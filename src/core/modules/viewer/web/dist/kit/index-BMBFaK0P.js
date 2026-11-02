@@ -230,7 +230,15 @@ const J = (e, t) => {
       e.open ? we(s.$slots, "default", {}, void 0, !0, 0) : j("", !0)
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, lv = /* @__PURE__ */ J(vr, [["__scopeId", "data-v-9ef1865c"]]), yr = Symbol("open-view"), Pe = Symbol.for("journal.window-context");
+========
+}, cv = /* @__PURE__ */ J(vr, [["__scopeId", "data-v-9ef1865c"]]), yr = Symbol("open-view"), Pe = Symbol.for("journal.window-context");
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, lv = /* @__PURE__ */ J(vr, [["__scopeId", "data-v-9ef1865c"]]), yr = Symbol("open-view"), Pe = Symbol.for("journal.window-context");
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 function ms() {
   const e = je(Pe, null);
   if (!e) throw new Error("useWindow is called only inside a window the viewer hosts");
@@ -309,7 +317,15 @@ const wr = {
       })
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, cv = /* @__PURE__ */ J(Mr, [["__scopeId", "data-v-d3240219"]]), Sr = ["aria-checked", "aria-label", "title"], Er = {
+========
+}, uv = /* @__PURE__ */ J(Mr, [["__scopeId", "data-v-d3240219"]]), Sr = ["aria-checked", "aria-label", "title"], Er = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, cv = /* @__PURE__ */ J(Mr, [["__scopeId", "data-v-d3240219"]]), Sr = ["aria-checked", "aria-label", "title"], Er = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "switch-inner"
 }, Ar = {
@@ -339,7 +355,15 @@ const wr = {
       e.word && !e.labelled ? (l(), d("span", Ar, b(e.word), 1)) : j("", !0)
     ], 10, Sr));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, uv = /* @__PURE__ */ J(Cr, [["__scopeId", "data-v-1bfb90f3"]]);
+========
+}, dv = /* @__PURE__ */ J(Cr, [["__scopeId", "data-v-1bfb90f3"]]);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, uv = /* @__PURE__ */ J(Cr, [["__scopeId", "data-v-1bfb90f3"]]);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 function xa(e, t, n) {
   try {
     const s = e().getItem(t);
@@ -705,7 +729,15 @@ const jr = ["stroke-width", "innerHTML"], Me = {
       }))
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, hv = /* @__PURE__ */ J(Jr, [["__scopeId", "data-v-a01e5a17"]]), Zr = {
+========
+}, fv = /* @__PURE__ */ J(Jr, [["__scopeId", "data-v-a01e5a17"]]), Zr = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, hv = /* @__PURE__ */ J(Jr, [["__scopeId", "data-v-a01e5a17"]]), Zr = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -2725,7 +2757,15 @@ const eu = ["innerHTML"], tu = ["innerHTML"], nu = {
       ], 64)) : j("", !0)
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, fv = /* @__PURE__ */ J(Eu, [["__scopeId", "data-v-fbe83734"]]);
+========
+}, pv = /* @__PURE__ */ J(Eu, [["__scopeId", "data-v-fbe83734"]]);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, fv = /* @__PURE__ */ J(Eu, [["__scopeId", "data-v-fbe83734"]]);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 function Au(e, t, n, s = () => window) {
   Le(() => {
     var a;
@@ -3489,7 +3529,15 @@ const Cd = ["data-from", "data-ref"], Od = { class: "message-body" }, Td = ["inn
       ])
     ], 8, Cd));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, pv = /* @__PURE__ */ J(Jd, [["__scopeId", "data-v-e8716407"]]), sn = [
+========
+}, mv = /* @__PURE__ */ J(Jd, [["__scopeId", "data-v-d94f6d91"]]), sn = [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, pv = /* @__PURE__ */ J(Jd, [["__scopeId", "data-v-d94f6d91"]]), sn = [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   { key: 100, label: "Low" },
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
@@ -3497,7 +3545,15 @@ const Cd = ["data-from", "data-ref"], Od = { class: "message-body" }, Td = ["inn
 ], An = 200, oo = (e) => {
   var t;
   return ((t = sn.findLast((n) => n.key <= e)) == null ? void 0 : t.key) ?? sn[0].key;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, mv = (e) => {
+========
+}, gv = (e) => {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, mv = (e) => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   var t;
   return ((t = sn.find((n) => n.key === e)) == null ? void 0 : t.label) || String(e);
 }, Zd = ["aria-label"], Xd = 300, ea = 400, Qd = {
@@ -3529,7 +3585,15 @@ const Cd = ["data-from", "data-ref"], Od = { class: "message-body" }, Td = ["inn
       }, null, 4)
     ], 10, Zd));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, gv = /* @__PURE__ */ J(Qd, [["__scopeId", "data-v-b10e610f"]]), eh = {
+========
+}, vv = /* @__PURE__ */ J(Qd, [["__scopeId", "data-v-b10e610f"]]), eh = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, gv = /* @__PURE__ */ J(Qd, [["__scopeId", "data-v-b10e610f"]]), eh = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   __name: "FoldSign",
   props: { open: Boolean },
   setup(e) {
@@ -3694,7 +3758,15 @@ const uh = { class: "title" }, dh = { class: "state" }, hh = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "empty"]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, vv = /* @__PURE__ */ J(hh, [["__scopeId", "data-v-a69084cd"]]), fh = ["data-tip", "aria-label"], ph = {
+========
+}, yv = /* @__PURE__ */ J(hh, [["__scopeId", "data-v-a69084cd"]]), fh = ["data-tip", "aria-label"], ph = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, vv = /* @__PURE__ */ J(hh, [["__scopeId", "data-v-a69084cd"]]), fh = ["data-tip", "aria-label"], ph = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "mact-word"
 }, mh = {
@@ -4531,7 +4603,15 @@ const Bf = ["data-window"], If = {
       ])
     ], 2));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, rs = /* @__PURE__ */ J(Wf, [["__scopeId", "data-v-51f69bf1"]]), Ff = (e) => `show-${e}`, yv = (e, t, n) => e.filter((s) => {
+========
+}, rs = /* @__PURE__ */ J(Wf, [["__scopeId", "data-v-51f69bf1"]]), Ff = (e) => `show-${e}`, wv = (e, t, n) => e.filter((s) => {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, rs = /* @__PURE__ */ J(Wf, [["__scopeId", "data-v-51f69bf1"]]), Ff = (e) => `show-${e}`, yv = (e, t, n) => e.filter((s) => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   var a;
   return n(Ff((a = t(s.type)) == null ? void 0 : a.family)) !== !1;
 }), Hf = "messages.chat", Uf = (e, t) => e.runs.replaceAll("{row_id}", String(t.target_id ?? "")), is = (e, t, n) => Et(Hf, Uf(e, t), n), Vf = (e, t) => t ? e.filter((n) => t.includes(n.runs.split(" ").slice(0, 2).join(" "))) : e, zf = ["title", "aria-label", "onClick"], Kf = {
@@ -4577,7 +4657,15 @@ function ho(e, t) {
   };
   return { load: s, read: a, fetchAll: async () => s(await a()), find: (o) => n.value.get(o) || null };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const fo = ho("/api/marks", "marks"), wv = fo.fetchAll, Jf = fo.find, Zf = 2e3;
+========
+const fo = ho("/api/marks", "marks"), kv = fo.fetchAll, Jf = fo.find, Zf = 2e3;
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const fo = ho("/api/marks", "marks"), wv = fo.fetchAll, Jf = fo.find, Zf = 2e3;
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 function Xf(e, t) {
   let n = null;
   const s = () => {
@@ -4589,11 +4677,27 @@ function Xf(e, t) {
     await e(), s();
   }), vt(() => clearTimeout(n));
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const Qf = ["data-ref"], e1 = ["data-ref"], t1 = { class: "mark-row" }, n1 = "dock add", s1 = {
   __name: "MarkHost",
   props: { mark: { type: Object, required: !0 }, allowedRuns: { type: Array, default: null }, docked: Boolean },
   setup(e) {
     const t = /* @__PURE__ */ new Set(["output", "process"]), n = /* @__PURE__ */ new Set(["user"]), s = e, a = B(() => Jf(s.mark.type)), o = je(Pe, null), r = B(() => !!(o && s.mark.target_model === "process" && s.mark.target_id && !s.mark.ended_at)), i = F(null);
+========
+const Qf = ["data-ref"], e1 = ["data-ref"], t1 = { class: "mark-row" }, n1 = "ended", s1 = "dock add", a1 = {
+  __name: "MarkHost",
+  props: { mark: { type: Object, required: !0 }, allowedRuns: { type: Array, default: null }, docked: Boolean },
+  setup(e) {
+    const t = /* @__PURE__ */ new Set(["output", "process"]), n = /* @__PURE__ */ new Set(["answered", "closed"]), s = e, a = B(() => Jf(s.mark.type)), o = je(Pe, null), r = B(() => !!(o && s.mark.target_model === "process" && s.mark.target_id && !s.mark.ended_at)), i = F(null);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const Qf = ["data-ref"], e1 = ["data-ref"], t1 = { class: "mark-row" }, n1 = "dock add", s1 = {
+  __name: "MarkHost",
+  props: { mark: { type: Object, required: !0 }, allowedRuns: { type: Array, default: null }, docked: Boolean },
+  setup(e) {
+    const t = /* @__PURE__ */ new Set(["output", "process"]), n = /* @__PURE__ */ new Set(["user"]), s = e, a = B(() => Jf(s.mark.type)), o = je(Pe, null), r = B(() => !!(o && s.mark.target_model === "process" && s.mark.target_id && !s.mark.ended_at)), i = F(null);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     Xf(async () => {
       if (!r.value) return;
       const $ = await o.read(["output", "list", "--process", String(s.mark.target_id)]);
@@ -4614,7 +4718,15 @@ const Qf = ["data-ref"], e1 = ["data-ref"], t1 = { class: "mark-row" }, n1 = "do
     });
     return ($, M) => {
       var L, w;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
       return (L = a.value) != null && L.card ? (l(), d("div", {
+========
+      return (L = a.value) != null && L.card && e.mark.state !== n1 && !z(n).has(e.mark.variant) ? (l(), d("div", {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+      return (L = a.value) != null && L.card ? (l(), d("div", {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
         key: 0,
         class: "thread-turn card whole-card",
         "data-ref": `chat_mark:${e.mark.id}`
@@ -4657,7 +4769,15 @@ const Qf = ["data-ref"], e1 = ["data-ref"], t1 = { class: "mark-row" }, n1 = "do
       ], 10, e1));
     };
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, a1 = /* @__PURE__ */ J(s1, [["__scopeId", "data-v-e6934a80"]]), o1 = ["data-ref"], r1 = ["inert"], i1 = { class: "thread-group" }, l1 = {
+========
+}, o1 = /* @__PURE__ */ J(a1, [["__scopeId", "data-v-9e607679"]]), r1 = ["data-ref"], i1 = ["inert"], l1 = { class: "thread-group" }, c1 = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, a1 = /* @__PURE__ */ J(s1, [["__scopeId", "data-v-e6934a80"]]), o1 = ["data-ref"], r1 = ["inert"], i1 = { class: "thread-group" }, l1 = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   __name: "MarkGroup",
   props: { group: { type: Object, required: !0 } },
   setup(e) {
@@ -4742,20 +4862,52 @@ const u1 = { class: "chat-dock-fold" }, d1 = ["aria-label"], h1 = { class: "chat
       ])
     ], 2));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, po = /* @__PURE__ */ J(m1, [["__scopeId", "data-v-63e4dcfc"]]), g1 = {
   class: "dock-leave",
   "aria-hidden": "true"
 }, Bn = 5, v1 = {
+========
+}, po = /* @__PURE__ */ J(g1, [["__scopeId", "data-v-63e4dcfc"]]), v1 = {
+  class: "dock-leave",
+  "aria-hidden": "true"
+}, Bn = 5, y1 = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, po = /* @__PURE__ */ J(m1, [["__scopeId", "data-v-63e4dcfc"]]), g1 = {
+  class: "dock-leave",
+  "aria-hidden": "true"
+}, Bn = 5, v1 = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   __name: "DockLeave",
   props: { endsAt: { type: Number, required: !0 } },
   setup(e) {
     const n = Math.min(Bn, Math.max(0, e.endsAt - Date.now() / 1e3)), s = { animationDuration: `${Bn}s`, animationDelay: `${(n - Bn).toFixed(2)}s` };
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     return (a, o) => (l(), d("span", g1, [
       p("i", { style: s })
     ]));
   }
 }, y1 = /* @__PURE__ */ J(v1, [["__scopeId", "data-v-d0c4b012"]]), mo = ho("/api/docks", "docks"), bv = mo.fetchAll, ls = mo.find, w1 = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), ra = (e, t, n, s) => ({ action: e, icon: t, label: n, runs: s });
 function k1(e, t) {
+========
+    return (a, o) => (l(), d("span", v1, [
+      p("i", { style: s })
+    ]));
+  }
+}, w1 = /* @__PURE__ */ J(y1, [["__scopeId", "data-v-d0c4b012"]]), mo = ho("/api/docks", "docks"), $v = mo.fetchAll, ls = mo.find, k1 = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), ra = (e, t, n, s) => ({ action: e, icon: t, label: n, runs: s });
+function b1(e, t) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    return (a, o) => (l(), d("span", g1, [
+      p("i", { style: s })
+    ]));
+  }
+}, y1 = /* @__PURE__ */ J(v1, [["__scopeId", "data-v-d0c4b012"]]), mo = ho("/api/docks", "docks"), bv = mo.fetchAll, ls = mo.find, w1 = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), ra = (e, t, n, s) => ({ action: e, icon: t, label: n, runs: s });
+function k1(e, t) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   var n;
   return [
     ...e.leaves_at && !e.kept ? [ra("keep", "pin", "Keep", `dock keep ${e.id}`)] : [],
@@ -4766,9 +4918,21 @@ function k1(e, t) {
 }
 const b1 = (e, t) => ({
   icon: (t == null ? void 0 : t.icon) || "",
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   title: w1(e, t),
   buttons: k1(e, t)
 }), $1 = { class: "dock-title" }, x1 = ["aria-expanded", "title"], _1 = { class: "chat-dock-acts dock-acts" }, M1 = {
+========
+  title: k1(e, t),
+  buttons: b1(e, t)
+}), x1 = { class: "dock-title" }, _1 = ["aria-expanded", "title"], M1 = { class: "chat-dock-acts dock-acts" }, S1 = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  title: w1(e, t),
+  buttons: k1(e, t)
+}), $1 = { class: "dock-title" }, x1 = ["aria-expanded", "title"], _1 = { class: "chat-dock-acts dock-acts" }, M1 = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "dock-text dock-failure",
   role: "alert",
@@ -4781,7 +4945,15 @@ const b1 = (e, t) => ({
   props: { item: { type: Object, required: !0 }, folded: Boolean, leaving: Boolean },
   emits: ["fold"],
   setup(e, { emit: t }) {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     const n = t, s = e, a = B(() => ls(s.item.type)), o = F(null), r = B(() => b1(s.item, a.value)), i = je(Pe), c = F(/* @__PURE__ */ new Set()), u = F("");
+========
+    const n = t, s = e, a = B(() => ls(s.item.type)), o = F(null), r = B(() => $1(s.item, a.value)), i = je(Pe), c = F(/* @__PURE__ */ new Set()), u = F("");
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    const n = t, s = e, a = B(() => ls(s.item.type)), o = F(null), r = B(() => b1(s.item, a.value)), i = je(Pe), c = F(/* @__PURE__ */ new Set()), u = F("");
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     async function f(M) {
       if (M.action === "open") return wt(`${s.item.target_model}:${s.item.target_id}`);
       if (M.action !== "declared") return is(M, s.item, i.environment);
@@ -4833,8 +5005,18 @@ const b1 = (e, t) => ({
             H(an, {
               open: !e.folded
             }, null, 8, ["open"])
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           ], 8, x1)),
           p("span", _1, [
+========
+          ], 8, _1)),
+          p("span", M1, [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          ], 8, x1)),
+          p("span", _1, [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
             (l(!0), d(Z, null, re(g.value, (q) => (l(), Y(ye, {
               key: q.action + q.runs,
               small: "",
@@ -4859,8 +5041,18 @@ const b1 = (e, t) => ({
       default: U(() => {
         var w, y;
         return [
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           u.value ? (l(), d("p", M1, b(u.value), 1)) : j("", !0),
           e.item.text && !((w = a.value) != null && w.body_url) ? (l(), d("p", S1, b(e.item.text), 1)) : j("", !0),
+========
+          u.value ? (l(), d("p", S1, b(u.value), 1)) : j("", !0),
+          e.item.text && !((w = a.value) != null && w.body_url) ? (l(), d("p", E1, b(e.item.text), 1)) : j("", !0),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          u.value ? (l(), d("p", M1, b(u.value), 1)) : j("", !0),
+          e.item.text && !((w = a.value) != null && w.body_url) ? (l(), d("p", S1, b(e.item.text), 1)) : j("", !0),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
           (y = a.value) != null && y.body_url ? (l(), Y(rs, {
             key: 2,
             declaration: a.value,
@@ -4873,7 +5065,15 @@ const b1 = (e, t) => ({
       _: 1
     }, 8, ["label", "folded"]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, ia = /* @__PURE__ */ J(E1, [["__scopeId", "data-v-608c189e"]]), A1 = ["title", "aria-label"], C1 = { class: "run-chip-in" }, O1 = {
+========
+}, ia = /* @__PURE__ */ J(A1, [["__scopeId", "data-v-608c189e"]]), C1 = ["title", "aria-label"], O1 = { class: "run-chip-in" }, T1 = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, ia = /* @__PURE__ */ J(E1, [["__scopeId", "data-v-608c189e"]]), A1 = ["title", "aria-label"], C1 = { class: "run-chip-in" }, O1 = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "run-chip-ring"
 }, T1 = { class: "run-chip-name" }, B1 = { class: "run-chip-bar" }, I1 = "processes.output", R1 = 3e3, L1 = {
@@ -4889,7 +5089,15 @@ const b1 = (e, t) => ({
       const $ = await Et(I1, ["process", "card", String(s.item.target_id)], a);
       $.ok && (o.value = $.value);
     }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     const f = setInterval(() => r.value && u(), R1);
+========
+    const f = setInterval(() => r.value && u(), L1);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    const f = setInterval(() => r.value && u(), R1);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     return Se(() => clearInterval(f)), u(), ($, M) => {
       var L;
       return l(), d("button", {
@@ -4920,11 +5128,27 @@ function xv({ top: e, before: t, height: n, shown: s }) {
   const a = n - e - s;
   return a <= N1 && e > t ? !0 : e < t && a > j1 ? !1 : null;
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const P1 = (e, t) => e === void 0 ? t : e, q1 = 6, W1 = 3, la = (e, t) => {
   var n;
   return (((n = t(e.type)) == null ? void 0 : n.leaves_after_seconds) || 0) > 0;
 }, go = (e) => !!(e.leaves_at && !e.kept), F1 = (e, t, n = /* @__PURE__ */ new Set()) => e.state === "docked" && (!go(e) || t < e.leaves_at || n.has(e.id)), H1 = (e, t, n = /* @__PURE__ */ new Set()) => e.filter((s) => F1(s, t, n)).sort((s, a) => s.id - a.id);
 function U1(e, t, n = q1) {
+========
+const q1 = (e, t) => e === void 0 ? t : e, W1 = 6, F1 = 3, la = (e, t) => {
+  var n;
+  return (((n = t(e.type)) == null ? void 0 : n.leaves_after_seconds) || 0) > 0;
+}, go = (e) => !!(e.leaves_at && !e.kept), H1 = (e, t, n = /* @__PURE__ */ new Set()) => e.state === "docked" && (!go(e) || t < e.leaves_at || n.has(e.id)), U1 = (e, t, n = /* @__PURE__ */ new Set()) => e.filter((s) => H1(s, t, n)).sort((s, a) => s.id - a.id);
+function V1(e, t, n = W1) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const P1 = (e, t) => e === void 0 ? t : e, q1 = 6, W1 = 3, la = (e, t) => {
+  var n;
+  return (((n = t(e.type)) == null ? void 0 : n.leaves_after_seconds) || 0) > 0;
+}, go = (e) => !!(e.leaves_at && !e.kept), F1 = (e, t, n = /* @__PURE__ */ new Set()) => e.state === "docked" && (!go(e) || t < e.leaves_at || n.has(e.id)), H1 = (e, t, n = /* @__PURE__ */ new Set()) => e.filter((s) => F1(s, t, n)).sort((s, a) => s.id - a.id);
+function U1(e, t, n = q1) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const s = e.length - n;
   if (s <= 0) return e;
   const a = new Set(e.filter((o) => o.leaves_at && !o.kept && !(o.leaves_at > t)).slice(0, s).map((o) => o.id));
@@ -4939,7 +5163,15 @@ const V1 = (e, t) => e >= W1 ? !0 : e <= 1 ? !1 : t, z1 = { class: "dock-stack" 
   setup(e) {
     const t = e, n = F(Date.now() / 1e3), s = F(/* @__PURE__ */ new Set()), a = F(!1), o = F(!1), r = setInterval(() => n.value = Date.now() / 1e3, 500);
     Se(() => clearInterval(r));
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     const i = B(() => H1(t.items, n.value, s.value)), c = B(() => U1(i.value.filter((q) => la(q, ls)), n.value)), u = B(() => i.value.filter((q) => !c.value.includes(q) && !la(q, ls))), f = B(() => (a.value = V1(c.value.length, a.value)) && !o.value), g = F({}), $ = (q) => P1(g.value[q.id], t.folded);
+========
+    const i = B(() => U1(t.items, n.value, s.value)), c = B(() => V1(i.value.filter((q) => la(q, ls)), n.value)), u = B(() => i.value.filter((q) => !c.value.includes(q) && !la(q, ls))), f = B(() => (a.value = z1(c.value.length, a.value)) && !o.value), g = F({}), $ = (q) => q1(g.value[q.id], t.folded);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    const i = B(() => H1(t.items, n.value, s.value)), c = B(() => U1(i.value.filter((q) => la(q, ls)), n.value)), u = B(() => i.value.filter((q) => !c.value.includes(q) && !la(q, ls))), f = B(() => (a.value = V1(c.value.length, a.value)) && !o.value), g = F({}), $ = (q) => P1(g.value[q.id], t.folded);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     function M(q) {
       g.value = { ...g.value, [q.id]: !$(q) };
     }
@@ -4991,7 +5223,15 @@ const V1 = (e, t) => e >= W1 ? !0 : e <= 1 ? !1 : t, z1 = { class: "dock-stack" 
           folded: $(x),
           onFold: (v) => M(x)
         }, null, 8, ["item", "folded", "onFold"])
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
       ], 40, Y1))), 128)),
+========
+      ], 40, J1))), 128)),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+      ], 40, Y1))), 128)),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
       f.value ? (l(), Y(po, {
         key: 1,
         label: `${c.value.length} runs`,
@@ -5022,6 +5262,8 @@ const V1 = (e, t) => e >= W1 ? !0 : e <= 1 ? !1 : t, z1 = { class: "dock-stack" 
       }, 8, ["label"])) : j("", !0)
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, _v = /* @__PURE__ */ J(Z1, [["__scopeId", "data-v-05bde3f3"]]), St = { gap: 8, shuffles: 3, frames: 48, fps: 20, lift: 0.12 }, Gt = (e) => Math.min(Math.max(e, 0), 1), X1 = (e) => {
   const t = Gt(e);
   return t * t * (3 - 2 * t);
@@ -5033,6 +5275,28 @@ function Mv(e) {
 const vo = 2400, Q1 = 0.05;
 function Sv({ y: e, speed: t }, n, s, a = 1 / 0) {
   const o = Math.min(s, Q1), r = Math.min(t + vo * o, a), i = e + r * o;
+========
+}, Mv = /* @__PURE__ */ J(X1, [["__scopeId", "data-v-05bde3f3"]]), St = { gap: 8, shuffles: 3, frames: 48, fps: 20, lift: 0.12 }, Gt = (e) => Math.min(Math.max(e, 0), 1), Q1 = (e) => {
+========
+}, _v = /* @__PURE__ */ J(Z1, [["__scopeId", "data-v-05bde3f3"]]), St = { gap: 8, shuffles: 3, frames: 48, fps: 20, lift: 0.12 }, Gt = (e) => Math.min(Math.max(e, 0), 1), X1 = (e) => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  const t = Gt(e);
+  return t * t * (3 - 2 * t);
+}, et = (e, t, n) => X1((e - t) / (n - t));
+function Mv(e) {
+  const t = Gt(e), n = Gt((t - 0.12) / 0.76) * St.shuffles, s = Math.min(Math.floor(n), St.shuffles - 1), a = n - s, o = et(a, 0.26, 0.38) * (1 - et(a, 0.76, 0.96)), r = et(a, 0.38, 0.76), i = et(t, 0, 0.12) * (1 - et(t, 0.88, 1)), c = et(a, 0.2, 0.34) * (1 - et(a, 0.84, 1)), u = Math.sin(Math.PI * Gt((a - 0.45) / 0.55)) ** 2;
+  return { moved: r, across: (s + r) / St.shuffles, lift: St.lift * o, ready: i, weight: c, follow: u, shuffle: s, phase: a };
+}
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+const vo = 2400, ep = 0.05;
+function Ev({ y: e, speed: t }, n, s, a = 1 / 0) {
+  const o = Math.min(s, ep), r = Math.min(t + vo * o, a), i = e + r * o;
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const vo = 2400, Q1 = 0.05;
+function Sv({ y: e, speed: t }, n, s, a = 1 / 0) {
+  const o = Math.min(s, Q1), r = Math.min(t + vo * o, a), i = e + r * o;
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   return i < n ? { y: i, speed: r, landed: !1 } : { y: n, speed: 0, landed: !0 };
 }
 const Je = {
@@ -5171,9 +5435,21 @@ const Je = {
   press: { intro: 24, hold: 24, outro: 24, fps: 12, squashes: [0.5, 1], frees: [0, 0.3] },
   // compacting: it vacuums up the words flying in from beside it, the canister on the floor and the nozzle in its hand
   vacuum: { intro: 10, hold: 40, outro: 10, fps: 10 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, cs = (e, t, n) => Math.min(Math.max((e - t) / (n - t), 0), 1), ep = (e) => e * e * (3 - 2 * e), rn = (e, [t, n]) => ep(cs(e, t, n)), tp = ["rummage_papers", "rummage_boot", "rummage_bone", "rummage_book"], Ge = { speed: [8, 10], angle: [66, 80], spread: [-0.8, 0.8], spin: [400, 900], gravity: 14, floor: 0.2 }, Ht = ([e, t], n) => e + n() * (t - e);
 function np(e) {
   return tp.map(() => {
+========
+}, cs = (e, t, n) => Math.min(Math.max((e - t) / (n - t), 0), 1), tp = (e) => e * e * (3 - 2 * e), rn = (e, [t, n]) => tp(cs(e, t, n)), np = ["rummage_papers", "rummage_boot", "rummage_bone", "rummage_book"], Ge = { speed: [8, 10], angle: [66, 80], spread: [-0.8, 0.8], spin: [400, 900], gravity: 14, floor: 0.2 }, Ht = ([e, t], n) => e + n() * (t - e);
+function sp(e) {
+  return np.map(() => {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, cs = (e, t, n) => Math.min(Math.max((e - t) / (n - t), 0), 1), ep = (e) => e * e * (3 - 2 * e), rn = (e, [t, n]) => ep(cs(e, t, n)), tp = ["rummage_papers", "rummage_boot", "rummage_bone", "rummage_book"], Ge = { speed: [8, 10], angle: [66, 80], spread: [-0.8, 0.8], spin: [400, 900], gravity: 14, floor: 0.2 }, Ht = ([e, t], n) => e + n() * (t - e);
+function np(e) {
+  return tp.map(() => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     const t = Ht(Ge.speed, e), n = Ht(Ge.angle, e) * Math.PI / 180, s = Ht(Ge.spin, e) * (e() < 0.5 ? -1 : 1);
     return { velocity: [Ht(Ge.spread, e), t * Math.cos(n), t * Math.sin(n)], spin: s };
   });
@@ -5201,6 +5477,8 @@ function Av(e, t) {
   }
   return { index: 0, s: 1, height: 0 };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const Cv = () => Array.from({ length: Je.pogo.count }, (e, t) => Je.pogo.bounce * (t + 1) / Je.pogo.count), Ov = { stride: 0.5 };
 function yo(e, t) {
   const n = t * (e.intro + e.hold + e.outro), s = n >= e.intro && n < e.intro + e.hold;
@@ -5213,16 +5491,49 @@ function Tv(e) {
 function Bv(e) {
   const t = Je.rope_swing, { into: n, out: s } = yo(t, e), a = (e * (t.intro + t.hold + t.outro) - t.intro) / t.hold;
   return rn(n, [0, 1]) * (1 - rn(s, [0, 1])) * Math.sin(2 * Math.PI * t.swings * a);
+========
+const Ov = () => Array.from({ length: Je.pogo.count }, (e, t) => Je.pogo.bounce * (t + 1) / Je.pogo.count), Tv = { stride: 0.5 };
+========
+const Cv = () => Array.from({ length: Je.pogo.count }, (e, t) => Je.pogo.bounce * (t + 1) / Je.pogo.count), Ov = { stride: 0.5 };
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+function yo(e, t) {
+  const n = t * (e.intro + e.hold + e.outro), s = n >= e.intro && n < e.intro + e.hold;
+  return { into: cs(n, 0, e.intro), held: s ? (n - e.intro) / e.hold : null, out: cs(n, e.intro + e.hold, e.intro + e.hold + e.outro) };
+}
+function Tv(e) {
+  const { into: t, out: n } = yo(Je.rope_swing, e);
+  return 1 - rn(t, [0, 1]) * (1 - rn(n, [0, 1]));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+}
+function Bv(e) {
+  const t = Je.rope_swing, { into: n, out: s } = yo(t, e), a = (e * (t.intro + t.hold + t.outro) - t.intro) / t.hold;
+  return rn(n, [0, 1]) * (1 - rn(s, [0, 1])) * Math.sin(2 * Math.PI * t.swings * a);
 }
 const op = { after: 3 }, rp = 10, ip = { hop_up: 1200, disco: 7200, rope_swing: 900, backflip: 360, bug_shot: 1800, bug_smash: 1800, tickle_swat: 0 }, lp = { hop_up: 20, disco: 12, rope_swing: 60, backflip: 3, bubble: 90 }, cp = { weight: 19 }, up = {
   build: { cooldown: 180 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, dp = { every: 120 }, wo = {
+========
+}, hp = { every: 120 }, wo = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, dp = { every: 120 }, wo = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   butler: { "🎩": "hat_tip", "🧐": "monocle", "🥂": "toast" },
   homie: { "🤙": "shaka", "😎": "shades", "🔥": "fire" },
   colleague: { "👍": "thumbs_up", "👀": "peer" },
   coach: { "🎉": "party_popper", "💪": "flex", "🏆": "trophy" },
   squire: { "⚔️": "sword", "🛡️": "shield_up", "🏰": "castle" }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, ko = { "🙏": "thanks", "😠": "tantrum", "😡": "tantrum" }, hp = {
+========
+}, ko = { "🙏": "thanks", "😠": "tantrum", "😡": "tantrum" }, fp = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, ko = { "🙏": "thanks", "😠": "tantrum", "😡": "tantrum" }, hp = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   "❤️": "hearts",
   "👍": "amused",
   "🎉": "startled",
@@ -5243,7 +5554,15 @@ const op = { after: 3 }, rp = 10, ip = { hop_up: 1200, disco: 7200, rope_swing: 
   "⚔️": "angry",
   "🛡️": "worried",
   "🏰": "amused"
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, Lt = (e, t, n, s) => ({ name: e, kind: t, weight: n, when: s, lifetime: rp }), ee = (e, t, n = {}) => Lt(e, "clip", t, n), In = (e, t, n = {}) => Lt(e, "look", t, n), ca = (e, t, n = {}) => Lt(e, "gaze", t, n), ce = (e, t, n = {}, s = {}) => ({ ...Lt(e, "pick", t, n), ...s }), pe = (e) => Lt("nothing", "nothing", e, {}), fp = 120, pp = 300, Rn = (e, t) => ({ ...ee(e, t), cooldown: pp }), mp = 120, te = (e, { cooldown: t = 0, ...n }, s) => s.map((a) => ({ ...n, ...a, when: { moment: e, ...a.when }, group: { name: e, cooldown: t } })), gp = () => [ee("joy", 2)], tt = (e, t, n, s, a = {}) => ({ ...ee(e, t, { free: !0, lasted: n, ...a.when }), cooldown: s }), nt = (e) => ({ ...e, cooldown: ip[e.name] }), Mt = (e) => ({ ...e, shenanigan: !0, lasts: lp[e.name] }), _s = [
+========
+}, Lt = (e, t, n, s) => ({ name: e, kind: t, weight: n, when: s, lifetime: ip }), ee = (e, t, n = {}) => Lt(e, "clip", t, n), In = (e, t, n = {}) => Lt(e, "look", t, n), ca = (e, t, n = {}) => Lt(e, "gaze", t, n), ce = (e, t, n = {}, s = {}) => ({ ...Lt(e, "pick", t, n), ...s }), pe = (e) => Lt("nothing", "nothing", e, {}), pp = 120, mp = 300, Rn = (e, t) => ({ ...ee(e, t), cooldown: mp }), gp = 120, te = (e, { cooldown: t = 0, ...n }, s) => s.map((a) => ({ ...n, ...a, when: { moment: e, ...a.when }, group: { name: e, cooldown: t } })), vp = () => [ee("joy", 2)], tt = (e, t, n, s, a = {}) => ({ ...ee(e, t, { free: !0, lasted: n, ...a.when }), cooldown: s }), nt = (e) => ({ ...e, cooldown: lp[e.name] }), Mt = (e) => ({ ...e, shenanigan: !0, lasts: cp[e.name] }), _s = [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, Lt = (e, t, n, s) => ({ name: e, kind: t, weight: n, when: s, lifetime: rp }), ee = (e, t, n = {}) => Lt(e, "clip", t, n), In = (e, t, n = {}) => Lt(e, "look", t, n), ca = (e, t, n = {}) => Lt(e, "gaze", t, n), ce = (e, t, n = {}, s = {}) => ({ ...Lt(e, "pick", t, n), ...s }), pe = (e) => Lt("nothing", "nothing", e, {}), fp = 120, pp = 300, Rn = (e, t) => ({ ...ee(e, t), cooldown: pp }), mp = 120, te = (e, { cooldown: t = 0, ...n }, s) => s.map((a) => ({ ...n, ...a, when: { moment: e, ...a.when }, group: { name: e, cooldown: t } })), gp = () => [ee("joy", 2)], tt = (e, t, n, s, a = {}) => ({ ...ee(e, t, { free: !0, lasted: n, ...a.when }), cooldown: s }), nt = (e) => ({ ...e, cooldown: ip[e.name] }), Mt = (e) => ({ ...e, shenanigan: !0, lasts: lp[e.name] }), _s = [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   // a test run's end: celebrated on its card, or a start at a failure; a pass soon after a failure is the bug solved, most often shot
   // as it crawls into the chat instead of the visor's glow
   ...te("tests_passed", { cooldown: 20, toward: "card", onto: !0 }, [ee("nod", 2), pe(1)]),
@@ -5302,7 +5621,15 @@ const op = { after: 3 }, rp = 10, ip = { hop_up: 1200, disco: 7200, rope_swing: 
   ...te("card_arrived", { cooldown: 20, toward: "card" }, [ee("glance", 7), pe(13)]),
   ...te("typing", { cooldown: 60 }, [In("reading", 1), pe(4)]),
   // a face the user puts on a message changes the eyes, every time; one the agent puts on in its voice is played out, every time
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   ...Object.entries(hp).flatMap(([e, t]) => te(`reacted:${e}`, {}, [In(t, 1)])),
+========
+  ...Object.entries(fp).flatMap(([e, t]) => te(`reacted:${e}`, {}, [In(t, 1)])),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  ...Object.entries(hp).flatMap(([e, t]) => te(`reacted:${e}`, {}, [In(t, 1)])),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   ...Object.entries(wo).flatMap(([e, t]) => Object.entries(t).map(([n, s]) => te(`agent_reacted:${n}`, {}, [ee(s, 1, { voices: [e] })])[0])),
   ...Object.entries(ko).flatMap(([e, t]) => te(`agent_reacted:${e}`, {}, [ee(t, 1)])),
   // the idle acts, while it has nothing to do, a wait on a run, a worker or the user as much as idle
@@ -5330,7 +5657,15 @@ const op = { after: 3 }, rp = 10, ip = { hop_up: 1200, disco: 7200, rope_swing: 
   // minutes, so the next is always another; none at all while all wait;
   // the binoculars only from the compose box, scanning up the chat; the glass held up to a bubble only with one within reach (perches.js
   // bubbleNear)
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   ...te("held:search", { cooldown: fp }, [Rn("search", 3), { ...Rn("binoculars", 2), when: { home: !0 } }, { ...Rn("glass_bubble", 2), when: { bubble: !0 } }]),
+========
+  ...te("held:search", { cooldown: pp }, [Rn("search", 3), { ...Rn("binoculars", 2), when: { home: !0 } }, { ...Rn("glass_bubble", 2), when: { bubble: !0 } }]),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  ...te("held:search", { cooldown: fp }, [Rn("search", 3), { ...Rn("binoculars", 2), when: { home: !0 } }, { ...Rn("glass_bubble", 2), when: { bubble: !0 } }]),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   ...te("held:type", {}, [ee("type", 3), ee("type_ponder", 1)]),
   ...te("held:watch", {}, [ee("watch", 2), ee("wave_up", 1)]),
   ...te("held:compacting", {}, [ee("pack_box", 3), ee("vacuum", 2), ee("compacting", 1)]),
@@ -5395,10 +5730,24 @@ const op = { after: 3 }, rp = 10, ip = { hop_up: 1200, disco: 7200, rope_swing: 
     ce("leaning_on_left_arm", 1, {}, { turn: 0, leans: 1 }),
     ce("leaning_on_right_arm", 1, {}, { turn: 0, leans: -1 })
   ])
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 ], vp = (e, t) => Object.entries(e).every(([n, s]) => n === "voices" ? s.includes(t.voice) : n === "lasted" ? t.lasted >= s : t[n] === s), bo = (e) => [[e.group.name, e.group.cooldown], [`${e.group.name}/${e.name}`, e.cooldown]].filter(([, t]) => t), yp = (e) => Array.isArray(e) ? e[0] : e, wp = (e, t) => Array.isArray(e) ? t() * (e[1] - e[0]) : 0;
 function kp(e) {
   var u;
   const t = e.has ?? (() => !0), n = (f) => e.now - (e.memory.get(f) ?? -1 / 0), s = (f) => !e.memory || bo(f).every(([g, $]) => n(g) >= yp($)), a = (f) => !f.shenanigan || f.lasts <= (e.room ?? 0), o = _s.filter((f) => vp(f.when, e) && (f.kind !== "clip" || t(f.name)) && s(f) && a(f)), i = (((u = e.tally) == null ? void 0 : u.plain) ?? 0) >= op.after && o.some((f) => f.shenanigan) ? o.filter((f) => f.shenanigan) : o, c = i.filter((f) => {
+========
+], yp = (e, t) => Object.entries(e).every(([n, s]) => n === "voices" ? s.includes(t.voice) : n === "lasted" ? t.lasted >= s : t[n] === s), bo = (e) => [[e.group.name, e.group.cooldown], [`${e.group.name}/${e.name}`, e.cooldown]].filter(([, t]) => t), wp = (e) => Array.isArray(e) ? e[0] : e, kp = (e, t) => Array.isArray(e) ? t() * (e[1] - e[0]) : 0;
+function bp(e) {
+  var u;
+  const t = e.has ?? (() => !0), n = (f) => e.now - (e.memory.get(f) ?? -1 / 0), s = (f) => !e.memory || bo(f).every(([g, $]) => n(g) >= wp($)), a = (f) => !f.shenanigan || f.lasts <= (e.room ?? 0), o = _s.filter((f) => yp(f.when, e) && (f.kind !== "clip" || t(f.name)) && s(f) && a(f)), i = (((u = e.tally) == null ? void 0 : u.plain) ?? 0) >= rp.after && o.some((f) => f.shenanigan) ? o.filter((f) => f.shenanigan) : o, c = i.filter((f) => {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+], vp = (e, t) => Object.entries(e).every(([n, s]) => n === "voices" ? s.includes(t.voice) : n === "lasted" ? t.lasted >= s : t[n] === s), bo = (e) => [[e.group.name, e.group.cooldown], [`${e.group.name}/${e.name}`, e.cooldown]].filter(([, t]) => t), yp = (e) => Array.isArray(e) ? e[0] : e, wp = (e, t) => Array.isArray(e) ? t() * (e[1] - e[0]) : 0;
+function kp(e) {
+  var u;
+  const t = e.has ?? (() => !0), n = (f) => e.now - (e.memory.get(f) ?? -1 / 0), s = (f) => !e.memory || bo(f).every(([g, $]) => n(g) >= yp($)), a = (f) => !f.shenanigan || f.lasts <= (e.room ?? 0), o = _s.filter((f) => vp(f.when, e) && (f.kind !== "clip" || t(f.name)) && s(f) && a(f)), i = (((u = e.tally) == null ? void 0 : u.plain) ?? 0) >= op.after && o.some((f) => f.shenanigan) ? o.filter((f) => f.shenanigan) : o, c = i.filter((f) => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     var g;
     return f.kind === "nothing" || f.name !== ((g = e.tally) == null ? void 0 : g.last);
   });
@@ -5412,9 +5761,21 @@ function bp(e, t) {
 }
 function $o(e, t, n) {
   var s;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   for (const [a, o] of bo(t)) (s = e.memory) == null || s.set(a, e.now + wp(o, n));
 }
 function Iv(e, t, n) {
+========
+  for (const [a, o] of bo(t)) (s = e.memory) == null || s.set(a, e.now + kp(o, n));
+}
+function Rv(e, t, n) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  for (const [a, o] of bo(t)) (s = e.memory) == null || s.set(a, e.now + wp(o, n));
+}
+function Iv(e, t, n) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   $o(e, _s.find((s) => s.when.moment === e.moment && s.name === t), n);
 }
 const ua = {
@@ -5444,7 +5805,15 @@ const ua = {
   Write: "writing",
   NotebookEdit: "writing",
   Bash: "running"
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, Lv = 120, Dv = (e) => ua[e] || ua.idle;
+========
+}, Dv = 120, Nv = (e) => ua[e] || ua.idle;
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, Lv = 120, Dv = (e) => ua[e] || ua.idle;
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 [.../* @__PURE__ */ new Set([...Object.values(wo).flatMap((e) => Object.keys(e)), ...Object.keys(ko)])];
 const Te = { seconds: 5, lines: 3, line: 18, sweep: 2.8, returnSeconds: 1.2, inset: 14, turn: 135, ahead: 0.25 };
 function Nv(e, t, n) {
@@ -5455,6 +5824,8 @@ const da = (e) => {
   const t = Math.min(Math.max(e, 0), 1);
   return t * t * t * (10 + t * (-15 + 6 * t));
 };
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function jv(e, t) {
   const n = Math.min(Te.inset, Math.max(e.right - e.left, 0) / 2), s = Math.min(Te.inset, Math.max(e.bottom - e.top, 0) / 2), a = Math.max(1, Math.min(Te.lines, Math.floor((e.bottom - e.top - 2 * s) / Te.line) + 1)), o = Math.max(t, 0), r = Math.floor(o / Te.sweep) % a, i = o % Te.sweep, c = Te.sweep - Te.returnSeconds, u = da((i - c) / Te.returnSeconds), f = i <= c ? da(i / c) : 1 - u, g = r + ((r + 1) % a - r) * u;
   return { x: e.left + n + Math.max(e.right - e.left - 2 * n, 0) * f, y: e.top + s + g * Te.line, readingCenter: (e.left + e.right) / 2, mood: "reading", behind: !0 };
@@ -5465,6 +5836,27 @@ const $p = 1, xp = (e, t, n, s, a, o = 0) => bp({ moment: "jump", high: e > $p *
 }, qv = { width: 24, height: 27, top: 3, units: 2 }, _p = "[data-figure-pile]", Wv = { amber: [1, 0.69, 0.125], good: ha.colours.good, bad: ha.colours.bad }, Ln = { phases: 4, dim: 0.25 }, Fv = (e, t, n) => e !== "amber" || (t + n) % Ln.phases < Ln.phases / 2 ? 1 : Ln.dim, Mp = /* @__PURE__ */ new Set(["standing", "building", "typing", "work_done"]);
 new Set(_s.filter((e) => Mp.has(e.when.moment) && e.kind === "clip").map((e) => e.name));
 const Hv = {
+========
+function Pv(e, t) {
+========
+function jv(e, t) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  const n = Math.min(Te.inset, Math.max(e.right - e.left, 0) / 2), s = Math.min(Te.inset, Math.max(e.bottom - e.top, 0) / 2), a = Math.max(1, Math.min(Te.lines, Math.floor((e.bottom - e.top - 2 * s) / Te.line) + 1)), o = Math.max(t, 0), r = Math.floor(o / Te.sweep) % a, i = o % Te.sweep, c = Te.sweep - Te.returnSeconds, u = da((i - c) / Te.returnSeconds), f = i <= c ? da(i / c) : 1 - u, g = r + ((r + 1) % a - r) * u;
+  return { x: e.left + n + Math.max(e.right - e.left - 2 * n, 0) * f, y: e.top + s + g * Te.line, readingCenter: (e.left + e.right) / 2, mood: "reading", behind: !0 };
+}
+const $p = 1, xp = (e, t, n, s, a, o = 0) => bp({ moment: "jump", high: e > $p * t, memory: s, now: a, room: o }, n).name === "backflip", ha = { colours: { bad: [1, 0.06, 0.1], good: [0.08, 1, 0.32] }, core: 0.45 }, Pv = (e) => {
+  var t;
+  return Math.max(e.glow, 1 - e.eyes, ((t = e.sign) == null ? void 0 : t.strength) ?? 0);
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+}, Wv = { width: 24, height: 27, top: 3, units: 2 }, Mp = "[data-figure-pile]", Fv = { amber: [1, 0.69, 0.125], good: ha.colours.good, bad: ha.colours.bad }, Ln = { phases: 4, dim: 0.25 }, Hv = (e, t, n) => e !== "amber" || (t + n) % Ln.phases < Ln.phases / 2 ? 1 : Ln.dim, Sp = /* @__PURE__ */ new Set(["standing", "building", "typing", "work_done"]);
+new Set(_s.filter((e) => Sp.has(e.when.moment) && e.kind === "clip").map((e) => e.name));
+const Uv = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, qv = { width: 24, height: 27, top: 3, units: 2 }, _p = "[data-figure-pile]", Wv = { amber: [1, 0.69, 0.125], good: ha.colours.good, bad: ha.colours.bad }, Ln = { phases: 4, dim: 0.25 }, Fv = (e, t, n) => e !== "amber" || (t + n) % Ln.phases < Ln.phases / 2 ? 1 : Ln.dim, Mp = /* @__PURE__ */ new Set(["standing", "building", "typing", "work_done"]);
+new Set(_s.filter((e) => Mp.has(e.when.moment) && e.kind === "clip").map((e) => e.name));
+const Hv = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   width: 84,
   belly: 13,
   blink: 4
@@ -5493,16 +5885,34 @@ function Op() {
   }
   return null;
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function xo(e, t, n = Op()) {
+========
+function xo(e, t, n = Tp()) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function xo(e, t, n = Op()) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   if (!e || !n) return !0;
   const s = kt(e, t), a = Ss(e), o = { left: s.left + Math.min(a.left, 0.27) * t.size, right: s.left + Math.max(a.right, 0.73) * t.size, top: s.top + Ye.top * t.size, bottom: s.top + Ye.bottom * t.size }, r = St.gap;
   return !So(o, { left: n.left - r, right: n.right + r, top: n.top - r, bottom: n.bottom + r });
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const Dn = 0.26, Tp = 0.54, bn = {
+========
+const Dn = 0.26, Bp = 0.54, bn = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const Dn = 0.26, Tp = 0.54, bn = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   stand: { drop: 0, travels: "stand" },
   sit: { drop: Dn, travels: "stand" },
   lounge: { drop: Dn, travels: "stand" },
   composed: { drop: Dn, travels: "stand" },
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   hang: { drop: Tp, travels: "hang" },
   walk: { drop: 0, travels: "stand" }
 }, _o = /* @__PURE__ */ new Set(["sit", "lounge", "composed"]), Bp = /* @__PURE__ */ new Set(["bubble", "dock", "compose"]), Uv = (e, t) => (e === "sit" ? Bp.has(t) : _o.has(e)) ? e : "stand", Vv = 0.25, zv = (e, t) => _o.has(e) && bn[t].drop === 0, Mo = 2, Ip = 90, Rp = 180, Lp = 140, Dp = 280, Np = 420, jp = 0.25, Pp = 290, qp = 600, Wp = "cubic-bezier(0.2, 0.7, 0.4, 1)", Fp = "cubic-bezier(0.55, 0, 0.9, 0.6)", Nn = 5;
@@ -5521,6 +5931,33 @@ function ln(e, t, n, { straight: s = !1, hangs: a = !1, pace: o = 1, pressing: r
   return { way: Math.sign(t.x - e.x) || 1, legs: P, lands: !a, pace: o, running: M };
 }
 const Hp = (e, t) => ({ x: e.x, y: e.y, ms: Je.pogo.frames / Je.pogo.fps * 1e3, lead: 0, easing: "linear", hopping: !0, pogo: !0, size: t, clip: "pogo" }), kt = (e, { size: t, below: n }, s = e.posture) => {
+========
+  hang: { drop: Bp, travels: "hang" },
+========
+  hang: { drop: Tp, travels: "hang" },
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  walk: { drop: 0, travels: "stand" }
+}, _o = /* @__PURE__ */ new Set(["sit", "lounge", "composed"]), Bp = /* @__PURE__ */ new Set(["bubble", "dock", "compose"]), Uv = (e, t) => (e === "sit" ? Bp.has(t) : _o.has(e)) ? e : "stand", Vv = 0.25, zv = (e, t) => _o.has(e) && bn[t].drop === 0, Mo = 2, Ip = 90, Rp = 180, Lp = 140, Dp = 280, Np = 420, jp = 0.25, Pp = 290, qp = 600, Wp = "cubic-bezier(0.2, 0.7, 0.4, 1)", Fp = "cubic-bezier(0.55, 0, 0.9, 0.6)", Nn = 5;
+function ln(e, t, n, { straight: s = !1, hangs: a = !1, pace: o = 1, pressing: r = !1, sprinting: i = !1, random: c = Math.random, memory: u = null, now: f = 0, room: g = 0, pogo: $ = !1 } = {}) {
+  if (Math.hypot(t.x - e.x, t.y - e.y) < Nn) return null;
+  (r || i) && (o = Math.max(o, Mo));
+  const M = o > 1, L = Math.abs(t.x - e.x), w = L < Nn ? 0 : L / (Ip * o) * 1e3, y = Math.min(w, M ? Lp : Rp), T = Math.abs(t.y - e.y), q = t.y < e.y, X = q && !$ && xp(T, n, c, u, f, g), x = q ? Np + Math.min(T, 400) * jp : Math.sqrt(2 * T / vo) * 1e3, v = {
+    x: t.x,
+    y: t.y,
+    ms: T > Nn ? X ? qp : x : 0,
+    lead: X ? Pp : q ? Dp : 0,
+    easing: q ? Wp : Fp,
+    hopping: !0,
+    clip: X ? "backflip" : q ? "jump" : "fall"
+  }, D = { x: t.x, y: t.y, ms: w + y, lead: 0, easing: "linear", ramp: y, ...M ? { clip: "run" } : {} }, O = $ ? Hp(t, n) : v, P = q && !s ? [{ ...D, y: e.y }, O] : [{ ...v, x: e.x }, D];
+  return { way: Math.sign(t.x - e.x) || 1, legs: P, lands: !a, pace: o, running: M };
+}
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+const Up = (e, t) => ({ x: e.x, y: e.y, ms: Je.pogo.frames / Je.pogo.fps * 1e3, lead: 0, easing: "linear", hopping: !0, pogo: !0, size: t, clip: "pogo" }), kt = (e, { size: t, below: n }, s = e.posture) => {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const Hp = (e, t) => ({ x: e.x, y: e.y, ms: Je.pogo.frames / Je.pogo.fps * 1e3, lead: 0, easing: "linear", hopping: !0, pogo: !0, size: t, clip: "pogo" }), kt = (e, { size: t, below: n }, s = e.posture) => {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const a = e.y - (1 - n - bn[s].drop) * t;
   return { left: e.x - t / 2, right: e.x + t / 2, top: a, bottom: a + t };
 }, So = (e, t) => e.left < t.right && t.left < e.right && e.top < t.bottom && t.top < e.bottom, Ms = (e) => {
@@ -5533,7 +5970,15 @@ function bt() {
   return e ? e.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 }
 const Ut = 0.5, pa = 20;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function Kv(e, t, n = bt()) {
+========
+function Gv(e, t, n = bt()) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function Kv(e, t, n = bt()) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const s = kt(e, t);
   return s.left >= n.left + pa && s.right <= n.right - pa;
 }
@@ -5541,14 +5986,30 @@ function Eo(e, t, n = bt()) {
   const s = kt(e, t), a = s.right - s.left, o = Ss(e), [r, i] = [s.left + o.left * a, s.left + o.right * a], c = e.posture === "hang" ? s.bottom : e.y;
   return r >= n.left - Ut && i <= n.right + Ut && s.top >= n.top - Ut && c <= n.bottom + Ut;
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const cn = [0.35, 0.5, 0.65], un = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9], Ye = { left: cn[0], right: cn.at(-1), top: un[0], bottom: un.at(-1) }, Up = 0.24;
+========
+const cn = [0.35, 0.5, 0.65], un = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9], Ye = { left: cn[0], right: cn.at(-1), top: un[0], bottom: un.at(-1) }, Vp = 0.24;
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const cn = [0.35, 0.5, 0.65], un = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9], Ye = { left: cn[0], right: cn.at(-1), top: un[0], bottom: un.at(-1) }, Up = 0.24;
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 function Ss(e) {
   if (e.posture === "stand") return { left: Ye.left, right: Ye.right };
   if (e.posture !== "sit") return { left: 0, right: 1 };
   const t = 0.5 + Up * Math.sin((e.face ?? 0) * Math.PI / 180);
   return { left: Math.min(Ye.left, t), right: Math.max(Ye.right, t) };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function Vp(e, { size: t }, n = bt()) {
+========
+function zp(e, { size: t }, n = bt()) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function Vp(e, { size: t }, n = bt()) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const s = Ss(e);
   return { ...e, x: Math.min(Math.max(e.x, n.left + (0.5 - s.left) * t), n.right - (s.right - 0.5) * t) };
 }
@@ -5565,6 +6026,8 @@ function Kp(e, t, n = "", s = "") {
   }
   return !1;
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const Gp = (e) => un.flatMap(
   (t) => cn.map((n) => [e.left + n * (e.right - e.left), e.top + t * (e.bottom - e.top)])
 );
@@ -5575,6 +6038,26 @@ function Yp(e, t, n = "") {
 }
 function Jp(e, t, n) {
   const s = bt(), a = (r) => n ? Math.hypot(r.x - n.x, r.y - n.y) : 0, o = e.filter((r) => Eo(r, t, s) && xo(r, t)).map((r) => ({ spot: r, covered: Yp(r, t), away: a(r) }));
+========
+const Yp = (e) => un.flatMap(
+========
+const Gp = (e) => un.flatMap(
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  (t) => cn.map((n) => [e.left + n * (e.right - e.left), e.top + t * (e.bottom - e.top)])
+);
+function Yp(e, t, n = "") {
+  if (!xo(e, t)) return cn.length * un.length;
+  const s = kt(e, t), a = e.posture === "hang" ? s : { ...s, bottom: Math.min(s.bottom, e.y) }, o = [...document.querySelectorAll(Ap)].map((i) => ({ control: i, rect: i.getBoundingClientRect() })).filter(({ control: i, rect: c }) => c.width && c.height && So(a, c) && Ms(i)).map(({ rect: i }) => i), r = (i, c) => o.some((u) => i >= u.left && i <= u.right && c >= u.top && c <= u.bottom);
+  return Gp(a).filter(([i, c]) => r(i, c) || Kp(i, c, n)).length;
+}
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+function Zp(e, t, n) {
+  const s = bt(), a = (r) => n ? Math.hypot(r.x - n.x, r.y - n.y) : 0, o = e.filter((r) => Eo(r, t, s) && xo(r, t)).map((r) => ({ spot: r, covered: Jp(r, t), away: a(r) }));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function Jp(e, t, n) {
+  const s = bt(), a = (r) => n ? Math.hypot(r.x - n.x, r.y - n.y) : 0, o = e.filter((r) => Eo(r, t, s) && xo(r, t)).map((r) => ({ spot: r, covered: Yp(r, t), away: a(r) }));
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   return o.length ? o.reduce(
     (r, i) => i.covered < r.covered || i.covered === r.covered && i.away < r.away ? i : r
   ).spot : null;
@@ -5582,6 +6065,8 @@ function Jp(e, t, n) {
 const Ao = {
   right: { along: 1, inboard: -1, face: 60 },
   left: { along: 0, inboard: 1, face: 300 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, Zp = zp, Xp = (e, t, { size: n }, s = Zp) => Qp(e, Ao[t], s * n, "stand");
 function Qp(e, { along: t, inboard: n, face: s }, a, o) {
   return { x: e.left + e.width * t + n * a, y: e.top, face: s, posture: o };
@@ -5609,6 +6094,43 @@ function Zv(e, t) {
 function Co() {
   var s;
   const e = Dt(), t = (s = e == null ? void 0 : e.closest("[data-figure-world]")) == null ? void 0 : s.querySelector(Sp);
+========
+}, Xp = Kp, Qp = (e, t, { size: n }, s = Xp) => em(e, Ao[t], s * n, "stand");
+function em(e, { along: t, inboard: n, face: s }, a, o) {
+========
+}, Zp = zp, Xp = (e, t, { size: n }, s = Zp) => Qp(e, Ao[t], s * n, "stand");
+function Qp(e, { along: t, inboard: n, face: s }, a, o) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  return { x: e.left + e.width * t + n * a, y: e.top, face: s, posture: o };
+}
+const Gv = (e) => ((e + 180) % 360 + 360) % 360 - 180, Yv = { turns: [-20, -10, 0, 10, 20] }, em = 7;
+function tm() {
+  const e = [...document.querySelectorAll(_p)].map((t) => t.getBoundingClientRect()).filter((t) => t.width && t.height);
+  return e.length ? { left: Math.min(...e.map((t) => t.left)), right: Math.max(...e.map((t) => t.right)), top: Math.min(...e.map((t) => t.top)), bottom: Math.max(...e.map((t) => t.bottom)) } : null;
+}
+const nm = 4;
+function sm() {
+  const e = Co(), t = tm(), { left: n, width: s, top: a } = e.edge;
+  return !t || Math.abs(t.bottom - a) > nm || t.left > n + s || t.right < n ? e : { ...e, edge: { ...e.edge, width: Math.max(t.left - em - n, 0) } };
+}
+const Jv = ({ size: e, below: t }) => (1 - t) * e;
+function am(e, t) {
+  const n = bt(), { size: s, below: a } = t, o = bn[e.posture].drop * s;
+  return { ...Vp(e, t, n), y: Math.min(Math.max(e.y, n.top + (1 - a) * s - o), n.bottom) };
+}
+const om = (e, t) => Object.keys(Ao).map((n) => am(Xp(e, n, t), t)), rm = (e, t, n) => Jp(e, t, n) ?? e[0];
+function Zv(e, t) {
+  const { element: n, edge: s } = sm();
+  return { ...rm(om(s, e), e, t), view: null, on: n };
+}
+function Co() {
+  var s;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+  const e = Dt(), t = (s = e == null ? void 0 : e.closest("[data-figure-world]")) == null ? void 0 : s.querySelector(Ep);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  const e = Dt(), t = (s = e == null ? void 0 : e.closest("[data-figure-world]")) == null ? void 0 : s.querySelector(Sp);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   if (!t) return { ...Oo(), docked: !1 };
   const n = t.getBoundingClientRect();
   return { element: t, docked: !0, edge: { left: n.left, width: n.width, top: n.top } };
@@ -5626,13 +6148,23 @@ function Xv(e, t, n, { straight: s = !1, pace: a = 1, pressing: o = !1, sprintin
     const x = kt(X, n, bn[X.posture].travels);
     return { x: x.left, y: x.top };
   }, L = t.ladder ?? e.ladder;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   if (L && !(t.ladder && e.ladder)) return lm(M(e), M(t), M({ ...L.foot, posture: "stand" }), L.way, !!t.ladder, n, a);
+========
+  if (L && !(t.ladder && e.ladder)) return cm(M(e), M(t), M({ ...L.foot, posture: "stand" }), L.way, !!t.ladder, n, a);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  if (L && !(t.ladder && e.ladder)) return lm(M(e), M(t), M({ ...L.foot, posture: "stand" }), L.way, !!t.ladder, n, a);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const [w, ...y] = [e, ...c, t].map(M), T = ln(w, y[0], n.size, { straight: s, hangs: t.posture === "hang" || !!t.swings, pace: a, pressing: o, sprinting: r, random: i, memory: u, now: f, room: g, pogo: $ }), q = y.slice(1).map((X, x) => {
     var v;
     return (v = ln(y[x], X, n.size, { random: i, memory: u, now: f, room: g })) == null ? void 0 : v.legs.find((D) => D.hopping);
   });
   return T && { ...T, legs: [...T.legs, ...q.filter(Boolean)] };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function lm(e, t, n, s, a, o, r) {
   const i = (f, g) => ({ x: g.x, y: g.y, ms: Math.hypot(g.x - f.x, g.y - f.y) / im.climb * 1e3, lead: 0, easing: "linear", hopping: !0, clip: "ladder_climb", facing: s > 0 ? 90 : 270 }), c = a ? ln(e, n, o.size, { pace: r }) : ln(n, t, o.size, { pace: r }), u = a ? [...(c == null ? void 0 : c.legs) ?? [], i(n, t)] : [i(e, n), ...(c == null ? void 0 : c.legs) ?? []];
   return { way: Math.sign(t.x - e.x) || 1, legs: u, lands: !1, pace: r, running: r > 1 };
@@ -5643,6 +6175,26 @@ const Bo = () => At, jn = /* @__PURE__ */ new WeakMap();
 let dm = 0;
 function Io(e) {
   return jn.has(e) || jn.set(e, `floor-${++dm}`), jn.get(e);
+========
+function cm(e, t, n, s, a, o, r) {
+  const i = (f, g) => ({ x: g.x, y: g.y, ms: Math.hypot(g.x - f.x, g.y - f.y) / lm.climb * 1e3, lead: 0, easing: "linear", hopping: !0, clip: "ladder_climb", facing: s > 0 ? 90 : 270 }), c = a ? ln(e, n, o.size, { pace: r }) : ln(n, t, o.size, { pace: r }), u = a ? [...(c == null ? void 0 : c.legs) ?? [], i(n, t)] : [i(e, n), ...(c == null ? void 0 : c.legs) ?? []];
+========
+function lm(e, t, n, s, a, o, r) {
+  const i = (f, g) => ({ x: g.x, y: g.y, ms: Math.hypot(g.x - f.x, g.y - f.y) / im.climb * 1e3, lead: 0, easing: "linear", hopping: !0, clip: "ladder_climb", facing: s > 0 ? 90 : 270 }), c = a ? ln(e, n, o.size, { pace: r }) : ln(n, t, o.size, { pace: r }), u = a ? [...(c == null ? void 0 : c.legs) ?? [], i(n, t)] : [i(e, n), ...(c == null ? void 0 : c.legs) ?? []];
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  return { way: Math.sign(t.x - e.x) || 1, legs: u, lands: !1, pace: r, running: r > 1 };
+}
+const cm = "[data-figure-bubble]", um = 250;
+let At = Object.freeze({ at: 0, world: null, view: null, floors: Object.freeze([]) }), To = 0;
+const Bo = () => At, jn = /* @__PURE__ */ new WeakMap();
+let dm = 0;
+function Io(e) {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+  return jn.has(e) || jn.set(e, `floor-${++hm}`), jn.get(e);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  return jn.has(e) || jn.set(e, `floor-${++dm}`), jn.get(e);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 }
 const hm = (e, t) => e.top >= t.top && e.top <= t.bottom && e.right > t.left && e.left < t.right, fm = () => {
   var e, t;
@@ -5653,14 +6205,28 @@ function pm(e, t) {
   const n = (s = e.querySelector(Ep)) == null ? void 0 : s.getBoundingClientRect();
   return { left: t.left, right: t.right, top: t.top, bottom: n ? Math.min(t.bottom, n.top) : t.bottom };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function mm(e, t) {
   const n = e && pm(e, t), s = e ? [...e.querySelectorAll(cm)].map((o) => ({ element: o, kind: "bubble" })) : [], a = [...document.querySelectorAll("[data-tab]")].map((o) => ({ element: o, kind: "tab" }));
   return [...s, ...a].map(({ element: o, kind: r }) => ({ element: o, kind: r, box: o.getBoundingClientRect() })).filter(({ kind: o, box: r }) => r.width > 0 && r.height > 0 && (o !== "bubble" || hm(r, n))).map(({ element: o, kind: r, box: i }) => ({ id: Io(o), kind: r, element: o, left: i.left, right: i.right, top: i.top, bottom: i.bottom }));
+========
+function gm(e, t) {
+  const n = e && mm(e, t), s = e ? [...e.querySelectorAll(um)].map((o) => ({ element: o, kind: "bubble" })) : [], a = [...document.querySelectorAll("[data-tab]")].map((o) => ({ element: o, kind: "tab" }));
+  return [...s, ...a].map(({ element: o, kind: r }) => ({ element: o, kind: r, box: o.getBoundingClientRect() })).filter(({ kind: o, box: r }) => r.width > 0 && r.height > 0 && (o !== "bubble" || fm(r, n))).map(({ element: o, kind: r, box: i }) => ({ id: Io(o), kind: r, element: o, left: i.left, right: i.right, top: i.top, bottom: i.bottom }));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function mm(e, t) {
+  const n = e && pm(e, t), s = e ? [...e.querySelectorAll(cm)].map((o) => ({ element: o, kind: "bubble" })) : [], a = [...document.querySelectorAll("[data-tab]")].map((o) => ({ element: o, kind: "tab" }));
+  return [...s, ...a].map(({ element: o, kind: r }) => ({ element: o, kind: r, box: o.getBoundingClientRect() })).filter(({ kind: o, box: r }) => r.width > 0 && r.height > 0 && (o !== "bubble" || hm(r, n))).map(({ element: o, kind: r, box: i }) => ({ id: Io(o), kind: r, element: o, left: i.left, right: i.right, top: i.top, bottom: i.bottom }));
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 }
 const gm = (e, t, n) => {
   const s = e.floors.find((o) => o.id === t.id), a = n - e.at;
   return s && a > 0 && a <= um ? (t.top - s.top) / a * 1e3 : 0;
 };
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function vm(e = At, t = performance.now()) {
   const n = bt(), s = fm(), a = (s == null ? void 0 : s.getBoundingClientRect()) ?? null, { element: o, docked: r, edge: i } = Co(), c = [];
   o && c.push({ id: "home", kind: r ? "dock" : "compose", element: o, left: i.left, right: i.left + i.width, top: i.top });
@@ -5675,15 +6241,51 @@ function wm() {
   Ro();
   const e = () => {
     To = requestAnimationFrame(e), !document.hidden && (At = vm(At), us.forEach((t) => t(At)));
+========
+function ym(e = At, t = performance.now()) {
+  const n = bt(), s = pm(), a = (s == null ? void 0 : s.getBoundingClientRect()) ?? null, { element: o, docked: r, edge: i } = Co(), c = [];
+========
+function vm(e = At, t = performance.now()) {
+  const n = bt(), s = fm(), a = (s == null ? void 0 : s.getBoundingClientRect()) ?? null, { element: o, docked: r, edge: i } = Co(), c = [];
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  o && c.push({ id: "home", kind: r ? "dock" : "compose", element: o, left: i.left, right: i.left + i.width, top: i.top });
+  const u = Oo();
+  return u.element && c.push({ id: Io(u.element), kind: "build", element: u.element, left: u.edge.left, right: u.edge.left + u.edge.width, top: u.edge.top }), c.push(...mm(s, a)), c.push({ id: "foot", kind: "foot", left: n.left, right: n.right, top: n.bottom }), Object.freeze({ at: t, world: n, view: a, floors: Object.freeze(c.map((f) => Object.freeze({ ...f, vy: gm(e, f, t) }))) });
+}
+const us = /* @__PURE__ */ new Set();
+function ym(e) {
+  return us.add(e), () => us.delete(e);
+}
+function wm() {
+  Ro();
+  const e = () => {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+    To = requestAnimationFrame(e), !document.hidden && (At = ym(At), us.forEach((t) => t(At)));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    To = requestAnimationFrame(e), !document.hidden && (At = vm(At), us.forEach((t) => t(At)));
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   };
   e();
 }
 function Ro() {
   cancelAnimationFrame(To);
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const km = (e, t) => e.find((n) => n.id === t) ?? null;
 function Qv(e, t, n = Bo().floors) {
   const s = km(n, "home");
+========
+const bm = (e, t) => e.find((n) => n.id === t) ?? null;
+function ey(e, t, n = Bo().floors) {
+  const s = bm(n, "home");
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const km = (e, t) => e.find((n) => n.id === t) ?? null;
+function Qv(e, t, n = Bo().floors) {
+  const s = km(n, "home");
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   return e.posture === "hang" && s && kt(e, t).bottom >= s.top ? !1 : Eo(e, t);
 }
 const bm = ["data-kind"], $m = { class: "figure-floor-name" }, xm = {
@@ -5698,7 +6300,15 @@ const bm = ["data-kind"], $m = { class: "figure-floor-name" }, xm = {
       p("span", $m, b(e.floor.kind), 1)
     ], 12, bm));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, _m = /* @__PURE__ */ J(xm, [["__scopeId", "data-v-8f6132da"]]), Mm = {
+========
+}, Mm = /* @__PURE__ */ J(_m, [["__scopeId", "data-v-8f6132da"]]), Sm = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, _m = /* @__PURE__ */ J(xm, [["__scopeId", "data-v-8f6132da"]]), Mm = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   class: "figure-floors",
   "aria-hidden": "true"
 }, Sm = {
@@ -5711,19 +6321,47 @@ const bm = ["data-kind"], $m = { class: "figure-floor-name" }, xm = {
       n = ym((s) => t.value = s.floors), wm();
     }), Se(() => {
       n(), Ro();
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     }), (s, a) => (l(), d("div", Mm, [
       (l(!0), d(Z, null, re(t.value, (o) => (l(), Y(_m, {
+========
+    }), (s, a) => (l(), d("div", Sm, [
+      (l(!0), d(Z, null, re(t.value, (o) => (l(), Y(Mm, {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    }), (s, a) => (l(), d("div", Mm, [
+      (l(!0), d(Z, null, re(t.value, (o) => (l(), Y(_m, {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
         key: o.id,
         floor: o
       }, null, 8, ["floor"]))), 128))
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, ey = /* @__PURE__ */ J(Sm, [["__scopeId", "data-v-e519168b"]]), Pn = (e) => typeof e == "number" ? e : Date.parse(e);
 function ty(e, t) {
   const n = (a, o) => ({ kind: a, id: `${a}:${o.id}`, row: o, time: Pn(o.created_at) / 1e3 });
   return [...e.map((a) => n("message", a)), ...t.map((a) => n("mark", a))].sort((a, o) => Pn(a.row.created_at) - Pn(o.row.created_at) || (a.kind === o.kind ? a.row.id - o.row.id : a.kind === "message" ? -1 : 1));
 }
 const Em = 3, qn = {
+========
+}, ty = /* @__PURE__ */ J(Em, [["__scopeId", "data-v-e519168b"]]), Pn = (e) => typeof e == "number" ? e : Date.parse(e);
+function ny(e, t) {
+  const n = (a, o) => ({ kind: a, id: `${a}:${o.id}`, row: o, time: Pn(o.created_at) / 1e3 });
+  return [...e.map((a) => n("message", a)), ...t.map((a) => n("mark", a))].sort((a, o) => Pn(a.row.created_at) - Pn(o.row.created_at) || (a.kind === o.kind ? a.row.id - o.row.id : a.kind === "message" ? -1 : 1));
+}
+const Am = 3, qn = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, ey = /* @__PURE__ */ J(Sm, [["__scopeId", "data-v-e519168b"]]), Pn = (e) => typeof e == "number" ? e : Date.parse(e);
+function ty(e, t) {
+  const n = (a, o) => ({ kind: a, id: `${a}:${o.id}`, row: o, time: Pn(o.created_at) / 1e3 });
+  return [...e.map((a) => n("message", a)), ...t.map((a) => n("mark", a))].sort((a, o) => Pn(a.row.created_at) - Pn(o.row.created_at) || (a.kind === o.kind ? a.row.id - o.row.id : a.kind === "message" ? -1 : 1));
+}
+const Em = 3, qn = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   family: (e, t) => `family:${t.family}`,
   type: (e) => `type:${e.type}`,
   row: (e) => e.target_model ? `row:${e.target_model}:${e.target_id}` : ""
@@ -5755,7 +6393,15 @@ function sy() {
   const e = F(Date.now()), t = setInterval(() => e.value = Date.now(), Om);
   return vt(() => clearInterval(t)), e;
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function ay(e) {
+========
+function oy(e) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function ay(e) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const t = ms(), n = F(null), s = F("");
   async function a(...o) {
     const r = await t.read(e(...o));
@@ -5818,13 +6464,29 @@ const Tm = {
           "data-row": o.id,
           onClick: (r) => n("open", o)
         }, [
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           p("span", jm, [
+========
+          p("span", Pm, [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          p("span", jm, [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
             H(Me, {
               name: e.icon,
               class: "card-icon"
             }, null, 8, ["name"]),
             he(" " + b(e.head(o)), 1),
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
             p("span", Pm, b(z(Yn)(o.created_at)), 1)
+========
+            p("span", qm, b(z(Yn)(o.created_at)), 1)
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+            p("span", Pm, b(z(Yn)(o.created_at)), 1)
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
           ]),
           p("span", qm, b(e.title(o)), 1),
           p("span", Wm, b(e.foot(o)), 1)
@@ -5833,8 +6495,18 @@ const Tm = {
       we(s.$slots, "default", {}, void 0, !0)
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, oy = /* @__PURE__ */ J(Fm, [["__scopeId", "data-v-d72d528d"]]), ma = "newest";
 function ry(e, { title: t, isOpen: n = null }) {
+========
+}, ry = /* @__PURE__ */ J(Hm, [["__scopeId", "data-v-d72d528d"]]), ma = "newest";
+function iy(e, { title: t, isOpen: n = null }) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, oy = /* @__PURE__ */ J(Fm, [["__scopeId", "data-v-d72d528d"]]), ma = "newest";
+function ry(e, { title: t, isOpen: n = null }) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const s = F(""), a = F(ma), o = F("all"), r = B(() => {
     const i = s.value.trim().toLowerCase(), c = e.value.filter((u) => (!i || JSON.stringify(u).toLowerCase().includes(i)) && (o.value === "all" || !n || n(u) === (o.value === "open")));
     return a.value === ma ? c : [...c].sort((u, f) => t(u).localeCompare(t(f)));
@@ -5856,7 +6528,15 @@ const Hm = {
       { key: "closed", label: "Closed" },
       { key: "all", label: "All" }
     ];
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     return (s, a) => (l(), d("div", Hm, [
+========
+    return (s, a) => (l(), d("div", Um, [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    return (s, a) => (l(), d("div", Hm, [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
       H(lh, {
         modelValue: e.tools.words.value,
         "onUpdate:modelValue": a[0] || (a[0] = (o) => e.tools.words.value = o),
@@ -5887,9 +6567,21 @@ function ly() {
     e.value = e.value === n.id ? null : n.id;
   } };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const Vm = 86400, ds = (e) => new Date(new Date(e * 1e3).toDateString()).getTime() / 1e3;
 function zm(e, t) {
   const n = new Date(e * 1e3), s = n.getFullYear() === new Date(t * 1e3).getFullYear(), a = n.toLocaleDateString("en-GB", { day: "numeric", month: "long", ...s ? {} : { year: "numeric" } }), o = Math.round((ds(t) - ds(e)) / Vm);
+========
+const zm = 86400, ds = (e) => new Date(new Date(e * 1e3).toDateString()).getTime() / 1e3;
+function Km(e, t) {
+  const n = new Date(e * 1e3), s = n.getFullYear() === new Date(t * 1e3).getFullYear(), a = n.toLocaleDateString("en-GB", { day: "numeric", month: "long", ...s ? {} : { year: "numeric" } }), o = Math.round((ds(t) - ds(e)) / zm);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const Vm = 86400, ds = (e) => new Date(new Date(e * 1e3).toDateString()).getTime() / 1e3;
+function zm(e, t) {
+  const n = new Date(e * 1e3), s = n.getFullYear() === new Date(t * 1e3).getFullYear(), a = n.toLocaleDateString("en-GB", { day: "numeric", month: "long", ...s ? {} : { year: "numeric" } }), o = Math.round((ds(t) - ds(e)) / Vm);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   return o === 0 ? `Today, ${a}` : o === 1 ? `Yesterday, ${a}` : `${n.toLocaleDateString("en-GB", { weekday: "long" })}, ${a}`;
 }
 function cy(e, t = Date.now() / 1e3) {
@@ -5897,6 +6589,8 @@ function cy(e, t = Date.now() / 1e3) {
   let s = 0;
   for (const a of e) {
     const o = ds(a.time);
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     o !== s && (s = o, n.push({ id: `day:${o}`, key: `day:${o}`, kind: "day", who: "", time: a.time, title: zm(a.time, t), text: "", data: {} })), n.push(a);
   }
   return n;
@@ -5906,6 +6600,24 @@ function Ym(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a
   if (!t || !n()) return o();
   const r = e.offsetHeight;
   Object.assign(e.style, { boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0", transform: `translateY(${Gm}px)` }), e.offsetHeight, e.style.transition = `height ${Wn}ms ${Tt}`, e.style.height = `${r}px`;
+========
+    o !== s && (s = o, n.push({ id: `day:${o}`, key: `day:${o}`, kind: "day", who: "", time: a.time, title: Km(a.time, t), text: "", data: {} })), n.push(a);
+========
+    o !== s && (s = o, n.push({ id: `day:${o}`, key: `day:${o}`, kind: "day", who: "", time: a.time, title: zm(a.time, t), text: "", data: {} })), n.push(a);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  }
+  return n;
+}
+const Wn = 280, Fn = 240, Hn = 120, Km = 6, Gm = 14, Tt = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+function Ym(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a = () => performance.now() }, o) {
+  if (!t || !n()) return o();
+  const r = e.offsetHeight;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+  Object.assign(e.style, { boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0", transform: `translateY(${Ym}px)` }), e.offsetHeight, e.style.transition = `height ${Wn}ms ${Tt}`, e.style.height = `${r}px`;
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  Object.assign(e.style, { boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0", transform: `translateY(${Gm}px)` }), e.offsetHeight, e.style.transition = `height ${Wn}ms ${Tt}`, e.style.height = `${r}px`;
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const i = a();
   let c = !1;
   const u = () => {
@@ -5918,7 +6630,15 @@ function Ym(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a
 }
 function uy(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a = () => performance.now() }, o) {
   if (!t || !n()) return o();
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   Object.assign(e.style, { opacity: "0", transform: `translateY(${Km}px)` }), e.offsetHeight, e.style.transition = `opacity ${Hn}ms ease-out, transform ${Hn}ms ${Tt}`, Object.assign(e.style, { opacity: "1", transform: "translateY(0)" });
+========
+  Object.assign(e.style, { opacity: "0", transform: `translateY(${Gm}px)` }), e.offsetHeight, e.style.transition = `opacity ${Hn}ms ease-out, transform ${Hn}ms ${Tt}`, Object.assign(e.style, { opacity: "1", transform: "translateY(0)" });
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  Object.assign(e.style, { opacity: "0", transform: `translateY(${Km}px)` }), e.offsetHeight, e.style.transition = `opacity ${Hn}ms ease-out, transform ${Hn}ms ${Tt}`, Object.assign(e.style, { opacity: "1", transform: "translateY(0)" });
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const r = a(), i = () => {
     if (n() && (t.scrollTop = t.scrollHeight), a() - r < Hn) return s(i);
     Object.assign(e.style, { opacity: "", transform: "", transition: "" }), o();
@@ -5960,7 +6680,15 @@ const Lo = "chat.pins.minimised", Yt = F(Ct(Lo, !1));
 function ga(e) {
   Yt.value = e, pn(Lo, e);
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function Xm(e) {
+========
+function Qm(e) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function Xm(e) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   const t = B(() => e()), n = B(() => Yt.value ? [] : e()), s = () => ga(!Yt.value), a = Date.now() / 1e3;
   return be(
     () => t.value.filter((o) => Ta(o) > a).length,
@@ -6063,7 +6791,15 @@ const Qm = ["title"], e0 = {
           class: "diff-card-side",
           title: L.value === "after" ? "Show the file before" : "Show the file after",
           onClick: m[0] || (m[0] = _e((h) => L.value = L.value === "after" ? "before" : "after", ["stop"]))
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
         }, b(L.value === "after" ? "After" : "Before"), 9, i0)) : j("", !0),
+========
+        }, b(L.value === "after" ? "After" : "Before"), 9, l0)) : j("", !0),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+        }, b(L.value === "after" ? "After" : "Before"), 9, i0)) : j("", !0),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
         g.value ? j("", !0) : (l(), d("button", {
           key: 1,
           type: "button",
@@ -6148,8 +6884,18 @@ function $0(e, t) {
     we(e.$slots, "default", {}, void 0, !0)
   ]);
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 const x0 = /* @__PURE__ */ J(k0, [["render", $0], ["__scopeId", "data-v-aa955b3e"]]), Do = /* @__PURE__ */ new WeakMap(), _0 = (e, t) => Do.set(e, t);
 function M0(e, t) {
+========
+const _0 = /* @__PURE__ */ J(b0, [["render", x0], ["__scopeId", "data-v-aa955b3e"]]), Do = /* @__PURE__ */ new WeakMap(), M0 = (e, t) => Do.set(e, t);
+function S0(e, t) {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+const x0 = /* @__PURE__ */ J(k0, [["render", $0], ["__scopeId", "data-v-aa955b3e"]]), Do = /* @__PURE__ */ new WeakMap(), _0 = (e, t) => Do.set(e, t);
+function M0(e, t) {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   for (let n = t; n; n = Do.get(n) ?? n.parentElement) if (n === e) return !0;
   return !1;
 }
@@ -6157,7 +6903,15 @@ function S0(e, t) {
   const n = (s) => {
     var o, r;
     const a = ((o = e.value) == null ? void 0 : o.element) || ((r = e.value) == null ? void 0 : r.$el) || e.value;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     a && !M0(a, s.target) && t(s);
+========
+    a && !S0(a, s.target) && t(s);
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    a && !M0(a, s.target) && t(s);
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   };
   window.addEventListener("click", n), Se(() => window.removeEventListener("click", n));
 }
@@ -6214,7 +6968,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     const O = new ResizeObserver(() => {
       cancelAnimationFrame(D), D = requestAnimationFrame(v);
     });
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     S0(a, (h) => s.anchor && !s.anchor.contains(h.target) && y("close"));
+========
+    E0(a, (h) => s.anchor && !s.anchor.contains(h.target) && y("close"));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    S0(a, (h) => s.anchor && !s.anchor.contains(h.target) && y("close"));
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     const P = (h, C) => ["top", "left", "right", "bottom"].some((k) => Math.abs(h[k] - C[k]) > 1), _ = (h) => h.bottom < 0 || h.top > window.innerHeight;
     let E = 0;
     function m() {
@@ -6311,7 +7073,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   props: { kind: { type: String, required: !0 }, id: { type: Number, required: !0 }, row: { type: Object, default: null }, read: { type: Function, required: !0 }, inline: Boolean },
   emits: ["done"],
   setup(e, { expose: t, emit: n }) {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     const s = e, a = n, o = B(() => N0(s.kind, s.row)), r = F(""), i = F(null), c = F(""), u = F("");
+========
+    const s = e, a = n, o = B(() => j0(s.kind, s.row)), r = F(""), i = F(null), c = F(""), u = F("");
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    const s = e, a = n, o = B(() => N0(s.kind, s.row)), r = F(""), i = F(null), c = F(""), u = F("");
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
     be(() => s.id, () => {
       r.value = "", i.value = null;
     });
@@ -6362,7 +7132,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             placeholder: i.value.ask,
             "aria-label": i.value.ask,
             onKeydown: L[3] || (L[3] = Jt(_e((y) => i.value = null, ["stop"]), ["esc"]))
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           }, null, 40, W0), [
+========
+          }, null, 40, F0), [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          }, null, 40, W0), [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
             [Kn, c.value]
           ]),
           i.value.opener ? mt((l(), d("input", {
@@ -6373,7 +7151,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             placeholder: i.value.opener,
             "aria-label": i.value.opener,
             onKeydown: L[5] || (L[5] = Jt(_e((y) => i.value = null, ["stop"]), ["esc"]))
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           }, null, 40, F0)), [
+========
+          }, null, 40, H0)), [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          }, null, 40, F0)), [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
             [Kn, u.value]
           ]) : j("", !0),
           H(ye, {
@@ -6426,7 +7212,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   __name: "TaskStatusIcon",
   props: { status: { type: String, required: !0 }, size: { type: Number, default: 14 } },
   setup(e) {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     return (t, n) => (l(), d("span", G0, [
+========
+    return (t, n) => (l(), d("span", Y0, [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    return (t, n) => (l(), d("span", G0, [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
       H(dn, {
         name: "turn",
         mode: "out-in"
@@ -6558,7 +7352,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       })
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, No = /* @__PURE__ */ J(J0, [["__scopeId", "data-v-2ab7e404"]]), Z0 = /* @__PURE__ */ new Set(["completed", "cancelled"]), X0 = (e) => Z0.has(e), jo = (e) => X0(e) ? "done" : e, Q0 = { class: "facts" }, eg = { class: "fact wide" }, tg = { class: "fact-value" }, ng = {
+========
+}, No = /* @__PURE__ */ J(Z0, [["__scopeId", "data-v-2ab7e404"]]), X0 = /* @__PURE__ */ new Set(["completed", "cancelled"]), Q0 = (e) => X0.has(e), jo = (e) => Q0(e) ? "done" : e, eg = { class: "facts" }, tg = { class: "fact wide" }, ng = { class: "fact-value" }, sg = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, No = /* @__PURE__ */ J(J0, [["__scopeId", "data-v-2ab7e404"]]), Z0 = /* @__PURE__ */ new Set(["completed", "cancelled"]), X0 = (e) => Z0.has(e), jo = (e) => X0(e) ? "done" : e, Q0 = { class: "facts" }, eg = { class: "fact wide" }, tg = { class: "fact-value" }, ng = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "fact"
 }, sg = { class: "fact-value" }, ag = {
@@ -6603,7 +7405,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ]);
     };
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, cg = /* @__PURE__ */ J(lg, [["__scopeId", "data-v-2018762d"]]), ug = {
+========
+}, ug = /* @__PURE__ */ J(cg, [["__scopeId", "data-v-2018762d"]]), dg = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, cg = /* @__PURE__ */ J(lg, [["__scopeId", "data-v-2018762d"]]), ug = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   key: 0,
   class: "part",
   "data-resource-waits": ""
@@ -6695,7 +7505,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       }, b(e.words(s)), 1))), 128))
     ], 2));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, _g = /* @__PURE__ */ J(xg, [["__scopeId", "data-v-19fdbdd4"]]), Mg = ["data-comments-below"], Sg = 600, Eg = {
+========
+}, Mg = /* @__PURE__ */ J(_g, [["__scopeId", "data-v-19fdbdd4"]]), Sg = ["data-comments-below"], Eg = 600, Ag = {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, _g = /* @__PURE__ */ J(xg, [["__scopeId", "data-v-19fdbdd4"]]), Mg = ["data-comments-below"], Sg = 600, Eg = {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   __name: "CommentedRow",
   props: { open: Boolean, comments: { type: Array, required: !0 }, words: { type: Function, required: !0 } },
   emits: ["close"],
@@ -6715,7 +7533,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         below: n.value,
         onClose: o[0] || (o[0] = (r) => a.$emit("close"))
       }, null, 8, ["comments", "words", "below"])) : j("", !0)
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
     ], 10, Mg));
+========
+    ], 10, Sg));
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+    ], 10, Mg));
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   }
 }, Ag = /* @__PURE__ */ J(Eg, [["__scopeId", "data-v-6c850df0"]]), Cg = ["placeholder"], Og = { class: "actions" }, Tg = { class: "error" }, Bg = {
   key: 1,
@@ -6780,7 +7606,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
           maxlength: "2000",
           placeholder: e.placeholder,
           onKeydown: Jt(M, ["enter"])
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
         }, null, 40, Cg), [
+========
+        }, null, 40, Og), [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+        }, null, 40, Cg), [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
           [Kn, o.value]
         ]),
         p("div", Og, [
@@ -6813,7 +7647,15 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
           class: "comment-bar-open",
           onClick: g
         }, [
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
           p("span", Ig, [
+========
+          p("span", Rg, [
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+          p("span", Ig, [
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
             H(Me, {
               name: c.value ? "check" : "chat",
               size: 14
@@ -6995,8 +7837,18 @@ const Pg = { class: "top" }, qg = {
                 key: o.value.id,
                 class: "body"
               }, [
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
                 p("div", Hg, "Task " + b(o.value.id) + " · updated " + b(z(Yn)(z(en)(o.value)) || "just now"), 1),
                 p("h3", Ug, b(o.value.title), 1),
+========
+                p("div", Ug, "Task " + b(o.value.id) + " · updated " + b(z(Yn)(z(en)(o.value)) || "just now"), 1),
+                p("h3", Vg, b(o.value.title), 1),
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+                p("div", Hg, "Task " + b(o.value.id) + " · updated " + b(z(Yn)(z(en)(o.value)) || "just now"), 1),
+                p("h3", Ug, b(o.value.title), 1),
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
                 p("div", {
                   class: Q(["state-line", z(M)(o.value.state)])
                 }, [
@@ -7012,7 +7864,15 @@ const Pg = { class: "top" }, qg = {
                     }, null, 8, ["status"]),
                     he(" " + b(L(o.value.state)), 1)
                   ]),
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
                   p("span", Vg, "since " + b(z(Yn)(z(en)(o.value)) || "just now"), 1)
+========
+                  p("span", zg, "since " + b(z(Yn)(z(en)(o.value)) || "just now"), 1)
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+                  p("span", Vg, "since " + b(z(Yn)(z(en)(o.value)) || "just now"), 1)
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
                 ], 2),
                 o.value.state === "blocked" ? (l(), d("section", zg, [
                   v[10] || (v[10] = p("span", { class: "label" }, "Blocked, waiting on", -1)),
@@ -7087,7 +7947,15 @@ function Qg(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
 var Un = { exports: {} }, va;
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 function ev() {
+========
+function tv() {
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+function ev() {
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   return va || (va = 1, (function(e, t) {
     var n = (function() {
       var s = function(v, D) {
@@ -8139,7 +9007,15 @@ const nv = /* @__PURE__ */ Qg(tv), sv = ["width", "height", "viewBox"], av = ["w
   props: { text: { type: String, required: !0 }, size: { type: Number, default: 200 } },
   setup(e) {
     const t = e, n = B(() => {
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
       const s = nv(0, "M");
+========
+      const s = sv(0, "M");
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+      const s = nv(0, "M");
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
       s.addData(t.text), s.make();
       const a = s.getModuleCount(), o = [];
       for (let r = 0; r < a; r += 1)
@@ -8167,23 +9043,54 @@ const nv = /* @__PURE__ */ Qg(tv), sv = ["width", "height", "viewBox"], av = ["w
       }, null, 8, ov)
     ], 8, sv));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
 }, gy = /* @__PURE__ */ J(rv, [["__scopeId", "data-v-489f0852"]]), vy = Zo(() => import("./VoiceFigure-BW5vsksM.js").then((e) => e.V)), yy = "1.0.0", wy = "3.5";
+========
+}, vy = /* @__PURE__ */ J(iv, [["__scopeId", "data-v-489f0852"]]), yy = Zo(() => import("./VoiceFigure-EEuNHaam.js").then((e) => e.V)), wy = "1.0.0", ky = "3.5";
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+}, gy = /* @__PURE__ */ J(rv, [["__scopeId", "data-v-489f0852"]]), vy = Zo(() => import("./VoiceFigure-CJaHk_Pr.js").then((e) => e.V)), yy = "1.0.0", wy = "3.5";
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 export {
   hv as $,
   Lv as A,
   Ye as B,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+========
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   Vv as C,
   Iv as D,
   Uv as E,
   Sv as F,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   Ro as G,
   wm as H,
   vm as I,
   Zv as J,
+========
+  zv as C,
+  Rv as D,
+  Vv as E,
+  Ev as F,
+  Ro as G,
+  km as H,
+  ym as I,
+  Xv as J,
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  Ro as G,
+  wm as H,
+  vm as I,
+  Zv as J,
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   kt as K,
   Wv as L,
   Te as M,
   St as N,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   Nv as O,
   bn as P,
   jv as Q,
@@ -8196,11 +9103,37 @@ export {
   Jp as X,
   Xv as Y,
   zv as Z,
+========
+  jv as O,
+========
+  Nv as O,
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  bn as P,
+  jv as Q,
+  tp as R,
+  _o as S,
+  Rv as T,
+  Hv as U,
+  ha as V,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+  am as W,
+  Zp as X,
+  Qv as Y,
+  Kv as Z,
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  sm as W,
+  Jp as X,
+  Xv as Y,
+  zv as Z,
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
   J as _,
   ie as a,
   ms as a$,
   ye as a0,
   gs as a1,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
   fv as a2,
   Fu as a3,
   py as a4,
@@ -8288,4 +9221,101 @@ export {
   _s as x,
   kp as y,
   bp as z
+========
+  pv as a2,
+========
+  fv as a2,
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
+  Fu as a3,
+  py as a4,
+  _v as a5,
+  Zt as a6,
+  ey as a7,
+  lv as a8,
+  an as a9,
+  st as aA,
+  lh as aB,
+  vy as aC,
+  Pe as aD,
+  Ji as aE,
+  Yn as aF,
+  dy as aG,
+  uy as aH,
+  hy as aI,
+  xv as aJ,
+  bv as aK,
+  wv as aL,
+  ny as aM,
+  ty as aN,
+  Jf as aO,
+  dv as aP,
+  wt as aQ,
+  mv as aR,
+  yv as aS,
+  ry as aT,
+  sy as aU,
+  ly as aV,
+  S0 as aW,
+  Xm as aX,
+  Xf as aY,
+  ay as aZ,
+  ch as a_,
+  Me as aa,
+  yy as ab,
+  wy as ac,
+  iy as ad,
+  rs as ae,
+  kv as af,
+  a1 as ag,
+  w0 as ah,
+  x0 as ai,
+  A0 as aj,
+  pv as ak,
+  yr as al,
+  fy as am,
+  gv as an,
+  gy as ao,
+  oy as ap,
+  Fr as aq,
+  cv as ar,
+  $v as as,
+  as as at,
+  yt as au,
+  vv as av,
+  uv as aw,
+  ps as ax,
+  my as ay,
+  No as az,
+  Je as b,
+  cy as b0,
+  Dv as c,
+  Av as d,
+  Cv as e,
+  Ev as f,
+  Gv as g,
+  yo as h,
+  Pv as i,
+  qv as j,
+  Fv as k,
+  Yv as l,
+  Ov as m,
+  Mv as n,
+  Tv as o,
+  rn as p,
+  Qv as q,
+  Kv as r,
+  Bv as s,
+  De as t,
+  Yp as u,
+  Jv as v,
+  Xp as w,
+  _s as x,
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-BMBFaK0P.js
+  bp as y,
+  $p as z
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-E2fU197h.js
+========
+  kp as y,
+  bp as z
+>>>>>>>> bdc641b2a3 (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/index-Q-eEN6cL.js
 };
