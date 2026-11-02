@@ -178,3 +178,13 @@ def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
     end_run(story, process, "one\ntwo\n")
     story.advance(timedelta(seconds=1))
     assert not any("no reader reads pytest" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_reader_is_not_judged_on_a_chain_of_commands(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
+    process = moved_run(story, "./deploy.sh staging && echo one && echo two")
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    assert not any("reader deploys picked no line" in line for line in lines_of(story, NOTHING))
