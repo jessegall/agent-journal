@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.listeners.worker_move_mark_listener import WorkerMoveMarkListener
 from suites.coding.modules.workers.listeners.worker_test_mark_listener import WorkerTestMarkListener
 from suites.coding.modules.workers.support.worker_marks import WORKER_MARKS
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
@@ -94,7 +95,7 @@ class WorkersModule(Module):
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerTestTurnRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
     marks = WORKER_MARKS
-    listeners = [WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
+    listeners = [WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
