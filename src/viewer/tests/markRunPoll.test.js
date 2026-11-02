@@ -28,10 +28,10 @@ test("an ended mark reads nothing", async () => {
     expect(reads).toEqual([]);
 });
 
-test("a docked row's mark steps back and says it is in the dock, and one not docked does not", async () => {
+test("a docked row's mark steps back and does not say it is in the dock, and one not docked does not step back", async () => {
     const docked = await drawn(RUN, 62, true);
     expect(docked.element.querySelector(".thread-turn.card.docked")).not.toBeNull();
-    expect(docked.element.textContent).toContain("In the dock");
+    expect(docked.element.textContent).not.toContain("In the dock");
     const free = await drawn(RUN, 62);
     expect(free.element.querySelector(".docked")).toBeNull();
     expect(free.element.textContent).not.toContain("In the dock");

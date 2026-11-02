@@ -160,9 +160,6 @@ const tint = computed(() => ({
                     <template v-if="took">
                         <span class="ran-for">{{ took }}</span>
                     </template>
-                    <template v-if="mark.docked">
-                        <span>In the dock</span>
-                    </template>
                     <template v-if="mark.stopping">
                         <span>Stopping</span>
                     </template>
