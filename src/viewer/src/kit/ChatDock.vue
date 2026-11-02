@@ -1,11 +1,20 @@
+<script>
+export const DOCK_ARRIVAL_MS = 700;
+</script>
+
 <script setup>
-import {ref} from "vue";
+import {onBeforeUnmount, onMounted, ref} from "vue";
 import {useMeasuredHeight} from "../composables/measuredHeight.js";
 
 defineProps({label: {type: String, default: ""}, folded: Boolean, lifted: Boolean, kind: {type: String, default: ""}});
 const card = ref(null);
 const content = ref(null);
 const height = useMeasuredHeight(content);
+// a card that is still arriving takes its fold at once: its size only eases once it has come in, so an arrival never makes the chat jump
+const settled = ref(false);
+let settling = 0;
+onMounted(() => (settling = setTimeout(() => (settled.value = true), DOCK_ARRIVAL_MS)));
+onBeforeUnmount(() => clearTimeout(settling));
 defineExpose({card});
 </script>
 
@@ -17,9 +26,9 @@ defineExpose({card});
                 <header class="chat-dock-head">
                     <slot name="head" />
                 </header>
-                <div :class="['chat-dock-body', {folded}]">
+                <div :class="['chat-dock-body', {folded, settled}]">
                     <div class="chat-dock-inner">
-                        <div class="chat-dock-grow" :style="height === null ? null : {height: `${height}px`}">
+                        <div :class="['chat-dock-grow', {settled}]" :style="height === null ? null : {height: `${height}px`}">
                             <div ref="content">
                                 <slot />
                             </div>
@@ -73,6 +82,9 @@ defineExpose({card});
 .chat-dock-body {
     display: grid;
     grid-template-rows: 1fr;
+}
+
+.chat-dock-body.settled {
     transition:
         grid-template-rows var(--move),
         opacity var(--fade);
@@ -90,11 +102,14 @@ defineExpose({card});
 
 .chat-dock-grow {
     overflow: hidden;
+}
+
+.chat-dock-grow.settled {
     transition: height var(--move);
 }
 
 /* a dock comes in two steps, the chat easing up to make room and then the card sliding in, and goes in the same two the other way, the
-   card sliding out and then the chat easing down into its space; the whole of each lasts DOCK_MOTION_MS (kit/dockMotion.js) */
+   card sliding out and then the chat easing down into its space; the whole of each lasts under DOCK_ARRIVAL_MS */
 .chat-dock.dock-enter-active {
     transition: grid-template-rows 0.4s ease-in-out;
 }
@@ -157,8 +172,8 @@ defineExpose({card});
     .chat-dock.dock-leave-active,
     .chat-dock.dock-enter-active .chat-dock-card,
     .chat-dock.dock-leave-active .chat-dock-card,
-    .chat-dock-body,
-    .chat-dock-grow {
+    .chat-dock-body.settled,
+    .chat-dock-grow.settled {
         transition: none;
     }
 }
