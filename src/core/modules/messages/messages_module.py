@@ -4,6 +4,7 @@ from core.modules.messages.commands.record_peer_message.record_peer_message_hand
 from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
 from core.modules.messages.rules.peer_message_rule import PeerMessageRule
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
+from core.modules.messages.listeners.message_edited_mark_listener import MessageEditedMarkListener
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
@@ -90,5 +91,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
+    listeners = [MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
     seeders = [MessagesSeeder]

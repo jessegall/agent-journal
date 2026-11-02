@@ -68,3 +68,26 @@ def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):
     assert "Task 1 created" in marks_text(story) and mark.click == "open row", marks_text(story)
     assert "Task 1 made" not in marks_text(story), marks_text(story)
     assert "tasks.task  made" in marks_text(story), marks_text(story)
+
+
+def test_a_task_edited_by_an_agent_shows_a_mark_that_opens_the_task(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    story.expect_success('task edit 1 --title "Fix the cart total"', actor=story.agent)
+    story.run_listeners()
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
+    assert "Task 1 edited: Fix the cart total" in marks_text(story) and mark.click == "open row", marks_text(story)
+    assert "tasks.task  edited" in marks_text(story), marks_text(story)
+
+
+def test_a_task_edited_by_the_user_shows_no_edited_mark(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    story.expect_success('task edit 1 --title "Fix the cart total"', actor=story.user)
+    story.run_listeners()
+    assert "edited" not in marks_text(story), marks_text(story)
+
+
+def test_a_task_started_shows_a_started_mark_and_no_edited_mark(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    story.expect_success(lines.TASK_START, actor=story.agent)
+    story.run_listeners()
+    assert "edited" not in marks_text(story), marks_text(story)

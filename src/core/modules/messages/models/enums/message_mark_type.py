@@ -6,3 +6,4 @@ class MessageMarkType(StrEnum):
 
     SUMMARY = "messages.thought"
     FILED = "messages.filed"
+    EDITED = "messages.edited"
