@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import ChatDock from "../kit/ChatDock.vue";
+import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import DockWrapper from "./DockWrapper.vue";
@@ -9,7 +9,7 @@ import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockFolded} from "../domain/dockFold.js";
 import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
 
-// the items docked at the bottom of the chat, above the composer: a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
+// the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
 const props = defineProps({items: {type: Array, required: true}, folded: Boolean});
 const now = ref(Date.now() / 1000);
 const held = ref(new Set());
@@ -51,24 +51,20 @@ function release(item) {
 </script>
 
 <template>
-    <div class="dock-stack">
+    <TransitionGroup tag="div" name="dock" :duration="DOCK_ARRIVAL_MS" class="dock-stack">
         <template v-for="item in rows" :key="item.id">
-            <div @mouseenter="hold(item)" @mouseleave="release(item)">
-                <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
-            </div>
+            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" @mouseenter="hold(item)" @mouseleave="release(item)" />
         </template>
         <template v-if="grouped && opened">
-            <div class="dock-runs-head">
+            <div key="runs-head" class="dock-runs-head">
                 <button type="button" class="dock-runs-toggle" aria-expanded="true" title="Fold the runs into one line" data-dock-runs-fold @click="foldRuns">{{ runs.length }} runs <FoldSign open /></button>
             </div>
         </template>
         <template v-for="item in shared ? [] : runs" :key="item.id">
-            <div @mouseenter="hold(item)" @mouseleave="release(item)">
-                <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
-            </div>
+            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" @mouseenter="hold(item)" @mouseleave="release(item)" />
         </template>
         <template v-if="shared">
-            <ChatDock :label="`${runs.length} runs`" kind="dock-runs-row">
+            <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">
                 <template #head>
                     <button type="button" class="dock-runs-toggle" aria-expanded="false" title="Show each run as its own card" data-dock-runs-open @click="opened = true"><MarkIcon name="runs" /> {{ runs.length }} runs <FoldSign /></button>
                     <span class="dock-runs-chips">
@@ -79,7 +75,7 @@ function release(item) {
                 </template>
             </ChatDock>
         </template>
-    </div>
+    </TransitionGroup>
 </template>
 
 <style scoped>

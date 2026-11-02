@@ -1,11 +1,13 @@
 from enum import StrEnum
 from typing import ClassVar
 
+from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 
 
@@ -18,6 +20,9 @@ class MarkListener(CommitListener):
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries
+
+    def by_agent(self, event: LoggedEvent) -> bool:
+        return self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT
 
     def show(self, event: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
              row_model: str = "", row_id: int | None = None, detail: str = "", key: str = "", ended: bool = True) -> None:

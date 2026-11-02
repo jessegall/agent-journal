@@ -3,10 +3,13 @@ from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 
+TITLE_LENGTH = 60
+
 
 @dataclass(frozen=True, kw_only=True)
 class Message(Model):
-    """One message in an environment's chat; a reply names the message it answers as its parent."""
+    """One message in an environment's chat; a reply names the message it answers as its parent. Its title,
+    which a comment on it names it by, is the first line of its text."""
 
     model_name = "message"
     cli_name = "message"
@@ -27,3 +30,8 @@ class Message(Model):
     peer: str = ""
     peer_key: str = ""
     recipient: str = ""
+
+    @property
+    def title(self) -> str:
+        first_line = next(iter(self.text.strip().splitlines()), "")
+        return f"{first_line[:TITLE_LENGTH]}…" if len(first_line) > TITLE_LENGTH else first_line
