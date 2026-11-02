@@ -279,7 +279,7 @@ test("a bar button whose window this suite does not offer opens nothing and leav
     const shellRead = async (line) => (line[0] === "usage" && line[1] === "show" ? {ok: true, value: {agents: [{id: 7, role: "main"}], windows: []}} : {ok: false, error: "no"});
     const {store, element} = await stage(SHAPE, {stageProps: {agent: 7, shellRead}});
     const before = JSON.stringify(store.layout.value);
-    const button = element.querySelector("[data-workers]");
+    const button = element.querySelector("[data-helpers]");
     expect(button).not.toBeNull();
     button.click();
     await settled();

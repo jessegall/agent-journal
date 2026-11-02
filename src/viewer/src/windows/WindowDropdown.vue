@@ -1,10 +1,16 @@
 <script setup>
-import {onUnmounted} from "vue";
+import {computed, onUnmounted} from "vue";
 import WindowPane from "./WindowPane.vue";
 
-// a window registered as a dropdown: it opens under the bars, over the page, and closes on a click outside or on escape
-defineProps({
-    name: {type: String, required: true},
+// what a bar button opens under itself, over the page: one window, or several as groups under sticky headers with a count each; it closes on
+// a click outside or on escape
+const WIDTH_PIXELS = 300;
+const GROUPED_WIDTH_PIXELS = 360;
+const GAP_PIXELS = 6;
+const EDGE_PIXELS = 8;
+const props = defineProps({
+    groups: {type: Array, required: true},
+    anchor: {type: Object, default: null},
     catalogue: {type: Object, required: true},
     subscriptions: {type: Object, required: true},
     environment: {type: String, required: true},
@@ -16,12 +22,26 @@ const emit = defineEmits(["close"]);
 const closeOnEscape = (event) => event.key === "Escape" && emit("close");
 window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
+const grouped = computed(() => props.groups.length > 1);
+const placed = computed(() => {
+    const width = grouped.value ? GROUPED_WIDTH_PIXELS : WIDTH_PIXELS;
+    const box = props.anchor?.getBoundingClientRect();
+    if (!box) return {width: `${width}px`};
+    return {width: `${width}px`, top: `${box.bottom + GAP_PIXELS}px`, left: `${Math.max(EDGE_PIXELS, Math.min(box.left, window.innerWidth - width - EDGE_PIXELS))}px`};
+});
 </script>
 
 <template>
     <div class="dropdown-veil" data-dropdown-veil @click.self="emit('close')">
-        <div class="dropdown" :data-dropdown="name" role="dialog">
-            <WindowPane dropdown :name="name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
+        <div class="dropdown" :data-dropdown="groups.map((group) => group.name).join(' ')" role="dialog" :style="placed">
+            <template v-for="group in groups" :key="group.name">
+                <template v-if="grouped">
+                    <h3 class="group-head" data-dropdown-group>
+                        {{ group.title }}<span class="group-count" data-dropdown-count>{{ group.count }}</span>
+                    </h3>
+                </template>
+                <WindowPane dropdown :name="group.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
+            </template>
         </div>
     </div>
 </template>
@@ -39,7 +59,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     left: 240px;
     overflow: auto;
     box-sizing: border-box;
-    width: 300px;
     padding: 14px 16px;
     max-width: calc(100vw - 32px);
     max-height: calc(100vh - 110px);
@@ -47,5 +66,28 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     border-radius: 10px;
     background: var(--raised);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.group-head {
+    position: sticky;
+    z-index: 1;
+    top: -14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    margin: 0;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.group-count {
+    padding: 0 6px;
+    border-radius: 8px;
+    background: var(--hover);
+    color: var(--text-3);
+    font-size: 11px;
 }
 </style>

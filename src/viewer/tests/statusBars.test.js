@@ -1,6 +1,7 @@
 import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import AgentBar from "../src/shell/AgentBar.vue";
+import WindowDropdown from "../src/windows/WindowDropdown.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
 
 const mounted = (component, props) => {
@@ -91,14 +92,35 @@ test("the information bar shows the allowance used, the context, the model and t
     expect(opened).toEqual(["context"]);
 });
 
-test("the agent bar names a paused agent, what waits on you, and opens workers and reviewers", () => {
+test("the agent bar names a paused agent and what waits on you, and has one button for every helper", () => {
     const opened = [];
-    const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 1, waiting: 2, workers: 3, onOpen: (name) => opened.push(name)});
+    const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 3, waiting: 2, onOpen: (name, anchor) => opened.push([name, anchor])});
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
-    expect(element.querySelector("[data-workers]").textContent).toContain("3 workers");
-    element.querySelector("[data-agent-waiting]").click();
-    element.querySelector("[data-workers]").click();
-    element.querySelector("[data-reviewers]").click();
-    expect(opened).toEqual(["waiting", "workers", "reviewers"]);
+    expect(element.querySelector("[data-workers]")).toBeNull();
+    expect(element.querySelector("[data-reviewers]")).toBeNull();
+    const helpers = element.querySelector("[data-helpers]");
+    expect(helpers.textContent.trim()).toBe("3 helpers");
+    helpers.click();
+    expect(opened).toEqual([["helpers", helpers]]);
+});
+
+test("a dropdown opens under the button that asked for it, kept inside the window", () => {
+    const anchor = {getBoundingClientRect: () => ({left: 400, bottom: 90})};
+    const catalogue = {dropdown: () => null, window: () => null, loaded: {value: false}};
+    const groups = [{name: "usage.context", title: "Context", count: 0}];
+    const element = mounted(WindowDropdown, {groups, anchor, catalogue, subscriptions: {}, environment: "main"});
+    const panel = element.querySelector("[data-dropdown]");
+    expect(panel.style.top).toBe("96px");
+    expect(panel.style.left).toBe("400px");
+    expect(element.querySelector("[data-dropdown-group]")).toBeNull();
+    const nearEdge = mounted(WindowDropdown, {groups, anchor: {getBoundingClientRect: () => ({left: window.innerWidth - 10, bottom: 90})}, catalogue, subscriptions: {}, environment: "main"});
+    expect(nearEdge.querySelector("[data-dropdown]").style.left).toBe(`${window.innerWidth - 308}px`);
+});
+
+test("the helpers dropdown holds every kind under its own header with a count", () => {
+    const catalogue = {dropdown: () => null, window: () => null, loaded: {value: false}};
+    const groups = [{name: "agents.subagents", title: "Subagents", count: 1}, {name: "workers.workers", title: "Workers", count: 2}, {name: "reviews.reviewers", title: "Reviewers", count: 0}];
+    const element = mounted(WindowDropdown, {groups, catalogue, subscriptions: {}, environment: "main"});
+    expect([...element.querySelectorAll("[data-dropdown-group]")].map((head) => head.textContent.trim())).toEqual(["Subagents1", "Workers2", "Reviewers0"]);
 });
 

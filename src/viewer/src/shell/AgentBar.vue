@@ -17,15 +17,13 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         <template v-if="agent">
             <strong data-agent-word>{{ word }}</strong>
             <template v-if="waiting">
-                <button type="button" class="agent-waiting" data-agent-waiting title="Show what the agent needs to go ahead" @click="emit('open', 'waiting')">Waiting: {{ waiting }}</button>
+                <button type="button" class="agent-waiting" data-agent-waiting title="Show what the agent needs to go ahead" @click="emit('open', 'waiting', $event.currentTarget)">Waiting: {{ waiting }}</button>
             </template>
             <template v-if="task">
                 <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
             </template>
             <span class="agent-space" />
-            <button type="button" class="agent-helpers" data-workers title="Workers, agents sent to write a job each" @click="emit('open', 'workers')">{{ workers }} {{ workers === 1 ? "worker" : "workers" }}</button>
-            <button type="button" class="agent-helpers" data-reviewers title="Reviewers, agents sent to check each worker's work" @click="emit('open', 'reviewers')">Reviewers</button>
-            <button type="button" class="agent-helpers" data-helpers title="Helpers running" @click="emit('open', 'helpers')">
+            <button type="button" class="agent-helpers" data-helpers title="Helpers running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
             </button>
         </template>

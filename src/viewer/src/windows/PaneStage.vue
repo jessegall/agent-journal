@@ -112,7 +112,9 @@ const facts = ref(NO_FACTS);
 const now = ref(Date.now());
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", workers: "workers.workers", reviewers: "reviews.reviewers", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness"};
+const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness"};
+// the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
+const HELPER_WINDOWS = [{name: "agents.subagents", role: "subagent"}, {name: "workers.workers", role: "worker"}, {name: "reviews.reviewers", role: "reviewer"}];
 const usage = ref({agents: [], windows: []});
 const fitness = ref(null);
 async function readUsage() {
@@ -130,9 +132,17 @@ async function readUsage() {
 const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
 const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? location.assign(pageAddress(name)) : openView(name));
 const openDropdown = ref(null);
-const openCount = (key) => {
+const windowTitle = (name) => (props.catalogue.dropdown(name) || props.catalogue.window(name)).title;
+const helperGroups = () =>
+    HELPER_WINDOWS.filter(({name}) => props.catalogue.dropdown(name) || props.catalogue.window(name)).map(({name, role}) => ({
+        name,
+        title: windowTitle(name),
+        count: usage.value.agents.filter((row) => row.role === role).length,
+    }));
+const openCount = (key, anchor) => {
     const name = COUNT_WINDOWS[key];
-    if (props.catalogue.dropdown(name)) openDropdown.value = openDropdown.value === name ? null : name;
+    const groups = key === "helpers" ? helperGroups() : props.catalogue.dropdown(name) ? [{name, title: windowTitle(name), count: 0}] : [];
+    if (groups.length) openDropdown.value = {key, groups, anchor};
     else if (props.catalogue.window(name)) openView(name);
 };
 const pairedPhones = ref([]);
@@ -306,7 +316,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </Btn>
                 </Breadcrumb>
                 <template v-if="openDropdown">
-                    <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
+                    <WindowDropdown :groups="openDropdown.groups" :anchor="openDropdown.anchor" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
             <template v-if="!streamAlive">
                 <div class="offline-band" role="status" data-offline-band>The journal is not answering. The page will catch up when it is back.</div>
@@ -315,7 +325,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" :workers="usage.agents.filter((row) => row.role === 'worker').length" @open="openCount">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" @open="openCount">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>

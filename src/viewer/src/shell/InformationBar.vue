@@ -58,12 +58,12 @@ const uptime = computed(() => {
             <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: pause, resume or stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
             <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ !running ? "Ended" : controls.paused.value ? "Paused" : "Working" }}</span>
             <template v-if="used !== null">
-                <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage')">
+                <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
                     <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
                 </button>
             </template>
             <template v-if="context !== null">
-                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context')">
+                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
@@ -74,17 +74,17 @@ const uptime = computed(() => {
                 <button type="button" class="fact" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
             </template>
             <template v-if="cost">
-                <button type="button" class="fact" data-fact="cost" title="What this session has cost" @click="emit('open', 'usage')">{{ cost }}</button>
+                <button type="button" class="fact" data-fact="cost" title="What this session has cost" @click="emit('open', 'usage', $event.currentTarget)">{{ cost }}</button>
             </template>
             <template v-if="uptime">
                 <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
             </template>
-            <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs')"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
             <template v-if="fitness">
-                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="Fitness, how the agent is working: opens its measures" @click="emit('open', 'fitness')">
+                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="Fitness, how the agent is working: opens its measures" @click="emit('open', 'fitness', $event.currentTarget)">
                     <Icon name="heart" :size="12" /> {{ fitness.is_measured ? fitness.score : "–" }}
                 </button>
-                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Load, messages arriving against those answered" @click="emit('open', 'fitness')"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
+                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Load, messages arriving against those answered" @click="emit('open', 'fitness', $event.currentTarget)"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
             </template>
         </template>
         <template v-else-if="run">

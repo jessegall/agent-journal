@@ -23,7 +23,7 @@ const props = defineProps({
     bar: {type: Boolean, default: false},
 });
 
-const entry = computed(() => (props.bar ? props.catalogue.bar(props.name) : props.dropdown ? props.catalogue.dropdown(props.name) : props.catalogue.window(props.name)));
+const entry = computed(() => (props.bar ? props.catalogue.bar(props.name) : props.dropdown ? props.catalogue.dropdown(props.name) || props.catalogue.window(props.name) : props.catalogue.window(props.name)));
 watch(() => props.catalogue.dropdown(props.name), (found) => found && !props.dropdown && emit("remove"), {immediate: true});
 const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
 const access = ref(null);
