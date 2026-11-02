@@ -39,7 +39,7 @@ def test_ending_a_task_names_the_task_now_in_hand_with_its_brief_and_the_phase_i
     story = plan_story(new_story)
     story.expect_success("task start 1", "state: started", actor=story.agent)
     lines = closed_lines(story, 1)
-    assert "task 2, Release, is in hand in plan 1: Release well" in lines
+    assert "task:2 is in hand in plan 1" in lines
     assert "plan 1: phase Build done" in lines
 
 
@@ -87,7 +87,7 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story.expect_absent_hook_line("s-1", VIEW_LINE, "plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.run('plan cancel 1 --reason "not needed"')
-    assert "plan 1 cancelled: not needed" in story.hook("s-1", VIEW_LINE).lines
+    assert "plan:1 is cancelled" in story.hook("s-1", VIEW_LINE).lines
 
 
 def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_story):

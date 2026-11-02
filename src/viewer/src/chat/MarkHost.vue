@@ -89,8 +89,21 @@ const opened = ref(false);
     background: var(--border-2);
 }
 
-/* an opened mark may take the chat's whole width, past the share a folded line keeps */
+/* an opened mark grows to the chat's whole width, past the share a folded line keeps */
+.thread-turn.card {
+    interpolate-size: allow-keywords;
+    transition: width 0.2s ease;
+}
+
 .thread-turn.card:has(.mark[data-open]) {
+    width: calc(100% - var(--turn-gutter));
     max-width: calc(100% - var(--turn-gutter));
+}
+
+.thread-turn.card:has(.mark[data-open]) .mark-row,
+.thread-turn.card:has(.mark[data-open]) .mark-row > :deep(.mark) {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
 }
 </style>

@@ -16,7 +16,7 @@ def test_a_failing_check_prints_its_output_and_tells_the_agent_once(new_story):
     story = new_story(fixture=UserJoined)
     story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
     story.expect_text("check run 1", "check 1 failed: Lint", "two problems", actor=story.user)
-    story.expect_hook_allowed("s-1", HookSamples.stop(), "check 1 failed")
+    story.expect_hook_allowed("s-1", HookSamples.stop(), "check:1 failed")
 
 
 def test_a_removed_check_runs_no_more_and_says_so(new_story):

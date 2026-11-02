@@ -3,7 +3,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 RESUME = HookSamples.session_start().with_fields(raw={"source": "resume"})
 COMPACTION = HookSamples.session_start().with_fields(raw={"source": "compact"})
-MEMORY = "memory 1, fact, weight 5: Keep the totals in cents"
+MEMORY = "1 memories to read"
 
 
 def kept_memory_story(new_story):

@@ -10,7 +10,6 @@ from core.base.driver.hook_keywords import hook_keywords
 from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
-from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
 from core.modules.memories.support.memory_settings import KEYWORD_LIMIT
@@ -40,4 +39,4 @@ class KeywordDeliveryRule(DriverRule):
         memories = list(rows)[:limit]
         if not memories:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(MEMORY_LINE.nudge(text=line) for line in MemoryLines.listing(memories))).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))
+        return RuleAnswer.with_nudges(*(MEMORY_LINE.nudge(memory=memory.memory_id) for memory in memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))

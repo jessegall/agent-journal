@@ -31,7 +31,7 @@ class SequenceTriggerRule(DriverRule):
         if not triggered or self.runs.current(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         sequence = triggered[0]
-        return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.id, title=sequence.title, step=sequence.steps[0])).running(MoveSequenceRun(START, sequence.id))
+        return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.id)).running(MoveSequenceRun(START, sequence.id))
 
     @staticmethod
     def is_triggered(sequence: Sequence, hook: AgentHook) -> bool:

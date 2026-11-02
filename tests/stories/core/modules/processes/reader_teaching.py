@@ -70,7 +70,7 @@ def test_two_running_outputs_with_one_title_are_named(new_story):
     first, second = moved_run(story, "make one"), moved_run(story, "make two")
     for process in (first, second):
         story.run(f'output title {process.id} "Building it"', actor=story.agent)
-    assert any(f"outputs {first.id}, {second.id} share the title Building it" in line for line in story.hook("s-1", VIEW_LINE).lines)
+    assert any(f"outputs {first.id}, {second.id} share one title" in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
 def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
@@ -78,7 +78,7 @@ def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new
     first, second = moved_run(story, "make one"), moved_run(story, "make two")
     for process in (first, second):
         story.run(f'output title {process.id} "Building it"', actor=story.agent)
-    shared = f"outputs {first.id}, {second.id} share the title Building it"
+    shared = f"outputs {first.id}, {second.id} share one title"
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(seconds=1))
     assert any(shared in line for line in story.hook("s-1", VIEW_LINE).lines)

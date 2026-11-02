@@ -61,7 +61,7 @@ def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(new
 
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(new_story):
     story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n", category=CommandCategory.BUILD)
-    assert any("no reader reads deploy.sh yet" in line and 'journal reader add deploy.sh --commands "./deploy.sh*"' in line for line in lines)
+    assert any("no reader reads deploy.sh yet: journal reader add deploy.sh" in line for line in lines)
     assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
 
 
@@ -143,7 +143,7 @@ def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    assert any("reader deploys picked no line" in line for line in lines_of(story, NOTHING))
+    assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
 
 
 def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
@@ -154,7 +154,7 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     lines = lines_of(story, NOTHING)
-    assert any("reader deploys kept 60 of the 60 lines" in line for line in lines)
+    assert any("reader deploys kept 60 of 60 lines" in line for line in lines)
     assert any("reader deploys found no summary" in line for line in lines)
 
 
@@ -165,7 +165,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    assert any("prints a count its card draws no bar for" in line for line in lines_of(story, NOTHING))
+    assert any("prints a count with no bar" in line for line in lines_of(story, NOTHING))
 
 
 def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
@@ -173,7 +173,7 @@ def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_stor
     process = moved_run(story, "./deploy.sh staging")
     assert not any("may buffer" in line for line in lines_of(story, NOTHING))
     story.advance(timedelta(seconds=31))
-    assert any(f"output {process.id} has printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
+    assert any(f"output {process.id} printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
 
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
@@ -192,4 +192,4 @@ def test_a_reader_is_not_judged_on_a_chain_of_commands(new_story):
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    assert not any("reader deploys picked no line" in line for line in lines_of(story, NOTHING))
+    assert not any("reader deploys picked none" in line for line in lines_of(story, NOTHING))

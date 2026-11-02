@@ -4,7 +4,6 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from suites.coding.modules.checks.commands.support.check_lines import CheckLines
 from suites.coding.modules.checks.commands.report_check.report_check import ReportCheck
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 
@@ -27,4 +26,4 @@ class FailedCheckRule(DriverRule):
         failing = self.checks.unreported(hook.timestamp, REPEAT_MINUTES)
         if not failing:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(CHECK_FAILED.nudge(text=CheckLines.report_text(check)) for check in failing)).running(*(ReportCheck(check.id) for check in failing))
+        return RuleAnswer.with_nudges(*(CHECK_FAILED.nudge(check=check.id) for check in failing)).running(*(ReportCheck(check.id) for check in failing))

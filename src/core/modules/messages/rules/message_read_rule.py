@@ -51,5 +51,5 @@ class MessageReadRule(DriverRule):
 
     def image_nudges(self, message: Message) -> list[Nudge]:
         captions = MessageCaptions.decoded(message)
-        return [IMAGE_TAG_REQUEST.nudge(message=message.id, path=self.home.message_files(message.id) / name, name=name)
+        return [IMAGE_TAG_REQUEST.nudge(message=message.id, name=name)
                 for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions]

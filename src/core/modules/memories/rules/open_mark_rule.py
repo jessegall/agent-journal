@@ -8,7 +8,6 @@ from core.base.provider.providers import Providers
 from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.support.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARKS_SETTING
-from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
@@ -36,4 +35,4 @@ class OpenMarkRule(DriverRule):
         if reached is None:
             return RuleAnswer.allowed()
         memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
-        return RuleAnswer.with_nudges(*(WEIGH_MEMORIES.nudge(text=line) for line in MemoryLines.weigh(reached, memories))).running(OpenMemoryMark(hook.agent_id, reached))
+        return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, count=len(memories))).running(OpenMemoryMark(hook.agent_id, reached))

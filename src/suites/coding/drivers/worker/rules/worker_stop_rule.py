@@ -19,4 +19,4 @@ class WorkerStopRule(DriverRule):
         rows = self.tasks.holder(hook.agent_id).started().page(1, 1).rows
         if not rows:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=rows[0].id, title=rows[0].title))
+        return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=rows[0].id))

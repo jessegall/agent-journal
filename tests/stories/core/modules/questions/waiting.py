@@ -62,14 +62,14 @@ def test_an_agent_that_asked_stays_under_the_wait_overlay_in_its_driver_run(new_
 def test_a_late_answer_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question answer 1 --answer sqlite")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question 1 is answered: read it with journal question show 1 and act on it")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question:1 is answered")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 is answered")
 
 
 def test_a_closed_question_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question close 1")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "the user closed question 1 unanswered: go on without it")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "the user closed question:1 unanswered")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "the user closed question 1")
 
 

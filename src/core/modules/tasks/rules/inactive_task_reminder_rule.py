@@ -34,4 +34,4 @@ class InactiveTaskReminderRule(DriverRule):
             return RuleAnswer.allowed()
         if newest.created_at.elapsed_seconds(hook.timestamp) < INACTIVE_MINUTES * MINUTE_SECONDS:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=INACTIVE_MINUTES, name=current.name))
+        return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=INACTIVE_MINUTES, task=current.task.id))

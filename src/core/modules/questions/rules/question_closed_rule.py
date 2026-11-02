@@ -1,3 +1,4 @@
+from core.modules.questions.support.question_nudges import QUESTION_CLOSED
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -20,4 +21,4 @@ class QuestionClosedRule(DriverRule):
         self.changes = changes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return self.changes.answer(hook, self.name, QuestionState.CLOSED, lambda question: f"the user closed question {question.id} unanswered: go on without it")
+        return self.changes.answer(hook, self.name, QuestionState.CLOSED, QUESTION_CLOSED)

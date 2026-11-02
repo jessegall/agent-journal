@@ -25,4 +25,4 @@ class TaskStillHeldRule(DriverRule):
         if not any(line in command for line in LEAVING_LINES):
             return RuleAnswer.allowed()
         current = self.current_tasks.current(hook.agent_id)
-        return RuleAnswer.with_nudges(TASK_STILL_HELD.nudge(name=current.name)) if current is not None else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TASK_STILL_HELD.nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
 
 
 def replied_story(new_story):

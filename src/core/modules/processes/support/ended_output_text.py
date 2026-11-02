@@ -27,13 +27,10 @@ class EndedOutputText:
     def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery) -> None:
         self.outputs, self.readers, self.folder, self.parts = outputs, readers, folder, parts
 
-    def line(self, process: Process) -> str:
-        return f"output {process.id} ended: {self.summary(process) or self.outcome(process)}"
-
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
-        ended = OUTPUT_ENDED.nudge(text=self.line(process))
-        return (ended, READER_DRAFT.nudge(text=advice, name=self.reader_name(process)), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+        ended = OUTPUT_ENDED.nudge(output=process.id, result=self.summary(process) or self.outcome(process))
+        return (ended, READER_DRAFT.nudge(name=self.reader_name(process)), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
 
     def reader_name(self, process: Process) -> str:
         return PurePath(self.read_program(process) or "").name

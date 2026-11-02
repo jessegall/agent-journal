@@ -31,13 +31,7 @@ class SleepPollRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None or shell.parse_error or not any(self.is_sleep_poll(part) for part in shell.parts):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SLEEP_REFUSED.nudge(advice=self.watch_advice(hook)))
+        return RuleAnswer.refused(SLEEP_REFUSED.nudge())
 
     def is_sleep_poll(self, part: Part) -> bool:
         return part.program == SLEEP or (part.program in LOOPS and SLEEP_LOOP.match(part.text) is not None)
-
-    def watch_advice(self, hook: AgentHook) -> str:
-        running = self.processes.agent(hook.agent_id).running().newest().page(1, 1).rows
-        if running:
-            return f"watch process {running[0].id} with `journal output watch {running[0].id}`, or wait on it with `journal wait on \"<what>\" --target processes:{running[0].id}`"
-        return "wait on the row it is about with `journal wait on \"<what>\" --target <table>:<id>`"

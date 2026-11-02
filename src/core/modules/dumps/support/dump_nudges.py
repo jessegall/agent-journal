@@ -5,4 +5,5 @@ from core.base.driver.nudge_type import NudgeType
 
 DUMP_OPEN = NudgeDeclaration("dumps.dump_open", NudgeType.INSTRUCTION, "dump {dump} is not filed", interval=Interval(Seconds(900)), pays="")
 
-DUMP_NUDGES = [DUMP_OPEN]
+DUMP_ARRIVED = NudgeDeclaration("dumps.dump_arrived", NudgeType.INSTRUCTION, "dump:{dump} arrived: journal dump items {dump}", pays="")
+DUMP_NUDGES = [DUMP_OPEN, DUMP_ARRIVED]

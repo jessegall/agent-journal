@@ -28,4 +28,4 @@ class UnloggedWriteRule(DriverRule):
         current, writes = counted
         if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, name=current.name, task=current.task.id))
+        return RuleAnswer.refused(UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, task=current.task.id))

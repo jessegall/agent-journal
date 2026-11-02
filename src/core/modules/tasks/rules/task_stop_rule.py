@@ -25,5 +25,5 @@ class TaskStopRule(DriverRule):
             return RuleAnswer.allowed()
         held = self.current_tasks.held(hook.agent_id)
         if len(held) > 1:
-            return RuleAnswer.refused(STOP_TASKS.nudge(names="; ".join(f"task {task.id}, {task.title}" for task in held)))
-        return RuleAnswer.refused(STOP_TASK.nudge(name=current.name, task=current.task.id))
+            return RuleAnswer.refused(STOP_TASKS.nudge(tasks=", ".join(f"task:{task.id}" for task in held)))
+        return RuleAnswer.refused(STOP_TASK.nudge(task=current.task.id))

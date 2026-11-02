@@ -39,7 +39,7 @@ def test_next_before_the_step_is_taken_up_is_refused_with_the_follow_command(new
 def test_a_step_not_taken_up_holds_the_agents_edits(new_story):
     story = sequence_story(new_story)
     story.run("sequence run 1", actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence 1 step 1 waits")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence:1 step 1 waits")
 
 
 def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(new_story):
@@ -92,7 +92,7 @@ def running(story) -> bool:
 
 def test_words_in_a_prompt_start_a_sequence_and_tell_the_agent(new_story):
     story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
-    assert any("sequence 1, Release, started" in line for line in story.hook("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now")).lines)
+    assert any("sequence:1 started" in line for line in story.hook("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now")).lines)
     assert running(story)
 
 

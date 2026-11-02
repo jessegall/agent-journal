@@ -29,5 +29,5 @@ class RunTitleRule(DriverRule):
         identical: defaultdict[str, list[str]] = defaultdict(list)
         for output in titled:
             identical[output.title].append(str(output.process_id))
-        shared = [SHARED_TITLE.nudge(outputs=", ".join(numbers), title=title) for title, numbers in identical.items() if len(numbers) > 1]
+        shared = [SHARED_TITLE.nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
         return RuleAnswer.with_nudges(*shared)

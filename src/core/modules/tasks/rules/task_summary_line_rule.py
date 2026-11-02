@@ -24,5 +24,4 @@ class TaskSummaryLineRule(DriverRule):
         current = self.current_tasks.current(hook.agent_id)
         if current is None:
             return RuleAnswer.allowed()
-        logged = f"last log: {current.last_log.line}" if current.last_log is not None else "nothing logged yet"
-        return RuleAnswer.with_nudges(CURRENT_TASK.nudge(name=current.name, logged=logged), MISSED_LOG.nudge(task=current.task.id))
+        return RuleAnswer.with_nudges(CURRENT_TASK.nudge(task=current.task.id), MISSED_LOG.nudge(task=current.task.id))

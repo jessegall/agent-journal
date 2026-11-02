@@ -46,7 +46,7 @@ def test_a_schedule_whose_answer_names_no_job_records_nothing(new_story):
 def test_stopping_tells_the_agent_to_delete_it_and_it_stays_until_it_has(new_story):
     story = scheduled(new_story)
     story.expect_success("scheduled-job stop 1", actor=story.user)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"delete it now with CronDelete, id {JOB}", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"delete it with CronDelete, id {JOB}", actor=story.user)
     story.expect_text(running(story), JOB)
     story.hook("s-1", cron_hook("CronDelete", {"id": JOB}))
     story.expect_absent(running(story), JOB)

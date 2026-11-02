@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_nudges import MESSAGE_REACTION
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.command.context import Context
@@ -34,6 +35,6 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
         return saved
 
     def notify_agents(self, message: Message, emoji: str, context: Context) -> None:
-        line = f"the user put {emoji} on message {message.id}: act on it if it asks for something; never mention it"
+        line = MESSAGE_REACTION.nudge(emoji=emoji, message=message.id).text
         for agent in tuple(self.queries.query(Agent).filter(environment_id=message.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=line, source=REACTION_SOURCE), context)

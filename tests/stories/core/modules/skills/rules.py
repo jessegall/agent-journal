@@ -18,7 +18,7 @@ def notes_due(new_story):
 
 
 def skill_path(story, skill: str) -> str:
-    return str(story.home.project_folder / ".claude/skills" / skill / "SKILL.md")
+    return f".claude/skills/{skill}/SKILL.md"
 
 
 def test_with_a_skill_due_every_tool_but_a_read_of_it_is_refused_with_its_path(new_story):

@@ -1,3 +1,4 @@
+from core.modules.drivers.support.driver_nudges import AGENT_RESUMED
 from dataclasses import replace
 
 from core.base.command.context import Context
@@ -11,7 +12,6 @@ from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 
-RESUMED_LINE = "the user resumed you: carry on where you stopped"
 
 
 class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
@@ -29,5 +29,5 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")
         resumed = self.repository.save(replace(agent, paused_at=None), context)
-        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=RESUMED_LINE, source=RESUME_SOURCE), context)
+        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=AGENT_RESUMED.nudge().text, source=RESUME_SOURCE), context)
         return resumed

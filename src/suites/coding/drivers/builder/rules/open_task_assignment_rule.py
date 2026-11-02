@@ -26,4 +26,4 @@ class OpenTaskAssignmentRule(DriverRule):
         following = self.next_task.following(hook.environment_id)
         if following is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=following.id, title=following.title, brief=following.brief or "no brief")).running(StartTask(following.id))
+        return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=following.id)).running(StartTask(following.id))

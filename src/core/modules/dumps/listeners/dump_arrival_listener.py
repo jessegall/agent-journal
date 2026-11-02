@@ -1,3 +1,4 @@
+from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
 from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
@@ -26,4 +27,4 @@ class DumpArrivalListener(SaveListener):
         if not isinstance(dump, Dump):
             return
         for agent in self.queries.query(Agent).filter(environment_id=dump.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows:
-            self.repository.save(AgentLine(agent_id=agent.id, creator_id=change.context.actor.id, text=f"file dump {dump.id}: journal dump items {dump.id}", source=LINE_SOURCE), change.context)
+            self.repository.save(AgentLine(agent_id=agent.id, creator_id=change.context.actor.id, text=DUMP_ARRIVED.nudge(dump=dump.id).text, source=LINE_SOURCE), change.context)

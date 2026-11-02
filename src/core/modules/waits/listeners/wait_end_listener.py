@@ -1,3 +1,4 @@
+from core.modules.waits.support.wait_nudges import WAIT_OVER
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -24,4 +25,4 @@ class WaitEndListener(SaveListener):
         wait = change.row
         if not isinstance(wait, Wait) or wait.state is not WaitState.ENDED or not change.event.endswith(".end") or wait.outcome == WORK_CONTINUED:
             return
-        self.repository.save(AgentLine(agent_id=wait.agent_id, creator_id=change.context.actor.id, text=f"wait over: {wait.outcome}", source=LINE_SOURCE), change.context)
+        self.repository.save(AgentLine(agent_id=wait.agent_id, creator_id=change.context.actor.id, text=WAIT_OVER.nudge(wait=wait.id, outcome=wait.outcome).text, source=LINE_SOURCE), change.context)

@@ -26,4 +26,4 @@ class WorkerCommandTypeRule(DriverRule):
                         and part.classification.category.value not in allowed), None) if shell is not None else None
         if refused is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(WORKER_COMMAND_TYPE.nudge(category=refused.classification.category.value, text=refused.text))
+        return RuleAnswer.refused(WORKER_COMMAND_TYPE.nudge(category=refused.classification.category.value))

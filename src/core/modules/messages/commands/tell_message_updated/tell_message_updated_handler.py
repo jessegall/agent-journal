@@ -9,6 +9,7 @@ from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOUR
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.commands.tell_message_updated.tell_message_updated import TellMessageUpdated
+from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 
 UPDATED_SOURCE = "messages.updated"
 
@@ -26,4 +27,4 @@ class TellMessageUpdatedHandler(Handler[TellMessageUpdated, None]):
         if not agents:
             return
         source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agents[0].id, context.timestamp) else UPDATED_SOURCE
-        self.repository.save(AgentLine(agent_id=agents[0].id, creator_id=context.actor.id, text=f"message {command.message_id} updated", source=source), context)
+        self.repository.save(AgentLine(agent_id=agents[0].id, creator_id=context.actor.id, text=MESSAGE_UPDATED.nudge(message=command.message_id).text, source=source), context)

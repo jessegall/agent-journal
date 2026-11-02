@@ -28,4 +28,4 @@ class LogRequestRule(DriverRule):
         current, writes = counted
         if writes != LOG_REQUEST_WRITES:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(LOG_REQUEST.nudge(writes=LOG_REQUEST_WRITES, name=current.name, task=current.task.id))
+        return RuleAnswer.with_nudges(LOG_REQUEST.nudge(writes=LOG_REQUEST_WRITES, task=current.task.id))

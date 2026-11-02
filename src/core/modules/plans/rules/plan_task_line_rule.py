@@ -50,7 +50,7 @@ class PlanTaskLineRule(DriverRule):
             return []
         places = self.queries.query(PlanTask).filter(task_id=current.task.id).page(1, 1).rows
         place = f" in plan {places[0].plan_id}" if places else ""
-        return [NEXT_TASK.nudge(task=current.task.id, title=current.task.title, place=place, brief=current.task.brief or "no brief")]
+        return [NEXT_TASK.nudge(task=current.task.id, place=place)]
 
     def plan_nudges(self, task_id: int) -> list[Nudge]:
         places = self.queries.query(PlanTask).filter(task_id=task_id).page(1, 1).rows

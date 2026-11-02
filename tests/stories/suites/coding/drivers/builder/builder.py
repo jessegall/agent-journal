@@ -8,7 +8,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWi
 
 def test_a_builder_that_stops_with_nothing_in_hand_is_started_on_the_open_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task 1 is yours now: Fix the cart")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
     story.expect_success(lines.SECOND_HOOK_CALL, "hook: stop", "suite: coding", "driver: coding.builder", "answer: refused")
 
@@ -40,7 +40,7 @@ def test_a_builder_sends_subagents_only_while_its_setting_allows(new_story):
 def test_a_builder_given_a_task_is_told_its_brief(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('task make "Fix the tax" --brief "Round it at the end" --environment main')
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "Fix the tax. Round it at the end")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
 
 
 def test_a_builder_starting_is_told_what_waits_for_it(new_story):

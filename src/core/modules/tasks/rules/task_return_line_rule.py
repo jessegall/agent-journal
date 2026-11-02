@@ -21,4 +21,4 @@ class TaskReturnLineRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         current = self.current_tasks.current(hook.agent_id) if hook.control_return else None
-        return RuleAnswer.with_nudges(TASK_RETURN.nudge(name=current.name)) if current is not None else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TASK_RETURN.nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()

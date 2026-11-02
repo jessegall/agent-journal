@@ -5,11 +5,9 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries
-from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 
 EDIT_TOOL_TYPES = (ToolType.EDIT, ToolType.NEW_FILE)
-STEP_SHOWN_CHARACTERS = 40
 
 
 class UntakenStepRule(DriverRule):
@@ -29,5 +27,4 @@ class UntakenStepRule(DriverRule):
         run = self.runs.current(hook.agent_id)
         if run is None or run.step_started:
             return RuleAnswer.allowed()
-        step = self.queries.query(Sequence).find(run.sequence_id).steps[run.step_number - 1]
-        return RuleAnswer.refused(STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number, text=step[:STEP_SHOWN_CHARACTERS]))
+        return RuleAnswer.refused(STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number))

@@ -25,7 +25,7 @@ def holding_three(new_story):
 
 def test_the_newest_started_task_is_the_current_one_whatever_its_number(new_story):
     story = holding_three(new_story)
-    assert any("task 2, Second, is in hand" in line for line in story.hook("s-1", HookSamples.session_start()).lines)
+    assert any("task:2 is in hand" in line for line in story.hook("s-1", HookSamples.session_start()).lines)
 
 
 def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_starts(new_story):
@@ -33,7 +33,7 @@ def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_st
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
     lines = story.hook("s-1", posted("journal task close 2 --outcome done")).lines
-    assert any("back to task 3, Third: carry on, close it, or release it" in line for line in lines)
+    assert any("back to task:3" in line for line in lines)
     story.expect_success("task show 4", "state: open", actor=story.agent)
 
 
@@ -48,5 +48,5 @@ def test_with_empty_hands_nothing_is_named_and_the_next_task_starts(new_story):
 def test_a_stop_names_every_task_in_hand_at_once_newest_first(new_story):
     story = holding_three(new_story)
     refusal = story.hook("s-1", HookSamples.stop()).refusal
-    assert "task 2, Second; task 3, Third; task 1," in refusal
+    assert "task:2, task:3, task:1" in refusal
     assert "close, release or block each" in refusal

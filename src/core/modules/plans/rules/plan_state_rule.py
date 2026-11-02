@@ -38,7 +38,7 @@ class PlanStateRule(DriverRule):
         if plan.state is PlanState.APPROVED:
             return [PLAN_APPROVED.nudge(plan=plan.id)]
         if plan.state is PlanState.CANCELLED:
-            return [PLAN_CANCELLED.nudge(plan=plan.id, reason=plan.reason)]
+            return [PLAN_CANCELLED.nudge(plan=plan.id)]
         if plan.state is PlanState.BLOCKED:
-            return [PLAN_BLOCKED.nudge(plan=plan.id, reason=plan.reason)]
+            return [PLAN_BLOCKED.nudge(plan=plan.id)]
         return []

@@ -19,4 +19,4 @@ def test_a_wait_that_ends_on_its_task_tells_the_agent_at_its_next_hook(new_story
     story = new_story(SAMPLES, fixture=LeadWaiting)
     story.expect_success(lines.TASK_START, "state: started", actor=story.agent)
     story.run('task close 1 --outcome "Cart works"', actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "wait over:", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "is over:", actor=story.agent)

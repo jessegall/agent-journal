@@ -65,7 +65,7 @@ def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('memory make "The cart total is in cents" --type fact --keywords cart --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_hook_allowed("s-1", CART_EDIT, "The cart total is in cents")
+    story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
     assert "Reminded the agent: The cart total is in cents" in marks_text(story), marks_text(story)
 
@@ -76,7 +76,7 @@ def test_a_reminder_given_when_due_shows_a_reminded_mark(new_story):
     story.run(f'memory make "Deploy the cart at nine" --type reminder --due {due} --environment main', actor=story.agent)
     story.advance(timedelta(hours=2))
     story.tick("s-1")
-    story.expect_hook_allowed("s-1", CART_EDIT, "Deploy the cart at nine")
+    story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
     assert "Reminded the agent: Deploy the cart at nine" in marks_text(story), marks_text(story)
 
@@ -125,7 +125,7 @@ def test_a_reminder_removed_shows_an_acknowledged_mark_and_no_removed_mark(new_s
 def test_a_rule_given_back_shows_a_reminded_mark_of_the_reminders_family(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('memory make "Always run the tests before a commit" --type rule --keywords cart --project --environment main', actor=story.user)
-    story.expect_hook_allowed("s-1", CART_EDIT, "Always run the tests before a commit")
+    story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.reminder")
     assert "Reminded the agent: Always run the tests before a commit" in marks_text(story) and mark.family == "memories.reminders", marks_text(story)

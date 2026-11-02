@@ -1,4 +1,4 @@
-from core.modules.memories.support.memory_nudges import MEMORY_LINE
+from core.modules.memories.support.memory_nudges import START_MEMORIES
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -6,7 +6,6 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
-from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.base.agent_role import AgentRole
 
 
@@ -27,4 +26,4 @@ class StartDeliveryRule(DriverRule):
         memories = list(self.memories.query(hook).start_memories().undated().delivery_order().all_rows())
         if not memories:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(MEMORY_LINE.nudge(text=line) for line in MemoryLines.listing(memories))).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.START))
+        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=len(memories))).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.START))

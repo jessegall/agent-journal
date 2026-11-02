@@ -28,5 +28,5 @@ class LongWaitRule(DriverRule):
         for wait in self.queries.query(Wait).filter(agent_id=hook.agent_id, state=WaitState.OPEN).all_rows():
             minutes = int(wait.opened_at.elapsed_seconds(current_time) / MINUTE_SECONDS)
             if minutes >= LONG_WAIT_MINUTES:
-                nudges.append(WAIT_CHECK.nudge(minutes=minutes, focus=wait.focus))
+                nudges.append(WAIT_CHECK.nudge(minutes=minutes, wait=wait.id))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

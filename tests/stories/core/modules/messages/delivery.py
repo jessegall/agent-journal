@@ -175,7 +175,7 @@ def test_the_files_of_a_message_are_named_by_their_path_in_the_line(new_story):
     pending.mkdir(parents=True)
     (pending / "cart.png").write_bytes(b"png")
     story.run('message send "see this" --file aaaaaaaaaaaaaaaa/cart.png --environment main', actor=story.user)
-    assert any(f"file {story.home.message_files(1) / 'cart.png'}" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    assert any("file .journal/files/message/1/cart.png" in line for line in story.hook("s-1", HookSamples.stop()).lines)
 
 
 def test_a_message_of_the_agent_is_not_given_back_to_it(new_story):
@@ -271,7 +271,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(new_story):
     story.run('message send "Look at this" --environment main', actor=story.user)
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    assert any(line.startswith("message 1 attaches an image: open") and line.endswith('then journal message tag 1 "shot.png" "<what it shows>"') for line in lines)
+    assert any(line == 'message:1 has an image: journal message tag 1 "shot.png" "<what it shows>"' for line in lines)
     assert not any("notes.txt" in line and "attaches an image" in line for line in lines)
 
 

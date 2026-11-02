@@ -23,7 +23,7 @@ def test_a_due_reminder_is_given_once_at_the_next_hook_after_the_tick_and_then_r
     memory_id = due_reminder(story)
     story.advance(timedelta(hours=2))
     story.tick("s-1")
-    story.expect_hook_allowed("s-1", EDIT, "Deploy the cart at nine")
+    story.expect_hook_allowed("s-1", EDIT, "memory:1 applies now")
     story.expect_absent_hook_line("s-1", EDIT, "Deploy the cart at nine")
     story.run_listeners()
     story.expect_success(f"memory show {memory_id}", "state: removed")

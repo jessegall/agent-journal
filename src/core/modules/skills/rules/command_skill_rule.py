@@ -30,7 +30,7 @@ class CommandSkillRule(DriverRule):
         missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.loaded(hook.agent_id, skill.folder, skill.digest)]
         if not missing:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(skills="; ".join(f"read {skill.folder} first: {self.files.readable(skill.folder)}" for skill in missing)))
+        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(name=missing[0].folder, path=self.files.relative(missing[0].folder)))
 
     def loaded(self, agent_id: int, folder: str, digest: str) -> bool:
         row = self.rows.find(agent_id, folder)

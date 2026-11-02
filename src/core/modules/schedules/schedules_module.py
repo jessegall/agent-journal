@@ -1,3 +1,4 @@
+from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -19,6 +20,7 @@ class SchedulesModule(Module):
     """Adds the record of the jobs an agent schedules in its own program, and a person's way to have one stopped."""
 
     name = "journal.core.schedules"
+    nudges = SCHEDULE_NUDGES
     seed_reason = "its jobs are written by an agent's hooks, and the demo has no hooks"
     move_reason = "version 4 kept its jobs in the agent program, not in a table"
     requires_core = ">=5,<6"

@@ -1,3 +1,4 @@
+from core.modules.schedules.support.schedule_nudges import JOB_STOPPED
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -25,5 +26,5 @@ class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
         job = self.queries.query(ScheduledJob).find(command.row_id)
         if job.ended_at is not None:
             raise Refusal(f"job {job.job_id} has ended already")
-        self.repository.save(AgentLine(agent_id=job.agent_id, creator_id=context.actor.id, text=f"the user stopped your scheduled job {job.job_id}: delete it now with CronDelete, id {job.job_id}", source=LINE_SOURCE), context)
+        self.repository.save(AgentLine(agent_id=job.agent_id, creator_id=context.actor.id, text=JOB_STOPPED.nudge(job=job.job_id).text, source=LINE_SOURCE), context)
         return self.repository.save(job.changed(stop_asked_at=context.timestamp), context)

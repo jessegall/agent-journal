@@ -9,7 +9,7 @@ def test_a_main_agent_that_stops_while_delivered_work_waits_for_its_checks_is_re
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker {worker.id} delivered task 1: check proof 1 with journal proof check <proof>")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{worker.id} delivered task:1: journal proof check 1")
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
 

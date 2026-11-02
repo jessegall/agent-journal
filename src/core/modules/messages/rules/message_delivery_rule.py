@@ -42,4 +42,4 @@ class MessageDeliveryRule(DriverRule):
         return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
 
     def file_nudges(self, message: Message) -> list[Nudge]:
-        return [MESSAGE_FILE.nudge(path=self.home.message_files(message.id) / name) for name in message.files]
+        return [MESSAGE_FILE.nudge(message=message.id, name=name) for name in message.files]

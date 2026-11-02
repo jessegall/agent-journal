@@ -17,7 +17,7 @@ class RecordSubjectLinkHandler(Handler[RecordSubjectLink, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordSubjectLink, context: Context) -> None:
-        link_fields = {"source_model": Message.model_name, "source_id": command.message_id, "target_model": command.target_model, "target_id": command.target_id}
-        if self.queries.query(Link).filter(**link_fields).count():
-            return
-        self.repository.save(Link(creator_id=context.actor.id, link_type=LinkType.SUBJECT, **link_fields), context)
+        link = Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=command.message_id, target_model=command.target_model, target_id=command.target_id, link_type=LinkType.SUBJECT)
+        existing = self.queries.query(Link).filter(source_model=link.source_model, source_id=link.source_id, target_model=link.target_model, target_id=link.target_id)
+        if not existing.count():
+            self.repository.save(link, context)

@@ -41,10 +41,10 @@ def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
     worker_with_started_task(story)
     story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""", "key: journal.suites.coding.worker-command-types")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
-    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "a worker here runs no edit command: rm src/cart.py")
+    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "a worker here runs no edit command")
 
 
 def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     worker_with_started_task(story)
-    story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task 1, Fix the cart, is still started: finish it and deliver it with journal worker deliver")
+    story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task:1 is still started: finish it and deliver it with journal worker deliver")

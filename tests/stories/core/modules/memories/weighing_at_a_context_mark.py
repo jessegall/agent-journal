@@ -9,7 +9,7 @@ READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "
 def fact_mark(story) -> int:
     fact_id = story.new_row_id('memory make "The cart total is in cents" --type fact --environment main', actor=story.agent)
     story.report_context_percent("s-1", 55)
-    story.expect_hook_allowed("s-1", EDITED, "The cart total is in cents", "journal memory weigh")
+    story.expect_hook_allowed("s-1", EDITED, "context at 50%: weigh your 1 memories: journal memory context")
     return fact_id
 
 

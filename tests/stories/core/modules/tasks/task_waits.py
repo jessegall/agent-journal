@@ -76,7 +76,7 @@ def test_unblocking_by_hand_ends_the_wait_so_a_later_end_changes_nothing(new_sto
 
 def test_a_wait_in_words_teaches_the_block_and_a_block_with_a_flag_does_not(new_story):
     story = new_story(fixture=TwoTasks)
-    assert any("a wait is a block the journal can see" in line for line in story.hook("s-1", posted('journal task log 1 waiting for the keys')).lines)
+    assert any("a wait is a block: journal task block" in line for line in story.hook("s-1", posted('journal task log 1 waiting for the keys')).lines)
     story.expect_absent_hook_line("s-1", posted('journal task block 1 --on task:2 waiting for the keys'), "a wait is a block")
     story.expect_absent_hook_line("s-1", posted('journal task log 1 the cart is done'), "a wait is a block")
 
@@ -165,15 +165,15 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
     story.run("task block 1 --on task:2")
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] task 1, Cart, is open again: what it waited on has ended")])
-    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task 1, Cart, is open again")
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended")])
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 
 def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):
     story = new_story(fixture=TwoTasks)
     story.run("task block 1 --on task:2")
     story.run('task cancel 2 --reason "no"')
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1, Cart, is open again")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1 is open again")
 
 
 def test_environment_cards_count_running_agents_and_unfinished_tasks(new_story):

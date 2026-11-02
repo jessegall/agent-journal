@@ -53,7 +53,7 @@ def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_
     story.hook(MAIN_SESSION, HookSamples.sample("session_end"))
     story.expect_success("worker-worktree show 1", "state: cut")
     repository.expect_head(repository.worker_branch(worker.id), repository.worktree_folder(worker.id))
-    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker {worker.id} holds task 1, Fix the cart")
+    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker:{worker.id} holds task:1")
 
 
 def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_their_own(new_story):
@@ -74,7 +74,7 @@ def test_a_worker_that_has_used_no_tool_for_five_minutes_is_named_to_its_main_ag
     repository_environment(story)
     worker = dispatched_worker(story)
     story.hook(worker_session(story, worker), HookSamples.prompt("Fix the cart"))
-    inactive_line = f"worker {worker.id} has used no tool for {INACTIVE_MINUTES} minutes: its last hook was prompt"
+    inactive_line = f"worker:{worker.id} has used no tool for {INACTIVE_MINUTES} minutes"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.advance(timedelta(minutes=INACTIVE_MINUTES))
     story.tick(MAIN_SESSION)

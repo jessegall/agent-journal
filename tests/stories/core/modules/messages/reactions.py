@@ -38,7 +38,7 @@ def test_the_agent_is_told_of_a_face_the_user_puts_on_but_not_of_its_own_or_one_
     story.run('message react 1 "👍"', actor=story.agent)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user put")
     story.run('message react 1 "🎉"', actor=story.user)
-    assert any("the user put 🎉 on message 1" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    assert any("the user put 🎉 on message:1" in line for line in story.hook("s-1", HookSamples.stop()).lines)
     story.run('message react 1 "🎉"', actor=story.user)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user put")
 

@@ -25,6 +25,9 @@ class SkillFiles:
         paths = [self.path(program_folder, folder) for program_folder in PROGRAM_FOLDERS]
         return next((path for path in paths if path.exists()), paths[0])
 
+    def relative(self, folder: str) -> Path:
+        return self.readable(folder).relative_to(self.home.project_folder)
+
     def write(self, skill: SkillEntry) -> bool:
         text, changed = Path(skill.path).read_text(), False
         for program_folder in PROGRAM_FOLDERS:

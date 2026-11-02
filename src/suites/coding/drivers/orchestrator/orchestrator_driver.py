@@ -13,4 +13,4 @@ class OrchestratorDriver(Driver):
     role = AgentRole.MAIN
     rules = [OpenTaskStopRule]
     guards = [OrchestratorStartGuard]
-    opening_lines = ["You are the orchestrator: you plan the work, give each task to a worker and check what comes back; you start no task yourself"]
+    opening_lines = ["You are the orchestrator: you plan, give each task to a worker and check what comes back; you start no task yourself"]
