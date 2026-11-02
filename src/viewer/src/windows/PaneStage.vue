@@ -23,6 +23,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import OptionsPicker from "../shell/OptionsPicker.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {streamAlive} from "./windowCatalogue.js";
@@ -326,9 +327,12 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
             </AgentBar>
             <InformationBar :agent="agentRow" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
-                    <template v-if="presets">
-                        <LayoutPicker :list="presets" />
-                    </template>
+                    <span class="bar-buttons">
+                        <template v-if="presets">
+                            <LayoutPicker :list="presets" />
+                        </template>
+                        <OptionsPicker />
+                    </span>
             </InformationBar>
             </template>
         </template>
@@ -352,7 +356,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     <template v-if="menu === id">
                         <PaneMenu
                             :pane="pane"
-                            :scheme-label="schemeLabel"
                             :floats="floats"
                             :followable="followable"
                             :agent-window="isAgentWindow(pane.active)"
@@ -360,7 +363,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             :others="others(id)"
                             :can-close="Object.keys(store.layout.value.panes).length > 1"
                             :can-reset="Boolean(presets?.presets.value.length)"
-                            @scheme="nextColorScheme"
                             @split="(side) => split(id, side)"
                             @detach="detach(id)"
                             @option="(key, value) => setOption(id, key, value)"
@@ -442,6 +444,13 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--danger) 12%, var(--bg));
     font-size: 13px;
+}
+
+.bar-buttons {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
 }
 
 .stage-frame {

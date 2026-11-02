@@ -28,6 +28,20 @@ def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(n
         assert "state: started" in started_holder(story, 3), move
 
 
+def test_closing_a_task_with_another_in_hand_starts_a_critical_open_task_but_no_other(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.run('task make "Second in hand" --environment main', actor=story.agent)
+    story.run("task start 2", actor=story.agent)
+    story.run('task make "Fix the totals" --environment main --priority high', actor=story.agent)
+    story.run('task make "Stop the outage" --environment main --priority critical', actor=story.agent)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in started_holder(story, 4) and "state: open" in started_holder(story, 3)
+    story.run('task close 4 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: open" in started_holder(story, 3) and "state: started" in started_holder(story, 2)
+
+
 def test_closing_the_last_open_task_starts_nothing(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     story.run('task close 1 --outcome "done"', actor=story.agent)

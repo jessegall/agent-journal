@@ -2,12 +2,13 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
+from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -28,7 +29,7 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).filter(environment_id=command.environment_id).all_rows()}
-        proofs = [proof for proof in self.queries.query(Proof).oldest().all_rows() if proof.worktree_id in worktrees]
+        proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         room = self.settings.number(TEST_RUNS, command.environment_id) - len(running)
         owner = self.main_agent.running(command.environment_id)

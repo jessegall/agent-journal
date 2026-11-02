@@ -441,6 +441,8 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 }
 
 .notices {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides and the top */

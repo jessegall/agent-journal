@@ -35,4 +35,4 @@ class OpenMarkRule(DriverRule):
         if reached is None:
             return RuleAnswer.allowed()
         memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
-        return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, count=len(memories), ids=",".join(str(memory.memory_id) for memory in memories))).running(OpenMemoryMark(hook.agent_id, reached))
+        return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(OpenMemoryMark(hook.agent_id, reached))

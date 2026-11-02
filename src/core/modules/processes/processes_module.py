@@ -94,6 +94,7 @@ from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.support.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 from core.modules.processes.support.block_conditions.output_ended import OutputEnded
+from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
 from core.modules.processes.support.block_conditions.output_read import OutputRead
 
 WINDOW_READS = ["process card", "process show", "process feed", "output peek"]
@@ -110,7 +111,7 @@ class ProcessesModule(Module):
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
-    block_conditions = [OutputEnded, OutputRead]
+    block_conditions = [OutputEnded, OutputRead, OutputMonitored]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
