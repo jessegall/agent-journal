@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
@@ -46,6 +47,7 @@ def test_a_task_waiting_on_two_opens_only_when_both_have_ended(new_story):
 def test_a_block_with_nothing_named_is_refused_and_says_how(new_story):
     story = new_story(fixture=TwoTasks)
     story.expect_refusal("task block 1", "say what it waits on")
+    story.expect_refusal('task block 1 --reason "  "', "say what it waits on")
 
 
 def test_a_block_on_itself_a_missing_row_or_a_finished_row_is_refused(new_story):
@@ -185,3 +187,12 @@ def test_a_comment_on_a_task_is_a_message_linked_to_it(new_story):
     story.expect_text('task comment 1 "Check the rounding" --environment main', "comment written as message", actor=story.user)
     story.expect_text("task comments 1", "Check the rounding", actor=story.user)
     story.expect_refusal('task comment 1 " " --environment main', "give the comment's text", actor=story.user)
+
+
+def test_the_inspector_says_what_opens_a_blocked_task_and_nothing_when_nothing_does(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.run('task block 1 --on task:2 --reason "needs the cart"')
+    story.run('task block 2 --reason "needs a key"')
+    openers = lambda task: json.loads(story.run(f"task inspect {task} --json", actor=story.user).output_text)["openers"]
+    assert openers(1) == ["task 2 is settled"]
+    assert openers(2) == []

@@ -10,6 +10,7 @@ const moves = computed(() => movesOf(props.kind, props.row));
 const refusal = ref("");
 const asking = ref(null);
 const words = ref("");
+const target = ref("");
 
 watch(() => props.id, () => {
     refusal.value = "";
@@ -17,11 +18,12 @@ watch(() => props.id, () => {
 });
 
 async function run(move, said = "") {
-    const answer = await props.read([move.noun ?? props.kind, move.word, String(props.id), ...(move.flag ? [move.flag, said] : move.positional ? [said] : [])]);
+    const answer = await props.read([move.noun ?? props.kind, move.word, String(props.id), ...(move.flag ? [move.flag, said] : move.positional ? [said] : []), ...(move.opener && target.value.trim() ? ["--on", target.value.trim()] : [])]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     asking.value = null;
     words.value = "";
+    target.value = "";
     emit("done");
 }
 
@@ -46,6 +48,9 @@ defineExpose({moves, press});
             <template v-else-if="asking">
                 <form class="ask" data-resource-ask @submit.prevent="send">
                     <input v-model="words" class="ask-input" :placeholder="asking.ask" :aria-label="asking.ask" @keydown.esc.stop="asking = null" />
+                    <template v-if="asking.opener">
+                        <input v-model="target" class="ask-input" data-resource-opener :placeholder="asking.opener" :aria-label="asking.opener" @keydown.esc.stop="asking = null" />
+                    </template>
                     <Btn small kind="primary" type="submit" :disabled="!words.trim()">{{ asking.label }}</Btn>
                     <Btn small kind="ghost" @click="asking = null">Back</Btn>
                 </form>

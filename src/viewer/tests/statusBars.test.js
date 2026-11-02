@@ -98,9 +98,9 @@ test("the information bar shows the allowance used, the context, the model and t
     expect(opened).toEqual(["context"]);
 });
 
-test("the agent bar names a paused agent and what waits on you, and has one button for every helper", () => {
+test("the agent bar names a paused agent, says nothing of what waits, and has one button for every helper", () => {
     const opened = [];
-    const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 3, waiting: 2, onOpen: (name, anchor) => opened.push([name, anchor])});
+    const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 3, onOpen: (name, anchor) => opened.push([name, anchor])});
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
     expect(element.querySelector("[data-workers]")).toBeNull();
     expect(element.querySelector("[data-reviewers]")).toBeNull();

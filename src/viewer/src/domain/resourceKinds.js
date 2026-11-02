@@ -22,8 +22,8 @@ const PLAN_MOVES = {
 };
 
 const TASK_MOVES = {
-    open: [{word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?"}, CANCEL],
-    started: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?"}, CANCEL],
+    open: [{word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)"}, CANCEL],
+    started: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)"}, CANCEL],
     testing: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "retest", label: "Back to work"}, CANCEL],
     blocked: [{word: "unblock", label: "Unblock", main: true}, CANCEL],
     completed: [{word: "reopen", label: "Reopen"}],

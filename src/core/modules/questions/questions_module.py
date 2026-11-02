@@ -14,11 +14,13 @@ from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolR
 from core.modules.questions.rules.question_closed_rule import QuestionClosedRule
 from core.modules.questions.guards.main_agent_guard import MainAgentGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
+from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
 from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
 from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
@@ -43,10 +45,12 @@ class QuestionsModule(Module):
     guards = [MainAgentGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
     marks = QUESTION_MARKS
-    listeners = [QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
+    listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
                                  reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
+               WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
+                                 reads=["question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
                                  reads=["wait waiting"], events=["wait.*"])]
     seeders = [QuestionsSeeder]

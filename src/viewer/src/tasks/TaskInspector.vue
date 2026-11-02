@@ -113,7 +113,12 @@ defineExpose({openStatus});
                     <section class="reason" data-task-reason>
                         <span class="label">Blocked, waiting on</span>
                         <p class="text">{{ task.reason || "Other tasks" }}</p>
-                        <p class="note">Nothing opens it by itself. Unblock it when that is done.</p>
+                        <template v-if="task.openers?.length">
+                            <p class="note" data-task-openers>Opens by itself when {{ task.openers.join(" or ") }}.</p>
+                        </template>
+                        <template v-else>
+                            <p class="note">Nothing opens it by itself. Unblock it when that is done.</p>
+                        </template>
                     </section>
                 </template>
                 <template v-else-if="task.state === 'cancelled' && task.reason">

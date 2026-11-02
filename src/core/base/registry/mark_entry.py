@@ -30,6 +30,7 @@ class MarkEntry:
     main: bool
     process: bool
     full_width: bool
+    card: bool
     shipped: bool
     unavailable_reason: str
 
@@ -37,5 +38,5 @@ class MarkEntry:
     def restored(cls, stored: Mapping[str, Any]) -> "MarkEntry":
         return cls(stored["type"], stored["module"], stored["family"], stored["family_title"], stored["family_icon"], stored["group"], stored["colouring"],
                    tuple(stored["variants"]), stored["label"], stored["mark_icon"], stored["click"], stored["grouping"], stored["group_label"],
-                   tuple(stored["group_buttons"]), tuple(stored["buttons"]), stored["body"], stored["shown"], stored["main"], stored["process"], stored["full_width"],
+                   tuple(stored["group_buttons"]), tuple(stored["buttons"]), stored["body"], stored["shown"], stored["main"], stored["process"], stored["full_width"], stored.get("card", False),
                    stored["shipped"], stored["unavailable_reason"])

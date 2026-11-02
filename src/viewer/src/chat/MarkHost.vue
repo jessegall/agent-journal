@@ -18,7 +18,12 @@ const opened = ref(false);
 </script>
 
 <template>
-    <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
+    <template v-if="declaration?.card">
+        <div class="thread-turn card" :data-ref="`chat_mark:${mark.id}`">
+            <MarkBody :declaration="declaration" :mark="mark" shown />
+        </div>
+    </template>
+    <div v-else :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
         <span class="mark-row">
             <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
                 <template v-if="opens" #default="{shown}">

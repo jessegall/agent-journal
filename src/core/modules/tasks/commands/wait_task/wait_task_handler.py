@@ -28,9 +28,9 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
 
     def handle(self, command: WaitTask, context: Context) -> Task:
         targets = tuple(self.target(text, command.task_id) for text in command.targets)
-        if not (command.reason or targets or command.until_command):
+        if not (command.reason.strip() or targets or command.until_command):
             raise Refusal("say what it waits on", "--on task:<n>, --on question:<n> or --on plan:<n>, --until '<command>', or --reason '<words>'")
-        reason = command.reason or command.wait_reason()
+        reason = command.reason.strip() or command.wait_reason()
         task = self.bus.dispatch(BlockTask(command.task_id, reason), context)
         for target in targets:
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, target=target), context)

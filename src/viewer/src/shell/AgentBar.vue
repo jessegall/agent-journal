@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, waiting: {type: Number, default: 0}, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
 const emit = defineEmits(["open", "changed"]);
 const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
@@ -19,9 +19,6 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         </template>
         <template v-if="agent">
             <strong data-agent-word>{{ word }}</strong>
-            <template v-if="waiting">
-                <button type="button" class="agent-waiting" data-agent-waiting title="Show what the agent needs to go ahead" @click="emit('open', 'waiting', $event.currentTarget)">Waiting: {{ waiting }}</button>
-            </template>
             <template v-if="task">
                 <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
             </template>
@@ -82,16 +79,6 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
 
 .dot.paused {
     background: var(--warn, var(--text-3));
-}
-
-.agent-waiting {
-    padding: 0 6px;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12.5px;
-    cursor: pointer;
 }
 
 .dot {

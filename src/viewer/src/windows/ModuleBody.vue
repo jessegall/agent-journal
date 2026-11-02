@@ -10,7 +10,9 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 const props = defineProps({declaration: {type: Object, required: true}, row: {type: Object, default: null}, head: {type: Object, default: null}});
 const subscriptions = new WindowSubscriptions();
 // the body reads in the environment of the window that draws it
-const env = inject(WINDOW_CONTEXT, null)?.environment ?? "";
+const host = inject(WINDOW_CONTEXT, null);
+const env = host?.environment ?? "";
+const openWindow = (name, agent) => host?.open?.(name, agent);
 const permissions = {reads: [], runs: [], missing: [], ask: async () => true};
 const entry = computed(() => ({
     // a body reads as the window its type names, which the module declares with the reads the body needs
@@ -24,7 +26,7 @@ const asComponent = computed(() => Boolean(props.declaration.shipped || props.de
 
 <template>
     <template v-if="asComponent">
-        <PageWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row, head}" />
+        <PageWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row, head}" @open="openWindow" />
     </template>
     <template v-else>
         <FrameWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row}" />
