@@ -12,4 +12,5 @@ class RuleSample:
         # @sin architecture_skills_RulesOnlyRefuseDetector
         repository.save(row)
         # @righteous architecture_skills_RulesOnlyRefuseDetector
+        # @sin architecture_nudges_NoRawLineFromARuleDetector
         return RuleAnswer.refused("read journal-notes first")
