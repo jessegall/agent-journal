@@ -4,6 +4,11 @@ import AgentBar from "../src/shell/AgentBar.vue";
 import WindowDropdown from "../src/windows/WindowDropdown.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
 
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
+
 const mounted = (component, props) => {
     const element = document.createElement("div");
     document.body.append(element);
