@@ -1,9 +1,9 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
 import {FoldSign, Icon, usePoll, useWindow} from "@journal/window-kit";
 
 // the card of a docked process, as version 4's watched output drew it: in the head a mark for where the run stands, its command, how far it has come
-// and how long it has run; along the foot a thin bar; opened, the lines its reader picked; read again every two seconds while the run is going
+// and how long it has run; along the foot a thin bar; opened, its terminal output in a scrolling box that follows the end; read again every two seconds while the run is going
 const TONES = {running: "var(--tone-work)", good: "var(--tone-good)", bad: "var(--tone-bad)", stopped: "var(--text-3)"};
 const ICONS = {running: "terminal", good: "tick", bad: "cross", stopped: "stop"};
 const STANDINGS = {running: "running", background: "running", finished: "good", failed: "bad", stopped: "stopped", orphaned: "stopped"};
@@ -13,6 +13,8 @@ const head = context.option("head");
 const run = ref(null);
 const lines = ref([]);
 const opened = ref(false);
+const terminal = ref(null);
+const FOLLOW_PIXELS = 24;
 const now = ref(Date.now());
 
 const standing = computed(() => STANDINGS[run.value?.state] ?? "running");
@@ -37,9 +39,16 @@ async function load() {
     now.value = Date.now();
     const shown = await context.read(`process card ${id}`);
     run.value = shown.ok ? shown.value : null;
-    const text = await context.read(`output peek ${id} --summary`);
+    if (!opened.value) return;
+    const box = terminal.value;
+    const following = !box || box.scrollHeight - box.scrollTop - box.clientHeight < FOLLOW_PIXELS;
+    const text = await context.read(`output peek ${id} --all`);
     lines.value = text.ok ? text.value.lines : [];
+    await nextTick();
+    if (following && terminal.value) terminal.value.scrollTop = terminal.value.scrollHeight;
 }
+
+watch(opened, (open) => open && load());
 
 usePoll(load, isRunning);
 </script>
@@ -66,11 +75,7 @@ usePoll(load, isRunning);
         </template>
         <div :class="['output-dock-more', {open: opened}]">
             <div class="output-dock-inner">
-                <ul class="output-dock-lines">
-                    <template v-for="line in lines" :key="line">
-                        <li>{{ line }}</li>
-                    </template>
-                </ul>
+                <pre ref="terminal" class="output-dock-terminal" data-output-terminal>{{ lines.join("\n") }}</pre>
             </div>
         </div>
     </div>
@@ -135,14 +140,19 @@ usePoll(load, isRunning);
     font-variant-numeric: tabular-nums;
 }
 
-.output-dock-lines {
-    margin: 0;
-    padding: 0 12px 10px 35px;
-    color: var(--text-3);
+.output-dock-terminal {
+    overflow: auto;
+    max-height: 280px;
+    margin: 0 12px 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text-2);
     font-family: var(--mono, monospace);
     font-size: 11px;
     line-height: 1.5;
-    list-style: none;
+    white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 

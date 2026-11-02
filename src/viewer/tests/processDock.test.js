@@ -48,7 +48,7 @@ test("a docked process's card shows the title and steps its output keeps, in pla
     expect(head.querySelector("[data-output-steps]").textContent).toBe("12 passed, 1 failed");
 });
 
-test("a docked process's card shows the run live: its state and the last lines of its reader", async () => {
+test("a docked process's card shows the run live, and unfolded its whole terminal output", async () => {
     const window = context({
         "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0}},
         "output peek 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"]}},
@@ -59,7 +59,11 @@ test("a docked process's card shows the run live: its state and the last lines o
     const element = await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
     expect(head.querySelector(".output-dock-title").textContent).toBe("make build");
-    expect([...element.querySelectorAll(".output-dock-lines li")].map((line) => line.textContent)).toEqual(["compiling the cart", "[ 40%]"]);
+    expect(window.reads.some((line) => line.startsWith("output peek"))).toBe(false);
+    head.querySelector("[data-output-toggle]").click();
+    await settle();
+    expect(window.reads).toContain("output peek 3 --all");
+    expect(element.querySelector("[data-output-terminal]").textContent).toBe("compiling the cart\n[ 40%]");
 });
 
 test("a button that names variants shows only on a mark of one of them", async () => {
