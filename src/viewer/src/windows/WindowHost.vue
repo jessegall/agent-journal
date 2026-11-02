@@ -1,6 +1,6 @@
 <script setup>
-import {computed, h, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
-import {WINDOW_CONTEXT, windowContext} from "./windowContext.js";
+import {computed, h, inject, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
+import {OPEN_VIEW, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import AllowancePrompt from "./AllowancePrompt.vue";
 import WindowPlaceholder from "./WindowPlaceholder.vue";
 
@@ -29,6 +29,7 @@ function retry() {
     attempt.value++;
 }
 
+const openView = inject(OPEN_VIEW, null);
 const context = windowContext({
     window: props.name,
     environment: props.environment,
@@ -41,7 +42,10 @@ const context = windowContext({
     declared: props.declared,
     readOnly: props.readOnly,
     shared: props.shared,
-    open: (window, agent) => emit("open", window, agent),
+    open: (window, agent) => {
+        emit("open", window, agent);
+        openView?.(window, agent);
+    },
 });
 provide(WINDOW_CONTEXT, context);
 
