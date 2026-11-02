@@ -300,7 +300,7 @@ function pick(face) {
 }
 
 .message-card:has(.message-quote) {
-    min-width: min(180px, 100%);
+    min-width: 180px;
 }
 
 .message-peer {

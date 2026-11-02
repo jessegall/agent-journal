@@ -1,6 +1,11 @@
 /* @code-commandments-generated */
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/player-CV0H5dqC.js
 import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-BW5vsksM.js";
 import { Z as Q, P as V, C as R } from "./index-BMBFaK0P.js";
+========
+import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-EEuNHaam.js";
+import { Z as Q, P as V, C as R } from "./index-E2fU197h.js";
+>>>>>>>> 35a6121bff (task 5777: A reply bubble has a minimum width so its quote can be read):src/core/modules/viewer/web/dist/kit/player-kQTOKBGj.js
 const X = 4, Y = (u) => u * u * (3 - 2 * u);
 class W {
   constructor(t, s) {
