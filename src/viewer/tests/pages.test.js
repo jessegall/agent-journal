@@ -1,6 +1,6 @@
 import {resolve} from "node:path";
 import {readFileSync} from "node:fs";
-import {createApp, h} from "vue";
+import {createApp, h, nextTick} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import HomePage from "../src/pages/HomePage.vue";
 import AgentPage from "../src/pages/AgentPage.vue";
@@ -294,4 +294,14 @@ test("on a fresh page with no suite chosen, a click on a closed window's button 
     button.dispatchEvent(new MouseEvent("click", {bubbles: true}));
     await settle();
     expect(element.querySelector(`[data-tab="tasks.tasks"]`)).not.toBeNull();
+});
+
+test("only an environment with an agent has a colored dot", async () => {
+    const {default: SidebarPages} = await import("../src/shell/SidebarPages.vue");
+    const element = document.createElement("div");
+    const environments = [{id: 1, name: "main"}, {id: 2, name: "development"}];
+    createApp(() => h(SidebarPages, {windows: [], environments, activeEnvironments: [1], current: "main"})).mount(element);
+    await nextTick();
+    expect(element.querySelector("[data-environment='main'] .dot").classList.contains("active")).toBe(true);
+    expect(element.querySelector("[data-environment='development'] .dot").classList.contains("active")).toBe(false);
 });

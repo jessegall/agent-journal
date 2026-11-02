@@ -1,9 +1,8 @@
 <script setup>
 import Segmented from "../kit/Segmented.vue";
 import {PRIORITY_LEVELS} from "../domain/taskPriority.js";
-import {isFinished} from "../domain/taskStatus.js";
 
-// where a task sits: its plan and phase, who holds it, and its priority while it can still change
+// where a task sits: its plan and phase, who holds it, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
 const emit = defineEmits(["priority"]);
@@ -27,15 +26,13 @@ const emit = defineEmits(["priority"]);
                 <span class="fact-value">Agent {{ task.holder_id }}</span>
             </div>
         </template>
-        <template v-if="!isFinished(task.state)">
-            <div class="fact wide">
-                <span class="fact-label">Priority</span>
-                <Segmented :options="PRIORITIES" :value="String(task.priority)" data-task-priority @pick="emit('priority', $event)" />
-                <template v-if="refusal">
-                    <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
-                </template>
-            </div>
-        </template>
+        <div class="fact wide">
+            <span class="fact-label">Priority</span>
+            <Segmented :options="PRIORITIES" :value="String(task.priority)" data-task-priority @pick="emit('priority', $event)" />
+            <template v-if="refusal">
+                <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
+            </template>
+        </div>
     </div>
 </template>
 

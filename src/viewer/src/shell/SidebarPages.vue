@@ -12,6 +12,7 @@ import Skeleton from "../kit/Skeleton.vue";
 const props = defineProps({
     windows: {type: Array, default: () => []},
     environments: {type: Array, default: () => []},
+    activeEnvironments: {type: Array, default: () => []},
     current: {type: String, default: ""},
     project: {type: String, default: "agent-journal"},
     counts: {type: Object, default: () => ({})},
@@ -79,7 +80,7 @@ function fold(key) {
                 </template>
                 <template v-for="environment in environments" :key="environment.id">
                     <a :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
-                        <span class="dot" /><span class="item-title">{{ environment.name }}</span>
+                        <span :class="['dot', {active: activeEnvironments.includes(environment.id)}]" /><span class="item-title">{{ environment.name }}</span>
                     </a>
                 </template>
             </template>
@@ -217,6 +218,10 @@ function fold(key) {
     width: 7px;
     height: 7px;
     border-radius: 50%;
+    background: var(--text-3);
+}
+
+.dot.active {
     background: var(--accent);
 }
 </style>

@@ -77,6 +77,7 @@ const agentKnown = ref(false);
 // the rows a list read gave, none when it failed or answered something else
 const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
 const environments = ref([]);
+const activeEnvironments = ref([]);
 const events = ref([]);
 const activityOpen = rememberedRef("activity-open", false);
 const wideKept = rememberedRef("full-screen", false);
@@ -109,6 +110,10 @@ function toggleActivity() {
 async function readEnvironments() {
     const answer = props.shellRead ? await props.shellRead(["environment", "list"]) : null;
     environments.value = rowsOf(answer);
+}
+async function readActiveEnvironments() {
+    const answer = props.shellRead ? await props.shellRead(["agent", "environments"]) : null;
+    activeEnvironments.value = answer?.ok ? answer.value.environment_ids : [];
 }
 const facts = ref(NO_FACTS);
 const now = ref(Date.now());
@@ -190,6 +195,8 @@ onMounted(() => {
     navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
     readEnvironments();
+    readActiveEnvironments();
+    props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
     readFacts();
     factsTimer = setInterval(readFacts, FACT_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
@@ -277,7 +284,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :project="project" :windows="catalogue.pages.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" />
+            <SidebarPages :project="project" :windows="catalogue.pages.value" :environments="environments" :active-environments="activeEnvironments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">

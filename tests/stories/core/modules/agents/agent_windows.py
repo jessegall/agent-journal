@@ -1,5 +1,5 @@
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.fixtures import AgentStarted, UserJoined
 
 
 def window_story(new_story) -> WindowStory:
@@ -29,3 +29,10 @@ def test_the_transcript_window_is_a_page_window_of_one_agent_that_reads_with_no_
     window = window_story(new_story)
     window.expect_declared_window("agents.transcript", "component", "agent")
     window.expect_window_allowed("agents.transcript", "agent transcript 1")
+
+
+def test_the_environments_with_a_running_main_agent_are_listed_until_it_ends(new_story):
+    story = new_story(fixture=AgentStarted)
+    story.expect_text("agent environments", "1", actor=story.user)
+    story.run(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_text("agent environments", "no environment has an agent", actor=story.user)
