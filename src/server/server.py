@@ -26,6 +26,7 @@ from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.listener_work import ListenerWork
 from server.check_work import CheckWork
+from server.output_read_work import OutputReadWork
 from server.tick_work import TickWork
 from server.viewer.session_file import SessionFile
 from server.viewer.viewer_listener import ViewerListener
@@ -43,6 +44,7 @@ TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
 HEALTH_CHECK_SECONDS = 60.0
 TICK_PERIOD_SECONDS = 60.0
+OUTPUT_READ_SECONDS = 3.0
 BACKUP_CHECK_SECONDS = 60.0
 CHECK_PERIOD_SECONDS = 60.0
 
@@ -75,6 +77,8 @@ def main(argv: list[str]) -> int:
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
+    output_read_round = JournalRound(home, "output reads", OutputReadWork())
+    output_read_thread = ListenerThread(output_read_round.run, output_read_round.report, OUTPUT_READ_SECONDS, "output reads")
     check_round = JournalRound(home, "checks", CheckWork())
     check_thread = ListenerThread(check_round.run, check_round.report, CHECK_PERIOD_SECONDS, "checks")
     tunnel = ServerTunnel(home)
@@ -99,6 +103,7 @@ def main(argv: list[str]) -> int:
         booting_round.report(error)
     listener_thread.start()
     ticker.start()
+    output_read_thread.start()
     check_thread.start()
     viewer.start()
     tunnel_thread.wake()
@@ -112,7 +117,7 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, ticker, listener_thread)
+        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, output_read_thread, ticker, listener_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()

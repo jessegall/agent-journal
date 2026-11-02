@@ -1,0 +1,13 @@
+from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.support.output_folder import OutputFolder
+
+
+class GrownOutputs:
+    """Whether a run's output gained bytes since its reader last looked."""
+
+    def __init__(self, outputs: OutputQuery, folder: OutputFolder) -> None:
+        self.outputs, self.folder = outputs, folder
+
+    def has_new_bytes(self, process_id: int) -> bool:
+        output = self.outputs.process(process_id).page(1, 1).rows
+        return bool(output) and output[0].reader_id is not None and self.folder.total_bytes(process_id) > output[0].read_offset

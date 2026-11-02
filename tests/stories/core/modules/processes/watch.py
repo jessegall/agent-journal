@@ -1,7 +1,9 @@
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from server.output_read_work import OutputReadWork
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.modules.processes.support.process_samples import moved_run
@@ -67,3 +69,12 @@ def test_an_explicit_watch_on_a_background_run_makes_no_second_watch(new_story):
     process = moved_run(story, "make test")
     story.run(f"output watch {process.id}", actor=story.agent)
     assert story.hook("s-1", AFTER).lines.count(f"output {process.id}: running") == 1
+
+
+def test_the_output_read_round_keeps_a_runs_progress_current_between_ticks(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
+    process_id = start_process(story, "make test").id
+    story.container.get(OutputFolder).write_output(process_id, 1, "[ 42%]\n")
+    OutputReadWork().run(story.container)
+    assert story.container.get(ProcessQuery).find(process_id).progress == 42
