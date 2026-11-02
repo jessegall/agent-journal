@@ -1,3 +1,5 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -76,3 +78,15 @@ class BuilderWithStartedTask(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+
+
+class BuilderWithUser(StoryFixture):
+    """A person, Ada, beside the started builder: story.user."""
+
+    parent = BuilderStarted
+
+    def steps(self, story) -> None:
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+    def expect(self, story) -> None:
+        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")

@@ -10,7 +10,7 @@ from core.modules.processes.support.grown_outputs import GrownOutputs
 
 class OutputReaderRule(DriverRule):
     """On each tick, a run of the agent whose output gained bytes since the reader last looked has them passed
-    through its reader; between ticks the server's output read round does the same."""
+    through its reader, for a run the journal's clock has not reached yet."""
 
     name = "processes.output-reader"
     hook = HookEventName.TICK

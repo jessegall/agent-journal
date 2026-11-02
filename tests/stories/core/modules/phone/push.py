@@ -50,7 +50,7 @@ def ask(story) -> None:
 
 
 def tick(story) -> None:
-    TickWork().run(story.container)
+    TickWork(lambda: None).run(story.container)
 
 
 def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_story):

@@ -15,7 +15,7 @@ def test_the_overview_shows_each_default_command_under_its_heading(new_story):
     text = story.run("overview", actor=story.user).output_text
     assert "## task list --state open" in text and "Fix the cart" in text
     assert "## question list" in text
-    assert "has no" not in text and "journal failed" not in text
+    assert "has no" not in text and "journal failed" not in text and "unrecognized arguments" not in text
     assert "Fix the cart  " not in text.replace("Fix the cart\n", "")
 
 

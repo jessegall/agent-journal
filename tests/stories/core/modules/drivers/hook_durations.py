@@ -1,24 +1,9 @@
 from core.base.timing import Timing
 from core.testing.hook_samples import HookSamples
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
-from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 MASTER = "journal.core.developer.tools"
 HOOKS = "journal.core.developer.tools.hooks"
-
-
-class BuilderWithUser(StoryFixture):
-    """A person, Ada, beside the started builder: story.user."""
-
-    parent = BuilderStarted
-
-    def steps(self, story) -> None:
-        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-
-    def expect(self, story) -> None:
-        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
 
 
 def terminal_line(story) -> str:

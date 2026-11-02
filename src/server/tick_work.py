@@ -1,3 +1,5 @@
+import time
+from collections.abc import Callable
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -13,24 +15,63 @@ from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls
 from core.modules.environments.models.environment import Environment
+from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
+from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.phone.commands.send_phone_notices.send_phone_notices import SendPhoneNotices
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.grown_outputs import GrownOutputs
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)
 MINUTE_SECONDS = 60
+SLOW_TICK_SECONDS = 0.25
 MAIN_ACTOR = "agent"
 
 
 class TickWork(RoundWork):
-    """The ticker's round, once a minute: each open agent other than a subagent gets a tick hook through the
-    hook route, so rules that keep time speak on their own; once a day the old hook calls are pruned; and the
-    notices that wait on paired phones are pushed."""
+    """The journal's clock, a tick each second: every running output that grew goes through its reader, which
+    writes its lines to their file and what it found on the output row, and wakes the listeners. Once a minute
+    each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
+    speak on their own, and the notices that wait on paired phones are pushed; once a day the old hook calls
+    are pruned. A tick over a quarter of a second says so in the chat, at most once a minute, when the
+    developer option is on."""
 
-    def __init__(self) -> None:
+    def __init__(self, wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic) -> None:
+        self.wake_listeners, self.seconds = wake_listeners, seconds
         self.pruned_at: Timestamp | None = None
+        self.minute_at: Timestamp | None = None
+        self.warned_at: Timestamp | None = None
 
     def run(self, container: Container) -> None:
-        clock_time, queries, route = container.get(Clock).timestamp(), container.get(Queries), container.get(HookRoute)
+        started = self.seconds()
+        self.read_running_outputs(container)
+        clock_time = container.get(Clock).timestamp()
+        if self.minute_at is None or self.minute_at.elapsed_seconds(clock_time) >= MINUTE_SECONDS:
+            self.minute_at = clock_time
+            self.run_minute(container, clock_time)
+        self.warn_slow_tick(container, self.seconds() - started, clock_time)
+
+    def warn_slow_tick(self, container: Container, tick_seconds: float, clock_time: Timestamp) -> None:
+        recently_warned = self.warned_at is not None and self.warned_at.elapsed_seconds(clock_time) < MINUTE_SECONDS
+        if tick_seconds <= SLOW_TICK_SECONDS or recently_warned:
+            return
+        agents, settings = tuple(container.get(Queries).query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()), container.get(SettingValues)
+        for environment_id in {agent.environment_id for agent in agents if settings.flag(SLOW_TICKS_SETTING, agent.environment_id)}:
+            self.warned_at = clock_time
+            container.get(Bus).run(SendMessage(f"A tick of the journal's clock took {round(tick_seconds * 1000)} ms, over its limit of {round(SLOW_TICK_SECONDS * 1000)} ms."), Actor.core(), environment_id=environment_id)
+
+    def read_running_outputs(self, container: Container) -> None:
+        bus, grown = container.get(Bus), container.get(GrownOutputs)
+        grown_runs = [process for process in tuple(container.get(ProcessQuery).running().oldest().all_rows()) if grown.has_new_bytes(process.id)]
+        for process in grown_runs:
+            bus.run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
+        if grown_runs:
+            self.wake_listeners()
+
+    def run_minute(self, container: Container, clock_time: Timestamp) -> None:
+        queries, route = container.get(Queries), container.get(HookRoute)
         for agent in tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows()):
             if agent.role != AgentRole.SUBAGENT:
                 route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
