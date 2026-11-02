@@ -11,7 +11,7 @@ test("the title fills {row_id} and {row_title}", () => {
 
 test("an item always has undock, and the declaration's own buttons after open", () => {
     const actions = dockButtons(item, declaration).map((b) => b.action);
-    expect(actions).toEqual(["open", "declared", "undock"]);
+    expect(actions).toEqual(["declared", "open", "undock"]);
     expect(dockButtons(item, declaration).at(-1).runs).toBe("dock remove 5");
 });
 
@@ -19,4 +19,9 @@ test("keep shows only while the item would leave by itself, and open only for a 
     expect(dockButtons({...item, leaves_at: 99}, declaration)[0]).toMatchObject({action: "keep", runs: "dock keep 5"});
     expect(dockButtons({...item, leaves_at: 99, kept: true}, declaration).map((b) => b.action)).not.toContain("keep");
     expect(dockButtons({...item, target_model: "nothing"}, declaration).map((b) => b.action)).not.toContain("open");
+});
+
+test("a card that draws its own head has no Open, its arrow unfolds it", () => {
+    const actions = dockButtons({id: 5, target_model: "processes", target_id: 1}, {reads: ["process show"], draws_head: true, buttons: []}).map((b) => b.action);
+    expect(actions).toEqual(["undock"]);
 });

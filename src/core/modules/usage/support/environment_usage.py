@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.modules.agents.models.agent import Agent
 from core.modules.usage.support.plan_window import PlanWindow
-from core.modules.usage.support.session_status import SessionStatus, WINDOW_TITLES
+from core.modules.usage.support.session_status import SessionStatus
 
 
 @dataclass(frozen=True)
@@ -11,11 +11,6 @@ class EnvironmentUsage:
 
     agents: tuple[tuple[Agent, SessionStatus], ...]
     windows: tuple[PlanWindow, ...]
-
-    @property
-    def unreported_windows(self) -> tuple[str, ...]:
-        reported = {window.title for window in self.windows}
-        return tuple(title for title in WINDOW_TITLES.values() if title not in reported)
 
     @property
     def cost_dollars(self) -> float:

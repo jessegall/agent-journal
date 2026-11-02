@@ -21,10 +21,10 @@ def test_the_plan_windows_show_how_much_is_used_and_when_each_starts_again(new_s
                       actor=story.user)
 
 
-def test_a_window_the_program_left_out_of_its_report_says_it_is_not_reported(new_story):
+def test_a_window_the_program_left_out_of_its_report_is_left_out(new_story):
     story = new_story(fixture=UserJoined)
     save_status_file(story, "s-1", {"rate_limits": {"seven_day": {"used_percentage": 17, "resets_at": SEVEN_DAYS_RESET}}})
-    story.expect_text("usage show --environment main", "plan: 7 days 17% used, starts again 2026-11-05 11:00 UTC; 5 hours not reported", actor=story.user)
+    story.expect_text("usage show --environment main", "plan: 7 days 17% used, starts again 2026-11-05 11:00 UTC", actor=story.user)
 
 
 def test_an_agent_that_reported_nothing_says_so_the_plan_comes_from_the_newest_report_and_the_cost_adds_up(new_story):

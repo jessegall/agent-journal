@@ -34,12 +34,6 @@ load();
             <small>{{ reset(window.reset_epoch_seconds) }}</small>
         </div>
     </template>
-    <template v-for="title in windows.length ? usage.unreported_windows : []" :key="title">
-        <div class="meter" data-usage-unreported>
-            <span>{{ title }}</span>
-            <small>Claude Code has not reported this window</small>
-        </div>
-    </template>
     <template v-if="usage && !windows.length">
         <p class="none">No current plan window has been reported here.</p>
     </template>

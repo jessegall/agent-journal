@@ -7,12 +7,12 @@ export const dockTitle = (item, declaration) =>
 
 const own = (action, icon, label, runs) => ({action, icon, label, runs});
 
-// the buttons of a docked item: undock; keep while the item would leave by itself; open when its row has an inspector; then the declaration's own
+// the buttons of a docked item: keep while the item would leave by itself; the declaration's own; open when its row has an inspector, unless its body draws the head and unfolds there; then undock
 export function dockButtons(item, declaration) {
     return [
         ...(item.leaves_at && !item.kept ? [own("keep", "pin", "Keep", `dock keep ${item.id}`)] : []),
-        ...(declaration?.reads?.length || meta(item.target_model) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
         ...(declaration?.buttons || []).map((button) => ({...button, action: "declared"})),
+        ...(!declaration?.draws_head && (declaration?.reads?.length || meta(item.target_model)) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
         own("undock", "close", "Undock", `dock remove ${item.id}`),
     ];
 }

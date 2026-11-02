@@ -60,7 +60,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             </template>
             <span class="chat-dock-acts dock-acts">
                 <template v-for="button in buttons" :key="button.action + button.runs">
-                    <Btn small bordered :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
+                    <Btn small :kind="button.primary ? 'primary' : 'ghost'" :bordered="!button.primary" :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
                 </template>
             </span>
             <CloseButton :title="undock.label" data-dock-action="undock" @click="press(undock)" />

@@ -9,6 +9,7 @@ class MarkButton:
     icon: str
     label: str
     runs: str
+    primary: bool = False
 
     def listed(self) -> dict[str, str]:
         return asdict(self)

@@ -1,29 +1,41 @@
 <script setup>
 import {ref} from "vue";
-import {RowList, useListTools, ListTools, useRows, peekRef} from "@journal/window-kit";
+import {Btn, RowList, TextInput, useListTools, ListTools, useRows, peekRef} from "@journal/window-kit";
 
+// the questions as version 4 asked them: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
+// an answer shows the moment it is given and goes back if the server refuses it
 const {rows, failure, loaded, load, context} = useRows("question list", ["question.*"]);
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
 const typed = ref({});
-const runFailure = ref("");
+const settled = ref({});
+const refusals = ref({});
+const elaborated = ref(new Set());
 
-async function run(words) {
+const shown = (row) => ({...row, ...settled.value[row.id]});
+
+async function settle(row, change, words) {
+    settled.value = {...settled.value, [row.id]: change};
+    refusals.value = {...refusals.value, [row.id]: ""};
     const result = await context.run(words);
-    runFailure.value = result.ok ? "" : result.error;
-    load();
+    if (result.ok) return void load();
+    settled.value = Object.fromEntries(Object.entries(settled.value).filter(([id]) => Number(id) !== row.id));
+    refusals.value = {...refusals.value, [row.id]: result.error};
 }
 
-function answer(row, text) {
-    return run(["question", "answer", String(row.id), "--answer", text]);
-}
+const answer = (row, text) => settle(row, {state: "answered", answer: text}, ["question", "answer", String(row.id), "--answer", text]);
+const close = (row) => settle(row, {state: "closed"}, ["question", "close", String(row.id)]);
 
 function sendTyped(row) {
     const text = (typed.value[row.id] || "").trim();
-    if (text) answer(row, text).then(() => (typed.value[row.id] = ""));
+    if (text) answer(row, text);
 }
 
-function choiceLabel(row, option) {
-    return option === row.recommended ? `${option} (recommended)` : option;
+async function elaborate(row) {
+    elaborated.value = new Set([...elaborated.value, row.id]);
+    const result = await context.run(["message", "send", `Elaborate on question ${row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
+    if (result.ok) return;
+    elaborated.value = new Set([...elaborated.value].filter((id) => id !== row.id));
+    refusals.value = {...refusals.value, [row.id]: result.error};
 }
 </script>
 
@@ -32,79 +44,131 @@ function choiceLabel(row, option) {
         <ListTools :tools="tools" placeholder="Search the questions" />
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
-                <div class="question" :data-state="row.state">
-                    <p class="question-text"><button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button></p>
-                    <template v-if="row.state !== 'open'">
-                        <p class="question-closed">{{ row.state === "answered" ? `Answered: ${row.answer}` : "Closed" }}</p>
+                <section class="question" :data-state="shown(row).state">
+                    <p class="question-label">Question {{ row.id }}</p>
+                    <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
+                    <template v-if="shown(row).state !== 'open'">
+                        <p class="question-closed" data-question-settled>{{ shown(row).state === "answered" ? `Answered: ${shown(row).answer}` : "Closed" }}</p>
                     </template>
-                    <template v-if="row.state === 'open'">
-                        <div class="question-choices">
+                    <template v-else>
+                        <div class="question-options">
                             <template v-for="option in row.options" :key="option">
-                                <button type="button" :class="['question-choice', {recommended: option === row.recommended}]" @click="answer(row, option)">
-                                    {{ choiceLabel(row, option) }}
+                                <button type="button" :class="['question-option', {recommended: option === row.recommended}]" :data-question-option="option" @click="answer(row, option)">
+                                    <template v-if="option === row.recommended">
+                                        <span class="question-tag">Recommended</span>
+                                    </template>
+                                    <span>{{ option }}</span>
                                 </button>
                             </template>
                         </div>
-                        <form class="question-form" @submit.prevent="sendTyped(row)">
-                            <input v-model="typed[row.id]" class="question-answer" placeholder="Answer in your own words" />
-                            <button type="button" class="question-send" @click="sendTyped(row)">Answer</button>
-                            <button type="button" class="question-close" @click="run(['question', 'close', String(row.id)])">Close</button>
+                        <form @submit.prevent="sendTyped(row)">
+                            <TextInput v-model="typed[row.id]" placeholder="Or answer in your own words…">
+                                <template #end>
+                                    <Btn small data-question-close @click="close(row)">Close</Btn>
+                                    <Btn small :disabled="elaborated.has(row.id)" data-question-elaborate @click="elaborate(row)">{{ elaborated.has(row.id) ? "Asked to elaborate" : "Elaborate" }}</Btn>
+                                    <Btn kind="primary" small data-question-answer @click="sendTyped(row)">Answer</Btn>
+                                </template>
+                            </TextInput>
                         </form>
                     </template>
-                </div>
+                    <template v-if="refusals[row.id]">
+                        <p class="question-failure" role="alert" data-question-failure>{{ refusals[row.id] }}</p>
+                    </template>
+                </section>
             </template>
         </RowList>
-        <template v-if="runFailure">
-            <p class="question-failure">{{ runFailure }}</p>
-        </template>
     </div>
 </template>
 
 <style scoped>
-.question-open {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
 .question {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    max-width: 640px;
+    margin-bottom: 10px;
+    padding: 14px 16px 16px;
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    background: var(--raised);
+    overflow-wrap: anywhere;
 }
 
-.question-text {
+.question-label {
     margin: 0;
+    color: var(--text-3);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
-.question-choices,
-.question-form {
+.question-open {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+}
+
+.question-options {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 6px;
 }
 
-.question-answer {
-    flex: 1;
-    min-width: 120px;
+.question-option {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 9px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.12s ease,
+        border-color 0.2s ease;
 }
 
-.question-choice.recommended {
-    font-weight: 600;
+.question-option:hover {
+    border-color: var(--accent);
+}
+
+.question-option:active {
+    transform: scale(0.98);
+}
+
+.question-option.recommended {
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border-2));
+}
+
+.question-tag {
+    margin: -9px -12px 8px;
+    padding: 4px 12px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent-text);
+    font-size: 11px;
+}
+
+.question-closed {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .question-failure {
-    margin: 6px 8px 0;
-    color: var(--text-2);
-}
-.question-closed {
-    margin: 2px 0 0;
-    color: var(--text-3);
-    font-size: 12px;
+    margin: 0;
+    color: var(--danger);
+    font-size: 12.5px;
 }
 </style>

@@ -46,7 +46,7 @@ class QuestionsModule(Module):
     listeners = [QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
-                                 reads=["question list", "question show"], runs=["question answer", "question close"], events=["question.*"]),
+                                 reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
                                  reads=["wait waiting"], events=["wait.*"])]
     seeders = [QuestionsSeeder]
