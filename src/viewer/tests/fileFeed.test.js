@@ -70,3 +70,24 @@ test("an edit kept before the changed lines were kept draws as its header alone"
     expect(element.querySelector(".diff-card").classList.contains("folded")).toBe(true);
 });
 
+test("in the view menu a checked and an unchecked item start their label at the same place", async () => {
+    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2);
+    window.setting = async () => ({headers: true});
+    const element = await mounted(FileFeed, window);
+    document.body.append(element);
+    await settle();
+    element.querySelector("[data-feed-view]").click();
+    await settle();
+    const checked = document.querySelector('[data-feed-toggle="headers"]');
+    const unchecked = document.querySelector('[data-feed-toggle="flush"]');
+    const action = document.querySelector("[data-feed-expand]");
+    expect(checked.children[0].className).toBe("menu-item-check");
+    expect(checked.children[0].textContent).toBe("✓");
+    for (const item of [unchecked, action]) {
+        expect(item.children[0].className).toBe("menu-item-check");
+        expect(item.children[0].textContent).toBe("");
+    }
+    expect(checked.textContent).toBe("✓Headers only");
+    expect(unchecked.textContent).toBe("Flush");
+});
+

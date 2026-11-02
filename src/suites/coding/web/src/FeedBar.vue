@@ -43,13 +43,11 @@ function expand() {
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="250" :max-width="300" @click.stop @close="anchor = null">
                 <template v-for="toggle in TOGGLES" :key="toggle.key">
-                    <MenuItem :data-feed-toggle="toggle.key" :aria-pressed="Boolean(options[toggle.key]) && !limited(toggle.key)" :disabled="limited(toggle.key)" @click="set({[toggle.key]: !options[toggle.key]})">
-                        {{ options[toggle.key] && !limited(toggle.key) ? "✓ " : "" }}{{ toggle.label }}
-                    </MenuItem>
+                    <MenuItem :data-feed-toggle="toggle.key" :checked="Boolean(options[toggle.key]) && !limited(toggle.key)" :aria-pressed="Boolean(options[toggle.key]) && !limited(toggle.key)" :disabled="limited(toggle.key)" @click="set({[toggle.key]: !options[toggle.key]})">{{ toggle.label }}</MenuItem>
                 </template>
-                <MenuItem data-feed-expand @click="expand">Expand everything</MenuItem>
-                <MenuItem data-feed-smaller :disabled="options.size <= SIZES[0]" @click="sized(-1)">Smaller text</MenuItem>
-                <MenuItem data-feed-larger :disabled="options.size >= SIZES[SIZES.length - 1]" @click="sized(1)">Larger text</MenuItem>
+                <MenuItem data-feed-expand :checked="false" @click="expand">Expand everything</MenuItem>
+                <MenuItem data-feed-smaller :checked="false" :disabled="options.size <= SIZES[0]" @click="sized(-1)">Smaller text</MenuItem>
+                <MenuItem data-feed-larger :checked="false" :disabled="options.size >= SIZES[SIZES.length - 1]" @click="sized(1)">Larger text</MenuItem>
                 <div class="feed-bar-lines">
                     <span>Lines</span>
                     <Segmented :options="LINES" :value="String(options.lines || 0)" @pick="(key) => set({lines: Number(key)})" />

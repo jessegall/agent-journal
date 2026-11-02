@@ -1,9 +1,11 @@
 <script setup>
-defineProps({on: Boolean, danger: Boolean, description: {type: String, default: ""}});
+// checked is null for an item with no check mark; true or false gives it a fixed space for one, empty when false
+defineProps({on: Boolean, danger: Boolean, checked: {type: Boolean, default: null}, description: {type: String, default: ""}});
 </script>
 
 <template>
     <button type="button" :class="['menu-item', {on, danger, described: description}]">
+        <span v-if="checked !== null" class="menu-item-check" aria-hidden="true">{{ checked ? "✓" : "" }}</span>
         <template v-if="description">
             <span class="menu-item-text">
                 <span><slot /></span>
@@ -63,6 +65,12 @@ defineProps({on: Boolean, danger: Boolean, description: {type: String, default: 
 
 .menu-item.described {
     align-items: flex-start;
+}
+
+.menu-item-check {
+    flex: none;
+    width: 1em;
+    text-align: center;
 }
 
 .menu-item-text {
