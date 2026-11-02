@@ -1,6 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import DockStack from "../src/chat/DockStack.vue";
+import {DOCK_ARRIVAL_MS} from "../src/kit/ChatDock.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 
@@ -44,6 +45,8 @@ test("a docked process that has completed shows a line along its top and undocks
     await nextTick();
     expect(host.querySelector("[data-dock-action=undock]")).not.toBeNull();
     vi.advanceTimersByTime(1500);
+    await nextTick();
+    vi.advanceTimersByTime(DOCK_ARRIVAL_MS);
     await nextTick();
     expect(host.querySelector("[data-dock-action=undock]")).toBeNull();
 });
