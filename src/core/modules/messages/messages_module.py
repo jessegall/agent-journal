@@ -33,6 +33,7 @@ from core.modules.messages.migrations.m004_message_delivered_at import MessageDe
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
 from core.modules.messages.rules.message_read_rule import MessageReadRule
+from core.modules.messages.rules.idle_agent_tick_rule import IdleAgentTickRule
 from core.modules.messages.rules.unread_message_show_rule import UnreadMessageShowRule
 from core.modules.messages.rules.chat_manners_rule import ChatMannersRule
 from core.modules.messages.rules.chat_opening_rule import ChatOpeningRule
@@ -69,7 +70,7 @@ class MessagesModule(Module):
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (TellMessageUpdatedHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, TellIdleAgentHandler)
-    driver_rules = [MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
+    driver_rules = [IdleAgentTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],

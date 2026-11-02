@@ -30,5 +30,5 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
         if agent.paused_at is not None:
             raise Refusal(f"agent {agent.id} is paused already")
         paused = self.repository.save(replace(agent, paused_at=context.timestamp), context)
-        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=f"[journal] {PAUSED_REFUSAL.nudge().text}", source=PAUSE_SOURCE), context)
+        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=PAUSED_REFUSAL.nudge().text, source=PAUSE_SOURCE), context)
         return paused

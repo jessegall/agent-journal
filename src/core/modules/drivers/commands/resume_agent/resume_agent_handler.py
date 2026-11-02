@@ -11,7 +11,7 @@ from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 
-RESUMED_LINE = "[journal] the user resumed you: carry on where you stopped"
+RESUMED_LINE = "the user resumed you: carry on where you stopped"
 
 
 class ResumeAgentHandler(Handler[ResumeAgent, Agent]):

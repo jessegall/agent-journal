@@ -13,6 +13,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
 IDLE_MESSAGE_SOURCE = "messages.idle"
+TYPED_LINE_PREFIX = "[journal] "
 TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
 
@@ -32,7 +33,7 @@ class TypedLineListener(CommitListener):
         if line.source not in TERMINAL_SOURCES:
             return
         try:
-            self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, line.text)
+            self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TYPED_LINE_PREFIX}{line.text}")
         except Refusal:
             return
         self.bus.run(EnterAgentLine(line.id), Actor(event.actor_id, ActorType.USER), environment_id=event.environment_id)

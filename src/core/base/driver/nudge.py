@@ -18,4 +18,4 @@ class Nudge:
 
     @property
     def labelled(self) -> str:
-        return f"{self.type.value}: {self.text}"
+        return f"journal: {self.text}"

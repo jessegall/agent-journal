@@ -89,7 +89,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
-        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, labelled_lines=[*answers.labelled_lines, *handed_lines.texts, *(line for _, line in refused)])
+        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, labelled_lines=[*answers.labelled_lines, *(f"journal: {line}" for line in (*handed_lines.texts, *(line for _, line in refused)))])
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:

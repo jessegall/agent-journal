@@ -26,7 +26,7 @@ class TellIdleAgentHandler(Handler[TellIdleAgent, Message | None]):
 
     def handle(self, command: TellIdleAgent, context: Context) -> Message | None:
         agents = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
-        if not agents or not self.hook_calls.is_idle(agents[0].id):
+        if not agents or not self.hook_calls.is_idle(agents[0].id, context.timestamp):
             return None
         waiting = self.queries.query(Message).filter(environment_id=command.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
         if not waiting or waiting[0].delivered_at is not None:

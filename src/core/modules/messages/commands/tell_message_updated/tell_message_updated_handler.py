@@ -25,5 +25,5 @@ class TellMessageUpdatedHandler(Handler[TellMessageUpdated, None]):
         agents = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
         if not agents:
             return
-        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agents[0].id) else UPDATED_SOURCE
-        self.repository.save(AgentLine(agent_id=agents[0].id, creator_id=context.actor.id, text=f"[journal] message {command.message_id} updated", source=source), context)
+        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agents[0].id, context.timestamp) else UPDATED_SOURCE
+        self.repository.save(AgentLine(agent_id=agents[0].id, creator_id=context.actor.id, text=f"message {command.message_id} updated", source=source), context)

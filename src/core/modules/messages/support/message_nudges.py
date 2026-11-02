@@ -5,8 +5,8 @@ from core.base.driver.nudge_type import NudgeType
 
 UNREAD_MESSAGE_STOP = NudgeDeclaration("messages.unread_at_stop", NudgeType.REFUSAL, 'message {message} is unread: journal message read {message}')
 UNREAD_DISPLAY_REFUSAL = NudgeDeclaration("messages.unread_show", NudgeType.REFUSAL, 'message {message} is unread, so it cannot be shown: journal message read {message}')
-NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.INSTRUCTION, '[journal] new message {message}', pays="")
-NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.INSTRUCTION, '[journal] {count} new messages', turn_limited=False, pays="")
+NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.INSTRUCTION, 'new message {message}', pays="")
+NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.INSTRUCTION, '{count} new messages', turn_limited=False, pays="")
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.REMARK, '  file {path}')
 MESSAGE_ADVICE = NudgeDeclaration("messages.act_on_messages", NudgeType.INSTRUCTION, 'act on what you read: if it steers your work, take it as steering and follow it from now on; if it asks for an update, give the update now; if it asks for work, make a task for it; otherwise answer it')
 IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.INSTRUCTION, 'message {message} attaches an image: open {path}, then journal message tag {message} "{name}" "<what it shows>"', pays="journal message tag {message}")

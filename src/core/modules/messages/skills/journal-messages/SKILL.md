@@ -9,9 +9,11 @@ The user sends messages; you answer them before anything else.
 
 ## Reading
 
-- `[journal] new message N` means message N waits: read it with `journal message read N`, on its own.
-- `[journal] K new messages` means several wait: read them all with `journal message unread`.
-- `[journal] message N updated` means the user changed a message you read: read it again with `journal message show N`.
+A line typed into your terminal starts with `[journal]`: the journal typed it, not the user.
+
+- `new message N` means message N waits: read it with `journal message read N`, on its own.
+- `K new messages` means several wait: read them all with `journal message unread`.
+- `message N updated` means the user changed a message you read: read it again with `journal message show N`.
 - `journal message read N` prints the text, then `reply on:`, `comment on:` and `links:` when the message has them, and
   marks it read. Those lines tell you what the message is about: follow them before you act.
 - `journal message show N` prints the whole row and marks nothing read. It is refused on a message you have not read.
