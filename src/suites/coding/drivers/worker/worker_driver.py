@@ -15,4 +15,4 @@ class WorkerDriver(Driver):
     suite = CodingSuite
     role = AgentRole.WORKER
     rules = [WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule, WorkerStopRule]
-    opening_lines = ["You are a worker: you do your one task in your worktree and deliver it with journal worker deliver; journal handles git."]
+    opening_lines = ["You are a worker: you do your one task in your worktree and deliver it with journal worker deliver; journal handles git.", "Run only the tests of what you changed, never the whole test suite."]
