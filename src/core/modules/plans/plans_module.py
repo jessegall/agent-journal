@@ -8,7 +8,6 @@ from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelO
 from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
 from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
 from core.modules.plans.listeners.finished_plan_listener import FinishedPlanListener
-from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
 from core.modules.plans.commands.make_phase.make_phase_handler import MakePhaseHandler
@@ -72,7 +71,7 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress, PlanCard]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 NextPlanTaskStarterListener, FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener)
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]

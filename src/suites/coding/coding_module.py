@@ -29,6 +29,7 @@ from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
 from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
+from suites.coding.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
@@ -51,7 +52,7 @@ class CodingModule(Module):
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
-    listeners = [AutoNextTaskListener]
+    listeners = [AutoNextTaskListener, NextPlanTaskStarterListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),

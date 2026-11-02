@@ -11,6 +11,7 @@ from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.support.task_priority import CRITICAL_PRIORITY
+from suites.coding.support.coding_assignment import CodingAssignment
 
 
 class NextPlanTaskStarterListener(CommitListener):
@@ -18,16 +19,16 @@ class NextPlanTaskStarterListener(CommitListener):
     started for that agent, so a plan is followed task by task, never past a checkpoint phase that still
     has an open task."""
 
-    name = "plans.next-plan-task-starter"
+    name = "coding.next-plan-task-starter"
     event = "task.close"
 
-    def __init__(self, bus: Bus, queries: Queries, next_tasks: NextPlanTasks, tasks: TaskQuery) -> None:
-        self.bus, self.queries, self.next_tasks, self.tasks = bus, queries, next_tasks, tasks
+    def __init__(self, bus: Bus, queries: Queries, next_tasks: NextPlanTasks, tasks: TaskQuery, assignment: CodingAssignment) -> None:
+        self.bus, self.queries, self.next_tasks, self.tasks, self.assignment = bus, queries, next_tasks, tasks, assignment
 
     def handle(self, event: LoggedEvent) -> None:
         places = self.queries.query(PlanTask).filter(task_id=event.row_id).page(1, 1).rows
         plan = self.queries.query(Plan).find(places[0].plan_id) if places else None
-        if plan is None or plan.state is not PlanState.STARTED or self.tasks.holder(event.actor_id).started().exists() or self.critical_task_waits(plan.environment_id):
+        if plan is None or not self.assignment.is_active(plan.environment_id) or plan.state is not PlanState.STARTED or self.tasks.holder(event.actor_id).started().exists() or self.critical_task_waits(plan.environment_id):
             return
         following = self.next_tasks.following(places[0].plan_id)
         if following is not None:

@@ -10,6 +10,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.support.coding_assignment import CodingAssignment
 from suites.coding.support.next_task import NextTask
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
@@ -25,13 +26,15 @@ class AutoNextTaskListener(CommitListener):
     name = "coding.auto-next-task"
     event = "task.*"
 
-    def __init__(self, bus: Bus, queries: Queries, tasks: TaskQuery, next_task: NextTask, settings: SettingValues) -> None:
-        self.bus, self.queries, self.tasks, self.next_task, self.settings = bus, queries, tasks, next_task, settings
+    def __init__(self, bus: Bus, queries: Queries, tasks: TaskQuery, next_task: NextTask, settings: SettingValues, assignment: CodingAssignment) -> None:
+        self.bus, self.queries, self.tasks, self.next_task, self.settings, self.assignment = bus, queries, tasks, next_task, settings, assignment
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event not in LEAVES_HAND or not self.settings.flag(AUTO_MODE_SETTING, event.environment_id):
+        if event.event not in LEAVES_HAND:
             return
         closed_task = self.queries.query(Task).find(event.row_id)
+        if not self.assignment.is_active(closed_task.environment_id) or not self.settings.flag(AUTO_MODE_SETTING, closed_task.environment_id):
+            return
         holder_id = event.data[HOLDER_FIELD][0] if HOLDER_FIELD in event.data else closed_task.holder_id
         if not isinstance(holder_id, int):
             return
