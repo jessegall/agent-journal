@@ -398,6 +398,10 @@ function pick(face) {
     white-space: nowrap;
 }
 
+.message-card :deep(pre code) {
+    white-space: inherit;
+}
+
 .message-files {
     display: flex;
     flex-wrap: wrap;

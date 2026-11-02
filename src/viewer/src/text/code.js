@@ -5,6 +5,9 @@ import "./copyBlock.js";
 
 const FENCE = /^(```|~~~)\s*(\w+)?\s*$/;
 const INDENTED = /^\s{4,}\S/;
+// the lines under a head line: indented by two spaces or more, and not a list item
+const UNDER_HEAD = /^\s{2,}(?![-*+]\s|\d+[.)]\s)\S/;
+const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/;
 const HEAD = /^(@\w|(async\s+)?def |class |if |elif |else\b|for |while |try\b|except\b|finally\b|with |switch |function\b|[\w$.]+\s*\([^)]*\)\s*(:|\{)?\s*$)|[:{]\s*$|=>\s*\{?\s*$/;
 const LANGS = [
     ["py", /\b(def |elif |None\b|self\b|lambda |print\(|import \w+$)|:\s*$/m],
@@ -28,6 +31,12 @@ function guess(lines) {
     const text = unescape(lines.join("\n"));
     return (LANGS.find(([, re]) => re.test(text)) || ["text"])[0];
 }
+
+// whether the last held line opens a block, so the indented lines after it are its body
+const endsInHead = (held) => {
+    const last = (held[held.length - 1] || "").trim();
+    return Boolean(last) && HEAD.test(last) && !LIST_ITEM.test(last);
+};
 
 function block(lines, lang) {
     const code = highlight(unescape(lines.join("\n")), lang || guess(lines)).join("\n");
@@ -53,9 +62,10 @@ export function lift(text) {
             i = stop + 1;
             continue;
         }
-        if (INDENTED.test(lines[i])) {
+        const indent = endsInHead(held) ? UNDER_HEAD : INDENTED;
+        if (indent.test(lines[i])) {
             let stop = i;
-            while (stop < lines.length && (INDENTED.test(lines[stop]) || !lines[stop].trim())) stop += 1;
+            while (stop < lines.length && (indent.test(lines[stop]) || !lines[stop].trim())) stop += 1;
             while (stop > i && !lines[stop - 1].trim()) stop -= 1;
             const head = [];
             while (held.length && held[held.length - 1].trim() && HEAD.test(held[held.length - 1].trim())) head.unshift(held.pop());

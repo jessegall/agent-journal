@@ -45,7 +45,7 @@ func (tracker *Tracker) mayMove(started time.Time) bool {
 		}
 	}
 	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
-	return tracker.Options.Background || (limit > 0 && time.Since(started) >= limit)
+	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && time.Since(started) >= limit)
 }
 
 // Watch follows a moved run as a program of its own until the run ends or its folder has been pruned.

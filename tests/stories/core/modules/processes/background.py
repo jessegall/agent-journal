@@ -10,8 +10,8 @@ from core.modules.processes.commands.read_new_output.read_new_output import Read
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
+from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = NOTHING.with_fields(event="post_tool_use")
@@ -148,3 +148,21 @@ def test_a_reader_is_not_judged_on_a_chain_of_commands(new_story):
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     assert not any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_background(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    process = start_process(story, "sleep 60")
+    folder = story.container.get(OutputFolder)
+    assert folder.text(process.id, "move") == ""
+    story.run('message send "are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    assert folder.text(process.id, "move") == "1"
+
+
+def test_an_agents_own_message_moves_nothing(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    process = start_process(story, "sleep 60")
+    story.run('message send "working on it" --environment main', actor=story.agent)
+    story.run_listeners()
+    assert story.container.get(OutputFolder).text(process.id, "move") == ""
