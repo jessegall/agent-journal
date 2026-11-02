@@ -69,6 +69,7 @@ from core.base.driver.conditions.time_reached import TimeReached
 from core.modules.drivers.support.block_conditions.agent_resumed import AgentResumed
 from core.modules.drivers.support.block_conditions.required_command_closed import RequiredCommandClosed
 from core.modules.drivers.support.block_conditions.tool_uses import ToolUses
+from core.modules.drivers.support.hook_cost_tool import HookCostTool
 from core.modules.drivers.commands.block_until.block_until_handler import BlockUntilHandler
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders_handler import PruneTempFoldersHandler
 from core.modules.drivers.commands.close_agent_block.close_agent_block_handler import CloseAgentBlockHandler
@@ -118,6 +119,7 @@ class DriversModule(Module):
     listeners = [DispatchMarkListener, RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
+    performance_tools = [HookCostTool]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed, RequiredCommandClosed]
     driver_rules = [DispatchMarkRule, RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),

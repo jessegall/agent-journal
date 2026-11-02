@@ -19,6 +19,7 @@ def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
     story = new_story(fixture=UserJoined)
     story.run('notice make "The pull request" --link "https://github.com/shop/cart/pull/4" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", shell_call("cat log", "http://127.0.0.1:8000/x\n"), "pin this link")
+    story.expect_absent_hook_line("s-1", shell_call("curl", "http://journal/health\n"), "pin this link")
     story.expect_absent_hook_line("s-1", shell_call("gh pr view", "https://github.com/shop/cart/pull/4/\n"), "pin this link")
 
 

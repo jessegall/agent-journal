@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.modules.drivers.support.hook_durations import HOOK_LIMIT_POINTS
+from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

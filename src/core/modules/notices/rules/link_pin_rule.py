@@ -6,12 +6,12 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.modules.notices.support.link_pin_check import LinkPinCheck
 
-READ_TOOLS = (ToolType.READ, ToolType.SEARCH)
+FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 
 
 class LinkPinRule(DriverRule):
-    """A link in a tool's output or in the line the agent ran is offered as a pin, and words there that a link is
-    pinned are checked; a file the agent reads is not offered from."""
+    """A link in a tool's output or in the line the agent ran is offered as a pin, and words in that line that a link
+    is pinned are checked; a file the agent reads or edits is not offered from."""
 
     name = "notices.link-pin"
     hook = HookEventName.POST_TOOL_USE
@@ -23,7 +23,7 @@ class LinkPinRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.category in READ_TOOLS:
+        if tool is None or tool.category in FILE_TOOLS:
             return RuleAnswer.allowed()
         line = tool.shell.line if tool.shell is not None else ""
-        return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, f"{line}\n{self.check.joined_text(hook.event.raw.get('tool_response'))}"))
+        return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, line, self.check.joined_text(hook.event.raw.get("tool_response"))))

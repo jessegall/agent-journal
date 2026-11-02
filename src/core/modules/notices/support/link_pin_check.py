@@ -14,7 +14,7 @@ from core.modules.notices.models.notice import Notice
 from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
 
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
-LOCAL_ADDRESS = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
+LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
 CLAIM_WINDOW_SECONDS = 60
 
@@ -26,10 +26,10 @@ class LinkPinCheck:
     def __init__(self, queries: Queries, clock: Clock) -> None:
         self.queries, self.clock = queries, clock
 
-    def nudges(self, environment_id: int, text: str) -> list[Nudge]:
-        if self.claims_unmade_pin(environment_id, text):
+    def nudges(self, environment_id: int, agent_text: str, tool_output: str = "") -> list[Nudge]:
+        if self.claims_unmade_pin(environment_id, agent_text):
             return [UNPINNED_CLAIM.nudge()]
-        unpinned = self.first_unpinned(environment_id, text)
+        unpinned = self.first_unpinned(environment_id, f"{agent_text}\n{tool_output}")
         if unpinned is None:
             return []
         nudge = LINK_PIN_REQUEST.nudge(url=unpinned)
