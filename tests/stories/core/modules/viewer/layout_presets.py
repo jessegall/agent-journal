@@ -2,7 +2,7 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
-SHAPE = "'{\"windows\": [\"notes.board\"], \"active\": \"notes.board\"}'"
+SHAPE = "'{\"tabs\": [\"notes.board\"], \"active\": \"notes.board\", \"width\": \"full\"}'"
 SAVE = f"person-preset save --page home --name Mine --shape {SHAPE} --environment main"
 
 
@@ -73,3 +73,10 @@ def test_a_shape_that_is_no_layout_is_refused(new_story):
 def test_renaming_a_preset_that_does_not_exist_is_refused(new_story):
     window = window_story(new_story)
     window.story.expect_refusal("person-preset rename 99 --name Review", "99", actor=window.story.user)
+
+
+def test_the_viewers_own_tree_with_a_split_and_pane_options_is_saved_as_it_came(new_story):
+    window = window_story(new_story)
+    tree = '{"dir":"row","r":0.5,"a":{"tabs":["notes.board"],"active":"notes.board","width":"full"},"b":{"tabs":["notes.board"],"active":"notes.board","width":"contained"}}'
+    window.story.expect_success(f"person-preset save --page home --name Split --shape '{tree}' --environment main", actor=window.story.user)
+    window.story.expect_text("person-preset list --page home --json --environment main", "contained", actor=window.story.user)

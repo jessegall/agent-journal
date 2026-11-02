@@ -33,24 +33,22 @@ class WorktreeGit:
     def head(self, folder: str) -> str:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
 
-    def rebase(self, worktree: Worktree) -> tuple[str, ...]:
-        finished = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch)
-        while finished.returncode != 0:
-            conflicts = tuple(self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
-            if not conflicts or not all(BUILT_FOLDER in path for path in conflicts):
-                self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
-                return conflicts
-            finished = self.rebase_past_built_files(worktree, conflicts)
-        return ()
+    def sync(self, worktree: Worktree) -> tuple[str, ...]:
+        if self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-edit", worktree.base_branch).returncode == 0:
+            return ()
+        conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
+        for path in (path for path in conflicts if BUILT_FOLDER in path):
+            self.use_branch_file(worktree, path)
+        source_conflicts = tuple(path for path in conflicts if BUILT_FOLDER not in path)
+        if not source_conflicts:
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
+        return source_conflicts
 
-    def rebase_past_built_files(self, worktree: Worktree, conflicts: tuple[str, ...]) -> subprocess.CompletedProcess[str]:
-        for path in conflicts:
-            if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--ours", "--", path).returncode == 0:
-                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)
-            else:
-                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-f", "--", path)
-        is_empty = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0
-        return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "-c", "core.editor=true", "rebase", "--skip" if is_empty else "--continue")
+    def use_branch_file(self, worktree: Worktree, path: str) -> None:
+        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--theirs", "--", path).returncode == 0:
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)
+        else:
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-f", "--", path)
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())

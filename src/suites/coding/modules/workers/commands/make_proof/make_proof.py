@@ -11,3 +11,4 @@ class MakeProof(Command[Proof]):
 
     point: int
     text: str
+    test_command: str = ""

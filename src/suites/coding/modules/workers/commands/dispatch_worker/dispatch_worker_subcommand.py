@@ -12,8 +12,8 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch <task> [--library-link <folder>] [--library-copy <folder>]`: a worker for the
-    task."""
+    """`journal worker dispatch <task> [<task> ...] [--library-link <folder>] [--library-copy <folder>]`: a worker
+    for the tasks, which it takes one by one."""
 
     cli_name = "worker"
     name = "dispatch"
@@ -22,13 +22,13 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         self.home = home
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("task_id", type=int)
+        parser.add_argument("task_ids", type=int, nargs="+")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
-        return DispatchWorker(arguments.task_id, tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program)
+        return DispatchWorker(arguments.task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, tuple(arguments.task_ids[1:]))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, WorkerLaunch):

@@ -7,8 +7,8 @@ from core.base.viewer.layout_tabs import LayoutTabs
 LayoutShape = LayoutTabs | LayoutSplit
 
 
-def tabs(*windows: str) -> LayoutTabs:
-    return LayoutTabs(tuple(windows), windows[0])
+def tabs(*windows: str, active: str = "") -> LayoutTabs:
+    return LayoutTabs(tuple(windows), active or windows[0])
 
 
 def split(direction: str, share: float, first: LayoutShape, second: LayoutShape) -> LayoutSplit:

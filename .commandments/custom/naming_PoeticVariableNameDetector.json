@@ -22,7 +22,7 @@
                 ]
             },
             {
-                "nameMatches": "^(object|glob|tmp_path|do_[A-Z]+)$"
+                "nameMatches": "^(object|glob|tmp_path|delegated_to|do_[A-Z]+)$"
             },
             {
                 "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"

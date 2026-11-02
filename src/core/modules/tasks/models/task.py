@@ -32,6 +32,7 @@ class Task(Model):
     outcome: str = ""
     started_at: Timestamp | None = None
     closed_at: Timestamp | None = None
+    delegated_to: int | None = None
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
