@@ -105,6 +105,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         stale = self.journal_server().context.code_version.is_stale()
         self.timing.stamp("stale_checked")
         if stale:
+            self.journal_server().context.files.mark_restart()
             self.close_with_json(409, {"error": "newer code: the server restarts, send the request again"})
             self.journal_server().release_files()
             return

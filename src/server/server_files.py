@@ -17,8 +17,9 @@ def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
     the server's whole life or, for a while, by a helper; its pid file and the pid of the tunnel program it
-    started; and the maintenance mark a change of the code keeps while the server is stopped, which tells a
-    client to start none. Only the server that keeps the lock removes a leftover socket, and a stopping server
+    started; the maintenance mark a change of the code keeps while the server is stopped, which tells a client
+    to start none; and the restart mark from a stop for new code until the next server takes requests, which
+    makes a hook wait. Only the server that keeps the lock removes a leftover socket, and a stopping server
     removes the socket and pid file only while the pid file still names it."""
 
     def __init__(self, home: JournalHome) -> None:
@@ -28,6 +29,7 @@ class ServerFiles:
         self.log = home.folder / "runtime" / "server.log"
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.folder / "run-lock"
+        self.restart_mark = home.folder / "server-restarting"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
 
@@ -94,6 +96,12 @@ class ServerFiles:
 
     def clear_maintenance(self) -> None:
         self.maintenance.unlink(missing_ok=True)
+
+    def mark_restart(self) -> None:
+        self.restart_mark.write_text(str(os.getpid()))
+
+    def clear_restart(self) -> None:
+        self.restart_mark.unlink(missing_ok=True)
 
     def mark_run_lock(self) -> None:
         self.run_lock.write_text(str(os.getpid()))

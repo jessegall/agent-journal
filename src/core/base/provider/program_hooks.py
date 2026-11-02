@@ -7,7 +7,8 @@ from core.base.provider.provider import Provider
 from core.base.type_guards import is_list, is_mapping
 
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
-HOOK_TIMEOUT_SECONDS = 60
+# Longer than the hook program's wait for a restarting server and its last ask, so the program never kills that wait.
+HOOK_TIMEOUT_SECONDS = 90
 
 
 @dataclass(frozen=True)

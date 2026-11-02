@@ -117,6 +117,7 @@ def main(argv: list[str]) -> int:
     health_thread.start()
     backup_thread.wake()
     backup_thread.start()
+    files.clear_restart()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)

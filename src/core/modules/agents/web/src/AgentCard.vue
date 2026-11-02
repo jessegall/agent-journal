@@ -79,7 +79,7 @@ const opened = ref(false);
     cursor: pointer;
 }
 
-.agent-card:hover {
+.agent-card[aria-expanded="false"]:hover {
     background: var(--hover);
 }
 
