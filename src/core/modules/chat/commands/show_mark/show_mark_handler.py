@@ -11,9 +11,9 @@ DETAIL_CHARACTERS = 80
 
 
 class ShowMarkHandler(Handler[ShowMark, ChatMark]):
-    """Makes the mark, or edits the shown mark of the same key in the environment and ends it when told
-    to; the detail is cut to its first 80 characters and the lines keep all of it, and a mark that ended
-    is never edited."""
+    """Makes the mark, or edits the shown mark of the same key in the environment, its variant too, and ends
+    it when told to; the detail is cut to its first 80 characters and the lines keep all of it, and a mark
+    that ended is never edited."""
 
     command = ShowMark
 
@@ -31,6 +31,6 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
                                                  fraction=command.fraction, state=ChatMarkState.ENDED if command.ended else ChatMarkState.SHOWN, ended_at=ended_at), context)
         if existing.state is ChatMarkState.ENDED:
             raise Refusal(f"chat mark {command.key} has ended", "show a mark under a new key")
-        edited = existing.changed(agent_id=command.agent_id, text=command.text, detail=detail, lines=command.detail, target_model=command.row_model, target_id=command.row_id,
+        edited = existing.changed(agent_id=command.agent_id, variant=command.variant.value, text=command.text, detail=detail, lines=command.detail, target_model=command.row_model, target_id=command.row_id,
                                   outcome=command.outcome, figure=command.figure, fraction=command.fraction)
         return self.repository.save(edited.end(context.timestamp, context.actor) if command.ended else edited, context)
