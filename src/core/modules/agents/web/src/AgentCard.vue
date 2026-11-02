@@ -42,9 +42,7 @@ function openTask(id) {
         <span class="agent-head">
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
-            <template v-if="facts?.given_name">
-                <span class="agent-name" data-agent-name>{{ facts.given_name }}</span>
-            </template>
+            <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
             <span class="agent-time">{{ runTime }}</span>
             <Icon :class="['agent-chevron', {opened}]" name="caret" :size="12" />
         </span>
