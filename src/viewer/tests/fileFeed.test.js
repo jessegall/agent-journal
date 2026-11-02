@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
@@ -68,5 +70,39 @@ test("an edit kept before the changed lines were kept draws as its header alone"
     const element = await mounted(FileFeed, context({"file-edit list": page([{...EDIT(1, "old.py"), rows: "[]"}])}, 2));
     await settle();
     expect(element.querySelector(".diff-card").classList.contains("folded")).toBe(true);
+});
+
+test("in the view menu a checked and an unchecked item start their label at the same place", async () => {
+    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2);
+    window.setting = async () => ({headers: true});
+    const element = await mounted(FileFeed, window);
+    document.body.append(element);
+    await settle();
+    element.querySelector("[data-feed-view]").click();
+    await settle();
+    const checked = document.querySelector('[data-feed-toggle="headers"]');
+    const unchecked = document.querySelector('[data-feed-toggle="flush"]');
+    const action = document.querySelector("[data-feed-expand]");
+    expect(checked.children[0].className).toBe("menu-item-check");
+    expect(checked.children[0].textContent).toBe("✓");
+    for (const item of [unchecked, action]) {
+        expect(item.children[0].className).toBe("menu-item-check");
+        expect(item.children[0].textContent).toBe("");
+    }
+    expect(checked.textContent).toBe("✓Headers only");
+    expect(unchecked.textContent).toBe("Flush");
+});
+
+test("in the view menu the Lines choices go below their label", async () => {
+    const element = await mounted(FileFeed, context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2));
+    document.body.append(element);
+    await settle();
+    element.querySelector("[data-feed-view]").click();
+    await settle();
+    const lines = document.querySelector(".feed-bar-lines");
+    expect(lines.children[0].textContent).toBe("Lines");
+    expect(lines.children[1].textContent).toContain("All");
+    const source = readFileSync(resolve(__dirname, "../../suites/coding/web/src/FeedBar.vue"), "utf8");
+    expect(source).toMatch(/\.feed-bar-lines \{[^}]*flex-direction: column;/);
 });
 
