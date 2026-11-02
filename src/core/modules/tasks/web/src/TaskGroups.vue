@@ -143,7 +143,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                             </template>
                             <span class="task-title">{{ row.title }}</span>
                             <template v-if="group.state === 'delegated'">
-                                <span class="task-worker" :title="`Delegated to agent ${row.delegated_to}, in state ${row.state}`" data-task-worker>Worker {{ row.delegated_to }} · {{ row.state }}</span>
+                                <span class="task-worker" :title="`Delegated to agent ${row.delegated_to}, in state ${row.state}`" data-task-worker>Worker {{ row.delegated_to }}</span>
                             </template>
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>
