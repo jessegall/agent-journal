@@ -11,8 +11,8 @@ class FitnessMeasure:
     label: str
     value: float | None
     pass_level: float | None
-    closeness: float
+    pass_share: float
     weight: int
 
     def json(self) -> Mapping[str, object]:
-        return {"key": self.key, "label": self.label, "value": self.value, "pass_level": self.pass_level, "closeness": self.closeness, "weight": self.weight}
+        return {"key": self.key, "label": self.label, "value": self.value, "pass_level": self.pass_level, "pass_share": self.pass_share, "weight": self.weight}

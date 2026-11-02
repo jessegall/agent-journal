@@ -2279,7 +2279,7 @@ function squire_chase(pose, stance, t) {
     pose.offsetAll([reach, 0, 0]);
 }
 
-// Each voice's one pointed remark after a long wait on the user, played once
+// Each voice's one pointed nudge after a long wait on the user, played once
 // the butler taps his foot, patiently
 function butler_pointed(pose, stance, u) {
     const tap = TAP_LIFT * Math.max(waveOf(3 * u), 0) * swell(u, 0, 1);

@@ -73,7 +73,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
                     <li>
                         <button type="button" class="search-hit" data-hit :disabled="!windowOf(hit)" @click="context.open(windowOf(hit))">
                             <span class="search-hit-name">{{ hit.cli_name }} {{ hit.id }}</span>
-                            <span class="search-hit-passage">{{ hit.passage }}</span>
+                            <span class="search-hit-excerpt">{{ hit.excerpt }}</span>
                         </button>
                     </li>
                 </template>
@@ -165,7 +165,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
     color: var(--text-3);
 }
 
-.search-hit-passage {
+.search-hit-excerpt {
     flex: 1;
     min-width: 0;
 }

@@ -28,7 +28,7 @@ class NoGit(DriverRule):
     """Lets every tool use through in this sample."""
 
     name = "coding.no-git"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -126,7 +126,7 @@ def test_a_rule_a_driver_lists_may_not_name_patterns_and_a_rule_a_module_adds_mu
 
 def test_the_entries_keep_sync_order_limits_and_rules_then_overlay_rules_then_added_rules():
     entries = DriverEntries().rules([module("coding", suites=[Coding], drivers=[BuilderDriver], overlays=[Wait], driver_rules=[AnyMain])])
-    assert [(entry.name, entry.owner, entry.unsilenced, entry.position) for entry in entries] == [
+    assert [(entry.name, entry.owner, entry.exempt, entry.position) for entry in entries] == [
         ("coding.no-git", "coding.builder", True, 1), ("coding.carry-on", "coding.builder", False, 2), ("coding.carry-on", "waits.wait", False, 3),
         ("safety.any-main", "coding", False, 4)]
 

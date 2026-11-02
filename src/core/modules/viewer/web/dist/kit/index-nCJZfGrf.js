@@ -1289,7 +1289,7 @@ class gs {
   teams() {
     return this.get("/teams");
   }
-  // connects to a team by its server's URL: a new server's makes this person its admin, an invitation URL a member, a bare URL logs in
+  // connects to a team by its server's URL: a new server's makes this person its admin, an pair_code URL a member, a bare URL logs in
   connectTeam(t) {
     return this.post("/team/connect", t, Fe);
   }
@@ -1297,7 +1297,7 @@ class gs {
   disconnectTeam(t = "") {
     return this.post("/team/disconnect", { team: t });
   }
-  // an invitation URL for a person's email; admins only
+  // an pair_code URL for a person's email; admins only
   inviteToTeam(t, n = "") {
     return this.post("/team/invite", { email: t, team: n });
   }
@@ -8140,7 +8140,7 @@ const ev = /* @__PURE__ */ Zg(Qg), tv = ["width", "height", "viewBox"], nv = ["w
       }, null, 8, sv)
     ], 8, tv));
   }
-}, py = /* @__PURE__ */ J(av, [["__scopeId", "data-v-489f0852"]]), my = Jo(() => import("./VoiceFigure-cJdAGejD.js").then((e) => e.V)), gy = "1.0.0", vy = "3.5";
+}, py = /* @__PURE__ */ J(av, [["__scopeId", "data-v-489f0852"]]), my = Jo(() => import("./VoiceFigure-Hwak3g26.js").then((e) => e.V)), gy = "1.0.0", vy = "3.5";
 export {
   uv as $,
   Iv as A,

@@ -102,7 +102,7 @@ class RemovalRule(DriverRule):
     """The lead removes no folder with rm -rf."""
 
     name = "samples.removal-limit"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

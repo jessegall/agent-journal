@@ -39,5 +39,5 @@ class SendMessageHandler(Handler[SendMessage, Message]):
                           parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
                           text=command.text, files=names, metadata=metadata)
         saved = self.repository.save(message, context)
-        self.files.adopt(saved.id, command.files)
+        self.files.attach(saved.id, command.files)
         return saved

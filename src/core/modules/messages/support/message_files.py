@@ -28,7 +28,7 @@ class MessageFiles:
             raise Refusal("two of the files have the same name", "rename one")
         return names
 
-    def adopt(self, message_id: int, pending: tuple[str, ...]) -> None:
+    def attach(self, message_id: int, pending: tuple[str, ...]) -> None:
         folder = self.home.message_files(message_id)
         folder.mkdir(parents=True, exist_ok=True)
         for file in pending:

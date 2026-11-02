@@ -32,10 +32,10 @@ def test_a_hit_shows_a_short_passage_around_the_first_word_with_its_spaces_folde
     story = new_story(fixture=UserJoined)
     story.run(f'task make "Long one" --brief "{LONG_BRIEF}" --environment main', actor=story.user)
     hit = story.run('search find rounding', actor=story.agent).output_text.strip()
-    passage = hit.removeprefix("task 1: ")
-    assert passage.startswith("…") and passage.endswith("…"), hit
-    assert "the cents rounding breaks" in passage and "  " not in passage and "\n" not in passage, hit
-    assert len(passage) <= 162, len(passage)
+    excerpt = hit.removeprefix("task 1: ")
+    assert excerpt.startswith("…") and excerpt.endswith("…"), hit
+    assert "the cents rounding breaks" in excerpt and "  " not in excerpt and "\n" not in excerpt, hit
+    assert len(excerpt) <= 162, len(excerpt)
 
 
 def test_the_model_option_keeps_the_hits_to_the_models_named(new_story):

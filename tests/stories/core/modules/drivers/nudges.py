@@ -32,8 +32,8 @@ from tests.stories.core.support.fixtures import UserJoined
 
 
 def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
-    nudge = NudgeDeclaration("shop.total", NudgeType.REMARK, "the total is {total}").nudge(total=12)
-    assert (nudge.key, nudge.type, nudge.text, nudge.labelled) == ("shop.total", NudgeType.REMARK, "the total is 12", "journal: the total is 12")
+    nudge = NudgeDeclaration("shop.total", NudgeType.NUDGE, "the total is {total}").nudge(total=12)
+    assert (nudge.key, nudge.type, nudge.text, nudge.labelled) == ("shop.total", NudgeType.NUDGE, "the total is 12", "journal: the total is 12")
 
 
 def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays():
@@ -42,7 +42,7 @@ def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays()
 
 
 def test_each_type_can_be_declared():
-    assert [item.value for item in NudgeType] == ["instruction", "remark", "refusal"]
+    assert [item.value for item in NudgeType] == ["instruction", "nudge", "refusal"]
 
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):

@@ -13,7 +13,7 @@ class RuleAnswers:
     layers: Sequence[str]
     rules: Sequence[RuleRecord]
     delays_lines: bool = False
-    withheld_lines: frozenset[tuple[str, str]] = frozenset()
+    skipped_lines: frozenset[tuple[str, str]] = frozenset()
 
     @property
     def answered(self) -> list[RuleRecord]:
@@ -64,7 +64,7 @@ class RuleAnswers:
         for rule in self.answered:
             for nudge in rule.answer.line_nudges if rule.answer is not None else ():
                 first_rule.setdefault((nudge.key, nudge.text), rule.name)
-        return [(name, text) for (key, text), name in first_rule.items() if (key, text) not in self.withheld_lines]
+        return [(name, text) for (key, text), name in first_rule.items() if (key, text) not in self.skipped_lines]
 
     @property
     def line_nudges(self) -> list[Nudge]:
@@ -72,7 +72,7 @@ class RuleAnswers:
 
     @property
     def delivered_nudges(self) -> list[Nudge]:
-        delivered = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.withheld_lines}
+        delivered = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.skipped_lines}
         return list(delivered.values())
 
     @property

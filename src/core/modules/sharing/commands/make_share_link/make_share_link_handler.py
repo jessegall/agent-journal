@@ -22,7 +22,7 @@ from core.modules.sharing.support.share_password import SharePassword
 TOKEN_BYTES = 24
 LINK_LIFETIME_DAYS = 7
 LINK_PATH = "/viewer/share/"
-ENDLESS = "never"
+UNLIMITED = "never"
 SPANS = {"h": timedelta(hours=1), "d": timedelta(days=1)}
 
 
@@ -54,7 +54,7 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
         return ShareInvitation(link.id, link.state.value, None, None, link.expires_at)
 
     def end_time(self, ends: str) -> Timestamp | None:
-        if ends == ENDLESS:
+        if ends == UNLIMITED:
             return None
         if not re.fullmatch(r"[1-9]\d*[hd]", ends):
             raise Refusal(f"a link cannot end after {ends!r}", "give a number of hours or days, such as 12h or 7d, or never")

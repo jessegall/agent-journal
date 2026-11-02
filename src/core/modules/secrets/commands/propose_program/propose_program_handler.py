@@ -19,7 +19,7 @@ class ProposeProgramHandler(Handler[ProposeProgram, SecretProgram]):
 
     def handle(self, command: ProposeProgram, context: Context) -> SecretProgram:
         secret = self.secrets.find(command.secret_id)
-        if SecretPrograms.is_withheld(command.program):
+        if SecretPrograms.is_skipped(command.program):
             raise Refusal(f"a secret never goes to {command.program}", "propose the program that uses it, named bare, such as curl or gh")
         if command.program in (*secret.programs, *secret.proposed):
             return SecretProgram(secret, command.program, False)

@@ -1,5 +1,5 @@
 from core.base.driver.nudge import Nudge
-from core.modules.messages.support.message_nudges import MESSAGE_ADVICE, REPLY_COMMAND, IMAGE_TAG_REQUEST
+from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
 import re
 from pathlib import PurePath
 
@@ -46,7 +46,7 @@ class MessageReadRule(DriverRule):
             all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
-        nudges = [MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
+        nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
         return RuleAnswer.with_nudges(*nudges).running(*(ReadMessage(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:

@@ -10,6 +10,6 @@ class PhoneSeeder(Seeder):
     """Pairs a phone with the viewer as the person."""
 
     def seed(self, demo: Demo) -> None:
-        invitation = CODE_LINE.search(demo.run("phone pair", demo.people["user"]))
-        if invitation is not None:
-            demo.run(f"phone redeem {invitation[1]} --token-digest demo-phone --name Demo-phone")
+        pair_code = CODE_LINE.search(demo.run("phone pair", demo.people["user"]))
+        if pair_code is not None:
+            demo.run(f"phone redeem {pair_code[1]} --token-digest demo-phone --name Demo-phone")

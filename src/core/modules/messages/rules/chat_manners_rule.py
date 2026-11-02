@@ -9,22 +9,22 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.messages.support.message_nudges import PARAGRAPH_REMARK, EM_DASH_REMARK, SHOP_TALK_REMARK, THIRD_PERSON_REMARK
+from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE, EM_DASH_NUDGE, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE
 
 LONG_TEXT_CHARACTERS = 400
 SENTENCE_COUNT = 3
 SENTENCE_END = ". "
 PARAGRAPH_BREAK = "\n\n"
-REMARK_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
-    (re.compile(r"\bjournal (task|plan|message|question|memory|rule|reminder|sequence|worker|check|skill) [a-z]+\b|\[journal\]", re.I), SHOP_TALK_REMARK),
-    (re.compile(r"\bthe user\b", re.I), THIRD_PERSON_REMARK),
-    (re.compile(r"—.*—", re.S), EM_DASH_REMARK),
+NUDGE_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
+    (re.compile(r"\bjournal (task|plan|message|question|memory|rule|reminder|sequence|worker|check|skill) [a-z]+\b|\[journal\]", re.I), SHOP_TALK_NUDGE),
+    (re.compile(r"\bthe user\b", re.I), THIRD_PERSON_NUDGE),
+    (re.compile(r"—.*—", re.S), EM_DASH_NUDGE),
 )
 
 
 class ChatMannersRule(DriverRule):
     """The main agent's newest chat message is read for shop talk, the third person, em dashes and paragraphs
-    that run together, and the agent is told of each; each remark waits ten minutes before it is said again.
+    that run together, and the agent is told of each; each nudge waits ten minutes before it is said again.
     """
 
     name = "messages.chat-manners"
@@ -40,7 +40,7 @@ class ChatMannersRule(DriverRule):
         if not rows:
             return RuleAnswer.allowed()
         text = rows[0].text.strip()
-        declarations = [declaration for pattern, declaration in REMARK_PATTERNS if pattern.search(text)]
+        declarations = [declaration for pattern, declaration in NUDGE_PATTERNS if pattern.search(text)]
         if len(text) >= LONG_TEXT_CHARACTERS and PARAGRAPH_BREAK not in text and text.count(SENTENCE_END) >= SENTENCE_COUNT:
-            declarations.append(PARAGRAPH_REMARK)
+            declarations.append(PARAGRAPH_NUDGE)
         return RuleAnswer.with_nudges(*(declaration.nudge() for declaration in declarations))

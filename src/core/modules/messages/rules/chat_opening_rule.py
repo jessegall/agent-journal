@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.messages.support.message_nudges import JOURNAL_DISCRETION, JOURNAL_LAWS, JOURNAL_LINE_NOTE
+from core.modules.messages.support.message_nudges import JOURNAL_CHAT_RULE, JOURNAL_LAWS, JOURNAL_LINE_NOTE
 
 
 class ChatOpeningRule(DriverRule):
@@ -17,4 +17,4 @@ class ChatOpeningRule(DriverRule):
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(JOURNAL_LINE_NOTE.nudge(), JOURNAL_DISCRETION.nudge(), JOURNAL_LAWS.nudge())
+        return RuleAnswer.with_nudges(JOURNAL_LINE_NOTE.nudge(), JOURNAL_CHAT_RULE.nudge(), JOURNAL_LAWS.nudge())

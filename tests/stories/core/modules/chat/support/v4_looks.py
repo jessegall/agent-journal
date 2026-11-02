@@ -21,11 +21,11 @@ class V4Appearance:
     group_label: str = ""
 
 
-THOUGHT = V4Appearance("messages.thought", "thoughts", "messages.thoughts", "agent", "group", "summary")
+SUMMARY = V4Appearance("messages.thought", "thoughts", "messages.thoughts", "agent", "group", "summary")
 FILED = V4Appearance("messages.filed", "filed", "messages.filed", "work", "group", "filed")
 TASK = V4Appearance("tasks.task", "task_moves", "tasks.tasks", "work", "group", "task_start")
 PLAN = V4Appearance("plans.plan", "plans", "plans.plans", "work", "group", "plan")
-IMPASSE = V4Appearance("waits.impasse", "stuck", "waits.impasse", "agent", "group", "stuck")
+REPORTED_WAIT = V4Appearance("waits.impasse", "stuck", "waits.impasse", "agent", "group", "stuck")
 SUBAGENT = V4Appearance("agents.subagent", "subagents", "agents.subagents", "agent", "group", "subagent", "{count} helper updates")
 
 

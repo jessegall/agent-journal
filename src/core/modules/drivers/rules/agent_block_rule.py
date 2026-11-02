@@ -19,7 +19,7 @@ class AgentBlockRule(DriverRule):
     condition is true."""
 
     name = "drivers.agent-block"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]

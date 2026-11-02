@@ -7,10 +7,10 @@ from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 
 
-class ImpasseMarkListener(MarkListener):
-    """When an agent reports it is stuck, the chat shows an impasse mark with the reason it gave."""
+class ReportedWaitMarkListener(MarkListener):
+    """When an agent reports it is stuck, the chat shows a reported wait mark with the reason it gave."""
 
-    name = "waits.impasse-mark"
+    name = "waits.reported-wait-mark"
     event = "wait.create"
     module_name = "journal.core.waits"
 
@@ -18,4 +18,4 @@ class ImpasseMarkListener(MarkListener):
         wait = self.queries.query(Wait).find(event.row_id)
         if wait.type is WaitType.HELP_REQUEST:
             environment_id = self.queries.query(Agent).find(wait.agent_id).environment_id
-            self.show(event, WaitMarkType.IMPASSE, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)
+            self.show(event, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)

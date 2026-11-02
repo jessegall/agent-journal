@@ -6,10 +6,10 @@ from core.modules.dumps.models.enums.item_state import ItemState
 
 @dataclass(frozen=True)
 class VersionFourItem:
-    """What version 4 kept of one piece of a dump: the agent's insight, how it was filed or why it failed, and
+    """What version 4 kept of one piece of a dump: the agent's note on it, how it was filed or why it failed, and
     the rows it became."""
 
-    insight: str = ""
+    agent_note: str = ""
     outcome: str = ""
     failed: str = ""
     refs: tuple[str, ...] = ()
@@ -28,11 +28,11 @@ class VersionFourItem:
             return ItemState.FAILED
         if self.outcome:
             return ItemState.FILED
-        return ItemState.READ if self.insight else ItemState.NEW
+        return ItemState.READ if self.agent_note else ItemState.NEW
 
     @property
     def note(self) -> str:
-        return self.insight if self.state is ItemState.READ else ""
+        return self.agent_note if self.state is ItemState.READ else ""
 
     @property
     def summary(self) -> str:

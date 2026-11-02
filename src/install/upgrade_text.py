@@ -15,11 +15,11 @@ class UpgradeText:
         self.report = report
 
     def table(self, heading: str) -> list[str]:
-        modules = [f"{module}  {rows}  {self.leftovers(module)}" for module, rows in self.report.moved.items()]
+        modules = [f"{module}  {rows}  {self.unmoved(module)}" for module, rows in self.report.moved.items()]
         unclaimed = [f"{table}  {rows} rows" for table, rows in self.report.unclaimed.items()]
         return [heading, HEADER, *modules, UNCLAIMED_HEADING, *unclaimed]
 
-    def leftovers(self, module: str) -> str:
+    def unmoved(self, module: str) -> str:
         tables = [f"{table}: {rows} rows" for table, rows in self.report.module_tables.get(module, {}).items()]
         return "; ".join(tables) or CLEAN_CELL
 

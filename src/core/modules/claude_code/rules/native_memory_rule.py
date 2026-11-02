@@ -14,7 +14,7 @@ class NativeMemoryRule(DriverRule):
     memories."""
 
     name = "claude_code.native-memory"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 

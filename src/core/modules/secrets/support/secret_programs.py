@@ -11,5 +11,5 @@ class SecretPrograms:
     that echoes or copies what it is given."""
 
     @staticmethod
-    def is_withheld(program: str) -> bool:
+    def is_skipped(program: str) -> bool:
         return "/" in program or WRAPPER_PROGRAMS.match(program) is not None

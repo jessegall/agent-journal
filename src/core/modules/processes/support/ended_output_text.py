@@ -28,10 +28,10 @@ class EndedOutputText:
         self.outputs, self.readers, self.folder, self.parts = outputs, readers, folder, parts
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
-        advice = self.advice(process)
+        note = self.note(process)
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
         program = self.read_program(process)
-        draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if advice and program else []
+        draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if note and program else []
         return (ended, *draft, *self.reader_nudges(process))
 
     def result(self, process: Process) -> str:
@@ -59,7 +59,7 @@ class EndedOutputText:
             matches.append(READER_PROGRESS_MISSING.nudge(reader=reader.name, output=process.id))
         return tuple(matches)
 
-    def advice(self, process: Process) -> str:
+    def note(self, process: Process) -> str:
         kept = self.outputs.process(process.id).page(1, 1).rows
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return ""

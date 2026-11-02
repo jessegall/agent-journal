@@ -9,7 +9,7 @@ class WorkerGitRule(DriverRule):
     """A worker runs no git: the journal commits, rebases and merges its worktree."""
 
     name = "workers.no-git"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

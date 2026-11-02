@@ -39,7 +39,7 @@ def test_a_message_left_waiting_lowers_the_score(new_story):
     story.advance(timedelta(minutes=15))
     answer = fitness(story)
     waited = measure(answer, "message_wait")
-    story.expect_rows(waited["value"] == 15, waited["closeness"] == 0.6, answer["score"] == 80)
+    story.expect_rows(waited["value"] == 15, waited["pass_share"] == 0.6, answer["score"] == 80)
 
 
 def test_a_message_read_no_longer_counts(new_story):

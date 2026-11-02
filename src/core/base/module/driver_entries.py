@@ -34,12 +34,12 @@ class DriverEntries:
         declared: list[DriverRuleEntry] = []
         for module in modules:
             for driver in module.drivers:
-                declared += [self.entry(rule, driver.name, unsilenced=rule.unsilenced) for rule in driver.rules]
+                declared += [self.entry(rule, driver.name, exempt=rule.exempt) for rule in driver.rules]
             for overlay in module.overlays:
                 declared += [self.entry(rule, overlay.name) for rule in overlay.rules]
             declared += [self.entry(rule, module.name, essential=rule.essential and module.name == DRIVERS_MODULE) for rule in module.driver_rules]
         return tuple(replace(entry, position=position) for position, entry in enumerate(declared, 1))
 
-    def entry(self, rule: type[DriverRule], owner: str, unsilenced: bool = False, essential: bool = False) -> DriverRuleEntry:
-        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), unsilenced, essential, rule.history,
+    def entry(self, rule: type[DriverRule], owner: str, exempt: bool = False, essential: bool = False) -> DriverRuleEntry:
+        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), exempt, essential, rule.history,
                                rule.essential)

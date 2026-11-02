@@ -9,7 +9,7 @@ from core.modules.search.support.search_result import SearchResult
 
 class SearchFindSubcommand(ReadSubcommand[SearchResult]):
     """`journal search find <terms> [--model task,doc]`: the newest rows that hold every term, each with a
-    short passage around the first."""
+    short excerpt around the first."""
 
     cli_name = "search"
     name = "find"
@@ -26,4 +26,4 @@ class SearchFindSubcommand(ReadSubcommand[SearchResult]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, SearchResult):
-            output.write("\n".join(value.lines()), {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "passage": hit.passage} for hit in value.hits], "total": value.total})
+            output.write("\n".join(value.lines()), {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in value.hits], "total": value.total})

@@ -68,5 +68,5 @@ class DriverRules:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")
         if answer.is_final_allowance and not (entry.is_standing or self.allowances.allowed(entry.name)):
-            return RuleOutcome.raised(f"{entry.name} allowed the hook at once and ended the walk, which only an essential rule or an unsilenced rule may")
+            return RuleOutcome.raised(f"{entry.name} allowed the hook at once and ended the walk, which only an essential rule or an exempt rule may")
         return RuleOutcome.answered(answer)

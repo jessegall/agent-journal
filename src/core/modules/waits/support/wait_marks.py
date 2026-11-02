@@ -5,6 +5,6 @@ from core.base.chat.mark_group import MarkGroup
 from core.modules.waits.models.enums.wait_mark_type import WaitMarkType
 from core.modules.waits.models.enums.wait_mark_variant import WaitMarkVariant
 
-IMPASSE_FAMILY = MarkFamily("waits.impasse", "Agent stuck", "fault", MarkGroup.AGENT)
+REPORTED_WAIT_FAMILY = MarkFamily("waits.impasse", "Agent stuck", "fault", MarkGroup.AGENT)
 
-WAIT_MARKS = [MarkDeclaration(WaitMarkType.IMPASSE, WaitMarkVariant, IMPASSE_FAMILY, "Agent stuck", "stuck", click=MarkClick.OPEN_ROW)]
+WAIT_MARKS = [MarkDeclaration(WaitMarkType.REPORTED_WAIT, WaitMarkVariant, REPORTED_WAIT_FAMILY, "Agent stuck", "stuck", click=MarkClick.OPEN_ROW)]

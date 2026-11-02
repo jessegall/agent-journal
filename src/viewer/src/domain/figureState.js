@@ -57,7 +57,7 @@ export const ASLEEP_AFTER = 120;
 // A tool's pose stays this many seconds after it finishes, so a tool that runs for a moment is still seen.
 export const TOOL_LINGERS = 3;
 
-// How long a wait on the user lasts before the figure makes its one pointed remark, in seconds.
+// How long a wait on the user lasts before the figure makes its one pointed nudge, in seconds.
 export const POINTED_AFTER = 180;
 
 // The held state at `now` (seconds), with when it began; `waitingSince` is when the oldest thing waiting on the user arrived, as its badges
@@ -319,7 +319,7 @@ export function beatsAfter(agent, seenAt) {
 export const EGGS = [
     // the squire runs after a literal bug across the pane when a check goes red
     {clip: "squire_chase", voice: "squire", beat: "failed"},
-    // each voice makes its one pointed remark when the user has kept it waiting a long while
+    // each voice makes its one pointed nudge when the user has kept it waiting a long while
     {clip: "pointed", state: "asking", lasted: POINTED_AFTER},
 ];
 

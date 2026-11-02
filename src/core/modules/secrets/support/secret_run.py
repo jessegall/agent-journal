@@ -56,7 +56,7 @@ class SecretRun:
         name = command[0]
         if "/" in name:
             raise Refusal(f"name the program bare, as {Path(name).name}", "a path could be a file of anyone's making")
-        if SecretPrograms.is_withheld(name):
+        if SecretPrograms.is_skipped(name):
             raise Refusal(f"a secret never goes to {name}", "name the program that uses it, such as curl or gh")
         if name not in secret.programs:
             raise Refusal(f"secret {secret.id} may not go to {name}", f"journal secret propose {secret.id} {name}")

@@ -2,6 +2,6 @@ from enum import StrEnum
 
 
 class WaitMarkVariant(StrEnum):
-    """What an impasse mark says: the agent reported it is stuck."""
+    """What a stuck mark says: the agent reported it is stuck."""
 
     REPORTED = "reported"

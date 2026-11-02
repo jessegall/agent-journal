@@ -43,8 +43,8 @@ class RestoreVersionFour:
 
     def restore(self, backup: Path, lines: list[str]) -> None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        displaced = [f"{self.home.database.name}{suffix}" for suffix in ("", *SIDE_FILES) if (self.home.folder / f"{self.home.database.name}{suffix}").exists()]
-        for name in displaced:
+        moved_names = [f"{self.home.database.name}{suffix}" for suffix in ("", *SIDE_FILES) if (self.home.folder / f"{self.home.database.name}{suffix}").exists()]
+        for name in moved_names:
             shutil.move(self.home.folder / name, self.home.folder / name.replace("version-5", f"version-5.{stamp}", 1))
         shutil.copy2(backup, self.home.folder / DATABASE)
         retired = VersionFourFiles(self.home.folder).retired / CODE_FOLDER

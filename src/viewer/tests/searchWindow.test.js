@@ -2,7 +2,7 @@ import {expect, test} from "vitest";
 import SearchWindow from "../../core/modules/search/web/src/SearchWindow.vue";
 import {context, mounted, settle} from "./support/windowContext.js";
 
-const HITS = {hits: [{cli_name: "task", id: 7, passage: "Round the cart total to cents"}, {cli_name: "doc", id: 2, passage: "How the cart counts money"}], total: 2};
+const HITS = {hits: [{cli_name: "task", id: 7, excerpt: "Round the cart total to cents"}, {cli_name: "doc", id: 2, excerpt: "How the cart counts money"}], total: 2};
 
 async function search(answer, words = "cart total") {
     const window = context({"search find": {ok: true, value: answer}});
@@ -16,10 +16,10 @@ async function search(answer, words = "cart total") {
     return {element, window, opened};
 }
 
-test("typing terms shows the hits with their passage and the total", async () => {
+test("typing terms shows the hits with their excerpt and the total", async () => {
     const {element, window} = await search(HITS);
     expect(window.reads).toEqual([`search find "cart" "total"`]);
-    expect([...element.querySelectorAll("[data-hit]")].map((hit) => [hit.querySelector(".search-hit-name").textContent, hit.querySelector(".search-hit-passage").textContent])).toEqual([
+    expect([...element.querySelectorAll("[data-hit]")].map((hit) => [hit.querySelector(".search-hit-name").textContent, hit.querySelector(".search-hit-excerpt").textContent])).toEqual([
         ["task 7", "Round the cart total to cents"],
         ["doc 2", "How the cart counts money"],
     ]);

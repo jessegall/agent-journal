@@ -7,7 +7,7 @@ from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import Wai
 from core.modules.waits.overlays.help_request_overlay import HelpRequestOverlay
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.models.wait import Wait
-from core.modules.waits.listeners.impasse_mark_listener import ImpasseMarkListener
+from core.modules.waits.listeners.reported_wait_mark_listener import ReportedWaitMarkListener
 from core.modules.waits.listeners.wait_end_listener import WaitEndListener
 from core.modules.waits.support.wait_nudges import WAIT_NUDGES
 from core.modules.waits.support.wait_marks import WAIT_MARKS
@@ -34,7 +34,7 @@ class WaitsModule(Module):
     views = [WaitingRow]
     handlers = [OpenWaitHandler]
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]
-    listeners = [TargetResolutionListener, ImpasseMarkListener, WaitEndListener]
+    listeners = [TargetResolutionListener, ReportedWaitMarkListener, WaitEndListener]
     nudges = WAIT_NUDGES
     marks = WAIT_MARKS
     overlays = [WaitOverlay, HelpRequestOverlay]

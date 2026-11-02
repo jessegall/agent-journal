@@ -19,14 +19,14 @@ class NudgeLog:
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def withheld_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
+    def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         lines = answers.line_nudges
         if not lines:
             return frozenset()
         turn_start = self.turn_start(agent_id)
-        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_withheld(agent_id, nudge, turn_start, timestamp))
+        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_skipped(agent_id, nudge, turn_start, timestamp))
 
-    def is_withheld(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp) -> bool:
+    def is_skipped(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp) -> bool:
         delivered_at = self.record(agent_id, nudge).last_delivered_at
         if delivered_at is None:
             return False

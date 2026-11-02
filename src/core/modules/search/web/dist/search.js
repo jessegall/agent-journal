@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-b8eba3bea6a9")) { const style = document.createElement("style"); style.id = "window-styles-b8eba3bea6a9"; style.textContent = ".search[data-v-66d955f0]{display:flex;flex-direction:column;gap:14px}.search-form[data-v-66d955f0]{display:flex;gap:10px;align-items:center;color:var(--text-3)}.search-input[data-v-66d955f0]{flex:1;max-width:520px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.search-chips[data-v-66d955f0]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-66d955f0]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-66d955f0]{background:var(--accent);color:#fff}.search-hits[data-v-66d955f0]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-66d955f0]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-66d955f0]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-66d955f0]:disabled{cursor:default}.search-hit-name[data-v-66d955f0]{flex:none;width:110px;color:var(--text-3)}.search-hit-passage[data-v-66d955f0]{flex:1;min-width:0}.search-note[data-v-66d955f0]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { ref as d, computed as C, openBlock as n, createElementBlock as l, createElementVNode as i, withModifiers as q, createVNode as S, unref as h, withDirectives as N, vModelText as B, withCtx as V, createTextVNode as W, Fragment as g, renderList as $, normalizeClass as j, toDisplayString as o, createCommentVNode as b, createBlock as O } from "vue";
+if (!document.getElementById("window-styles-f0b4fada76fe")) { const style = document.createElement("style"); style.id = "window-styles-f0b4fada76fe"; style.textContent = ".search[data-v-71001cb2]{display:flex;flex-direction:column;gap:14px}.search-form[data-v-71001cb2]{display:flex;gap:10px;align-items:center;color:var(--text-3)}.search-input[data-v-71001cb2]{flex:1;max-width:520px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.search-chips[data-v-71001cb2]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-71001cb2]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-71001cb2]{background:var(--accent);color:#fff}.search-hits[data-v-71001cb2]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-71001cb2]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-71001cb2]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-71001cb2]:disabled{cursor:default}.search-hit-name[data-v-71001cb2]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-71001cb2]{flex:1;min-width:0}.search-note[data-v-71001cb2]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { ref as h, computed as C, openBlock as n, createElementBlock as l, createElementVNode as i, withModifiers as q, createVNode as S, unref as d, withDirectives as N, vModelText as B, withCtx as V, createTextVNode as W, Fragment as w, renderList as x, normalizeClass as j, toDisplayString as o, createCommentVNode as b, createBlock as O } from "vue";
 import { useWindow as z, Icon as D, Btn as I, Skeleton as E } from "@journal/window-kit";
 const F = (v, p) => {
   const u = v.__vccOpts || v;
@@ -20,7 +20,7 @@ const F = (v, p) => {
   key: 3,
   class: "search-note",
   "data-no-hits": ""
-}, G = { class: "search-hits" }, H = ["disabled", "onClick"], J = { class: "search-hit-name" }, K = { class: "search-hit-passage" }, P = {
+}, G = { class: "search-hits" }, H = ["disabled", "onClick"], J = { class: "search-hit-name" }, K = { class: "search-hit-excerpt" }, P = {
   class: "search-note",
   "data-total": ""
 }, Q = {
@@ -35,28 +35,28 @@ const F = (v, p) => {
       sequence: "sequences.sequences",
       trigger: "triggers.triggers",
       check: "checks.checks"
-    }, u = z(), r = d(""), c = d(/* @__PURE__ */ new Set()), s = d(null), _ = d(""), m = d(!1), w = C(() => {
+    }, u = z(), r = h(""), c = h(/* @__PURE__ */ new Set()), s = h(null), _ = h(""), m = h(!1), g = C(() => {
       var a;
       return [.../* @__PURE__ */ new Set([...(((a = s.value) == null ? void 0 : a.hits) || []).map((t) => t.cli_name), ...c.value])].sort();
     });
-    async function f() {
+    async function k() {
       const a = r.value.trim().split(/\s+/).filter(Boolean);
       if (!a.length) return void (s.value = null);
       m.value = !0;
-      const t = c.value.size ? ` --model ${[...c.value].join(",")}` : "", e = await u.read(`search find ${a.map((k) => `"${k}"`).join(" ")}${t}`);
+      const t = c.value.size ? ` --model ${[...c.value].join(",")}` : "", e = await u.read(`search find ${a.map((f) => `"${f}"`).join(" ")}${t}`);
       m.value = !1, _.value = e.ok ? "" : e.error, s.value = e.ok ? e.value : null;
     }
-    function x(a) {
+    function $(a) {
       const t = new Set(c.value);
-      t.has(a) ? t.delete(a) : t.add(a), c.value = t, f();
+      t.has(a) ? t.delete(a) : t.add(a), c.value = t, k();
     }
     const y = (a) => p[a.cli_name] || "";
     return (a, t) => (n(), l("div", M, [
       i("form", {
         class: "search-form",
-        onSubmit: q(f, ["prevent"])
+        onSubmit: q(k, ["prevent"])
       }, [
-        S(h(D), {
+        S(d(D), {
           name: "search",
           size: 14
         }),
@@ -69,11 +69,11 @@ const F = (v, p) => {
         }, null, 512), [
           [B, r.value]
         ]),
-        S(h(I), {
+        S(d(I), {
           kind: "primary",
           small: "",
           "data-search-go": "",
-          onClick: f
+          onClick: k
         }, {
           default: V(() => [...t[1] || (t[1] = [
             W("Search", -1)
@@ -81,21 +81,21 @@ const F = (v, p) => {
           _: 1
         })
       ], 32),
-      w.value.length ? (n(), l("div", T, [
-        (n(!0), l(g, null, $(w.value, (e) => (n(), l("button", {
+      g.value.length ? (n(), l("div", T, [
+        (n(!0), l(w, null, x(g.value, (e) => (n(), l("button", {
           key: e,
           type: "button",
           class: j(["search-chip", { on: c.value.has(e) }]),
           "data-model": e,
-          onClick: (k) => x(e)
+          onClick: (f) => $(e)
         }, o(e), 11, L))), 128))
       ])) : b("", !0),
-      m.value ? (n(), O(h(E), {
+      m.value ? (n(), O(d(E), {
         key: 1,
         shape: "rows"
-      })) : _.value ? (n(), l("p", U, o(_.value), 1)) : s.value && !s.value.hits.length ? (n(), l("p", A, "Nothing here holds all of: " + o(r.value.trim()), 1)) : s.value ? (n(), l(g, { key: 4 }, [
+      })) : _.value ? (n(), l("p", U, o(_.value), 1)) : s.value && !s.value.hits.length ? (n(), l("p", A, "Nothing here holds all of: " + o(r.value.trim()), 1)) : s.value ? (n(), l(w, { key: 4 }, [
         i("ul", G, [
-          (n(!0), l(g, null, $(s.value.hits, (e) => (n(), l("li", {
+          (n(!0), l(w, null, x(s.value.hits, (e) => (n(), l("li", {
             key: `${e.cli_name}:${e.id}`
           }, [
             i("button", {
@@ -103,10 +103,10 @@ const F = (v, p) => {
               class: "search-hit",
               "data-hit": "",
               disabled: !y(e),
-              onClick: (k) => h(u).open(y(e))
+              onClick: (f) => d(u).open(y(e))
             }, [
               i("span", J, o(e.cli_name) + " " + o(e.id), 1),
-              i("span", K, o(e.passage), 1)
+              i("span", K, o(e.excerpt), 1)
             ], 8, H)
           ]))), 128))
         ]),
@@ -114,7 +114,7 @@ const F = (v, p) => {
       ], 64)) : b("", !0)
     ]));
   }
-}, Y = /* @__PURE__ */ F(Q, [["__scopeId", "data-v-66d955f0"]]);
+}, Y = /* @__PURE__ */ F(Q, [["__scopeId", "data-v-71001cb2"]]);
 export {
   Y as default
 };

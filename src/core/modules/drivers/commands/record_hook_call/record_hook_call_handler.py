@@ -60,7 +60,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("hook_built")
         with self.settings.keep_rows():
             answers = self.rules.ask(hook)
-        answers = replace(answers, withheld_lines=self.nudges.withheld_lines(agent.id, answers, context.timestamp))
+        answers = replace(answers, skipped_lines=self.nudges.skipped_lines(agent.id, answers, context.timestamp))
         self.timing.stamp("rules_asked")
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")

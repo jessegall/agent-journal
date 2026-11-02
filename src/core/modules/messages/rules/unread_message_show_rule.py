@@ -20,7 +20,7 @@ class UnreadMessageShowRule(DriverRule):
     """The main agent reads a person's unread message with journal message read: showing it is refused."""
 
     name = "messages.unread-show"
-    unsilenced = True
+    exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]

@@ -394,7 +394,7 @@ export class ApiClient {
         return this.get("/teams");
     }
 
-    // connects to a team by its server's URL: a new server's makes this person its admin, an invitation URL a member, a bare URL logs in
+    // connects to a team by its server's URL: a new server's makes this person its admin, an pair_code URL a member, a bare URL logs in
     connectTeam(fields) {
         return this.post("/team/connect", fields, LONG_WAIT_MS);
     }
@@ -404,7 +404,7 @@ export class ApiClient {
         return this.post("/team/disconnect", {team});
     }
 
-    // an invitation URL for a person's email; admins only
+    // an pair_code URL for a person's email; admins only
     inviteToTeam(email, team = "") {
         return this.post("/team/invite", {email, team});
     }
