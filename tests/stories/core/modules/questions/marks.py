@@ -27,22 +27,22 @@ def test_the_process_mark_is_updated_in_place_while_the_question_waits(new_story
     story.expect_success("chat-mark show 1", "text: Question 1: Which database engine?", "state: shown")
 
 
-def test_an_answer_ends_the_process_mark_and_shows_an_answer_mark(new_story):
+def test_an_answer_ends_the_one_mark_in_place_and_says_it_is_answered(new_story):
     story = new_story(fixture=BuilderStarted)
     with_question(story)
     story.expect_success("question answer 1 --answer sqlite")
     story.run_listeners()
     story.expect_success("chat-mark show 1", "state: ended")
-    assert mark_count(story) == 2 and "Question 1 answered: sqlite" in marks_text(story), marks_text(story)
+    assert mark_count(story) == 1 and "Question 1 answered" in marks_text(story), marks_text(story)
 
 
-def test_a_close_ends_the_process_mark_and_shows_a_close_mark(new_story):
+def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
     story = new_story(fixture=BuilderStarted)
     with_question(story)
     story.expect_success("question close 1")
     story.run_listeners()
     story.expect_success("chat-mark show 1", "state: ended")
-    assert mark_count(story) == 2 and "Question 1 closed without an answer" in marks_text(story), marks_text(story)
+    assert mark_count(story) == 1 and "Question 1 closed without an answer" in marks_text(story), marks_text(story)
 
 
 def test_a_failed_ask_shows_no_mark(new_story):

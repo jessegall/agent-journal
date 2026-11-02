@@ -5,6 +5,8 @@ export const STOPPED_VARIANTS = new Set(["failed", "stopped", "lost", "blocked",
 import {actionLabel, refAction} from "./markAction.js";
 
 const OUTCOME_TONES = {passed: "good", failed: "danger", warned: "warn", running: ""};
+// a mark whose variant is a tone, as a plugin's cards are, is drawn in it
+const VARIANT_TONES = {good: "good", warn: "warn", danger: "danger"};
 
 // what a click does besides unfolding a second line, which ChatMark does itself: open the row or the page the mark names
 const OPENERS = {
@@ -22,7 +24,7 @@ export function markLook(mark, declaration) {
         icon: kind.family_icon || (declaration ? "" : "dot"),
         markIcon: kind.mark_icon || "",
         group: kind.group || "",
-        tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : "",
+        tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : VARIANT_TONES[mark.variant] || "",
         label: mark.text,
         // a mark with a body of its module's own keeps its lines for that body, and its cut-off first part is not a second line
         detail: kind.body_url ? "" : mark.detail || "",

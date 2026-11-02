@@ -38,3 +38,10 @@ test("a click on an open-row mark opens its row, on an open-page mark the page i
     expect(markLook(row, {click: "nothing"})).toMatchObject({action: "", handlers: {}});
     expect(markLook(row, {click: "open row"}).action).toBe("Open the task");
 });
+
+test("a plugin card is drawn in the tone its variant names, and any other variant in none", () => {
+    const kind = {type: "plugins.card", colouring: "group", group: "journal"};
+    expect(markLook({id: 1, text: "2 sins", variant: "warn", created_at: "2026-11-01T10:00:00Z"}, kind).tone).toBe("warn");
+    expect(markLook({id: 2, text: "repented", variant: "good", created_at: "2026-11-01T10:00:00Z"}, kind).tone).toBe("good");
+    expect(markLook({id: 3, text: "words", variant: "note", created_at: "2026-11-01T10:00:00Z"}, kind).tone).toBe("");
+});

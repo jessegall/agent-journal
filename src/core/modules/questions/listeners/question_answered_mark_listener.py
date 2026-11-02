@@ -5,13 +5,12 @@ from core.modules.questions.models.enums.question_mark_variant import QuestionMa
 
 
 class QuestionAnsweredMarkListener(QuestionMarkListener):
-    """When a question is answered, its process mark ends and the chat shows an answer mark."""
+    """When a question is answered, its mark ends in place and says so; opening it shows the answer."""
 
     name = "questions.answered-mark"
     event = "question.answer"
 
     def handle(self, event: LoggedEvent) -> None:
         question = self.question(event)
-        self.process(event, question, ended=True)
-        self.show(event, QuestionMarkType.QUESTION, QuestionMarkVariant.ANSWERED, f"Question {question.id} answered: {question.answer}", question.environment_id,
-                  question.agent_id, "question", question.id)
+        self.show(event, QuestionMarkType.QUESTION, QuestionMarkVariant.ANSWERED, f"Question {question.id} answered", question.environment_id,
+                  question.agent_id, "question", question.id, key=f"question:{question.id}", ended=True)

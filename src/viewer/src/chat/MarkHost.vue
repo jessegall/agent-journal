@@ -7,6 +7,8 @@ import {markDeclaration} from "../domain/markRegistry.js";
 import {markLook, STOPPED_VARIANTS} from "../domain/markLook.js";
 
 const OUTPUT_MODELS = new Set(["output", "process"]);
+const ENDED_STATE = "ended";
+const SETTLED_VARIANTS = new Set(["answered", "closed"]);
 
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
 const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
@@ -18,7 +20,7 @@ const opened = ref(false);
 </script>
 
 <template>
-    <template v-if="declaration?.card">
+    <template v-if="declaration?.card && mark.state !== ENDED_STATE && !SETTLED_VARIANTS.has(mark.variant)">
         <div class="thread-turn card whole-card" :data-ref="`chat_mark:${mark.id}`">
             <MarkBody :declaration="declaration" :mark="mark" shown />
         </div>

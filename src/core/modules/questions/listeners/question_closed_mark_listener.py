@@ -5,13 +5,12 @@ from core.modules.questions.models.enums.question_mark_variant import QuestionMa
 
 
 class QuestionClosedMarkListener(QuestionMarkListener):
-    """When a question is closed, its process mark ends and the chat shows a close mark."""
+    """When a question is closed, its mark ends in place and says so."""
 
     name = "questions.closed-mark"
     event = "question.close"
 
     def handle(self, event: LoggedEvent) -> None:
         question = self.question(event)
-        self.process(event, question, ended=True)
         self.show(event, QuestionMarkType.QUESTION, QuestionMarkVariant.CLOSED, f"Question {question.id} closed without an answer", question.environment_id,
-                  question.agent_id, "question", question.id)
+                  question.agent_id, "question", question.id, key=f"question:{question.id}", ended=True)
