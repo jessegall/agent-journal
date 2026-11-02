@@ -156,6 +156,17 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     expect(element.querySelector("[data-dock-failure]").textContent).toBe("only a person approves");
 });
 
+test("a refused close of a docked card says why on the card", async () => {
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
+    const element = document.createElement("div");
+    createApp({setup: () => () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    mounted.push(element);
+    await settled();
+    element.querySelector("[data-dock-action='undock']").click();
+    await settled();
+    expect(element.querySelector("[data-dock-failure]").textContent).toBe("this card stays");
+});
+
 // task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
 test("docked cards fold when the chat is scrolled up, open at its foot, and a hand fold holds", async () => {
     const element = await mountedChat();
