@@ -16,7 +16,7 @@ def four_memories(story) -> None:
 def test_a_session_start_gives_rules_then_reminders_then_facts_heaviest_first(new_story):
     story = new_story(fixture=BuilderStarted)
     four_memories(story)
-    story.expect_hook_allowed("s-1", SESSION_START, "4 memories to read: journal memory context")
+    story.expect_hook_allowed("s-1", SESSION_START, "4 memories to read: journal memory list")
 
 
 def test_a_faded_fact_is_not_given_at_a_session_start(new_story):
@@ -24,7 +24,7 @@ def test_a_faded_fact_is_not_given_at_a_session_start(new_story):
     story.run('memory make "An old fact" --type fact --weight 0 --environment main', actor=story.agent)
     story.run('memory make "A standing fact" --type fact --environment main', actor=story.agent)
     reply = story.hook("s-1", SESSION_START)
-    story.expect_hook_allowed("s-1", SESSION_START, "1 memories to read: journal memory context")
+    story.expect_hook_allowed("s-1", SESSION_START, "1 memories to read: journal memory list")
     story.expect_rows(not any("An old fact" in line for line in reply.lines))
 
 
@@ -34,4 +34,4 @@ def test_a_reminder_not_yet_due_is_not_given_at_a_session_start(new_story):
     story.run(f'memory make "Deploy at nine" --type reminder --due {due} --environment main', actor=story.agent)
     story.run('memory make "Log after each step" --type reminder --environment main', actor=story.agent)
     reply = story.hook("s-1", SESSION_START)
-    story.expect_rows("1 memories to read: journal memory context" in reply.lines)
+    story.expect_rows("1 memories to read: journal memory list" in reply.lines)

@@ -56,7 +56,10 @@ const placed = computed(() => {
     inset: 0;
 }
 
+/* it grows from its skeleton's size to its contents' size as they arrive */
 .dropdown {
+    interpolate-size: allow-keywords;
+    transition: width 0.2s ease, height 0.2s ease;
     position: absolute;
     top: 84px;
     left: 240px;

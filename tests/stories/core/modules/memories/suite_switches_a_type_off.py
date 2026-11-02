@@ -20,7 +20,7 @@ def test_a_switched_off_type_s_rows_stay_but_are_not_given_and_come_back_when_sw
     reply = story.hook("s-1", SESSION_START)
     story.expect_rows(not any("The cart total is in cents" in line for line in reply.lines))
     story.expect_success(f"setting edit {setting_id} --value true")
-    story.expect_hook_allowed("s-1", SESSION_START, "1 memories to read: journal memory context")
+    story.expect_hook_allowed("s-1", SESSION_START, "1 memories to read: journal memory list")
 
 
 def test_a_rule_switched_off_by_its_full_name_gives_nothing(new_story):
@@ -36,4 +36,4 @@ def test_a_type_a_module_adds_is_given_after_the_facts(new_story):
     story.expect_sync_success(VOICE)
     story.run('memory make "Write as a colleague, never as a manual" --type voice --environment main', actor=story.agent)
     story.run(FACT_COMMAND, actor=story.agent)
-    story.expect_hook_allowed("s-1", SESSION_START, "2 memories to read: journal memory context")
+    story.expect_hook_allowed("s-1", SESSION_START, "2 memories to read: journal memory list")

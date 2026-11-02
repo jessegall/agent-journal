@@ -25,6 +25,24 @@ export const sessionTab = {
     },
 };
 
+// this browser's copy of a layout, shared by its tabs, so a new tab draws the person's panes and their skeletons at once
+export const browserCopy = {
+    read(key) {
+        try {
+            return JSON.parse(localStorage.getItem(key));
+        } catch (error) {
+            return null;
+        }
+    },
+    write(key, layout) {
+        try {
+            localStorage.setItem(key, JSON.stringify(layout));
+        } catch (error) {
+            return;
+        }
+    },
+};
+
 const PANE_OWN_OPTIONS = ["width", "agent"];
 
 // each pane's tabs with the titles the catalogue gives them, a gone window keeping the title it had, and its options
@@ -49,7 +67,7 @@ function tidied(layout, entry) {
 // the suite's; a change goes to the tab at once and is saved half a second after the last of a burst, against the version
 // it was loaded at, so a save over another tab's newer layout is refused and that layout loaded instead; a window no
 // module offers keeps its tab and is listed as gone, and loading never saves
-export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
+export function paneLayout({saved, defaults, save, tab = sessionTab, copy = browserCopy, entry}) {
     const store = new LayoutStore({saved, defaults, save});
     // a page has a layout from the first moment, an empty one until its own is loaded (a journal with no suite chosen never loads one)
     const layout = ref(fresh());
@@ -84,6 +102,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
             version = latest.version;
             layout.value = tidied(latest.layout, entry);
             tab.write(tabKey(at), layout.value);
+            copy.write(tabKey(at), layout.value);
         }
     }
 
@@ -93,8 +112,9 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         key = null;
         loading = at;
         const own = tab.read(tabKey(at));
-        if (own && wellShaped(own)) {
-            layout.value = tidied(own, entry);
+        const kept = own && wellShaped(own) ? own : copy.read(tabKey(at));
+        if (kept && wellShaped(kept)) {
+            layout.value = tidied(kept, entry);
             ready.value = true;
         }
         const found = await store.layout(at);
@@ -102,6 +122,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         key = at;
         version = found.version;
         layout.value = tidied(own && wellShaped(own) ? own : found.layout, entry);
+        copy.write(tabKey(at), layout.value);
         ready.value = true;
     }
 
@@ -111,6 +132,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         if (key === null) return;
         layout.value = tidied(layout.value, entry);
         tab.write(tabKey(key), layout.value);
+        copy.write(tabKey(key), layout.value);
         if (pending) clearTimeout(pending.timer);
         pending = {at: key, kept: layout.value, base: version, timer: setTimeout(flush, SAVE_DELAY_MS)};
     }
