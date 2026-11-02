@@ -51,7 +51,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         return MergeOutcome(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
-        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows()
+        delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows())
         return [task, *(row for row in delivered if row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:

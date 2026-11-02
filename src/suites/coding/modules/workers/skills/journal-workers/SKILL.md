@@ -9,7 +9,8 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 
 ## As the one who sends
 
-- `journal worker dispatch <task>` starts a worker on the task. `--library-link <folder>` links a folder such as
+- `journal worker dispatch <task> [<task> ...]` starts a worker on the tasks, which it takes one by one with no report in
+  between; the journal runs their tests after the last and tells you when all pass. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
 - A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last. Send
@@ -24,6 +25,8 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 ## As the worker
 
 - `journal proof points --agent <n>` lists the points of your task's brief.
-- Prove each one with `journal proof make <point> "<file:line, and the test>"`.
-- `journal worker deliver` hands your task in, with a proof for every point.
+- Prove each one with `journal proof make <point> "<file:line, and the test>" --test "<command>"`: the journal runs that
+  test command in your worktree. A proof with no test waits for the main agent's check.
+- `journal worker deliver` hands your task in, with a proof for every point, and prints your next task if there is one.
+  After the last, the journal runs your tests; those that fail come back to you to fix and deliver again.
 - Git is not yours to run: the journal commits your work.
