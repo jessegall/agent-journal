@@ -326,6 +326,20 @@ test("side panels: a left sidebar lists the suite's pages and the environments, 
     expect(files).toContain("../src/shell/ActivityPanel.vue");
 });
 
+test("composer: a comment on a message to a worker shows in the band under the word Comment and goes as a comment", async () => {
+    const element = await mountedChat({"message feed": [{id: 5, type: "peer", text: "Check the cart", recipient: "worker 12", created_at: "2026-11-01T05:00:00+00:00"}]});
+    element.querySelector("[data-growing-comment]").click();
+    await settled();
+    expect(element.querySelector("[data-composer-quote]").textContent).toContain("Comment on: Check the cart");
+    const box = element.querySelector(".composer-input");
+    box.value = "And the till";
+    box.dispatchEvent(new Event("input"));
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
+    await settled();
+    expect(runs).toContainEqual(["message", "comment", "5", "And the till"]);
+    expect(element.querySelector("[data-composer-quote]")).toBeNull();
+});
+
 test("composer: a reply names what it answers and goes as a reply, and the arrow up edits the newest unread message", async () => {
     const element = await mountedChat({"message feed": [{id: 4, type: "user", text: "Fix the cart", created_at: "2026-11-01T05:00:00+00:00"}]});
     element.querySelector("[data-message-action='reply']").click();

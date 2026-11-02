@@ -1,16 +1,15 @@
 <script setup>
-import {computed, nextTick, ref} from "vue";
+import {computed, ref} from "vue";
 import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkAction from "../kit/MarkAction.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
-import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useMarkMotion} from "../composables/markMotion.js";
 
 // a one-line card in the chat that grows in place to its whole text on a click on its title and folds on a second: a worker's report, a
 // message to or from a subagent; its one-click action, where it has one, sits at the end of its line. An incoming one, a message another
-// agent sent, has its icon at the far right and its title against it. Given a send function it shows a comment button when pointed at, which
-// opens the comment box under the card, as a document has one at its foot
+// agent sent, has its icon at the far right and its title against it. A commentable one shows a comment button when pointed at, and the chat
+// takes the comment in its composer
 const props = defineProps({
     title: {type: String, required: true},
     text: {type: String, default: ""},
@@ -19,21 +18,10 @@ const props = defineProps({
     bad: Boolean,
     action: {type: String, default: ""},
     incoming: Boolean,
-    send: {type: Function, default: null},
+    commentable: Boolean,
 });
-const emit = defineEmits(["act"]);
+const emit = defineEmits(["act", "comment"]);
 const opened = ref(false);
-const commenting = ref(false);
-const bar = ref(null);
-async function startComment() {
-    commenting.value = true;
-    await nextTick();
-    bar.value?.expand();
-}
-async function sendComment(text) {
-    await props.send(text);
-    commenting.value = false;
-}
 // it opens as a mark does: its text out, its new size, its text in, its top where it was (composables/markMotion.js)
 const wrap = ref(null);
 const {folded, phase} = useMarkMotion(wrap, () => !opened.value);
@@ -62,17 +50,12 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
             <template v-if="action">
                 <MarkAction :label="action" :open="opened" @click="emit('act')" />
             </template>
-            <template v-if="send">
-                <button type="button" class="growing-card-comment" data-growing-comment title="Comment on this message" aria-label="Comment on this message" @click="startComment">
+            <template v-if="commentable">
+                <button type="button" class="growing-card-comment" data-growing-comment title="Comment on this message" aria-label="Comment on this message" @click="emit('comment')">
                     <Icon name="bubble" :size="13" />
                 </button>
             </template>
         </div>
-        <template v-if="commenting">
-            <div class="growing-card-comment-bar" data-growing-comment-bar>
-                <QuickCommentBar ref="bar" :send="sendComment" />
-            </div>
-        </template>
         <div class="growing-card-more">
             <div class="growing-card-body">
                 <template v-for="(part, i) in paragraphs" :key="i">
@@ -155,11 +138,6 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
 .growing-card-comment:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.growing-card-comment-bar {
-    min-width: 260px;
-    padding: 0 8px 8px;
 }
 
 .growing-card-wrap.incoming .growing-card-top {
