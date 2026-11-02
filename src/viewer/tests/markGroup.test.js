@@ -32,6 +32,14 @@ function drawn() {
     app.mount(root);
 }
 
+test("an opened group shows its marks under its line, not inside it", async () => {
+    drawn();
+    root.querySelector(".mark").click();
+    await nextTick();
+    expect(root.querySelector(".mark [data-mark-group-rows]")).toBeNull();
+    expect(root.querySelector(".thread-turn.group > [data-mark-group-rows]")).not.toBeNull();
+});
+
 test("a group draws one line with its label and none of its marks until it is opened", () => {
     drawn();
     expect(root.textContent).toContain("2 rules and reminders recalled");
@@ -46,5 +54,5 @@ test("a click on the line opens it to each mark, and the next folds it back", as
     expect(root.querySelector("[data-mark-group-rows]").textContent).toContain("Second rule");
     root.querySelector(".mark").click();
     await nextTick();
-    expect(root.querySelector(".mark").hasAttribute("data-open")).toBe(false);
+    expect(root.querySelector("[data-mark-group-rows]")).toBeNull();
 });

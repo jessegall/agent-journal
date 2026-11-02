@@ -19,7 +19,7 @@ const opened = ref(false);
 
 <template>
     <template v-if="declaration?.card">
-        <div class="thread-turn card" :data-ref="`chat_mark:${mark.id}`">
+        <div class="thread-turn card whole-card" :data-ref="`chat_mark:${mark.id}`">
             <MarkBody :declaration="declaration" :mark="mark" shown />
         </div>
     </template>
@@ -46,6 +46,12 @@ const opened = ref(false);
 
     gap: 3px;
     max-width: min(78%, calc(100% - var(--turn-gutter)));
+}
+
+/* a mark drawn as a card takes the chat's width and keeps to the card's own limit */
+.thread-turn.whole-card {
+    align-self: stretch;
+    max-width: none;
 }
 
 .mark-row {

@@ -4564,7 +4564,7 @@ const fo = ho("/api/marks", "marks"), Wg = fo.fetchAll, Uf = fo.find, Vf = ["dat
       var d, f, v;
       return (d = s.value) != null && d.card ? (c(), h("div", {
         key: 0,
-        class: "thread-turn card",
+        class: "thread-turn card whole-card",
         "data-ref": `chat_mark:${e.mark.id}`
       }, [
         F(ss, {
@@ -4605,7 +4605,7 @@ const fo = ho("/api/marks", "marks"), Wg = fo.fetchAll, Uf = fo.find, Vf = ["dat
       ], 10, zf));
     };
   }
-}, Yf = /* @__PURE__ */ Y(Kf, [["__scopeId", "data-v-6fc6be2f"]]), Jf = ["data-ref"], Zf = {
+}, Yf = /* @__PURE__ */ Y(Kf, [["__scopeId", "data-v-9fef4c92"]]), Jf = ["data-ref"], Zf = {
   key: 0,
   class: "thread-group",
   "data-mark-group-rows": ""
@@ -4630,20 +4630,16 @@ const fo = ho("/api/marks", "marks"), Wg = fo.fetchAll, Uf = fo.find, Vf = ["dat
         mark: s.value,
         open: n.value,
         onClick: o[0] || (o[0] = (i) => n.value = !n.value)
-      }, {
-        default: U(({ shown: i }) => [
-          i ? (c(), h("div", Zf, [
-            (c(!0), h(J, null, re(e.group.marks, (r) => (c(), K(Yf, {
-              key: r.id,
-              mark: r
-            }, null, 8, ["mark"]))), 128))
-          ])) : j("", !0)
-        ]),
-        _: 1
-      }, 8, ["mark", "open"])
+      }, null, 8, ["mark", "open"]),
+      n.value ? (c(), h("div", Zf, [
+        (c(!0), h(J, null, re(e.group.marks, (i) => (c(), K(Yf, {
+          key: i.id,
+          mark: i
+        }, null, 8, ["mark"]))), 128))
+      ])) : j("", !0)
     ], 8, Jf));
   }
-}, Hg = /* @__PURE__ */ Y(Qf, [["__scopeId", "data-v-fee222d5"]]);
+}, Hg = /* @__PURE__ */ Y(Qf, [["__scopeId", "data-v-4eab0b3e"]]);
 function Xf(e) {
   const t = W(null), n = new ResizeObserver(() => t.value = e.value.offsetHeight);
   return je(() => n.observe(e.value)), ds(() => n.disconnect()), t;
@@ -7992,7 +7988,7 @@ const Mg = /* @__PURE__ */ $g(_g), Sg = ["width", "height", "viewBox"], Eg = ["w
       }, null, 8, Ag)
     ], 8, Sg));
   }
-}, Dv = /* @__PURE__ */ Y(Cg, [["__scopeId", "data-v-489f0852"]]), jv = Yo(() => import("./VoiceFigure-C836RTRk.js").then((e) => e.V)), Nv = "1.0.0", Pv = "3.5";
+}, Dv = /* @__PURE__ */ Y(Cg, [["__scopeId", "data-v-489f0852"]]), jv = Yo(() => import("./VoiceFigure-Dk8Wbn3S.js").then((e) => e.V)), Nv = "1.0.0", Pv = "3.5";
 export {
   Rg as $,
   sv as A,

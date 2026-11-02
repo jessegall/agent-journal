@@ -19,15 +19,14 @@ const look = computed(() => ({
 
 <template>
     <div class="thread-turn group" :data-ref="group.id">
-        <ChatMark :mark="look" :open="opened" @click="opened = !opened">
-            <template #default="{shown}">
-                <div v-if="shown" class="thread-group" data-mark-group-rows>
-                    <template v-for="mark in group.marks" :key="mark.id">
-                        <MarkHost :mark="mark" />
-                    </template>
-                </div>
-            </template>
-        </ChatMark>
+        <ChatMark :mark="look" :open="opened" @click="opened = !opened" />
+        <template v-if="opened">
+            <div class="thread-group" data-mark-group-rows>
+                <template v-for="mark in group.marks" :key="mark.id">
+                    <MarkHost :mark="mark" />
+                </template>
+            </div>
+        </template>
     </div>
 </template>
 
