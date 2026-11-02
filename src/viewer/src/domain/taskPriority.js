@@ -7,4 +7,7 @@ export const PRIORITY_LEVELS = [
 ];
 export const NORMAL_PRIORITY = 200;
 
-export const priorityLabel = (priority) => PRIORITY_LEVELS.find((level) => level.key === priority)?.label || String(priority);
+// The named level a number shows as: the highest level at or below it, Low when it is under them all.
+export const namedPriority = (priority) => PRIORITY_LEVELS.findLast((level) => level.key <= priority)?.key ?? PRIORITY_LEVELS[0].key;
+
+export const priorityLabel =(priority) => PRIORITY_LEVELS.find((level) => level.key === priority)?.label || String(priority);

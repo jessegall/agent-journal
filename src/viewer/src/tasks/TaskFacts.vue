@@ -1,6 +1,6 @@
 <script setup>
 import Segmented from "../kit/Segmented.vue";
-import {PRIORITY_LEVELS} from "../domain/taskPriority.js";
+import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
 
 // where a task sits: its plan and phase, who holds it, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
@@ -28,7 +28,7 @@ const emit = defineEmits(["priority"]);
         </template>
         <div class="fact wide">
             <span class="fact-label">Priority</span>
-            <Segmented :options="PRIORITIES" :value="String(task.priority)" data-task-priority @pick="emit('priority', $event)" />
+            <Segmented :options="PRIORITIES" :value="String(namedPriority(task.priority))" data-task-priority @pick="emit('priority', $event)" />
             <template v-if="refusal">
                 <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
             </template>
