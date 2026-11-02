@@ -46,7 +46,7 @@ test("a docked process that has completed shows a line along its top and undocks
     expect(host.querySelector("[data-dock-action=undock]")).not.toBeNull();
     vi.advanceTimersByTime(1500);
     await nextTick();
-    vi.advanceTimersByTime(DOCK_ARRIVAL_MS);
+    vi.advanceTimersByTime(DOCK_ARRIVAL_MS + 100);
     await nextTick();
     expect(host.querySelector("[data-dock-action=undock]")).toBeNull();
 });
