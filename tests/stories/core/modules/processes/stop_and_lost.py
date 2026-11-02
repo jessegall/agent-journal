@@ -43,6 +43,21 @@ def test_a_heartbeat_older_than_90_seconds_ends_the_run_lost_and_tells_the_agent
     assert any(ORPHAN_LINE in line for line in story.hook("s-1", NOTHING).lines)
 
 
+def test_a_run_whose_runner_pid_is_gone_is_lost_at_the_next_tick_after_ten_seconds(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    story.container.get(OutputFolder).write_pid(process.id, ended_program.pid)
+    story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
+    story.advance(timedelta(seconds=5))
+    story.tick("s-1")
+    story.expect_success("process show 1", "state: background", actor=story.agent)
+    story.advance(timedelta(seconds=6))
+    story.tick("s-1")
+    story.expect_success("process show 1", "state: orphaned", actor=story.agent)
+
+
 def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")

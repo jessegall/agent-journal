@@ -89,3 +89,10 @@ func TestAMixedLineKeepsTheCategoryOfEachOfItsParts(t *testing.T) {
 		}
 	}
 }
+
+func TestGoWithAFolderFlagIsStillATestRun(t *testing.T) {
+	classifier := NewClassifier(LoadTable(""))
+	if category := classifier.Classify("go -C tools/journal-run test . -run Report").Category; category != "test run" {
+		t.Fatalf("category %q", category)
+	}
+}

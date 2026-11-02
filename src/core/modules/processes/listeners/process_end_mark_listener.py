@@ -31,7 +31,8 @@ class ProcessEndMarkListener(CommitListener):
     """A command that is a test run, a build, a check or a package, or a line a reader reads, shows one mark
     naming that command alone, whatever else its line runs; the mark is kept up to date in place by the key process:<id>: running, with
     the reader's progress as its figure, moved to the background, then ended with its outcome. A line with
-    no such command and no reader shows none, also when it moved to the background."""
+    no such command and no reader shows none, also when it moved to the background. A mark once shown always
+    ends, also when the run's output is gone by then."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -47,7 +48,7 @@ class ProcessEndMarkListener(CommitListener):
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
         parts = list(self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows())
-        part = next((part for part in parts if part.category in MARK_CATEGORIES), parts[0] if parts and output and output.reader_id is not None else None)
+        part = next((part for part in parts if part.category in MARK_CATEGORIES), parts[0] if parts and (shown is not None or (output and output.reader_id is not None)) else None)
         if part is None:
             return
         variant = ProcessMarkVariant(process.state.value)

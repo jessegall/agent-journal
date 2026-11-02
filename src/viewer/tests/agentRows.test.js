@@ -46,7 +46,7 @@ test("the agents window filters on running or closed", async () => {
 test("a card is two lines: the profile, name and time, then the provider, model and kind, with no task or instruction", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
-    expect(card.querySelector("[data-agent-title]").textContent).toBe("journal-researcher");
+    expect(card.querySelector("[data-agent-title]").textContent).toBe("Journal-researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
     expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · subagent");
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
