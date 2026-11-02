@@ -1,11 +1,13 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import MarkHost from "./MarkHost.vue";
 
 // marks that stand together, folded into one mark that opens to each of them, as version 4's TurnGroup did
 const props = defineProps({group: {type: Object, required: true}});
 const opened = ref(false);
+const everOpened = ref(false);
+watch(opened, () => (everOpened.value = true));
 const look = computed(() => ({
     key: props.group.id,
     icon: props.group.declaration.family_icon || "",
@@ -20,11 +22,13 @@ const look = computed(() => ({
 <template>
     <div class="thread-turn group" :data-ref="group.id">
         <ChatMark :mark="look" :open="opened" @click="opened = !opened" />
-        <template v-if="opened">
-            <div class="thread-group" data-mark-group-rows>
-                <template v-for="mark in group.marks" :key="mark.id">
-                    <MarkHost :mark="mark" />
-                </template>
+        <template v-if="everOpened">
+            <div :class="['group-rows', {open: opened}]" :inert="!opened" data-mark-group-rows>
+                <div class="thread-group">
+                    <template v-for="mark in group.marks" :key="mark.id">
+                        <MarkHost :mark="mark" />
+                    </template>
+                </div>
             </div>
         </template>
     </div>
@@ -40,7 +44,23 @@ const look = computed(() => ({
     max-width: 100%;
 }
 
+/* closing fades the rows first and then folds them; opening grows first and then fades them in */
+.group-rows {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: opacity 120ms ease, grid-template-rows 280ms cubic-bezier(0.2, 0.9, 0.25, 1) 120ms;
+}
+
+.group-rows.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transition: grid-template-rows 280ms cubic-bezier(0.2, 0.9, 0.25, 1), opacity 160ms ease 280ms;
+}
+
 .thread-group {
+    min-height: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 6px;
