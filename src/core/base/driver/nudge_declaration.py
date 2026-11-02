@@ -12,7 +12,7 @@ CUT_END_CHARACTERS = 60
 class NudgeDeclaration:
     """A line a module can say to an agent, declared once: its key, its type, its words with {fields}, the
     interval before it may be said again, the longest it may be, cut in its middle so its instruction stays, 0
-    meaning no limit, and whether a turn says it only once; a reminder on a clock says no."""
+    meaning no limit, whether a turn says it only once, as a reminder on a clock does not, and the command with {fields} that pays it, which makes the line a debt."""
 
     key: str
     type: NudgeType
@@ -20,9 +20,10 @@ class NudgeDeclaration:
     interval: Interval | None = None
     longest_characters: int = 0
     turn_limited: bool = True
+    pays: str = ""
 
     def nudge(self, **fields: object) -> Nudge:
-        return Nudge(self.key, self.type, self.cut(self.text.format(**fields)), self.interval, self.turn_limited)
+        return Nudge(self.key, self.type, self.cut(self.text.format(**fields)), self.interval, self.turn_limited, self.pays.format(**fields))
 
     def cut(self, line: str) -> str:
         if not self.longest_characters or len(line) <= self.longest_characters:

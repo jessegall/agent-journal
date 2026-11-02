@@ -4,7 +4,8 @@ import WindowPane from "./WindowPane.vue";
 
 // what a bar button opens under itself, over the page: one window, or several as groups under sticky headers with a count each; it closes on
 // a click outside or on escape
-const WIDTH_PIXELS = 300;
+const SMALLEST_WIDTH_PIXELS = 240;
+const MOST_WIDTH_PIXELS = 480;
 const GROUPED_WIDTH_PIXELS = 360;
 const GAP_PIXELS = 6;
 const EDGE_PIXELS = 8;
@@ -24,10 +25,12 @@ window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 const grouped = computed(() => props.groups.length > 1);
 const placed = computed(() => {
-    const width = grouped.value ? GROUPED_WIDTH_PIXELS : WIDTH_PIXELS;
+    const smallest = grouped.value ? GROUPED_WIDTH_PIXELS : SMALLEST_WIDTH_PIXELS;
     const box = props.anchor?.getBoundingClientRect();
-    if (!box) return {width: `${width}px`};
-    return {width: `${width}px`, top: `${box.bottom + GAP_PIXELS}px`, left: `${Math.max(EDGE_PIXELS, Math.min(box.left, window.innerWidth - width - EDGE_PIXELS))}px`};
+    const size = {minWidth: `${smallest}px`, maxWidth: `min(${MOST_WIDTH_PIXELS}px, calc(100vw - ${2 * EDGE_PIXELS}px))`};
+    if (!box) return size;
+    const top = `${box.bottom + GAP_PIXELS}px`;
+    return box.left + MOST_WIDTH_PIXELS + EDGE_PIXELS > window.innerWidth ? {...size, top, left: "auto", right: `${EDGE_PIXELS}px`} : {...size, top, left: `${box.left}px`};
 });
 </script>
 
@@ -58,9 +61,10 @@ const placed = computed(() => {
     top: 84px;
     left: 240px;
     overflow: auto;
+    overflow-wrap: anywhere;
     box-sizing: border-box;
+    width: fit-content;
     padding: 14px 16px;
-    max-width: calc(100vw - 32px);
     max-height: calc(100vh - 110px);
     border: 1px solid var(--border-2);
     border-radius: 10px;

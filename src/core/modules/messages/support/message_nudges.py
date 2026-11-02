@@ -8,7 +8,7 @@ NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.INSTRUCTION, '[
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.INSTRUCTION, '[journal] {count} new messages: journal message unread', turn_limited=False)
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.REMARK, '  file {path}')
 MESSAGE_ADVICE = NudgeDeclaration("messages.act_on_messages", NudgeType.INSTRUCTION, 'act on what you read: if it steers your work, take it as steering and follow it from now on; if it asks for an update, give the update now; if it asks for work, make a task for it; otherwise answer it')
-IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.INSTRUCTION, 'message {message} attaches an image: open {path}, then journal message tag {message} "{name}" "<what it shows>"')
+IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.INSTRUCTION, 'message {message} attaches an image: open {path}, then journal message tag {message} "{name}" "<what it shows>"', pays="journal message tag {message}")
 REPLY_COMMAND = NudgeDeclaration("messages.reply_command", NudgeType.INSTRUCTION, "your words in the chat are your reply; in a turn that goes on with tools, reply first with journal message reply <n> '<text>'", interval=Interval(Seconds(1800)))
 UNANSWERED = NudgeDeclaration("messages.unanswered", NudgeType.INSTRUCTION, "answer message {messages} before you go on", interval=Interval(Seconds(300)))
 UNANSWERED_COUNTDOWN = NudgeDeclaration("messages.unanswered_countdown", NudgeType.INSTRUCTION, "reply to message {messages}; tool calls wait after {count} more", turn_limited=False)

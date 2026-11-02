@@ -120,7 +120,7 @@ test("a dropdown opens under the button that asked for it, kept inside the windo
     expect(panel.style.left).toBe("400px");
     expect(element.querySelector("[data-dropdown-group]")).toBeNull();
     const nearEdge = mounted(WindowDropdown, {groups, anchor: {getBoundingClientRect: () => ({left: window.innerWidth - 10, bottom: 90})}, catalogue, subscriptions: {}, environment: "main"});
-    expect(nearEdge.querySelector("[data-dropdown]").style.left).toBe(`${window.innerWidth - 308}px`);
+    expect(nearEdge.querySelector("[data-dropdown]").style.right).toBe("8px");
 });
 
 test("the helpers dropdown holds every kind under its own header with a count", () => {

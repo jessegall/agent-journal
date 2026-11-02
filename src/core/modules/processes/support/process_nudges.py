@@ -4,7 +4,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.REMARK, '{text}')
-READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.INSTRUCTION, '{text}')
+READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.INSTRUCTION, '{text}', pays="journal reader add {name}")
 MONITOR_ADVICE = NudgeDeclaration("processes.use_a_monitor", NudgeType.INSTRUCTION, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}')
 HAND_MADE_MONITOR = NudgeDeclaration("processes.hand_made_monitor", NudgeType.REFUSAL, 'do not write your own wait on an output: give the Monitor the command journal output monitor <n>, which tells you when the run ends, at once if it has')
 PROCESS_MISSING = NudgeDeclaration("processes.process_lost", NudgeType.REMARK, 'process {process} was lost: its shell is gone; journal output read {process} --summary')
@@ -16,13 +16,13 @@ RUNNER_MISSING = NudgeDeclaration("processes.runner_missing", NudgeType.REMARK, 
 MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, 'do not move with cd: you are in {folder}, so name paths from there; a tool takes its own folder, such as npm --prefix or vitest --root')
 UNREAD_OUTPUT = NudgeDeclaration("processes.unread_output", NudgeType.INSTRUCTION, 'output {outputs} unread: journal output read {first} --summary')
 SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep with nothing to wait on is refused: {advice}')
-RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.INSTRUCTION, 'output {process} is docked with its raw command as its title: name what it does with journal output title {process} "<what it does>", or give its reader a --title')
+RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.INSTRUCTION, 'output {process} is docked with its raw command as its title: name what it does with journal output title {process} "<what it does>", or give its reader a --title', pays="journal output title {process}")
 
 PIPED_RUN = NudgeDeclaration("processes.piped_run", NudgeType.INSTRUCTION, "{programs} is cut by a pipe, so its reader sees only what is left: run it without the pipe, then journal output read <n> --summary")
 SILENT_RUN = NudgeDeclaration("processes.silent_run", NudgeType.REMARK, "output {output} has printed nothing for {seconds} seconds, so it may buffer: run it with stdbuf -oL, python -u or its streaming flag")
-READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.INSTRUCTION, "reader {reader} picked no line of the {lines} that output {output} printed: fix its pattern with journal reader add {reader} --lines \"<the lines that matter>\"")
-READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.INSTRUCTION, "reader {reader} kept {kept} of the {lines} lines of output {output}, which reads no better than the output: narrow it with journal reader add {reader} --lines \"<the lines that matter>\"")
-READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.INSTRUCTION, "reader {reader} found no summary in output {output}: give it one with journal reader add {reader} --summary \"<a pattern of the last line>\"")
+READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.INSTRUCTION, "reader {reader} picked no line of the {lines} that output {output} printed: fix its pattern with journal reader add {reader} --lines \"<the lines that matter>\"", pays="journal reader add {reader}")
+READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.INSTRUCTION, "reader {reader} kept {kept} of the {lines} lines of output {output}, which reads no better than the output: narrow it with journal reader add {reader} --lines \"<the lines that matter>\"", pays="journal reader add {reader}")
+READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.INSTRUCTION, "reader {reader} found no summary in output {output}: give it one with journal reader add {reader} --summary \"<a pattern of the last line>\"", pays="journal reader add {reader}")
 READER_PROGRESS_MISSING = NudgeDeclaration("processes.reader_no_progress", NudgeType.REMARK, "output {output} prints a count its card draws no bar for: give reader {reader} a --progress pattern such as \"\\[ *([0-9]+)%\\]\"")
 
 ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.REMARK, 'you ran {shape} {count} times: add an alias with journal alias add <name> "<line>"', interval=Interval(Seconds(3600)))

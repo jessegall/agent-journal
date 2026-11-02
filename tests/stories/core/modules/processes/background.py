@@ -29,16 +29,18 @@ def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summa
     assert ENDED not in lines_of(story, NOTHING)
 
 
-def ended_lines(new_story, line, text=TESTS_REPORT):
+def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, line)
+    process = moved_run(story, line, category=category)
     end_run(story, process, text)
     story.advance(timedelta(seconds=1))
     return story, process, lines_of(story, NOTHING)
 
 
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(new_story):
-    story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n")
+    story, _, plain = ended_lines(new_story, "grep -n word file", "one\ntwo\n")
+    assert not any("no reader reads" in line for line in plain)
+    story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n", category=CommandCategory.BUILD)
     assert any("no reader reads deploy.sh yet" in line and 'journal reader add deploy.sh --commands "./deploy.sh*"' in line for line in lines)
     assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
 

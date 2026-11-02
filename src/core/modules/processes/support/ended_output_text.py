@@ -1,4 +1,5 @@
 import re
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
 from pathlib import PurePath
@@ -13,6 +14,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
+READ_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
 SHELL_TERMS = frozenset(("journal", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
 
 
@@ -29,7 +31,11 @@ class EndedOutputText:
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
         ended = OUTPUT_ENDED.nudge(text=self.line(process))
-        return (ended, READER_DRAFT.nudge(text=advice), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+        return (ended, READER_DRAFT.nudge(text=advice, name=self.reader_name(process)), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+
+    @staticmethod
+    def reader_name(process: Process) -> str:
+        return PurePath(process.program_word() or "").name
 
     def reader_nudges(self, process: Process) -> tuple[Nudge, ...]:
         kept = self.outputs.process(process.id).page(1, 1).rows
@@ -50,7 +56,7 @@ class EndedOutputText:
 
     def advice(self, process: Process) -> str:
         kept = self.outputs.process(process.id).page(1, 1).rows
-        if not kept or kept[0].reader_id is not None or not kept[0].line_count:
+        if process.category not in READ_CATEGORIES or not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return ""
         first = process.program_word()
         if first is None or first in SHELL_TERMS:
