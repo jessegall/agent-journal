@@ -5,7 +5,7 @@ import Skeleton from "../kit/Skeleton.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 // what happened on a plan's tasks, newest first, by day
-const KINDS = {
+const EVENT_TYPES = {
     made: {icon: "plus", word: "Made"},
     logged: {icon: "edits", word: "Logged"},
     completed: {icon: "check", word: "Finished"},
@@ -13,14 +13,14 @@ const KINDS = {
 };
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["select"]);
-const moments = ref(null);
+const events = ref(null);
 const failure = ref("");
 
 const days = computed(() => {
     const groups = new Map();
-    for (const moment of moments.value ?? []) {
-        const day = new Date(moment.time).toLocaleDateString(undefined, {weekday: "long", month: "long", day: "numeric"});
-        groups.set(day, [...(groups.get(day) ?? []), moment]);
+    for (const event of events.value ?? []) {
+        const day = new Date(event.time).toLocaleDateString(undefined, {weekday: "long", month: "long", day: "numeric"});
+        groups.set(day, [...(groups.get(day) ?? []), event]);
     }
     return [...groups].map(([day, items]) => ({day, items}));
 });
@@ -29,7 +29,7 @@ const clock = (time) => new Date(time).toLocaleTimeString(undefined, {hour: "2-d
 async function load() {
     const answer = await props.read(["plan", "timeline", String(props.id)]);
     failure.value = answer.ok ? "" : answer.error;
-    moments.value = answer.ok ? answer.value.moments : [];
+    events.value = answer.ok ? answer.value.events : [];
 }
 
 watch(() => props.id, load, {immediate: true});
@@ -40,26 +40,26 @@ watch(() => props.id, load, {immediate: true});
         <template v-if="failure">
             <p class="empty" role="alert">{{ failure }}</p>
         </template>
-        <template v-else-if="moments === null">
+        <template v-else-if="events === null">
             <Skeleton />
         </template>
-        <template v-else-if="!moments.length">
+        <template v-else-if="!events.length">
             <p class="empty">Nothing has happened on this plan's tasks yet.</p>
         </template>
         <template v-for="group in days" :key="group.day">
             <h3 class="day">{{ group.day }}</h3>
-            <ol class="moments">
-                <template v-for="moment in group.items" :key="`${moment.time}-${moment.kind}-${moment.task_id}`">
-                    <li :class="['moment', moment.kind]" data-plan-moment>
-                        <span class="mark"><Icon :name="KINDS[moment.kind].icon" :size="11" /></span>
+            <ol class="events">
+                <template v-for="event in group.items" :key="`${event.time}-${event.event_type}-${event.task_id}`">
+                    <li :class="['event', event.event_type]" data-plan-event>
+                        <span class="mark"><Icon :name="EVENT_TYPES[event.event_type].icon" :size="11" /></span>
                         <div class="what">
                             <div class="head">
-                                <span class="word">{{ KINDS[moment.kind].word }}</span>
-                                <button type="button" class="task" :title="`Open task ${moment.task_id}`" @click="emit('select', moment.task_id)">#{{ moment.task_id }} {{ moment.title }}</button>
-                                <span class="at">{{ clock(moment.time) }}</span>
+                                <span class="word">{{ EVENT_TYPES[event.event_type].word }}</span>
+                                <button type="button" class="task" :title="`Open task ${event.task_id}`" @click="emit('select', event.task_id)">#{{ event.task_id }} {{ event.title }}</button>
+                                <span class="at">{{ clock(event.time) }}</span>
                             </div>
-                            <template v-if="moment.text">
-                                <TextDisplay class="text" :text="moment.text" />
+                            <template v-if="event.text">
+                                <TextDisplay class="text" :text="event.text" />
                             </template>
                         </div>
                     </li>
@@ -90,7 +90,7 @@ watch(() => props.id, load, {immediate: true});
     font-weight: 600;
 }
 
-.moments {
+.events {
     display: flex;
     flex-direction: column;
     margin: 0;
@@ -98,7 +98,7 @@ watch(() => props.id, load, {immediate: true});
     list-style: none;
 }
 
-.moment {
+.event {
     display: flex;
     gap: 10px;
     padding-bottom: 12px;
@@ -116,7 +116,7 @@ watch(() => props.id, load, {immediate: true});
     color: var(--text-3);
 }
 
-.moment.completed .mark {
+.event.completed .mark {
     color: var(--tone-good);
 }
 

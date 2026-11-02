@@ -15,12 +15,12 @@ async function drawn(component, answer, props = {}) {
     return element;
 }
 
-const moment = (kind, task_id, text = "") => ({time: "2026-11-01T10:00:00Z", kind, task_id, title: `Task ${task_id}`, text});
+const event = (event_type, task_id, text = "") => ({time: "2026-11-01T10:00:00Z", event_type, task_id, title: `Task ${task_id}`, text});
 
 test("the timeline shows each moment with its word, opens the task, and says what it wrote", async () => {
     const picked = [];
-    const element = await drawn(PlanTimeline, {ok: true, value: {moments: [moment("completed", 7, "It works"), moment("made", 7)]}}, {onSelect: (id) => picked.push(id)});
-    const rows = element.querySelectorAll("[data-plan-moment]");
+    const element = await drawn(PlanTimeline, {ok: true, value: {events: [event("completed", 7, "It works"), event("made", 7)]}}, {onSelect: (id) => picked.push(id)});
+    const rows = element.querySelectorAll("[data-plan-event]");
     expect(rows.length).toBe(2);
     expect(rows[0].textContent).toContain("Finished");
     expect(rows[0].textContent).toContain("It works");
@@ -29,7 +29,7 @@ test("the timeline shows each moment with its word, opens the task, and says wha
 });
 
 test("a plan with no moments says so, and a refused read says why", async () => {
-    expect((await drawn(PlanTimeline, {ok: true, value: {moments: []}})).textContent).toContain("Nothing has happened");
+    expect((await drawn(PlanTimeline, {ok: true, value: {events: []}})).textContent).toContain("Nothing has happened");
     expect((await drawn(PlanTimeline, {ok: false, error: "no such plan"})).textContent).toContain("no such plan");
 });
 
@@ -50,7 +50,7 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
     const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", worker_id: 44}, {id: 8, title: "Tax", state: "open", worker_id: null}]}]};
     const read = async (line) => {
         lines.push(line[1]);
-        return line[1] === "inspect" ? {ok: true, value: plan} : line[1] === "timeline" ? {ok: true, value: {moments: [moment("made", 7)]}} : {ok: true, value: {rows: []}};
+        return line[1] === "inspect" ? {ok: true, value: plan} : line[1] === "timeline" ? {ok: true, value: {events: [event("made", 7)]}} : {ok: true, value: {rows: []}};
     };
     const element = document.createElement("div");
     createApp({render: () => h(PlanInspector, {id: 3, read})}).directive("tip", {}).mount(element);

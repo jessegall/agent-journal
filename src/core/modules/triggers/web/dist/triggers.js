@@ -1,224 +1,224 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-7698a0b959fe")) { const style = document.createElement("style"); style.id = "window-styles-7698a0b959fe"; style.textContent = ".words[data-v-7a597156]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-7a597156]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-7a597156]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-7a597156]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.trigger-editor[data-v-a16956be]{display:flex;flex-direction:column;gap:14px}.summary[data-v-a16956be]{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.summary-label[data-v-a16956be],.field-label[data-v-a16956be]{color:var(--text-3);font-size:12px}.summary-text[data-v-a16956be]{margin:0;font-size:14px;line-height:1.55}.field[data-v-a16956be],.choices[data-v-a16956be]{display:flex;flex-direction:column;gap:6px}.choice[data-v-a16956be]{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--border-2);border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.choice.chosen[data-v-a16956be]{border-color:var(--accent);background:var(--accent-dim)}.choice-label[data-v-a16956be]{font-size:13px;font-weight:500}.choice-hint[data-v-a16956be]{color:var(--text-3);font-size:12px}textarea[data-v-a16956be]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-trigger[data-v-3c3d7ccf]{display:flex;flex-direction:column;gap:14px}.kind[data-v-3c3d7ccf]{display:flex}.examples[data-v-3c3d7ccf],.time[data-v-3c3d7ccf]{display:flex;flex-direction:column;gap:6px}.example-list[data-v-3c3d7ccf]{display:flex;flex-wrap:wrap;gap:6px}.label[data-v-3c3d7ccf]{color:var(--text-3);font-size:12px}.times[data-v-3c3d7ccf]{display:grid;grid-template-columns:1fr 1fr;gap:12px}.time input[data-v-3c3d7ccf]{padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px}.note[data-v-3c3d7ccf]{flex:1;color:var(--text-3);font-size:12px}.cards-page[data-v-82c96f74]{display:flex;flex-direction:column;height:100%;min-height:0}.cards-bar[data-v-82c96f74]{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 20px;border-bottom:1px solid var(--border)}.cards-count[data-v-82c96f74],.note[data-v-82c96f74]{color:var(--text-3);font-size:12px}.note[data-v-82c96f74]{flex:1}.cards[data-v-82c96f74]{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-82c96f74]{display:flex;flex-direction:column;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-82c96f74]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-82c96f74]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-82c96f74]{width:14px;height:14px}.card-title[data-v-82c96f74]{font-weight:600}.card-foot[data-v-82c96f74]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-82c96f74]{margin:0;color:var(--text-2)}.card-age[data-v-82c96f74]{margin-left:auto}\n"; document.head.appendChild(style); }
-import { ref as $, openBlock as c, createElementBlock as m, Fragment as w, renderList as T, createTextVNode as y, toDisplayString as g, createElementVNode as t, createVNode as f, unref as r, withDirectives as I, withKeys as K, withModifiers as z, vModelText as B, computed as S, normalizeClass as M, createCommentVNode as W, reactive as G, createBlock as x, withCtx as k } from "vue";
-import { Icon as D, useWindow as V, Dialog as R, Segmented as P, Btn as b, useRows as U, Skeleton as F, ago as X } from "@journal/window-kit";
-const j = [
+if (!document.getElementById("window-styles-faea43bf9ff6")) { const style = document.createElement("style"); style.id = "window-styles-faea43bf9ff6"; style.textContent = ".words[data-v-7a597156]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-7a597156]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-7a597156]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-7a597156]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.trigger-editor[data-v-a16956be]{display:flex;flex-direction:column;gap:14px}.summary[data-v-a16956be]{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.summary-label[data-v-a16956be],.field-label[data-v-a16956be]{color:var(--text-3);font-size:12px}.summary-text[data-v-a16956be]{margin:0;font-size:14px;line-height:1.55}.field[data-v-a16956be],.choices[data-v-a16956be]{display:flex;flex-direction:column;gap:6px}.choice[data-v-a16956be]{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--border-2);border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.choice.chosen[data-v-a16956be]{border-color:var(--accent);background:var(--accent-dim)}.choice-label[data-v-a16956be]{font-size:13px;font-weight:500}.choice-hint[data-v-a16956be]{color:var(--text-3);font-size:12px}textarea[data-v-a16956be]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-trigger[data-v-3c3d7ccf]{display:flex;flex-direction:column;gap:14px}.kind[data-v-3c3d7ccf]{display:flex}.examples[data-v-3c3d7ccf],.time[data-v-3c3d7ccf]{display:flex;flex-direction:column;gap:6px}.example-list[data-v-3c3d7ccf]{display:flex;flex-wrap:wrap;gap:6px}.label[data-v-3c3d7ccf]{color:var(--text-3);font-size:12px}.times[data-v-3c3d7ccf]{display:grid;grid-template-columns:1fr 1fr;gap:12px}.time input[data-v-3c3d7ccf]{padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px}.note[data-v-3c3d7ccf],.note[data-v-749ba1ff]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as b, openBlock as g, createElementBlock as k, Fragment as $, renderList as L, createTextVNode as x, toDisplayString as y, createElementVNode as s, createVNode as f, unref as d, withDirectives as E, withKeys as M, withModifiers as P, vModelText as I, computed as W, normalizeClass as U, createCommentVNode as B, reactive as V, createBlock as C, withCtx as w } from "vue";
+import { Icon as z, useWindow as R, Dialog as q, Segmented as F, Btn as O, useRows as X, RowCards as J } from "@journal/window-kit";
+const D = [
   { value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." }
-], J = [
+], Q = [
   { name: "Block a command", phrases: ["push --force"], action: "deny", text: "Never force-push. Ask me first." },
   { name: "Remind the agent when a word appears", phrases: ["CHANGELOG"], action: "nudge", text: "Add the change to src/CHANGELOG.md in plain words." },
   { name: "Tell the agent to stop and ask", phrases: ["migration"], action: "instruct", text: "Stop and ask me before you touch the database." }
-], q = (a) => j.find((u) => u.value === a) || j[0], H = (a) => `“${a}”`;
-function Q(a) {
-  const u = a.slice(0, 3).map(H), d = a.length - 3;
-  return d > 0 ? `${u.join(", ")} or ${d} other ${d === 1 ? "phrase" : "phrases"}` : u.length > 1 ? `${u.slice(0, -1).join(", ")} or ${u.at(-1)}` : u[0];
+], H = (n) => D.find((l) => l.value === n) || D[0], K = (n) => `“${n}”`;
+function Y(n) {
+  const l = n.slice(0, 3).map(K), i = n.length - 3;
+  return i > 0 ? `${l.join(", ")} or ${i} other ${i === 1 ? "phrase" : "phrases"}` : l.length > 1 ? `${l.slice(0, -1).join(", ")} or ${l.at(-1)}` : l[0];
 }
-const Y = {
-  nudge: (a) => `remind the agent ${a}`,
-  instruct: (a) => `tell the agent to do this now: ${a}`,
-  deny: (a) => `block it and tell the agent ${a}`
+const Z = {
+  nudge: (n) => `remind the agent ${n}`,
+  instruct: (n) => `tell the agent to do this now: ${n}`,
+  deny: (n) => `block it and tell the agent ${n}`
 };
-function Z(a) {
-  return a.phrases.length ? `When ${Q(a.phrases)} comes up, ${Y[a.action](a.text ? H(a.text) : "(no text yet)")}.` : "Add the words to watch for and choose what happens.";
+function ee(n) {
+  return n.phrases.length ? `When ${Y(n.phrases)} comes up, ${Z[n.action](n.text ? K(n.text) : "(no text yet)")}.` : "Add the words to watch for and choose what happens.";
 }
-const A = (a, u) => {
-  const d = a.__vccOpts || a;
-  for (const [h, p] of u)
-    d[h] = p;
-  return d;
-}, ee = { class: "words" }, te = ["aria-label", "onClick"], se = ["onKeydown"], ne = {
+const T = (n, l) => {
+  const i = n.__vccOpts || n;
+  for (const [m, v] of l)
+    i[m] = v;
+  return i;
+}, te = { class: "words" }, ne = ["aria-label", "onClick"], se = ["onKeydown"], oe = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
-  setup(a, { emit: u }) {
-    const d = a, h = u, p = $("");
-    function v() {
-      const n = p.value.trim();
-      p.value = "", n && !d.words.includes(n) && h("words", [...d.words, n]);
+  setup(n, { emit: l }) {
+    const i = n, m = l, v = b("");
+    function u() {
+      const t = v.value.trim();
+      v.value = "", t && !i.words.includes(t) && m("words", [...i.words, t]);
     }
-    const l = (n) => h("words", d.words.filter((i) => i !== n));
-    return (n, i) => (c(), m("div", ee, [
-      (c(!0), m(w, null, T(a.words, (_) => (c(), m("span", {
-        key: _,
+    const a = (t) => m("words", i.words.filter((r) => r !== t));
+    return (t, r) => (g(), k("div", te, [
+      (g(!0), k($, null, L(n.words, (h) => (g(), k("span", {
+        key: h,
         class: "word"
       }, [
-        y(g(_) + " ", 1),
-        t("button", {
+        x(y(h) + " ", 1),
+        s("button", {
           type: "button",
           class: "word-remove",
-          "aria-label": `Remove ${_}`,
-          onClick: (C) => l(_)
+          "aria-label": `Remove ${h}`,
+          onClick: (N) => a(h)
         }, [
-          f(r(D), {
+          f(d(z), {
             name: "close",
             size: 11
           })
-        ], 8, te)
+        ], 8, ne)
       ]))), 128)),
-      I(t("input", {
-        "onUpdate:modelValue": i[0] || (i[0] = (_) => p.value = _),
+      E(s("input", {
+        "onUpdate:modelValue": r[0] || (r[0] = (h) => v.value = h),
         class: "word-input",
         placeholder: "Add a word, then Enter",
         "aria-label": "Add a word",
         "data-trigger-word": "",
-        onKeydown: K(z(v, ["prevent"]), ["enter"]),
-        onBlur: v
+        onKeydown: M(P(u, ["prevent"]), ["enter"]),
+        onBlur: u
       }, null, 40, se), [
-        [B, p.value]
+        [I, v.value]
       ])
     ]));
   }
-}, ae = /* @__PURE__ */ A(ne, [["__scopeId", "data-v-7a597156"]]), oe = { class: "trigger-editor" }, re = { class: "summary" }, le = { class: "summary-text" }, ie = { class: "field" }, de = { class: "field" }, ce = { class: "choices" }, ue = ["data-action", "onClick"], ge = { class: "choice-label" }, he = { class: "choice-hint" }, ve = { class: "field" }, me = { class: "field-label" }, pe = ["value", "placeholder"], fe = {
+}, ae = /* @__PURE__ */ T(oe, [["__scopeId", "data-v-7a597156"]]), re = { class: "trigger-editor" }, le = { class: "summary" }, ie = { class: "summary-text" }, de = { class: "field" }, ue = { class: "field" }, ce = { class: "choices" }, ge = ["data-action", "onClick"], me = { class: "choice-label" }, ve = { class: "choice-hint" }, he = { class: "field" }, pe = { class: "field-label" }, fe = ["value", "placeholder"], we = {
   __name: "TriggerEditor",
   props: { trigger: { type: Object, required: !0 } },
   emits: ["change"],
-  setup(a, { emit: u }) {
-    const d = a, h = u, p = S(() => q(d.trigger.action)), v = S(() => !!d.trigger.next_at);
-    return (l, n) => (c(), m("div", oe, [
-      v.value ? W("", !0) : (c(), m(w, { key: 0 }, [
-        t("div", re, [
-          n[2] || (n[2] = t("span", { class: "summary-label" }, "What it does", -1)),
-          t("p", le, g(r(Z)(a.trigger)), 1)
+  setup(n, { emit: l }) {
+    const i = n, m = l, v = W(() => H(i.trigger.action)), u = W(() => !!i.trigger.next_at);
+    return (a, t) => (g(), k("div", re, [
+      u.value ? B("", !0) : (g(), k($, { key: 0 }, [
+        s("div", le, [
+          t[2] || (t[2] = s("span", { class: "summary-label" }, "What it does", -1)),
+          s("p", ie, y(d(ee)(n.trigger)), 1)
         ]),
-        t("div", ie, [
-          n[3] || (n[3] = t("span", { class: "field-label" }, "When these words appear", -1)),
+        s("div", de, [
+          t[3] || (t[3] = s("span", { class: "field-label" }, "When these words appear", -1)),
           f(ae, {
-            words: a.trigger.phrases,
-            onWords: n[0] || (n[0] = (i) => h("change", { phrases: i }))
+            words: n.trigger.phrases,
+            onWords: t[0] || (t[0] = (r) => m("change", { phrases: r }))
           }, null, 8, ["words"])
         ]),
-        t("div", de, [
-          n[4] || (n[4] = t("span", { class: "field-label" }, "What this trigger does", -1)),
-          t("div", ce, [
-            (c(!0), m(w, null, T(r(j), (i) => (c(), m("button", {
-              key: i.value,
+        s("div", ue, [
+          t[4] || (t[4] = s("span", { class: "field-label" }, "What this trigger does", -1)),
+          s("div", ce, [
+            (g(!0), k($, null, L(d(D), (r) => (g(), k("button", {
+              key: r.value,
               type: "button",
-              class: M(["choice", { chosen: i.value === a.trigger.action }]),
-              "data-action": i.value,
-              onClick: (_) => h("change", { action: i.value })
+              class: U(["choice", { chosen: r.value === n.trigger.action }]),
+              "data-action": r.value,
+              onClick: (h) => m("change", { action: r.value })
             }, [
-              t("span", ge, g(i.label), 1),
-              t("span", he, g(i.hint), 1)
-            ], 10, ue))), 128))
+              s("span", me, y(r.label), 1),
+              s("span", ve, y(r.hint), 1)
+            ], 10, ge))), 128))
           ])
         ])
       ], 64)),
-      t("label", ve, [
-        t("span", me, g(v.value ? "What to tell the agent" : p.value.ask), 1),
-        t("textarea", {
-          value: a.trigger.text,
+      s("label", he, [
+        s("span", pe, y(u.value ? "What to tell the agent" : v.value.ask), 1),
+        s("textarea", {
+          value: n.trigger.text,
           rows: "3",
-          placeholder: p.value.example,
+          placeholder: v.value.example,
           "data-trigger-text": "",
-          onChange: n[1] || (n[1] = (i) => h("change", { text: i.target.value }))
-        }, null, 40, pe)
+          onChange: t[1] || (t[1] = (r) => m("change", { text: r.target.value }))
+        }, null, 40, fe)
       ])
     ]));
   }
-}, L = /* @__PURE__ */ A(fe, [["__scopeId", "data-v-a16956be"]]), _e = { class: "new-trigger" }, ke = { class: "kind" }, ye = { class: "examples" }, we = { class: "example-list" }, $e = { class: "times" }, be = { class: "time" }, xe = { class: "time" }, Ce = ["disabled"], Ne = {
+}, j = /* @__PURE__ */ T(we, [["__scopeId", "data-v-a16956be"]]), ke = { class: "new-trigger" }, ye = { class: "kind" }, _e = { class: "examples" }, be = { class: "example-list" }, $e = { class: "times" }, xe = { class: "time" }, Ce = { class: "time" }, Oe = ["disabled"], Ne = {
   class: "note",
   role: "status"
 }, We = {
   __name: "NewTrigger",
   emits: ["close"],
-  setup(a, { emit: u }) {
-    const d = [
+  setup(n, { emit: l }) {
+    const i = [
       { key: "words", label: "When words appear" },
       { key: "time", label: "On a schedule" }
-    ], h = u, p = V(), v = $("words"), l = G({ phrases: [], action: "nudge", text: "" }), n = G({ every: "", at: "" }), i = $(""), _ = S(() => v.value === "time" ? l.text.trim() ? n.every || n.at ? "" : "Choose a time or how often." : "Write what to tell the agent." : l.phrases.length ? l.text.trim() ? "" : `Write ${q(l.action).ask.toLowerCase()}.` : "Add at least one word."), C = ({ phrases: o, action: e, text: s }) => Object.assign(l, { phrases: o, action: e, text: s });
-    function O() {
-      if (v.value === "words") return ["trigger", "make", l.phrases.join(", "), l.text.trim(), "--do", l.action];
-      const o = n.every ? ["--every", String(n.every)] : ["--at", new Date(n.at).toISOString()];
-      return ["trigger", "schedule", l.text.trim(), ...o];
+    ], m = l, v = R(), u = b("words"), a = V({ phrases: [], action: "nudge", text: "" }), t = V({ every: "", at: "" }), r = b(""), h = W(() => u.value === "time" ? a.text.trim() ? t.every || t.at ? "" : "Choose a time or how often." : "Write what to tell the agent." : a.phrases.length ? a.text.trim() ? "" : `Write ${H(a.action).ask.toLowerCase()}.` : "Add at least one word."), N = ({ phrases: p, action: o, text: e }) => Object.assign(a, { phrases: p, action: o, text: e });
+    function A() {
+      if (u.value === "words") return ["trigger", "make", a.phrases.join(", "), a.text.trim(), "--do", a.action];
+      const p = t.every ? ["--every", String(t.every)] : ["--at", new Date(t.at).toISOString()];
+      return ["trigger", "schedule", a.text.trim(), ...p];
     }
-    async function E() {
-      const o = await p.run(O());
-      i.value = o.ok ? "" : o.error, o.ok && h("close");
+    async function S() {
+      const p = await v.run(A());
+      r.value = p.ok ? "" : p.error, p.ok && m("close");
     }
-    return (o, e) => (c(), x(r(R), {
+    return (p, o) => (g(), C(d(q), {
       title: "New trigger",
-      onClose: e[6] || (e[6] = (s) => h("close"))
+      onClose: o[6] || (o[6] = (e) => m("close"))
     }, {
-      foot: k(() => [
-        t("span", Ne, g(i.value || _.value), 1),
-        f(r(b), {
-          onClick: e[5] || (e[5] = (s) => h("close"))
+      foot: w(() => [
+        s("span", Ne, y(r.value || h.value), 1),
+        f(d(O), {
+          onClick: o[5] || (o[5] = (e) => m("close"))
         }, {
-          default: k(() => [...e[10] || (e[10] = [
-            y("Cancel", -1)
+          default: w(() => [...o[10] || (o[10] = [
+            x("Cancel", -1)
           ])]),
           _: 1
         }),
-        f(r(b), {
+        f(d(O), {
           kind: "primary",
-          disabled: !!_.value,
+          disabled: !!h.value,
           "data-trigger-create": "",
-          onClick: E
+          onClick: S
         }, {
-          default: k(() => [...e[11] || (e[11] = [
-            y("Create trigger", -1)
+          default: w(() => [...o[11] || (o[11] = [
+            x("Create trigger", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
       ]),
-      default: k(() => [
-        t("div", _e, [
-          t("div", ke, [
-            f(r(P), {
-              options: d,
-              value: v.value,
-              onPick: e[0] || (e[0] = (s) => v.value = s)
+      default: w(() => [
+        s("div", ke, [
+          s("div", ye, [
+            f(d(F), {
+              options: i,
+              value: u.value,
+              onPick: o[0] || (o[0] = (e) => u.value = e)
             }, null, 8, ["value"])
           ]),
-          v.value === "words" ? (c(), m(w, { key: 0 }, [
-            t("div", ye, [
-              e[7] || (e[7] = t("span", { class: "label" }, "Start with an example", -1)),
-              t("div", we, [
-                (c(!0), m(w, null, T(r(J), (s) => (c(), x(r(b), {
-                  key: s.name,
+          u.value === "words" ? (g(), k($, { key: 0 }, [
+            s("div", _e, [
+              o[7] || (o[7] = s("span", { class: "label" }, "Start with an example", -1)),
+              s("div", be, [
+                (g(!0), k($, null, L(d(Q), (e) => (g(), C(d(O), {
+                  key: e.name,
                   small: "",
                   bordered: "",
-                  onClick: (N) => C(s)
+                  onClick: (c) => N(e)
                 }, {
-                  default: k(() => [
-                    y(g(s.name), 1)
+                  default: w(() => [
+                    x(y(e.name), 1)
                   ]),
                   _: 2
                 }, 1032, ["onClick"]))), 128))
               ])
             ]),
-            f(L, {
-              trigger: l,
-              onChange: e[1] || (e[1] = (s) => Object.assign(l, s))
+            f(j, {
+              trigger: a,
+              onChange: o[1] || (o[1] = (e) => Object.assign(a, e))
             }, null, 8, ["trigger"])
-          ], 64)) : (c(), m(w, { key: 1 }, [
-            f(L, {
-              trigger: { ...l, next_at: "scheduled" },
-              onChange: e[2] || (e[2] = (s) => Object.assign(l, s))
+          ], 64)) : (g(), k($, { key: 1 }, [
+            f(j, {
+              trigger: { ...a, next_at: "scheduled" },
+              onChange: o[2] || (o[2] = (e) => Object.assign(a, e))
             }, null, 8, ["trigger"]),
-            t("div", $e, [
-              t("label", be, [
-                e[8] || (e[8] = t("span", { class: "label" }, "Every so many minutes", -1)),
-                I(t("input", {
-                  "onUpdate:modelValue": e[3] || (e[3] = (s) => n.every = s),
+            s("div", $e, [
+              s("label", xe, [
+                o[8] || (o[8] = s("span", { class: "label" }, "Every so many minutes", -1)),
+                E(s("input", {
+                  "onUpdate:modelValue": o[3] || (o[3] = (e) => t.every = e),
                   type: "number",
                   min: "1",
                   "data-trigger-every": ""
                 }, null, 512), [
-                  [B, n.every]
+                  [I, t.every]
                 ])
               ]),
-              t("label", xe, [
-                e[9] || (e[9] = t("span", { class: "label" }, "Or once, at", -1)),
-                I(t("input", {
-                  "onUpdate:modelValue": e[4] || (e[4] = (s) => n.at = s),
+              s("label", Ce, [
+                o[9] || (o[9] = s("span", { class: "label" }, "Or once, at", -1)),
+                E(s("input", {
+                  "onUpdate:modelValue": o[4] || (o[4] = (e) => t.at = e),
                   type: "datetime-local",
-                  disabled: !!n.every,
+                  disabled: !!t.every,
                   "data-trigger-at": ""
-                }, null, 8, Ce), [
-                  [B, n.at]
+                }, null, 8, Oe), [
+                  [I, t.at]
                 ])
               ])
             ])
@@ -228,119 +228,85 @@ const A = (a, u) => {
       _: 1
     }));
   }
-}, Se = /* @__PURE__ */ A(We, [["__scopeId", "data-v-3c3d7ccf"]]), Te = { class: "cards-page" }, Ae = { class: "cards-bar" }, Oe = { class: "cards-count" }, Ee = { class: "cards" }, Ie = {
-  key: 1,
-  class: "cards-note"
-}, Be = {
-  key: 2,
-  class: "cards-note"
-}, De = ["data-row", "onClick"], je = { class: "card-head" }, Le = { class: "card-age" }, Ge = { class: "card-title" }, Ve = { class: "card-foot" }, Re = {
+}, Te = /* @__PURE__ */ T(We, [["__scopeId", "data-v-3c3d7ccf"]]), Ae = {
   class: "note",
   role: "status"
-}, qe = {
+}, Se = {
   __name: "TriggerCards",
-  setup(a) {
-    const u = V(), { rows: d, failure: h, loaded: p } = U("trigger list", ["trigger.*"]), v = $(!1), l = $(null), n = $(""), i = S(() => d.value.find((o) => o.id === l.value) || null), _ = {
-      phrases: (o) => ["--phrases", ...o],
-      action: (o) => ["--action", o],
-      text: (o) => ["--text", o]
-    };
-    async function C(o) {
-      const [[e, s]] = Object.entries(o), N = await u.run(["trigger", "edit", String(l.value), ..._[e](s)]);
-      n.value = N.ok ? "" : N.error;
+  setup(n) {
+    const l = R(), { rows: i, failure: m, loaded: v } = X("trigger list", ["trigger.*"]), u = b(!1), a = b(null), t = b(""), r = W(() => i.value.find((e) => e.id === a.value) || null), h = {
+      phrases: (e) => ["--phrases", ...e],
+      action: (e) => ["--action", e],
+      text: (e) => ["--text", e]
+    }, N = (e) => `Trigger ${e.id} · ${e.action}`, A = (e) => e.next_at ? `Next at ${new Date(e.next_at).toLocaleString()}` : `When these come up: ${e.phrases.join(", ")}`;
+    async function S(e) {
+      const [[c, _]] = Object.entries(e), G = await l.run(["trigger", "edit", String(a.value), ...h[c](_)]);
+      t.value = G.ok ? "" : G.error;
     }
-    async function O() {
-      const o = await u.run(["trigger", "strike", String(l.value)]);
-      n.value = o.ok ? "" : o.error, o.ok && (l.value = null);
+    async function p() {
+      const e = await l.run(["trigger", "strike", String(a.value)]);
+      t.value = e.ok ? "" : e.error, e.ok && (a.value = null);
     }
-    function E(o) {
-      n.value = "", l.value = o.id;
+    function o(e) {
+      t.value = "", a.value = e.id;
     }
-    return (o, e) => (c(), m("div", Te, [
-      t("div", Ae, [
-        t("span", Oe, g(r(d).length) + " " + g(r(d).length === 1 ? "trigger" : "triggers"), 1),
-        f(r(b), {
-          small: "",
-          bordered: "",
-          "data-trigger-new": "",
-          onClick: e[0] || (e[0] = (s) => v.value = !0)
+    return (e, c) => (g(), C(d(J), {
+      noun: "trigger",
+      icon: "bolt",
+      rows: d(i),
+      failure: d(m),
+      loaded: d(v),
+      head: N,
+      title: (_) => _.text,
+      foot: A,
+      onNew: c[3] || (c[3] = (_) => u.value = !0),
+      onOpen: o
+    }, {
+      default: w(() => [
+        u.value ? (g(), C(Te, {
+          key: 0,
+          onClose: c[0] || (c[0] = (_) => u.value = !1)
+        })) : B("", !0),
+        r.value ? (g(), C(d(q), {
+          key: 1,
+          title: `Trigger ${r.value.id}`,
+          onClose: c[2] || (c[2] = (_) => a.value = null)
         }, {
-          default: k(() => [
-            f(r(D), {
-              name: "plus",
-              size: 12
+          foot: w(() => [
+            s("span", Ae, y(t.value), 1),
+            f(d(O), {
+              kind: "danger",
+              "data-trigger-strike": "",
+              onClick: p
+            }, {
+              default: w(() => [...c[4] || (c[4] = [
+                x("End this trigger", -1)
+              ])]),
+              _: 1
             }),
-            e[4] || (e[4] = y(" New trigger", -1))
+            f(d(O), {
+              "data-trigger-done": "",
+              onClick: c[1] || (c[1] = (_) => a.value = null)
+            }, {
+              default: w(() => [...c[5] || (c[5] = [
+                x("Done", -1)
+              ])]),
+              _: 1
+            })
+          ]),
+          default: w(() => [
+            f(j, {
+              trigger: r.value,
+              onChange: S
+            }, null, 8, ["trigger"])
           ]),
           _: 1
-        })
+        }, 8, ["title"])) : B("", !0)
       ]),
-      t("div", Ee, [
-        r(p) ? r(h) ? (c(), m("p", Ie, g(r(h)), 1)) : r(p) && !r(d).length ? (c(), m("p", Be, "No triggers yet")) : W("", !0) : (c(), x(r(F), {
-          key: 0,
-          shape: "cards"
-        })),
-        (c(!0), m(w, null, T(r(d), (s) => (c(), m("button", {
-          key: s.id,
-          type: "button",
-          class: "card",
-          "data-row": s.id,
-          onClick: (N) => E(s)
-        }, [
-          t("span", je, [
-            f(r(D), {
-              name: "bolt",
-              class: "card-icon"
-            }),
-            y(" Trigger " + g(s.id) + " · " + g(s.action), 1),
-            t("span", Le, g(r(X)(s.created_at)), 1)
-          ]),
-          t("span", Ge, g(s.text), 1),
-          t("span", Ve, g(s.next_at ? `Next at ${new Date(s.next_at).toLocaleString()}` : `When these come up: ${s.phrases.join(", ")}`), 1)
-        ], 8, De))), 128))
-      ]),
-      v.value ? (c(), x(Se, {
-        key: 0,
-        onClose: e[1] || (e[1] = (s) => v.value = !1)
-      })) : W("", !0),
-      i.value ? (c(), x(r(R), {
-        key: 1,
-        title: `Trigger ${i.value.id}`,
-        onClose: e[3] || (e[3] = (s) => l.value = null)
-      }, {
-        foot: k(() => [
-          t("span", Re, g(n.value), 1),
-          f(r(b), {
-            kind: "danger",
-            "data-trigger-strike": "",
-            onClick: O
-          }, {
-            default: k(() => [...e[5] || (e[5] = [
-              y("End this trigger", -1)
-            ])]),
-            _: 1
-          }),
-          f(r(b), {
-            "data-trigger-done": "",
-            onClick: e[2] || (e[2] = (s) => l.value = null)
-          }, {
-            default: k(() => [...e[6] || (e[6] = [
-              y("Done", -1)
-            ])]),
-            _: 1
-          })
-        ]),
-        default: k(() => [
-          f(L, {
-            trigger: i.value,
-            onChange: C
-          }, null, 8, ["trigger"])
-        ]),
-        _: 1
-      }, 8, ["title"])) : W("", !0)
-    ]));
+      _: 1
+    }, 8, ["rows", "failure", "loaded", "title"]));
   }
-}, ze = /* @__PURE__ */ A(qe, [["__scopeId", "data-v-82c96f74"]]);
+}, Be = /* @__PURE__ */ T(Se, [["__scopeId", "data-v-749ba1ff"]]);
 export {
-  ze as default
+  Be as default
 };

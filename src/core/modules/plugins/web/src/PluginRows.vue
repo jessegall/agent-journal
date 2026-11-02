@@ -1,8 +1,11 @@
 <script setup>
 import {ref} from "vue";
-import {Dashboard, Dialog, Btn, Skeleton, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {Dashboard, Dialog, Btn, Skeleton, useReadLine, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
 import PluginGuide from "./PluginGuide.vue";
 import PluginInstallPreview from "./PluginInstallPreview.vue";
+import PluginRecordDialog from "./PluginRecordDialog.vue";
+import PluginSettingList from "./PluginSettingList.vue";
+import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 import PluginServices from "./PluginServices.vue";
 
 // the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
@@ -100,7 +103,6 @@ async function toggleSettings(row) {
 
 const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
 
-const record = ref(null);
 
 // a plugin that reports cards writes them as JSON; what a person reads is each card's words
 function outputWords(text) {
@@ -110,13 +112,7 @@ function outputWords(text) {
         return text;
     }
 }
-const recordFailure = ref("");
-
-async function showRecord(row) {
-    const answer = await context.read(`plugin record ${row.name}`);
-    recordFailure.value = answer.ok ? "" : answer.error;
-    record.value = answer.ok ? answer.value : null;
-}
+const {value: record, failure: recordFailure, load: showRecord} = useReadLine((row) => `plugin record ${row.name}`);
 </script>
 
 <template>
@@ -185,17 +181,7 @@ async function showRecord(row) {
                     </template>
                 </template>
                 <template v-if="settings[row.name]">
-                    <div class="plugin-settings" data-plugin-setting-list>
-                        <template v-if="!settings[row.name].length">
-                            <p class="plugin-note">This plugin has no settings</p>
-                        </template>
-                        <template v-for="setting in settings[row.name]" :key="setting.key">
-                            <label class="plugin-setting">
-                                <span class="plugin-setting-title">{{ setting.title || setting.key }}</span>
-                                <input :value="setting.value" :data-plugin-setting="setting.key" @change="configure(row, setting, $event.target.value)">
-                            </label>
-                        </template>
-                    </div>
+                    <PluginSettingList :settings="settings[row.name]" @configure="(setting, value) => configure(row, setting, value)" />
                 </template>
             </div>
         </template>
@@ -204,43 +190,14 @@ async function showRecord(row) {
         <p class="plugin-fault" role="alert" data-plugin-record-failure>{{ recordFailure }}</p>
     </template>
     <template v-if="record">
-        <Dialog :title="`What ${record.name} did`" @close="record = null">
-            <div data-plugin-record-body>
-                <template v-if="record.last_fault">
-                    <p class="plugin-fault">Last fault, {{ record.fault_count }} without a success: {{ record.last_fault }}</p>
-                </template>
-                <template v-if="record.services?.length">
-                    <p class="plugin-note" data-plugin-services>Keeps running: {{ record.services.map((service) => service.name).join(", ") }}</p>
-                </template>
-                <template v-if="!record.outputs.length">
-                    <p class="plugin-note">It has done nothing yet.</p>
-                </template>
-                <template v-for="row in record.outputs" :key="row.id">
-                    <p class="plugin-output" data-plugin-output>{{ outputWords(row.output) }}</p>
-                </template>
-            </div>
-        </Dialog>
+        <PluginRecordDialog :record="record" @close="record = null" />
     </template>
     <PluginServices />
     <template v-if="preview">
         <PluginInstallPreview :preview="preview" @close="preview = null" @install="install" />
     </template>
     <template v-if="upgrade">
-        <Dialog :title="`Upgrade ${upgrade.name}`" @close="upgrade = null">
-            <div data-plugin-upgrade-body>
-                <p class="plugin-note">{{ upgrade.installed }} to {{ upgrade.version }}. Services that run keep the old code until the journal restarts.</p>
-                <template v-if="!upgrade.changes.length">
-                    <p class="plugin-note">It runs the same commands as the version you have.</p>
-                </template>
-                <template v-for="change in upgrade.changes" :key="change">
-                    <p class="plugin-output" data-plugin-upgrade-change>{{ change }}</p>
-                </template>
-            </div>
-            <template #foot>
-                <Btn @click="upgrade = null">Cancel</Btn>
-                <Btn kind="primary" data-plugin-upgrade-apply @click="applyUpgrade">Upgrade</Btn>
-            </template>
-        </Dialog>
+        <PluginUpgradeDialog :upgrade="upgrade" @close="upgrade = null" @apply="applyUpgrade" />
     </template>
     <template v-if="guide">
         <PluginGuide @close="guide = false" />
@@ -253,12 +210,6 @@ async function showRecord(row) {
 </template>
 
 <style scoped>
-.plugin-output {
-    margin: 0 0 6px;
-    font-size: 13px;
-    white-space: pre-wrap;
-}
-
 .plugin-note {
     margin: 0;
     color: var(--text-2);
@@ -287,24 +238,6 @@ async function showRecord(row) {
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 6px;
-}
-
-.plugin-settings {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.plugin-setting {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.plugin-setting-title {
-    color: var(--text-3);
-    font-size: 12px;
 }
 
 .plugins {

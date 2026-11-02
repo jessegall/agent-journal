@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, MenuItem, MenuLabel, MenuPanel, useWindow} from "@journal/window-kit";
+import {Btn, MenuItem, MenuLabel, MenuPanel, SwitchCase, useWindow} from "@journal/window-kit";
 
 const STATES = ["started", "open", "blocked", "testing", "completed", "cancelled"];
 const GROUPINGS = [
@@ -56,37 +56,39 @@ async function remove() {
     <Btn small data-menu-more :disabled="!selected" @click="opened('more', $event)">More</Btn>
     <template v-if="menu">
         <MenuPanel :anchor="menu.anchor" :min-width="240" :max-width="320" @close="menu = null">
-            <template v-if="menu.kind === 'filter'">
-                <MenuLabel>Show tasks that are</MenuLabel>
-                <template v-for="state in STATES" :key="state">
-                    <MenuItem :on="states.includes(state)" :data-filter-state="state" @click="toggled(state)">{{ name(state) }}</MenuItem>
+            <SwitchCase :value="menu.kind">
+                <template #filter>
+                    <MenuLabel>Show tasks that are</MenuLabel>
+                    <template v-for="state in STATES" :key="state">
+                        <MenuItem :on="states.includes(state)" :data-filter-state="state" @click="toggled(state)">{{ name(state) }}</MenuItem>
+                    </template>
+                    <MenuItem data-filter-clear @click="(emit('states', []), (menu = null))">Show every task that is not done</MenuItem>
                 </template>
-                <MenuItem data-filter-clear @click="(emit('states', []), (menu = null))">Show every task that is not done</MenuItem>
-            </template>
-            <template v-else-if="menu.kind === 'display'">
-                <MenuLabel>Group the list by</MenuLabel>
-                <template v-for="grouping in GROUPINGS" :key="grouping.key">
-                    <MenuItem :on="display.grouping === grouping.key" :data-grouping="grouping.key" @click="changed({grouping: grouping.key})">{{ grouping.label }}</MenuItem>
+                <template #display>
+                    <MenuLabel>Group the list by</MenuLabel>
+                    <template v-for="grouping in GROUPINGS" :key="grouping.key">
+                        <MenuItem :on="display.grouping === grouping.key" :data-grouping="grouping.key" @click="changed({grouping: grouping.key})">{{ grouping.label }}</MenuItem>
+                    </template>
+                    <MenuLabel>Show on each task</MenuLabel>
+                    <template v-for="shown in SHOWN" :key="shown.key">
+                        <MenuItem :on="display[shown.key]" :data-shown="shown.key" @click="changed({[shown.key]: !display[shown.key]})">{{ shown.label }}</MenuItem>
+                    </template>
+                    <MenuItem :on="display.showDone" data-show-done @click="changed({showDone: !display.showDone})">Show completed tasks</MenuItem>
                 </template>
-                <MenuLabel>Show on each task</MenuLabel>
-                <template v-for="shown in SHOWN" :key="shown.key">
-                    <MenuItem :on="display[shown.key]" :data-shown="shown.key" @click="changed({[shown.key]: !display[shown.key]})">{{ shown.label }}</MenuItem>
+                <template #keys>
+                    <MenuLabel>Keys</MenuLabel>
+                    <template v-for="[keys, what] in KEYS" :key="keys">
+                        <span class="key-line">{{ what }}<kbd>{{ keys }}</kbd></span>
+                    </template>
                 </template>
-                <MenuItem :on="display.showDone" data-show-done @click="changed({showDone: !display.showDone})">Show completed tasks</MenuItem>
-            </template>
-            <template v-else-if="menu.kind === 'keys'">
-                <MenuLabel>Keys</MenuLabel>
-                <template v-for="[keys, what] in KEYS" :key="keys">
-                    <span class="key-line">{{ what }}<kbd>{{ keys }}</kbd></span>
+                <template #default>
+                    <MenuLabel>Task {{ selected }}</MenuLabel>
+                    <MenuItem data-delete-task @click="remove">{{ sure ? "Delete it for good" : "Delete" }}</MenuItem>
+                    <template v-if="refusal">
+                        <p class="menu-note" role="alert">{{ refusal }}</p>
+                    </template>
                 </template>
-            </template>
-            <template v-else>
-                <MenuLabel>Task {{ selected }}</MenuLabel>
-                <MenuItem data-delete-task @click="remove">{{ sure ? "Delete it for good" : "Delete" }}</MenuItem>
-                <template v-if="refusal">
-                    <p class="menu-note" role="alert">{{ refusal }}</p>
-                </template>
-            </template>
+            </SwitchCase>
         </MenuPanel>
     </template>
 </template>

@@ -29,7 +29,7 @@ test("a check card shows its title, verdict and how often it runs, and its comma
     expect(card.querySelector("pre")).toBeNull();
     card.click();
     await settled();
-    expect(card.querySelector("pre").textContent).toBe("two problems");
+    expect(document.body.querySelector("[data-check-output]").textContent).toBe("two problems");
 });
 
 test("a window with no rows says so", async () => {

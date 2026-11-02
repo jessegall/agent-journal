@@ -1,18 +1,12 @@
 <script setup>
-import {ref} from "vue";
-import {Btn, usePoll, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, usePoll, useReadLine, useWindow} from "@journal/window-kit";
 
 // what each kind of hook has cost since the counts began, read again every few seconds: by name or slowest first, and a reset
 const context = useWindow();
-const rows = ref([]);
-const failure = ref("");
 const slowestFirst = ref(false);
-
-async function load() {
-    const answer = await context.read(`developer numbers${slowestFirst.value ? " --slowest" : ""}`);
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) rows.value = answer.value.rows;
-}
+const {value: numbers, failure, load} = useReadLine(() => `developer numbers${slowestFirst.value ? " --slowest" : ""}`);
+const rows = computed(() => numbers.value?.rows ?? []);
 
 function sortBySlowest() {
     slowestFirst.value = !slowestFirst.value;

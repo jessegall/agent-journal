@@ -6,35 +6,32 @@ import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
-import Segmented from "../kit/Segmented.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import RowMoves from "../resource/RowMoves.vue";
 import {updatedAt} from "../domain/row.js";
 import {ago} from "../format/time.js";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
-import {PRIORITY_LEVELS} from "../domain/taskPriority.js";
+import {statusIcon} from "../domain/taskStatus.js";
+import TaskFacts from "./TaskFacts.vue";
+import TaskSections from "./TaskSections.vue";
 import CommentSide from "../resource/CommentSide.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 
 // one task as version 4's inspector drew it: where it stands, why it stopped, what it waits on, its brief and log, and what can be done to it
-const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
-const FINISHED = new Set(["completed", "cancelled"]);
-const LONG_BRIEF = 180;
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, lone: Boolean, stepped: Boolean, backed: Boolean, changes: {type: Number, default: 0}});
 const emit = defineEmits(["close", "step", "select", "back", "comments"]);
 const task = ref(null);
 const place = ref(null);
 const failure = ref("");
 const refusal = ref("");
-const briefWhole = ref(false);
 const menu = ref(null);
 const footer = ref(null);
 const textComments = useTextComments(() => (task.value ? {kind: "task", id: props.id, title: task.value.title} : {}), (line) => props.read(line));
 watch(textComments.open, (open) => emit("comments", open));
 let reading = 0;
 
-const iconOf = (state) => (FINISHED.has(state) ? "done" : state);
+const iconOf = statusIcon;
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const crumb = computed(() => {
     if (!place.value?.plan_id) return "Not in a plan";
@@ -53,7 +50,6 @@ async function load() {
 watch(() => props.id, () => {
     task.value = null;
     place.value = null;
-    briefWhole.value = false;
     menu.value = null;
     load();
 }, {immediate: true});
@@ -127,68 +123,8 @@ defineExpose({openStatus});
                         <p class="text">{{ task.reason }}</p>
                     </section>
                 </template>
-                <div class="facts">
-                    <div class="fact wide">
-                        <span class="fact-label">Plan</span>
-                        <span class="fact-value">{{ place?.plan_id ? `Plan ${place.plan_id}: ${place.plan_title}` : "Not in a plan" }}</span>
-                    </div>
-                    <template v-if="place?.phase_total > 1">
-                        <div class="fact">
-                            <span class="fact-label">Phase</span>
-                            <span class="fact-value">{{ place.phase_number }} of {{ place.phase_total }}: {{ place.phase_title }}</span>
-                        </div>
-                    </template>
-                    <template v-if="task.state === 'started' && task.holder_id">
-                        <div class="fact">
-                            <span class="fact-label">Holder</span>
-                            <span class="fact-value">Agent {{ task.holder_id }}</span>
-                        </div>
-                    </template>
-                    <template v-if="!FINISHED.has(task.state)">
-                        <div class="fact wide">
-                            <span class="fact-label">Priority</span>
-                            <Segmented :options="PRIORITIES" :value="String(task.priority)" data-task-priority @pick="setPriority" />
-                            <template v-if="refusal">
-                                <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-                <template v-if="task.waits.length">
-                    <section class="part" data-resource-waits>
-                        <h4>Waits on</h4>
-                        <template v-for="wait in task.waits" :key="wait.id">
-                            <button type="button" class="wait" @click="emit('select', wait.id)">
-                                <TaskStatusIcon :status="iconOf(wait.state)" :size="12" />
-                                <span class="wait-id">{{ wait.id }}</span>
-                                <span class="wait-title">{{ wait.title }}</span>
-                            </button>
-                        </template>
-                    </section>
-                </template>
-                <template v-if="task.state === 'completed' && task.outcome">
-                    <section class="part" data-task-outcome>
-                        <h4>How it was done</h4>
-                        <p class="text">{{ task.outcome }}</p>
-                    </section>
-                </template>
-                <template v-if="task.brief">
-                    <section class="part" data-task-brief>
-                        <h4>The brief</h4>
-                        <p :class="['text', {clamped: !briefWhole}]">{{ task.brief }}</p>
-                        <template v-if="task.brief.length > LONG_BRIEF && !briefWhole">
-                            <button type="button" class="more" @click="briefWhole = true">Show the whole brief</button>
-                        </template>
-                    </section>
-                </template>
-                <template v-if="task.logs.length">
-                    <section class="part" data-resource-logs>
-                        <h4>Log</h4>
-                        <template v-for="log in task.logs" :key="log.id">
-                            <p class="log">{{ log.line }}</p>
-                        </template>
-                    </section>
-                </template>
+                <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="setPriority" />
+                <TaskSections :task="task" @select="emit('select', $event)" />
             </div>
             <template v-if="textComments.open.value">
                 <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
@@ -273,12 +209,6 @@ defineExpose({openStatus});
     font-size: 12.5px;
 }
 
-.refusal {
-    margin: 2px 0 0;
-    color: var(--danger);
-    font-size: 12.5px;
-}
-
 .stamp,
 .since {
     color: var(--text-3);
@@ -335,58 +265,11 @@ defineExpose({openStatus});
     font-size: 11.5px;
 }
 
-.facts {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 12px 20px;
-    margin-bottom: 18px;
-}
-
-.fact {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
-    min-width: 0;
-}
-
-.fact.wide {
-    grid-column: 1 / -1;
-}
-
-.fact-label {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.fact-value {
-    font-size: 13px;
-    overflow-wrap: anywhere;
-}
-
-.part {
-    margin-bottom: 18px;
-}
-
-.part h4 {
-    margin: 0 0 6px;
-    color: var(--text-3);
-    font-size: 12px;
-    font-weight: 500;
-}
-
 .text {
     margin: 0;
     color: var(--text-2);
     white-space: pre-wrap;
     text-wrap: pretty;
-}
-
-.text.clamped {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
 }
 
 .note {
@@ -395,57 +278,4 @@ defineExpose({openStatus});
     font-size: 12px;
 }
 
-.more {
-    margin-top: 4px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--text-3);
-    font: 12px var(--font);
-    cursor: pointer;
-}
-
-.more:hover {
-    color: var(--text);
-}
-
-.wait {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    width: 100%;
-    padding: 5px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 13px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.wait:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.wait-id {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.wait-title {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.log {
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12.5px;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
-}
 </style>

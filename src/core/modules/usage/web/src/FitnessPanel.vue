@@ -1,17 +1,9 @@
 <script setup>
-import {ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {useReadLine, useWindow} from "@journal/window-kit";
 
 // the measures behind an agent's fitness score, each with its value and the level it should stay under
 const context = useWindow();
-const fitness = ref(null);
-const failure = ref("");
-
-async function load() {
-    const answer = await context.read(`usage fitness --agent ${context.agent}`);
-    failure.value = answer.ok ? "" : answer.error;
-    fitness.value = answer.ok ? answer.value : null;
-}
+const {value: fitness, failure, load} = useReadLine(() => `usage fitness --agent ${context.agent}`);
 
 load();
 </script>

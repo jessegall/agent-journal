@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {Btn, Skeleton, useWindow} from "@journal/window-kit";
+import TunlerDomain from "./TunlerDomain.vue";
 import TunlerLoginForm from "./TunlerLoginForm.vue";
 
 const SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain";
@@ -14,8 +15,6 @@ const failure = ref("");
 const switching = ref(false);
 const server = ref("");
 const subdomain = ref("");
-const asking = ref("");
-const newName = ref("");
 
 async function load() {
     const [statusAnswer, versionAnswer, domainsAnswer] = await Promise.all([context.read("tunler status"), context.read("tunler version"), context.read("tunler domains")]);
@@ -32,13 +31,11 @@ async function run(...lines) {
         failure.value = result.ok ? "" : result.error;
         if (!result.ok) break;
     }
-    asking.value = "";
     await load();
 }
 
 const setting = (key, value) => ["setting", "set", key, value, "--project"];
 const useTunler = () => run(setting(SUBDOMAIN_SETTING, subdomain.value.trim()), setting(SERVICE_SETTING, "tunler"));
-const moveAddress = (domain) => run(setting(SUBDOMAIN_SETTING, newName.value.trim()), ["tunler", "release", domain.name]);
 
 function ready() {
     switching.value = false;
@@ -123,32 +120,7 @@ load();
                 <section class="part">
                     <h3>Domains</h3>
                     <template v-for="domain in domains" :key="domain.name">
-                        <div class="domain" :data-tunler-domain="domain.name">
-                            <div class="row">
-                                <span class="name">{{ domain.name }}</span>
-                                <template v-if="domain.own">
-                                    <span class="fine">In use</span>
-                                </template>
-                                <template v-if="asking !== domain.name">
-                                    <Btn small data-tunler-release @click="asking = domain.name">{{ domain.own ? "Move to a new address" : "Release" }}</Btn>
-                                </template>
-                            </div>
-                            <template v-if="asking === domain.name && domain.own">
-                                <p class="fine">Share links stop working and a paired phone has to be paired again.</p>
-                                <form class="row" data-tunler-move @submit.prevent="moveAddress(domain)">
-                                    <input v-model="newName" placeholder="The new name" aria-label="The new name">
-                                    <Btn small kind="primary" type="submit" :disabled="!newName.trim()">Move to the new address</Btn>
-                                    <Btn small @click="asking = ''">Keep it</Btn>
-                                </form>
-                            </template>
-                            <template v-else-if="asking === domain.name">
-                                <p class="fine">Release it? Anyone can claim it after.</p>
-                                <div class="row">
-                                    <Btn small kind="primary" data-tunler-release-confirm @click="run(['tunler', 'release', domain.name])">Release the address</Btn>
-                                    <Btn small @click="asking = ''">Keep it</Btn>
-                                </div>
-                            </template>
-                        </div>
+                        <TunlerDomain :domain="domain" @run="run(...$event)" />
                     </template>
                 </section>
             </template>
@@ -199,16 +171,6 @@ h3 {
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-}
-
-.domain {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.name {
-    overflow-wrap: anywhere;
 }
 
 input {

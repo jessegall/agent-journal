@@ -2,7 +2,7 @@
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
@@ -294,18 +294,20 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
             </template>
             <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet">
                 <template #default="{row}">
-                    <template v-if="row.kind === 'day'">
-                        <p class="chat-day" data-day-line>{{ row.title }}</p>
-                    </template>
-                    <template v-else-if="row.kind === 'mark'">
-                        <MarkHost :mark="row.row" />
-                    </template>
-                    <template v-else-if="row.kind === 'mark-group'">
-                        <MarkGroup :group="row" />
-                    </template>
-                    <template v-else>
-                        <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" @react="reactTo" />
-                    </template>
+                    <SwitchCase :value="row.kind">
+                        <template #day>
+                            <p class="chat-day" data-day-line>{{ row.title }}</p>
+                        </template>
+                        <template #mark>
+                            <MarkHost :mark="row.row" />
+                        </template>
+                        <template #mark-group>
+                            <MarkGroup :group="row" />
+                        </template>
+                        <template #default>
+                            <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" @react="reactTo" />
+                        </template>
+                    </SwitchCase>
                 </template>
             </RowList>
         </div>

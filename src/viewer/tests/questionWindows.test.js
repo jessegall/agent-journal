@@ -45,14 +45,14 @@ test("an empty waiting list shows an empty state", async () => {
 test("the questions list shows the recommended choice first and marked", async () => {
     const text = await drawn(Questions, context({"question list": page([QUESTION])}));
     expect(text).toContain("Which database?");
-    expect(text.indexOf("postgres (recommended)")).toBeGreaterThan(-1);
+    expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("postgres"));
     expect(text.indexOf("postgres")).toBeLessThan(text.indexOf("sqlite"));
 });
 
 test("a click on a choice answers the question with it", async () => {
     const {windowContext, runs} = recording({"question list": page([QUESTION])});
     const element = await mounted(Questions, windowContext);
-    element.querySelectorAll("button.question-choice")[1].click();
+    element.querySelector('[data-question-option="sqlite"]').click();
     await nextTick();
     expect(runs).toEqual([["question", "answer", "1", "--answer", "sqlite"]]);
 });
@@ -60,10 +60,10 @@ test("a click on a choice answers the question with it", async () => {
 test("a typed answer answers the question with the text", async () => {
     const {windowContext, runs} = recording({"question list": page([QUESTION])});
     const element = await mounted(Questions, windowContext);
-    const input = element.querySelector("input.question-answer");
+    const input = element.querySelector("form input");
     input.value = "MariaDB";
     input.dispatchEvent(new Event("input"));
-    element.querySelector("button.question-send").click();
+    element.querySelector("[data-question-answer]").click();
     await nextTick();
     expect(runs).toEqual([["question", "answer", "1", "--answer", "MariaDB"]]);
 });
@@ -71,7 +71,7 @@ test("a typed answer answers the question with the text", async () => {
 test("the close button closes the question", async () => {
     const {windowContext, runs} = recording({"question list": page([QUESTION])});
     const element = await mounted(Questions, windowContext);
-    element.querySelector("button.question-close").click();
+    element.querySelector("[data-question-close]").click();
     await nextTick();
     expect(runs).toEqual([["question", "close", "1"]]);
 });

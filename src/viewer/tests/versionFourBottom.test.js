@@ -23,7 +23,7 @@ test("a button has no visible border unless it is asked to be bordered", () => {
 });
 
 test("the dock's action buttons and Dump files are the bordered ones", () => {
-    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small bordered :data-dock-action="button\.action"/);
+    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small :kind="button\.primary \? 'primary' : 'ghost'" :bordered="!button\.primary" :data-dock-action="button\.action"/);
     expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered class="composer-send" data-dump-files/);
 });
 
@@ -74,7 +74,7 @@ test("every module window that tracks loading shows the shared skeleton or lists
     // SkillRows only hands its first read to LoadedSkills, which lists through RowList
     const loading = files.filter((file) => /\bloaded\b/.test(read(file)) && !file.endsWith("SkillRows.vue"));
     expect(loading.length).toBeGreaterThan(10);
-    for (const file of loading) expect(read(file), file).toMatch(/RowList|Skeleton/);
+    for (const file of loading) expect(read(file), file).toMatch(/RowList|RowCards|Skeleton/);
 });
 
 test("a list shows the skeleton in the shape it was given until its first read answers, then fades the rows in", () => {

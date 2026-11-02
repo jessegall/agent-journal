@@ -53,7 +53,7 @@ test("a page window of a module the journal does not ship shows how to trust its
     const page = {name: "pages.board", module: "pages", title: "Board", entry_url: "/modules/pages/board.js?v=1", line: "", loading: "component", reads: [], runs: [], events: [], unavailable_reason: "", allowed: false};
     const catalogue = new WindowCatalogue(async () => ({windows: [page]}));
     const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", component_trusted: false, agents: [], windows: []};
-    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: access, error: ""})})));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: {...access, rows: []}, error: ""})})));
     const element = document.createElement("div");
     createApp(() => h(WindowShell, {environment: "main", layout: ["pages.board"], catalogue, events: () => () => {}})).mount(element);
     await settledByTimer();

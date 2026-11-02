@@ -5,7 +5,6 @@ import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import MarkIcon from "../kit/MarkIcon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
@@ -18,7 +17,6 @@ import {usePaneGuide} from "../composables/paneGuide.js";
 import {followFullscreen} from "../platform/fullscreen.js";
 import {store as shell} from "../state/store.js";
 import {leaves} from "../domain/panes.js";
-import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
 import PhoneBar from "./PhoneBar.vue";
@@ -40,6 +38,9 @@ import {colorScheme, nextColorScheme, pageTitle, SCHEMES} from "./colorScheme.js
 import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
+import PaneAddBar from "./PaneAddBar.vue";
+import PaneMenu from "./PaneMenu.vue";
+import StageTopButtons from "./StageTopButtons.vue";
 
 const props = defineProps({
     store: {type: Object, required: true},
@@ -304,24 +305,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" :project="project">
-                    <Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="stepSidebar"><Icon name="list" :size="13" /></Btn>
-                    <Btn kind="icon" data-top-search aria-label="Search" title="Search" @click="openView('search.search')"><Icon name="search" :size="13" /></Btn>
-                    <Btn kind="icon" class="top-bell" data-top-bell aria-label="Waiting on you" title="Waiting on you" @click="openCount('waiting')">
-                        <Icon name="bell" :size="13" />
-                        <template v-if="facts.waiting">
-                            <span class="top-bell-count" data-top-bell-count>{{ facts.waiting }}</span>
-                        </template>
-                    </Btn>
-                    <Btn kind="icon" class="top-bell" data-top-phone aria-label="Phones" :title="pairedPhones.length ? `${pairedPhones[0].name} is connected` : 'Connect your phone'" @click="openView('phone.phones')">
-                        <Icon name="phone" :size="13" />
-                        <template v-if="pairedPhones.length">
-                            <span class="top-phone-dot" data-top-phone-dot />
-                        </template>
-                    </Btn>
-                    <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
-                    <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
-                        <Icon name="wide" :size="13" />
-                    </Btn>
+                    <StageTopButtons :waiting="facts.waiting" :paired-phones="pairedPhones" @sidebar="stepSidebar" @view="openView" @count="openCount" @activity="toggleActivity" @wide="shell.wide = !shell.wide" />
                 </Breadcrumb>
                 <template v-if="openDropdown">
                     <WindowDropdown :groups="openDropdown.groups" :anchor="openDropdown.anchor" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
@@ -360,51 +344,27 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <Btn kind="icon" class="pane-menu-button" aria-label="Window settings" title="Window settings" @click="toggleMenu(id)"><Icon name="dots-vertical" :size="13" /></Btn>
                     </PaneTabs>
                     <template v-if="adding === id">
-                        <div class="pane-add" role="menu" data-add-bar>
-                            <template v-for="window in barWindows()" :key="window.name">
-                                <Btn
-                                    small
-                                    :data-reopen="window.name"
-                                    :class="{unavailable: window.unavailable_reason}"
-                                    :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
-                                    @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
-                                    @click="!window.unavailable_reason && addWindow(id, window.name)"
-                                >
-                                    <MarkIcon :name="window.icon || 'window'" />{{ window.title }}
-                                </Btn>
-                            </template>
-                            <template v-if="!barWindows().length">
-                                <span class="pane-add-none">Every window is open</span>
-                            </template>
-                        </div>
+                        <PaneAddBar :windows="barWindows()" @grab="grabWindow" @add="(name) => addWindow(id, name)" />
                     </template>
                     <template v-if="menu === id">
-                        <div class="pane-menu" role="menu">
-                            <Btn data-menu="color-scheme" :title="`Color scheme: ${schemeLabel}`" @click="nextColorScheme">Color scheme: {{ schemeLabel }}</Btn>
-                            <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="split(id, 'right')">Split right</Btn>
-                            <Btn data-menu="split-below" :disabled="pane.tabs.length < 2" @click="split(id, 'bottom')">Split below</Btn>
-                            <template v-if="floats">
-                                <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
-                            </template>
-                            <Btn data-menu="width" @click="setOption(id, 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</Btn>
-                            <template v-if="isAgentWindow(pane.active)">
-                                <div class="pane-menu-choice" data-option="agent">
-                                    <span>Agent</span>
-                                    <Btn data-choice="main" :aria-pressed="!pane.options?.agent" @click="setOption(id, 'agent', null)">Main agent</Btn>
-                                    <template v-for="row in followable" :key="row.id">
-                                        <Btn :data-choice="row.id" :aria-pressed="pane.options?.agent === row.id" @click="setOption(id, 'agent', row.id)">{{ row.role }} {{ row.id }}</Btn>
-                                    </template>
-                                </div>
-                            </template>
-                            <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
-                            <template v-for="other in others(id)" :key="other.id">
-                                <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
-                            </template>
-                            <Btn data-menu="close" :disabled="Object.keys(store.layout.value.panes).length < 2" @click="closePane(id); menu = null">Close</Btn>
-                            <template v-if="presets?.presets.value.length">
-                                <Btn data-menu="reset" @click="presets.apply(presets.presets.value[0].key); menu = null">Reset layout</Btn>
-                            </template>
-                        </div>
+                        <PaneMenu
+                            :pane="pane"
+                            :scheme-label="schemeLabel"
+                            :floats="floats"
+                            :followable="followable"
+                            :agent-window="isAgentWindow(pane.active)"
+                            :declared="declaredBy(pane)"
+                            :others="others(id)"
+                            :can-close="Object.keys(store.layout.value.panes).length > 1"
+                            :can-reset="Boolean(presets?.presets.value.length)"
+                            @scheme="nextColorScheme"
+                            @split="(side) => split(id, side)"
+                            @detach="detach(id)"
+                            @option="(key, value) => setOption(id, key, value)"
+                            @move="(other) => moveTo(id, other)"
+                            @close="closePane(id); menu = null"
+                            @reset="presets.apply(presets.presets.value[0].key); menu = null"
+                        />
                     </template>
                     <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
                         <template v-if="pane.active">
@@ -497,55 +457,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     min-height: 0;
 }
 
-.top-bell {
-    position: relative;
-}
-
-.top-phone-dot {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--ok, var(--accent));
-}
-
-.top-bell-count {
-    position: absolute;
-    top: -3px;
-    right: -3px;
-    min-width: 13px;
-    border-radius: 7px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 9px;
-    line-height: 13px;
-    text-align: center;
-}
-
-.pane-add {
-    position: absolute;
-    top: 34px;
-    right: 5px;
-    left: 5px;
-    z-index: 6;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--raised);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.pane-add-none {
-    padding: 4px 6px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
 .pane-body.contained > * {
     max-width: 860px;
     margin-inline: auto;
@@ -569,24 +480,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     box-sizing: border-box;
     height: 100%;
     padding: 16px;
-}
-
-.pane-menu {
-    position: absolute;
-    top: 34px;
-    right: 5px;
-    z-index: 6;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--bg);
-}
-
-.pane-add .unavailable {
-    opacity: 0.45;
 }
 
 .pane-empty {

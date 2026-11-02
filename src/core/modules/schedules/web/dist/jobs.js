@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a76276c69428")) { const style = document.createElement("style"); style.id = "window-styles-a76276c69428"; style.textContent = ".agent-jobs[data-v-68fe4ed8]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-68fe4ed8]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-68fe4ed8]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-68fe4ed8]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-68fe4ed8]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-8871a505911a")) { const style = document.createElement("style"); style.id = "window-styles-8871a505911a"; style.textContent = ".agent-jobs[data-v-f2adcd35]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-f2adcd35]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-f2adcd35]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-f2adcd35]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-f2adcd35]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { ref as j, openBlock as h, createElementBlock as b, toDisplayString as p, createCommentVNode as S, createVNode as $, unref as _, withCtx as v, createElementVNode as m, createTextVNode as k } from "vue";
 import { useWindow as N, useRows as x, RowList as w, Btn as D } from "@journal/window-kit";
 const A = [
@@ -47,7 +47,7 @@ const R = (n, s) => {
   class: "agent-jobs-refusal",
   role: "alert",
   "data-job-refusal": ""
-}, W = ["data-job"], O = { class: "agent-job-text" }, H = {
+}, W = ["data-job"], O = { class: "agent-job-text" }, q = {
   __name: "AgentJobs",
   setup(n) {
     const s = N(), { rows: e, failure: t, loaded: o, load: r } = x(`scheduled-job running --agent ${s.agent}`, ["scheduled_job.*"]), i = j(""), d = (c) => c.split(`
@@ -83,12 +83,12 @@ const R = (n, s) => {
             ]),
             $(_(D), {
               small: "",
-              disabled: !!u.stop_asked_at,
+              disabled: !!u.stop_requested_at,
               "data-job-stop": "",
-              onClick: (I) => y(u)
+              onClick: (H) => y(u)
             }, {
               default: v(() => [
-                k(p(u.stop_asked_at ? "Stopping" : "Stop"), 1)
+                k(p(u.stop_requested_at ? "Stopping" : "Stop"), 1)
               ]),
               _: 2
             }, 1032, ["disabled", "onClick"])
@@ -98,7 +98,7 @@ const R = (n, s) => {
       }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, K = /* @__PURE__ */ R(H, [["__scopeId", "data-v-68fe4ed8"]]);
+}, G = /* @__PURE__ */ R(q, [["__scopeId", "data-v-f2adcd35"]]);
 export {
-  K as default
+  G as default
 };

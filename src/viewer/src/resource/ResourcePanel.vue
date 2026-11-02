@@ -3,6 +3,7 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, shareAddress, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentFacts from "./AgentFacts.vue";
 import MemoryFacts from "./MemoryFacts.vue";
@@ -62,70 +63,72 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <Transition name="side" appear>
             <div v-if="opened" class="veil" @click.self="close">
                 <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
-                    <template v-if="kind === 'task'">
-                        <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" @comments="taskComments = $event" />
-                    </template>
-                    <template v-else-if="kind === 'plan'">
-                        <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
-                    </template>
-                    <template v-else>
-                    <header class="head">
-                        <template v-if="route.stack.length > 1">
-                            <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
+                    <SwitchCase :value="kind">
+                        <template #task>
+                            <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" @comments="taskComments = $event" />
                         </template>
-                        <div class="names">
-                            <p class="kind">{{ kind }} {{ opened.id }}<template v-if="row?.state"> · {{ row.state }}</template></p>
-                            <h2 data-resource-title>{{ title }}</h2>
-                            <template v-if="row?.abstract">
-                                <p class="abstract">{{ row.abstract }}</p>
+                        <template #plan>
+                            <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                        </template>
+                        <template #default>
+                        <header class="head">
+                            <template v-if="route.stack.length > 1">
+                                <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
+                            </template>
+                            <div class="names">
+                                <p class="kind">{{ kind }} {{ opened.id }}<template v-if="row?.state"> · {{ row.state }}</template></p>
+                                <h2 data-resource-title>{{ title }}</h2>
+                                <template v-if="row?.abstract">
+                                    <p class="abstract">{{ row.abstract }}</p>
+                                </template>
+                            </div>
+                            <template v-if="kind === 'doc' || kind === 'report'">
+                                <a class="head-button head-share" data-resource-share :href="shareAddress(`${opened.table}:${opened.id}`)">Share</a>
+                            </template>
+                            <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
+                        </header>
+                        <div class="panel-row">
+                        <div class="body">
+                            <template v-if="failure">
+                                <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
+                            </template>
+                            <template v-else-if="!row">
+                                <Skeleton />
+                            </template>
+                            <template v-else>
+                                <template v-if="html">
+                                    <div class="md text" data-resource-text v-html="html" />
+                                </template>
+                                <template v-if="kind === 'agent'">
+                                    <AgentFacts :id="opened.id" :read="read" />
+                                    <template v-if="row.role === 'worker'">
+                                        <WorkerFacts :id="opened.id" :read="read" />
+                                    </template>
+                                </template>
+                                <template v-if="kind === 'memory'">
+                                    <MemoryFacts :id="opened.id" :read="read" />
+                                </template>
+                                <template v-if="kind === 'doc' || kind === 'report'">
+                                    <TextDetails :kind="kind" :id="opened.id" :row="row" :read="read" @changed="load" />
+                                </template>
+                                <section class="section" data-resource-fields>
+                                    <template v-for="[name, value] in fields" :key="name">
+                                        <p class="field-name">{{ name }}</p>
+                                        <p class="field-value">{{ value }}</p>
+                                    </template>
+                                </section>
                             </template>
                         </div>
-                        <template v-if="kind === 'doc' || kind === 'report'">
-                            <a class="head-button head-share" data-resource-share :href="shareAddress(`${opened.table}:${opened.id}`)">Share</a>
+                        <template v-if="commentable && textComments.open.value">
+                            <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
                         </template>
-                        <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
-                    </header>
-                    <div class="panel-row">
-                    <div class="body">
-                        <template v-if="failure">
-                            <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
+                        </div>
+                        <template v-if="commentable && row">
+                            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
                         </template>
-                        <template v-else-if="!row">
-                            <Skeleton />
+                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                         </template>
-                        <template v-else>
-                            <template v-if="html">
-                                <div class="md text" data-resource-text v-html="html" />
-                            </template>
-                            <template v-if="kind === 'agent'">
-                                <AgentFacts :id="opened.id" :read="read" />
-                                <template v-if="row.role === 'worker'">
-                                    <WorkerFacts :id="opened.id" :read="read" />
-                                </template>
-                            </template>
-                            <template v-if="kind === 'memory'">
-                                <MemoryFacts :id="opened.id" :read="read" />
-                            </template>
-                            <template v-if="kind === 'doc' || kind === 'report'">
-                                <TextDetails :kind="kind" :id="opened.id" :row="row" :read="read" @changed="load" />
-                            </template>
-                            <section class="section" data-resource-fields>
-                                <template v-for="[name, value] in fields" :key="name">
-                                    <p class="field-name">{{ name }}</p>
-                                    <p class="field-value">{{ value }}</p>
-                                </template>
-                            </section>
-                        </template>
-                    </div>
-                    <template v-if="commentable && textComments.open.value">
-                        <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
-                    </template>
-                    </div>
-                    <template v-if="commentable && row">
-                        <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
-                    </template>
-                    <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
-                    </template>
+                    </SwitchCase>
                 </aside>
             </div>
         </Transition>

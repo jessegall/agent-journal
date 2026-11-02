@@ -1,67 +1,66 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d8d51fcde1fa")) { const style = document.createElement("style"); style.id = "window-styles-d8d51fcde1fa"; style.textContent = ".numbers-tools[data-v-eddf43e8]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-eddf43e8]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-eddf43e8]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-eddf43e8],.numbers-table td[data-v-eddf43e8]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-eddf43e8]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
-import { ref as _, openBlock as u, createElementBlock as a, createElementVNode as e, createVNode as v, unref as b, withCtx as f, createTextVNode as k, toDisplayString as s, Fragment as w, renderList as g } from "vue";
-import { useWindow as x, usePoll as N, Btn as p } from "@journal/window-kit";
-const B = (i, d) => {
-  const o = i.__vccOpts || i;
-  for (const [n, l] of d)
-    o[n] = l;
-  return o;
-}, C = {
+if (!document.getElementById("window-styles-3f6a95d9a068")) { const style = document.createElement("style"); style.id = "window-styles-3f6a95d9a068"; style.textContent = ".numbers-tools[data-v-b039a2fd]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-b039a2fd]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-b039a2fd]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-b039a2fd],.numbers-table td[data-v-b039a2fd]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-b039a2fd]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+import { ref as g, computed as w, openBlock as l, createElementBlock as r, createElementVNode as e, createVNode as v, unref as d, withCtx as p, createTextVNode as f, toDisplayString as s, Fragment as x, renderList as N } from "vue";
+import { useWindow as B, useReadLine as C, usePoll as H, Btn as h } from "@journal/window-kit";
+const S = (c, i) => {
+  const t = c.__vccOpts || c;
+  for (const [m, u] of i)
+    t[m] = u;
+  return t;
+}, V = {
   class: "numbers",
   "data-hook-numbers": ""
-}, H = { class: "numbers-tools" }, S = {
+}, E = { class: "numbers-tools" }, F = {
   key: 0,
   class: "numbers-note",
   role: "alert"
-}, V = {
+}, L = {
   key: 1,
   class: "numbers-note"
-}, E = {
+}, P = {
   key: 2,
   class: "numbers-table"
-}, F = {
+}, R = {
   __name: "HookNumbers",
-  setup(i) {
-    const d = x(), o = _([]), n = _(""), l = _(!1);
-    async function m() {
-      const t = await d.read(`developer numbers${l.value ? " --slowest" : ""}`);
-      n.value = t.ok ? "" : t.error, t.ok && (o.value = t.value.rows);
-    }
-    function h() {
-      l.value = !l.value, m();
+  setup(c) {
+    const i = B(), t = g(!1), { value: m, failure: u, load: _ } = C(() => `developer numbers${t.value ? " --slowest" : ""}`), b = w(() => {
+      var o;
+      return ((o = m.value) == null ? void 0 : o.rows) ?? [];
+    });
+    function k() {
+      t.value = !t.value, _();
     }
     async function y() {
-      const t = await d.run(["developer", "reset-numbers"]);
-      n.value = t.ok ? "" : t.error, m();
+      const o = await i.run(["developer", "reset-numbers"]);
+      u.value = o.ok ? "" : o.error, _();
     }
-    return N(m, () => !0), (t, c) => (u(), a("div", C, [
-      e("div", H, [
-        v(b(p), {
+    return H(_, () => !0), (o, a) => (l(), r("div", V, [
+      e("div", E, [
+        v(d(h), {
           small: "",
           bordered: "",
           "data-numbers-sort": "",
-          onClick: h
+          onClick: k
         }, {
-          default: f(() => [
-            k(s(l.value ? "By name" : "Slowest first"), 1)
+          default: p(() => [
+            f(s(t.value ? "By name" : "Slowest first"), 1)
           ]),
           _: 1
         }),
-        v(b(p), {
+        v(d(h), {
           small: "",
           bordered: "",
           "data-numbers-reset": "",
           onClick: y
         }, {
-          default: f(() => [...c[0] || (c[0] = [
-            k("Reset the counts", -1)
+          default: p(() => [...a[0] || (a[0] = [
+            f("Reset the counts", -1)
           ])]),
           _: 1
         })
       ]),
-      n.value ? (u(), a("p", S, s(n.value), 1)) : o.value.length ? (u(), a("table", E, [
-        c[1] || (c[1] = e("thead", null, [
+      d(u) ? (l(), r("p", F, s(d(u)), 1)) : b.value.length ? (l(), r("table", P, [
+        a[1] || (a[1] = e("thead", null, [
           e("tr", null, [
             e("th", null, "Hook"),
             e("th", null, "Count"),
@@ -71,21 +70,21 @@ const B = (i, d) => {
           ])
         ], -1)),
         e("tbody", null, [
-          (u(!0), a(w, null, g(o.value, (r) => (u(), a("tr", {
-            key: r.id,
+          (l(!0), r(x, null, N(b.value, (n) => (l(), r("tr", {
+            key: n.id,
             "data-number-row": ""
           }, [
-            e("td", null, s(r.hook), 1),
-            e("td", null, s(r.count), 1),
-            e("td", null, s(r.average_ms) + " ms", 1),
-            e("td", null, s(r.slowest_ms) + " ms", 1),
-            e("td", null, s(r.average_points), 1)
+            e("td", null, s(n.hook), 1),
+            e("td", null, s(n.count), 1),
+            e("td", null, s(n.average_ms) + " ms", 1),
+            e("td", null, s(n.slowest_ms) + " ms", 1),
+            e("td", null, s(n.average_points), 1)
           ]))), 128))
         ])
-      ])) : (u(), a("p", V, "Nothing counted yet. Hook durations in the developer settings turns the counts on."))
+      ])) : (l(), r("p", L, "Nothing counted yet. Hook durations in the developer settings turns the counts on."))
     ]));
   }
-}, D = /* @__PURE__ */ B(F, [["__scopeId", "data-v-eddf43e8"]]);
+}, I = /* @__PURE__ */ S(R, [["__scopeId", "data-v-b039a2fd"]]);
 export {
-  D as default
+  I as default
 };

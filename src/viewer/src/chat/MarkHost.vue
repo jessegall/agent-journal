@@ -25,16 +25,18 @@ const opened = ref(false);
             <MarkBody :declaration="declaration" :mark="mark" shown />
         </div>
     </template>
-    <div v-else :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
-        <span class="mark-row">
-            <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
-                <template v-if="opens" #default="{shown}">
-                    <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
-                </template>
-            </ChatMark>
-            <MarkButtons :buttons="declaration?.buttons" :mark="mark" :allowed-runs="allowedRuns" />
-        </span>
-    </div>
+    <template v-else>
+        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
+            <span class="mark-row">
+                <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
+                    <template v-if="opens" #default="{shown}">
+                        <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
+                    </template>
+                </ChatMark>
+                <MarkButtons :buttons="declaration?.buttons" :mark="mark" :allowed-runs="allowedRuns" />
+            </span>
+        </div>
+    </template>
 </template>
 
 <style scoped>

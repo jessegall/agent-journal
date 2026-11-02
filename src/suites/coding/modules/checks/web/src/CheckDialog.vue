@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, Segmented, ago, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, Segmented, ago, useReadLine, useWindow} from "@journal/window-kit";
 
 // one check opened: its latest output and its runs, picked at the top, and the button that runs it
 const VIEWS = [
@@ -11,16 +11,10 @@ const props = defineProps({row: {type: Object, required: true}, running: Boolean
 const emit = defineEmits(["close", "run"]);
 const context = useWindow();
 const view = ref("output");
-const runs = ref([]);
 const chosenRun = ref(null);
-const failure = ref("");
+const {value: history, failure, load: readRuns} = useReadLine(() => `check runs ${props.row.id}`);
+const runs = computed(() => history.value?.rows ?? []);
 const shownOutput = computed(() => chosenRun.value?.output ?? props.row.last_output);
-
-async function readRuns() {
-    const answer = await context.read(`check runs ${props.row.id}`);
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) runs.value = answer.value.rows;
-}
 
 function showRun(run) {
     chosenRun.value = run;
