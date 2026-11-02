@@ -59,7 +59,7 @@ const uptime = computed(() => {
             <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
-                    {{ allowance.title }} <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
+                    <Icon name="clock" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
                 </button>
             </template>
             <template v-if="context !== null">

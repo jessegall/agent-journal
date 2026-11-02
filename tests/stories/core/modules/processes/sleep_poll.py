@@ -36,6 +36,12 @@ def test_the_monitor_command_is_refused_as_a_plain_command(new_story):
     story.expect_hook_refusal("s-1", plain, "journal output monitor runs only in a Monitor")
 
 
+def test_a_line_that_only_names_the_monitor_command_is_not_refused(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    grep_line = HookSamples.shell('grep -n "journal output monitor" notes.md', ShellPart("grep", CommandCategory.SEARCH, ["-n", "journal output monitor", "notes.md"]))
+    assert "runs only in a Monitor" not in story.hook("s-1", grep_line).refusal
+
+
 def test_a_hand_made_wait_on_an_output_is_refused_naming_the_command_and_that_command_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.expect_hook_refusal("s-1", monitor_on("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "journal output monitor <n>")

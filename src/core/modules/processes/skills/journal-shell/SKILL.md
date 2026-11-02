@@ -12,7 +12,7 @@ Every shell command you run goes through the journal's runner.
 - A command that runs past its time limit moves to the background and gives you its output number N.
 - `output N ended: <result>` means it finished. `output N unread` means you have not read it yet.
 - Read it with `journal output read N --summary`, which gives its reader's lines and how it ended.
-- Other parts: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--all`.
+- Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
 - Wait on a run with a Monitor on `journal output monitor N`; never ask for its status again and again.

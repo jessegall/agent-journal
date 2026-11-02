@@ -14,6 +14,10 @@ HIDDEN = "hidden"
 
 PAGE_SIZE_EVENTS = 100
 REGISTRY_SYNC_EVENT = "registry.sync"
+JOURNAL_BOOTING_EVENT = "journal.booting"
+JOURNAL_TABLE = "journal"
+JOURNAL_ROW_ID = 0
+BOOT_COMMAND = "journal start"
 REGISTRY_TABLE = "registry"
 REGISTRY_ROW_ID = 1
 SYNC_COMMAND = "module sync"
@@ -42,6 +46,12 @@ class EventLog:
         return self.table.insert({
             "actor_id": actor_id, "environment_id": None, "row_id": REGISTRY_ROW_ID, "name": REGISTRY_SYNC_EVENT, "row_table": REGISTRY_TABLE,
             "command": SYNC_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"fingerprint": [None, fingerprint]}), "created_at": timestamp,
+        })
+
+    def write_journal_booting(self, actor_id: int, timestamp: str) -> int:
+        return self.table.insert({
+            "actor_id": actor_id, "environment_id": None, "row_id": JOURNAL_ROW_ID, "name": JOURNAL_BOOTING_EVENT, "row_table": JOURNAL_TABLE,
+            "command": BOOT_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": "{}", "created_at": timestamp,
         })
 
     def write_upgrade_moved(self, actor_id: int, module: str, counts: dict[str, dict[str, int]], timestamp: str) -> int:

@@ -1,3 +1,4 @@
+from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -48,7 +49,7 @@ class SkillsModule(Module):
     migrations = [SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
-    listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
+    listeners = [SkillPublishListener, SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, group="project", place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
