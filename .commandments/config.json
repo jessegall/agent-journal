@@ -149,7 +149,6 @@
         "architecture_views_NoSecondViewReaderDetector",
         "architecture_views_PositionsThroughPositionsDetector",
         "architecture_views_ViewModelDeclaresSelectDetector",
-        "lists",
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
         "naming_NoTypeWordInsideNameDetector"

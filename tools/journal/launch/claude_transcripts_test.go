@@ -43,7 +43,7 @@ func TestNoMoreThanTenConversationsAreOffered(t *testing.T) {
 	for index := 0; index < 15; index++ {
 		conversations = append(conversations, Conversation{Session: string(rune('a' + index))})
 	}
-	if offered := (ClaudeTranscripts{Home: t.TempDir()}).Titled("/work/shop", conversations); len(offered) != ConversationLimit {
+	if offered := (ClaudeTranscripts{Home: t.TempDir()}).Titled("/work/shop", conversations); len(offered) != ConversationsShown {
 		t.Fatalf("%d conversations were offered", len(offered))
 	}
 }

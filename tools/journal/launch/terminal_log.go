@@ -10,14 +10,14 @@ import (
 	"sync"
 )
 
-// TerminalLineLimit is how many of its last terminal lines the log of one agent keeps.
-const TerminalLineLimit = 2000
+// TerminalLinesKept is how many of its last terminal lines the log of one agent keeps.
+const TerminalLinesKept = 2000
 
 // escapeCodes are the terminal's colour and cursor sequences, left out of the lines the log keeps.
 var escapeCodes = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)|\x1b[@-Z\\-_]`)
 
 // TerminalLog keeps an agent program's terminal output as numbered lines, "<number>\t<text>", in a file of its own,
-// the last TerminalLineLimit of them.
+// the last TerminalLinesKept of them.
 type TerminalLog struct {
 	path      string
 	file      *os.File
@@ -74,7 +74,7 @@ func (log *TerminalLog) Close() error {
 		_ = log.keep(string(log.pending))
 		log.pending = nil
 	}
-	if log.lineCount > TerminalLineLimit {
+	if log.lineCount > TerminalLinesKept {
 		_ = log.trimmed()
 	}
 	return log.file.Close()
@@ -91,7 +91,7 @@ func (log *TerminalLog) keep(raw string) error {
 		return err
 	}
 	log.lineCount++
-	if log.lineCount >= 2*TerminalLineLimit {
+	if log.lineCount >= 2*TerminalLinesKept {
 		return log.trimmed()
 	}
 	return nil
@@ -99,8 +99,8 @@ func (log *TerminalLog) keep(raw string) error {
 
 func (log *TerminalLog) trimmed() error {
 	lines := readLines(log.path)
-	if len(lines) > TerminalLineLimit {
-		lines = lines[len(lines)-TerminalLineLimit:]
+	if len(lines) > TerminalLinesKept {
+		lines = lines[len(lines)-TerminalLinesKept:]
 	}
 	if err := os.WriteFile(log.path, []byte(strings.Join(lines, "\n")+"\n"), 0o600); err != nil {
 		return err

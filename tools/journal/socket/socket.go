@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 )
 
-// PathLimit is the longest socket path the server binds in the journal's folder; past it both sides use a
+// PathBytes is the longest socket path the server binds in the journal's folder; past it both sides use a
 // short path under /tmp named by a hash of the long one, as the server's socket_path does.
-const PathLimit = 100
+const PathBytes = 100
 
 // Path is the server's socket for a journal's folder.
 func Path(home string) string {
@@ -31,7 +31,7 @@ func NamedPath(home string, name string) string {
 		absolute = resolved
 	}
 	path := filepath.Join(absolute, name+".sock")
-	if len(path) <= PathLimit {
+	if len(path) <= PathBytes {
 		return path
 	}
 	sum := sha256.Sum256([]byte(path))

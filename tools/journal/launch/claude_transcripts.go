@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// ConversationLimit is how many past conversations the boot menu offers.
-const ConversationLimit = 10
+// ConversationsShown is how many past conversations the boot menu offers.
+const ConversationsShown = 10
 
 var slugCharacters = regexp.MustCompile(`[^A-Za-z0-9]`)
 
@@ -30,7 +30,7 @@ type titleLine struct {
 }
 
 // Titled gives the conversations Claude Code still keeps for the folder, each with its title and last write,
-// newest first and at most ConversationLimit; a folder Claude Code keeps nothing for gives them back as they are.
+// newest first and at most ConversationsShown; a folder Claude Code keeps nothing for gives them back as they are.
 func (transcripts ClaudeTranscripts) Titled(folder string, conversations []Conversation) []Conversation {
 	projectFolder := filepath.Join(transcripts.Home, ".claude", "projects", slugCharacters.ReplaceAllString(folder, "-"))
 	if _, err := os.Stat(projectFolder); err != nil {
@@ -51,8 +51,8 @@ func (transcripts ClaudeTranscripts) Titled(folder string, conversations []Conve
 }
 
 func limited(conversations []Conversation) []Conversation {
-	if len(conversations) > ConversationLimit {
-		return conversations[:ConversationLimit]
+	if len(conversations) > ConversationsShown {
+		return conversations[:ConversationsShown]
 	}
 	return conversations
 }

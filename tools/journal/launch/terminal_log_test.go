@@ -27,14 +27,14 @@ func TestTheTerminalLogNumbersEachLineWithoutItsColoursAndKeepsTheLastLines(t *t
 	}
 	fmt.Fprint(log, "\x1b[32mready\x1b[0m\r\nhalf")
 	fmt.Fprint(log, " a line\n")
-	for number := 3; number <= TerminalLineLimit+10; number++ {
+	for number := 3; number <= TerminalLinesKept+10; number++ {
 		fmt.Fprintf(log, "line %d\n", number)
 	}
 	if err := log.Close(); err != nil {
 		t.Fatal(err)
 	}
 	lines := logLines(t, path)
-	if len(lines) != TerminalLineLimit || lines[0] != "11\tline 11" || lines[len(lines)-1] != fmt.Sprintf("%d\tline %d", TerminalLineLimit+10, TerminalLineLimit+10) {
+	if len(lines) != TerminalLinesKept || lines[0] != "11\tline 11" || lines[len(lines)-1] != fmt.Sprintf("%d\tline %d", TerminalLinesKept+10, TerminalLinesKept+10) {
 		t.Fatalf("the log kept %d lines, from %q to %q", len(lines), lines[0], lines[len(lines)-1])
 	}
 	short := filepath.Join(t.TempDir(), "17.log")

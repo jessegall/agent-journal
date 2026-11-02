@@ -37,16 +37,16 @@ func TestPatchRowsKeepOnlyTheFirstFile(t *testing.T) {
 }
 
 func TestAHugeChangeIsCutWithARowSayingHowManyAreLeftOut(t *testing.T) {
-	rows := NewFileRows(strings.Repeat("line\n", rowLimit+5))
+	rows := NewFileRows(strings.Repeat("line\n", rowsMost+5))
 	last := rows[len(rows)-1]
-	if len(rows) != rowLimit+1 || last.LineType != "fold" || last.Hidden != 5 {
+	if len(rows) != rowsMost+1 || last.LineType != "fold" || last.Hidden != 5 {
 		t.Fatalf("got %d rows, last %+v", len(rows), last)
 	}
 }
 
 func TestALongLineIsCutAndStaysValidText(t *testing.T) {
-	rows := NewFileRows(strings.Repeat("é", rowTextLimit))
-	if len(rows[0].Text) > rowTextLimit || !strings.HasPrefix(rows[0].Text, "é") || strings.ContainsRune(rows[0].Text, 0xFFFD) {
+	rows := NewFileRows(strings.Repeat("é", rowTextBytes))
+	if len(rows[0].Text) > rowTextBytes || !strings.HasPrefix(rows[0].Text, "é") || strings.ContainsRune(rows[0].Text, 0xFFFD) {
 		t.Fatalf("got %q", rows[0].Text)
 	}
 }

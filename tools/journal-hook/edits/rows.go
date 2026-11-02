@@ -10,8 +10,8 @@ import (
 // How many rows and how many characters of each the hook hands on for one edit, so a huge file cannot fill the
 // event; the rest is counted in one row left out.
 const (
-	rowLimit       = 600
-	rowTextLimit   = 400
+	rowsMost       = 600
+	rowTextBytes   = 400
 	foldedLineType = "fold"
 )
 
@@ -83,12 +83,12 @@ func PatchRows(patch string) []event.DiffRow {
 
 func limited(rows []event.DiffRow) []event.DiffRow {
 	for index := range rows {
-		if len(rows[index].Text) > rowTextLimit {
-			rows[index].Text = strings.ToValidUTF8(rows[index].Text[:rowTextLimit], "")
+		if len(rows[index].Text) > rowTextBytes {
+			rows[index].Text = strings.ToValidUTF8(rows[index].Text[:rowTextBytes], "")
 		}
 	}
-	if len(rows) <= rowLimit {
+	if len(rows) <= rowsMost {
 		return rows
 	}
-	return append(rows[:rowLimit:rowLimit], event.DiffRow{LineType: foldedLineType, Hidden: len(rows) - rowLimit})
+	return append(rows[:rowsMost:rowsMost], event.DiffRow{LineType: foldedLineType, Hidden: len(rows) - rowsMost})
 }
