@@ -37,3 +37,9 @@ test("a list item ending in a colon with an indented line under it stays a list"
     expect(element.querySelector("pre")).toBeNull();
     expect(element.querySelectorAll("li")).toHaveLength(1);
 });
+
+test("a fenced block of several lines keeps its lines, one per line of the text", () => {
+    const element = shown("before\n\n```python\n@dataclass\nclass Item:\n    title: str\n```\n\nafter");
+
+    expect(element.querySelector("pre.chat-code").textContent.split("\n")).toEqual(["@dataclass", "class Item:", "    title: str"]);
+});
