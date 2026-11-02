@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {useWindow} from "@journal/window-kit";
 
-// the measures behind an agent's fitness score, each with its value and the level it should stay under, and its load
+// the measures behind an agent's fitness score, each with its value and the level it should stay under
 const context = useWindow();
 const fitness = ref(null);
 const failure = ref("");
@@ -29,7 +29,6 @@ load();
                     <span>{{ measure.value }}<template v-if="measure.pass_level !== null"> of {{ measure.pass_level }}</template></span>
                 </p>
             </template>
-            <p class="fitness-measure" data-measure="load"><span>Load: messages arriving against those answered</span><span>{{ fitness.workload }}</span></p>
             <p class="fitness-note">Counts messages, waits and tasks. Version 4 also measured workers, merges and lines of code, which this version does not record.</p>
         </template>
     </div>

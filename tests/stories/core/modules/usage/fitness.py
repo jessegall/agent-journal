@@ -56,7 +56,7 @@ def test_messages_arriving_faster_than_answered_raise_the_load_and_its_level(new
     for number in range(2):
         story.expect_success(f'message send "Fix {number}" --environment main', actor=story.user)
     answer = fitness(story)
-    story.expect_rows(answer["workload"] == 2.0, answer["workload_level"] == "critical")
+    story.expect_rows(answer["workload"] == 2.0, answer["workload_level"] == "critical", answer["arrivals_hourly"] == 4, answer["answers_hourly"] == 0, answer["waiting_messages"] == 2)
 
 
 def test_tasks_closed_in_the_last_two_hours_count_and_older_ones_do_not(new_story):

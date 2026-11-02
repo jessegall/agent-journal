@@ -41,8 +41,9 @@ class FitnessMeasures:
         is_measured = agent.creation_timestamp().elapsed_seconds(current_time) >= WARMING_MINUTES * 60
         weights = sum(measure.weight for measure in measures)
         score = round(100 * sum(measure.weight * measure.closeness for measure in measures) / weights) if is_measured else None
-        workload = round(self.workload(agent, current_time), 2)
-        return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload))
+        arrivals_hourly, answers_hourly = self.message_rates(agent, current_time)
+        workload = round(arrivals_hourly / (answers_hourly or EMPTY_CLEARING_RATE), 2)
+        return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload), arrivals_hourly, answers_hourly, self.waiting_messages(agent))
 
     def message_wait(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
         waiting = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
@@ -70,13 +71,16 @@ class FitnessMeasures:
             return "critical"
         return "warn" if workload >= WORKLOAD_WARNING else ""
 
-    def workload(self, agent: Agent, current_time: Timestamp) -> float:
+    def message_rates(self, agent: Agent, current_time: Timestamp) -> tuple[float, float]:
         start = Timestamp(current_time.value - timedelta(minutes=WORKLOAD_WINDOW_MINUTES)).text
         recent = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Greater("created_at", start))
         hourly = 60 / WORKLOAD_WINDOW_MINUTES
         arrivals = recent.matching(Among("type", PERSON_MESSAGE_TYPES)).count() * hourly
-        cleared = recent.filter(type=MessageType.AGENT).count() * hourly
-        return arrivals / (cleared or EMPTY_CLEARING_RATE)
+        answers = recent.filter(type=MessageType.AGENT).count() * hourly
+        return arrivals, answers
+
+    def waiting_messages(self, agent: Agent) -> int:
+        return self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()
 
     @staticmethod
     def minutes_closeness(minutes: float) -> float:

@@ -15,6 +15,9 @@ class AgentFitness:
     measures: Sequence[FitnessMeasure]
     workload: float
     workload_level: str
+    arrivals_hourly: float
+    answers_hourly: float
+    waiting_messages: int
 
     def json(self) -> Mapping[str, object]:
-        return {"agent_id": self.agent_id, "is_measured": self.is_measured, "score": self.score, "measures": [measure.json() for measure in self.measures], "workload": self.workload, "workload_level": self.workload_level}
+        return {"agent_id": self.agent_id, "is_measured": self.is_measured, "score": self.score, "measures": [measure.json() for measure in self.measures], "workload": self.workload, "workload_level": self.workload_level, "arrivals_hourly": self.arrivals_hourly, "answers_hourly": self.answers_hourly, "waiting_messages": self.waiting_messages}

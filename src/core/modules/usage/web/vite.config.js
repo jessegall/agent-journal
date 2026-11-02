@@ -8,6 +8,7 @@ export default windowBuild({
         usage: here("./src/usage.js"),
         context: here("./src/context.js"),
         fitness: here("./src/fitness.js"),
+        load: here("./src/load.js"),
     },
     outDir: here("./dist"),
 });

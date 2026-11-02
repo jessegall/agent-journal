@@ -113,7 +113,7 @@ const facts = ref(NO_FACTS);
 const now = ref(Date.now());
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness"};
+const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
 const HELPER_WINDOWS = [{name: "agents.subagents", role: "subagent"}, {name: "workers.workers", role: "worker"}, {name: "reviews.reviewers", role: "reviewer"}];
 const usage = ref({agents: [], windows: []});
