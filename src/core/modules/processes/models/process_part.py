@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.part_state import PartState
@@ -17,6 +18,7 @@ class ProcessPart(Model):
     text: str
     program: str
     piped: bool = False
+    category: CommandCategory = CommandCategory.UNKNOWN
     state: PartState = PartState.WAITING
     exit_code: int | None = None
     started_at: Timestamp | None = None

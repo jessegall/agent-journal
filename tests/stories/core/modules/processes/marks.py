@@ -10,6 +10,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.chat.support.mark_samples import mark_count
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.support.part_spec import PartSpec
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process, tick
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
@@ -111,22 +113,23 @@ def test_a_failed_plain_command_makes_no_mark(new_story):
     assert mark_count(story) == 0
 
 
-def test_a_plain_command_moved_to_the_background_makes_a_mark(new_story):
+def test_a_plain_command_moved_to_the_background_makes_no_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "tail -f log")
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    story.run_listeners()
-    story.expect_text(MARKS, "process:1", "background")
-
-
-def test_a_plain_command_that_ended_after_moving_to_the_background_ends_its_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "tail -f log")
+    process = start_process(story, "grep -n cart notes")
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     end_run(story, process, "done\n")
     story.run_listeners()
-    story.expect_text("chat-mark list --environment 1 --state ended", "process:1")
+    assert mark_count(story) == 0
+
+
+def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    parts = (PartSpec("grep -n cart notes", "grep", False, CommandCategory.SEARCH), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
+    story.container.get(Bus).run(StartProcess(story.agent.id, None, "grep -n cart notes; make test", "/work/main", "zsh", CommandCategory.SEARCH, 30, parts), story.agent, environment_id=1)
+    story.run_listeners()
+    story.expect_text(MARKS, "process:1", "Running make test")
+    story.expect_absent(MARKS, "grep")
 
 
 def test_a_mark_names_the_command_and_not_where_the_project_lives(new_story):
@@ -147,7 +150,7 @@ def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_
 
 def test_output_that_is_not_utf8_still_ends_its_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "cat notes")
+    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
     story.run_listeners()
     (story.container.get(OutputFolder).home.folder / "processes" / str(process.id) / "1.out").write_bytes(b"caf\xe9\n")
     story.container.get(Bus).run(EndProcess(process.id, 0, 5, 1), story.agent, environment_id=1)

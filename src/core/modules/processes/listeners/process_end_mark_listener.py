@@ -14,6 +14,7 @@ from core.modules.processes.models.enums.process_mark_variant import ProcessMark
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.output_folder import OutputFolder
 
 MODULE_NAME = "journal.core.processes"
@@ -27,10 +28,10 @@ MARK_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCateg
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A test run, a build, a check or a package shows one mark, and so does any run that moves to
-    the background; the mark is kept up to date in place by the key process:<id>: running, with
-    the reader's progress as its figure, moved to the background, then ended with its outcome.
-    Other runs show none."""
+    """A command that is a test run, a build, a check or a package shows one mark naming that command alone,
+    whatever else its line runs; the mark is kept up to date in place by the key process:<id>: running, with
+    the reader's progress as its figure, moved to the background, then ended with its outcome. A line with
+    no such command shows none, also when it moved to the background."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -42,14 +43,15 @@ class ProcessEndMarkListener(CommitListener):
         process = self.queries.query(Process).find(event.row_id)
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
-        if shown is None and process.category not in MARK_CATEGORIES and process.state is not ProcessState.BACKGROUND:
-            return
         if shown is not None and shown.state is ChatMarkState.ENDED:
+            return
+        part = next((part for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows() if part.category in MARK_CATEGORIES), None)
+        if part is None:
             return
         variant = ProcessMarkVariant(process.state.value)
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
         figure = self.figure(process, output)
-        text = output.title if output and output.title else f"{PHRASES[process.state]} {ProjectPaths.relative_line(process.line, process.folder)[:LINE_CHARACTERS]}"
+        text = output.title if output and output.title else f"{PHRASES[process.state]} {ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS]}"
         self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),

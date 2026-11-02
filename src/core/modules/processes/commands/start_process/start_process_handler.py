@@ -30,7 +30,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds), context)
         for position, part in enumerate(command.parts, 1):
-            self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped), context)
+            self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped, category=part.category), context)
         reader = ReaderSelection.choose(self.all_readers(), process) if command.reader_id is None else self.readers.find(command.reader_id)
         self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id if reader is not None else None,
                                     title=RunTitle.title(reader, process)), context)

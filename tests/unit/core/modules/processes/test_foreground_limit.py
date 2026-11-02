@@ -25,6 +25,9 @@ class Background:
     def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
         return ()
 
+    def declared_category(self, shell: ShellLine) -> None:
+        return None
+
 
 class Rows:
     """Stands in for the process and message queries: whether the line went past the limit and whether a
