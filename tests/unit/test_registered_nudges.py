@@ -10,12 +10,12 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
 ALLOWED_PLACEHOLDERS = frozenset({
-    "agent", "branch", "category", "check", "count", "debt", "dump", "emoji", "environment", "folder", "job", "kept", "left", "lines", "memory", "message",
+    "agent", "branch", "category", "check", "count", "required_command", "dump", "emoji", "environment", "folder", "job", "kept", "left", "lines", "memory", "message",
     "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "programs", "proofs", "question",
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "url", "wait", "worker", "writes", "items",
 })
 # whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
-OUTSIDE_WORDS = frozenset({"PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
+FOREIGN_TEMPLATES = frozenset({"PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
 # a worker's job and the words a person or an agent sends it, passed on as written
 PASSED_ON_LINES = ("send_worker_handler.py", "short_proof_handler.py", "ended_worker_listener.py", "worker_resume.py", "merge_worker_handler.py",
                    "record_bypass_line_handler.py", "record_hook_call_handler.py", "new_driver_lines_listener.py")
@@ -50,7 +50,7 @@ def test_a_line_is_at_most_120_characters(name, text, path):
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
-    if name in OUTSIDE_WORDS:
+    if name in FOREIGN_TEMPLATES:
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"
     carried = set(PLACEHOLDER.findall(text)) - ALLOWED_PLACEHOLDERS

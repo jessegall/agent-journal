@@ -10,8 +10,8 @@ from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
 
 WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
-READING_CATEGORIES = (ToolType.READ, ToolType.SEARCH)
-READING_COMMANDS = (CommandCategory.READ, CommandCategory.SEARCH)
+READ_TOOL_TYPES = (ToolType.READ, ToolType.SEARCH)
+READ_COMMAND_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
 
 
 @dataclass(frozen=True)
@@ -42,9 +42,9 @@ class Tool:
 
     @property
     def is_reading(self) -> bool:
-        if self.category in READING_CATEGORIES:
+        if self.category in READ_TOOL_TYPES:
             return True
-        return self.shell is not None and self.shell.category in READING_COMMANDS and not self.is_writing_files()
+        return self.shell is not None and self.shell.category in READ_COMMAND_CATEGORIES and not self.is_writing_files()
 
     def is_writing_files(self) -> bool:
         if self.category in WRITING_CATEGORIES:

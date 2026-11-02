@@ -151,8 +151,8 @@ class Story:
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
-        printed_text = self.with_touched_rows(outcome)
-        missing = [text for text in texts if text not in printed_text]
+        output_text = self.with_touched_rows(outcome)
+        missing = [text for text in texts if text not in output_text]
         assert not missing, f"{line} printed none of {missing}:\n{outcome.output_text}"
 
     def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:

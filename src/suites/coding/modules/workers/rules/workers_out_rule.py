@@ -14,7 +14,7 @@ class WorkersOutRule(DriverRule):
     """A main agent's session starts with a line for each worker of its environment that still has a worktree out."""
 
     name = "workers.workers-out-at-start"
-    first_start_only = True
+    start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]

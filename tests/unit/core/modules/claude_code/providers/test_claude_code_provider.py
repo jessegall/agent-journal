@@ -38,8 +38,8 @@ def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):
     assert provider.session_model() == "opus"
     given = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--model", "sonnet", "--effort=low"))
     assert list(provider.session_command(given).arguments) == ["claude", "--dangerously-skip-permissions", "--model", "sonnet", "--effort=low", "--session-id", "s-1"]
-    effort_alone = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--effort", "low"))
-    assert list(provider.session_command(effort_alone).arguments) == ["claude", "--model", "opus", "--dangerously-skip-permissions", "--effort", "low", "--session-id", "s-1"]
+    effort_launch = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--effort", "low"))
+    assert list(provider.session_command(effort_launch).arguments) == ["claude", "--model", "opus", "--dangerously-skip-permissions", "--effort", "low", "--session-id", "s-1"]
 
 
 def test_a_resumed_session_runs_claude_with_resume(provider):

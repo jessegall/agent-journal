@@ -45,6 +45,6 @@ class NudgeLog:
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
-            same_text = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).page(1, 1).rows
-            current = same_text[0] if same_text else self.record(agent_id, nudge)
+            matching_records = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).page(1, 1).rows
+            current = matching_records[0] if matching_records else self.record(agent_id, nudge)
             self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, said_count=current.said_count + 1, last_said_at=context.timestamp), context)

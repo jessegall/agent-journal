@@ -1,9 +1,10 @@
-from core.modules.drivers.commands.settle_debt.settle_debt_handler import SettleDebtHandler
-from core.modules.drivers.commands.skip_debt.skip_debt_subcommand import SkipDebtSubcommand
-from core.modules.drivers.listeners.debt_skip_mark_listener import DebtSkipMarkListener
+from core.modules.drivers.commands.close_required_command.close_required_command_handler import CloseRequiredCommandHandler
+from core.modules.drivers.commands.skip_required_command.skip_required_command_subcommand import SkipRequiredCommandSubcommand
+from core.modules.drivers.listeners.required_command_skip_mark_listener import RequiredCommandSkipMarkListener
 from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
-from core.modules.drivers.models.nudge_debt import NudgeDebt
-from core.modules.drivers.rules.nudge_debt_rule import NudgeDebtRule
+from core.modules.drivers.migrations.m006_required_commands import RequiredCommandsMigration
+from core.modules.drivers.models.required_command import RequiredCommand
+from core.modules.drivers.rules.required_command_rule import RequiredCommandRule
 from core.modules.drivers.support.driver_nudges import DRIVER_NUDGES
 from core.base.driver.essential_allowances import EssentialAllowances
 from core.base.driver.hook_history import HookHistory
@@ -83,17 +84,17 @@ class DriversModule(Module):
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(NudgeDebt, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(RequiredCommand, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
-    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration]
-    handlers = [SettleDebtHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [SkipDebtSubcommand, PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration]
+    handlers = [CloseRequiredCommandHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    subcommands = [SkipRequiredCommandSubcommand, PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [DebtSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = BYPASS_MARKS
-    driver_rules = [NudgeDebtRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
+    driver_rules = [RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

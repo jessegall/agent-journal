@@ -12,7 +12,7 @@ class TaskSummaryLineRule(DriverRule):
     and its newest log line."""
 
     name = "tasks.session-start-summary"
-    first_start_only = True
+    start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]

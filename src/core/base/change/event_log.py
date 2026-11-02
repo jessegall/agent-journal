@@ -81,7 +81,7 @@ class EventLog:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]
 
     def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
-        return [LoggedEvent.parsed(row) for row in self.table.rows_of(row_table, row_id)]
+        return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]
 
     def page(self, number: int, size: int) -> Page[LoggedEvent]:
         return self.table.newest_page(number, size, LoggedEvent.parsed)

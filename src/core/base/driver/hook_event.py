@@ -9,7 +9,7 @@ from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 2
 RESUME_SOURCE = "resume"
-SAME_PROGRAM_SOURCES = ("compact", "clear")
+CONTINUING_SOURCES = ("compact", "clear")
 REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch")
 
 
@@ -64,8 +64,8 @@ class HookEvent:
         return self.raw.get("source") == RESUME_SOURCE
 
     @property
-    def keeps_program(self) -> bool:
-        return self.raw.get("source") in SAME_PROGRAM_SOURCES
+    def is_continuing(self) -> bool:
+        return self.raw.get("source") in CONTINUING_SOURCES
 
     def tool_input(self) -> Mapping[object, object]:
         return mapping(self.raw.get("tool_input", {}), "tool_input")

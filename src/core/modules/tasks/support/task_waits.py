@@ -1,4 +1,4 @@
-from core.modules.tasks.support.task_nudges import TASK_OPEN_AGAIN
+from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from dataclasses import replace
 
 from core.base.agent_role import AgentRole
@@ -32,7 +32,7 @@ class TaskWaits:
 
     def notify_agents(self, task: Task, context: Context) -> None:
         for agent in tuple(self.queries.query(Agent).filter(environment_id=task.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
-            self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=TASK_OPEN_AGAIN.nudge(task=task.id).text, source=WAIT_ENDED_SOURCE), context)
+            self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=TASK_REOPENED.nudge(task=task.id).text, source=WAIT_ENDED_SOURCE), context)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))

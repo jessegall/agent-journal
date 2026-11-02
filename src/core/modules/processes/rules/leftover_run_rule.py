@@ -20,7 +20,7 @@ class LeftoverRunRule(DriverRule):
         self.processes = processes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.keeps_program:
+        if hook.event.is_continuing:
             return RuleAnswer.allowed()
         leftover_runs = self.processes.agent(hook.agent_id).running().oldest().all_rows()
         return RuleAnswer.allowed().running(*(OrphanProcess(process.id) for process in leftover_runs))

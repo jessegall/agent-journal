@@ -23,7 +23,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
-from core.modules.drivers.commands.support.nudge_debts import NudgeDebts
+from core.modules.drivers.commands.support.required_commands import RequiredCommands
 from core.modules.drivers.commands.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
@@ -45,9 +45,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     command = RecordHookCall
 
-    def __init__(self, debts: NudgeDebts, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
+    def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
                  history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog) -> None:
-        self.debts = debts
+        self.required_commands = required_commands
         self.nudges = nudges
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
@@ -77,7 +77,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "resumed": command.event.is_resume, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
         self.nudges.write(agent.id, answers, context)
-        self.debts.open(agent.id, answers.delivered_nudges, call.id, context)
+        self.required_commands.open(agent.id, answers.delivered_nudges, call.id, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)

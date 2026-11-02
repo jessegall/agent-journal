@@ -4,7 +4,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_outcome import RULE_FAILED
 
-REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.INSTRUCTION, 'your stop was refused five times in a row: report what held it with journal report create', pays="")
+REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.INSTRUCTION, 'your stop was refused five times in a row: report what held it with journal report create', required_command="")
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.INSTRUCTION, '{text}', turn_limited=False)
 
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.INSTRUCTION, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
@@ -16,6 +16,6 @@ UNBOUND_DISPATCH = NudgeDeclaration("drivers.unbound_dispatch", NudgeType.REFUSA
 LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.REMARK, "that result was {lines} lines: read a range, or read the output by its number, so less stays in the context", interval=Interval(Seconds(600)))
 
 AGENT_RESUMED = NudgeDeclaration("drivers.resumed", NudgeType.REMARK, "the user resumed you: carry on where you stopped")
-DEBT_COUNTDOWN = NudgeDeclaration("drivers.debt_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, pays="")
-DEBT_HOLD = NudgeDeclaration("drivers.debt_hold", NudgeType.REFUSAL, '{subject} is due: do it, or journal debt skip {debt} --reason "<why>"')
-DRIVER_NUDGES = [AGENT_RESUMED, DEBT_COUNTDOWN, DEBT_HOLD, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]
+REQUIRED_COMMAND_COUNTDOWN = NudgeDeclaration("drivers.debt_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, required_command="")
+REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.debt_hold", NudgeType.REFUSAL, '{subject} is due: do it, or journal required-command skip {required_command} --reason "<why>"')
+DRIVER_NUDGES = [AGENT_RESUMED, REQUIRED_COMMAND_COUNTDOWN, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

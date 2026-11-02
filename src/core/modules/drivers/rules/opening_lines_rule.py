@@ -10,7 +10,7 @@ class OpeningLinesRule(DriverRule):
     """A session's start gives the agent its driver's opening lines."""
 
     name = "drivers.opening-lines"
-    first_start_only = True
+    start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
 

@@ -14,7 +14,7 @@ class StartDeliveryRule(DriverRule):
     project's whose type gives at start and that has no due time: rules first, facts heaviest first."""
 
     name = "memories.start-delivery"
-    first_start_only = True
+    start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]

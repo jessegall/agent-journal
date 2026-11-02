@@ -1,5 +1,5 @@
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
-from core.modules.tasks.rules.task_still_held_rule import TaskStillHeldRule
+from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 from core.modules.tasks.commands.block_task.block_task import BlockTask
@@ -77,7 +77,7 @@ class TasksModule(Module):
     listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [TaskStillHeldRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]

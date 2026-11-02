@@ -23,7 +23,7 @@
         "reject": [
             {
                 "descendant": {
-                    "name": "pays"
+                    "name": "required_command"
                 }
             },
             {
@@ -34,7 +34,7 @@
     "sin": {
         "name": "instruction-without-payment",
         "description": "A line tells the agent to run a journal command and does not declare whether that command pays it, so the agent can ignore it for ever.",
-        "rule": "Give the NudgeDeclaration pays=\"<the command>\" so the line becomes a debt, or pays=\"\" to say the line is only advice.",
+        "rule": "Give the NudgeDeclaration required_command=\"<the command>\" so the line becomes a debt, or required_command=\"\" to say the line is only advice.",
         "skill": "plain-code-words"
     }
 }

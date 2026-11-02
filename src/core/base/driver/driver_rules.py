@@ -60,7 +60,7 @@ class DriverRules:
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
             rule = self.container.get(entry.path.checked_class(DriverRule))
-            if rule.first_start_only and hook.event.is_resume:
+            if rule.start_line_rule and hook.event.is_resume:
                 return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             answer = rule.answer(replace(hook, control_return=control_return))

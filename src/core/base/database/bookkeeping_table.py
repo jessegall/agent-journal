@@ -30,7 +30,7 @@ class BookkeepingTable:
     def rows_past(self, row_id: int, limit: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? ORDER BY id LIMIT ?", (row_id, limit)))
 
-    def rows_of(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
+    def row_rows(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? ORDER BY id", (row_table, row_id)))
 
     def newest_id(self) -> int:

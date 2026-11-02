@@ -14,7 +14,7 @@ class Nudge:
     text: str
     interval: Interval | None = None
     turn_limited: bool = True
-    pays: str = ""
+    required_command: str = ""
 
     @property
     def labelled(self) -> str:

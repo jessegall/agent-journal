@@ -11,7 +11,7 @@ def posted(line):
     return sample.with_fields(event="post_tool_use", raw={"tool_input": {"command": line}})
 
 
-def holding_three(new_story):
+def three_started_tasks(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     story.expect_success('task make "Second" --environment main', actor=story.agent)
     story.expect_success('task make "Third" --environment main', actor=story.agent)
@@ -24,12 +24,12 @@ def holding_three(new_story):
 
 
 def test_the_newest_started_task_is_the_current_one_whatever_its_number(new_story):
-    story = holding_three(new_story)
+    story = three_started_tasks(new_story)
     assert any("task:2 is in hand" in line for line in story.hook("s-1", HookSamples.session_start()).lines)
 
 
 def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_starts(new_story):
-    story = holding_three(new_story)
+    story = three_started_tasks(new_story)
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
     lines = story.hook("s-1", posted("journal task close 2 --outcome done")).lines
@@ -46,7 +46,7 @@ def test_with_empty_hands_nothing_is_named_and_the_next_task_starts(new_story):
 
 
 def test_a_stop_names_every_task_in_hand_at_once_newest_first(new_story):
-    story = holding_three(new_story)
+    story = three_started_tasks(new_story)
     refusal = story.hook("s-1", HookSamples.stop()).refusal
     assert "task:2, task:3, task:1" in refusal
     assert "close, release or block each" in refusal

@@ -13,7 +13,7 @@ from core.modules.drivers.models.hook_call import HookCall
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
-NO_HOOK_IDLE_SECONDS = 30
+IDLE_LIMIT_SECONDS = 30
 IDLE_HOOKS = (HookEventName.SESSION_START, HookEventName.STOP)
 
 
@@ -39,8 +39,8 @@ class HookCallQuery(Query[HookCall]):
         calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if not calls:
             return False
-        has_no_recent_hook = calls[0].creation_timestamp().elapsed_seconds(current_time) >= NO_HOOK_IDLE_SECONDS
-        return has_no_recent_hook or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED)
+        is_past_idle_limit = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
+        return is_past_idle_limit or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED)
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
