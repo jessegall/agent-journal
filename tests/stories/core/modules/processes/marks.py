@@ -213,3 +213,11 @@ def test_when_an_agent_ends_the_runs_it_left_going_end_as_lost(new_story):
     story.expect_success(f"agent end {story.agent.id}", actor=story.user_actor)
     story.run_listeners()
     story.expect_text(f"output status {process.id}", f"{process.id}  orphaned", actor=story.user_actor)
+
+
+def test_an_ended_run_says_its_result_on_its_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "F..\n=== 1 failed, 2 passed in 1.00s ===\n", exit_code=1)
+    story.run_listeners()
+    story.expect_text("chat-mark list --json", "1 failed, 2 passed")

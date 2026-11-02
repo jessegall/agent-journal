@@ -59,6 +59,8 @@ class ProcessEndMarkListener(CommitListener):
 
     @staticmethod
     def figure(process: Process, output: Output | None) -> str:
+        if process.state in ENDED and output and output.reader_summary:
+            return output.reader_summary
         if output and output.steps_failed:
             return f"{output.steps_passed} passed, {output.steps_failed} failed"
         if output and output.steps_passed:
