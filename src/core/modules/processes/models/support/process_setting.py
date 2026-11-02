@@ -15,8 +15,6 @@ class ProcessSetting(Enum):
                                       SettingType.NUMBER, default=15)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)
-    UNREAD_OUTPUT_TOOL_USES = SettingValue("unread-output-every", "Unread output reminder", "Every how many tool uses an unread finished output is named again.",
-                                           SettingType.NUMBER, default=5)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Seconds to a lost run", "How long a run may go without a sign of life before it is ended as lost.",
                                   SettingType.NUMBER, default=90)
     OUTPUTS_KEPT_COUNT = SettingValue("outputs-kept", "Outputs kept", "How many outputs are kept before the oldest are removed.", SettingType.NUMBER, default=40)

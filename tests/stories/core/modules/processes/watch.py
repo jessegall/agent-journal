@@ -4,6 +4,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.modules.processes.support.process_samples import moved_run
 
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 READER = 'reader add watched --commands "make*" --lines "FAILED|error"'
@@ -48,3 +49,21 @@ def test_a_watch_is_ended_by_unwatching(new_story):
     story.run(f"output unwatch {process_id}", actor=story.agent)
     story.expect_success("watch show 1", "state: ended", actor=story.agent)
     story.expect_refusal(f"output unwatch {process_id}", "no open watch", actor=story.agent)
+
+
+def test_a_background_run_is_named_running_once_and_then_each_10_percent(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
+    process = moved_run(story, "make test")
+    assert f"output {process.id}: running" in story.hook("s-1", AFTER).lines
+    assert f"output {process.id}: running" not in story.hook("s-1", AFTER).lines
+    story.container.get(OutputFolder).write_output(process.id, 1, "[ 42%]\nFAILED a\n")
+    tick(story)
+    assert f"output {process.id}: 42%" in story.hook("s-1", AFTER).lines
+
+
+def test_an_explicit_watch_on_a_background_run_makes_no_second_watch(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make test")
+    story.run(f"output watch {process.id}", actor=story.agent)
+    assert story.hook("s-1", AFTER).lines.count(f"output {process.id}: running") == 1

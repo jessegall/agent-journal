@@ -17,7 +17,6 @@ NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, 
 AFTER = NOTHING.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
 ENDED = "output 1 ended: 2 failed 1 passed"
-UNREAD = "output 1 unread"
 
 
 def lines_of(story, sample) -> list[str]:
@@ -90,50 +89,6 @@ def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     ended_run(story, "pytest -q", TESTS_REPORT, exit_code=1)
     assert not any("ended" in line for line in lines_of(story, NOTHING))
-
-
-def test_the_reminder_comes_after_5_tool_uses_and_once_in_a_turn_while_the_output_is_not_read(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "pytest -q")
-    end_run(story, process, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
-    story.hook("s-1", NOTHING)
-    reminders = [UNREAD in lines_of(story, AFTER) for _ in range(10)]
-    assert reminders == [False, False, False, False, True, False, False, False, False, False]
-
-
-def test_outputs_that_ended_apart_are_named_together_once_in_a_turn(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    first = moved_run(story, "pytest -q")
-    end_run(story, first, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
-    lines_of(story, AFTER)
-    lines_of(story, AFTER)
-    second = moved_run(story, "pytest -q tests/cart")
-    end_run(story, second, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
-    story.hook("s-1", NOTHING)
-    labelled = [line for _ in range(10) for line in lines_of(story, AFTER) if "unread" in line]
-    assert labelled == [f"output {first.id}, {second.id} unread"]
-
-
-def test_reading_the_output_ends_the_reminders(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "pytest -q")
-    end_run(story, process, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
-    story.hook("s-1", NOTHING)
-    story.run(f"output read {process.id} --summary", actor=story.agent)
-    assert [UNREAD in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
-
-
-def test_an_output_left_unread_for_half_an_hour_is_no_longer_named(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "pytest -q")
-    end_run(story, process, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(minutes=31))
-    story.hook("s-1", NOTHING)
-    assert [UNREAD in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
 
 
 def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
