@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from core.base.periodic_checks import PeriodicChecks
@@ -17,6 +18,24 @@ def test_a_failing_check_prints_its_output_and_tells_the_agent_once(new_story):
     story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
     story.expect_text("check run 1", "check 1 failed: Lint", "two problems", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.stop(), "check:1 failed")
+
+
+def test_the_runs_of_a_check_are_listed_newest_first_with_what_each_printed(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
+    story.run("check run 1", actor=story.user)
+    story.advance(timedelta(minutes=1))
+    story.run('check edit 1 --command "echo clean"', actor=story.user)
+    story.run("check run 1", actor=story.user)
+    runs = json.loads(story.run("check runs 1 --json", actor=story.user).output_text)["rows"]
+    assert [run["passed"] for run in runs] == [True, False]
+    assert "clean" in runs[0]["output"] and "two problems" in runs[1]["output"]
+
+
+def test_a_check_that_never_ran_has_no_runs(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 0', actor=story.user)
+    story.expect_text("check runs 1", "no runs yet", actor=story.user)
 
 
 def test_a_removed_check_runs_no_more_and_says_so(new_story):

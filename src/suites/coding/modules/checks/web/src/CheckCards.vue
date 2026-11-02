@@ -1,9 +1,23 @@
 <script setup>
-import {Icon, ListTools, Skeleton, useListTools, useOpenRow, useRows, Btn, peekRef} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Icon, ListTools, Skeleton, useListTools, useRows, Btn} from "@journal/window-kit";
+import CheckDialog from "./CheckDialog.vue";
 
-const {rows, failure, loaded} = useRows("check list", ["check.*"]);
-const {opened, toggle} = useOpenRow();
+// a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming why
+const {rows, failure, loaded, context} = useRows("check list", ["check.*"]);
 const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !row.stopped});
+const openedId = ref(null);
+const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
+const runningIds = ref(new Set());
+const refusal = ref("");
+
+async function run(row) {
+    refusal.value = "";
+    runningIds.value = new Set([...runningIds.value, row.id]);
+    const answer = await context.run(["check", "run", String(row.id)]);
+    runningIds.value = new Set([...runningIds.value].filter((id) => id !== row.id));
+    if (!answer.ok) refusal.value = answer.error;
+}
 </script>
 
 <template>
@@ -18,21 +32,24 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
         <template v-else-if="loaded && !rows.length">
             <p class="cards-note">No checks yet</p>
         </template>
+        <template v-if="refusal">
+            <p class="cards-note" data-check-refusal>{{ refusal }}</p>
+        </template>
         <template v-for="row in tools.shown.value" :key="row.id">
-            <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
+            <div role="button" tabindex="0" class="card" :data-row="row.id" @click="openedId = row.id" @keydown.enter="openedId = row.id">
                 <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
                 <span class="card-title">{{ row.title }}</span>
-                <Btn small data-check-open @click.stop="peekRef(`checks:${row.id}`)">Details</Btn>
                 <code class="card-detail">{{ row.command }}</code>
-                <template v-if="opened === row.id">
-                    <template v-if="row.last_output">
-                        <pre class="card-output">{{ row.last_output }}</pre>
-                    </template>
+                <template v-if="!row.stopped">
+                    <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
                 </template>
                 <span class="card-foot">{{ row.status }} · {{ row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand" }}</span>
-            </button>
+            </div>
         </template>
     </div>
+    <template v-if="opened">
+        <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
+    </template>
 </template>
 
 <style scoped>
@@ -59,8 +76,7 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
     cursor: pointer;
 }
 
-.card:hover,
-.card.open {
+.card:hover {
     border-color: var(--border-strong, var(--border));
 }
 
@@ -81,8 +97,11 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
     font-weight: 600;
 }
 
-.card-detail,
-.card-output {
+.card-run {
+    align-self: flex-start;
+}
+
+.card-detail {
     margin: 0;
     overflow-wrap: anywhere;
     color: var(--text-2);

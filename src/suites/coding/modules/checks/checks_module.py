@@ -1,3 +1,4 @@
+from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -46,10 +47,10 @@ class ChecksModule(Module):
     listeners = [TaskWaitCheckListener, TaskWaitPassListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
-    subcommands = (MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
+    subcommands = (CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = [(PeriodicChecks, DueCheckRuns)]
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
-                                 reads=["check list"], events=["check.*"])]
+                                 reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]
     moves = [ChecksMove]
