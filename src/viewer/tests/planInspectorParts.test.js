@@ -6,7 +6,10 @@ import PlanTimeline from "../src/resource/PlanTimeline.vue";
 import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
-
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
 
 async function drawn(component, answer, props = {}) {
     const element = document.createElement("div");

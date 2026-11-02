@@ -4,6 +4,11 @@ import ViewWindow from "../src/layout/ViewWindow.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {perLine} from "./support/windowContext.js";
 
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
+
 const board = {name: "notes.board", title: "Board", icon: "window", entry_url: "", line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true};
 
 test("a view window builds its own catalogue and event stream, draws its one window and docks back through the channel", async () => {

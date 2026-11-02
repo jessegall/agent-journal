@@ -14,7 +14,7 @@ import ProgressBar from "../kit/ProgressBar.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {render} from "../text/index.js";
 import RowMoves from "./RowMoves.vue";
-import CommentSide from "./CommentSide.vue";
+import CommentedRow from "./CommentedRow.vue";
 import PlanCritique from "./PlanCritique.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
@@ -69,7 +69,7 @@ watch(() => props.id, () => {
             <a class="share-link" data-resource-share :href="shareAddress(`plans:${id}`)">Share</a>
             <CloseButton title="Close the plan" data-resource-close @click="emit('close')" />
         </header>
-        <div class="plan-row">
+        <CommentedRow :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
         <div class="scroll">
             <template v-if="failure">
                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -139,10 +139,7 @@ watch(() => props.id, () => {
                 <PlanReviews :id="id" :read="read" />
             </template>
         </div>
-        <template v-if="textComments.open.value">
-            <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
-        </template>
-        </div>
+        </CommentedRow>
         <template v-if="plan">
             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
         </template>
@@ -173,17 +170,6 @@ watch(() => props.id, () => {
     color: var(--text-3);
     font-size: 11px;
     line-height: 18px;
-}
-
-.plan-row {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-}
-
-.plan-row > .scroll {
-    flex: 1;
-    min-width: 0;
 }
 
 .plan-critique {
