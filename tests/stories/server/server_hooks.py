@@ -4,12 +4,13 @@ import sqlite3
 from pathlib import Path
 
 from core.base.timing import TIMING_HEADER
+from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
-from tests.stories.core.support.fixtures import ThreeTasks
+from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import expect_timing_lines, server_story
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
@@ -25,6 +26,15 @@ def test_a_prepared_hook_object_is_read_and_let_through_until_the_drivers_decide
     with server_story(new_story(fixture=ThreeTasks)) as story:
         for name in ("document_example", "edit", "write", "prompt", "stop"):
             story.expect_hook_answer("/hook", example(name), 200, '"refusal": ""')
+
+
+def test_a_hook_is_recorded_as_it_was_sent_while_the_developer_option_is_on(new_story):
+    started = new_story(fixture=UserJoined)
+    started.expect_success("setting switch journal.core.developer.tools on --project", actor=started.user)
+    started.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=started.user)
+    with server_story(started) as story:
+        story.expect_hook_answer("/hook", example("edit"), 200, '"refusal": ""')
+    assert started.container.get(HookRequestLog).read()[0].body == example("edit")
 
 
 def test_a_raw_body_with_no_version_is_read_the_old_way(new_story):

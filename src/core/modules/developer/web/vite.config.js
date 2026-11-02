@@ -6,6 +6,7 @@ const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 export default windowBuild({
     entries: {
         numbers: here("./src/numbers.js"),
+        hookRequests: here("./src/hookRequests.js"),
     },
     outDir: here("./dist"),
 });

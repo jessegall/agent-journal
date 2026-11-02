@@ -1,7 +1,9 @@
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.developer.commands.hook_numbers.hook_numbers_subcommand import HookNumbersSubcommand
+from core.modules.developer.commands.hook_requests.hook_requests_subcommand import HookRequestsSubcommand
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.module.module import Module
@@ -18,5 +20,6 @@ class DeveloperModule(Module):
     dependencies = ["journal.core.settings"]
     settings = DEVELOPER_SETTINGS
     handlers = [ResetHookNumbersHandler]
-    subcommands = [HookNumbersSubcommand, ResetHookNumbersSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"])]
+    subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand]
+    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
+               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["developer hook-requests"])]

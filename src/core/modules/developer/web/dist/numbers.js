@@ -1,66 +1,62 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-3f6a95d9a068")) { const style = document.createElement("style"); style.id = "window-styles-3f6a95d9a068"; style.textContent = ".numbers-tools[data-v-b039a2fd]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-b039a2fd]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-b039a2fd]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-b039a2fd],.numbers-table td[data-v-b039a2fd]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-b039a2fd]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
-import { ref as g, computed as w, openBlock as l, createElementBlock as r, createElementVNode as e, createVNode as v, unref as d, withCtx as p, createTextVNode as f, toDisplayString as s, Fragment as x, renderList as N } from "vue";
-import { useWindow as B, useReadLine as C, usePoll as H, Btn as h } from "@journal/window-kit";
-const S = (c, i) => {
-  const t = c.__vccOpts || c;
-  for (const [m, u] of i)
-    t[m] = u;
-  return t;
-}, V = {
+if (!document.getElementById("window-styles-4d3aa400bc1c")) { const style = document.createElement("style"); style.id = "window-styles-4d3aa400bc1c"; style.textContent = ".requests[data-v-e05d2e6b]{display:flex;flex-wrap:wrap;gap:16px}.list[data-v-e05d2e6b]{display:flex;flex:1 1 280px;flex-direction:column;gap:2px}.row[data-v-e05d2e6b]{display:flex;flex-wrap:wrap;gap:8px;padding:6px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.row.open[data-v-e05d2e6b]{background:var(--surface-2, var(--border))}.event[data-v-e05d2e6b]{font-weight:600}.note[data-v-e05d2e6b]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-e05d2e6b]{flex:2 1 420px;min-width:0}.heading[data-v-e05d2e6b]{margin:0 0 4px;font-size:12px}pre[data-v-e05d2e6b]{margin:0 0 12px;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.numbers-tools[data-v-b039a2fd]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-b039a2fd]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-b039a2fd]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-b039a2fd],.numbers-table td[data-v-b039a2fd]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-b039a2fd]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+import { ref as y, computed as g, openBlock as n, createElementBlock as l, createElementVNode as e, createVNode as i, unref as a, withCtx as _, createTextVNode as b, toDisplayString as t, Fragment as w, renderList as x } from "vue";
+import { useWindow as N, useReadLine as B, usePoll as C, Btn as p } from "@journal/window-kit";
+import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const S = {
   class: "numbers",
   "data-hook-numbers": ""
-}, E = { class: "numbers-tools" }, F = {
+}, V = { class: "numbers-tools" }, E = {
   key: 0,
   class: "numbers-note",
   role: "alert"
-}, L = {
+}, F = {
   key: 1,
   class: "numbers-note"
-}, P = {
+}, L = {
   key: 2,
   class: "numbers-table"
-}, R = {
+}, P = {
   __name: "HookNumbers",
-  setup(c) {
-    const i = B(), t = g(!1), { value: m, failure: u, load: _ } = C(() => `developer numbers${t.value ? " --slowest" : ""}`), b = w(() => {
-      var o;
-      return ((o = m.value) == null ? void 0 : o.rows) ?? [];
+  setup(R) {
+    const v = N(), r = y(!1), { value: f, failure: d, load: m } = B(() => `developer numbers${r.value ? " --slowest" : ""}`), c = g(() => {
+      var s;
+      return ((s = f.value) == null ? void 0 : s.rows) ?? [];
     });
-    function k() {
-      t.value = !t.value, _();
+    function h() {
+      r.value = !r.value, m();
     }
-    async function y() {
-      const o = await i.run(["developer", "reset-numbers"]);
-      u.value = o.ok ? "" : o.error, _();
+    async function k() {
+      const s = await v.run(["developer", "reset-numbers"]);
+      d.value = s.ok ? "" : s.error, m();
     }
-    return H(_, () => !0), (o, a) => (l(), r("div", V, [
-      e("div", E, [
-        v(d(h), {
+    return C(m, () => !0), (s, u) => (n(), l("div", S, [
+      e("div", V, [
+        i(a(p), {
           small: "",
           bordered: "",
           "data-numbers-sort": "",
-          onClick: k
+          onClick: h
         }, {
-          default: p(() => [
-            f(s(t.value ? "By name" : "Slowest first"), 1)
+          default: _(() => [
+            b(t(r.value ? "By name" : "Slowest first"), 1)
           ]),
           _: 1
         }),
-        v(d(h), {
+        i(a(p), {
           small: "",
           bordered: "",
           "data-numbers-reset": "",
-          onClick: y
+          onClick: k
         }, {
-          default: p(() => [...a[0] || (a[0] = [
-            f("Reset the counts", -1)
+          default: _(() => [...u[0] || (u[0] = [
+            b("Reset the counts", -1)
           ])]),
           _: 1
         })
       ]),
-      d(u) ? (l(), r("p", F, s(d(u)), 1)) : b.value.length ? (l(), r("table", P, [
-        a[1] || (a[1] = e("thead", null, [
+      a(d) ? (n(), l("p", E, t(a(d)), 1)) : c.value.length ? (n(), l("table", L, [
+        u[1] || (u[1] = e("thead", null, [
           e("tr", null, [
             e("th", null, "Hook"),
             e("th", null, "Count"),
@@ -70,21 +66,21 @@ const S = (c, i) => {
           ])
         ], -1)),
         e("tbody", null, [
-          (l(!0), r(x, null, N(b.value, (n) => (l(), r("tr", {
-            key: n.id,
+          (n(!0), l(w, null, x(c.value, (o) => (n(), l("tr", {
+            key: o.id,
             "data-number-row": ""
           }, [
-            e("td", null, s(n.hook), 1),
-            e("td", null, s(n.count), 1),
-            e("td", null, s(n.average_ms) + " ms", 1),
-            e("td", null, s(n.slowest_ms) + " ms", 1),
-            e("td", null, s(n.average_points), 1)
+            e("td", null, t(o.hook), 1),
+            e("td", null, t(o.count), 1),
+            e("td", null, t(o.average_ms) + " ms", 1),
+            e("td", null, t(o.slowest_ms) + " ms", 1),
+            e("td", null, t(o.average_points), 1)
           ]))), 128))
         ])
-      ])) : (l(), r("p", L, "Nothing counted yet. Hook durations in the developer settings turns the counts on."))
+      ])) : (n(), l("p", F, "Nothing counted yet. Hook durations in the developer settings turns the counts on."))
     ]));
   }
-}, I = /* @__PURE__ */ S(R, [["__scopeId", "data-v-b039a2fd"]]);
+}, T = /* @__PURE__ */ H(P, [["__scopeId", "data-v-b039a2fd"]]);
 export {
-  I as default
+  T as default
 };

@@ -11,6 +11,7 @@ from core.base.provider.providers import Providers
 from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
+from core.modules.developer.support.hook_request_log import HookRequestLog
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
@@ -54,6 +55,7 @@ class HookEndpoint:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
         self.timing.stamp("hook_synced")
+        container.get(HookRequestLog).record(program, headers, data)
         event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
         try:
