@@ -14,8 +14,9 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal/socket"
 )
 
-// StartLimit is how long a client waits for a server it started, or one another client is starting.
-var StartLimit = 5 * time.Second
+// StartLimit is how long a client waits for a server it started, or one another client is starting: a boot on a loaded
+// machine takes many seconds, and a client that gives up too early kills the server it started and leaves none.
+var StartLimit = 30 * time.Second
 
 // MaintenanceMark is the file a change of the journal's code keeps in the home while it stops the server and holds the
 // lock: a client starts no server while it is there, and it counts for MaintenanceLimit at most, so a change that died
