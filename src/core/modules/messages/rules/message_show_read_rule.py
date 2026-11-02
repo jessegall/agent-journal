@@ -13,7 +13,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
@@ -46,7 +46,7 @@ class MessageShowReadRule(DriverRule):
         commands = {int(number): command for command, number in MESSAGE_READ_LINE.findall(shell.line)}
         unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", tuple(commands))).all_rows()) if commands else []
         if MESSAGE_UNREAD_LINE.search(shell.line):
-            all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
+            all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
             commands = {message.id: READ_COMMAND for message in unread}
         read = [message for message in unread if commands[message.id] == READ_COMMAND]

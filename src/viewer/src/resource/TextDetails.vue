@@ -3,14 +3,12 @@ import {computed, onMounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {peekRef} from "../route.js";
 
-// what a document's or a report's panel adds to its text: edit it, its chapters, the comments on it, what it links to, and for a document its revisions
+// what a document's or a report's panel adds to its text: edit it, its chapters, what it links to, and for a document its revisions
 const props = defineProps({kind: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["changed"]);
-const comments = ref([]);
 const links = ref([]);
 const revisions = ref([]);
 const revision = ref(null);
-const comment = ref("");
 const failure = ref("");
 const editing = ref(false);
 const edited = ref({abstract: "", body: ""});
@@ -20,9 +18,7 @@ const targetRef = (link) => `${link.target_model}:${link.target_id}`;
 const rowsOf = (answer) => (answer.ok ? answer.value.rows ?? [] : []);
 
 async function load() {
-    const [written, linked] = await Promise.all([props.read([props.kind, "comments", String(props.id)]), props.read(["link", "list", "--source", `${props.kind}:${props.id}`])]);
-    comments.value = rowsOf(written);
-    links.value = rowsOf(linked);
+    links.value = rowsOf(await props.read(["link", "list", "--source", `${props.kind}:${props.id}`]));
     if (props.kind === "doc") revisions.value = rowsOf(await props.read(["doc", "revisions", String(props.id)]));
 }
 
@@ -30,12 +26,6 @@ async function run(line) {
     const answer = await props.read(line);
     failure.value = answer.ok ? "" : answer.error;
     return answer.ok;
-}
-
-async function write() {
-    if (!comment.value.trim() || !(await run([props.kind, "comment", String(props.id), comment.value.trim()]))) return;
-    comment.value = "";
-    await load();
 }
 
 function edit() {
@@ -85,14 +75,6 @@ watch(() => props.id, load);
                 </template>
             </ol>
         </template>
-        <p class="label">Comments</p>
-        <template v-for="row in comments" :key="row.id">
-            <p class="comment" data-text-comment>{{ row.text }}</p>
-        </template>
-        <form class="write" data-text-comment-form @submit.prevent="write">
-            <input v-model="comment" placeholder="Write a comment" aria-label="Write a comment">
-            <Btn small type="submit" :disabled="!comment.trim()">Send</Btn>
-        </form>
         <template v-if="links.length">
             <p class="label">Links</p>
             <template v-for="link in links" :key="link.id">

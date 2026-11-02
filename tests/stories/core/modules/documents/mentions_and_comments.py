@@ -1,3 +1,6 @@
+import json
+
+from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -40,3 +43,19 @@ def test_a_comment_on_a_report_and_an_empty_comment(new_story):
     story.expect_text("report comments 1", "Good", actor=story.user)
     story.expect_refusal('report comment 1 " " --environment main', "give the comment's text", actor=story.user)
 
+
+def test_a_person_s_comment_is_a_message_of_type_comment_naming_the_document_and_the_agent_hears_of_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "All of it"', actor=story.user)
+    story.expect_text('doc comment 1 "Use cents everywhere" --environment main', "comment written as message", actor=story.user)
+    shown = json.loads(story.run("message show 1 --json", actor=story.user).output_text)
+    assert shown["type"] == "comment"
+    assert shown["metadata"]["journal.core.messages"]["comment_on"] == {"model": "doc", "id": 1}
+    assert "[journal] new message 1: journal message read 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
+
+
+def test_an_agent_s_comment_stays_an_agent_message_and_is_not_told_back_to_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "All of it"', actor=story.user)
+    story.run('doc comment 1 "Noted" --environment main', actor=story.agent)
+    assert json.loads(story.run("message show 1 --json", actor=story.user).output_text)["type"] == "agent"

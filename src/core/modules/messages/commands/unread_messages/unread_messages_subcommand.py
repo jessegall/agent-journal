@@ -9,7 +9,8 @@ from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
-from core.modules.messages.models.enums.message_type import MessageType
+from core.base.query.conditions.among import Among
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_text import MessageText
 
@@ -31,7 +32,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("unread messages are read for one environment", "name it with --environment")
-        unread = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
+        unread = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
         return tuple(MessageText.built(message, self.links) for message in unread)
 
     def write_output(self, value: object, output: Output) -> None:

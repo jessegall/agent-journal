@@ -2,7 +2,8 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.messages.models.enums.message_type import MessageType
+from core.base.query.conditions.among import Among
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
@@ -37,5 +38,5 @@ class ForegroundLimit:
         return self.processes.environment(environment_id).line(line).moved().exists()
 
     def seconds_allowed(self, environment_id: int) -> int:
-        is_waiting = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(IsNull("read_at")).exists()
+        is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()
         return self.settings.integer(ProcessSetting.WAITING_FOREGROUND_SECONDS if is_waiting else ProcessSetting.FOREGROUND_SECONDS, environment_id)

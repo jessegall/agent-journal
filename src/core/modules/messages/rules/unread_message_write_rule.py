@@ -7,7 +7,8 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.messages.models.enums.message_type import MessageType
+from core.base.query.conditions.among import Among
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL
 
@@ -30,7 +31,7 @@ class UnreadMessageWriteRule(DriverRule):
         self.queries, self.hook_calls = queries, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        delivered = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).matching(Greater("delivered_at", "")).oldest()
+        delivered = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(Greater("delivered_at", "")).oldest()
         first = delivered.page(1, 1).rows
         first_delivered_at = first[0].delivered_at if first else None
         if first_delivered_at is None:

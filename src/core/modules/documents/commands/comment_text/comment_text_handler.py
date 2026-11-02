@@ -23,7 +23,7 @@ class CommentTextHandler(Handler[CommentText, Message]):
         if not command.text.strip():
             raise Refusal("give the comment's text")
         text_row = self.queries.query(command.text_model).find(command.row_id)
-        message = self.bus.dispatch(SendMessage(f"On {text_row.cli_name} {text_row.id}, {text_row.title}: {command.text.strip()}"), context)
+        message = self.bus.dispatch(SendMessage(f"On {text_row.cli_name} {text_row.id}, {text_row.title}: {command.text.strip()}", comment_on=(text_row.model_name, text_row.id)), context)
         self.repository.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
                                   link_type=LinkType.COMMENT), context)
         return message

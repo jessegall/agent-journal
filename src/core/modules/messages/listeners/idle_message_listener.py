@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.modules.messages.commands.tell_idle_agent.tell_idle_agent import TellIdleAgent
-from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 
 
 class IdleMessageListener(CommitListener):
@@ -17,5 +17,5 @@ class IdleMessageListener(CommitListener):
         self.bus = bus
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.environment_id is not None and event.data["type"][1] == MessageType.USER:
+        if event.environment_id is not None and event.data["type"][1] in PERSON_MESSAGE_TYPES:
             self.bus.run(TellIdleAgent(event.environment_id), Actor(event.actor_id, ActorType.USER), environment_id=event.environment_id)

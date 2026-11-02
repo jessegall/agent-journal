@@ -122,7 +122,7 @@ async function removeMessage(message) {
     load();
 }
 // the arrow up in an empty box brings back the newest message of yours the agent has not read, to change it; the arrow down or escape leaves it
-const lastUnread = () => messages.value.find((row) => row.type === "user" && !row.read_at);
+const lastUnread = () => messages.value.find((row) => ["user", "comment"].includes(row.type) && !row.read_at);
 function editUp(event) {
     if (text.value || !lastUnread()) return;
     event.preventDefault();
@@ -239,7 +239,7 @@ const isEcho = (row) => Boolean(row?.local);
 const arrival = {
     enter: (element, done) => {
         const row = rowOf(element);
-        return isEcho(row) ? arriveAtOnce(element, arrivalPane(), done) : row?.type === "user" ? done() : comeIn(element, arrivalPane(), done);
+        return isEcho(row) ? arriveAtOnce(element, arrivalPane(), done) : ["user", "comment"].includes(row?.type) ? done() : comeIn(element, arrivalPane(), done);
     },
     leave: (element, done) => (!atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
 };

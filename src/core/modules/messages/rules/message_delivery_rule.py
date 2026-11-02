@@ -9,7 +9,8 @@ from core.base.journal_home import JournalHome
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
-from core.modules.messages.models.enums.message_type import MessageType
+from core.base.query.conditions.among import Among
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 
 LISTED_MESSAGES = 5
@@ -32,7 +33,7 @@ class MessageDeliveryRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
-        undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
+        undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
         page = undelivered.page(1, LISTED_MESSAGES)
         messages, waiting = page.rows, page.total
         if not messages:

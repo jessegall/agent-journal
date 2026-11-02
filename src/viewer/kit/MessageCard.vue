@@ -15,7 +15,8 @@ const props = defineProps({message: {type: Object, required: true}, quote: {type
 const emit = defineEmits(["reply", "delete", "react"]);
 const copied = ref(false);
 const bubble = ref(null);
-const deletable = computed(() => props.message.type === "user" && !props.message.read_at && !props.message.local);
+const fromPerson = computed(() => ["user", "comment"].includes(props.message.type));
+const deletable = computed(() => fromPerson.value && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
     copied.value = true;
@@ -49,7 +50,7 @@ function pick(face) {
 </script>
 
 <template>
-    <article class="message" data-message data-figure-bubble :data-from="message.type" :data-ref="`message:${message.id}`">
+    <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
         <div class="message-body">
             <div ref="bubble" class="message-card md" @click="peekChip">
                 <template v-if="message.parent_id">
@@ -105,7 +106,7 @@ function pick(face) {
         </template>
         <div class="message-foot">
             <time class="message-time">{{ time }}</time>
-            <template v-if="message.type === 'user'">
+            <template v-if="fromPerson">
                 <ReadTicks :message="message" />
             </template>
         </div>

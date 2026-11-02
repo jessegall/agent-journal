@@ -8,6 +8,9 @@ import AgentFacts from "./AgentFacts.vue";
 import MemoryFacts from "./MemoryFacts.vue";
 import WorkerFacts from "./WorkerFacts.vue";
 import TextDetails from "./TextDetails.vue";
+import CommentSide from "./CommentSide.vue";
+import QuickCommentBar from "../kit/QuickCommentBar.vue";
+import {useTextComments} from "../composables/textComments.js";
 import PlanInspector from "./PlanInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
@@ -24,6 +27,8 @@ let reading = 0;
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
 const OWN_INSPECTORS = new Set(["task", "plan"]);
 const TEXT_KINDS = new Set(["question", "memory"]);
+const commentable = computed(() => kind.value === "doc" || kind.value === "report");
+const textComments = useTextComments(() => (commentable.value && row.value ? {kind: kind.value, id: opened.value.id, title: row.value.title} : {}), (line) => props.read(line));
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_KINDS.has(kind.value) ? row.value?.text : "") || "");
@@ -79,6 +84,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         </template>
                         <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                     </header>
+                    <div class="panel-row">
                     <div class="body">
                         <template v-if="failure">
                             <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -110,6 +116,13 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </section>
                         </template>
                     </div>
+                    <template v-if="commentable && textComments.open.value">
+                        <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
+                    </template>
+                    </div>
+                    <template v-if="commentable && row">
+                        <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
+                    </template>
                     <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                     </template>
                 </aside>
@@ -119,6 +132,17 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
+.panel-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.panel-row > .body {
+    flex: 1;
+    min-width: 0;
+}
+
 .head-share {
     width: auto;
     padding: 0 8px;

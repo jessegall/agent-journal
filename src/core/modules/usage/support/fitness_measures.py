@@ -5,7 +5,8 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
-from core.modules.messages.models.enums.message_type import MessageType
+from core.base.query.conditions.among import Among
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
@@ -44,7 +45,7 @@ class FitnessMeasures:
         return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload))
 
     def message_wait(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
-        waiting = self.queries.query(Message).filter(environment_id=agent.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().page(1, 1).rows
+        waiting = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
         minutes = waiting[0].creation_timestamp().elapsed_seconds(current_time) / 60 if waiting else 0.0
         return FitnessMeasure("message_wait", "Oldest message waiting, minutes", round(minutes, 1), MESSAGE_WAIT_PASS_MINUTES, self.minutes_closeness(minutes), MESSAGE_WEIGHT)
 
@@ -73,7 +74,7 @@ class FitnessMeasures:
         start = Timestamp(current_time.value - timedelta(minutes=WORKLOAD_WINDOW_MINUTES)).text
         recent = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Greater("created_at", start))
         hourly = 60 / WORKLOAD_WINDOW_MINUTES
-        arrivals = recent.filter(type=MessageType.USER).count() * hourly
+        arrivals = recent.matching(Among("type", PERSON_MESSAGE_TYPES)).count() * hourly
         cleared = recent.filter(type=MessageType.AGENT).count() * hourly
         return arrivals / (cleared or EMPTY_CLEARING_RATE)
 

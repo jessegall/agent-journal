@@ -10,7 +10,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions
 from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL
@@ -46,7 +46,7 @@ class UnansweredMessageRule(DriverRule):
 
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
         agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
-        read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
+        read_messages = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
         candidates = tuple(read_messages.oldest().all_rows())
         answered: set[int | None] = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
         return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_actor(message, ActorType.AGENT.value))
