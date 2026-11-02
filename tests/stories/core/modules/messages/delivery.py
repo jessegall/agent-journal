@@ -118,6 +118,16 @@ def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(new
     assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
 
 
+def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
+    story.run('message send "Use sqlite" --environment main', actor=story.user)
+    assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
+
+
 def test_with_no_terminal_the_line_waits_for_the_next_hook(new_story):
     story = delivery_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))

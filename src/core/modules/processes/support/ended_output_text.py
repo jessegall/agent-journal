@@ -15,7 +15,7 @@ WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
 READ_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
-SHELL_TERMS = frozenset(("journal", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
+SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
 
 
 class EndedOutputText:
