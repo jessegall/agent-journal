@@ -1,6 +1,7 @@
 <script setup>
 import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
+import {WINDOW_CONTEXT} from "./windowContextKey.js";
 import Icon from "../src/kit/Icon.vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
@@ -40,6 +41,17 @@ const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIC
 const captions = computed(() => JSON.parse(props.message.captions || "{}"));
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name), title: captions.value[name] || name})));
 const time = computed(() => clock(new Date(props.message.created_at).getTime() / 1000 || props.message.created_at));
+
+// the rows a person's message names, under it, as version 4's line of what it linked
+const context = inject(WINDOW_CONTEXT, null);
+const links = ref([]);
+const linksHtml = computed(() => (links.value.length ? render(`Linked ${links.value.join(", ")}`, {env: ""}) : ""));
+async function readLinks() {
+    if (!fromPerson.value || !context?.read || props.message.local) return;
+    const answer = await context.read(`link list --source message:${props.message.id}`);
+    if (answer.ok) links.value = (answer.value.rows ?? answer.value ?? []).map((link) => `${link.target_model} ${link.target_id}`);
+}
+readLinks();
 
 const picking = ref(false);
 const reactions = computed(() => reactionGroups(props.message.reactions));
@@ -108,6 +120,9 @@ function pick(face) {
                 </template>
             </div>
         </template>
+        <template v-if="linksHtml">
+            <div class="message-links md" data-message-links @click="peekChip" v-html="linksHtml" />
+        </template>
         <div class="message-foot">
             <time class="message-time">{{ time }}</time>
             <template v-if="fromPerson">
@@ -139,6 +154,15 @@ function pick(face) {
 
 .message-face:hover {
     background: var(--hover);
+}
+
+.message-links {
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.message-links :deep(p) {
+    margin: 0;
 }
 
 .message-reactions {
