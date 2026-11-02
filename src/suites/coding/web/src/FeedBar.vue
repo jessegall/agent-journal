@@ -87,9 +87,9 @@ function expand() {
 
 .feed-bar-lines {
     display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
     padding: 6px 10px;
     font-size: 13px;
 }
