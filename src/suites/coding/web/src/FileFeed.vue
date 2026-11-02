@@ -14,7 +14,7 @@ const AGENT_PAGE = "agent";
 const AGENT_VIEW = {lines: 5, flush: true};
 
 const context = useWindow();
-const {rows, failure, loaded, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
+const {rows, failure, loaded, more, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
 const kept = context.option(SETTING_KEY);
 const startView = (own) => ({...DEFAULTS, ...(context.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
 const view = ref(startView({}));
@@ -22,7 +22,6 @@ const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
 const scroller = ref(null);
-const hasOlder = ref(true);
 
 const cards = computed(() => cardsOf([...rows.value].sort((one, two) => one.id - two.id)));
 const listed = computed(() => {
@@ -49,10 +48,6 @@ async function whole(card) {
     const answer = await context.read(`project-file show ${JSON.stringify(card.path)}`);
     folds.value = {...folds.value, [card.id]: false};
     wholes.value = {...wholes.value, [card.id]: answer.ok ? {text: answer.value.text} : {error: "The text of this file could not be read."}};
-}
-
-async function showOlder() {
-    hasOlder.value = await older();
 }
 
 const atEnd = () => !scroller.value || scroller.value.scrollTop + scroller.value.clientHeight >= scroller.value.scrollHeight - 40;
@@ -84,8 +79,8 @@ onMounted(async () => {
             </template>
             <template v-else>
             <div class="file-feed-flow">
-                <template v-if="hasOlder && !filter">
-                    <Btn small data-feed-older @click="showOlder">Show older edits</Btn>
+                <template v-if="more && !filter">
+                    <Btn small data-feed-older @click="older">Show older edits</Btn>
                 </template>
                 <template v-for="card in listed" :key="card.id">
                     <DiffCard

@@ -3,11 +3,15 @@ import {useWindow} from "./windowContextKey.js";
 
 // the rows a window lists from one read line (in a share, the one row it is shared for, read by its model's show line), read again whenever an event it follows arrives, with the reason a read
 // failed in place of the rows, and whether the first read has answered
+// whether the server says another page follows the one it answered
+const followed = (page) => page.page * page.size < page.total;
+
 export function useRows(line, patterns, {incremental = false} = {}) {
     const context = useWindow();
     const rows = ref([]);
     const failure = ref("");
     const loaded = ref(false);
+    const more = ref(false);
     const actionFailure = ref("");
     const answer = ref(null);
 
@@ -32,12 +36,13 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         rows.value = [...result.value.rows.filter((row) => !held.has(row.id)), ...rows.value];
     }
 
-    // the page of rows older than the oldest held, added behind them; false when there are none
+    // the page of rows older than the oldest held, added behind them; false when there are none, and `more` says whether the server holds another page behind it
     async function older() {
         if (!rows.value.length) return false;
         const oldest = Math.min(...rows.value.map((row) => row.id));
         const result = await context.read(`${line} --before-id ${oldest}`);
-        if (!result.ok || !result.value.rows.length) return false;
+        if (!result.ok || !result.value.rows.length) return (more.value = false);
+        more.value = followed(result.value);
         const held = new Set(rows.value.map((row) => row.id));
         rows.value = [...rows.value, ...result.value.rows.filter((row) => !held.has(row.id))];
         return true;
@@ -52,6 +57,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         // older pages already read stay when the newest page is read again, so a chat scrolled up keeps its place
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
         rows.value = incremental && result.ok && reach ? [...rows.value.filter((row) => row.id > Math.max(...fresh.map((held) => held.id))), ...fresh, ...rows.value.filter((row) => row.id < reach)] : fresh;
+        if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value);
         failure.value = result.ok ? "" : result.error;
         loaded.value = true;
     }
@@ -67,5 +73,5 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     context.follow(patterns, heard);
     load();
-    return {rows, failure, loaded, load, older, act, actionFailure, answer, context};
+    return {rows, failure, loaded, more, load, older, act, actionFailure, answer, context};
 }

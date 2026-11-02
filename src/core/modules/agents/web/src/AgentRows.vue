@@ -9,7 +9,7 @@ const SHOWS = [
     {key: "all", label: "All"},
 ];
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, only: {type: Function, default: () => true}});
-const {rows, failure, loaded, older} = useRows(props.line, ["agent.*"], {incremental: true});
+const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: facts} = useRows("usage agents", ["agent.*", "task.*"]);
 const show = ref("running");
 const words = ref("");
@@ -27,7 +27,7 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
             <TextInput v-model="words" icon="search" class="agents-search" placeholder="Search the agents" data-agents-search />
             <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
         </div>
-        <RowList :rows="shown" :failure="failure" :loaded="loaded" :older="older" :empty="emptyText">
+        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText">
             <template #default="{row}">
                 <AgentCard :row="row" :facts="factsOf(row)" />
             </template>
