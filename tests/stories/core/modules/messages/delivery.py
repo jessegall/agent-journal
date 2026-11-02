@@ -212,6 +212,15 @@ def test_only_read_tells_the_agent_how_to_act_and_only_the_first_time(new_story)
     assert not any(line.startswith(ACT_ON_IT) for line in story.hook("s-1", READ_MESSAGE_HOOK).lines)
 
 
+def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Fix the cart first" --environment main', actor=story.user)
+    story.hook("s-1", READ_MESSAGE_HOOK)
+    story.run('message send "And the checkout" --environment main', actor=story.user)
+    reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
+    assert any(line.startswith(ACT_ON_IT) for line in reply.lines)
+
+
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)

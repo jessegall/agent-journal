@@ -1,28 +1,18 @@
 import re
 import shutil
 import sqlite3
-from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.database.version_four_tables import VersionFourTables
 from install.backup_mismatch_error import BackupMismatchError
 from install.backup_write_error import BackupWriteError
+from install.backup_result import BackupResult
 
 BACKUP_FOLDER = "version-4"
 DATABASE = "journal.db"
 VERSION_FILE = Path("src") / "journal" / "version.py"
 VERSION_PATTERN = re.compile(r'VERSION\s*=\s*"([^"]+)"')
 UNKNOWN_VERSION = "unknown"
-
-
-@dataclass(frozen=True)
-class BackupResult:
-    """A backup of the version 4 database: where it is, how many tables it was checked on, and whether it was
-    made now or an earlier upgrade's was kept."""
-
-    path: Path
-    tables: int
-    kept: bool
 
 
 class VersionFourBackup:

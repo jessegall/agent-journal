@@ -24,4 +24,4 @@ class BackgroundCommands:
         return [options for options in runs if options is not None]
 
     def declared_category(self, shell: ShellLine) -> CommandCategory | None:
-        return next((options.category for options in self.alias_runs(shell) if options.category is not None), None)
+        return next((options.category for options in self.alias_runs(shell) if options.category), None)

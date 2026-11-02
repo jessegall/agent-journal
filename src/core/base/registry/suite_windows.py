@@ -6,7 +6,8 @@ from core.base.viewer.layout_shape import LayoutShape
 
 
 class SuiteWindows:
-    """The viewer windows and default layouts a suite offers: its own, then those of the suites it requires;
+    """The viewer windows and default layouts a suite offers: its own, then those of the suites it requires,
+    then those of the installed tunnels, which no suite names;
     for a page, the layout named for the driver wins over the plain page's; of two presets with one key the
     first is kept."""
 
@@ -14,7 +15,11 @@ class SuiteWindows:
         self.registry = registry
 
     def windows(self, suite_name: str) -> list[WindowEntry]:
-        offered = list(dict.fromkeys(name for suite in self.suites(suite_name) for name in suite.windows))
+        if self.registry.suite(suite_name) is None:
+            return []
+        tunnel_modules = {tunnel.module for tunnel in self.registry.tunnels}
+        tunnel_windows = [window.name for window in self.registry.windows if window.module in tunnel_modules]
+        offered = list(dict.fromkeys([*(name for suite in self.suites(suite_name) for name in suite.windows), *tunnel_windows]))
         return sorted((window for window in self.registry.windows if window.name in offered), key=lambda window: offered.index(window.name))
 
     def has_layout(self, suite_name: str, page: str, driver: str) -> bool:

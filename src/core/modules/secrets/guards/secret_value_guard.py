@@ -3,8 +3,8 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.type_guards import is_tuple
-from core.modules.secrets.support.secret_values import SecretValues
-from core.modules.secrets.support.server_keys import ServerKeys
+from core.base.private.secret_values import SecretValues
+from core.base.private.server_keys import ServerKeys
 
 SHORTEST_GUARDED_CHARACTERS = 6
 

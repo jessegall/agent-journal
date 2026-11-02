@@ -23,7 +23,7 @@ from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
-from core.modules.secrets.support.server_keys import ServerKeys
+from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox

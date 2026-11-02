@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.change.event_log import EventLog
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from suites.coding.modules.checks.commands.check_runs.check_run_history import CheckRunHistory
+from suites.coding.modules.checks.support.check_run_history import CheckRunHistory
 
 CHECKS_TABLE = "checks"
 

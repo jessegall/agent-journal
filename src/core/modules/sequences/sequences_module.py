@@ -18,6 +18,7 @@ from core.modules.sequences.commands.sequence_show.sequence_show_subcommand impo
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
+from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
@@ -41,7 +42,7 @@ class SequencesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
-    migrations = [SequencesTablesMigration, SequenceTriggersMigration]
+    migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler]
     subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,

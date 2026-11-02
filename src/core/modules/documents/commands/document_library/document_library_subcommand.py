@@ -30,7 +30,7 @@ class DocumentLibrarySubcommand(ReadSubcommand[DocumentLibrary]):
         parser.add_argument("--after", type=int, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> DocumentLibrary:
-        category = self.queries.query(DocumentRow).filter(kind=arguments.kind)
+        category = self.queries.query(DocumentRow).filter(row_type=arguments.kind)
         if arguments.state == OPEN:
             category = category.filter(close_reason="")
         if arguments.state == CLOSED:

@@ -5,9 +5,7 @@
         "select": "kind:Attribute",
         "where": [
             {
-                "nameIn": [
-                    "PAGE"
-                ]
+                "textMatches": "^WindowLoading\\.PAGE$"
             }
         ],
         "reject": [

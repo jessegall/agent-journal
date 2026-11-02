@@ -15,7 +15,7 @@ COMMAND_TRIGGER = "command"
 FILE_TRIGGER = "file"
 FILE_TEXT_TRIGGER = "file-text"
 TOOL_TRIGGER = "tool"
-REQUIRED_FIELDS = {ROW_TRIGGER: ["moment"], PHRASE_TRIGGER: ["text"], COMMAND_TRIGGER: ["pattern"], FILE_TRIGGER: ["pattern"], FILE_TEXT_TRIGGER: ["pattern", "text"], TOOL_TRIGGER: ["tool"]}
+REQUIRED_FIELDS = {ROW_TRIGGER: ["event"], PHRASE_TRIGGER: ["text"], COMMAND_TRIGGER: ["pattern"], FILE_TRIGGER: ["pattern"], FILE_TEXT_TRIGGER: ["pattern", "text"], TOOL_TRIGGER: ["tool"]}
 PATTERN_TRIGGERS = (COMMAND_TRIGGER, TOOL_TRIGGER)
 
 
@@ -24,7 +24,7 @@ class SequenceTrigger:
     """One thing that starts a sequence on its own, by its kind and the fields that kind reads."""
 
     trigger_type: str = ""
-    moment: str = ""
+    event: str = ""
     text: str = ""
     pattern: str = ""
     tool: str = ""

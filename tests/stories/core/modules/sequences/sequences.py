@@ -127,7 +127,7 @@ def test_a_tool_used_starts_a_sequence(new_story):
 
 
 def test_a_record_made_starts_a_sequence(new_story):
-    story = triggered_story(new_story, {"trigger_type": "row", "moment": "plan.create"})
+    story = triggered_story(new_story, {"trigger_type": "row", "event": "plan.create"})
     story.run('plan make "The rebuild" --environment main', actor=story.user)
     story.run_listeners()
     assert running(story)

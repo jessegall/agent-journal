@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-from core.modules.secrets.support.private_folder import PrivateFolder
+from core.base.private.private_folder import PrivateFolder
 
 VALUES_SUFFIX = ".env"
 SHOWN_SUFFIX = ".shown"

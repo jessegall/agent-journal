@@ -24,7 +24,6 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.query.conditions.among import Among
 from core.base.subcommand.output import Output
 from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
@@ -139,7 +138,7 @@ class Story:
         output = Output(self.container.get(Tables), False, stream)
         for match in TOUCHED_LINE.finditer(outcome.output_text):
             for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
-                for row in self.container.get(Queries).query(models[model_name]).matching(Among("id", (int(row_id),))).all_rows() if model_name in models else ():
+                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).all_rows() if model_name in models else ():
                     output.row(row)
         return outcome.output_text + stream.getvalue()
 

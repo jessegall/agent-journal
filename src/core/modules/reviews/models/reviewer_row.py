@@ -21,7 +21,7 @@ class ReviewerRow(ViewModel):
     state: str
     subject_model: str
     subject_id: int
-    kind: str
+    row_type: str
     step_id: int
     text: str
     outcome: str

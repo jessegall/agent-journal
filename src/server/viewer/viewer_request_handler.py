@@ -272,7 +272,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         content = module_file.content.replace(b"</head>", head_mark + b"</head>", 1) if head_mark else module_file.content
         caching = ModuleFileCaching.built(self.path, content)
-        if status == 200 and not headers and caching.is_unchanged(self.headers.get("If-None-Match")):
+        client_copy_is_current = status == 200 and not headers and caching.is_unchanged(self.headers.get("If-None-Match"))
+        if client_copy_is_current:
             self.send_response(304)
             self.send_header("ETag", caching.etag)
             self.send_header("Cache-Control", caching.cache_control)

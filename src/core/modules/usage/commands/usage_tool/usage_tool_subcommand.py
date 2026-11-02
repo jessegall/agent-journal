@@ -56,11 +56,11 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         kept = self.outputs.process(process.id).page(1, 1).rows
         return kept[0].title if kept and kept[0].title else process.line
 
-    def open_question_lines(self, environment_id: int) -> tuple[str, ...]:
+    def open_question_lines(self, environment_id: int) -> list[str]:
         open_questions = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
         if open_questions.total > 1:
-            return (f"your answers to {open_questions.total} questions",)
-        return tuple(f"your answer to question {question.id}" for question in open_questions.rows)
+            return [f"your answers to {open_questions.total} questions"]
+        return [f"your answer to question {question.id}" for question in open_questions.rows]
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):

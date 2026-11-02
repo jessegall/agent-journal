@@ -1,7 +1,7 @@
 import json
 
-from core.modules.secrets.support.private_folder import PrivateFolder
-from core.modules.secrets.support.secret_values import SecretValues
+from core.base.private.private_folder import PrivateFolder
+from core.base.private.secret_values import SecretValues
 
 KEYS_SUFFIX = ".keys.json"
 

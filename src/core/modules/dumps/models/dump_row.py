@@ -15,7 +15,7 @@ class DumpRow(ViewModel):
     select = DUMP_ROWS_SELECT
 
     row_key: str
-    kind: str
+    row_type: str
     environment_id: int
     dump_id: int
     item_id: int

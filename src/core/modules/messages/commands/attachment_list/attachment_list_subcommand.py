@@ -1,4 +1,4 @@
-from core.modules.messages.commands.attachment_list.attachment_list_subcommand_listed_record import AttachmentListSubcommandListedRecord
+from core.modules.messages.support.attachment_list_subcommand_listed_record import AttachmentListSubcommandListedRecord
 import re
 from argparse import ArgumentParser, Namespace
 

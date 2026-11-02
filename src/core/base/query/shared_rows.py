@@ -1,16 +1,8 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 from typing import ClassVar
 
 from core.base.model.model import Model
-
-
-@dataclass(frozen=True)
-class ModelRowIds:
-    """The ids of one model that a shared row includes."""
-
-    model: str
-    ids: Sequence[int]
+from core.base.query.model_row_ids import ModelRowIds
 
 
 class SharedRows:

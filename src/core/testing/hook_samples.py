@@ -16,6 +16,10 @@ class HookSamples:
                 "environment": "main", "subagent": "", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": ""})
 
     @staticmethod
+    def tool_use(name: str, category: ToolType, files: list[str], diff: object, **fields: object) -> HookSample:
+        return HookSamples.sample("pre_tool_use", {"name": name, "category": category, "files": files, "diff": diff, **fields})
+
+    @staticmethod
     def stop() -> HookSample:
         return HookSamples.sample("stop")
 
@@ -36,7 +40,7 @@ class HookSamples:
     @staticmethod
     def edit(path: str, added: int = 1, removed: int = 0) -> HookSample:
         diff = {"path": path, "existed": True, "lines_added": added, "lines_removed": removed}
-        return HookSamples.sample("pre_tool_use", {"name": "Edit", "category": ToolType.EDIT, "files": [path], "diff": diff})
+        return HookSamples.tool_use("Edit", ToolType.EDIT, [path], diff)
 
     @staticmethod
     def shell(line: str, *parts: ShellPart) -> HookSample:
@@ -45,11 +49,11 @@ class HookSamples:
         joined = [{**part, "joined_by": "&&"} if index < len(prepared) - 1 else part for index, part in enumerate(prepared)]
         shell = {"line": line, "parts": joined, "redirects": [], "category": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
                  "parse_error": ""}
-        return HookSamples.sample("pre_tool_use", {"name": "Bash", "category": ToolType.SHELL, "files": [], "shell": shell, "diff": None})
+        return HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell)
 
     @staticmethod
     def subagent() -> HookSample:
-        return HookSamples.sample("pre_tool_use", {"name": "Agent", "category": ToolType.AGENT, "files": [], "diff": None}).with_fields(raw={"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
+        return HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_fields(raw={"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
 
     @staticmethod
     def tick() -> HookSample:

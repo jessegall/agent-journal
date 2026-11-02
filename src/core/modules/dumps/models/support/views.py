@@ -1,5 +1,5 @@
 DUMP_ROWS_SELECT = (
-    "SELECT 'dump:' || dumps.id AS row_key, 'dump' AS kind, dumps.environment_id, dumps.id AS dump_id, 0 AS item_id, 0 AS position,"
+    "SELECT 'dump:' || dumps.id AS row_key, 'dump' AS row_type, dumps.environment_id, dumps.id AS dump_id, 0 AS item_id, 0 AS position,"
     " dumps.title, dumps.brief, dumps.outcome, '' AS text, '' AS state, '' AS note, '' AS summary, '[]' AS refs FROM dumps"
     " UNION ALL"
     " SELECT 'item:' || dump_items.id, 'item', dumps.environment_id, dumps.id, dump_items.id, dump_items.position,"

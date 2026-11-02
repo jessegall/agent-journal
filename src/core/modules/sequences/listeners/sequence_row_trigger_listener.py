@@ -39,4 +39,4 @@ class SequenceRowTriggerListener(CommitListener):
 
     @staticmethod
     def is_triggered(sequence: Sequence, event: LoggedEvent) -> bool:
-        return any(trigger.trigger_type == ROW_TRIGGER and trigger.moment == event.event for trigger in SequenceTriggers.parsed(sequence.triggers))
+        return any(trigger.trigger_type == ROW_TRIGGER and trigger.event == event.event for trigger in SequenceTriggers.parsed(sequence.triggers))

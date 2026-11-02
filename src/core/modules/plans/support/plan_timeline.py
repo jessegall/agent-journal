@@ -9,7 +9,7 @@ class PlanTimeline:
     """What happened on a plan's tasks, newest first."""
 
     plan_id: int
-    moments: tuple[PlanEvent, ...]
+    events: tuple[PlanEvent, ...]
 
     def json(self) -> Mapping[str, object]:
-        return {"plan_id": self.plan_id, "moments": [event.json() for event in self.moments]}
+        return {"plan_id": self.plan_id, "events": [event.json() for event in self.events]}

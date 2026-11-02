@@ -17,12 +17,13 @@ from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_
 
 ALLOWED_TOOL_CALL_COUNT = 10
 COUNTDOWN_CALL_COUNT = 3
-REPLY_LINE = re.compile(r"""(?:^|[\s/'"])journal message """)
+ANSWER_LINE = re.compile(r"""(?:^|[\s/'"])journal (?:message|task make) """)
 
 
 class UnansweredMessageRule(DriverRule):
     """A message the main agent has read and not answered is named before each tool call, and after ten calls
-    tool calls wait for the answer; a journal message line always goes through, since it is the answer."""
+    tool calls wait for the answer; a journal message line and the task a message asks for always go through,
+    since they are the answer."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE
@@ -35,7 +36,7 @@ class UnansweredMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unanswered = self.unanswered(hook.environment_id)
         tool = hook.event.tool
-        if not unanswered or (tool is not None and tool.shell is not None and REPLY_LINE.search(tool.shell.line)):
+        if not unanswered or (tool is not None and tool.shell is not None and ANSWER_LINE.search(tool.shell.line)):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
         first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)

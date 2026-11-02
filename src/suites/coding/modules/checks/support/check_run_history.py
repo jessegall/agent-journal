@@ -2,20 +2,12 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from core.base.change.logged_event import LoggedEvent
+from suites.coding.modules.checks.support.check_run_record import CheckRunRecord
 
 RUN_FIELD = "last_run_at"
 PASSED_FIELD = "last_passed"
 OUTPUT_FIELD = "last_output"
 RUNS_SHOWN = 50
-
-
-@dataclass(frozen=True)
-class CheckRunRecord:
-    """One run of a check: when it ran, whether it passed and what it printed."""
-
-    run_at: str
-    passed: bool
-    output: str
 
 
 @dataclass(frozen=True)

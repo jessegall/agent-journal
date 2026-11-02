@@ -1,6 +1,6 @@
 REVIEWER_ROWS_SELECT = (
     "SELECT 'review:' || reviews.id AS row_key, reviews.environment_id, reviews.id AS review_id, reviews.state, reviews.subject_model, reviews.subject_id,"
-    " 'review' AS kind, 0 AS step_id, '' AS text, 'none' AS outcome, reviews.created_at"
+    " 'review' AS row_type, 0 AS step_id, '' AS text, 'none' AS outcome, reviews.created_at"
     " FROM reviews WHERE reviews.state IN ('reviewing', 'queued')"
     " UNION ALL"
     " SELECT 'step:' || review_steps.id, reviews.environment_id, reviews.id, reviews.state, reviews.subject_model, reviews.subject_id,"

@@ -11,8 +11,8 @@ from core.base.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
-from core.modules.secrets.support.private_folder import PrivateFolder
-from core.modules.secrets.support.server_keys import ServerKeys
+from core.base.private.private_folder import PrivateFolder
+from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 
 HOOK_FOLDER = Path(__file__).resolve().parents[6] / "tools" / "journal-hook"

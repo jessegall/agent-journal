@@ -25,11 +25,11 @@ class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
         parser.add_argument("--before", type=int, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> DumpBoard:
-        dumps = self.queries.query(DumpRow).filter(kind="dump")
+        dumps = self.queries.query(DumpRow).filter(row_type="dump")
         if caller.environment_id is not None:
             dumps = dumps.filter(environment_id=caller.environment_id)
         page = (dumps.matching(Less("dump_id", arguments.before)) if arguments.before else dumps).descending("dump_id").page(1, PAGE_SIZE_ROWS)
-        items = self.queries.query(DumpRow).filter(kind="item").matching(Among("dump_id", tuple(dump.dump_id for dump in page.rows))).ordered("dump_id", "position")
+        items = self.queries.query(DumpRow).filter(row_type="item").matching(Among("dump_id", tuple(dump.dump_id for dump in page.rows))).ordered("dump_id", "position")
         return DumpBoard(dumps.count(), page.rows, tuple(items.all_rows()))
 
     def write_output(self, value: object, output: Output) -> None:

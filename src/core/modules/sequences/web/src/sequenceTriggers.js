@@ -1,6 +1,6 @@
 // what starts a sequence on its own, each kind with the fields it is written with and a plain sentence for it
 export const TRIGGER_KINDS = [
-    {value: "row", label: "A record is made", fields: [{name: "moment", label: "Record and event", placeholder: "plan.create"}]},
+    {value: "row", label: "A record is made", fields: [{name: "event", label: "Record and event", placeholder: "plan.create"}]},
     {value: "phrase", label: "You ask for it", fields: [{name: "text", label: "Words you write", placeholder: "an update please"}]},
     {value: "command", label: "A command runs", fields: [{name: "pattern", label: "Pattern on the command line", placeholder: "^git push"}]},
     {value: "file", label: "A file is edited", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}]},
@@ -11,7 +11,7 @@ export const TRIGGER_KINDS = [
 export const kindOf = (value) => TRIGGER_KINDS.find((kind) => kind.value === value) ?? TRIGGER_KINDS[0];
 
 const WORDS = {
-    row: (trigger) => `When ${trigger.moment} happens`,
+    row: (trigger) => `When ${trigger.event} happens`,
     phrase: (trigger) => `When you ask “${trigger.text}”`,
     command: (trigger) => `When a command matching “${trigger.pattern}” runs`,
     file: (trigger) => `When a file matching “${trigger.pattern}” is edited`,
@@ -23,7 +23,7 @@ export const triggerWords = (trigger) => WORDS[trigger.trigger_type](trigger);
 
 export const startWords = (triggers) => (triggers.length ? triggers.map(triggerWords) : ["Only when you or the agent start it"]);
 
-export const blankTrigger = () => ({trigger_type: "phrase", moment: "", text: "", pattern: "", tool: ""});
+export const blankTrigger = () => ({trigger_type: "phrase", event: "", text: "", pattern: "", tool: ""});
 
 // a trigger as the server takes it: only the fields its kind reads, trimmed
 export function triggerBody(trigger) {

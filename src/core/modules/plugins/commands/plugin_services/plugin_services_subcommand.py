@@ -1,4 +1,4 @@
-from core.modules.plugins.commands.plugin_services.plugin_services_subcommand_row_record import PluginServicesSubcommandRowRecord
+from core.modules.plugins.support.plugin_services_subcommand_row_record import PluginServicesSubcommandRowRecord
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller

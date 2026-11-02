@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from core.modules.secrets.support.private_folder import FOLDER_VARIABLE
+from core.base.private.private_folder import FOLDER_VARIABLE
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretAllowed
 
 VALUE = "tok-live-4f9a2c71"

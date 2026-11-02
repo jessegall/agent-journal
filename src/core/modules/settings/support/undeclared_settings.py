@@ -1,6 +1,5 @@
 import json
 from collections.abc import Sequence
-from dataclasses import dataclass
 
 from core.base.query.queries import Queries
 from core.base.registry.setting_entry import SettingEntry
@@ -8,24 +7,12 @@ from core.base.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.current_setting import CurrentSetting
+from core.modules.settings.support.undeclared_setting import UndeclaredSetting
 
 JOURNAL_PREFIX = "journal."
 MODULE_SEGMENTS = 3
 UNCOVERED_REASON = "is declared by no installed module"
 UNDECLARED_TYPE = "undeclared"
-
-
-@dataclass(frozen=True)
-class UndeclaredSetting:
-    """A stored setting row no declaration covers, or one whose value is not of its declared type: its key,
-    the module its key belongs to and why it is reported."""
-
-    key: str
-    module: str
-    reason: str
-    environment_id: int | None
-    value: str
-    is_secret: bool
 
 
 class UndeclaredSettings:

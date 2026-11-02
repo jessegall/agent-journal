@@ -20,7 +20,7 @@ TABLE = "sequences"
 class SequencesMove(VersionFourMove):
     """Carries version 4's sequences with their numbers, each step as its title and its instructions, with
     their
-    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name. A
+    triggers and each step's edit hold and allowed commands; a record's moment becomes version 5's event. A
     sequence
     whose triggers or guards do not read is skipped and told, since one such row would fail every read of them
     all."""
@@ -59,7 +59,12 @@ class SequencesMove(VersionFourMove):
 
     @staticmethod
     def triggers(row: sqlite3.Row) -> list[dict[str, object]]:
-        return [{**trigger, "moment": trigger["moment"].replace(".created", ".create")} if trigger.get("moment") else trigger for trigger in json.loads(row["triggers"] or "[]")]
+        return [SequencesMove.moved_trigger(trigger) for trigger in json.loads(row["triggers"] or "[]")]
+
+    @staticmethod
+    def moved_trigger(trigger: dict[str, object]) -> dict[str, object]:
+        kept = {name: value for name, value in trigger.items() if name != "moment"}
+        return {**kept, "event": str(trigger["moment"]).replace(".created", ".create")} if trigger.get("moment") else kept
 
     @staticmethod
     def guards(row: sqlite3.Row) -> list[dict[str, object]]:

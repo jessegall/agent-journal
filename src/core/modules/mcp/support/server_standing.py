@@ -1,6 +1,6 @@
 from core.modules.mcp.models.enums.server_auth import ServerAuth
 from core.modules.mcp.models.mcp_server import McpServer
-from core.modules.secrets.support.server_keys import ServerKeys
+from core.base.private.server_keys import ServerKeys
 
 NEEDS_KEY = "needs its key"
 OAUTH_SIGNING = "signs in on its own"

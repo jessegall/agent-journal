@@ -54,6 +54,14 @@ def test_a_read_message_is_named_until_it_is_answered_in_text(new_story):
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
+def test_filing_the_task_a_message_asks_for_is_not_told_to_answer_it(new_story):
+    story, _ = read_story(new_story)
+    task_make = ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Fix the cart"], subcommand="task")
+    reply = ShellPart("journal", CommandCategory.JOURNAL, ["message", "reply", "1", "on it"], subcommand="message")
+    story.expect_absent_hook_line("s-1", HookSamples.shell('journal task make "Fix the cart"', task_make), "answer message 1")
+    story.expect_absent_hook_line("s-1", HookSamples.shell("journal message reply 1 'on it'", reply), "answer message 1")
+
+
 def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(new_story):
     story, _ = read_story(new_story)
     for _ in range(10):

@@ -30,14 +30,13 @@ class EndedOutputText:
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
-        return (ended, READER_DRAFT.nudge(name=self.reader_name(process)), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+        program = self.read_program(process)
+        draft = (READER_DRAFT.nudge(name=PurePath(program).name),) if advice and program else ()
+        return (ended, *draft, *self.reader_nudges(process))
 
     def result(self, process: Process) -> str:
         summary = self.summary(process)
         return summary if summary else self.outcome(process)
-
-    def reader_name(self, process: Process) -> str:
-        return PurePath(self.read_program(process) or "").name
 
     def read_program(self, process: Process) -> str | None:
         parts = self.parts.process(process.id).oldest().all_rows()

@@ -11,7 +11,6 @@ class ClaudeCodeModule(Module):
     seed_reason = "it keeps no rows"
     move_reason = "version 4 had no table for an agent program"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.secrets"]
     providers = [ClaudeCodeProvider]
     driver_rules = [NativeMemoryRule]
     nudges = CLAUDE_CODE_NUDGES

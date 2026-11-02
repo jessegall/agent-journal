@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import subprocess
@@ -14,6 +13,7 @@ from server.server_files import ServerFiles
 from tunnels.tunler.support.tunler_answer import TunlerAnswer
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
 from tunnels.tunler.support.tunler_login import TunlerLogin
+from tunnels.tunler.support.tunler_report import TunlerReport
 from tunnels.tunler.support.tunler_status import TunlerStatus
 from tunnels.tunler.support.tunler_version import TunlerVersion
 
@@ -40,9 +40,8 @@ class TunlerClient:
         command = self.command()
         if command is None:
             return TunlerStatus(False, False)
-        fields = self.fields(self.answer(STATUS_LIMIT_SECONDS, {}, "status", "--json").text)
-        saved = fields.get("logged_in") is True
-        return TunlerStatus(True, saved and fields.get("auth_ok") is True, self.text_field(fields, "user"), self.text_field(fields, "host"), command, saved and fields.get("auth_ok") is False)
+        report = TunlerReport.from_text(self.answer(STATUS_LIMIT_SECONDS, {}, "status", "--json").text)
+        return TunlerStatus(True, report.logged_in and report.auth_ok is True, report.user, report.host, command, report.logged_in and report.auth_ok is False)
 
     def start(self, port: int, subdomain: str) -> None:
         command = self.command()
@@ -115,9 +114,9 @@ class TunlerClient:
             raise Refusal(answer.text or f"tunler did not release {domain}")
 
     def version(self) -> TunlerVersion:
-        fields = self.fields(self.answer(COMMAND_LIMIT_SECONDS, {}, "update", "--check", "--json").text)
-        if "update_available" in fields:
-            return TunlerVersion(self.text_field(fields, "current"), self.text_field(fields, "latest"), fields["update_available"] is True)
+        report = TunlerReport.from_text(self.answer(COMMAND_LIMIT_SECONDS, {}, "update", "--check", "--json").text)
+        if report.update_available is not None:
+            return TunlerVersion(report.current, report.latest, report.update_available)
         answer = self.answer(STATUS_LIMIT_SECONDS, {}, "version")
         return TunlerVersion(answer.text.split()[-1] if answer.succeeded and answer.text else None, None, False)
 
@@ -143,19 +142,6 @@ class TunlerClient:
     @staticmethod
     def login_environment(password: str, master: str | None) -> Mapping[str, str]:
         return {name: value for name, value in (("TUNLER_PASSWORD", password), ("TUNLER_MASTER_PASSWORD", master)) if value is not None}
-
-    @staticmethod
-    def text_field(fields: Mapping[str, object], name: str) -> str | None:
-        value = fields.get(name)
-        return value if isinstance(value, str) and value else None
-
-    @staticmethod
-    def fields(text: str) -> Mapping[str, object]:
-        try:
-            fields = json.loads(text)
-        except ValueError:
-            return {}
-        return fields if isinstance(fields, dict) else {}
 
     @staticmethod
     def command() -> str | None:

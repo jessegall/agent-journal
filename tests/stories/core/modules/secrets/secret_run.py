@@ -1,4 +1,4 @@
-from core.modules.secrets.support.secret_values import SecretValues
+from core.base.private.secret_values import SecretValues
 from tests.stories.core.support.fixtures import UserJoined
 from core.base.actor import Actor
 from core.base.actor_type import ActorType

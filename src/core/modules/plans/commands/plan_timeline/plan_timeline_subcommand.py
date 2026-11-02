@@ -42,4 +42,4 @@ class PlanTimelineSubcommand(ReadSubcommand[PlanTimeline]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanTimeline):
-            output.write("\n".join(f"{event.time}  {event.kind}  task {event.task_id}  {event.text}" for event in value.moments) or "nothing yet", value.json())
+            output.write("\n".join(f"{event.time}  {event.event_type}  task {event.task_id}  {event.text}" for event in value.events) or "nothing yet", value.json())

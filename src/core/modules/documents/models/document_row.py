@@ -15,7 +15,7 @@ class DocumentRow(ViewModel):
     select = DOCUMENT_ROWS_SELECT
 
     row_key: str
-    kind: str
+    row_type: str
     id: int
     title: str
     abstract: str

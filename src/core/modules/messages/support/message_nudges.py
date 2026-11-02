@@ -10,7 +10,7 @@ MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.REMARK, "the 
 MESSAGE_UPDATED = NudgeDeclaration("messages.message_updated", NudgeType.REMARK, 'message {message} updated')
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.INSTRUCTION, '{count} new messages', turn_limited=False, required_command="")
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.REMARK, '  file .journal/files/message/{message}/{name}')
-MESSAGE_ADVICE = NudgeDeclaration("messages.act_on_messages", NudgeType.INSTRUCTION, 'act on what you read: steering you follow, an update you give now, work you file as a task; else answer it')
+MESSAGE_ADVICE = NudgeDeclaration("messages.act_on_messages", NudgeType.INSTRUCTION, 'act on what you read: steering you follow, an update you give now, work you file as a task; else answer it', turn_limited=False)
 IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.INSTRUCTION, 'message:{message} has an image: journal message tag {message} "{name}" "<what it shows>"', required_command="journal message tag {message}")
 REPLY_COMMAND = NudgeDeclaration("messages.reply_command", NudgeType.INSTRUCTION, "your chat words are your reply; in a turn that goes on, reply first: journal message reply <n> '<text>'", interval=Interval(Seconds(1800)), required_command="")
 UNANSWERED = NudgeDeclaration("messages.unanswered", NudgeType.INSTRUCTION, "answer message {messages} before you go on", interval=Interval(Seconds(300)))
