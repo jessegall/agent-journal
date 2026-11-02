@@ -93,6 +93,7 @@ test("a task shows its log, and a move that needs words asks for them before it 
         "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", priority: "normal", brief: "The totals", waits: [], logs: [{id: 1, line: "rounding found"}]}},
     }, lines));
     expect(shown().querySelector("[data-resource-logs]").textContent).toContain("rounding found");
+    expect(shown().querySelector("[data-move='close']").textContent).toContain("Complete");
     shown().querySelector("[data-move='close']").click();
     await later();
     const input = shown().querySelector("[data-resource-ask] input");
