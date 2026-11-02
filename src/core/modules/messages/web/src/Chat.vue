@@ -421,7 +421,9 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     display: flex;
     flex-direction: column;
     gap: 8px;
-    height: 100%;
+    /* the history scrolls right up to the tab bar: out past the pane's top padding */
+    height: calc(100% + 8px);
+    margin-top: -8px;
     min-height: 0;
 }
 
@@ -445,8 +447,8 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     z-index: 2;
     display: flex;
     flex-direction: column;
-    /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides and the top */
-    margin: -8px -12px 0;
+    /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides, and with no gap to the history below */
+    margin: 0 -12px -8px;
 }
 
 .notice {
