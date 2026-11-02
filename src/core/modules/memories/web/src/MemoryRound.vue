@@ -1,9 +1,9 @@
 <script setup>
 import {computed, ref} from "vue";
-import {FoldGroup, useWindow} from "@journal/window-kit";
+import {FoldGroup, peekRef, useWindow} from "@journal/window-kit";
 import {roundOf} from "./round.js";
 
-// one compaction's round of memories, as its mark keeps it, in two groups shut until clicked: those still shown, and those faded out
+// one compaction's round of memories, as its mark keeps it, in two groups shut until clicked: those still shown, and those faded out; a row opens its memory in the inspector
 const window = useWindow();
 const mark = window.option("row");
 const parts = computed(() => roundOf(mark.value?.lines) || []);
@@ -23,7 +23,7 @@ function toggle(label) {
                 <ul class="memory-round-rows">
                     <template v-for="memory in part.rows" :key="memory.id">
                         <li class="memory-round-row">
-                            <button type="button" class="memory-round-ref" @click.stop="window.open('memories.list')">Memory {{ memory.id }}</button>
+                            <button type="button" class="memory-round-ref" :data-memory-ref="memory.id" @click.stop="peekRef(`memories:${memory.id}`)">Memory {{ memory.id }}</button>
                             <span class="memory-round-weight">{{ memory.change }}</span>
                         </li>
                     </template>

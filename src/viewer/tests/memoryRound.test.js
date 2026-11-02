@@ -1,5 +1,10 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
+import {context, mounted, settle} from "./support/windowContext.js";
+import MemoryRound from "../../core/modules/memories/web/src/MemoryRound.vue";
 import {roundOf} from "../../core/modules/memories/web/src/round.js";
+import {peekRef} from "../src/route.js";
+
+vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), peekRef: vi.fn()}));
 
 test("a round's lines are drawn as the memories still shown and those faded out, each with its weights", () => {
     const parts = roundOf("shown|4|3|2\nshown|5|2|1\nfaded|6|1|0");
@@ -11,4 +16,13 @@ test("a round's lines are drawn as the memories still shown and those faded out,
 test("lines that are no round, or none, draw nothing", () => {
     expect(roundOf("")).toBeNull();
     expect(roundOf("Memory 3: weight set")).toBeNull();
+});
+
+test("a memory in the faded round opens in the inspector", async () => {
+    const window_ = {...context({}), option: () => ({value: {lines: "shown|122|5|4\nfaded|123|1|0"}})};
+    const element = await mounted(MemoryRound, window_);
+    [...element.querySelectorAll("button")].find((button) => button.textContent.includes("Still shown")).click();
+    await settle();
+    element.querySelector("[data-memory-ref='122']").click();
+    expect(peekRef).toHaveBeenCalledWith("memories:122");
 });
