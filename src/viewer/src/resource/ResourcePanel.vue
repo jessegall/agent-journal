@@ -62,7 +62,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear>
             <div v-if="opened" class="veil" @click.self="close">
-                <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
+                <aside :class="['panel', {wide, task: kind === 'task'}]" role="dialog" :aria-label="title" data-resource-panel>
                     <SwitchCase :value="kind">
                         <template #task>
                             <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" @comments="taskComments = $event" />
@@ -161,6 +161,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     border-left: 1px solid var(--border);
     background: var(--bg);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+}
+
+.panel.task {
+    width: min(640px, 100vw);
 }
 
 .panel.wide {

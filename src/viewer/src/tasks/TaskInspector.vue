@@ -146,7 +146,7 @@ defineExpose({openStatus});
     display: flex;
     flex: none;
     flex-direction: column;
-    width: 440px;
+    width: 560px;
     min-height: 0;
     border-left: 1px solid var(--border);
 }
