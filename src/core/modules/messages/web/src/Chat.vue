@@ -536,7 +536,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     border: 1px solid var(--text);
     border-radius: 99px;
     background: var(--text);
-    color: #0d0e10;
+    color: var(--bg);
     font-size: 11.5px;
     font-weight: 500;
     cursor: pointer;
@@ -545,9 +545,9 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 }
 
 .jump:hover {
-    border-color: #fff;
-    background: #fff;
-    color: #000;
+    border-color: var(--text-2);
+    background: var(--text-2);
+    color: var(--bg);
 }
 
 .rise-enter-active {
