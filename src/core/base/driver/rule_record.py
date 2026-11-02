@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.rule_answer import RuleAnswer
@@ -13,3 +14,10 @@ class RuleRecord:
     outcome: str
     answer: RuleAnswer | None = None
     history: bool = False
+
+    @property
+    def saved_fields(self) -> Mapping[str, str]:
+        fields = {"rule": self.name, "outcome": self.outcome}
+        if self.layer:
+            fields["layer"] = self.layer
+        return fields

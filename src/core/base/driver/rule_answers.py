@@ -88,4 +88,4 @@ class RuleAnswers:
         return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in rule.answer.commands]
 
     def metadata(self) -> dict[str, object]:
-        return {"layers": list(self.layers), "rules": [{"rule": rule.name, "layer": rule.layer, "outcome": rule.outcome} for rule in self.rules]}
+        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules]}

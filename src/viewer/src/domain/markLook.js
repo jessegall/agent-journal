@@ -26,8 +26,8 @@ export function markLook(mark, declaration) {
         group: kind.group || "",
         tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : VARIANT_TONES[mark.variant] || "",
         label: mark.text,
-        // a mark with a body of its module's own keeps its lines for that body, and its cut-off first part is not a second line
-        detail: kind.body_url ? "" : mark.detail || "",
+        // an opened mark shows its whole lines in its body, so their cut-off first part is not a second line
+        detail: kind.body_url || mark.lines ? "" : mark.detail || "",
         figure: mark.figure || "",
         fraction: mark.fraction || 0,
         // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick

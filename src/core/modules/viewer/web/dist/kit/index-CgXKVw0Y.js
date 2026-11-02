@@ -3929,8 +3929,8 @@ function Hh(e, t) {
     group: n.group || "",
     tone: n.colouring === "outcome" ? qh[e.outcome] || "" : Wh[e.variant] || "",
     label: e.text,
-    // a mark with a body of its module's own keeps its lines for that body, and its cut-off first part is not a second line
-    detail: n.body_url ? "" : e.detail || "",
+    // an opened mark shows its whole lines in its body, so their cut-off first part is not a second line
+    detail: n.body_url || e.lines ? "" : e.detail || "",
     figure: e.figure || "",
     fraction: e.fraction || 0,
     // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick
@@ -8119,7 +8119,7 @@ const Jg = /* @__PURE__ */ Gg(Yg), Zg = ["width", "height", "viewBox"], Xg = ["w
       }, null, 8, Qg)
     ], 8, Zg));
   }
-}, uy = /* @__PURE__ */ J(ev, [["__scopeId", "data-v-489f0852"]]), dy = Jo(() => import("./VoiceFigure-Bsb9Iisn.js").then((e) => e.V)), hy = "1.0.0", fy = "3.5";
+}, uy = /* @__PURE__ */ J(ev, [["__scopeId", "data-v-489f0852"]]), dy = Jo(() => import("./VoiceFigure-DlgKzYtL.js").then((e) => e.V)), hy = "1.0.0", fy = "3.5";
 export {
   rv as $,
   Cv as A,

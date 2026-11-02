@@ -1,6 +1,6 @@
 import re
 
-LONG_PATH = re.compile(r"""(?<![\w.~/:-])(?:[\w.~-]*/){2,}([^\s/'"]+)""")
+LONG_PATH = re.compile(r"""(?<![\w.~/:-])(?:[\w.~-]*/){3,}([^\s/'"]+)""")
 
 
 class ProjectPaths:

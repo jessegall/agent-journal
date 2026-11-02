@@ -7,6 +7,14 @@
             {
                 "nameMatches": "(^|[a-z])(The|A|An|Of|On|At|When|Its|To|In|By|For|With|From|Into|Over|Under|After|Before|Still|Again|Until|About|Without)([A-Z]|$)"
             }
+        ],
+        "reject": [
+            {
+                "nameIn": [
+                    "BlockUntil",
+                    "BlockUntilHandler"
+                ]
+            }
         ]
     },
     "sin": {

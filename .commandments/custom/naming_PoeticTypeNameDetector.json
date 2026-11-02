@@ -7,6 +7,13 @@
             {
                 "nameMatches": "(^|[a-z0-9])(${poetic}|${poetic_types})([A-Z0-9]|$)"
             }
+        ],
+        "reject": [
+            {
+                "nameIn": [
+                    "RanCommand"
+                ]
+            }
         ]
     },
     "sin": {

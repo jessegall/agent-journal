@@ -20,7 +20,7 @@ from core.base.registry.registry import Registry
 from core.modules.drivers.commands.support.nudge_log import NudgeLog
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.models.nudge_record import NudgeRecord
-from core.modules.processes.support.process_nudges import UNREAD_OUTPUT
+from core.modules.processes.support.process_nudges import RUN_NAME
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
@@ -47,8 +47,8 @@ def test_each_type_can_be_declared():
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
     story = new_story(fixture=UserJoined)
-    entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == UNREAD_OUTPUT.key)
-    assert (entry.module, entry.type, entry.text) == ("journal.core.processes", "instruction", UNREAD_OUTPUT.text)
+    entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == RUN_NAME.key)
+    assert (entry.module, entry.type, entry.text) == ("journal.core.processes", "instruction", RUN_NAME.text)
 
 
 def test_no_two_nudges_share_a_key(new_story):
@@ -61,7 +61,7 @@ def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
     window = WindowStory(story)
     window.expect_window_allowed("drivers.nudges", "nudge list")
     rows = json.loads(story.run("nudge list --json", actor=story.user).output_text)["rows"]
-    assert {"id": UNREAD_OUTPUT.key, "key": UNREAD_OUTPUT.key, "module": "journal.core.processes", "type": "instruction", "text": UNREAD_OUTPUT.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""} in rows
+    assert {"id": RUN_NAME.key, "key": RUN_NAME.key, "module": "journal.core.processes", "type": "instruction", "text": RUN_NAME.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""} in rows
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
