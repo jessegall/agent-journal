@@ -18,8 +18,7 @@ TERMINAL_NUDGE_CHARACTERS = 300
 class HookDurations:
     """What the developer settings show of a hook: in the terminal how long it took, from the first
     stamp of its request to now, the points it cost the database and each line the agent was
-    sent; a hook that cost 50 points or more says so, is update_statements to runtime/costly-
-    hooks.log and is told to the agent in one line, which hears of no hook under."""
+    sent; a hook that cost 50 points or more says so and is written to runtime/costly-hooks.log."""
 
     def __init__(self, timing: Timing, settings: SettingValues, database: Database, home: JournalHome, numbers: HookNumbersFile) -> None:
         self.timing, self.settings, self.database, self.home, self.numbers = timing, settings, database, home, numbers
@@ -28,28 +27,24 @@ class HookDurations:
     def begin(self) -> None:
         self.begun = self.database.tally.points()
 
-    def measured(self, event: HookEvent, environment_id: int, nudges: Sequence[str]) -> tuple[str, str]:
-        """The text for the terminal, and the note for the agent, which is empty unless the hook
-        went over its points."""
+    def measured(self, event: HookEvent, environment_id: int, nudges: Sequence[str]) -> str:
         shown: list[str] = []
-        note = ""
         if self.timing.stamps and self.settings.value(HOOK_DURATIONS_SETTING, environment_id) is True:
-            line, note = self.duration(event)
-            shown.append(line)
+            shown.append(self.duration(event))
         if self.settings.value(HOOK_NUDGES_SETTING, environment_id) is True:
             shown.extend(nudge[:TERMINAL_NUDGE_CHARACTERS] for nudge in nudges if nudge)
-        return "\n".join(shown), note
+        return "\n".join(shown)
 
-    def duration(self, event: HookEvent) -> tuple[str, str]:
+    def duration(self, event: HookEvent) -> str:
         milliseconds = (time.time_ns() // 1000 - self.timing.stamps[0][1]) // 1000
         points = self.database.tally.points().minus(self.begun)
         self.numbers.add(event.event.value, milliseconds, points.total)
         if points.total < HOOK_LIMIT_POINTS:
-            return f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()})", ""
+            return f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()})"
         line = f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost"
         self.home.costly_hooks_log.parent.mkdir(parents=True, exist_ok=True)
         with self.home.costly_hooks_log.open("a") as log:
             log.write(f"{time.strftime('%H:%M:%S')} {line}\n")
             log.writelines(f"    {rows} rows: {sql}\n" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED))
             log.writelines(f"    {count} writes: {sql}\n" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED))
-        return line, f"[journal] a {event.event.value} hook cost {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost: cut what it reads"
+        return line

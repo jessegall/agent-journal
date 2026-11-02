@@ -62,7 +62,7 @@ def test_a_stop_hook_costs_the_database_less_than_the_50_points_a_hook_may_cost(
     assert points < 50, line
 
 
-def test_the_agent_is_told_of_a_hook_only_when_it_costs_the_points_over_the_limit(new_story, monkeypatch):
+def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_went_over(new_story, monkeypatch):
     story = new_story(fixture=BuilderWithUser)
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     timing = story.container.get(Timing)
@@ -70,7 +70,9 @@ def test_the_agent_is_told_of_a_hook_only_when_it_costs_the_points_over_the_limi
     assert not any("points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
     monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_LIMIT_POINTS", 1)
     timing.stamps[:] = Timing.started("go_start").stamps
-    assert any("cost" in line and "points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    reply = story.hook("s-1", HookSamples.stop())
+    assert not any("points" in line for line in reply.lines)
+    assert "over the 1 a hook may cost" in reply.terminal
 
 
 def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_setting_is_on(new_story):
