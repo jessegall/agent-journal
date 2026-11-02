@@ -76,10 +76,6 @@ class GitRepository:
         parents = self.git("log", "-1", "--format=%P", f"refs/heads/{branch}").stdout.split()
         assert len(parents) == 2, f"the last commit of {branch} is no merge: its parents are {parents}"
 
-    def expect_no_rebase(self, worker_id: int) -> None:
-        status = self.git("status", folder=self.worktree_folder(worker_id)).stdout
-        assert "rebase" not in status, f"a rebase is left in the worktree of worker {worker_id}: {status}"
-
     def expect_no_folder(self, worker_id: int) -> None:
         assert not self.worktree_folder(worker_id).exists(), f"the worktree folder of worker {worker_id} is still there"
 
