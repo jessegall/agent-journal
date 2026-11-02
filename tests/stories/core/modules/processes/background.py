@@ -1,6 +1,10 @@
 from datetime import timedelta
 
 from core.base.command.bus import Bus
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.commands.move_process.move_process import MoveProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 
 from core.base.driver.command_category import CommandCategory
@@ -37,9 +41,25 @@ def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
     return story, process, lines_of(story, NOTHING)
 
 
+def test_a_plain_command_is_not_asked_for_a_reader(new_story):
+    _, _, lines = ended_lines(new_story, "grep -n word file", "one\ntwo\n")
+    assert not any("no reader reads" in line for line in lines)
+
+
+def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
+    command = StartProcess(story.agent.id, None, "mkdir build && make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts)
+    process = story.container.get(Bus).run(command, story.agent, environment_id=1)
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    end_run(story, process, "one\ntwo\n")
+    story.advance(timedelta(seconds=1))
+    lines = lines_of(story, NOTHING)
+    assert any("no reader reads make yet" in line for line in lines)
+    assert not any("no reader reads mkdir" in line for line in lines)
+
+
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(new_story):
-    story, _, plain = ended_lines(new_story, "grep -n word file", "one\ntwo\n")
-    assert not any("no reader reads" in line for line in plain)
     story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n", category=CommandCategory.BUILD)
     assert any("no reader reads deploy.sh yet" in line and 'journal reader add deploy.sh --commands "./deploy.sh*"' in line for line in lines)
     assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
@@ -115,7 +135,7 @@ def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
     process = moved_run(story, "./deploy.sh staging")
-    end_run(story, process, "uploading\nall done\n")
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     assert any("reader deploys picked no line" in line for line in lines_of(story, NOTHING))
@@ -149,3 +169,12 @@ def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_stor
     assert not any("may buffer" in line for line in lines_of(story, NOTHING))
     story.advance(timedelta(seconds=31))
     assert any(f"output {process.id} has printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest tests/one.py && echo done", category=CommandCategory.TEST_RUN)
+    story.container.get(OutputFolder).write_start(process.id, process.line, [process.line])
+    end_run(story, process, "one\ntwo\n")
+    story.advance(timedelta(seconds=1))
+    assert not any("no reader reads pytest" in line for line in lines_of(story, NOTHING))
