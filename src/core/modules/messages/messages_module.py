@@ -70,7 +70,7 @@ class MessagesModule(Module):
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
-                                 events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"],
+                                 events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*", "question.*", "process.*"],
                                  options=[ChoiceOption("figure", "Figure", [("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "none"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS

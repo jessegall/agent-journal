@@ -91,3 +91,13 @@ def test_the_usage_names_the_effort_the_session_reported(new_story):
     story = new_story(fixture=UserJoined)
     save_status_file(story, "s-1", {"model": {"display_name": "Opus"}, "effort": {"level": "high"}})
     assert json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["effort"] == "high"
+
+
+def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.stop())
+    story.expect_absent("usage tool --environment main", "waiting for", actor=story.user)
+    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    story.expect_text("usage tool --environment main", "waiting for your answer to question 1", actor=story.user)
+    story.run('question ask "Which cache?" --environment main', actor=story.agent)
+    story.expect_text("usage tool --environment main", "waiting for your answers to 2 questions", actor=story.user)

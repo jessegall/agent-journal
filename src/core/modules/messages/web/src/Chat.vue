@@ -20,6 +20,7 @@ const figureVoice = computed(() => {
     return chosen && chosen !== "none" ? chosen : "";
 });
 const runningTool = ref("");
+const waitingFor = ref("");
 const heardAt = ref(Date.now() / 1000);
 // a face the user puts on a message already in the chat is answered by the figure; faces on messages that page in are not
 const userFaceKeys = (row) => JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").map((face) => face.emoji);
@@ -37,8 +38,9 @@ async function readTool() {
     heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
     runningTool.value = answer.ok ? answer.value.tool : "";
+    waitingFor.value = answer.ok ? answer.value.waiting_for : "";
 }
-context.follow(["hook_call.*"], readTool);
+context.follow(["hook_call.*", "question.*", "process.*"], readTool);
 readTool();
 const FOLD_AFTER_MS = 180;
 const ECHO_SLACK_MS = 2000;
@@ -297,7 +299,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <div data-figure-chat-foot>
             <DockStack :items="docked" :folded="short || !docksOpen" />
         </div>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
