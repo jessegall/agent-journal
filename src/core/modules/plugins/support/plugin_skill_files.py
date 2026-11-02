@@ -10,8 +10,9 @@ from core.modules.skills.support.skill_files import PROGRAM_FOLDERS
 
 
 class PluginSkillFiles:
-    """A plugin's skills in the agent programs' skill folders: each folder of its skills folder published while it
-    is on, with plugin: <name> added to the front matter, and taken away when it is switched off or removed."""
+    """A plugin's skills in the agent programs' skill folders: each folder of its skills folder published
+    while it is on, with plugin: <name> added to the front matter, and taken away when it is switched off or
+    removed."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

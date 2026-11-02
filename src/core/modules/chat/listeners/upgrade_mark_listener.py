@@ -9,8 +9,8 @@ SHOWN = ("tasks", "plans", "messages", "memories")
 
 
 class UpgradeMarkListener(MarkListener):
-    """After an upgrade from version 4, the chat of the first environment shows one mark telling how many tasks,
-    plans, messages and memories moved, with the whole report to open."""
+    """After an upgrade from version 4, the chat of the first environment shows one mark telling how many
+    tasks, plans, messages and memories moved, with the whole report to open."""
 
     name = "chat.upgrade-mark"
     event = "upgrade.finished"

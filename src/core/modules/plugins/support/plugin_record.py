@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PluginRecord:
-    """What a plugin did: its newest outputs, its fault count and its last fault, and the services it keeps running."""
+    """What a plugin did: its newest outputs, its fault count and its last fault, and the services it keeps
+    running."""
 
     name: str
     outputs: Sequence[Mapping[str, object]]

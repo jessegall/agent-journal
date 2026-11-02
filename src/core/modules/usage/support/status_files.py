@@ -7,8 +7,8 @@ from core.modules.usage.support.session_status import SessionStatus
 
 
 class StatusFiles:
-    """The status files the hook program keeps of each session's status line, read for usage: one session's report,
-    and the plan's windows, which belong to the account, from the newest file that names them."""
+    """The status files the hook program keeps of each session's status line, read for usage: one session's
+    report, and the plan's windows, which belong to the account, from the newest file that names them."""
 
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.status_folder

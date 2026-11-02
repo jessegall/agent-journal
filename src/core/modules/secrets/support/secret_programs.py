@@ -7,8 +7,8 @@ WRAPPER_PROGRAMS = re.compile(r"^(?:a?sh|bash|zsh|fish|dash|ksh|t?csh|env|xargs|
 
 
 class SecretPrograms:
-    """Which programs a secret may never go to: a path, a shell, an interpreter, a build tool or a program that
-    echoes or copies what it is given."""
+    """Which programs a secret may never go to: a path, a shell, an interpreter, a build tool or a program
+    that echoes or copies what it is given."""
 
     @staticmethod
     def is_withheld(program: str) -> bool:

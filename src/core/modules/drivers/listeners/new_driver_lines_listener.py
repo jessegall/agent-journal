@@ -12,8 +12,8 @@ from core.modules.settings.models.setting import Setting
 
 
 class NewDriverLinesListener(SaveListener):
-    """When an environment's suite or one of its drivers changes, each of its open agents gets its driver's opening
-    lines as lines waiting for its next hook."""
+    """When an environment's suite or one of its drivers changes, each of its open agents gets its driver's
+    opening lines as lines waiting for its next hook."""
 
     name = "drivers.new-driver-lines"
     event = "setting.*"

@@ -8,8 +8,8 @@ PLAIN_EVENTS = {HookEventName.STOP: "idle", HookEventName.PROMPT: "prompt_submit
 
 
 class PluginEventNames:
-    """Turns a version 5 hook into the version 4 events a plugin hears: a tool's start, each command of its shell
-    line, each file a finished tool wrote, and the plain events by their version 4 names."""
+    """Turns a version 5 hook into the version 4 events a plugin hears: a tool's start, each command of its
+    shell line, each file a finished tool wrote, and the plain events by their version 4 names."""
 
     def events(self, hook: AgentHook) -> list[PluginEvent]:
         event, tool = hook.event.event, hook.event.tool

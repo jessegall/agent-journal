@@ -17,7 +17,8 @@ REACTION_SOURCE = "messages.reaction"
 
 
 class ReactMessageHandler(Handler[ReactMessage, Message]):
-    """Puts a face on a message, or takes it off; a face the user puts on is told to the environment's main agent."""
+    """Puts a face on a message, or takes it off; a face the user puts on is told to the environment's main
+    agent."""
 
     command = ReactMessage
 

@@ -16,7 +16,8 @@ CODE_LIFETIME_MINUTES = 10
 
 
 class PairPhoneHandler(Handler[PairPhone, PhoneInvitation]):
-    """Keeps the digest of a new pairing code for the calling person, valid for ten minutes, and gives the code."""
+    """Keeps the digest of a new pairing code for the calling person, valid for ten minutes, and gives the
+    code."""
 
     command = PairPhone
 

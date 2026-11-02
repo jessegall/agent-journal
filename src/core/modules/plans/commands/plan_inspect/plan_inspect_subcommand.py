@@ -10,7 +10,8 @@ from core.modules.plans.support.plan_outlines import PlanOutlines
 
 
 class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
-    """`journal plan inspect <plan>`: a plan with its phases and tasks and how far it has come, in one answer."""
+    """`journal plan inspect <plan>`: a plan with its phases and tasks and how far it has come, in one answer.
+    """
 
     cli_name = "plan"
     name = "inspect"

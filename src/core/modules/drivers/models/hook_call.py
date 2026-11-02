@@ -6,8 +6,8 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
 @dataclass(frozen=True, kw_only=True)
 class HookCall(Model):
-    """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and its
-    answer; the rules asked, the layers and any command dropped are in its metadata."""
+    """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
+    its answer; the rules asked, the layers and any command dropped are in its metadata."""
 
     model_name = "hook_call"
     cli_name = "hook-call"

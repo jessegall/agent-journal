@@ -7,9 +7,9 @@ from server.viewer.viewer_request_error import ViewerRequestError
 
 
 class PushRoute:
-    """GET and POST /api/push, kept with the phone sessions: the public key a phone subscribes to notices with,
-    and the subscription it gives back, which the phone module keeps on the paired phone of the session. A
-    share session has no phone and gets neither."""
+    """GET and POST /api/push, kept with the phone sessions: the public key a phone subscribes to notices
+    with, and the subscription it gives back, which the phone module keeps on the paired phone of the session.
+    A share session has no phone and gets neither."""
 
     def __init__(self, login: ViewerLogin, phones: PhoneSessions) -> None:
         self.login, self.phones = login, phones

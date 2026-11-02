@@ -12,7 +12,8 @@ from core.modules.processes.support.foreground_run import ForegroundRun
 
 @dataclass(frozen=True)
 class StartProcess(Command[Process]):
-    """Makes the process of a shell line and a part for each of its commands, in the hook call's transaction."""
+    """Makes the process of a shell line and a part for each of its commands, in the hook call's transaction.
+    """
 
     agent_id: int
     hook_call_id: int | None

@@ -9,8 +9,9 @@ from core.base.agent_role import AgentRole
 
 
 class DriverRule:
-    """The base of every driver rule: one rule about what an agent may do or reads, asked on the hooks it covers
-    while a driver its patterns name drives the agent; its class docstring says the rule in plain words."""
+    """The base of every driver rule: one rule about what an agent may do or reads, asked on the hooks it
+    covers while a driver its patterns name drives the agent; its class docstring says the rule in plain
+    words."""
 
     name: ClassVar[str]
     hook: ClassVar[HookEventName | HookWildcard]

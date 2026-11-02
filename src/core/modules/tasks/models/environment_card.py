@@ -6,7 +6,8 @@ from core.modules.tasks.models.support.views import ENVIRONMENT_CARDS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class EnvironmentCard(ViewModel):
-    """An environment with its running agents and its unfinished tasks, read from the environment_cards view."""
+    """An environment with its running agents and its unfinished tasks, read from the environment_cards view.
+    """
 
     cli_name = "environment"
     view = "environment_cards"

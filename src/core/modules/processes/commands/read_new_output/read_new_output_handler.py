@@ -16,8 +16,8 @@ OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 
 
 class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
-    """Keeps the reader's new lines in the output's lines file and what it found in the output's fields and the
-    run's progress."""
+    """Keeps the reader's new lines in the output's lines file and what it found in the output's fields and
+    the run's progress."""
 
     command = ReadNewOutput
 

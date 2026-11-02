@@ -2,8 +2,8 @@ from core.base.viewer.window_icon import WindowIcon
 
 
 class DeclarationNames:
-    """The checks every declaration a module makes shares, for windows, marks, docks and buttons alike: its name
-    starts with the module's short name, and an icon it shows is one of the shell's icon set."""
+    """The checks every declaration a module makes shares, for windows, marks, docks and buttons alike: its
+    name starts with the module's short name, and an icon it shows is one of the shell's icon set."""
 
     @staticmethod
     def short_name(module_name: str) -> str:

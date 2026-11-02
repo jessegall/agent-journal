@@ -8,7 +8,8 @@ MODULE_KEY = "journal.core.processes"
 
 
 class ProcessSetting(Enum):
-    """A setting of the processes module, declared once: its full key and its default come from its declaration."""
+    """A setting of the processes module, declared once: its full key and its default come from its
+    declaration."""
 
     FOREGROUND_SECONDS = SettingValue("foreground-seconds", "Seconds in the foreground", "How long a command runs in front before it moves to the background.",
                                       SettingType.NUMBER, default=15)

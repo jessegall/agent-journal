@@ -11,8 +11,8 @@ from server.viewer.viewer_window import ViewerWindow
 
 
 class WindowsRoute:
-    """Answers GET /api/windows: the windows the environment's suite offers, each with the URL of its entry carrying
-    the registry's fingerprint, so a page reloads a window's files after an install or an upgrade."""
+    """Answers GET /api/windows: the windows the environment's suite offers, each with the URL of its entry
+    carrying the registry's fingerprint, so a page reloads a window's files after an install or an upgrade."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

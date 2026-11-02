@@ -15,7 +15,8 @@ TEXT_LIMIT_CHARACTERS = 400
 @dataclass(frozen=True, kw_only=True)
 class Memory(Model):
     """What the journal gives back to an agent: for one environment, for one helper with agent_id, or for the
-    whole project with neither; a weight from 0 to 10, given only above 0; quiet until due_at when it has one."""
+    whole project with neither; a weight from 0 to 10, given only above 0; quiet until due_at when it has one.
+    """
 
     model_name = "memory"
     cli_name = "memory"

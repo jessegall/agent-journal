@@ -11,9 +11,9 @@ ENVELOPE = "cross-session-message"
 
 
 class ClaudeInbox:
-    """Claude Code's channel between sessions: a line handed to a running session through the socket its registry
-    entry names, after the key the registry holds, in the envelope that names its sender as a session that
-    bypasses permissions, so the session takes it."""
+    """Claude Code's channel between sessions: a line handed to a running session through the socket its
+    registry entry names, after the key the registry holds, in the envelope that names its sender as a session
+    that bypasses permissions, so the session takes it."""
 
     def __init__(self, registry: Path) -> None:
         self.registry = registry

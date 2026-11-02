@@ -11,7 +11,8 @@ from core.modules.waits.models.wait_target import WaitTarget
 
 
 class QuestionChanges:
-    """The questions an agent asked that reached a state since the rule last answered, with no open wait on them."""
+    """The questions an agent asked that reached a state since the rule last answered, with no open wait on
+    them."""
 
     def __init__(self, questions: QuestionQuery, queries: Queries, history: HookHistory) -> None:
         self.questions, self.queries, self.history = questions, queries, history

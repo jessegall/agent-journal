@@ -15,7 +15,8 @@ ARROW = re.compile(r"\s*([^:]+?)\s*->\s*([^:]+?)\s*(?::\s*(.*?))?\s*")
 
 
 class DrawFlowchartHandler(Handler[DrawFlowchart, Message]):
-    """Reads each arrow, `From -> To` or `From -> To: label`, and saves the flowchart on a message titled by it."""
+    """Reads each arrow, `From -> To` or `From -> To: label`, and saves the flowchart on a message titled by
+    it."""
 
     command = DrawFlowchart
 

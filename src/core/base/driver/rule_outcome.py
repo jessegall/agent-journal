@@ -11,7 +11,8 @@ SILENCED = "silenced"
 
 @dataclass(frozen=True)
 class RuleOutcome:
-    """What asking one rule came to: its answer, or that it raised, with the line the agent reads about that."""
+    """What asking one rule came to: its answer, or that it raised, with the line the agent reads about that.
+    """
 
     outcome: str
     answer: RuleAnswer | None = None

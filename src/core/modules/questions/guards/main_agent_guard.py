@@ -10,8 +10,8 @@ from core.modules.questions.models.question import Question
 
 
 class MainAgentGuard(Guard):
-    """Refuses a question asked by anyone but a main agent: nobody answers one asked by a worker, a subagent, a
-    reviewer or a verifier, or by someone who is no agent."""
+    """Refuses a question asked by anyone but a main agent: nobody answers one asked by a worker, a subagent,
+    a reviewer or a verifier, or by someone who is no agent."""
 
     name = "questions.asked-by-the-main-agent"
     event = "question.create"

@@ -8,7 +8,8 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class AllowWindowSubcommand(Subcommand[AllowWindow, WindowPermission]):
-    """`journal window allow <window> --type reads|runs`: lets the window read or run the lines it declares, for you."""
+    """`journal window allow <window> --type reads|runs`: lets the window read or run the lines it declares,
+    for you."""
 
     cli_name = "window"
     name = "allow"

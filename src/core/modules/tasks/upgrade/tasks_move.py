@@ -25,11 +25,12 @@ MISSING_HOLDER_REASON = "its holder was not found"
 
 class TasksMove(VersionFourMove):
     """Carries version 4's tasks with their numbers: the state by its name or its former name (paused and
-    parked are blocked), the priority number doubled, since version 4 spaced its levels at 50, a title cut to 80 characters with the
-    whole of it put first in the brief, the pause or block reason as the reason, and the agent that held it.
-    A started task whose holder did not move is blocked, with the reason that its holder was not found.
-    Their log lines go to task_logs and the links of type depends to task_dependencies, a link that would
-    close a loop dropped and counted. A task in a state version 5 does not know is skipped and told."""
+    parked are blocked), the priority number doubled, since version 4 spaced its levels at 50, a title cut to
+    80 characters with the whole of it put first in the brief, the pause or block reason as the reason, and
+    the agent that held it. A started task whose holder did not move is blocked, with the reason that its
+    holder was not found. Their log lines go to task_logs and the links of type depends to task_dependencies,
+    a link that would close a loop dropped and counted. A task in a state version 5 does not know is skipped
+    and told."""
 
     name = "tasks"
     reads = ["tasks", "task_logs", "links"]

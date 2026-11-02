@@ -7,8 +7,8 @@ from core.base.driver.nudge import Nudge
 
 @dataclass(frozen=True)
 class RuleAnswer:
-    """What one driver rule says about a hook: nothing, nudges, a refusal or a new input for the tool, with the
-    commands the journal runs for it."""
+    """What one driver rule says about a hook: nothing, nudges, a refusal or a new input for the tool, with
+    the commands the journal runs for it."""
 
     refusal: str = ""
     nudges: Sequence[Nudge] = ()

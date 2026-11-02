@@ -9,7 +9,8 @@ from core.modules.documents.support.doc_revisions import DocRevisions
 
 
 class EditTextHandler(Handler[EditText, TextRow]):
-    """Writes a document's or report's text anew, keeping what was not given, and records a document's revision."""
+    """Writes a document's or report's text anew, keeping what was not given, and records a document's
+    revision."""
 
     command = EditText
 

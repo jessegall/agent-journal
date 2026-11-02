@@ -6,7 +6,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class SequenceRun(Model):
-    """One agent working through a sequence: the step it is on, whether it took that step up, and when the run ended."""
+    """One agent working through a sequence: the step it is on, whether it took that step up, and when the run
+    ended."""
 
     model_name = "sequence_run"
     cli_name = "sequence-run"

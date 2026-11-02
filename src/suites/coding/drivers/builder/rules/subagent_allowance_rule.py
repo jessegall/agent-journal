@@ -10,8 +10,8 @@ from suites.coding.support.coding_settings import SENDS_SUBAGENTS_SETTING
 
 
 class SubagentAllowanceRule(DriverRule):
-    """While the project setting coding.builder-sends-subagents is false, the builder's dispatch of a subagent is
-    refused; it is true by default."""
+    """While the project setting coding.builder-sends-subagents is false, the builder's dispatch of a subagent
+    is refused; it is true by default."""
 
     name = "coding.builder-subagent-allowance"
     hook = HookEventName.PRE_TOOL_USE

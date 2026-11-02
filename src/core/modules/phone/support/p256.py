@@ -13,8 +13,8 @@ COORDINATE_BYTES = 32
 
 
 class P256:
-    """The NIST P-256 curve with no library: adding and multiplying its points, and checking a signature, for the
-    VAPID keys a web push is signed with."""
+    """The NIST P-256 curve with no library: adding and multiplying its points, and checking a signature, for
+    the VAPID keys a web push is signed with."""
 
     @staticmethod
     def added(single: Point | None, counterpart: Point | None) -> Point | None:

@@ -15,8 +15,8 @@ from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
 
 class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
-    """Deletes the hook calls older than the kept days and, first, the lines they gave; the rule history, which the
-    rules and reminders read, is never pruned."""
+    """Deletes the hook calls older than the kept days and, first, the lines they gave; the rule history,
+    which the rules and reminders read, is never pruned."""
 
     command = PruneHookCalls
 

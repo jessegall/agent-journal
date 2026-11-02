@@ -14,8 +14,8 @@ from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
 
 
 class PauseAgentHandler(Handler[PauseAgent, Agent]):
-    """Marks a running agent paused and leaves the line that says so, which a listener types once this is committed;
-    an agent that ended or is paused already is refused."""
+    """Marks a running agent paused and leaves the line that says so, which a listener types once this is
+    committed; an agent that ended or is paused already is refused."""
 
     command = PauseAgent
 

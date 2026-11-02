@@ -5,7 +5,8 @@ from pathlib import Path
 
 class FolderListing:
     """The Python files under some folders, listed again only when one of their folders changes: a file added,
-    removed or renamed changes its folder's change time, so a check costs a stat of each folder, not a walk."""
+    removed or renamed changes its folder's change time, so a check costs a stat of each folder, not a walk.
+    """
 
     def __init__(self, folders: Sequence[Path]) -> None:
         self.folders = list(folders)

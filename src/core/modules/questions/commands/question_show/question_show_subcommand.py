@@ -9,7 +9,8 @@ from core.modules.questions.queries.question_query import QuestionQuery
 
 
 class QuestionShowSubcommand(ReadSubcommand[Question]):
-    """`journal question show <n>`: one question with its choices and its answer, or that it is not answered yet."""
+    """`journal question show <n>`: one question with its choices and its answer, or that it is not answered
+    yet."""
 
     cli_name = "question"
     name = "show"

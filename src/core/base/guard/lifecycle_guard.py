@@ -11,8 +11,8 @@ METADATA_SUFFIX = ".metadata"
 
 
 class LifecycleGuard(Guard):
-    """A row starts in one of its lifecycle's first states, changes state only by a move its lifecycle lists, and
-    is edited or deleted only in a state that allows it."""
+    """A row starts in one of its lifecycle's first states, changes state only by a move its lifecycle lists,
+    and is edited or deleted only in a state that allows it."""
 
     name = LIFECYCLE_GUARD
     event = "*"

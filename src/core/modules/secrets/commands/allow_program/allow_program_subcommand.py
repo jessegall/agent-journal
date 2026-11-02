@@ -8,8 +8,8 @@ from core.modules.secrets.commands.support.secret_program import SecretProgram
 
 
 class AllowProgramSubcommand(Subcommand[AllowProgram, SecretProgram]):
-    """`journal secret allow <n> [<program>] [--helpers]`: the Secrets window's line for a program the user lets a
-    secret go to, or for letting helpers use it."""
+    """`journal secret allow <n> [<program>] [--helpers]`: the Secrets window's line for a program the user
+    lets a secret go to, or for letting helpers use it."""
 
     cli_name = "secret"
     name = "allow"

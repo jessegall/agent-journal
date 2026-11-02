@@ -9,7 +9,8 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 
 @dataclass(frozen=True, kw_only=True)
 class Proof(Model):
-    """What a worker shows for one point of its task's brief, and what is missing when it is sent back short."""
+    """What a worker shows for one point of its task's brief, and what is missing when it is sent back short.
+    """
 
     model_name = "proof"
     cli_name = "proof"

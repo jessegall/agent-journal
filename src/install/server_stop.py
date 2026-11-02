@@ -13,8 +13,8 @@ POLL_SECONDS = 0.05
 
 
 class ServerStop:
-    """Asks the running server of a journal to stop and waits until it has drained and let the lock go; with no
-    server running it says so and is not an error."""
+    """Asks the running server of a journal to stop and waits until it has drained and let the lock go; with
+    no server running it says so and is not an error."""
 
     def __init__(self, home: JournalHome) -> None:
         self.files = ServerFiles(home)

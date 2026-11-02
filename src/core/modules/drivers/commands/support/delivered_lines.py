@@ -12,8 +12,8 @@ TOOL_HOOK_LINES = 3
 
 @dataclass(frozen=True)
 class DeliveredLines:
-    """The waiting lines a hook gives the agent: none on a tick, which reaches no agent, or while the newest layer
-    delays lines, three on a tool hook, all of them on any other; the rest stay waiting."""
+    """The waiting lines a hook gives the agent: none on a tick, which reaches no agent, or while the newest
+    layer delays lines, three on a tool hook, all of them on any other; the rest stay waiting."""
 
     rows: Sequence[AgentLine]
 

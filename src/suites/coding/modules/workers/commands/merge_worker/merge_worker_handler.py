@@ -19,7 +19,8 @@ from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOUR
 
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
-    """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101 4.5."""
+    """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
+    4.5."""
 
     command = MergeWorker
 

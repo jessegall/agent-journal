@@ -5,7 +5,8 @@ from core.base.model.model import Model
 
 
 class SaveListener:
-    """Runs right after a change is saved, inside the same transaction, for what must be true together with it."""
+    """Runs right after a change is saved, inside the same transaction, for what must be true together with
+    it."""
 
     name: ClassVar[str]
     event: ClassVar[str]

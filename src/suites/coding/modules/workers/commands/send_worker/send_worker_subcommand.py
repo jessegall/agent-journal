@@ -11,7 +11,8 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 
 
 class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
-    """`journal worker send <n> "<job>"`: a worker that reported takes its next job, with its memory of the last."""
+    """`journal worker send <n> "<job>"`: a worker that reported takes its next job, with its memory of the
+    last."""
 
     cli_name = "worker"
     name = "send"

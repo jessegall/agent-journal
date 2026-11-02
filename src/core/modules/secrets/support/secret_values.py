@@ -13,8 +13,8 @@ HEADER = "# The values of this project's secrets, written by agent-journal.\n# O
 
 
 class SecretValues:
-    """The project's secret values, in the file of version 4's shape in the private folder, readable by its user
-    alone and written whole: one line a field, a replaced value kept under a retired name so it is still
+    """The project's secret values, in the file of version 4's shape in the private folder, readable by its
+    user alone and written whole: one line a field, a replaced value kept under a retired name so it is still
     masked, and the shown fields, such as a username, named in a file beside it."""
 
     def __init__(self, folder: PrivateFolder) -> None:

@@ -7,8 +7,8 @@ HOOK_HEADERS = ("X-Journal-Hook-Id", "X-Journal-Request-At", "X-Journal-Actor", 
 
 @dataclass(frozen=True)
 class HookHeaders:
-    """What version 4's hook sends beside a raw body: its firing id, when it fired in milliseconds, its actor and
-    its environment."""
+    """What version 4's hook sends beside a raw body: its firing id, when it fired in milliseconds, its actor
+    and its environment."""
 
     firing: str
     hook_timestamp_ms: int

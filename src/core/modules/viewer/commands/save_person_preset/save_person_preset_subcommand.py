@@ -7,7 +7,8 @@ from core.modules.viewer.models.person_preset import PersonPreset
 
 
 class SavePersonPresetSubcommand(Subcommand[SavePersonPreset, PersonPreset]):
-    """`journal person-preset save --page <page> --name <name> --shape <json>`: a layout of yours as a preset."""
+    """`journal person-preset save --page <page> --name <name> --shape <json>`: a layout of yours as a preset.
+    """
 
     cli_name = "person-preset"
     name = "save"

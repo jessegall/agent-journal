@@ -15,8 +15,8 @@ TOOL_EVENTS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEven
 
 @dataclass(frozen=True)
 class RawHookBody:
-    """A hook body that no Go program prepared, as an agent program sends it, read into the HookEvent it stands
-    for through its program's hook names, with its tool unsplit and unclassified. Kept for one major
+    """A hook body that no Go program prepared, as an agent program sends it, read into the HookEvent it
+    stands for through its program's hook names, with its tool unsplit and unclassified. Kept for one major
     version, while hooks still post raw bodies; removed at version 6."""
 
     hook_name: str

@@ -4,7 +4,8 @@ ROW_COLUMNS = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAUL
 
 
 class PluginsTablesMigration(Migration):
-    """Creates the plugins, plugin settings, plugin deliveries, plugin outputs and plugin queue files tables."""
+    """Creates the plugins, plugin settings, plugin deliveries, plugin outputs and plugin queue files tables.
+    """
 
     number = 1
     statements = (

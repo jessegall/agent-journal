@@ -7,8 +7,8 @@ from core.base.registry.dotted_path import DottedPath
 
 @dataclass(frozen=True)
 class MoveEntry:
-    """A registered move from version 4: the module that declares it, its class, the version 4 tables it reads and
-    drops, and the modules whose new ids it looks up; entries stand in module order."""
+    """A registered move from version 4: the module that declares it, its class, the version 4 tables it reads
+    and drops, and the modules whose new ids it looks up; entries stand in module order."""
 
     module: str
     path: DottedPath

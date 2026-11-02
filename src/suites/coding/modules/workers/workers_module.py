@@ -65,7 +65,8 @@ from suites.coding.modules.workers.commands.remove_project_worktree.remove_proje
 
 
 class WorkersModule(Module):
-    """Adds the coding suite's workers: the worktree each one writes in and the proofs it shows for its task."""
+    """Adds the coding suite's workers: the worktree each one writes in and the proofs it shows for its task.
+    """
 
     name = "journal.suites.coding.workers"
     nudges = WORKER_NUDGES

@@ -6,8 +6,8 @@ from core.base.type_guards import is_mapping
 
 @dataclass(frozen=True)
 class PlanWindow:
-    """One window of the plan's allowance as the agent program reported it: its length, the percent used and when
-    it starts again."""
+    """One window of the plan's allowance as the agent program reported it: its length, the percent used and
+    when it starts again."""
 
     title: str
     used_percent: float

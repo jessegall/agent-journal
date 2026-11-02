@@ -11,8 +11,8 @@ CAPITAL = re.compile(r"(?<!^)(?=[A-Z])")
 
 
 class CodexTrust:
-    """Codex's record, in its config.toml, of which hooks of a hook file the person trusts: one state table per
-    file, hook and position, which a worktree's hook file copies from the main checkout's."""
+    """Codex's record, in its config.toml, of which hooks of a hook file the person trusts: one state table
+    per file, hook and position, which a worktree's hook file copies from the main checkout's."""
 
     def __init__(self, config_file: Path) -> None:
         self.config_file = config_file

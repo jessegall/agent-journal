@@ -10,8 +10,8 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class RequireSkillHandler(Handler[RequireSkill, AgentSkill]):
-    """Makes the skill due for the agent; a skill the agent holds loaded with the current text stays loaded, and
-    one it read in an older text becomes due again."""
+    """Makes the skill due for the agent; a skill the agent holds loaded with the current text stays loaded,
+    and one it read in an older text becomes due again."""
 
     command = RequireSkill
 

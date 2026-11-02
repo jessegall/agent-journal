@@ -12,7 +12,8 @@ TABLE = "statistics"
 
 
 class StatisticsMove(VersionFourMove):
-    """Carries version 4's counts with their numbers, keys and values; a row with no key is skipped and told."""
+    """Carries version 4's counts with their numbers, keys and values; a row with no key is skipped and told.
+    """
 
     name = "statistics"
     reads = [TABLE]

@@ -9,7 +9,8 @@ from core.modules.processes.models.reader import Reader
 
 
 class ReaderOwnerGuard(Guard):
-    """Refuses the removal of a reader the core or another module made; only the one that made it removes it."""
+    """Refuses the removal of a reader the core or another module made; only the one that made it removes it.
+    """
 
     name = "processes.reader-owner"
     event = "reader.delete"

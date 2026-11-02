@@ -8,8 +8,8 @@ OUTLINE_HINT = 'read a section with --section <n or heading>, its bullets with -
 
 
 class TextLines:
-    """Prints a document or a report the way it is asked for: the outline, one section, its bullets, the lines a
-    search finds, or the whole text."""
+    """Prints a document or a report the way it is asked for: the outline, one section, its bullets, the lines
+    a search finds, or the whole text."""
 
     @staticmethod
     def write(heading: str, abstract: str, body: str, arguments: Namespace, output: Output) -> None:

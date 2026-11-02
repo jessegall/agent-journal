@@ -7,8 +7,8 @@ from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_
 
 
 class SuiteChoice:
-    """The suite an environment runs and the driver each role gets there: what the environment's settings name,
-    else the one installed suite no other requires and that suite's default for the role."""
+    """The suite an environment runs and the driver each role gets there: what the environment's settings
+    name, else the one installed suite no other requires and that suite's default for the role."""
 
     def __init__(self, registry: Registry, settings: SettingValues) -> None:
         self.registry, self.settings = registry, settings

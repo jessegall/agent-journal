@@ -6,8 +6,8 @@ from core.base.subcommand.subcommand import Subcommand
 
 
 class LineParser:
-    """Builds the parser of one command line's subcommand, with --json and, for a command, the write flags; the
-    one place a line's arguments are worked out, for the console and for every check of a line."""
+    """Builds the parser of one command line's subcommand, with --json and, for a command, the write flags;
+    the one place a line's arguments are worked out, for the console and for every check of a line."""
 
     def __init__(self, lookup: SubcommandLookup, flags: WriteFlags) -> None:
         self.lookup, self.flags = lookup, flags

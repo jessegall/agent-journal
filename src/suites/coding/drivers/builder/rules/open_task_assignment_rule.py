@@ -11,8 +11,8 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 
 
 class OpenTaskAssignmentRule(DriverRule):
-    """While auto mode is on, a builder that stops with no task started is given the next task, started as its own,
-    and goes on with it."""
+    """While auto mode is on, a builder that stops with no task started is given the next task, started as its
+    own, and goes on with it."""
 
     name = "coding.builder-next-task-at-stop"
     hook = HookEventName.STOP

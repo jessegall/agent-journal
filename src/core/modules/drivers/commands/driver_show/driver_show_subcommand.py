@@ -10,8 +10,8 @@ from core.modules.drivers.commands.support.driver_description import DriverDescr
 
 
 class DriverShowSubcommand(ReadSubcommand[DriverDescription]):
-    """`journal driver show <driver>`: the standing rules, the overlays' rules and the driver's own and added rules
-    that can apply to it, a rule marked essential but not yet allowed named as waiting for the user."""
+    """`journal driver show <driver>`: the standing rules, the overlays' rules and the driver's own and added
+    rules that can apply to it, a rule marked essential but not yet allowed named as waiting for the user."""
 
     cli_name = "driver"
     name = "show"

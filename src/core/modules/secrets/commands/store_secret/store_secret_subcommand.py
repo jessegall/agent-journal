@@ -8,8 +8,8 @@ from core.modules.secrets.commands.support.filled_field import FilledField
 
 
 class StoreSecretSubcommand(Subcommand[FillSecret, FilledField]):
-    """`journal secret store <n> <field> <file>`: a value the agent made, such as a generated password, moved from
-    its file into the secret; the file is deleted."""
+    """`journal secret store <n> <field> <file>`: a value the agent made, such as a generated password, moved
+    from its file into the secret; the file is deleted."""
 
     cli_name = "secret"
     name = "store"

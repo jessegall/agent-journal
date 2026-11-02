@@ -17,7 +17,8 @@ from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
 
 
 class SchedulesModule(Module):
-    """Adds the record of the jobs an agent schedules in its own program, and a person's way to have one stopped."""
+    """Adds the record of the jobs an agent schedules in its own program, and a person's way to have one
+    stopped."""
 
     name = "journal.core.schedules"
     nudges = SCHEDULE_NUDGES

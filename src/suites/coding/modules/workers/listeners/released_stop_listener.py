@@ -15,7 +15,8 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class ReleasedStopListener(SaveListener):
-    """A worker whose stop went through only by the repeated-stop release, its task still started, is ended."""
+    """A worker whose stop went through only by the repeated-stop release, its task still started, is ended.
+    """
 
     name = "workers.released-stop"
     event = "hook_call.create"

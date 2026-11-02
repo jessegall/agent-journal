@@ -8,8 +8,8 @@ from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE
 
 
 class SettingCatalogue:
-    """The settings the installed modules declare, found by their full key or by the key of a place a group is placed
-    at, with the groups above each."""
+    """The settings the installed modules declare, found by their full key or by the key of a place a group is
+    placed at, with the groups above each."""
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

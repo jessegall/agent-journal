@@ -10,8 +10,8 @@ from core.modules.sharing.models.share_link import ShareLink
 
 
 class ShareSessionSubcommand(ReadSubcommand[ShareLink]):
-    """`journal share session <token-digest>`: the link a viewer cookie's token belongs to, whether it is still
-    active or has ended, read by the viewer's listener."""
+    """`journal share session <token-digest>`: the link a viewer cookie's token belongs to, whether it is
+    still active or has ended, read by the viewer's listener."""
 
     cli_name = "share"
     name = "session"

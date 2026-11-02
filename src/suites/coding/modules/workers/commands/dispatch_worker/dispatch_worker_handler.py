@@ -31,7 +31,8 @@ WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
-    """Starts a worker: its agent row, a worktree cut from the environment's branch, its task; a failure undoes it."""
+    """Starts a worker: its agent row, a worktree cut from the environment's branch, its task; a failure
+    undoes it."""
 
     command = DispatchWorker
 

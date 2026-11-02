@@ -7,8 +7,8 @@ KEYS_SUFFIX = ".keys.json"
 
 
 class ServerKeys:
-    """The keys the project's MCP servers sign in with, by variable, in a file in the private folder; the agent
-    programs are given them in their environment at launch, and no row or config holds one."""
+    """The keys the project's MCP servers sign in with, by variable, in a file in the private folder; the
+    agent programs are given them in their environment at launch, and no row or config holds one."""
 
     def __init__(self, folder: PrivateFolder) -> None:
         self.folder = folder

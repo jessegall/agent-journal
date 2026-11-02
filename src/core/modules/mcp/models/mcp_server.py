@@ -8,8 +8,8 @@ STDIO = "stdio"
 
 @dataclass(frozen=True, kw_only=True)
 class McpServer(Model):
-    """An MCP server the project's agents use: how it is started or reached and the variable its key is given in;
-    the key itself lives outside the project, never in a row."""
+    """An MCP server the project's agents use: how it is started or reached and the variable its key is given
+    in; the key itself lives outside the project, never in a row."""
 
     model_name = "mcp_server"
     cli_name = "mcp"

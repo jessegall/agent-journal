@@ -9,7 +9,8 @@ TYPING_SUGGESTION = "it types only for an agent it started, and a launcher older
 
 
 class TerminalTyping:
-    """Hands the running launcher a line to type into an agent's terminal, and refuses unless it answers that it did."""
+    """Hands the running launcher a line to type into an agent's terminal, and refuses unless it answers that
+    it did."""
 
     def __init__(self, home: JournalHome, link: LauncherLink) -> None:
         self.home, self.link = home, link

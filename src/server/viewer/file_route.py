@@ -11,8 +11,8 @@ UNKNOWN_TYPE = "application/octet-stream"
 
 
 class FileRoute:
-    """The files of the chat: an upload waits in the pending folder under a token until a message takes it, and a
-    message's file is read back by the message's number and its name."""
+    """The files of the chat: an upload waits in the pending folder under a token until a message takes it,
+    and a message's file is read back by the message's number and its name."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

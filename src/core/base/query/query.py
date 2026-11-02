@@ -18,7 +18,8 @@ from core.base.query.unknown_column_error import UnknownColumnError
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
 class Query(Generic[M]):
-    """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time."""
+    """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time.
+    """
 
     def __init__(self, database: Database, tables: Tables, model: type[M]) -> None:
         self.database, self.model, self.table = database, model, tables.table(model)

@@ -11,8 +11,8 @@ from core.base.cli.subcommand_columns import generic_base, argument_columns, fla
 
 
 class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
-    """The `make` subcommand the core builds for a model: the model's required fields as arguments, its optional
-    fields as flags, run as a make command of that model."""
+    """The `make` subcommand the core builds for a model: the model's required fields as arguments, its
+    optional fields as flags, run as a make command of that model."""
 
     name = "make"
 

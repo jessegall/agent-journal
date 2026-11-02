@@ -6,7 +6,8 @@ LINKS_SHOWN = 50
 
 
 class StoredRowLinks(RowLinks):
-    """Names the rows a row links to and the rows that link to it, newest first, on one line, each as model:number."""
+    """Names the rows a row links to and the rows that link to it, newest first, on one line, each as
+    model:number."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

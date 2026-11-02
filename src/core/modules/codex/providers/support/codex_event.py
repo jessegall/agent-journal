@@ -12,8 +12,8 @@ AGENT_MESSAGE = "agent_message"
 
 @dataclass(frozen=True)
 class CodexEvent:
-    """One line of codex exec --json as the journal reads it: its type, the thread a start names, the text of a
-    completed agent message and the message of a failed turn."""
+    """One line of codex exec --json as the journal reads it: its type, the thread a start names, the text of
+    a completed agent message and the message of a failed turn."""
 
     event_type: str
     thread: str

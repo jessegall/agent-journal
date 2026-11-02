@@ -9,7 +9,8 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 
 @dataclass(frozen=True, kw_only=True)
 class Worktree(Model):
-    """The git worktree a worker writes in for its task: its folder and branch, cut from the environment's branch."""
+    """The git worktree a worker writes in for its task: its folder and branch, cut from the environment's
+    branch."""
 
     model_name = "worker_worktree"
     cli_name = "worker-worktree"

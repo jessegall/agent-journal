@@ -10,7 +10,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class MakeProofHandler(Handler[MakeProof, Proof]):
-    """Makes the worker's proof for a point, changes its text while it waits for a check, or shows a short one again."""
+    """Makes the worker's proof for a point, changes its text while it waits for a check, or shows a short one
+    again."""
 
     command = MakeProof
 

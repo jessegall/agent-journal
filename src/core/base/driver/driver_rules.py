@@ -19,9 +19,9 @@ from core.base.registry.registry import Registry
 
 
 class DriverRules:
-    """Asks the rules a hook's driver hears: standing rules first, then each layer newest first, then the driver's
-    own. An exclusive layer silences the ordinary rules beneath it, a refusal ends the walk, and a rule that
-    raises is recorded and passed by."""
+    """Asks the rules a hook's driver hears: standing rules first, then each layer newest first, then the
+    driver's own. An exclusive layer silences the ordinary rules beneath it, a refusal ends the walk, and a
+    rule that raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog,
                  allowances: EssentialAllowances) -> None:

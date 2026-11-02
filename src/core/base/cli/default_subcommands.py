@@ -20,7 +20,8 @@ from core.base.cli.subcommand_columns import generic_base
 
 
 class DefaultSubcommands:
-    """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""
+    """Builds the subcommands every model gets from its model, so a module writes only the ones that differ.
+    """
 
     def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks) -> None:
         self.tables, self.queries, self.environment_names, self.links = tables, queries, environment_names, links

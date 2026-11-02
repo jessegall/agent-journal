@@ -11,7 +11,8 @@ PLUGIN_KEY = "plugin"
 
 class SkillCatalogue:
     """Every skill an agent may be given: the skills the modules declare, and the skills an installed plugin
-    published into any of the agent programs' skill folders, which carry plugin: <name> in their front matter."""
+    published into any of the agent programs' skill folders, which carry plugin: <name> in their front matter.
+    """
 
     def __init__(self, registry: Registry, home: JournalHome) -> None:
         self.registry, self.home = registry, home

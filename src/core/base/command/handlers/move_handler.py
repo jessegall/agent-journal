@@ -8,8 +8,8 @@ from core.base.command.handlers.move_method_error import MoveMethodError
 
 
 class MoveHandler(Handler[MoveCommand[Model], Model]):
-    """Carries out every move command: finds the row, moves it, through the model's own method for the move when
-    it has one, and saves it."""
+    """Carries out every move command: finds the row, moves it, through the model's own method for the move
+    when it has one, and saves it."""
 
     command = MoveCommand
 

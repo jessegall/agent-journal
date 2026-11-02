@@ -15,8 +15,8 @@ from core.testing.template import Template
 
 
 class TemplateDatabases:
-    """One migrated and synced database per set of modules, and one more per fixture built on it, each made once
-    and copied for every story that starts from it."""
+    """One migrated and synced database per set of modules, and one more per fixture built on it, each made
+    once and copied for every story that starts from it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder

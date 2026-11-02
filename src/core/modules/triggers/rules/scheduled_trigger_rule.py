@@ -9,8 +9,8 @@ from core.modules.triggers.queries.trigger_query import TriggerQuery
 
 
 class ScheduledTriggerRule(DriverRule):
-    """On any hook, the server's tick included, the main agent is given the text of each scheduled trigger whose
-    time has come, and the trigger moves on to its next time or ends."""
+    """On any hook, the server's tick included, the main agent is given the text of each scheduled trigger
+    whose time has come, and the trigger moves on to its next time or ends."""
 
     name = "triggers.scheduled"
     hook = HookWildcard.ALL_HOOKS

@@ -15,8 +15,8 @@ from core.base.type_guards import is_text_list
 
 class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
     """`journal program command <program> <folder> --launch <name> [--resume <session>] [--ask-prompts]
-    [--program-argument=<argument>]...`: the command line that starts the program in the folder, one argument a
-    line, as its provider builds it, for the launcher."""
+    [--program-argument=<argument>]...`: the command line that starts the program in the folder, one argument
+    a line, as its provider builds it, for the launcher."""
 
     cli_name = "program"
     name = "command"

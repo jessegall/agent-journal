@@ -6,8 +6,8 @@ from core.base.type_guards import is_mapping
 
 @dataclass(frozen=True)
 class CodexTokenCount:
-    """A token count line of a Codex session's rollout: the tokens the last turn used_tokens of the model's context
-    window_tokens."""
+    """A token count line of a Codex session's rollout: the tokens the last turn used_tokens of the model's
+    context window_tokens."""
 
     used_tokens: int
     window_tokens: int

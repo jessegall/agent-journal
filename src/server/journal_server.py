@@ -10,8 +10,8 @@ from server.server_context import ServerContext
 DRAIN_LIMIT_SECONDS = 10
 DRAIN_POLL_SECONDS = 0.05
 class JournalServer(ThreadingMixIn, UnixStreamServer):
-    """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to its
-    limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once."""
+    """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to
+    its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once."""
 
     daemon_threads = True
 

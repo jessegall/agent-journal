@@ -12,9 +12,9 @@ END = "# end of agent-journal mcp servers"
 
 
 class CodexServerFile:
-    """The project's .codex/config.toml, which Codex reads its servers from: the journal's servers in one block of
-    their own, written anew each time, beside everything else the file holds; a key only by its variable's
-    name, which Codex passes on from its own environment."""
+    """The project's .codex/config.toml, which Codex reads its servers from: the journal's servers in one
+    block of their own, written anew each time, beside everything else the file holds; a key only by its
+    variable's name, which Codex passes on from its own environment."""
 
     def __init__(self, home: JournalHome) -> None:
         self.path = home.project_folder / FILE

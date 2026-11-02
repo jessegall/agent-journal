@@ -9,7 +9,8 @@ from core.modules.drivers.models.required_command import RequiredCommand
 
 
 class RequiredCommands:
-    """Opens a required_command for each line said that declares the command paying it, once while it stays open."""
+    """Opens a required_command for each line said that declares the command paying it, once while it stays
+    open."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository

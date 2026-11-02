@@ -2,7 +2,8 @@ from core.base.database.migration import Migration
 
 
 class OutputReadersMigration(Migration):
-    """Gives each output the reader chosen at the start and what the reader has made of the bytes it passed."""
+    """Gives each output the reader chosen at the start and what the reader has made of the bytes it passed.
+    """
 
     number = 4
     statements = (

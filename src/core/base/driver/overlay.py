@@ -6,8 +6,8 @@ from core.base.driver.open_row import OpenRow
 
 
 class Overlay:
-    """The base of every overlay: a row type whose active rows put its rules before the driver's; an exclusive one
-    silences every ordinary rule beneath it."""
+    """The base of every overlay: a row type whose active rows put its rules before the driver's; an exclusive
+    one silences every ordinary rule beneath it."""
 
     name: ClassVar[str]
     exclusive: ClassVar[bool] = False

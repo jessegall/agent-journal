@@ -9,7 +9,8 @@ from core.modules.drivers.models.required_command import RequiredCommand
 
 
 class SkipRequiredCommandSubcommand(Subcommand[CloseRequiredCommand, RequiredCommand]):
-    """`journal required-command skip <n> --reason <why>`: leaves a line's command unrun, saying why; the chat shows it."""
+    """`journal required-command skip <n> --reason <why>`: leaves a line's command unrun, saying why; the chat
+    shows it."""
 
     cli_name = "required-command"
     name = "skip"

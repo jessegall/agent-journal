@@ -6,8 +6,8 @@ from core.modules.dumps.models.enums.item_state import ItemState
 
 @dataclass(frozen=True, kw_only=True)
 class DumpItem(Model):
-    """One note of a dump, numbered in the dump from 1: what the agent noted of it, or what was done with it and
-    the rows it became."""
+    """One note of a dump, numbered in the dump from 1: what the agent noted of it, or what was done with it
+    and the rows it became."""
 
     model_name = "dump_item"
     cli_name = "dump-item"

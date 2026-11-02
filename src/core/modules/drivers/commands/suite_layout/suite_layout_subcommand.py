@@ -12,8 +12,8 @@ from core.modules.environments.models.environment import Environment
 
 
 class SuiteLayoutSubcommand(ReadSubcommand[PageLayout]):
-    """`journal suite layout <environment> <page> [--driver <driver>]`: the default layout the environment's suite
-    gives the page, its layout for the driver before its plain one."""
+    """`journal suite layout <environment> <page> [--driver <driver>]`: the default layout the environment's
+    suite gives the page, its layout for the driver before its plain one."""
 
     cli_name = "suite"
     name = "layout"

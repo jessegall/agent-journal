@@ -10,8 +10,8 @@ from core.modules.phone.commands.support.push_key_pair import PushKeyPair
 
 
 class EnsurePushKeysSubcommand(Subcommand[EnsurePushKeys, PushKeyPair]):
-    """`journal phone push-key`: prints the public key a phone subscribes to push with, making the key pair on the
-    first call; only the viewer asks for it, as the journal itself."""
+    """`journal phone push-key`: prints the public key a phone subscribes to push with, making the key pair on
+    the first call; only the viewer asks for it, as the journal itself."""
 
     cli_name = "phone"
     name = "push-key"

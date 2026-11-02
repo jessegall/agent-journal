@@ -7,8 +7,8 @@ from core.modules.environments.models.environment import Environment
 
 
 class EnvironmentQuery(Query[Environment]):
-    """Reads environments, with the one whose folder holds a given folder: the deepest such folder, both compared
-    after their links are resolved."""
+    """Reads environments, with the one whose folder holds a given folder: the deepest such folder, both
+    compared after their links are resolved."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Environment)

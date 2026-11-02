@@ -9,8 +9,8 @@ from core.modules.viewer.models.viewer_layout import ViewerLayout
 
 
 class ViewerLayoutCurrentSubcommand(ReadSubcommand[ViewerLayout]):
-    """`journal viewer-layout current --suite <suite> --page <page> [--driver <driver>]`: your saved layout of the
-    page in your environment, or the one --environment names."""
+    """`journal viewer-layout current --suite <suite> --page <page> [--driver <driver>]`: your saved layout of
+    the page in your environment, or the one --environment names."""
 
     cli_name = "viewer-layout"
     name = "current"

@@ -16,8 +16,8 @@ READ_COMMAND_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
 
 @dataclass(frozen=True)
 class Tool:
-    """The tool a hook is about: its name, its category, the files it names, its shell line when it runs one, and
-    its diff and the changed lines when it edits or writes."""
+    """The tool a hook is about: its name, its category, the files it names, its shell line when it runs one,
+    and its diff and the changed lines when it edits or writes."""
 
     name: str
     category: ToolType

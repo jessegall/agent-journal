@@ -13,7 +13,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
-    """Opens the worker's task again, abandons its worktree and removes the folder; a branch with commits is kept."""
+    """Opens the worker's task again, abandons its worktree and removes the folder; a branch with commits is
+    kept."""
 
     command = ReleaseWorker
 

@@ -11,8 +11,8 @@ PUBLIC_KEY = "journal.core.phone.push-public-key"
 
 
 class EnsurePushKeysHandler(Handler[EnsurePushKeys, PushKeyPair]):
-    """Reads the push key pair from its two secret settings; when they are not set it makes a pair and keeps both, so
-    every later need gives the same keys."""
+    """Reads the push key pair from its two secret settings; when they are not set it makes a pair and keeps
+    both, so every later need gives the same keys."""
 
     command = EnsurePushKeys
 

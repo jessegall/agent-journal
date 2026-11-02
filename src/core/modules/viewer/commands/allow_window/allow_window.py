@@ -7,7 +7,8 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 @dataclass(frozen=True)
 class AllowWindow(Command[WindowPermission]):
-    """Allows a window, for the caller in the caller's environment, every read or command line it declares now."""
+    """Allows a window, for the caller in the caller's environment, every read or command line it declares
+    now."""
 
     window: str
     type: WindowPermissionType

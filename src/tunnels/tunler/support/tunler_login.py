@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TunlerLogin:
-    """How a login went: connected, or it needs the master password to make the account, or tunler's own words."""
+    """How a login went: connected, or it needs the master password to make the account, or tunler's own
+    words."""
 
     connected: bool
     needs_master: bool = False

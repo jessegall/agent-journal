@@ -4,7 +4,8 @@ from core.base.database.timestamp_sql import TIMESTAMP_SQL
 
 
 class MemoriesTablesMigration(Migration):
-    """Creates memories with their types, switches, keywords, deliveries and marks, and the three core types."""
+    """Creates memories with their types, switches, keywords, deliveries and marks, and the three core types.
+    """
 
     number = 1
     statements = (

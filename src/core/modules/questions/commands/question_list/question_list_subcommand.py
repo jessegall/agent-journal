@@ -9,8 +9,8 @@ from core.modules.questions.queries.question_query import QuestionQuery
 
 
 class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
-    """`journal question list [--all]`: the open questions of the caller's environment, each with its number, text and
-    choices; with --all the answered and closed ones too, newest first."""
+    """`journal question list [--all]`: the open questions of the caller's environment, each with its number,
+    text and choices; with --all the answered and closed ones too, newest first."""
 
     cli_name = "question"
     name = "list"

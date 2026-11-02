@@ -13,7 +13,8 @@ from core.modules.processes.models.watch import Watch
 
 
 class OutputDockListener(CommitListener):
-    """A watch of a running output docks it above the chat, once; the dock lets it leave after its run ends."""
+    """A watch of a running output docks it above the chat, once; the dock lets it leave after its run ends.
+    """
 
     name = "processes.output-dock"
     event = "watch.create"

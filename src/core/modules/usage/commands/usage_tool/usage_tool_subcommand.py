@@ -24,8 +24,9 @@ TURN_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.STOP, HookEventName.PROM
 
 
 class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
-    """`journal usage tool [--environment <name>]`: the tool the main agent last began, empty once it has stopped or
-    a new turn began, and then what it waits for: the runs it left going and the questions it asked."""
+    """`journal usage tool [--environment <name>]`: the tool the main agent last began, empty once it has
+    stopped or a new turn began, and then what it waits for: the runs it left going and the questions it
+    asked."""
 
     cli_name = "usage"
     name = "tool"

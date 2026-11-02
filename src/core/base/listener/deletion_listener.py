@@ -5,8 +5,8 @@ from core.base.model.model import Model
 
 
 class DeletionListener:
-    """Runs before a row is deleted, inside the same transaction, so a module can remove or detach its own rows
-    that point at it."""
+    """Runs before a row is deleted, inside the same transaction, so a module can remove or detach its own
+    rows that point at it."""
 
     name: ClassVar[str]
     event: ClassVar[str]

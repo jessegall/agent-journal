@@ -44,9 +44,9 @@ TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 
 class Story:
-    """One story on its own copy of the template database, the public entry a plugin's stories use: it loads the
-    modules named, runs command lines as text through the same console, container and registry as a real run,
-    moves its clock by hand, reads rows and refusals, and checks what came back. It knows no model of the
+    """One story on its own copy of the template database, the public entry a plugin's stories use: it loads
+    the modules named, runs command lines as text through the same console, container and registry as a real
+    run, moves its clock by hand, reads rows and refusals, and checks what came back. It knows no model of the
     core."""
 
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:

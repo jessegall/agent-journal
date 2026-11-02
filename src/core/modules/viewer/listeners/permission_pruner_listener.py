@@ -7,7 +7,8 @@ from core.modules.viewer.commands.prune_window_permissions.prune_window_permissi
 
 
 class PermissionPrunerListener(CommitListener):
-    """After the installed modules change, deletes the permissions of the windows and modules that are gone."""
+    """After the installed modules change, deletes the permissions of the windows and modules that are gone.
+    """
 
     name = "viewer.prune-permissions"
     event = REGISTRY_SYNC_EVENT

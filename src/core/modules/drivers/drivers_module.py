@@ -75,8 +75,8 @@ from core.modules.drivers.seeders.drivers_seeder import DriversSeeder
 
 
 class DriversModule(Module):
-    """Keeps every hook's decision, the lines waiting for agents and the rules' history, and answers hooks through
-    the suites, drivers and rules of the installed modules."""
+    """Keeps every hook's decision, the lines waiting for agents and the rules' history, and answers hooks
+    through the suites, drivers and rules of the installed modules."""
 
     name = "journal.core.drivers"
     nudges = DRIVER_NUDGES

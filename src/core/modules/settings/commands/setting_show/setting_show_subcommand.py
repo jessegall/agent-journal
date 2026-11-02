@@ -12,7 +12,8 @@ from core.modules.settings.support.current_setting import CurrentSetting
 
 
 class SettingShowSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSetting]):
-    """`journal setting show <key>`: a declared setting's value here and where it comes from; a secret only as set."""
+    """`journal setting show <key>`: a declared setting's value here and where it comes from; a secret only as
+    set."""
 
     cli_name = "setting"
     name = "show"

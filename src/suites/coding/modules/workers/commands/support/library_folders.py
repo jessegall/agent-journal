@@ -12,7 +12,8 @@ LINUX_COPY = ("cp", "-a", "--reflink=auto")
 
 
 class LibraryFolders:
-    """Gives a worktree the environment's library folders, each linked or copied, and keeps every one out of git."""
+    """Gives a worktree the environment's library folders, each linked or copied, and keeps every one out of
+    git."""
 
     def __init__(self, git: WorktreeGit) -> None:
         self.git = git

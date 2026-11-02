@@ -10,7 +10,8 @@ from core.modules.questions.models.question import OPTION_LIMIT_CHARACTERS, TEXT
 
 
 class AskQuestionHandler(Handler[AskQuestion, Question]):
-    """Opens the calling agent's question in its environment, the recommended option put first, and the wait on it."""
+    """Opens the calling agent's question in its environment, the recommended option put first, and the wait
+    on it."""
 
     command = AskQuestion
 

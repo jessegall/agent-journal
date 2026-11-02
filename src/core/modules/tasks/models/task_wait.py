@@ -6,8 +6,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class TaskWait(Model):
-    """What a blocked task waits on: a row, written table:id, or a command run on an interval; the task opens once
-    all its waits have ended."""
+    """What a blocked task waits on: a row, written table:id, or a command run on an interval; the task opens
+    once all its waits have ended."""
 
     model_name = "task_wait"
     cli_name = "task-wait"

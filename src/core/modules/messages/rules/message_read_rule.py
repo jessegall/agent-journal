@@ -24,9 +24,9 @@ IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageReadRule(DriverRule):
-    """A message the main agent has read with journal message read is marked read, the first time, and the agent is
-    told how to act on it. The tool's line holds the command inside the runner's own line by then, so the rule looks
-    for it in the text."""
+    """A message the main agent has read with journal message read is marked read, the first time, and the
+    agent is told how to act on it. The tool's line holds the command inside the runner's own line by then, so
+    the rule looks for it in the text."""
 
     name = "messages.read-marks-read"
     hook = HookEventName.POST_TOOL_USE

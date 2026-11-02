@@ -14,7 +14,8 @@ class ModelRowIds:
 
 
 class SharedRows:
-    """The rows a share link to one row includes, which its module declares: for a plan, its phases and tasks."""
+    """The rows a share link to one row includes, which its module declares: for a plan, its phases and tasks.
+    """
 
     row: ClassVar[type[Model]]
 

@@ -11,8 +11,8 @@ from core.base.cli.subcommand_columns import generic_base, editable_columns, par
 
 
 class EditSubcommand(Subcommand[EditCommand[Model], Model]):
-    """The `edit <id>` subcommand the core builds for a model: a flag for each field but the state, and only the
-    fields named are changed."""
+    """The `edit <id>` subcommand the core builds for a model: a flag for each field but the state, and only
+    the fields named are changed."""
 
     name = "edit"
 

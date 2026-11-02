@@ -10,8 +10,8 @@ from core.modules.secrets.support.secret_programs import SecretPrograms
 
 
 class AllowProgramHandler(Handler[AllowProgram, SecretProgram]):
-    """Adds a program to the ones a secret may go to, taking it from the proposed ones, or lets helpers use the
-    secret; only the user allows, and never a wrapper or a path."""
+    """Adds a program to the ones a secret may go to, taking it from the proposed ones, or lets helpers use
+    the secret; only the user allows, and never a wrapper or a path."""
 
     command = AllowProgram
 

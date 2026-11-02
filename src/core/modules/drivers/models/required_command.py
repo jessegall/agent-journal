@@ -6,7 +6,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class RequiredCommand(Model):
-    """A line that named one command to run and waits for it: the command that pays it, the hook call that said it, and when it was settled, with the reason if it was skipped."""
+    """A line that named one command to run and waits for it: the command that pays it, the hook call that
+    said it, and when it was settled, with the reason if it was skipped."""
 
     model_name = "required_command"
     cli_name = "required-command"

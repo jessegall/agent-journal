@@ -8,8 +8,9 @@ from core.modules.plugins.support.plugin_card import PluginCard
 
 @dataclass(frozen=True)
 class PluginAnswer:
-    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line, with
-    the cards it shows, the journal commands it runs and the skills it requires; an empty output allows."""
+    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line,
+    with the cards it shows, the journal commands it runs and the skills it requires; an empty output allows.
+    """
 
     answer: str
     reason: str

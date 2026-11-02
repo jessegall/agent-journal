@@ -8,8 +8,8 @@ AGENT = "agent"
 
 
 class CreatorResolver:
-    """The version 5 actor of a version 4 creator, written type:id: a user by its moved row, an agent by the actor
-    its session made, and the system, a plugin, a phone or anyone not moved as the core."""
+    """The version 5 actor of a version 4 creator, written type:id: a user by its moved row, an agent by the
+    actor its session made, and the system, a plugin, a phone or anyone not moved as the core."""
 
     def __init__(self, target: Database, map: MoveMap) -> None:
         self.actors, self.map = ActorTable(target), map

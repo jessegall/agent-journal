@@ -7,7 +7,8 @@ from core.modules.actors.seeders.actors_seeder import ActorsSeeder
 
 
 class ActorsModule(Module):
-    """Gives the actors table, which the core owns, its commands: journal actor make, show, list, edit and delete."""
+    """Gives the actors table, which the core owns, its commands: journal actor make, show, list, edit and
+    delete."""
 
     name = "journal.core.actors"
     requires_core = ">=5,<6"

@@ -4,8 +4,8 @@ from core.modules.viewer.models.window_permission import WindowPermission
 
 
 class PermissionOwnerGuard(PersonRowGuard):
-    """Refuses a window permission written by anyone but the person it names, so no agent, window or other person
-    gives rights for someone."""
+    """Refuses a window permission written by anyone but the person it names, so no agent, window or other
+    person gives rights for someone."""
 
     name = "viewer.permission-owner"
     event = "window_permission.*"

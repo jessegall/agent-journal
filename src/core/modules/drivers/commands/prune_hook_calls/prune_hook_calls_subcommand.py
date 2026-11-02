@@ -6,7 +6,8 @@ from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import Prun
 
 
 class PruneHookCallsSubcommand(Subcommand[PruneHookCalls, int]):
-    """`journal hook-call prune`: deletes the hook calls older than drivers.hook-call-days, with the lines they gave."""
+    """`journal hook-call prune`: deletes the hook calls older than drivers.hook-call-days, with the lines
+    they gave."""
 
     cli_name = "hook-call"
     name = "prune"

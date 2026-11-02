@@ -10,8 +10,8 @@ from core.modules.secrets.queries.secret_query import SecretQuery
 
 
 class SecretListSubcommand(ReadSubcommand[Sequence[Secret]]):
-    """`journal secret list`: every secret not deleted, oldest first, with what it waits for and the programs it
-    goes to."""
+    """`journal secret list`: every secret not deleted, oldest first, with what it waits for and the programs
+    it goes to."""
 
     cli_name = "secret"
     name = "list"

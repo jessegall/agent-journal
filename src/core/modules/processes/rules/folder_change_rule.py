@@ -9,8 +9,8 @@ CHANGE_WORD = "cd"
 
 
 class FolderChangeRule(DriverRule):
-    """An agent does not move to another folder with cd; a cd into the folder it is already in does nothing and goes
-    through."""
+    """An agent does not move to another folder with cd; a cd into the folder it is already in does nothing
+    and goes through."""
 
     name = "processes.folder-change"
     hook = HookEventName.PRE_TOOL_USE

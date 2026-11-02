@@ -9,8 +9,8 @@ R = TypeVar("R", covariant=True)
 
 
 class ReadSubcommand(Generic[R]):
-    """One `journal <model> <subcommand>` that only reads: its arguments, the query it runs, and how the rows are
-    printed. It never runs a command."""
+    """One `journal <model> <subcommand>` that only reads: its arguments, the query it runs, and how the rows
+    are printed. It never runs a command."""
 
     row_line: ClassVar[str] = ""
     empty_line: ClassVar[str] = ""

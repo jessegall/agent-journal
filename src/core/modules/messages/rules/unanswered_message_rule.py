@@ -21,8 +21,8 @@ REPLY_LINE = re.compile(r"""(?:^|[\s/'"])journal message """)
 
 
 class UnansweredMessageRule(DriverRule):
-    """A message the main agent has read and not answered is named before each tool call, and after ten calls tool
-    calls wait for the answer; a journal message line always goes through, since it is the answer."""
+    """A message the main agent has read and not answered is named before each tool call, and after ten calls
+    tool calls wait for the answer; a journal message line always goes through, since it is the answer."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE

@@ -16,8 +16,8 @@ from core.modules.usage.support.status_files import StatusFiles
 
 
 class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
-    """`journal usage show [--environment <name>]`: each open session of the environment with the model, context
-    and cost its status line last reported, the plan's windows and the sessions' cost added up."""
+    """`journal usage show [--environment <name>]`: each open session of the environment with the model,
+    context and cost its status line last reported, the plan's windows and the sessions' cost added up."""
 
     cli_name = "usage"
     name = "show"

@@ -13,8 +13,8 @@ UNKNOWN_STATUSES = (404, 410)
 
 
 class SendPhoneNoticesHandler(Handler[SendPhoneNotices, int]):
-    """Pushes each paired phone whose notice waits, once, and clears the mark; a phone the push service no longer
-    knows loses its subscription. Only the journal itself, in the ticker's round, sends."""
+    """Pushes each paired phone whose notice waits, once, and clears the mark; a phone the push service no
+    longer knows loses its subscription. Only the journal itself, in the ticker's round, sends."""
 
     command = SendPhoneNotices
 

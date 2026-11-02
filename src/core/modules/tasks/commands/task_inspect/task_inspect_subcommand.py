@@ -15,7 +15,8 @@ LOG_LINES_SHOWN = 100
 
 
 class TaskInspectSubcommand(ReadSubcommand[TaskInspection]):
-    """`journal task inspect <task>`: a task with the tasks it waits on and its latest log lines, in one answer."""
+    """`journal task inspect <task>`: a task with the tasks it waits on and its latest log lines, in one
+    answer."""
 
     cli_name = "task"
     name = "inspect"

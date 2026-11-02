@@ -7,8 +7,8 @@ from core.modules.messages.commands.tell_idle_agent.tell_idle_agent import TellI
 
 
 class IdleMessageTickRule(DriverRule):
-    """Each tick, a message waiting for a main agent that sent no hook lately is typed to it: an interrupted turn sends no
-    stop, so nothing else would wake it."""
+    """Each tick, a message waiting for a main agent that sent no hook lately is typed to it: an interrupted
+    turn sends no stop, so nothing else would wake it."""
 
     name = "messages.idle-agent-tick"
     hook = HookEventName.TICK

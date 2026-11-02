@@ -6,7 +6,8 @@ from core.modules.agents.models.agent import Agent
 
 @dataclass(frozen=True)
 class ChooseAgentControl(Command[Agent]):
-    """Applies one choice of the agent bar to a running agent's program, by typing the line the program takes for it."""
+    """Applies one choice of the agent bar to a running agent's program, by typing the line the program takes
+    for it."""
 
     agent_id: int
     key: str

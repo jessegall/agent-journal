@@ -33,7 +33,8 @@ RUN_BUILT = [*BUILT, "edit", "delete"]
 
 
 class SequencesModule(Module):
-    """Adds sequences: steps an agent works through in order, taking each up before it edits, one run at a time."""
+    """Adds sequences: steps an agent works through in order, taking each up before it edits, one run at a
+    time."""
 
     name = "journal.core.sequences"
     nudges = SEQUENCE_NUDGES

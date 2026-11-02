@@ -7,8 +7,8 @@ from core.base.registry.driver_patterns import DriverPatterns
 
 @dataclass(frozen=True)
 class OverlayEntry:
-    """A registered overlay as the registry lists it: its full name, the dotted path of its class, its place in the
-    order, and the patterns of the drivers it applies to."""
+    """A registered overlay as the registry lists it: its full name, the dotted path of its class, its place
+    in the order, and the patterns of the drivers it applies to."""
 
     name: str
     path: DottedPath

@@ -8,8 +8,8 @@ from core.modules.updates.models.release import Release
 
 
 class InstallReleaseSubcommand(Subcommand[InstallRelease, Release]):
-    """`journal update install`: the newest release put into .journal/src, which the journal runs from its next
-    request."""
+    """`journal update install`: the newest release put into .journal/src, which the journal runs from its
+    next request."""
 
     cli_name = "update"
     name = "install"

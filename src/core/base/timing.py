@@ -5,8 +5,9 @@ TIMING_HEADER = "Journal-Timing"
 
 
 class Timing:
-    """The named wall clock stamps, in microseconds since 1970, one request collects in order on its way through
-    the hook, the client and the server; a timing with no stamps belongs to no request, so it stays empty."""
+    """The named wall clock stamps, in microseconds since 1970, one request collects in order on its way
+    through the hook, the client and the server; a timing with no stamps belongs to no request, so it stays
+    empty."""
 
     def __init__(self, stamps: Sequence[tuple[str, int]] = ()) -> None:
         self.stamps = list(stamps)

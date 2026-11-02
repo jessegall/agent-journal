@@ -9,8 +9,8 @@ from core.base.registry.driver_rule_entry import DriverRuleEntry
 
 
 class Walk:
-    """One hook's walk through its rules: the rules asked and silenced, whether an exclusive layer silences what
-    follows, and whether the newest layer holds lines."""
+    """One hook's walk through its rules: the rules asked and silenced, whether an exclusive layer silences
+    what follows, and whether the newest layer holds lines."""
 
     def __init__(self, layers: Sequence[str]) -> None:
         self.layers = list(layers)

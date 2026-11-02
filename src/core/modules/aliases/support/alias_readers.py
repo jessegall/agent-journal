@@ -3,7 +3,8 @@ from core.modules.processes.queries.reader_query import ReaderQuery
 
 
 class AliasReaders:
-    """The reader an alias names, found by its name: refused when it does not exist, or none for a plugin's alias."""
+    """The reader an alias names, found by its name: refused when it does not exist, or none for a plugin's
+    alias."""
 
     def __init__(self, readers: ReaderQuery) -> None:
         self.readers = readers

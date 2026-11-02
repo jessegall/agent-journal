@@ -11,8 +11,8 @@ TABLE = "environments"
 
 
 class EnvironmentsMove(VersionFourMove):
-    """Carries version 4's environments with their numbers, names and branches; the project is every one's folder and
-    version 4's key is not carried."""
+    """Carries version 4's environments with their numbers, names and branches; the project is every one's
+    folder and version 4's key is not carried."""
 
     name = "environments"
     reads = ["environments"]

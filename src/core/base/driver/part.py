@@ -7,8 +7,8 @@ from core.base.driver.hook_fields import mapping, text, texts
 
 @dataclass(frozen=True)
 class Part:
-    """One command of a shell line: its text, program, subcommand and arguments, how it is classified, the paths it
-    reads and writes, and how it joins the next."""
+    """One command of a shell line: its text, program, subcommand and arguments, how it is classified, the
+    paths it reads and writes, and how it joins the next."""
 
     text: str
     program: str

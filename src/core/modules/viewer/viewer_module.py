@@ -43,8 +43,8 @@ SHELL_READS = ["notice list", "agent-skill list", "doc comments", "report commen
 
 
 class ViewerModule(Module):
-    """Adds the viewer: the window the shell itself runs its lines as, the check of every line a window sends, each
-    person's layouts and the permissions each person gives a window."""
+    """Adds the viewer: the window the shell itself runs its lines as, the check of every line a window sends,
+    each person's layouts and the permissions each person gives a window."""
 
     name = "journal.core.viewer"
     seed_reason = "a person's layouts and presets are made by using the viewer"

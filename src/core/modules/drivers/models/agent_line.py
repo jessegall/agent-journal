@@ -8,8 +8,8 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 
 @dataclass(frozen=True, kw_only=True)
 class AgentLine(Model):
-    """A line the journal has for an agent, kept as a row until a hook gives it or the server types it, with the
-    rule or listener that wrote it."""
+    """A line the journal has for an agent, kept as a row until a hook gives it or the server types it, with
+    the rule or listener that wrote it."""
 
     model_name = "agent_line"
     cli_name = "agent-line"

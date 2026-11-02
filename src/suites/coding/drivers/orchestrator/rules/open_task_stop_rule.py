@@ -10,8 +10,8 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
 
 
 class OpenTaskStopRule(DriverRule):
-    """An orchestrator's stop is refused while tasks of its environment are open, naming them, since each waits for
-    a worker it sends; at the worker limit it can send none, so it may stop until a worker ends."""
+    """An orchestrator's stop is refused while tasks of its environment are open, naming them, since each
+    waits for a worker it sends; at the worker limit it can send none, so it may stop until a worker ends."""
 
     name = "coding.orchestrator-open-tasks-at-stop"
     hook = HookEventName.STOP

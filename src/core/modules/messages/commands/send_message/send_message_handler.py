@@ -10,9 +10,9 @@ from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.support.message_files import MessageFiles
+from core.modules.messages.support.message_module import MESSAGES_MODULE
 
 
-MESSAGES_MODULE = "journal.core.messages"
 ACTOR_MESSAGE_TYPES = {ActorType.USER: MessageType.USER, ActorType.AGENT: MessageType.AGENT}
 
 

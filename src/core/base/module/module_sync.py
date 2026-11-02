@@ -58,8 +58,8 @@ DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(h
                     for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler))}
 class ModuleSync:
     """Updates the database and the registry to match the installed modules: finds, orders and checks them,
-    runs the schema, gives each module its actor and each new commit listener its cursor, writes the
-    registry, logging one registry.sync event when it changed, and writes the program table the Go hook reads."""
+    runs the schema, gives each module its actor and each new commit listener its cursor, writes the registry,
+    logging one registry.sync event when it changed, and writes the program table the Go hook reads."""
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,

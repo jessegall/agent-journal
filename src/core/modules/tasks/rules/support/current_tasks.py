@@ -6,7 +6,8 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class CurrentTasks:
-    """Finds the started tasks an agent holds, newest started first, for the tasks module's rules; the newest is its current task."""
+    """Finds the started tasks an agent holds, newest started first, for the tasks module's rules; the newest
+    is its current task."""
 
     def __init__(self, tasks: TaskQuery, queries: Queries) -> None:
         self.tasks, self.queries = tasks, queries

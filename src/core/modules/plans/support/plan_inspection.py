@@ -9,7 +9,8 @@ from core.modules.plans.support.plan_outline import PlanOutline
 
 @dataclass(frozen=True)
 class PlanInspection:
-    """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase it is in."""
+    """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase it is
+    in."""
 
     plan: Plan
     outline: PlanOutline

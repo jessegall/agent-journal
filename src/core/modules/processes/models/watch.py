@@ -9,7 +9,8 @@ from core.modules.processes.models.lifecycles.watch_lifecycle import WatchLifecy
 
 @dataclass(frozen=True, kw_only=True)
 class Watch(Model):
-    """An agent watching one running process: after each tool use it is told the progress in steps of 10 percent."""
+    """An agent watching one running process: after each tool use it is told the progress in steps of 10
+    percent."""
 
     model_name = "watch"
     cli_name = "watch"

@@ -19,8 +19,8 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 
 class TypedLineListener(CommitListener):
     """Types a line for an agent that may be sitting idle and so sends no hook that could carry it: that it
-    was paused or resumed, that a message waits, or that a task it waited on opened. With no terminal to type in, the
-    line waits for its next hook."""
+    was paused or resumed, that a message waits, or that a task it waited on opened. With no terminal to type
+    in, the line waits for its next hook."""
 
     name = "drivers.typed-line"
     event = "agent_line.create"

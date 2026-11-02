@@ -13,8 +13,8 @@ DRIVERS_MODULE = "journal.core.drivers"
 
 
 class DriverEntries:
-    """The registry entries of the modules' suites, drivers, overlays and driver rules, in sync order: per module,
-    each driver's rules, each overlay's rules, then the rules the module adds."""
+    """The registry entries of the modules' suites, drivers, overlays and driver rules, in sync order: per
+    module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {role.value: driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),

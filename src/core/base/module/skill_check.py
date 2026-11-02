@@ -9,8 +9,9 @@ FOLDER_PREFIX = "journal"
 
 
 class SkillCheck:
-    """Checks the skills the modules declare before a sync writes anything: each folder is used once and starts
-    with journal, its file is in the module's skills folder, and each event it names is raised by a model."""
+    """Checks the skills the modules declare before a sync writes anything: each folder is used once and
+    starts with journal, its file is in the module's skills folder, and each event it names is raised by a
+    model."""
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
         problems = list(NameGroups.duplicates([("skills", [skill.folder for module in modules for skill in module.skills])]))

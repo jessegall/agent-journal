@@ -8,8 +8,8 @@ from server.viewer.waiting_thing import WaitingThing
 
 
 class WaitingRoute:
-    """Answers GET /api/waiting for the phone's worker: each open question in every environment, newest first, by
-    its reference alone, so a notice can count them and open the newest without saying what they are."""
+    """Answers GET /api/waiting for the phone's worker: each open question in every environment, newest first,
+    by its reference alone, so a notice can count them and open the newest without saying what they are."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

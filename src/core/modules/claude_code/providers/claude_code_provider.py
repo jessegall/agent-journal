@@ -39,9 +39,9 @@ SESSION_EFFORT = "high"
 
 
 class ClaudeCodeProvider(Provider):
-    """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's projects, a
-    session id the journal chooses, and a state file that records the folders it trusts;
-    a main session starts with the MCP servers' keys in its environment."""
+    """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's
+    projects, a session id the journal chooses, and a state file that records the folders it trusts; a main
+    session starts with the MCP servers' keys in its environment."""
 
     name = "claude"
     title = "Claude Code"

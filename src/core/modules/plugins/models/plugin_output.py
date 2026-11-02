@@ -5,9 +5,8 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class PluginOutput(Model):
-    """A plugin's answer that shows cards or runs journal commands, waiting to be applied after the hook's reply
-    as the plugins module: the plugin, the environment, the agent and the answer's
-    JSON line."""
+    """A plugin's answer that shows cards or runs journal commands, waiting to be applied after the hook's
+    reply as the plugins module: the plugin, the environment, the agent and the answer's JSON line."""
 
     model_name = "plugin_output"
     cli_name = "plugin-output"

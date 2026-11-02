@@ -9,8 +9,8 @@ from core.base.type_guards import is_list
 
 @dataclass(frozen=True)
 class ShellLine:
-    """A shell tool's line split into its parts, with its redirects, the category of its heaviest part, whether
-    it runs only journal commands, and the parse error of a line no shell reads."""
+    """A shell tool's line split into its parts, with its redirects, the category of its heaviest part,
+    whether it runs only journal commands, and the parse error of a line no shell reads."""
 
     line: str
     parts: tuple[Part, ...]

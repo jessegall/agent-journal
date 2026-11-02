@@ -37,7 +37,8 @@ BUILT = ["make", "edit", "list", "delete"]
 
 
 class ChecksModule(Module):
-    """Adds checks: a command that proves a point, run by hand or on a schedule; the agent hears once when it fails."""
+    """Adds checks: a command that proves a point, run by hand or on a schedule; the agent hears once when it
+    fails."""
 
     name = "journal.suites.coding.checks"
     nudges = CHECK_NUDGES

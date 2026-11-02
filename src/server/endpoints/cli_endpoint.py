@@ -8,8 +8,8 @@ CLI_LIMIT_SECONDS = 600.0
 
 
 class CliEndpoint:
-    """Answers POST /cli: runs the command line as the caller the request names, as a direct run would, waiting
-    for another writer up to the /cli limit, and streams what it prints."""
+    """Answers POST /cli: runs the command line as the caller the request names, as a direct run would,
+    waiting for another writer up to the /cli limit, and streams what it prints."""
 
     def __init__(self, home: JournalHome, listener_runner: CommitListenerRunner) -> None:
         self.line_run = LineRun(home, CLI_LIMIT_SECONDS, listener_runner)

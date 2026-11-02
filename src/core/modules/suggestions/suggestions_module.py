@@ -16,8 +16,8 @@ from core.modules.suggestions.upgrade.suggestions_move import SuggestionsMove
 
 
 class SuggestionsModule(Module):
-    """Adds suggestions the journal offers the person once, such as running Code Commandments as a plugin, shown as a
-    chat mark the person accepts or declines."""
+    """Adds suggestions the journal offers the person once, such as running Code Commandments as a plugin,
+    shown as a chat mark the person accepts or declines."""
 
     name = "journal.core.suggestions"
     seed_reason = "a suggestion is an agent's own offer, which a demo has none of"

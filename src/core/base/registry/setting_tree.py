@@ -5,8 +5,8 @@ from core.base.setting.setting_declaration import SettingNode
 
 
 class SettingTree:
-    """Walks the settings tree a module declares, giving every node its full key: the module's name and the path
-    of short keys down to it, so journal.core.sharing declares tunnel.token and gets
+    """Walks the settings tree a module declares, giving every node its full key: the module's name and the
+    path of short keys down to it, so journal.core.sharing declares tunnel.token and gets
     journal.core.sharing.tunnel.token."""
 
     def entries(self, module_name: str, nodes: Sequence[SettingNode]) -> Iterator[SettingEntry]:

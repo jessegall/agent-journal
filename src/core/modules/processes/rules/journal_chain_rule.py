@@ -16,7 +16,8 @@ JOURNAL_COMMAND = re.compile(rf"(^|[;(|&]\s*|\bdo\s+|\buntil\s+|\bwhile\s+|\bthe
 
 
 class JournalChainRule(DriverRule):
-    """Refuses a journal command after a command that may run long, such as a test or a build, or inside a loop."""
+    """Refuses a journal command after a command that may run long, such as a test or a build, or inside a
+    loop."""
 
     name = "processes.journal-chain"
     hook = HookEventName.PRE_TOOL_USE

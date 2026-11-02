@@ -14,8 +14,8 @@ ANSWERED_OUTCOMES = ("lines", "refused")
 
 
 class RuleHistoryWriter:
-    """Keeps, per agent, rule and layer, whether a rule with history was asked or silenced, and when any rule last
-    answered with lines or a refusal; a rule that only allowed the hook leaves no row."""
+    """Keeps, per agent, rule and layer, whether a rule with history was asked or silenced, and when any rule
+    last answered with lines or a refusal; a rule that only allowed the hook leaves no row."""
 
     def __init__(self, repository: Repository, history: HookHistory) -> None:
         self.repository, self.history = repository, history

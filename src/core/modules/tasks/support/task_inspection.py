@@ -7,8 +7,8 @@ from core.modules.tasks.models.task_log import TaskLog
 
 @dataclass(frozen=True)
 class TaskInspection:
-    """What the task inspector draws: the task, the tasks it waits on, what will open it when it is blocked, and its
-    log, oldest line first."""
+    """What the task inspector draws: the task, the tasks it waits on, what will open it when it is blocked,
+    and its log, oldest line first."""
 
     task: Task
     waits: tuple[Task, ...]

@@ -19,9 +19,10 @@ FINISHED_PAGE_ROWS = 10
 
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
-    """`journal task board [--environment <name>] [--state <state> --before-id <n> --before-closed-at <time> --limit <n>]`:
-    the first page of every state in one answer, or one more page of one state. A finished state runs from the
-    task closed last and pages by that time; any other from the newest task, by its number."""
+    """`journal task board [--environment <name>] [--state <state> --before-id <n> --before-closed-at <time>
+    --limit <n>]`: the first page of every state in one answer, or one more page of one state. A finished
+    state runs from the task closed last and pages by that time; any other from the newest task, by its
+    number."""
 
     cli_name = "task"
     name = "board"

@@ -10,8 +10,8 @@ CLEAN_CELL = "nothing"
 
 
 class UpgradeText:
-    """The lines that tell what an upgrade moved: a plain table of each module's rows and what it left behind and
-    of the tables no module claims, then the detail of every module, skipped row and note."""
+    """The lines that tell what an upgrade moved: a plain table of each module's rows and what it left behind
+    and of the tables no module claims, then the detail of every module, skipped row and note."""
 
     def __init__(self, report: UpgradeReport) -> None:
         self.report = report

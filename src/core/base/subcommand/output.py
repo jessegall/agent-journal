@@ -16,8 +16,8 @@ LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creat
 
 
 class Output:
-    """Prints what a command gives back: plain lines for a person, or one JSON value with --json. A row a write gave
-    back prints as the confirmation of what that write touched."""
+    """Prints what a command gives back: plain lines for a person, or one JSON value with --json. A row a
+    write gave back prints as the confirmation of what that write touched."""
 
     def __init__(self, tables: Tables, json_output: bool, stream: TextIO) -> None:
         self.tables, self.json_output, self.stream = tables, json_output, stream

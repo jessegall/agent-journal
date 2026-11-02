@@ -23,8 +23,8 @@ TAG = re.compile(r"/releases/download/([^/]+)/")
 
 
 class ReleaseSource:
-    """The release address install.sh downloads from: its checksums.txt read for the archive's SHA-256, and the
-    archive downloaded, checked against it and unpacked into a folder of its own."""
+    """The release address install.sh downloads from: its checksums.txt read for the archive's SHA-256, and
+    the archive downloaded, checked against it and unpacked into a folder of its own."""
 
     def __init__(self, settings: SettingValues, home: JournalHome, clock: Clock) -> None:
         self.settings, self.home, self.clock = settings, home, clock

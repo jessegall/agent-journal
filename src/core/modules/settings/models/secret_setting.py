@@ -5,8 +5,8 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class SecretSetting(Model):
-    """The value of a setting declared secret, such as a token, for one environment or the whole project; the event
-    log keeps its value out."""
+    """The value of a setting declared secret, such as a token, for one environment or the whole project; the
+    event log keeps its value out."""
 
     model_name = "secret_setting"
     cli_name = "secret-setting"

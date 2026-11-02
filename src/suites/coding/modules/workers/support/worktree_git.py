@@ -10,7 +10,8 @@ WORKTREE_EXCLUDE_FILE = "journal-exclude"
 
 
 class WorktreeGit:
-    """Runs the git of a worker's worktree under a time limit; it never reads or moves the checkout's own branch."""
+    """Runs the git of a worker's worktree under a time limit; it never reads or moves the checkout's own
+    branch."""
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")

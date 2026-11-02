@@ -6,8 +6,8 @@ from core.modules.docking.guards.support.docking_arrival import DockingArrival
 
 
 class DockTitleGuard(Guard):
-    """An item arrives with a title: a card with none is a fault in its type's declaration, which is refused here
-    and fixed there."""
+    """An item arrives with a title: a card with none is a fault in its type's declaration, which is refused
+    here and fixed there."""
 
     name = "docking.item-title"
     event = "dock_item.*"

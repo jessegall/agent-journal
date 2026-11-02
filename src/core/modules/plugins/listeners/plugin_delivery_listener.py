@@ -28,8 +28,8 @@ MODULE_NAME = "journal.core.plugins"
 
 
 class PluginDeliveryListener(CommitListener):
-    """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed, and puts
-    the line it tells in its queue, which reaches the agent at its next hook."""
+    """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed,
+    and puts the line it tells in its queue, which reaches the agent at its next hook."""
 
     name = "plugins.delivery"
     event = "plugin_delivery.create"

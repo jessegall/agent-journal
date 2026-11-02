@@ -34,8 +34,8 @@ FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
 
 class CodingModule(Module):
-    """Ships the coding suite with its drivers, the record of every file a coding agent edits, and its windows; the
-    modules only coding uses live in its modules folder."""
+    """Ships the coding suite with its drivers, the record of every file a coding agent edits, and its
+    windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
     nudges = CODING_NUDGES

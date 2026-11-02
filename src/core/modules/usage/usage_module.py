@@ -15,8 +15,8 @@ from core.modules.usage.upgrade.statistics_move import StatisticsMove
 
 
 class UsageModule(Module):
-    """Adds usage and cost: what each open session's status line reported of its model, context and cost, the plan's
-    windows, and the project's counts, shown on the Usage window."""
+    """Adds usage and cost: what each open session's status line reported of its model, context and cost, the
+    plan's windows, and the project's counts, shown on the Usage window."""
 
     name = "journal.core.usage"
     seed_reason = "usage is what the agent programs report, which a demo has none of"

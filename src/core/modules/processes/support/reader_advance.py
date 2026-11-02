@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ReaderAdvance:
-    """What the reader made of the bytes that arrived since it last looked: its new lines, how far it has read,
-    and the summary and progress it found; a script reader's lines replace what the file held."""
+    """What the reader made of the bytes that arrived since it last looked: its new lines, how far it has
+    read, and the summary and progress it found; a script reader's lines replace what the file held."""
 
     lines: list[str]
     read_offset: int

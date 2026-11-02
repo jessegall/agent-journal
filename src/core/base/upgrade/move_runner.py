@@ -23,7 +23,8 @@ from core.base.upgrade.version_four_source import VersionFourSource
 class MoveRunner:
     """Runs the registered moves from a version 4 database in module order, each in one transaction with its
     finished row, skips a move already finished, and gathers what they did. A dry run rolls every move back,
-    so the counts are real and nothing stays; a move that raises is rolled back and the moves before it stay."""
+    so the counts are real and nothing stays; a move that raises is rolled back and the moves before it stay.
+    """
 
     def __init__(self, registry: Registry, database: Database, clock: Clock, events: EventLog, home: JournalHome) -> None:
         self.registry, self.database, self.clock, self.events, self.home = registry, database, clock, events, home

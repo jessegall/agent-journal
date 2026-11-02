@@ -9,8 +9,8 @@ from core.modules.secrets.support.server_keys import ServerKeys
 
 
 class GiveServerKeyHandler(Handler[GiveServerKey, McpServer]):
-    """Writes a server's key into the keys file, never into a row; a server that signs in on its own or takes no
-    key, and a blank key, are refused."""
+    """Writes a server's key into the keys file, never into a row; a server that signs in on its own or takes
+    no key, and a blank key, are refused."""
 
     command = GiveServerKey
 

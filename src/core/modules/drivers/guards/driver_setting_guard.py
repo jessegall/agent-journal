@@ -13,8 +13,8 @@ from core.modules.settings.models.setting import Setting
 
 
 class DriverSettingGuard(Guard):
-    """Refuses a suite setting naming a suite no installed module ships, and a driver setting naming a driver that is
-    not installed or belongs to a suite the environment does not run."""
+    """Refuses a suite setting naming a suite no installed module ships, and a driver setting naming a driver
+    that is not installed or belongs to a suite the environment does not run."""
 
     name = "drivers.known-setting"
     event = "setting.*"

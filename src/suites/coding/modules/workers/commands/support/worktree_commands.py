@@ -8,7 +8,8 @@ COMMAND_LIMIT_SECONDS = 600
 
 
 class WorktreeCommands:
-    """Runs the user's worktree commands in a new worktree, one per line; the first that fails refuses the order."""
+    """Runs the user's worktree commands in a new worktree, one per line; the first that fails refuses the
+    order."""
 
     def run(self, folder: str, branch: str, lines: Sequence[str], libraries: Sequence[str]) -> None:
         variables = {**os.environ, "JOURNAL_WORKTREE": folder, "JOURNAL_BRANCH": branch, "JOURNAL_LIBRARIES": " ".join(libraries)}

@@ -8,7 +8,8 @@ from core.modules.settings.support.current_setting import CurrentSetting
 
 
 class SetSettingSubcommand(CurrentSettingOutput, Subcommand[SetSetting, CurrentSetting]):
-    """`journal setting set <key> <value> [--project]`: sets a declared setting for this environment or the project."""
+    """`journal setting set <key> <value> [--project]`: sets a declared setting for this environment or the
+    project."""
 
     cli_name = "setting"
     name = "set"

@@ -13,7 +13,8 @@ LINE_SOURCE = "waits.wait-over"
 
 
 class WaitEndListener(SaveListener):
-    """A wait that ended on anything but the agent's own work tells the agent it is over, and how, at its next hook."""
+    """A wait that ended on anything but the agent's own work tells the agent it is over, and how, at its next
+    hook."""
 
     name = "waits.wait-over"
     event = "wait.*"

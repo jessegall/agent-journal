@@ -9,8 +9,8 @@ MOVES = "version_four_moves"
 
 
 class UpgradeMapTable:
-    """The core's two tables of an upgrade from version 4: the rows moved, version 4 table and id against version 5
-    table and id, and the moves finished with their counts."""
+    """The core's two tables of an upgrade from version 4: the rows moved, version 4 table and id against
+    version 5 table and id, and the moves finished with their counts."""
 
     def __init__(self, database: Database) -> None:
         self.database = database

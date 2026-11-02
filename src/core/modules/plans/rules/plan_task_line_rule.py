@@ -25,8 +25,8 @@ ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class PlanTaskLineRule(DriverRule):
-    """A task the main agent has ended tells it the task now in hand with its brief, the phase or plan that ended,
-    and a plan with nothing left that can start."""
+    """A task the main agent has ended tells it the task now in hand with its brief, the phase or plan that
+    ended, and a plan with nothing left that can start."""
 
     name = "plans.task-end-lines"
     hook = HookEventName.POST_TOOL_USE

@@ -12,8 +12,8 @@ from core.modules.secrets.support.secret_values import SecretValues
 
 
 class FillSecretHandler(Handler[FillSecret, FilledField]):
-    """Stores a field's value in the values file, never in a row, and marks the field filled; only the user types
-    a value, and a value from a file is read and the file deleted, an empty one too."""
+    """Stores a field's value in the values file, never in a row, and marks the field filled; only the user
+    types a value, and a value from a file is read and the file deleted, an empty one too."""
 
     command = FillSecret
 

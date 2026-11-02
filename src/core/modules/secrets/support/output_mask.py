@@ -5,8 +5,8 @@ from collections.abc import Mapping
 
 
 class OutputMask:
-    """Values hidden in what a program printed, in every form a program prints a value in: as it is, in base64,
-    URL-quoted, JSON-escaped and in hex, the longest form first."""
+    """Values hidden in what a program printed, in every form a program prints a value in: as it is, in
+    base64, URL-quoted, JSON-escaped and in hex, the longest form first."""
 
     def __init__(self, values: Mapping[str, str]) -> None:
         pairs = ((form, f"[secret {variable}]".encode()) for value, variable in values.items() for form in self.forms(value))

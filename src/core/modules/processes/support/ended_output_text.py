@@ -21,16 +21,20 @@ SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case"
 
 
 class EndedOutputText:
-    """The lines that tell an agent a run of its own ended: what the reader of the run makes of it, else how it
-    ended, and how to read it; and how to read such a run better next time."""
+    """The lines that tell an agent a run of its own ended: what the reader of the run makes of it, else how
+    it ended, and how to read it; and how to read such a run better next time."""
 
     def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery) -> None:
         self.outputs, self.readers, self.folder, self.parts = outputs, readers, folder, parts
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
-        ended = OUTPUT_ENDED.nudge(output=process.id, result=self.summary(process) or self.outcome(process))
+        ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
         return (ended, READER_DRAFT.nudge(name=self.reader_name(process)), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+
+    def result(self, process: Process) -> str:
+        summary = self.summary(process)
+        return summary if summary else self.outcome(process)
 
     def reader_name(self, process: Process) -> str:
         return PurePath(self.read_program(process) or "").name

@@ -9,8 +9,8 @@ from core.modules.processes.commands.read_output.support.output_texts import Out
 
 
 class PeekOutputSubcommand(OutputLinesWriting, ReadSubcommand[OutputLines]):
-    """`journal output peek <n> --summary|--all|--lines A-B|--tail K|--reader <name>`: shows what a run printed
-    as `output read` does, without noting it as read; the windows read it."""
+    """`journal output peek <n> --summary|--all|--lines A-B|--tail K|--reader <name>`: shows what a run
+    printed as `output read` does, without noting it as read; the windows read it."""
 
     cli_name = "output"
     name = "peek"

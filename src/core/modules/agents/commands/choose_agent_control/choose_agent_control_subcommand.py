@@ -8,7 +8,8 @@ from core.modules.agents.models.agent import Agent
 
 
 class ChooseAgentControlSubcommand(Subcommand[ChooseAgentControl, Agent]):
-    """`journal agent control <agent> <key> <value>`: applies one choice of the agent bar, such as model opus."""
+    """`journal agent control <agent> <key> <value>`: applies one choice of the agent bar, such as model opus.
+    """
 
     cli_name = "agent"
     name = "control"

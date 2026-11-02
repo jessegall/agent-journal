@@ -13,8 +13,8 @@ MARKERS = ("agent-journal/secrets", ".journal/keys")
 
 
 class SecretsFolderRule(DriverRule):
-    """A tool that names the secrets folder, or version 4's folder of server keys, by any spelling of its path is
-    refused: a secret reaches a program only through journal secret run."""
+    """A tool that names the secrets folder, or version 4's folder of server keys, by any spelling of its path
+    is refused: a secret reaches a program only through journal secret run."""
 
     name = "secrets.secrets-folder"
     hook = HookEventName.PRE_TOOL_USE

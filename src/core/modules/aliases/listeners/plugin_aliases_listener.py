@@ -11,8 +11,8 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
 class PluginAliasesListener(SaveListener):
-    """An installed plugin's aliases become the project's, in the install's transaction, each line run from the
-    plugin's folder, named in full so it runs from any folder; a name the journal or the project holds
+    """An installed plugin's aliases become the project's, in the install's transaction, each line run from
+    the plugin's folder, named in full so it runs from any folder; a name the journal or the project holds
     already is skipped, and the aliases go with the plugin's row."""
 
     name = "aliases.plugin-aliases"

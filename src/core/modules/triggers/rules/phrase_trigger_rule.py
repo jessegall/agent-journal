@@ -13,8 +13,8 @@ INSTRUCTION_PREFIX = "instruction: "
 
 
 class PhraseTriggerRule(DriverRule):
-    """A phrase trigger whose words are in the user's prompt or in a tool call gives its text to the agent, as a
-    nudge or an instruction, or refuses the call when it denies."""
+    """A phrase trigger whose words are in the user's prompt or in a tool call gives its text to the agent, as
+    a nudge or an instruction, or refuses the call when it denies."""
 
     name = "triggers.phrase"
     hook = HookWildcard.ALL_HOOKS

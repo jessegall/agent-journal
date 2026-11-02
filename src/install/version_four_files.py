@@ -8,8 +8,9 @@ CODE_FOLDER = VERSION_FILE.parent
 
 
 class VersionFourFiles:
-    """The files version 4 left in a project's .journal folder: its database with its side files, and its code. After
-    a good upgrade they move into .journal/version-4/, where the backup is, so only version 5 is live."""
+    """The files version 4 left in a project's .journal folder: its database with its side files, and its
+    code. After a good upgrade they move into .journal/version-4/, where the backup is, so only version 5 is
+    live."""
 
     def __init__(self, journal: Path) -> None:
         self.journal = journal

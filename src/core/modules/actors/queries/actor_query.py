@@ -6,7 +6,8 @@ from core.modules.actors.models.actor_record import ActorRecord
 
 
 class ActorQuery(Query[ActorRecord]):
-    """Reads actors, with the person a login name names: the user actor of that name, else the first person made."""
+    """Reads actors, with the person a login name names: the user actor of that name, else the first person
+    made."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, ActorRecord)

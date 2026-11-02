@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 class SessionFile:
-    """The sessions of people the viewer's login opened, token to person, kept in a file only its owner reads, so a
-    browser stays logged in when the server restarts."""
+    """The sessions of people the viewer's login opened, token to person, kept in a file only its owner reads,
+    so a browser stays logged in when the server restarts."""
 
     def __init__(self, path: Path) -> None:
         self.path = path

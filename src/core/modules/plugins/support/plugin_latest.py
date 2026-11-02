@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PluginLatest:
-    """The newest release a plugin's source has against the one installed; a source with no release has no newest."""
+    """The newest release a plugin's source has against the one installed; a source with no release has no
+    newest."""
 
     name: str
     installed: str

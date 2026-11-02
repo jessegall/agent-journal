@@ -7,8 +7,8 @@ from server.round_work import RoundWork
 
 
 class JournalRound:
-    """One round of a server thread on a journal: a fresh synced container, the thread's work run on it, its database
-    closed; an error is reported under the thread's name."""
+    """One round of a server thread on a journal: a fresh synced container, the thread's work run on it, its
+    database closed; an error is reported under the thread's name."""
 
     def __init__(self, home: JournalHome, name: str, work: RoundWork) -> None:
         self.home, self.name, self.work = home, name, work

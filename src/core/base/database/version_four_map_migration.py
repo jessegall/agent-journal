@@ -3,8 +3,8 @@ from core.base.database.timestamp_sql import TIMESTAMP_SQL
 
 
 class VersionFourMapMigration(Migration):
-    """Creates the tables an upgrade from version 4 keeps: each moved row with its version 4 and version 5 table and
-    id, and each module's move with when it finished and its counts."""
+    """Creates the tables an upgrade from version 4 keeps: each moved row with its version 4 and version 5
+    table and id, and each module's move with when it finished and its counts."""
 
     number = 3
     statements = (

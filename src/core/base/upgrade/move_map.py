@@ -7,8 +7,8 @@ from core.base.upgrade.version_four_ref import VersionFourRef
 
 
 class MoveMap:
-    """Every row moved from version 4: its version 4 table and id and its version 5 table and id, so a second run
-    skips what is moved and a move finds the new id of a row it refers to."""
+    """Every row moved from version 4: its version 4 table and id and its version 5 table and id, so a second
+    run skips what is moved and a move finds the new id of a row it refers to."""
 
     def __init__(self, database: Database) -> None:
         self.table = UpgradeMapTable(database)

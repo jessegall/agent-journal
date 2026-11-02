@@ -14,10 +14,10 @@ VARIABLE_SEPARATOR = "="
 
 @dataclass(frozen=True, kw_only=True)
 class Alias(Model):
-    """A word of the project's own for a shell line: `journal <name> [args]` runs the line with the
-    arguments in place of {args}, or after it, with its variables set; its reader reads the output, and
-    a background one moves to the background at once, and one with a category is held to the turn of that kind of
-    command, such as the test run."""
+    """A word of the project's own for a shell line: `journal <name> [args]` runs the line with the arguments
+    in place of {args}, or after it, with its variables set; its reader reads the output, and a background one
+    moves to the background at once, and one with a category is held to the turn of that kind of command, such
+    as the test run."""
 
     model_name = "alias"
     cli_name = "alias"

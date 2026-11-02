@@ -13,8 +13,8 @@ from core.modules.settings.support.setting_text import SettingText
 
 
 class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
-    """Sets a declared setting where its scope allows, refusing an agent a setting only the user sets; a secret goes
-    to its own table, which the event log keeps out."""
+    """Sets a declared setting where its scope allows, refusing an agent a setting only the user sets; a
+    secret goes to its own table, which the event log keeps out."""
 
     command = SetSetting
 

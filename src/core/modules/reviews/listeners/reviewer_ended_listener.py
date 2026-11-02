@@ -11,8 +11,8 @@ MODULE_NAME = "journal.core.reviews"
 
 
 class ReviewerEndedListener(CommitListener):
-    """When the session of a reviewer ends, the reviewer ends and a review it was still reviewing is abandoned,
-    which gives the work back to the agent that asked."""
+    """When the session of a reviewer ends, the reviewer ends and a review it was still reviewing is
+    abandoned, which gives the work back to the agent that asked."""
 
     name = "reviews.reviewer-ended"
     event = "agent.update"

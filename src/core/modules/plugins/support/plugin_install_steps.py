@@ -11,8 +11,9 @@ STEP_LIMIT_SECONDS = 600
 
 
 class PluginInstallSteps:
-    """The steps a plugin's manifest asks of its install, as version 4 ran them: each program it requires found,
-    its setup steps run in order in its folder, and its installed command's answer read as its settings."""
+    """The steps a plugin's manifest asks of its install, as version 4 ran them: each program it requires
+    found, its setup steps run in order in its folder, and its installed command's answer read as its
+    settings."""
 
     def __init__(self, program: PluginProgram) -> None:
         self.program = program

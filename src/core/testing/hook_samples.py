@@ -7,8 +7,8 @@ SAMPLE_FIRING = "story-1"
 
 
 class HookSamples:
-    """Prepared hook objects for stories, in the shape the Go hook program sends; each but the server's own tick is
-    kept beside the Go examples and checked against the schema there."""
+    """Prepared hook objects for stories, in the shape the Go hook program sends; each but the server's own
+    tick is kept beside the Go examples and checked against the schema there."""
 
     @staticmethod
     def sample(event: str, tool: dict[str, object] | None = None, prompt: str | None = None) -> HookSample:

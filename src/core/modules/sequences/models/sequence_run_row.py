@@ -7,7 +7,8 @@ from core.modules.sequences.models.support.views import SEQUENCE_RUN_ROWS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class SequenceRunRow(ViewModel):
-    """A sequence run still going, with its sequence's title and steps, read from the sequence_run_rows view."""
+    """A sequence run still going, with its sequence's title and steps, read from the sequence_run_rows view.
+    """
 
     cli_name = "sequence-run"
     view = "sequence_run_rows"

@@ -9,7 +9,8 @@ MODULE_KEY = "journal.core.updates"
 
 
 class UpdateSetting(Enum):
-    """A setting of the updates module, declared once: its full key and its default come from its declaration."""
+    """A setting of the updates module, declared once: its full key and its default come from its declaration.
+    """
 
     RELEASE_ADDRESS = SettingValue("release-address", "Release address", "Where the newest release is downloaded from, as install.sh does.",
                                    SettingType.TEXT, default="https://github.com/jessegall/agent-journal/releases/latest/download", scope=SettingScope.PROJECT)

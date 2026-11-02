@@ -6,8 +6,8 @@ from core.base.registry.dotted_path import DottedPath
 
 @dataclass(frozen=True)
 class GuardEntry:
-    """A registered guard as the registry lists it: its full name, the event it covers, the dotted path of its class,
-    its place in the order, and the short flag that skips it, if its module gives one."""
+    """A registered guard as the registry lists it: its full name, the event it covers, the dotted path of its
+    class, its place in the order, and the short flag that skips it, if its module gives one."""
 
     name: str
     event: EventPattern

@@ -9,8 +9,8 @@ from core.modules.dumps.commands.support.dump_line import DumpLine
 
 
 class DumpItemSubcommand(Subcommand[MoveDumpItem, DumpLine]):
-    """What `journal dump note`, `filed` and `failed` share: they take a dump, an item and words, and print the line
-    the dump answers."""
+    """What `journal dump note`, `filed` and `failed` share: they take a dump, an item and words, and print
+    the line the dump answers."""
 
     action: ClassVar[str]
     cli_name = "dump"

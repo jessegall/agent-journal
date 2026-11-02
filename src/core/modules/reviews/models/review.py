@@ -9,7 +9,8 @@ from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecy
 
 @dataclass(frozen=True, kw_only=True)
 class Review(Model):
-    """One request to have a row's work checked, point by point; its state moves only as ReviewLifecycle allows."""
+    """One request to have a row's work checked, point by point; its state moves only as ReviewLifecycle
+    allows."""
 
     model_name = "review"
     cli_name = "review"

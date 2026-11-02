@@ -9,8 +9,8 @@ READERS_FOLDER = ".journal-plugin/readers"
 
 
 class PluginReaders:
-    """The readers a plugin ships in its folder's .journal-plugin/readers, saved as the project's readers named
-    with the plugin, a name the project holds already left as it is, and deleted with the plugin."""
+    """The readers a plugin ships in its folder's .journal-plugin/readers, saved as the project's readers
+    named with the plugin, a name the project holds already left as it is, and deleted with the plugin."""
 
     def __init__(self, readers: ReaderQuery, repository: Repository) -> None:
         self.readers, self.repository = readers, repository

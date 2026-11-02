@@ -12,7 +12,8 @@ from core.modules.drivers.support.nudge_row import NudgeRow
 
 
 class NudgeListSubcommand(ReadSubcommand[tuple[NudgeRow, ...]]):
-    """`journal nudge list`: every nudge the modules declare, its type and words, and how often it was said."""
+    """`journal nudge list`: every nudge the modules declare, its type and words, and how often it was said.
+    """
 
     cli_name = "nudge"
     name = "list"

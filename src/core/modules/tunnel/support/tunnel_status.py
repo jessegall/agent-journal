@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TunnelStatus:
-    """What the tunnel window draws: whether the tunnel is connected, its address, and why not when it is not."""
+    """What the tunnel window draws: whether the tunnel is connected, its address, and why not when it is not.
+    """
 
     state: str
     address: str | None

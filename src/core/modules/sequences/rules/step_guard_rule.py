@@ -13,7 +13,8 @@ from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
 
 
 class StepGuardRule(DriverRule):
-    """A step that holds file edits refuses a writing call, except journal lines and the commands the step allows."""
+    """A step that holds file edits refuses a writing call, except journal lines and the commands the step
+    allows."""
 
     name = "sequences.step-guard"
     hook = HookEventName.PRE_TOOL_USE

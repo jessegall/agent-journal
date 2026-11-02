@@ -10,8 +10,8 @@ from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
 
 class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
-    """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order, then
-    how many of each."""
+    """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order,
+    then how many of each."""
 
     cli_name = "reviewer"
     name = "list"

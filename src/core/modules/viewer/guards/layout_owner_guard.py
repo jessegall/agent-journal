@@ -4,8 +4,8 @@ from core.modules.viewer.models.viewer_layout import ViewerLayout
 
 
 class LayoutOwnerGuard(PersonRowGuard):
-    """Refuses a layout written by anyone but the person it is for, so no agent or other person arranges someone's
-    pages."""
+    """Refuses a layout written by anyone but the person it is for, so no agent or other person arranges
+    someone's pages."""
 
     name = "viewer.layout-owner"
     event = "viewer_layout.*"

@@ -8,7 +8,8 @@ from suites.coding.modules.workers.support.brief_points import brief_points
 
 @dataclass(frozen=True)
 class WorkerPointList:
-    """What the points window draws: each point of the worker's task brief with the proof shown for it, if any."""
+    """What the points window draws: each point of the worker's task brief with the proof shown for it, if
+    any."""
 
     worker_points: WorkerPoints | None
 

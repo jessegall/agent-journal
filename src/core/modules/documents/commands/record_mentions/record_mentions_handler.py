@@ -11,8 +11,8 @@ from core.modules.documents.support.row_refs import RowRefs
 
 
 class RecordMentionsHandler(Handler[RecordMentions, int]):
-    """Saves a mentions link to each row a text names that exists and is not the row itself; a link already there is
-    kept, and none is ever removed."""
+    """Saves a mentions link to each row a text names that exists and is not the row itself; a link already
+    there is kept, and none is ever removed."""
 
     command = RecordMentions
 

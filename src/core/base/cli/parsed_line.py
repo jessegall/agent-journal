@@ -7,7 +7,8 @@ from core.base.subcommand.subcommand import Subcommand
 
 @dataclass(frozen=True)
 class ParsedLine:
-    """A command line parsed the way the console parses it: the subcommand it resolves to and its arguments."""
+    """A command line parsed the way the console parses it: the subcommand it resolves to and its arguments.
+    """
 
     subcommand: AnySubcommand
     arguments: Namespace

@@ -4,8 +4,8 @@ from core.testing.story import Story
 
 
 class StoryFixture:
-    """A named starting state for stories: the fixture it builds on, the steps that make its state, and what that
-    state must be; it is built once per run and copied for every story that starts from it."""
+    """A named starting state for stories: the fixture it builds on, the steps that make its state, and what
+    that state must be; it is built once per run and copied for every story that starts from it."""
 
     parent: ClassVar[type["StoryFixture"] | None] = None
 

@@ -12,8 +12,8 @@ ROW = re.compile(r"^[a-z_]+:\d+$")
 
 @dataclass(frozen=True, kw_only=True)
 class Notice(Model):
-    """A link pinned above an environment's chat for the person to open on their return: an outside address or a
-    row of the journal, with the words on its button, until it is closed."""
+    """A link pinned above an environment's chat for the person to open on their return: an outside address or
+    a row of the journal, with the words on its button, until it is closed."""
 
     model_name = "notice"
     cli_name = "notice"

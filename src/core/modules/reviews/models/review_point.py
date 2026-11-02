@@ -7,7 +7,8 @@ from core.modules.reviews.models.enums.point_finding import PointFinding
 
 @dataclass(frozen=True, kw_only=True)
 class ReviewPoint(Model):
-    """One point of a review's report: its number, whether it passed, fell short or could not be decided, and why."""
+    """One point of a review's report: its number, whether it passed, fell short or could not be decided, and
+    why."""
 
     model_name = "review_point"
     cli_name = "review-point"

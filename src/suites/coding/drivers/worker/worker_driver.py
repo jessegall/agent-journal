@@ -8,7 +8,8 @@ from core.base.agent_role import AgentRole
 
 
 class WorkerDriver(Driver):
-    """Drives a coding worker at its one task in its own worktree: no git, only the command types its setting allows."""
+    """Drives a coding worker at its one task in its own worktree: no git, only the command types its setting
+    allows."""
 
     name = "coding.worker"
     suite = CodingSuite

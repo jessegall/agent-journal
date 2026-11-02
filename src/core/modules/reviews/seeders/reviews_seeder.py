@@ -9,7 +9,8 @@ REVIEWER_ID = re.compile(r"^reviewer_id: (\d+)$", re.MULTILINE)
 
 
 class ReviewsSeeder(Seeder):
-    """Requests a review of the closed task with the reviewers switched on, so a reviewer takes it and reports."""
+    """Requests a review of the closed task with the reviewers switched on, so a reviewer takes it and
+    reports."""
 
     follows = ["journal.core.tasks"]
 

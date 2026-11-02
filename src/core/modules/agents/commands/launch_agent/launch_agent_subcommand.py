@@ -8,7 +8,8 @@ from core.modules.agents.models.agent import Agent
 
 
 class LaunchAgentSubcommand(Subcommand[LaunchAgent, Agent]):
-    """`journal agent launch <program>`: starts an agent program in the environment, through the running launcher."""
+    """`journal agent launch <program>`: starts an agent program in the environment, through the running
+    launcher."""
 
     cli_name = "agent"
     name = "launch"

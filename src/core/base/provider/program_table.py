@@ -9,7 +9,8 @@ from core.base.provider.provider import Provider
 
 @dataclass(frozen=True)
 class ProgramTable:
-    """Every provider's row, with the journal's event names, as programs.json gives them to the Go hook program."""
+    """Every provider's row, with the journal's event names, as programs.json gives them to the Go hook
+    program."""
 
     providers: Sequence[type[Provider]]
 

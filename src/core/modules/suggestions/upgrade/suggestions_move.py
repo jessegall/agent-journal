@@ -14,7 +14,8 @@ TABLE = "suggestions"
 
 class SuggestionsMove(VersionFourMove):
     """Carries version 4's suggestions with their keys, titles and answers into the first environment, since
-    version 4 kept them for the whole project, so none is offered again; with no environment they are skipped."""
+    version 4 kept them for the whole project, so none is offered again; with no environment they are skipped.
+    """
 
     name = "suggestions"
     reads = [TABLE]

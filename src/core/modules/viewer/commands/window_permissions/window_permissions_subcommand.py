@@ -11,8 +11,8 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class WindowPermissionsSubcommand(ReadSubcommand[WindowAccess]):
-    """`journal window permissions <window> [--environment <name>]`: what you allowed the window and what it still
-    asks for."""
+    """`journal window permissions <window> [--environment <name>]`: what you allowed the window and what it
+    still asks for."""
 
     cli_name = "window"
     name = "permissions"

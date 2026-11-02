@@ -9,8 +9,8 @@ from core.base.setting.setting_value import SettingValue
 
 @dataclass(frozen=True)
 class SettingEntry:
-    """A registered setting or setting group: its full key, the module that declares it and the group above it,
-    its title and description, its type (group for a group), default, scope and choices, whether it is a
+    """A registered setting or setting group: its full key, the module that declares it and the group above
+    it, its title and description, its type (group for a group), default, scope and choices, whether it is a
     secret (whose default is never kept) or a value an agent may set, for a group whether it can be switched
     off, and for a reference the full key of the group it places here."""
 

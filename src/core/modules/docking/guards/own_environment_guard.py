@@ -8,7 +8,8 @@ from core.modules.docking.models.dock_item import DockItem
 
 
 class OwnEnvironmentGuard(Guard):
-    """An item belongs to its environment's dock, and no other environment adds to it, keeps it or undocks it."""
+    """An item belongs to its environment's dock, and no other environment adds to it, keeps it or undocks it.
+    """
 
     name = "docking.own-environment"
     event = "dock_item.*"

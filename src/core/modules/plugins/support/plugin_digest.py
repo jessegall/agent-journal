@@ -5,8 +5,8 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
 class PluginDigest:
-    """The digest of the files a plugin runs, its manifest, program and settings file, by their sizes and change
-    times, so a check on every hook costs a few file reads of their metadata."""
+    """The digest of the files a plugin runs, its manifest, program and settings file, by their sizes and
+    change times, so a check on every hook costs a few file reads of their metadata."""
 
     @staticmethod
     def digest(folder: Path, manifest: PluginManifest) -> str:

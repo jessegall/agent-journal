@@ -12,8 +12,8 @@ from core.modules.environments.models.environment import Environment
 
 
 class SuitePresetsSubcommand(ReadSubcommand[Page[PagePreset]]):
-    """`journal suite presets <environment> <page>`: the layouts the environment's suite offers for the page, in the
-    order it declares them, then those of the suites it requires."""
+    """`journal suite presets <environment> <page>`: the layouts the environment's suite offers for the page,
+    in the order it declares them, then those of the suites it requires."""
 
     cli_name = "suite"
     name = "presets"

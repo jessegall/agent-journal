@@ -10,8 +10,8 @@ from core.base.cli.subcommand_columns import parser_argument
 
 
 class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
-    """The subcommand the core builds for one move of a model's lifecycle, named for the move: the row's id, and
-    a flag for each field of the move's typed command, if the module gives one."""
+    """The subcommand the core builds for one move of a model's lifecycle, named for the move: the row's id,
+    and a flag for each field of the move's typed command, if the module gives one."""
 
     def __init__(self, table: Table[Model], command_class: type[MoveCommand[Model]]) -> None:
         self.table, self.command_class = table, command_class

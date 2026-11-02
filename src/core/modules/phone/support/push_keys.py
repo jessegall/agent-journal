@@ -12,8 +12,8 @@ TOKEN_LIFETIME_SECONDS = 12 * 3600
 
 @dataclass(frozen=True)
 class PushKeys:
-    """The journal's own VAPID key pair: the secret number it signs with, whose public point a push service learns
-    from each push, so it knows the pushes come from the journal the phone subscribed to."""
+    """The journal's own VAPID key pair: the secret number it signs with, whose public point a push service
+    learns from each push, so it knows the pushes come from the journal the phone subscribed to."""
 
     secret: int
 

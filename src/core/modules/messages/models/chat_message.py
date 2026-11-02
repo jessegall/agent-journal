@@ -8,7 +8,8 @@ from core.modules.messages.models.support.views import CHAT_MESSAGES_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class ChatMessage(ViewModel):
-    """A message as the chat draws it, read from the chat_messages view without who made it or when it was delivered."""
+    """A message as the chat draws it, read from the chat_messages view without who made it or when it was
+    delivered."""
 
     cli_name = "message"
     view = "chat_messages"

@@ -14,9 +14,9 @@ from core.modules.updates.support.release_source import ReleaseSource
 
 
 class InstallReleaseHandler(Handler[InstallRelease, Release]):
-    """Downloads the newest release, checks its archive against its checksum, copies its code into the journal's
-    src folder, which the server reloads from at its next request, and records the release; only the user
-    installs one."""
+    """Downloads the newest release, checks its archive against its checksum, copies its code into the
+    journal's src folder, which the server reloads from at its next request, and records the release; only the
+    user installs one."""
 
     command = InstallRelease
 

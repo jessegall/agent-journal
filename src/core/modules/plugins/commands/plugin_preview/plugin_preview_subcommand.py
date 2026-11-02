@@ -9,7 +9,8 @@ from core.modules.plugins.support.plugin_staging import PluginStaging
 
 
 class PluginPreviewSubcommand(ReadSubcommand[PluginPreview]):
-    """`journal plugin preview <source>`: everything the plugin at a source would run, before it is installed."""
+    """`journal plugin preview <source>`: everything the plugin at a source would run, before it is installed.
+    """
 
     cli_name = "plugin"
     name = "preview"

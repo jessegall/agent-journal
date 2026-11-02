@@ -8,7 +8,8 @@ from core.modules.plugins.support.plugin_queue import PluginQueue
 
 
 class PluginQueueFileListener(CommitListener):
-    """Deletes a queue file a hook reserved, now that the hook has committed and its lines reached the agent."""
+    """Deletes a queue file a hook reserved, now that the hook has committed and its lines reached the agent.
+    """
 
     name = "plugins.queue-file"
     event = "plugin_queue_file.create"

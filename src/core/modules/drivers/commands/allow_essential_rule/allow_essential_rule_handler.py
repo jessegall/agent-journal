@@ -9,8 +9,8 @@ from core.modules.settings.commands.support.setting_store import SettingStore
 
 
 class AllowEssentialRuleHandler(Handler[AllowEssentialRule, Setting]):
-    """Writes the project setting that allows a rule marked essential; the guard drivers.known-setting refuses it
-    from an agent."""
+    """Writes the project setting that allows a rule marked essential; the guard drivers.known-setting refuses
+    it from an agent."""
 
     command = AllowEssentialRule
 

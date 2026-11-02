@@ -12,8 +12,8 @@ TABLE = "users"
 
 
 class ActorsMove(VersionFourMove):
-    """Carries each version 4 user as a user actor under the same name; the new actor's number is in the map, and the
-    rows the user made name it. An agent's actor is made by the agents move."""
+    """Carries each version 4 user as a user actor under the same name; the new actor's number is in the map,
+    and the rows the user made name it. An agent's actor is made by the agents move."""
 
     name = "actors"
     reads = ["users"]

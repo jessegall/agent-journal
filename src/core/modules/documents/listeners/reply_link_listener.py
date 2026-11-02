@@ -19,8 +19,8 @@ TASK_NUMBER = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
 
 
 class ReplyLinkListener(CommitListener):
-    """Links to a person's message the tasks, plans, documents and reports an agent writes within two minutes of
-    answering it, and the tasks its answer names, so the chat shows them under that message."""
+    """Links to a person's message the tasks, plans, documents and reports an agent writes within two minutes
+    of answering it, and the tasks its answer names, so the chat shows them under that message."""
 
     name = "documents.reply-links"
     event = "*.*"

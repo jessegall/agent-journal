@@ -8,7 +8,8 @@ from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 
 
 class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
-    """`journal worker release <worker> "<why>"`: the worker's task goes back to open and its worktree is removed."""
+    """`journal worker release <worker> "<why>"`: the worker's task goes back to open and its worktree is
+    removed."""
 
     cli_name = "worker"
     name = "release"

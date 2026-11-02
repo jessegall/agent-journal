@@ -10,7 +10,8 @@ from core.modules.agents.support.agent_control_list import AgentControlList
 
 
 class AgentControlsSubcommand(ReadSubcommand[AgentControlList]):
-    """`journal agent controls <agent>`: what the agent bar can change on this agent's program, with its choices."""
+    """`journal agent controls <agent>`: what the agent bar can change on this agent's program, with its
+    choices."""
 
     cli_name = "agent"
     name = "controls"

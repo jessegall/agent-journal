@@ -23,8 +23,9 @@ REMARK_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
 
 
 class ChatMannersRule(DriverRule):
-    """The main agent's newest chat message is read for shop talk, the third person, em dashes and paragraphs that
-    run together, and the agent is told of each; each remark waits ten minutes before it is said again."""
+    """The main agent's newest chat message is read for shop talk, the third person, em dashes and paragraphs
+    that run together, and the agent is told of each; each remark waits ten minutes before it is said again.
+    """
 
     name = "messages.chat-manners"
     hook = HookEventName.POST_TOOL_USE

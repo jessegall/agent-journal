@@ -9,7 +9,8 @@ from core.base.agent_role import AgentRole
 
 class Driver:
     """The base of every driver: how the journal drives an agent of one role in one suite, by its rules, of
-    which an exclusive overlay silences those not marked unsilenced, the guards for its agents only, and its opening lines."""
+    which an exclusive overlay silences those not marked unsilenced, the guards for its agents only, and its
+    opening lines."""
 
     name: ClassVar[str]
     suite: ClassVar[type[Suite]]

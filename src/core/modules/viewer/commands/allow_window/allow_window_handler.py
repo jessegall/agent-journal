@@ -12,8 +12,8 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
-    """Writes the caller's permission row for the window: the lines it declares added to those allowed before; the
-    guard viewer.person-gives-permissions refuses any caller but a person allowing for themselves."""
+    """Writes the caller's permission row for the window: the lines it declares added to those allowed before;
+    the guard viewer.person-gives-permissions refuses any caller but a person allowing for themselves."""
 
     command = AllowWindow
 

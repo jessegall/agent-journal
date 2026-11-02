@@ -19,9 +19,9 @@ TABLE = "mcp_servers"
 
 
 class McpServersMove(VersionFourMove):
-    """Carries version 4's MCP servers with their numbers, names and how each is started or reached, and moves the
-    keys of the servers that moved from version 4's keys file under ~/.journal/keys into the keys file beside
-    the secret values; version 4's last check of a server is not kept, since the check is read anew."""
+    """Carries version 4's MCP servers with their numbers, names and how each is started or reached, and moves
+    the keys of the servers that moved from version 4's keys file under ~/.journal/keys into the keys file
+    beside the secret values; version 4's last check of a server is not kept, since the check is read anew."""
 
     name = "mcp_servers"
     reads = [TABLE]

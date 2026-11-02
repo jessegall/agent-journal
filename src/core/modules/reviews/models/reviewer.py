@@ -9,8 +9,8 @@ from core.modules.reviews.models.lifecycles.reviewer_lifecycle import ReviewerLi
 
 @dataclass(frozen=True, kw_only=True)
 class Reviewer(Model):
-    """An agent of role reviewer that starts the queued reviews one after another; its id is its agent's id, and
-    its state moves only as ReviewerLifecycle allows."""
+    """An agent of role reviewer that starts the queued reviews one after another; its id is its agent's id,
+    and its state moves only as ReviewerLifecycle allows."""
 
     model_name = "reviewer"
     cli_name = "reviewer"

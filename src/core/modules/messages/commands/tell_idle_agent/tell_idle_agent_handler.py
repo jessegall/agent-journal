@@ -16,8 +16,8 @@ from core.modules.messages.support.message_nudges import NEW_MESSAGE
 
 
 class TellIdleAgentHandler(Handler[TellIdleAgent, Message | None]):
-    """An idle main agent, paused or not, sends no hook that could carry a message, so the first of the queue is typed
-    to it; the rest reach it by the hooks that follow, once it wakes."""
+    """An idle main agent, paused or not, sends no hook that could carry a message, so the first of the queue
+    is typed to it; the rest reach it by the hooks that follow, once it wakes."""
 
     command = TellIdleAgent
 

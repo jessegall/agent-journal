@@ -18,9 +18,9 @@ DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """A test, build, check or package run of the main agent's that has gone on for more than 5 seconds docks its
-    output above the chat, once, and the agent is told if its card has only the raw command to show; any other
-    command never does, nor a run whose folder says it has ended already."""
+    """A test, build, check or package run of the main agent's that has gone on for more than 5 seconds docks
+    its output above the chat, once, and the agent is told if its card has only the raw command to show; any
+    other command never does, nor a run whose folder says it has ended already."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS

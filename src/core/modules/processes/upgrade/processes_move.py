@@ -24,10 +24,10 @@ SHELL = "sh"
 
 
 class ProcessesMove(VersionFourMove):
-    """Carries version 4's command outputs as processes with the output each kept, under the number they had, run
-    by the agent whose session ran them and ended as they ended; an output whose folder is gone is pruned. The
-    readers' reports and suggestions of version 4 are dropped and counted, and the readers it kept as files
-    become version 5 readers."""
+    """Carries version 4's command outputs as processes with the output each kept, under the number they had,
+    run by the agent whose session ran them and ended as they ended; an output whose folder is gone is pruned.
+    The readers' reports and suggestions of version 4 are dropped and counted, and the readers it kept as
+    files become version 5 readers."""
 
     name = "processes"
     reads = [TABLE]

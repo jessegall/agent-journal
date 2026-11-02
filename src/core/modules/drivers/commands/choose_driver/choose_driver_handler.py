@@ -9,8 +9,8 @@ from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS
 
 
 class ChooseDriverHandler(Handler[ChooseDriver, Setting]):
-    """Writes the environment's driver setting for the driver's role; the guard drivers.known-setting refuses a
-    driver that is not installed or not of the suite the environment runs."""
+    """Writes the environment's driver setting for the driver's role; the guard drivers.known-setting refuses
+    a driver that is not installed or not of the suite the environment runs."""
 
     command = ChooseDriver
 

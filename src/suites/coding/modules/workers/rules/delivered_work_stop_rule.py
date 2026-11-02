@@ -11,7 +11,8 @@ from core.base.agent_role import AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):
-    """A main agent that stops while a worker's delivered work waits for its checks is refused once per delivery."""
+    """A main agent that stops while a worker's delivered work waits for its checks is refused once per
+    delivery."""
 
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP

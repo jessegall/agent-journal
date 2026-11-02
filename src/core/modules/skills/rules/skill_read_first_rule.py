@@ -14,8 +14,8 @@ from core.modules.skills.support.skill_files import SkillFiles
 
 
 class SkillReadFirstRule(DriverRule):
-    """While a skill is due, every tool call is refused but a read of a due skill's file and a journal command; the
-    refusal lists each due skill with the path to read."""
+    """While a skill is due, every tool call is refused but a read of a due skill's file and a journal
+    command; the refusal lists each due skill with the path to read."""
 
     name = "skills.read-first"
     hook = HookEventName.PRE_TOOL_USE

@@ -11,7 +11,8 @@ from core.base.agent_role import AgentRole
 
 
 class MissingProcessRule(DriverRule):
-    """A tick ends each open worker of the environment whose recorded process is gone; one never seen stays."""
+    """A tick ends each open worker of the environment whose recorded process is gone; one never seen stays.
+    """
 
     name = "drivers.missing-process"
     hook = HookEventName.TICK

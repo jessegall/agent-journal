@@ -9,7 +9,8 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 
 
 class TypeTerminalLineHandler(Handler[TypeTerminalLine, Agent]):
-    """Hands the launcher a line for a running agent's terminal; only a person types there, and never an empty line."""
+    """Hands the launcher a line for a running agent's terminal; only a person types there, and never an empty
+    line."""
 
     command = TypeTerminalLine
 

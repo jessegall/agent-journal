@@ -6,7 +6,8 @@ FLAG_TEXTS = {"on": True, "true": True, "yes": True, "off": False, "false": Fals
 
 
 class SettingText:
-    """Turns the text a person types after journal setting set into a value of the setting's type, or refuses it."""
+    """Turns the text a person types after journal setting set into a value of the setting's type, or refuses
+    it."""
 
     def value(self, entry: SettingEntry, text: str) -> str | int | float | bool | tuple[str, ...] | tuple[int, ...]:
         match SettingType(entry.type):

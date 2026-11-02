@@ -12,7 +12,8 @@ from core.modules.documents.support.text_lines import TextLines
 
 
 class TextShowSubcommand(ReadSubcommand[TextReading]):
-    """`journal <doc or report> show <n>`: its outline, or one section, its bullets, a search or the whole text."""
+    """`journal <doc or report> show <n>`: its outline, or one section, its bullets, a search or the whole
+    text."""
 
     model: ClassVar[type[TextRow]]
     name = "show"

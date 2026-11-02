@@ -12,8 +12,8 @@ from core.modules.mcp.support.server_standing import NEEDS_KEY, ServerStanding
 
 
 class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
-    """`journal mcp check`: what each installed server still needs, its key or its place in a config, and where it
-    is written; the journal checks what it keeps and never starts an agent program for it."""
+    """`journal mcp check`: what each installed server still needs, its key or its place in a config, and
+    where it is written; the journal checks what it keeps and never starts an agent program for it."""
 
     cli_name = "mcp"
     name = "check"

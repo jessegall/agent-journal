@@ -6,8 +6,8 @@ from core.base.driver.rule_answer import RuleAnswer
 
 
 class SubagentWriteRule(DriverRule):
-    """A subagent reads and searches only: an edit, a write or a shell line that writes files is refused, under
-    every overlay."""
+    """A subagent reads and searches only: an edit, a write or a shell line that writes files is refused,
+    under every overlay."""
 
     name = "coding.subagent-reads-only"
     unsilenced = True

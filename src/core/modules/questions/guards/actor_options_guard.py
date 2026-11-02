@@ -10,8 +10,8 @@ PERSONAL = re.compile(r"\b(I|I'll|I'm|I've|me|my|we|us|our|you|your)\b", re.IGNO
 
 
 class ActorOptionsGuard(Guard):
-    """Refuses a question whose option says I, me, my, we, us, our, you or your instead of naming who acts: the
-    agent or the user."""
+    """Refuses a question whose option says I, me, my, we, us, our, you or your instead of naming who acts:
+    the agent or the user."""
 
     name = "questions.options-name-the-actor"
     event = "question.create"

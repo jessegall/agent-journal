@@ -8,8 +8,8 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True)
 class OneMovePerRow:
-    """The commands the rules of one hook returned, split into those that run and the second moves of a row already
-    moved on this hook, which are dropped and named."""
+    """The commands the rules of one hook returned, split into those that run and the second moves of a row
+    already moved on this hook, which are dropped and named."""
 
     runnable: Sequence[tuple[str, Command[object]]]
     dropped: Sequence[str]

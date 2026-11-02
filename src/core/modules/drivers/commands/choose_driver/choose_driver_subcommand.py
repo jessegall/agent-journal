@@ -7,7 +7,8 @@ from core.modules.settings.models.setting import Setting
 
 
 class ChooseDriverSubcommand(Subcommand[ChooseDriver, Setting]):
-    """`journal driver choose <driver> --environment <name>`: the driver of its role in the environment from now on."""
+    """`journal driver choose <driver> --environment <name>`: the driver of its role in the environment from
+    now on."""
 
     cli_name = "driver"
     name = "choose"

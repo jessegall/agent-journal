@@ -7,8 +7,8 @@ from suites.coding.modules.workers.support.worker_resume import WorkerResume
 
 
 class EndedWorkerJobListener(CommitListener):
-    """A job or a merge clash for a worker whose session has ended resumes that session; a running worker reads the
-    line at its next hook."""
+    """A job or a merge clash for a worker whose session has ended resumes that session; a running worker
+    reads the line at its next hook."""
 
     name = "workers.ended-worker-job"
     event = "agent_line.create"

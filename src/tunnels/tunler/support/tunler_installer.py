@@ -18,7 +18,8 @@ BROKEN_PROGRAM = "what the server sent is not a working tunler, so nothing was r
 
 
 class TunlerInstaller:
-    """Downloads tunler from a tunler server to this user's local bin folder, and puts it in place only once it runs."""
+    """Downloads tunler from a tunler server to this user's local bin folder, and puts it in place only once
+    it runs."""
 
     def local_path(self) -> Path:
         return Path.home() / ".local" / "bin" / "tunler"

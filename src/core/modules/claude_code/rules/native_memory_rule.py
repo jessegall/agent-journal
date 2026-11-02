@@ -10,7 +10,8 @@ NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")
 
 
 class NativeMemoryRule(DriverRule):
-    """A write into Claude Code's own memory folder is refused, under every overlay: the journal keeps the memories."""
+    """A write into Claude Code's own memory folder is refused, under every overlay: the journal keeps the
+    memories."""
 
     name = "claude_code.native-memory"
     unsilenced = True

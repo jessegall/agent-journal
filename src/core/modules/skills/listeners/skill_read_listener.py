@@ -7,8 +7,8 @@ from core.modules.skills.listeners.skill_listener import SkillListener
 
 
 class SkillReadListener(SkillListener):
-    """When a tool call reads the SKILL.md of a skill in the catalogue, the agent has that skill loaded, with the
-    digest of the catalogue's text."""
+    """When a tool call reads the SKILL.md of a skill in the catalogue, the agent has that skill loaded, with
+    the digest of the catalogue's text."""
 
     name = "skills.read"
     event = "hook_call.create"

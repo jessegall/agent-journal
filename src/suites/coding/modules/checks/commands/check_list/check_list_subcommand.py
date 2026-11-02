@@ -11,7 +11,8 @@ from suites.coding.modules.checks.queries.check_query import CheckQuery
 
 
 class CheckListSubcommand(ReadSubcommand[Sequence[Check]]):
-    """`journal check list`: every check not removed, with whether it passed, failed, is stopped or has not run."""
+    """`journal check list`: every check not removed, with whether it passed, failed, is stopped or has not
+    run."""
 
     cli_name = "check"
     name = "list"

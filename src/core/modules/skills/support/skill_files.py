@@ -12,8 +12,9 @@ FOLDER_PREFIX = "journal"
 
 
 class SkillFiles:
-    """The skill folders of the agent programs in the project: each skill's text in its own folder of each program,
-    written only when it changed, and the journal's own folders no module declares any more cleared."""
+    """The skill folders of the agent programs in the project: each skill's text in its own folder of each
+    program, written only when it changed, and the journal's own folders no module declares any more cleared.
+    """
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

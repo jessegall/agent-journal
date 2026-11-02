@@ -19,7 +19,8 @@ ENDED = (ItemState.FILED, ItemState.FAILED)
 
 
 class MoveDumpItemHandler(Handler[MoveDumpItem, DumpLine]):
-    """Notes, files or fails one item of an open dump, and closes the dump with its outcome once no item is left."""
+    """Notes, files or fails one item of an open dump, and closes the dump with its outcome once no item is
+    left."""
 
     command = MoveDumpItem
 

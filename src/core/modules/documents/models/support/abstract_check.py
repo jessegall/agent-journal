@@ -5,7 +5,8 @@ TITLE_LIMIT_CHARACTERS = 200
 
 
 class AbstractCheck:
-    """The rules a document's or report's title and abstract keep: a title, and an abstract of one short description."""
+    """The rules a document's or report's title and abstract keep: a title, and an abstract of one short
+    description."""
 
     @staticmethod
     def check(title: str, abstract: str) -> None:

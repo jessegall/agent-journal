@@ -11,8 +11,8 @@ from server.viewer.viewer_window import ViewerWindow
 
 
 class SessionRoute:
-    """GET /api/session: the session type of the cookie the shell was opened with, so it can pick its face; for
-    a share session also the row, the window the server picked for it and when the link ends."""
+    """GET /api/session: the session type of the cookie the shell was opened with, so it can pick its face;
+    for a share session also the row, the window the server picked for it and when the link ends."""
 
     def __init__(self, login: ViewerLogin, home: JournalHome) -> None:
         self.login, self.home = login, home

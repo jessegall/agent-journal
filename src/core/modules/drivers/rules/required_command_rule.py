@@ -16,8 +16,8 @@ COUNTDOWN_START_USES = 3
 
 
 class RequiredCommandRule(DriverRule):
-    """A line that named a command is owed: its command settles it, the tool uses count down, and past the fifth only
-    reads and journal commands run, so the paying command and the skip always go through."""
+    """A line that named a command is owed: its command settles it, the tool uses count down, and past the
+    fifth only reads and journal commands run, so the paying command and the skip always go through."""
 
     name = "drivers.nudge-required_commands"
     hook = HookEventName.PRE_TOOL_USE

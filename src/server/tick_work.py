@@ -22,8 +22,8 @@ MAIN_ACTOR = "agent"
 
 
 class TickWork(RoundWork):
-    """The ticker's round, once a minute: each open agent other than a subagent gets a tick hook through the hook
-    route, so rules that keep time speak on their own; once a day the old hook calls are pruned; and the
+    """The ticker's round, once a minute: each open agent other than a subagent gets a tick hook through the
+    hook route, so rules that keep time speak on their own; once a day the old hook calls are pruned; and the
     notices that wait on paired phones are pushed."""
 
     def __init__(self) -> None:

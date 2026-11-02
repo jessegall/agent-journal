@@ -8,8 +8,8 @@ UNSET_LABEL = "not set"
 
 
 class SettingLines:
-    """Prints a setting as read: its key, its value (a secret only as set or not set, a group as on or off) and
-    where the value came from."""
+    """Prints a setting as read: its key, its value (a secret only as set or not set, a group as on or off)
+    and where the value came from."""
 
     def write(self, setting: CurrentSetting, output: Output) -> None:
         value = None if setting.entry.secret else setting.value

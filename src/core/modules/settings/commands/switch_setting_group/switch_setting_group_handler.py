@@ -11,7 +11,8 @@ from core.modules.settings.support.current_setting import CurrentSetting
 
 
 class SwitchSettingGroupHandler(Handler[SwitchSettingGroup, CurrentSetting]):
-    """Keeps whether a toggleable group is on as a setting of the group's own key; only the user switches one."""
+    """Keeps whether a toggleable group is on as a setting of the group's own key; only the user switches one.
+    """
 
     command = SwitchSettingGroup
 

@@ -6,7 +6,8 @@ from core.base.query.condition import Condition
 
 @dataclass(frozen=True)
 class SubqueryMatch:
-    """Matches rows whose column is among the results of another query, or, with negated, rows whose column is not."""
+    """Matches rows whose column is among the results of another query, or, with negated, rows whose column is
+    not."""
 
     column: str
     select: Condition

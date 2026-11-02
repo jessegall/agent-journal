@@ -11,7 +11,8 @@ from core.modules.plans.support.task_place import TaskPlace
 
 
 class PlanPlaceSubcommand(ReadSubcommand[TaskPlace]):
-    """`journal plan place <task>`: the plan and the phase that hold a task, or nothing when it is in no plan."""
+    """`journal plan place <task>`: the plan and the phase that hold a task, or nothing when it is in no plan.
+    """
 
     cli_name = "plan"
     name = "place"

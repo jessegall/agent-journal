@@ -3,8 +3,8 @@ from core.base.deadline_passed_error import DeadlinePassedError
 
 
 class Deadline:
-    """When the caller stops waiting for a command, on the monotonic clock; a run with no deadline waits as long
-    as the command takes."""
+    """When the caller stops waiting for a command, on the monotonic clock; a run with no deadline waits as
+    long as the command takes."""
 
     def __init__(self, ends_at: float | None = None) -> None:
         self.ends_at = ends_at

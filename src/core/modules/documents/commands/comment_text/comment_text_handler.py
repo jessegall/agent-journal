@@ -12,7 +12,8 @@ from core.modules.messages.models.message import Message
 
 
 class CommentTextHandler(Handler[CommentText, Message]):
-    """Sends the comment as a chat message naming the text, so the agent reads it, and links the message to the text."""
+    """Sends the comment as a chat message naming the text, so the agent reads it, and links the message to
+    the text."""
 
     command = CommentText
 

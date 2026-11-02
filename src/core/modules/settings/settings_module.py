@@ -23,8 +23,8 @@ from core.modules.settings.upgrade.settings_move import SettingsMove
 
 
 class SettingsModule(Module):
-    """Adds settings: values kept for an environment or for the whole project, set and read by the keys modules
-    declare, a secret kept apart from the event log."""
+    """Adds settings: values kept for an environment or for the whole project, set and read by the keys
+    modules declare, a secret kept apart from the event log."""
 
     name = "journal.core.settings"
     seed_reason = "its rows are the settings the other modules declare"

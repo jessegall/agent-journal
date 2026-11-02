@@ -3,8 +3,8 @@ LEVEL_NAMES = {number: name for name, number in PRIORITY_LEVELS.items()}
 
 
 class TaskPriority(int):
-    """How soon a task should be taken up: a number with named levels, spaced so a level can go between two others;
-    it is given by number or name, and a number that is a level reads by its name."""
+    """How soon a task should be taken up: a number with named levels, spaced so a level can go between two
+    others; it is given by number or name, and a number that is a level reads by its name."""
 
     def __new__(cls, value: str | int) -> "TaskPriority":
         return super().__new__(cls, PRIORITY_LEVELS.get(str(value), value))

@@ -19,8 +19,8 @@ LISTED_MESSAGES = 5
 
 
 class UnreadMessageWriteRule(DriverRule):
-    """A message the main agent was told of and has not read counts down its tool calls, and after twenty a write
-    waits until it is read; reading is no write, so it always goes through."""
+    """A message the main agent was told of and has not read counts down its tool calls, and after twenty a
+    write waits until it is read; reading is no write, so it always goes through."""
 
     name = "messages.unread-write"
     hook = HookEventName.PRE_TOOL_USE

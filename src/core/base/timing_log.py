@@ -7,9 +7,9 @@ TIMING_LOG_LIMIT_BYTES = 10_000_000
 
 
 class TimingLog:
-    """The file each answered request appends one JSON line to, in one write, so several processes can append to
-    it at once; only the server, at its start and holding its lock, moves it aside to timing.log.1 once it is
-    past its limit, so no writer ever loses a file."""
+    """The file each answered request appends one JSON line to, in one write, so several processes can append
+    to it at once; only the server, at its start and holding its lock, moves it aside to timing.log.1 once it
+    is past its limit, so no writer ever loses a file."""
 
     def __init__(self, home: JournalHome, limit_bytes: int = TIMING_LOG_LIMIT_BYTES) -> None:
         self.path, self.limit_bytes = home.timing_log, limit_bytes

@@ -20,7 +20,8 @@ class CheckRunRecord:
 
 @dataclass(frozen=True)
 class CheckRunHistory:
-    """A check's runs, newest first, read from the events that recorded them; an event names only what changed."""
+    """A check's runs, newest first, read from the events that recorded them; an event names only what
+    changed."""
 
     records: Sequence[CheckRunRecord]
 

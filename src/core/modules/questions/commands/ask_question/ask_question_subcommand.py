@@ -8,7 +8,8 @@ from core.modules.questions.models.question import Question
 
 
 class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
-    """`journal question ask <text> --options a b --recommend a`: the agent asks the user and waits for the answer."""
+    """`journal question ask <text> --options a b --recommend a`: the agent asks the user and waits for the
+    answer."""
 
     cli_name = "question"
     name = "ask"

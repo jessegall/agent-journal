@@ -10,8 +10,8 @@ SERVERS = "mcpServers"
 
 
 class ClaudeServerFile:
-    """The project's .mcp.json, which Claude Code reads its servers from: the journal's servers written over their
-    own names beside every other server and setting the file holds, a key only as ${VARIABLE}."""
+    """The project's .mcp.json, which Claude Code reads its servers from: the journal's servers written over
+    their own names beside every other server and setting the file holds, a key only as ${VARIABLE}."""
 
     def __init__(self, home: JournalHome) -> None:
         self.path = home.project_folder / FILE

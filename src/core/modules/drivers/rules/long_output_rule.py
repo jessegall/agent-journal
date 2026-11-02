@@ -12,7 +12,8 @@ FILE_FIELD = "file"
 
 
 class LongOutputRule(DriverRule):
-    """A tool's long result stays in the context for every later turn, so the main agent is told how long it was."""
+    """A tool's long result stays in the context for every later turn, so the main agent is told how long it
+    was."""
 
     name = "drivers.long-output"
     hook = HookEventName.POST_TOOL_USE

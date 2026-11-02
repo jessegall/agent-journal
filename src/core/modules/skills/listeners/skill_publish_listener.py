@@ -9,8 +9,8 @@ PUBLISHING_EVENTS = (JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT)
 
 
 class SkillPublishListener(CommitListener):
-    """As the journal starts or an update changes its modules, removes the skill folders no module declares and
-    republishes every declared skill."""
+    """As the journal starts or an update changes its modules, removes the skill folders no module declares
+    and republishes every declared skill."""
 
     name = "skills.publish"
     event = "*.*"

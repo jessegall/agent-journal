@@ -11,7 +11,8 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
 class PluginSettingsSubcommand(ReadSubcommand[PluginSettingLines]):
-    """`journal plugin settings <name>`: each setting the plugin declares, its type, its value and its title."""
+    """`journal plugin settings <name>`: each setting the plugin declares, its type, its value and its title.
+    """
 
     cli_name = "plugin"
     name = "settings"

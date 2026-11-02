@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Health:
-    """What GET /health answers: the server is up, with its pid, the code it runs, when it started and the port
-    of its viewer."""
+    """What GET /health answers: the server is up, with its pid, the code it runs, when it started and the
+    port of its viewer."""
 
     status: str
     pid: int

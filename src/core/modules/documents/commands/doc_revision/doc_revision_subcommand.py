@@ -10,7 +10,8 @@ from core.modules.documents.models.doc_revision import DocRevision
 
 
 class DocRevisionSubcommand(ReadSubcommand[RevisionReading]):
-    """`journal doc revision <n> <k>`: one revision of a document whole; an old revision is read, never restored."""
+    """`journal doc revision <n> <k>`: one revision of a document whole; an old revision is read, never
+    restored."""
 
     cli_name = "doc"
     name = "revision"

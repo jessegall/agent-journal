@@ -13,8 +13,8 @@ HIDDEN_NAMES = {".git", "node_modules", "__pycache__", ".venv"}
 
 
 class ProjectFiles:
-    """Reads an environment's checkout: a folder's entries, the tracked files whose path holds some words, and one
-    file's text; a path that leaves the checkout is refused."""
+    """Reads an environment's checkout: a folder's entries, the tracked files whose path holds some words, and
+    one file's text; a path that leaves the checkout is refused."""
 
     def __init__(self, queries: Queries, git: ProjectGit) -> None:
         self.queries, self.git = queries, git

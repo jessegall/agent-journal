@@ -9,7 +9,8 @@ from suites.coding.modules.checks.queries.check_query import CheckQuery
 
 
 class DueCheckRuns(PeriodicChecks):
-    """Runs each check whose interval has passed, then records its result in a short transaction of its own."""
+    """Runs each check whose interval has passed, then records its result in a short transaction of its own.
+    """
 
     def __init__(self, checks: CheckQuery, runner: CheckRunner, bus: Bus, clock: Clock) -> None:
         self.checks, self.runner, self.bus, self.clock = checks, runner, bus, clock

@@ -11,7 +11,8 @@ EDIT_TOOL_TYPES = (ToolType.EDIT, ToolType.NEW_FILE)
 
 
 class UntakenStepRule(DriverRule):
-    """An agent whose sequence step is not taken up yet edits no file until it runs journal sequence follow."""
+    """An agent whose sequence step is not taken up yet edits no file until it runs journal sequence follow.
+    """
 
     name = "sequences.untaken-step"
     hook = HookEventName.PRE_TOOL_USE

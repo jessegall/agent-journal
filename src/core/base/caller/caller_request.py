@@ -6,8 +6,8 @@ from core.base.caller.caller_request_error import CallerRequestError
 
 @dataclass(frozen=True)
 class CallerRequest:
-    """What a run knows of its caller: the environment variables it was started with, its working folder, and the pid
-    of the process that asked."""
+    """What a run knows of its caller: the environment variables it was started with, its working folder, and
+    the pid of the process that asked."""
 
     variables: Mapping[str, str] = field(default_factory=dict[str, str])
     folder: str = ""

@@ -7,7 +7,8 @@ from core.modules.messages.models.message import Message
 
 
 class RecordMessageDeliveryHandler(Handler[RecordMessageDelivery, Message]):
-    """Saves when the agent was told of a message; it reads the message itself, and only that marks it read."""
+    """Saves when the agent was told of a message; it reads the message itself, and only that marks it read.
+    """
 
     command = RecordMessageDelivery
 

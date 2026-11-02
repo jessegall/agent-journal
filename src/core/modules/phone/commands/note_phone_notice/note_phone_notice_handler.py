@@ -8,7 +8,8 @@ from core.modules.phone.models.phone import Phone
 
 
 class NotePhoneNoticeHandler(Handler[NotePhoneNotice, int]):
-    """Marks each paired phone with a subscription as having a notice waiting; the ticker's round pushes it."""
+    """Marks each paired phone with a subscription as having a notice waiting; the ticker's round pushes it.
+    """
 
     command = NotePhoneNotice
 

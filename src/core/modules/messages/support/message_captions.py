@@ -6,7 +6,8 @@ from core.modules.messages.models.message import Message
 
 
 class MessageCaptions:
-    """What the agent said each attached file of a message shows, by file name, kept as JSON on the message."""
+    """What the agent said each attached file of a message shows, by file name, kept as JSON on the message.
+    """
 
     @staticmethod
     def decoded(message: Message) -> Mapping[str, str]:

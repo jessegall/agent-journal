@@ -10,8 +10,8 @@ from core.base.subcommand.render_value import render_value
 C = TypeVar("C", bound=Command[object], covariant=True)
 R = TypeVar("R", covariant=True)
 class Subcommand(Generic[C, R]):
-    """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and how
-    the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
+    """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and
+    how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
     run in the background at once when an agent types it."""
 
     cli_name: str

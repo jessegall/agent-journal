@@ -6,7 +6,8 @@ from core.base.model.model import Model
 @dataclass(frozen=True, kw_only=True)
 class MemoryType(Model):
     """A type of memory: whether agents may make it (the user always may), whether each compaction lowers its
-    weight, its starting weight, and whether it is given at a session start, at a context mark and by keyword."""
+    weight, its starting weight, and whether it is given at a session start, at a context mark and by keyword.
+    """
 
     model_name = "memory_type"
     cli_name = "memory-type"

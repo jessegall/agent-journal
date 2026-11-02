@@ -7,8 +7,8 @@ IGNORED = ("__pycache__", "node_modules", "*.pyc", ".venv")
 
 
 class CodeCopy:
-    """The journal's code copied into a home's own src folder, so a running journal keeps its code while the source
-    it came from changes."""
+    """The journal's code copied into a home's own src folder, so a running journal keeps its code while the
+    source it came from changes."""
 
     def __init__(self, source: Path, home: JournalHome) -> None:
         self.source, self.home = source, home

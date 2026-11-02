@@ -14,7 +14,8 @@ MINUTE_SECONDS = 60
 
 
 class LongWaitRule(DriverRule):
-    """A tick that finds an agent's wait open for ten minutes or more tells it to check on what it waits for."""
+    """A tick that finds an agent's wait open for ten minutes or more tells it to check on what it waits for.
+    """
 
     name = "waits.long-wait"
     hook = HookEventName.TICK

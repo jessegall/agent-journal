@@ -10,8 +10,8 @@ from core.modules.secrets.models.support.secret_field import SecretField
 
 @dataclass(frozen=True, kw_only=True)
 class Secret(Model):
-    """A key or a login the agent may use without seeing it: its fields, which are filled, the programs it may go
-    to and those proposed; its values live in the values file outside the project, never in a row."""
+    """A key or a login the agent may use without seeing it: its fields, which are filled, the programs it may
+    go to and those proposed; its values live in the values file outside the project, never in a row."""
 
     model_name = "secret"
     cli_name = "secret"

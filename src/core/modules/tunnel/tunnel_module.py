@@ -11,7 +11,8 @@ from core.modules.tunnel.support.no_tunnel import NoTunnel
 
 
 class TunnelModule(Module):
-    """Chooses the tunnel through which a phone or a share link reaches this computer, and ships none by default."""
+    """Chooses the tunnel through which a phone or a share link reaches this computer, and ships none by
+    default."""
 
     name = "journal.core.tunnel"
     seed_reason = "it keeps no rows, only a service the settings choose"

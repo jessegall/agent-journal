@@ -6,8 +6,8 @@ from core.modules.dumps.models.enums.item_state import ItemState
 
 @dataclass(frozen=True)
 class VersionFourItem:
-    """What version 4 kept of one piece of a dump: the agent's insight, how it was filed or why it failed, and the
-    rows it became."""
+    """What version 4 kept of one piece of a dump: the agent's insight, how it was filed or why it failed, and
+    the rows it became."""
 
     insight: str = ""
     outcome: str = ""

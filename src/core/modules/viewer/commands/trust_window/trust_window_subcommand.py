@@ -7,8 +7,8 @@ from core.modules.viewer.commands.trust_window.trust_window import TrustWindow
 
 
 class TrustWindowSubcommand(Subcommand[TrustWindow, WindowPermission]):
-    """`journal window trust <module>`: lets the module's windows run in the viewer's page, with the page's rights,
-    until its code changes."""
+    """`journal window trust <module>`: lets the module's windows run in the viewer's page, with the page's
+    rights, until its code changes."""
 
     cli_name = "window"
     name = "trust"

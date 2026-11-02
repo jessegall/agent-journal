@@ -13,8 +13,8 @@ VIEWER_SETTINGS = [SettingGroup("window", "Window settings", "What each window k
 
 
 class WindowSettingKeys:
-    """The setting key of one of a window's own settings, under the viewer's window group: the window is one an
-    installed module declares, and the key has no dot, so it never names another window's setting."""
+    """The setting key of one of a window's own settings, under the viewer's window group: the window is one
+    an installed module declares, and the key has no dot, so it never names another window's setting."""
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

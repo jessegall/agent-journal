@@ -8,7 +8,8 @@ from core.modules.settings.commands.support.setting_store import SettingStore
 
 
 class ChooseSuiteHandler(Handler[ChooseSuite, Setting]):
-    """Writes the environment's suite setting; the guard drivers.known-setting refuses a suite no module ships."""
+    """Writes the environment's suite setting; the guard drivers.known-setting refuses a suite no module
+    ships."""
 
     command = ChooseSuite
 

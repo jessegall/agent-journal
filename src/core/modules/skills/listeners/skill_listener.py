@@ -11,8 +11,8 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class SkillListener(CommitListener):
-    """What the skill listeners share: the hook call that raised the event, and running a command as the skills
-    module for that event."""
+    """What the skill listeners share: the hook call that raised the event, and running a command as the
+    skills module for that event."""
 
     module_name: ClassVar[str] = "journal.core.skills"
 

@@ -16,8 +16,8 @@ START_ROLES = (AgentRole.MAIN, AgentRole.WORKER)
 
 
 class StartSkillsListener(SkillListener):
-    """When a main agent or a worker starts a session, the skills of the session-start setting become due for it;
-    when it starts again right after a compaction, those of the after-compaction setting."""
+    """When a main agent or a worker starts a session, the skills of the session-start setting become due for
+    it; when it starts again right after a compaction, those of the after-compaction setting."""
 
     name = "skills.start"
     event = "hook_call.create"

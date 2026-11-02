@@ -10,8 +10,8 @@ from core.modules.reviews.support.review_settings import ReviewSettings
 
 
 class ReviewQueuedListener(SaveListener):
-    """A queued review goes to an idle reviewer at once; with none idle and room under the limit, a reviewer is
-    added for it."""
+    """A queued review goes to an idle reviewer at once; with none idle and room under the limit, a reviewer
+    is added for it."""
 
     name = "reviews.review-queued"
     event = "review.create"

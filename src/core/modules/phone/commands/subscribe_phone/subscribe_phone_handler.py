@@ -13,8 +13,8 @@ from core.modules.phone.models.phone import Phone
 
 
 class SubscribePhoneHandler(Handler[SubscribePhone, Phone]):
-    """Keeps a subscription on the paired phone whose session token has the digest; a subscription is a JSON object
-    that names an endpoint. Only the viewer, as the journal itself, subscribes a phone."""
+    """Keeps a subscription on the paired phone whose session token has the digest; a subscription is a JSON
+    object that names an endpoint. Only the viewer, as the journal itself, subscribes a phone."""
 
     command = SubscribePhone
 

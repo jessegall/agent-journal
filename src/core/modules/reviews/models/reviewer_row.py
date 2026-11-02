@@ -7,7 +7,8 @@ from core.modules.reviews.models.support.views import REVIEWER_ROWS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class ReviewerRow(ViewModel):
-    """A review being done or waiting, or one step of a review being done, read from the reviewer_rows view."""
+    """A review being done or waiting, or one step of a review being done, read from the reviewer_rows view.
+    """
 
     cli_name = "reviewer-row"
     view = "reviewer_rows"

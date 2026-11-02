@@ -6,7 +6,8 @@ from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree im
 
 
 class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
-    """`journal worktree prepare <folder> <source> <environment>`: the launcher's order for a new launch worktree."""
+    """`journal worktree prepare <folder> <source> <environment>`: the launcher's order for a new launch
+    worktree."""
 
     cli_name = "worktree"
     name = "prepare"

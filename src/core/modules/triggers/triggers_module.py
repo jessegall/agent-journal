@@ -24,7 +24,8 @@ BUILT = ["make", "show", "list", "delete"]
 
 
 class TriggersModule(Module):
-    """Adds triggers: a phrase in the user's words or in a tool call, or a time, gives the agent a text or refuses."""
+    """Adds triggers: a phrase in the user's words or in a tool call, or a time, gives the agent a text or
+    refuses."""
 
     name = "journal.core.triggers"
     nudges = TRIGGER_NUDGES

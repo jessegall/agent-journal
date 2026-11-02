@@ -8,7 +8,8 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
 class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
-    """`journal plugin propose <folder> --why "<what for>"`: an agent names a plugin the person may install."""
+    """`journal plugin propose <folder> --why "<what for>"`: an agent names a plugin the person may install.
+    """
 
     cli_name = "plugin"
     name = "propose"

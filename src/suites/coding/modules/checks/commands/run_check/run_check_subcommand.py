@@ -12,8 +12,8 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
-    """`journal check run <n>`: runs the check now, outside any transaction, says whether it passed and shows what it
-    printed on a failure."""
+    """`journal check run <n>`: runs the check now, outside any transaction, says whether it passed and shows
+    what it printed on a failure."""
 
     cli_name = "check"
     name = "run"

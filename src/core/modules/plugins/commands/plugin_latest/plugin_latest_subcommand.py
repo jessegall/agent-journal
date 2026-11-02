@@ -9,7 +9,8 @@ from core.modules.plugins.support.plugin_releases import PluginReleases
 
 
 class PluginLatestSubcommand(ReadSubcommand[PluginLatest]):
-    """`journal plugin latest <name>`: whether the plugin's source has a newer release than the one installed."""
+    """`journal plugin latest <name>`: whether the plugin's source has a newer release than the one installed.
+    """
 
     cli_name = "plugin"
     name = "latest"

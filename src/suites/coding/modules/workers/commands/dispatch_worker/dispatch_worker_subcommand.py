@@ -12,7 +12,8 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch <task> [--library-link <folder>] [--library-copy <folder>]`: a worker for the task."""
+    """`journal worker dispatch <task> [--library-link <folder>] [--library-copy <folder>]`: a worker for the
+    task."""
 
     cli_name = "worker"
     name = "dispatch"

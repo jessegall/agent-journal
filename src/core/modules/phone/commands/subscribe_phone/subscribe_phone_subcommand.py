@@ -7,8 +7,8 @@ from core.modules.phone.models.phone import Phone
 
 
 class SubscribePhoneSubcommand(Subcommand[SubscribePhone, Phone]):
-    """`journal phone subscribe <token-digest> <subscription>`: keeps the push subscription of the paired phone whose
-    session has that digest, read from the viewer's listener."""
+    """`journal phone subscribe <token-digest> <subscription>`: keeps the push subscription of the paired
+    phone whose session has that digest, read from the viewer's listener."""
 
     cli_name = "phone"
     name = "subscribe"

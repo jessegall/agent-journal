@@ -5,7 +5,8 @@ TIMEOUT_SECONDS = 10
 
 
 class PushTransport:
-    """The post of one empty push to a push service: its status, or 0 when the service could not be reached."""
+    """The post of one empty push to a push service: its status, or 0 when the service could not be reached.
+    """
 
     def post(self, endpoint: str, headers: dict[str, str]) -> int:
         try:

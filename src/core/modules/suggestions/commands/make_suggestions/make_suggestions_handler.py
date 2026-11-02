@@ -8,7 +8,8 @@ from core.modules.suggestions.support.commandments_package import KEY, TITLE, Co
 
 
 class MakeSuggestionsHandler(Handler[MakeSuggestions, int]):
-    """Saves the Code Commandments suggestion in the caller's environment when it applies and was never made."""
+    """Saves the Code Commandments suggestion in the caller's environment when it applies and was never made.
+    """
 
     command = MakeSuggestions
 

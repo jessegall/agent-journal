@@ -14,9 +14,9 @@ CUT_END_CHARACTERS = 60
 @dataclass(frozen=True)
 class NudgeDeclaration:
     """A line a module can say to an agent, declared once: its key, its type, its words with {fields}, the
-    interval before it may be said again, the longest it may be, cut in its middle so its instruction stays, whether
-    a turn says it only once, as a reminder on a clock does not, and the command with {fields} that pays it, which
-    makes the line a required_command. Each field is held to its own limit too."""
+    interval before it may be said again, the longest it may be, cut in its middle so its instruction stays,
+    whether a turn says it only once, as a reminder on a clock does not, and the command with {fields} that
+    pays it, which makes the line a required_command. Each field is held to its own limit too."""
 
     key: str
     type: NudgeType

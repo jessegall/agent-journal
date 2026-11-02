@@ -17,7 +17,8 @@ MINUTE_SECONDS = 60
 
 
 class InactiveWorkerRule(DriverRule):
-    """A tick names to the main agent each worker that has used no tool for five minutes, again every five minutes."""
+    """A tick names to the main agent each worker that has used no tool for five minutes, again every five
+    minutes."""
 
     name = "workers.inactive-worker"
     hook = HookEventName.TICK

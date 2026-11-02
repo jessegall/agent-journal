@@ -6,7 +6,8 @@ from core.modules.reviews.models.reviewer_row import ReviewerRow
 
 @dataclass(frozen=True)
 class ReviewerBoard:
-    """What the reviewer window draws: the reviews being done with the steps of each, and how many reviews wait."""
+    """What the reviewer window draws: the reviews being done with the steps of each, and how many reviews
+    wait."""
 
     rows: Sequence[ReviewerRow]
 

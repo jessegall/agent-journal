@@ -12,9 +12,9 @@ SETTING_NAMES = {"progress: ": "progress_pattern", "label: ": "title", "commands
 
 @dataclass(frozen=True)
 class ReaderFile:
-    """A reader written as a file, as version 4 kept them and plugins ship them: a .pattern file holds a note line,
-    its pattern line and its settings, one per line; a .sh script holds its settings in # lines and is the
-    reader itself."""
+    """A reader written as a file, as version 4 kept them and plugins ship them: a .pattern file holds a note
+    line, its pattern line and its settings, one per line; a .sh script holds its settings in # lines and is
+    the reader itself."""
 
     name: str
     type: ReaderType

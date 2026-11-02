@@ -9,8 +9,8 @@ from core.modules.skills.models.lifecycles.agent_skill_lifecycle import AgentSki
 
 @dataclass(frozen=True, kw_only=True)
 class AgentSkill(Model):
-    """One skill for one agent: due to be read until the agent reads its file, then loaded with the digest of the
-    text it read."""
+    """One skill for one agent: due to be read until the agent reads its file, then loaded with the digest of
+    the text it read."""
 
     model_name = "agent_skill"
     cli_name = "agent-skill"

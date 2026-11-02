@@ -13,8 +13,8 @@ TABLE = "notices"
 
 
 class NoticesMove(VersionFourMove):
-    """Carries version 4's notices with their numbers, titles, links, button words and closing times; one with no
-    link or of an environment that did not move is skipped and told."""
+    """Carries version 4's notices with their numbers, titles, links, button words and closing times; one with
+    no link or of an environment that did not move is skipped and told."""
 
     name = "notices"
     reads = [TABLE]

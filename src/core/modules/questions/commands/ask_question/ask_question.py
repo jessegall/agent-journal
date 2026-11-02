@@ -7,7 +7,8 @@ from core.modules.questions.models.question import Question
 
 @dataclass(frozen=True)
 class AskQuestion(Command[Question]):
-    """Asks the user a question for the calling agent, with the options it offers and the one it recommends."""
+    """Asks the user a question for the calling agent, with the options it offers and the one it recommends.
+    """
 
     text: str
     options: Sequence[str] = ()

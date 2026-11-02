@@ -35,7 +35,8 @@ from core.modules.phone.push.web_push import WebPush
 
 
 class PhoneModule(Module):
-    """Pairs a person's phone with the viewer by a short code, and keeps each paired phone until it is unpaired."""
+    """Pairs a person's phone with the viewer by a short code, and keeps each paired phone until it is
+    unpaired."""
 
     name = "journal.core.phone"
     requires_core = ">=5,<6"

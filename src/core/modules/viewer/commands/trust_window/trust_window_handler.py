@@ -10,8 +10,9 @@ from core.modules.viewer.commands.trust_window.trust_window import TrustWindow
 
 
 class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):
-    """Writes the caller's page trust of a module at the module's current code fingerprint, so a later upgrade asks
-    again; the guard viewer.person-gives-permissions refuses any caller but a person trusting for themselves."""
+    """Writes the caller's page trust of a module at the module's current code fingerprint, so a later upgrade
+    asks again; the guard viewer.person-gives-permissions refuses any caller but a person trusting for
+    themselves."""
 
     command = TrustWindow
 

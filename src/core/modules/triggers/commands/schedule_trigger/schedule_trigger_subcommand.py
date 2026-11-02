@@ -6,8 +6,8 @@ from core.modules.triggers.commands.support.trigger_line_subcommand import Trigg
 
 
 class ScheduleTriggerSubcommand(TriggerLineSubcommand[ScheduleTrigger]):
-    """`journal trigger schedule "<text>"` with `--at`, `--every <minutes>` or `--cron "<line>"`, and an end with
-    `--until` or `--times <n>`."""
+    """`journal trigger schedule "<text>"` with `--at`, `--every <minutes>` or `--cron "<line>"`, and an end
+    with `--until` or `--times <n>`."""
 
     cli_name = "trigger"
     name = "schedule"

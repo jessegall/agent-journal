@@ -8,8 +8,8 @@ from server.viewer.shared_row import SharedRow
 
 
 class ShareEvents:
-    """Which events a share session may follow: those of the shared row and of the rows it includes, tabled_ids by
-    their table and id, so no other row's change reaches a link."""
+    """Which events a share session may follow: those of the shared row and of the rows it includes,
+    tabled_ids by their table and id, so no other row's change reaches a link."""
 
     def __init__(self, container: Container, shared: SharedRow) -> None:
         self.container, self.shared = container, shared

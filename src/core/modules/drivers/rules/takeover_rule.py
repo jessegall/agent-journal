@@ -11,8 +11,8 @@ from core.modules.drivers.support.driver_nudges import TAKEOVER
 
 
 class TakeoverRule(DriverRule):
-    """A new main session in an environment that had another is told the chat above it is history; a session that
-    has hooks already, after a compaction or a resume, is the same agent and is told nothing."""
+    """A new main session in an environment that had another is told the chat above it is history; a session
+    that has hooks already, after a compaction or a resume, is the same agent and is told nothing."""
 
     name = "drivers.takeover"
     hook = HookEventName.SESSION_START

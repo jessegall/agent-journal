@@ -54,8 +54,8 @@ BUILT = ["make", "edit", "show", "list", "delete"]
 
 
 class PluginsModule(Module):
-    """Adds plugins: programs the person installs into the journal, switches on or off and configures, which an
-    agent may only propose."""
+    """Adds plugins: programs the person installs into the journal, switches on or off and configures, which
+    an agent may only propose."""
 
     name = "journal.core.plugins"
     nudges = PLUGIN_NUDGES

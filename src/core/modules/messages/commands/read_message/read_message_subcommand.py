@@ -9,7 +9,8 @@ from core.modules.messages.support.message_text import MessageText
 
 
 class ReadMessageSubcommand(ReadSubcommand[MessageText]):
-    """`journal message read <n>`: only a message's text and links; the messages module marks it read once this ran."""
+    """`journal message read <n>`: only a message's text and links; the messages module marks it read once
+    this ran."""
 
     cli_name = "message"
     name = "read"

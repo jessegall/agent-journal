@@ -9,7 +9,8 @@ from core.base.agent_role import AgentRole
 
 
 class TaskStopRule(DriverRule):
-    """A stop with tasks in hand is refused, naming them all, unless the agent is waiting on a run it watches."""
+    """A stop with tasks in hand is refused, naming them all, unless the agent is waiting on a run it watches.
+    """
 
     name = "tasks.carry-on-at-stop"
     hook = HookEventName.STOP

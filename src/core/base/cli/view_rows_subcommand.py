@@ -18,7 +18,8 @@ ENVIRONMENT_COLUMN = "environment_id"
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
     """The read of a window that lists a view: rows newest first, by id, only the columns of the view, for the
-    filters it names, in the caller's environment unless it names one; --after-id and --before-id page by id."""
+    filters it names, in the caller's environment unless it names one; --after-id and --before-id page by id.
+    """
 
     model: ClassVar[type[ViewModel]]
     filters: ClassVar[Sequence[str]] = ()

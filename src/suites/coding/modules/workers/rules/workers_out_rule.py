@@ -11,7 +11,8 @@ from core.base.agent_role import AgentRole
 
 
 class WorkersOutRule(DriverRule):
-    """A main agent's session starts with a line for each worker of its environment that still has a worktree out."""
+    """A main agent's session starts with a line for each worker of its environment that still has a worktree
+    out."""
 
     name = "workers.workers-out-at-start"
     start_line_rule = True

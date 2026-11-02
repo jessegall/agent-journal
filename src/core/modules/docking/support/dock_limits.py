@@ -11,8 +11,8 @@ DOCKING_SETTINGS = [SettingValue("most-items", "Docked items", "How many items t
 
 
 class DockLimits:
-    """How many items a dock holds in all, from the docking module's most-items setting, and how many of one type,
-    from the type's declaration."""
+    """How many items a dock holds in all, from the docking module's most-items setting, and how many of one
+    type, from the type's declaration."""
 
     def __init__(self, registry: Registry, queries: Queries, settings: SettingValues) -> None:
         self.registry, self.queries, self.settings = registry, queries, settings

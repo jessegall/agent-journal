@@ -7,8 +7,8 @@ CORE_MODULE = "core"
 
 
 class CoreTablesMigration(Migration):
-    """Creates the tables the core itself needs: the actors, the event log, listener bookkeeping, refusals and the
-    registry."""
+    """Creates the tables the core itself needs: the actors, the event log, listener bookkeeping, refusals and
+    the registry."""
 
     number = 1
     statements = (

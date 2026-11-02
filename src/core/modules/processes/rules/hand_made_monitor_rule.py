@@ -12,7 +12,8 @@ MONITOR_LINE = "journal output monitor "
 
 class HandMadeMonitorRule(DriverRule):
     """A Monitor that loops over an output by hand is refused: its match can miss the end of the run, and the
-    command made for it cannot. That command runs only in a Monitor: as a plain command it blocks the agent."""
+    command made for it cannot. That command runs only in a Monitor: as a plain command it blocks the agent.
+    """
 
     name = "processes.hand-made-monitor"
     hook = HookEventName.PRE_TOOL_USE

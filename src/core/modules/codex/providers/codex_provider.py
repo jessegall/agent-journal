@@ -30,9 +30,9 @@ TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 
 class CodexProvider(Provider):
-    """OpenAI's Codex: hooks in .codex/hooks.json, trusted per file and hook in its config.toml, rollouts under
-    its sessions folder, and a session it names itself, which the first hook brings; a main session starts
-    with the MCP servers' keys in its environment."""
+    """OpenAI's Codex: hooks in .codex/hooks.json, trusted per file and hook in its config.toml, rollouts
+    under its sessions folder, and a session it names itself, which the first hook brings; a main session
+    starts with the MCP servers' keys in its environment."""
 
     name = "codex"
     title = "Codex"

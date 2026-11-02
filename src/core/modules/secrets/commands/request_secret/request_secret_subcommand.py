@@ -9,8 +9,8 @@ from core.modules.secrets.models.secret import Secret
 
 
 class RequestSecretSubcommand(Subcommand[MakeSecret, Secret]):
-    """`journal secret request <title> --why "<what for>" [--kind <kind>] [--field <name>] [--brief "<how it is
-    used>"]`: the secret is made and the user is asked in the chat to fill it on the Secrets window."""
+    """`journal secret request <title> --why "<what for>" [--kind <kind>] [--field <name>] [--brief "<how it
+    is used>"]`: the secret is made and the user is asked in the chat to fill it on the Secrets window."""
 
     cli_name = "secret"
     name = "request"

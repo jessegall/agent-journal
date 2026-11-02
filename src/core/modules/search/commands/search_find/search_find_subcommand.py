@@ -8,8 +8,8 @@ from core.modules.search.support.search_result import SearchResult
 
 
 class SearchFindSubcommand(ReadSubcommand[SearchResult]):
-    """`journal search find <terms> [--model task,doc]`: the newest rows that hold every term, each with a short
-    passage around the first."""
+    """`journal search find <terms> [--model task,doc]`: the newest rows that hold every term, each with a
+    short passage around the first."""
 
     cli_name = "search"
     name = "find"

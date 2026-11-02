@@ -8,8 +8,8 @@ from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout import S
 
 
 class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
-    """Writes the person's one layout row for the page, suite and driver in the environment, over the row there is
-    or as a new one, refusing a save over a version newer than the one it was loaded at; the guard
+    """Writes the person's one layout row for the page, suite and driver in the environment, over the row
+    there is or as a new one, refusing a save over a version newer than the one it was loaded at; the guard
     viewer.person-keeps-layouts refuses any caller but a person."""
 
     command = SaveViewerLayout
