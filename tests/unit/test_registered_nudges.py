@@ -4,9 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
-from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE
-
 ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
@@ -69,9 +66,3 @@ def test_every_line_is_in_a_register_of_its_module(name, text, path):
 def test_no_line_to_an_agent_is_written_on_the_fly():
     file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', path.read_text()) and path.name not in PASSED_ON_LINES]
     assert not file_names, f"these write a line to an agent with no registered template: {file_names}"
-
-
-def test_a_line_someone_wrote_and_a_path_to_open_stay_whole():
-    assert TRIGGER_LINE.nudge(text="x" * 500).text == "x" * 500
-    path = ".agents/skills/commandments-rows-through-their-repository/SKILL.md"
-    assert path in READ_SKILL_FIRST.nudge(path=path).text

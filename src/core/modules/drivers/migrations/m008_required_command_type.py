@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class RequiredCommandMarksMigration(Migration):
+class RequiredCommandTypeMigration(Migration):
     """Marks of a skipped required command take the type's new name, so they keep their family and icon."""
 
     number = 8
