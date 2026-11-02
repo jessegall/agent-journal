@@ -38,7 +38,7 @@ test("the view menu hides removals and is kept", async () => {
     const element = await mounted(FileFeed, window);
     document.body.append(element);
     await settle();
-    element.querySelector("[data-feed-view]").click();
+    element.querySelector("[data-search-menu]").click();
     await settle();
     document.querySelector('[data-feed-toggle="removals"]').click();
     await settle();
@@ -78,7 +78,7 @@ test("in the view menu a checked and an unchecked item start their label at the 
     const element = await mounted(FileFeed, window);
     document.body.append(element);
     await settle();
-    element.querySelector("[data-feed-view]").click();
+    element.querySelector("[data-search-menu]").click();
     await settle();
     const checked = document.querySelector('[data-feed-toggle="headers"]');
     const unchecked = document.querySelector('[data-feed-toggle="flush"]');
@@ -97,7 +97,7 @@ test("in the view menu the Lines choices go below their label", async () => {
     const element = await mounted(FileFeed, context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2));
     document.body.append(element);
     await settle();
-    element.querySelector("[data-feed-view]").click();
+    element.querySelector("[data-search-menu]").click();
     await settle();
     const lines = document.querySelector(".feed-bar-lines");
     expect(lines.children[0].textContent).toBe("Lines");

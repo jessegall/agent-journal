@@ -120,7 +120,7 @@ test("an agent with no tasks has no tasks control", async () => {
 test("the agents window searches the session, program, role, profile and name", async () => {
     const element = await drawn();
     await pick(element, "All");
-    const search = element.querySelector(".agents-search input") || element.querySelector("input");
+    const search = element.querySelector("[data-search-input]");
     search.value = "codex";
     search.dispatchEvent(new Event("input"));
     await settle();

@@ -19,8 +19,8 @@ test("tasks delegated to a worker are listed in a section of their own, with the
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
     const delegated = element.querySelector('[data-state="delegated"]');
     expect(delegated.querySelector("[data-group-head]").textContent).toContain("Delegated");
-    expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["2", "1"]);
-    expect([...delegated.querySelectorAll("[data-task-worker]")].map((worker) => worker.textContent)).toEqual(["Worker 12 · open", "Worker 12 · started"]);
+    expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["1", "2"]);
+    expect([...delegated.querySelectorAll("[data-task-worker]")].map((worker) => worker.textContent)).toEqual(["Worker 12 · started", "Worker 12 · open"]);
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
     expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
     expect(element.querySelector('[data-state="open"]')).toBeNull();
@@ -28,7 +28,7 @@ test("tasks delegated to a worker are listed in a section of their own, with the
 
 test("while searching, a group with no match is hidden", async () => {
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
-    const search = element.querySelector(".tasks-search");
+    const search = element.querySelector("[data-search-input]");
     search.value = "mine";
     search.dispatchEvent(new Event("input"));
     await settle();

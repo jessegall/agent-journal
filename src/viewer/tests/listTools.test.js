@@ -1,5 +1,5 @@
 import {ref} from "vue";
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
@@ -39,7 +39,7 @@ test("a list with states keeps open or closed rows", () => {
 
 test("a window's search narrows what it draws", async () => {
     const element = await mounted(SuggestionRows, context({"suggestion list": page([{id: 1, title: "Cart", answer: ""}, {id: 2, title: "Shop", answer: ""}])}));
-    const input = element.querySelector("[data-list-search] input, input[data-list-search]");
+    const input = element.querySelector("[data-search-input]");
     input.value = "shop";
     input.dispatchEvent(new Event("input"));
     await settle();
@@ -48,10 +48,20 @@ test("a window's search narrows what it draws", async () => {
 });
 
 test("a list with states offers Open, Closed and All, another does not", async () => {
-    const questions = await mounted(QuestionRows, context({"question list": page([])}));
-    expect(questions.textContent).toContain("Closed");
-    const suggestions = await mounted(SuggestionRows, context({"suggestion list": page([])}));
-    expect(suggestions.textContent).not.toContain("Closed");
+    vi.stubGlobal("ResizeObserver", class {
+        observe() {}
+        disconnect() {}
+    });
+    const menuOf = async (component, answers) => {
+        document.body.innerHTML = "";
+        const element = await mounted(component, context(answers));
+        document.body.append(element);
+        element.querySelector("[data-search-menu]").click();
+        await settle();
+        return document.body.textContent;
+    };
+    expect(await menuOf(QuestionRows, {"question list": page([])})).toContain("Closed");
+    expect(await menuOf(SuggestionRows, {"suggestion list": page([])})).not.toContain("Closed");
 });
 
 test.each([

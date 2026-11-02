@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, Segmented, TextInput, useRows} from "@journal/window-kit";
+import {RowList, SearchBar, Segmented, useRows} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -24,8 +24,9 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
 <template>
     <div class="agents" data-window-flush>
         <div class="agents-bar">
-            <TextInput v-model="words" icon="search" class="agents-search" placeholder="Search the agents" data-agents-search />
-            <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
+            <SearchBar v-model="words" class="agents-search" placeholder="Search the agents" data-agents-search>
+                <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
+            </SearchBar>
         </div>
         <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText">
             <template #default="{row}">

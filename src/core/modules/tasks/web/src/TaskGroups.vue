@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Icon, PriorityIcon, Skeleton, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
+import {Icon, PriorityIcon, SearchBar, Skeleton, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
@@ -75,11 +75,14 @@ async function more(group) {
 const shownGroup = (group) => group.total && (props.states.length ? props.states.includes(group.state) : props.display.showDone || !FINISHED.has(group.state));
 const places = ref([]);
 const NOT_PLACED = "Not in a plan";
+// the delegated tasks in the order of the groups above them, with no heads between
+const DELEGATED_ORDER = ["started", "testing", "blocked", "open"];
+const orderedRows = (group) => (group.state === "delegated" ? [...group.rows].sort((one, two) => DELEGATED_ORDER.indexOf(one.state) - DELEGATED_ORDER.indexOf(two.state)) : group.rows);
 const stateGroups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     return board.value
         .filter(shownGroup)
-        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
+        .map((group) => ({group, tasks: orderedRows(group).filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
         .filter(({tasks}) => !wanted || tasks.length);
 });
 // the tasks held, under the plan and phase each is placed in; the tasks of no plan come last
@@ -115,8 +118,9 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
         </template>
         <template v-else>
             <div class="tasks-tools">
-                <input ref="search" v-model="query" class="tasks-search" type="search" placeholder="Search the tasks" aria-label="Search the tasks" />
-                <slot name="tools" />
+                <SearchBar ref="search" v-model="query" class="tasks-search" placeholder="Search the tasks">
+                    <slot name="tools" />
+                </SearchBar>
             </div>
             <template v-if="!groups.length">
                 <p class="tasks-note">{{ query ? "No task matches" : "No tasks yet" }}</p>
