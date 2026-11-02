@@ -17,6 +17,6 @@ class NextTask:
         if most_urgent is not None and most_urgent.priority >= CRITICAL_PRIORITY:
             return most_urgent
         planned = self.plan_tasks.environment_task(environment_id)
-        if planned is not None and planned != excluded_id:
-            return self.queries.query(Task).find(planned)
+        if planned is not None and planned.id != excluded_id:
+            return planned
         return most_urgent

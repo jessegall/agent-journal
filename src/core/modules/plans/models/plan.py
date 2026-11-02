@@ -23,10 +23,14 @@ class Plan(Model):
     brief: str = ""
     state: PlanState = PlanState.DRAFT
     reason: str = ""
+    started_at: Timestamp | None = None
     closed_at: Timestamp | None = None
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
+
+    def start(self, timestamp: Timestamp, actor: Actor) -> "Plan":
+        return self.moved(PlanLifecycle.start, started_at=self.started_at or timestamp)
 
     def close(self, timestamp: Timestamp, actor: Actor) -> "Plan":
         return self.moved(PlanLifecycle.close, closed_at=timestamp)

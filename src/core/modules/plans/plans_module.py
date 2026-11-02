@@ -21,6 +21,7 @@ from core.modules.plans.commands.place_phase.place_phase_subcommand import Place
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_card import PlanCard
 from core.modules.plans.migrations.m003_plan_state_index import PlanStateIndexMigration
+from core.modules.plans.migrations.m004_plan_start_time import PlanStartTimeMigration
 from core.modules.plans.commands.plan_progress.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
@@ -59,7 +60,7 @@ class PlansModule(Module):
     block_conditions = [PlanApproved, PlanFinished]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
     subcommands = (CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,

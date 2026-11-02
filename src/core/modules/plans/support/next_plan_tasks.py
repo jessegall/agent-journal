@@ -8,13 +8,15 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.listeners.support.checkpoint_limit import CheckpointLimit
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
+from core.modules.tasks.models.task import Task
 UNFINISHED_STATES = tuple(state for state in TaskState if state not in (TaskState.COMPLETED, TaskState.CANCELLED))
 
 
 class NextPlanTasks:
     """Finds a plan's next open task that waits on nothing: only in its first phase with unfinished tasks, so a
     phase is finished before the next, and within it by priority and then by id. A task that waits on another
-    does not hold its phase, since what it waits on may lie in a later one."""
+    does not hold its phase, since what it waits on may lie in a later one. Of several started plans, the one
+    started first goes first."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -28,11 +30,12 @@ class NextPlanTasks:
         first = min(free_tasks, key=lambda place: (-place.priority, place.task_id), default=None)
         return first.task_id if first is not None else None
 
-    def environment_task(self, environment_id: int) -> int | None:
-        for plan in tuple(self.queries.query(Plan).filter(environment_id=environment_id, state=PlanState.STARTED).oldest().all_rows()):
+    def environment_task(self, environment_id: int) -> Task | None:
+        plans = self.queries.query(Plan).filter(environment_id=environment_id, state=PlanState.STARTED).ordered("started_at", "id").all_rows()
+        for plan in tuple(plans):
             following = self.following(plan.id)
             if following is not None:
-                return following
+                return self.queries.query(Task).find(following)
         return None
 
     def plan_exclusion(self) -> SubqueryMatch:

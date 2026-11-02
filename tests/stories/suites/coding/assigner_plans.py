@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, BuilderWithStartedTask
 
@@ -91,3 +93,21 @@ def test_when_the_plan_has_nothing_free_the_next_task_outside_it_is_handed_out(n
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     assert "state: started" in state_of(story, 4), state_of(story, 4)
+
+
+def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    for plan_id, title in ((1, "Made first"), (2, "Made second")):
+        story.run(f'plan make "{title}" --brief "all of it" --environment main', actor=story.agent)
+        story.run(f'phase make --plan {plan_id} "First" --goal "it works"', actor=story.agent)
+        story.run(f'task make "Task of {title}" --environment main', actor=story.agent)
+        story.run(f"phase place {plan_id + 1} --phase {plan_id}", actor=story.agent)
+        for move in (f"plan ready {plan_id}", f"plan approve {plan_id}"):
+            story.run(move)
+    story.run("plan start 2")
+    story.advance(timedelta(seconds=1))
+    story.run("plan start 1")
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in state_of(story, 3), state_of(story, 3)
+    assert "state: open" in state_of(story, 2)
