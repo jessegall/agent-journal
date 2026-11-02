@@ -4,6 +4,9 @@ from pathlib import Path
 
 import pytest
 
+from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
+from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE
+
 ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
@@ -19,7 +22,6 @@ FOREIGN_TEMPLATES = frozenset({"PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", 
 # a worker's job and the words a person or an agent sends it, passed on as file_names
 PASSED_ON_LINES = ("send_worker_handler.py", "short_proof_handler.py", "ended_worker_listener.py", "worker_resume.py", "merge_worker_handler.py",
                    "record_bypass_line_handler.py", "record_hook_call_handler.py", "new_driver_lines_listener.py")
-
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
@@ -67,3 +69,9 @@ def test_every_line_is_in_a_register_of_its_module(name, text, path):
 def test_no_line_to_an_agent_is_written_on_the_fly():
     file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', path.read_text()) and path.name not in PASSED_ON_LINES]
     assert not file_names, f"these write a line to an agent with no registered template: {file_names}"
+
+
+def test_a_line_someone_wrote_and_a_path_to_open_stay_whole():
+    assert TRIGGER_LINE.nudge(text="x" * 500).text == "x" * 500
+    path = ".agents/skills/commandments-rows-through-their-repository/SKILL.md"
+    assert path in READ_SKILL_FIRST.nudge(path=path).text

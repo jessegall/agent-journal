@@ -30,7 +30,7 @@ class SkillReadFirstRule(DriverRule):
         tool = hook.event.tool
         if not folders or tool is None or tool.is_journal_line or self.reads_due(tool, folders):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(name=folders[0], path=self.files.relative(folders[0])))
+        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(path=self.files.relative(folders[0])))
 
     def reads_due(self, tool: Tool, folders: list[str]) -> bool:
         paths = [PurePath(path) for path in tool.files]

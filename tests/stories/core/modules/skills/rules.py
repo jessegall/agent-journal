@@ -23,7 +23,7 @@ def skill_path(story, skill: str) -> str:
 
 def test_with_a_skill_due_every_tool_but_a_read_of_it_is_refused_with_its_path(new_story):
     story = notes_due(new_story)
-    story.expect_hook_refusal("s-1", EDIT, f"read journal-notes first: {skill_path(story, 'journal-notes')}")
+    story.expect_hook_refusal("s-1", EDIT, f"read this first: {skill_path(story, 'journal-notes')}")
 
 
 def test_a_journal_command_passes_while_a_skill_is_due(new_story):
@@ -44,9 +44,9 @@ def test_a_stop_is_refused_naming_the_unread_skills(new_story):
 
 def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(new_story):
     story = notes_due(new_story)
-    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, f"read journal-tasks first: {skill_path(story, 'journal-tasks')}")
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, f"read this first: {skill_path(story, 'journal-tasks')}")
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
-    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read journal-tasks first")
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
     read_of(story, ".claude/skills/journal-tasks/SKILL.md")
     story.expect_hook_allowed("s-1", JOURNAL_TASK_LIST)
 

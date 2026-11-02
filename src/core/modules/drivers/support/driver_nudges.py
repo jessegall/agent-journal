@@ -16,6 +16,6 @@ UNBOUND_DISPATCH = NudgeDeclaration("drivers.unbound_dispatch", NudgeType.REFUSA
 LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.REMARK, "that result was {lines} lines: read a range, or read the output by its number, so less stays in the context", interval=Interval(Seconds(600)))
 
 AGENT_RESUMED = NudgeDeclaration("drivers.resumed", NudgeType.REMARK, "the user resumed you: carry on where you stopped")
-REQUIRED_COMMAND_COUNTDOWN = NudgeDeclaration("drivers.debt_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, required_command="")
-REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.debt_hold", NudgeType.REFUSAL, '{subject} is due: do it, or journal required-command skip {required_command} --reason "<why>"')
+REQUIRED_COMMAND_COUNTDOWN = NudgeDeclaration("drivers.required_command_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, required_command="")
+REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or journal required-command skip {required_command} --reason "<why>"')
 DRIVER_NUDGES = [AGENT_RESUMED, REQUIRED_COMMAND_COUNTDOWN, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

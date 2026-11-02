@@ -8,6 +8,6 @@ from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVari
 
 BYPASS_FAMILY = MarkFamily("drivers.bypass", "Unchecked work", "stop", MarkGroup.JOURNAL)
 
-DEBTS_FAMILY = MarkFamily("drivers.required_commands", "Skipped lines", "stop", MarkGroup.JOURNAL)
+REQUIRED_COMMANDS_FAMILY = MarkFamily("drivers.required_commands", "Skipped lines", "stop", MarkGroup.JOURNAL)
 
-BYPASS_MARKS = [MarkDeclaration(RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant, DEBTS_FAMILY, "Lines the agent skipped", "stop"), MarkDeclaration(BypassMarkType.BYPASS, BypassMarkVariant, BYPASS_FAMILY, "Hooks that went through while the journal did not answer", "stop")]
+BYPASS_MARKS = [MarkDeclaration(RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant, REQUIRED_COMMANDS_FAMILY, "Lines the agent skipped", "stop"), MarkDeclaration(BypassMarkType.BYPASS, BypassMarkVariant, BYPASS_FAMILY, "Hooks that went through while the journal did not answer", "stop")]

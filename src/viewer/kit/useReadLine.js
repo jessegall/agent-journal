@@ -1,7 +1,7 @@
 import {ref} from "vue";
 import {useWindow} from "./windowContextKey.js";
 
-// what one read line answers: its value, or why it failed; the line is made from what load is called with
+// what one read line answers: its value, kept when a later read fails, and why it failed; the line is made from what load is called with
 export function useReadLine(line) {
     const context = useWindow();
     const value = ref(null);
@@ -10,7 +10,7 @@ export function useReadLine(line) {
     async function load(...args) {
         const answer = await context.read(line(...args));
         failure.value = answer.ok ? "" : answer.error;
-        value.value = answer.ok ? answer.value : null;
+        if (answer.ok) value.value = answer.value;
     }
 
     return {value, failure, load};

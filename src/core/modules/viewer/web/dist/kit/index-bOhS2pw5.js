@@ -5733,7 +5733,7 @@ function Zv(e) {
   const t = ps(), n = F(null), s = F("");
   async function a(...o) {
     const r = await t.read(e(...o));
-    s.value = r.ok ? "" : r.error, n.value = r.ok ? r.value : null;
+    s.value = r.ok ? "" : r.error, r.ok && (n.value = r.value);
   }
   return { value: n, failure: s, load: a };
 }
@@ -8117,7 +8117,7 @@ const Yg = /* @__PURE__ */ zg(Kg), Jg = ["width", "height", "viewBox"], Zg = ["w
       }, null, 8, Xg)
     ], 8, Jg));
   }
-}, cy = /* @__PURE__ */ J(Qg, [["__scopeId", "data-v-489f0852"]]), uy = Zo(() => import("./VoiceFigure-CV5uxkH9.js").then((e) => e.V)), dy = "1.0.0", hy = "3.5";
+}, cy = /* @__PURE__ */ J(Qg, [["__scopeId", "data-v-489f0852"]]), uy = Zo(() => import("./VoiceFigure-C16DAoeW.js").then((e) => e.V)), dy = "1.0.0", hy = "3.5";
 export {
   ov as $,
   Av as A,

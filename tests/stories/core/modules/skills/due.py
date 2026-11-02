@@ -89,7 +89,7 @@ def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due
 def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_is_read(new_story):
     story = environment(new_story)
     start(story)
-    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read journal-tasks first")
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
 
 
 def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environment(new_story):
