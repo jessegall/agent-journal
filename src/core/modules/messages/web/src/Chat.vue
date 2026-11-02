@@ -40,7 +40,7 @@ async function readTool() {
     runningTool.value = answer.ok ? answer.value.tool : "";
     waitingFor.value = answer.ok ? answer.value.waiting_for : "";
 }
-context.follow(["hook_call.*", "question.*", "process.*"], readTool);
+context.follow(["hook_call.*", "dock_item.*"], readTool);
 readTool();
 const FOLD_AFTER_MS = 180;
 const ECHO_SLACK_MS = 2000;
