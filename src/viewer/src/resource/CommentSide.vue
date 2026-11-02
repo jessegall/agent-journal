@@ -1,13 +1,13 @@
 <script setup>
 import CloseButton from "../kit/CloseButton.vue";
 
-// the comments on a document, in a column beside its text
-defineProps({comments: {type: Array, required: true}, words: {type: Function, required: true}});
+// the comments on a document, in a column beside its text, or under it when it is shown below
+defineProps({comments: {type: Array, required: true}, words: {type: Function, required: true}, below: Boolean});
 defineEmits(["close"]);
 </script>
 
 <template>
-    <aside class="comment-side" data-comment-side aria-label="Comments">
+    <aside :class="['comment-side', {below}]" data-comment-side aria-label="Comments">
         <header class="comment-side-head">
             <h3>Comments</h3>
             <CloseButton title="Close the comments" @click="$emit('close')" />
@@ -29,6 +29,13 @@ defineEmits(["close"]);
     overflow-y: auto;
     padding: 12px 16px;
     border-left: 1px solid var(--border);
+}
+
+.comment-side.below {
+    width: auto;
+    max-height: 40%;
+    border-top: 1px solid var(--border);
+    border-left: 0;
 }
 
 .comment-side-head {

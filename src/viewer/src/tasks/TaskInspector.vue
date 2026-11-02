@@ -14,7 +14,7 @@ import TaskStatusIcon from "./TaskStatusIcon.vue";
 import {statusIcon} from "../domain/taskStatus.js";
 import TaskFacts from "./TaskFacts.vue";
 import TaskSections from "./TaskSections.vue";
-import CommentSide from "../resource/CommentSide.vue";
+import CommentedRow from "../resource/CommentedRow.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 
@@ -94,7 +94,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <div class="body-row">
+            <CommentedRow :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
             <div :key="task.id" class="body">
                 <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
                 <h3 class="title" data-resource-title>{{ task.title }}</h3>
@@ -126,10 +126,7 @@ defineExpose({openStatus});
                 <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="setPriority" />
                 <TaskSections :task="task" @select="emit('select', $event)" />
             </div>
-            <template v-if="textComments.open.value">
-                <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
-            </template>
-            </div>
+            </CommentedRow>
             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
         </template>
         <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
@@ -152,17 +149,6 @@ defineExpose({openStatus});
     width: 440px;
     min-height: 0;
     border-left: 1px solid var(--border);
-}
-
-.body-row {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-}
-
-.body-row > .body {
-    flex: 1;
-    min-width: 0;
 }
 
 .task-inspector.lone {

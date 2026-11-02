@@ -9,7 +9,7 @@ import AgentFacts from "./AgentFacts.vue";
 import MemoryFacts from "./MemoryFacts.vue";
 import WorkerFacts from "./WorkerFacts.vue";
 import TextDetails from "./TextDetails.vue";
-import CommentSide from "./CommentSide.vue";
+import CommentedRow from "./CommentedRow.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 import PlanInspector from "./PlanInspector.vue";
@@ -87,7 +87,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </template>
                             <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                         </header>
-                        <div class="panel-row">
+                        <CommentedRow :open="commentable && textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
                         <div class="body">
                             <template v-if="failure">
                                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -119,10 +119,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 </section>
                             </template>
                         </div>
-                        <template v-if="commentable && textComments.open.value">
-                            <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
-                        </template>
-                        </div>
+                        </CommentedRow>
                         <template v-if="commentable && row">
                             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
                         </template>
@@ -136,17 +133,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
-.panel-row {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-}
-
-.panel-row > .body {
-    flex: 1;
-    min-width: 0;
-}
-
 .head-share {
     width: auto;
     padding: 0 8px;
