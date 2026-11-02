@@ -1,16 +1,17 @@
 <script setup>
 import {computed} from "vue";
+import {NORMAL_PRIORITY, namedPriority} from "../domain/taskPriority.js";
 
-const LOW = 200;
 const HIGH = 300;
 const CRITICAL = 400;
-const props = defineProps({value: {type: Number, default: LOW}});
-const bars = computed(() => (props.value < LOW ? [1, 0.25, 0.25] : props.value === LOW ? [1, 1, 0.25] : [1, 1, 1]));
+const props = defineProps({value: {type: Number, default: NORMAL_PRIORITY}});
+const level = computed(() => namedPriority(props.value));
+const bars = computed(() => (level.value < NORMAL_PRIORITY ? [1, 0.25, 0.25] : level.value === NORMAL_PRIORITY ? [1, 1, 0.25] : [1, 1, 1]));
 </script>
 
 <template>
     <svg
-        :class="['ico', 'prio', {hot: value >= CRITICAL, high: value >= HIGH && value < CRITICAL}]"
+        :class="['ico', 'prio', {hot: level >= CRITICAL, high: level >= HIGH && level < CRITICAL}]"
         viewBox="0 0 16 16"
         fill="none"
         stroke="currentColor"

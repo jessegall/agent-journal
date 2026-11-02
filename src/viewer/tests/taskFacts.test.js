@@ -14,3 +14,10 @@ test.each(["open", "started", "completed", "cancelled"])("a %s task has its prio
     [...element.querySelectorAll("[data-task-priority] button")].find((button) => button.textContent.trim() === "High").click();
     expect(emitted).toEqual(["300"]);
 });
+
+test("a priority between two levels lights the level at or below it, and the number stays", () => {
+    const element = document.createElement("div");
+    createApp({render: () => h(TaskFacts, {task: {id: 7, state: "open", priority: 301}})}).mount(element);
+    const on = [...element.querySelectorAll("[data-task-priority] button.on")].map((button) => button.textContent.trim());
+    expect(on).toEqual(["High"]);
+});
