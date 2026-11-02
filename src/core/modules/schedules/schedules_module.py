@@ -30,7 +30,6 @@ class SchedulesModule(Module):
 
     name = "journal.core.schedules"
     nudges = SCHEDULE_NUDGES
-    seed_reason = "its jobs are written by an agent's hooks, and the demo has no hooks"
     moves = [SchedulesMove]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]

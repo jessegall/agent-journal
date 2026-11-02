@@ -6,6 +6,11 @@ def test_a_setting_a_module_declares_moves_under_its_full_name_with_its_value(ne
     assert "journal.core.memories.keyword-limit  4" in story.run("setting list").output_text
 
 
+def test_version_4s_profile_model_setting_moves_under_its_new_name(new_story):
+    story = upgraded_story(new_story)
+    assert 'journal.core.profiles.model-claude  "haiku"' in story.run("setting list").output_text
+
+
 def test_a_setting_no_module_declares_is_skipped_with_its_number_and_reason(new_story):
     story = upgraded_story(new_story)
     assert "skipped settings 2: no module declares the key no.such.key" in story.upgrade_text
@@ -27,7 +32,7 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
-    assert "skipped settings 9: the key moveprefs.limit is already moved for that scope" in outcome.text
+    assert "skipped settings 10: the key moveprefs.limit is already moved for that scope" in outcome.text
     listing = story.run("setting list").output_text
     assert "moveprefs.limit" in listing and "7" in listing and "9" in listing and "8" not in listing.replace("moveprefs", "")
 

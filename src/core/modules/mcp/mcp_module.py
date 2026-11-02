@@ -28,7 +28,6 @@ class McpModule(Module):
     agent programs at launch, and the Integrations window."""
 
     name = "journal.core.mcp"
-    seed_reason = "a server is installed by the person, with their own accounts"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.secrets"]
     seeders = [McpSeeder]

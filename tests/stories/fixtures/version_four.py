@@ -206,6 +206,7 @@ ROWS = (
       1792000000.0, "1 filed, 1 failed", STAMP, USER)),
     ("dumps", "(environment_id, title, brief, files, parts, items, question, created_at, creator)", (1, "", "Pasted text", "[]", "[]", "{}", '{"text": "Which date?"}', STAMP, USER)),
     ("dumps", "(environment_id, title, brief, created_at, creator)", (9, "Lost", "In a removed environment", STAMP, USER)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (None, "profiles.model.claude", '"haiku"', STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
     ("triggers", "(phrases, action, text, is_scheduled, created_at, creator)", ('["deploy", "release"]', "nudge", "Run the release sequence", 0, STAMP, USER)),
     ("triggers", "(phrases, action, text, is_scheduled, created_at, creator)", ('["rm -rf"]', "deny", "never remove folders", 0, STAMP, USER)),

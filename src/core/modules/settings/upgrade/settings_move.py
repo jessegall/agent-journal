@@ -13,7 +13,8 @@ TABLE = "settings"
 LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout", "viewer.layout", "viewer.inspector_layout", "viewer.worker_layout")
 RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.worker-limit",
            "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
-           "workers.command_kinds": "journal.suites.coding.worker-command-types"}
+           "workers.command_kinds": "journal.suites.coding.worker-command-types", "profiles.model.claude": "journal.core.profiles.model-claude",
+           "profiles.model.codex": "journal.core.profiles.model-codex"}
 LISTED_KEY = "journal.suites.coding.worker-command-types"
 
 

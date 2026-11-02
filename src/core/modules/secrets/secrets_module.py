@@ -29,10 +29,10 @@ from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.queries.secret_query import SecretQuery
 from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
+from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
 
 BUILT = ["make", "edit", "show", "list", "delete"]
-from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 
 
 class SecretsModule(Module):
@@ -42,7 +42,6 @@ class SecretsModule(Module):
 
     name = "journal.core.secrets"
     nudges = SECRET_NUDGES
-    seed_reason = "a secret's value is typed by the person, never made up for a demo"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
