@@ -100,6 +100,22 @@ test("the card counts what is completed and lists its tasks when opened, under t
     expect(card.getAttribute("aria-expanded")).toBe("true");
 });
 
+test("a worker with a task in testing and none started says it waits for its tests", async () => {
+    const element = await drawn([{...FACTS[0], tasks: [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}]}]);
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toContain("waiting for its tests");
+    expect(cardOf(element, 2).querySelector(".agent-dot").dataset.state).toBe("waiting");
+});
+
+test("a worker with a started task does not say it waits for its tests", async () => {
+    const element = await drawn([{...FACTS[0], tasks: TASKS}]);
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("waiting for its tests");
+});
+
+test("a profile's name shows with a capital letter", async () => {
+    const element = await drawn([{...FACTS[0], profile: "auditor"}]);
+    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Auditor");
+});
+
 test("an agent with no tasks has no tasks control", async () => {
     const element = await drawn();
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();

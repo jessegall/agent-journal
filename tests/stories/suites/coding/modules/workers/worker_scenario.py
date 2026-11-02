@@ -17,7 +17,7 @@ def proved(story, repository, worker, point_file: str, text: str) -> None:
     story.expect_success(f'proof make 1 "{point_file}:1, its story" --test "pytest tests/{point_file}"', actor=worker)
 
 
-def test_a_worker_takes_three_tasks_in_one_run_hands_them_in_once_and_is_merged_after_a_failed_test(new_story, monkeypatch):
+def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_once_and_is_merged(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
@@ -28,41 +28,43 @@ def test_a_worker_takes_three_tasks_in_one_run_hands_them_in_once_and_is_merged_
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     expect_states(story, task1="started", task2="open", task3="open")
 
-    # the first task: delivering is refused while tasks are queued, and next moves on with no hand-in
+    # the first task: delivering is refused while tasks are queued; next commits it and queues its test
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_refusal("worker deliver", "task 2 is still in your queue", actor=worker)
-    story.expect_text("worker next", "your next task, task 2: Add the tax", actor=worker)
+    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.run_listeners()
+    expect_states(story, task1="testing", task2="open", task3="open")
+    assert "handed in" not in marks_text(story), marks_text(story)
+    story.expect_refusal("worker next", "the tests of task 1 are running", actor=worker)
+
+    # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
+    ended(story, started[0], 1)
+    assert "1 failed, back with the worker" in marks_text(story), marks_text(story)
+    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed: pytest tests/cart.py")
+    expect_states(story, task1="started", task2="open", task3="open")
+
+    # the worker fixes it: next again, and this time its test passes, which starts the second task with its brief
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.run_listeners()
+    ended(story, started[1], 0)
     expect_states(story, task1="testing", task2="started", task3="open")
+    story.expect_text(f"agent-line list --agent {worker.id}", "Your next task, task:2: Add the tax")
 
     # the second task
     proved(story, repository, worker, "tax.py", "TAX = 1\n")
-    story.expect_text("worker next", "your next task, task 3: Print the receipt", actor=worker)
-    expect_states(story, task1="testing", task2="testing", task3="started")
+    story.expect_success("worker next", actor=worker)
     story.run_listeners()
-    assert "handed in" not in marks_text(story), marks_text(story)
+    ended(story, started[2], 0)
+    expect_states(story, task1="testing", task2="testing", task3="started")
 
-    # the last task: there is no next, and the one delivery hands all three in and queues their tests
+    # the last task: there is no next, and the one delivery hands all three in and runs its test
     proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n")
     story.expect_refusal("worker next", "task 3 is your last", actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     expect_states(story, task1="testing", task2="testing", task3="testing")
     assert "handed in task 1, task 2, task 3" in marks_text(story), marks_text(story)
-    assert "Tests of worker" in marks_text(story) and "queued" in marks_text(story), marks_text(story)
-
-    # the journal runs the tests in turn; the one that fails goes back to the worker, with a mark in the chat
-    ended(story, started[0], 0)
-    ended(story, started[1], 1)
-    ended(story, started[2], 0)
-    assert "1 failed, back with the worker" in marks_text(story), marks_text(story)
-    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed: pytest tests/tax.py")
-    expect_states(story, task1="testing", task2="started", task3="testing")
-
-    # the worker fixes it and delivers again, and only that test runs again
-    repository.changed(worker.id, "tax.py", "TAX = 2\n")
-    story.expect_success("worker deliver", actor=worker)
-    story.run_listeners()
-    assert len(started) == 4
     ended(story, started[3], 0)
     assert "passed" in marks_text(story), marks_text(story)
 
@@ -71,4 +73,4 @@ def test_a_worker_takes_three_tasks_in_one_run_hands_them_in_once_and_is_merged_
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     expect_states(story, task1="completed", task2="completed", task3="completed")
-    repository.expect_file(ENVIRONMENT_BRANCH, "tax.py", "TAX = 2\n")
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")

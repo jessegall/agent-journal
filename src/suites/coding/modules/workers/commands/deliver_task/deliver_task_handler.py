@@ -9,12 +9,9 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
-from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 
 
@@ -24,8 +21,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
 
     command = DeliverTask
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
-        self.queries, self.worktrees, self.proofs, self.repository, self.task_commit, self.tasks = queries, worktrees, proofs, repository, task_commit, tasks
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
+        self.queries, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = queries, worktrees, proof_queue, repository, task_commit, tasks
 
     def handle(self, command: DeliverTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
@@ -38,14 +35,5 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save(started.moved(TaskLifecycle.test), context)
         self.repository.save(worktree.moved(WorktreeLifecycle.deliver), context)
-        self.queue_tests(worktree, context)
+        self.proof_queue.queue(worktree, context)
         return self.queries.query(Task).find(worktree.task_id)
-
-    def queue_tests(self, worktree: Worktree, context: Context) -> None:
-        for proof in tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()):
-            if not proof.test_command:
-                continue
-            if proof.state is ProofState.SHORT:
-                proof = self.repository.save(proof.revise(context.timestamp, context.actor, proof.text), context)
-            if proof.state is ProofState.SHOWN:
-                self.repository.save(proof.moved(ProofLifecycle.queue), context)

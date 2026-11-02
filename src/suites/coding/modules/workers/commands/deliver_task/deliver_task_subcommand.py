@@ -4,11 +4,9 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_step_check import WorkerStepCheck
+from suites.coding.modules.workers.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
-
-DELIVERY_EVENTS = ["worker_clocking_out", "worker_delivering"]
 
 
 class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):

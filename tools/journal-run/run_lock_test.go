@@ -53,6 +53,8 @@ func (client *awayClient) Run(arguments ...string) error {
 
 func (client *awayClient) Reachable() bool { return !client.away }
 
+func (client *awayClient) Restarting() bool { return false }
+
 func TestAnEndIsToldAgainWhileTheServerIsAway(t *testing.T) {
 	setup := options(t, "echo ran")
 	client := &awayClient{recordingClient: newClient(), refusals: 1}

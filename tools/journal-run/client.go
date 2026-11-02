@@ -4,6 +4,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal/socket"
@@ -12,6 +13,7 @@ import (
 // Client is how the runner talks to the journal: whether its server answers, and a command through the journal client.
 type Client interface {
 	Reachable() bool
+	Restarting() bool
 	Run(arguments ...string) error
 }
 
@@ -27,6 +29,13 @@ func (client JournalClient) Reachable() bool {
 	}
 	connection.Close()
 	return true
+}
+
+// Restarting says whether a server that stops for new code left its restart mark, as a stale server still accepts the
+// socket then.
+func (client JournalClient) Restarting() bool {
+	_, err := os.Stat(filepath.Join(client.Home, "server-restarting"))
+	return err == nil
 }
 
 func (client JournalClient) Run(arguments ...string) error {

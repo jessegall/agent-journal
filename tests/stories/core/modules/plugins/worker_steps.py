@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
@@ -21,6 +21,16 @@ def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(new_stor
     story.run(FIRST_PROOF, actor=worker)
     story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("worker-worktree list", "cut", actor=story.agent)
+
+
+def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_task(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_refusal("worker next", "[plugin steps] cart.py has a sin", actor=worker)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
 
 
 def test_a_delivery_the_plugin_lets_through_is_delivered(new_story):

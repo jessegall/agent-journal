@@ -8,6 +8,9 @@ from core.modules.plugins.support.plugin_step_check import PluginStepCheck
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
+# The plugin events of a worker handing a task's work over for testing, which worker next and worker deliver both do.
+DELIVERY_EVENTS = ("worker_clocking_out", "worker_delivering")
+
 
 class WorkerStepCheck:
     """Asks the plugins that answer a worker's step before its command is sent, outside the write the command

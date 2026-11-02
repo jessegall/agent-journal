@@ -94,7 +94,7 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 // report tells the journal of an end, and tells it again while the server is away, as during a restart.
 func (tracker *Tracker) report(arguments ...string) {
 	for attempt := 0; attempt < reportAttempts; attempt++ {
-		if tracker.Client.Run(arguments...) == nil || tracker.Client.Reachable() {
+		if tracker.Client.Run(arguments...) == nil || (tracker.Client.Reachable() && !tracker.Client.Restarting()) {
 			return
 		}
 		time.Sleep(reportRetryInterval)
