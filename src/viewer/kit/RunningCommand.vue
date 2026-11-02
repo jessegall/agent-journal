@@ -29,7 +29,7 @@ defineProps({text: {type: String, default: ""}, idle: {type: String, default: "w
 
 .running-line {
     display: inline-block;
-    max-width: 44ch;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.project_paths import ProjectPaths
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
@@ -46,7 +47,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ToolFacts()
         calls = self.queries.query(HookCall).filter(agent_id=mains[0].id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
-            return ToolFacts(" ".join(part for part in (calls[0].tool, calls[0].summary) if part))
+            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(calls[0].summary)) if part))
         return ToolFacts(wait_target=" and ".join((*self.running_titles(mains[0].id), *self.open_question_lines(environment_id))))
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
