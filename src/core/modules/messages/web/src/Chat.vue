@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
@@ -15,7 +15,7 @@ watch(messages, () => {
     const kept = outgoing.value.filter((echo) => !landed(echo));
     if (kept.length !== outgoing.value.length) outgoing.value = kept;
 });
-const rows = computed(() => withDayLines(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value)));
+const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value), markDeclaration)));
 const {visible: pinned} = usePins(() => notices.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
@@ -292,6 +292,9 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </template>
                     <template v-else-if="row.kind === 'mark'">
                         <MarkHost :mark="row.row" />
+                    </template>
+                    <template v-else-if="row.kind === 'mark-group'">
+                        <MarkGroup :group="row" />
                     </template>
                     <template v-else>
                         <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" @react="reactTo" />
