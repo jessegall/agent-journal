@@ -4,13 +4,16 @@ import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
 
+// the page a pane stage draws, given to the windows in its panes
+export const PANE_PAGE = Symbol("pane-page");
+
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
 const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
-// what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
-// through the host, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
-export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], readOnly = false, shared = null}) {
+// what every window is given: its name, environment, agent and page, whether it is shown, what it may run, its follows
+// through the host, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings, one of its pane's options written through setOption
+export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], page = null, setOption = () => {}, readOnly = false, shared = null}) {
     const recent = new Map();
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
     const requests = new AbortController();
@@ -25,6 +28,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         window,
         environment,
         agent,
+        page,
         visible: computed(() => visible()),
         permissions,
         readOnly,
@@ -41,6 +45,7 @@ export function windowContext({window, environment, agent, visible, permissions,
             const answer = await read(`window setting ${window} ${key}`);
             return answer.ok ? answer.value.value : fallback;
         },
+        setOption,
         keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment, requests.signal),
     };
 }

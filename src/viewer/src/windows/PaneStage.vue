@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
-import {OPEN_VIEW} from "./windowContext.js";
+import {OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -144,6 +144,7 @@ async function readUsage() {
 const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
 const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? location.assign(pageAddress(name)) : openView(name));
 provide(OPEN_VIEW, goTo);
+provide(PANE_PAGE, props.page);
 const openDropdown = ref(null);
 const windowTitle = (name) => (props.catalogue.dropdown(name) || props.catalogue.window(name)).title;
 const helperGroups = () =>
@@ -381,6 +382,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 :visible="state === 'live'"
                                 :prompts="prompts"
                                 :shell-read="shellRead"
+                                :options="pane.options || {}"
+                                @option="(key, value) => setOption(id, key, value)"
                                 @remove="closeTab(id, pane.active)"
                             />
                         </template>

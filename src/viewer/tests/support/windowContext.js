@@ -22,7 +22,8 @@ export function context(answers, agent = null) {
         open: () => {},
         setting: async (key, fallback) => fallback,
         keep: async () => {},
-        option: (key) => ({value: key === "figure" ? "none" : false}),
+        setOption: () => {},
+        option: (key) => ({value: key === "figure" ? "none" : key === "view" ? undefined : false}),
     };
 }
 

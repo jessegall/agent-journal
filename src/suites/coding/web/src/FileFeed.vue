@@ -9,10 +9,15 @@ const DEFAULTS = {lines: 0, flush: false, headers: false, collapse: false, edits
 const BIG_LINE_COUNT = 40;
 const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21px"]};
 const SETTING_KEY = "view";
+// on an agent's page and a worker's, the feed starts as five lines flush, the way version 4's inspector drew it
+const AGENT_PAGE = "agent";
+const AGENT_VIEW = {lines: 5, flush: true};
 
 const context = useWindow();
 const {rows, failure, loaded, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
-const view = ref(DEFAULTS);
+const kept = context.option(SETTING_KEY);
+const startView = (own) => ({...DEFAULTS, ...(context.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
+const view = ref(startView({}));
 const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
@@ -31,7 +36,7 @@ const expand = () => (folds.value = Object.fromEntries(cards.value.map((card) =>
 
 function setOptions(options) {
     view.value = options;
-    context.keep(SETTING_KEY, options);
+    context.setOption(SETTING_KEY, options);
 }
 
 async function whole(card) {
@@ -57,8 +62,10 @@ watch(() => rows.value.length, async () => {
     if (follow && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
 });
 
+// this pane's own view, else the one version 5 first kept for every feed
+watch(kept, (own) => own && (view.value = startView(own)));
 onMounted(async () => {
-    view.value = {...DEFAULTS, ...(await context.setting(SETTING_KEY, {}))};
+    view.value = startView(kept.value ?? (await context.setting(SETTING_KEY, {})));
 });
 </script>
 
