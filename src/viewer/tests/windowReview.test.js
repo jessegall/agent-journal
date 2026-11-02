@@ -29,7 +29,7 @@ test("tasks sit in a group for each state and a search narrows them", async () =
     ]}}});
     const element = await mounted(TaskGroups, window);
     expect([...element.querySelectorAll("[data-state]")].map((group) => group.dataset.state)).toEqual(["started", "blocked"]);
-    const box = element.querySelector(".tasks-search");
+    const box = element.querySelector("[data-search-input]");
     box.value = "price";
     box.dispatchEvent(new Event("input"));
     await settle();

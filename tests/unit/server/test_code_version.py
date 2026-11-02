@@ -40,3 +40,14 @@ def test_a_change_is_seen_only_after_the_recheck_time(tmp_path):
     assert not version.is_stale()
     version.checked_seconds -= 3600
     assert version.is_stale()
+
+
+def test_a_servers_requests_read_what_the_ticker_found(monkeypatch):
+    fingerprint = CodeFingerprint()
+    monkeypatch.setattr(CodeFingerprint, "ticked", True)
+    monkeypatch.setattr(CodeFingerprint, "kept_texts", {})
+    first = fingerprint.text([])
+    monkeypatch.setattr(fingerprint, "folder_text", lambda folders: "read again")
+    assert fingerprint.text([]) == first
+    assert fingerprint.refreshed([]) == "read again"
+    assert fingerprint.text([]) == "read again"

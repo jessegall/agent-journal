@@ -51,3 +51,9 @@ def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_cl
     assert [row["id"] for row in cancelled["rows"]] == [1, 3, 2]
     page = json.loads(story.run(f"task board --environment main --state cancelled --before-closed-at {cancelled['rows'][0]['closed_at']} --json", actor=story.user).output_text)["groups"][0]
     assert [row["id"] for row in page["rows"]] == [3, 2]
+
+
+def test_delegated_tasks_come_after_blocked_and_before_open(new_story):
+    story = new_story(fixture=UserJoined)
+    states = [group["state"] for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]]
+    assert states.index("blocked") < states.index("delegated") < states.index("open"), states

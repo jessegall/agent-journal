@@ -17,3 +17,6 @@ class StartAgent(Command[Agent]):
     parent_id: int | None = None
     pid: int | None = None
     process_started_at: Timestamp | None = None
+    program_model: str = ""
+    profile: str = ""
+    given_name: str = ""

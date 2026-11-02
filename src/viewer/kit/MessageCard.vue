@@ -162,7 +162,7 @@ function pick(face) {
             <div class="message-foot">
                 <time class="message-time">{{ time }}</time>
                 <template v-if="Number.isInteger(message.id)">
-                    <span class="message-id" data-message-id>#{{ message.id }}</span>
+                    <span class="message-id" data-message-id>message {{ message.id }}</span>
                 </template>
                 <template v-if="fromPerson">
                     <ReadTicks :message="message" />
@@ -360,7 +360,7 @@ function pick(face) {
 
 .message-card :deep(p),
 .message-card :deep(li) {
-    text-wrap: balance;
+    text-wrap: pretty;
 }
 
 .message-card {
@@ -464,15 +464,23 @@ function pick(face) {
 
 .message-foot {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
     margin: 0 2px;
 }
 
-.message-time,
+.message-time {
+    color: var(--text-3);
+    font-size: 11px;
+}
+
 .message-id {
     color: var(--text-4);
     font-size: 11px;
+}
+
+.message[data-from="user"] .message-id {
+    order: -1;
 }
 
 .message-flowchart {

@@ -1,4 +1,5 @@
 import argparse
+import math
 from datetime import datetime, timezone
 import signal
 import sys
@@ -46,8 +47,8 @@ TICK_PERIOD_SECONDS = 1.0
 BACKUP_CHECK_SECONDS = 60.0
 CHECK_PERIOD_SECONDS = 60.0
 
-# How long a request may be answered on code that has changed since the last check of its files.
-CODE_RECHECK_SECONDS = 1.0
+# How often the ticker looks at the code files; a request only reads what it found, and never looks itself.
+CODE_CHECK_SECONDS = 10.0
 
 
 def last_port(home: JournalHome) -> int:
@@ -59,7 +60,9 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="journal server")
     parser.add_argument("--home", required=True)
     home = JournalHome(Path(parser.parse_args(argv).home))
-    code_version = CodeVersion(CodeFingerprint(), CodeFolders(ModuleFinder(home)), CODE_RECHECK_SECONDS)
+    CodeFingerprint.ticked = True
+    code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
+    code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
     files = ServerFiles(home)
     if not files.acquire_lock():
         files.log_line("another server holds the lock; this one exits")
@@ -75,6 +78,11 @@ def main(argv: list[str]) -> int:
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
+    def check_code() -> None:
+        code_version.check()
+        code_fingerprint.refreshed(finder.modules())
+
+    code_thread = ListenerThread(check_code, lambda error: files.log_line(f"the code files could not be read: {error}"), CODE_CHECK_SECONDS, "code check")
     check_round = JournalRound(home, "checks", CheckWork())
     check_thread = ListenerThread(check_round.run, check_round.report, CHECK_PERIOD_SECONDS, "checks")
     tunnel = ServerTunnel(home)
@@ -99,6 +107,7 @@ def main(argv: list[str]) -> int:
         booting_round.report(error)
     listener_thread.start()
     ticker.start()
+    code_thread.start()
     check_thread.start()
     viewer.start()
     tunnel_thread.wake()
@@ -112,7 +121,7 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, ticker, listener_thread)
+        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, code_thread, ticker, listener_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()

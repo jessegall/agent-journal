@@ -2,7 +2,7 @@
 import {computed, onUnmounted, ref} from "vue";
 import {useWindow} from "@journal/window-kit";
 
-// the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again, and what the open sessions cost
+// the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again
 const REFRESH_MILLISECONDS = 30000;
 const context = useWindow();
 const usage = ref(null);
@@ -36,9 +36,6 @@ load();
     </template>
     <template v-if="usage && !windows.length">
         <p class="none">No current plan window has been reported here.</p>
-    </template>
-    <template v-if="usage">
-        <p class="none">Cost of the open sessions: ${{ Number(usage.cost_dollars || 0).toFixed(2) }}</p>
     </template>
 </template>
 

@@ -1,3 +1,4 @@
+from core.modules.notices.rules.agent_text_pin_rule import AgentTextPinRule
 from core.modules.notices.rules.link_pin_rule import LinkPinRule
 from core.modules.notices.support.notice_nudges import NOTICE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
@@ -21,7 +22,7 @@ class NoticesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
     nudges = NOTICE_NUDGES
-    driver_rules = [LinkPinRule]
+    driver_rules = [LinkPinRule, AgentTextPinRule]
     seeders = [NoticesSeeder]
     models = [ModelDeclaration(Notice, query=NoticeQuery, excluded_subcommands=["make", "edit", "list", "delete"])]
     migrations = [NoticesTableMigration]

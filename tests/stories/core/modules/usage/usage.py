@@ -2,12 +2,14 @@ import json
 
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from tests.stories.core.support.fixtures import UserJoined
 
 HELPER_START = "agent start s-2 claude worker --parent {parent} --environment main"
@@ -63,6 +65,11 @@ def test_usage_outside_an_environment_is_refused_with_how_to_name_one(new_story)
 def test_the_usage_window_reads_the_usage(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("usage.usage", "usage show")
+
+
+def test_the_cost_window_reads_the_usage(new_story):
+    window = WindowStory(new_story(fixture=UserJoined))
+    window.expect_window_allowed("usage.cost", "usage show")
 
 
 def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_task(new_story):
@@ -122,3 +129,11 @@ def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.run("task start 1", actor=story.agent)
     story.expect_text("usage agents --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)
+
+
+def test_a_subagents_facts_carry_its_profile_given_name_and_instruction(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    dispatch = {"subagent_type": "journal-researcher", "model": "sonnet", "description": "Madame Curie, reader of the cart", "prompt": "Read the cart"}
+    story.hook("s-1", HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": dispatch, "tool_use_id": "tool-1"}))
+    story.hook("s-1", HookSamples.sample("session_start").with_fields(subagent="sub-1").with_raw({"agent_type": "journal-researcher"}))
+    story.expect_text("usage agents --environment main --json", '"profile": "journal-researcher"', '"given_name": "Madame Curie"', '"instruction": "Read the cart"')

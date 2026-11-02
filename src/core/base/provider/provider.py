@@ -101,6 +101,9 @@ class Provider(ABC):
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None
 
+    def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
+        return {}
+
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {}

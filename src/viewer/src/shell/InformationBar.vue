@@ -74,7 +74,7 @@ const uptime = computed(() => {
                 <button type="button" class="fact" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
             </template>
             <template v-if="cost">
-                <button type="button" class="fact" data-fact="cost" title="What this session has cost" @click="emit('open', 'usage', $event.currentTarget)">{{ cost }}</button>
+                <button type="button" class="fact" data-fact="cost" title="The predicted API price of this session: open its breakdown" @click="emit('open', 'cost', $event.currentTarget)">{{ cost }}</button>
             </template>
             <template v-if="uptime">
                 <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>

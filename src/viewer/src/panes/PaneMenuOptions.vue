@@ -1,10 +1,17 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
+import {isMainOnly, mainOnlyOptions} from "../domain/markFamilies.js";
 
 const props = defineProps({declared: {type: Array, required: true}, values: {type: Object, default: () => ({})}});
 const emit = defineEmits(["set"]);
 
 const isChosen = (preset) => Object.entries(preset.options).every(([key, shown]) => (props.values[key] ?? true) === shown);
+
+const valueOf = (key) => props.values[key];
+
+function chooseMain(option) {
+    Object.entries(mainOnlyOptions(option.declarations, option.group, valueOf)).forEach(([key, shown]) => emit("set", key, shown));
+}
 
 function choose(preset) {
     Object.entries(preset.options).forEach(([key, shown]) => emit("set", key, shown));
@@ -17,6 +24,10 @@ function choose(preset) {
             <Btn :data-option="option.key" :aria-pressed="Boolean(values[option.key] ?? option.default)" @click="emit('set', option.key, !(values[option.key] ?? option.default))">
                 {{ option.label }}
             </Btn>
+        </template>
+        <template v-else-if="option.control === 'main'">
+            <span class="pane-menu-group" :data-group="option.group">{{ option.title }}</span>
+            <Btn :data-option="option.key" :aria-pressed="isMainOnly(option.declarations, option.group, valueOf)" @click="chooseMain(option)">{{ option.label }}</Btn>
         </template>
         <template v-else-if="option.control === 'preset'">
             <div class="pane-menu-choice" :data-option="option.key">

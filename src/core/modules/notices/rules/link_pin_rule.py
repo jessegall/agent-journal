@@ -1,50 +1,29 @@
-import re
-from datetime import timedelta
-
 from core.base.agent_role import AgentRole
-from core.base.clock import Clock
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
-from core.base.type_guards import is_mapping
-from core.modules.notices.models.notice import Notice
-from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
+from core.base.driver.tool_type import ToolType
+from core.modules.notices.support.link_pin_check import LinkPinCheck
 
-LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
-LOCAL_ADDRESS = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
-PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
-CLAIM_WINDOW_SECONDS = 60
-OUTPUT_FIELD = "stdout"
+FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 
 
 class LinkPinRule(DriverRule):
-    """A link in a command's output that no pin has is offered as a pin, and words in a message that a link is
-    pinned, with no pin made in the last minute, are pointed out."""
+    """A link in a tool's output or in the line the agent ran is offered as a pin, and words in that line that a link
+    is pinned are checked; a file the agent reads or edits is not offered from."""
 
     name = "notices.link-pin"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, clock: Clock) -> None:
-        self.queries, self.clock = queries, clock
+    def __init__(self, check: LinkPinCheck) -> None:
+        self.check = check
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.shell is None:
+        if tool is None or tool.category in FILE_TOOLS:
             return RuleAnswer.allowed()
-        notices = self.queries.query(Notice).filter(environment_id=hook.environment_id)
-        if PIN_CLAIM.search(tool.shell.line) and not notices.matching(Greater("created_at", Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text)).exists():
-            return RuleAnswer.with_nudges(UNPINNED_CLAIM.nudge())
-        response = hook.event.raw.get("tool_response")
-        output = response.get(OUTPUT_FIELD) if is_mapping(response) else None
-        if not isinstance(output, str):
-            return RuleAnswer.allowed()
-        loose = [url.rstrip(".,;:") for url in LINK.findall(output) if not LOCAL_ADDRESS.match(url)]
-        unpinned = [url for url in dict.fromkeys(loose) if not notices.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()]
-        return RuleAnswer.with_nudges(LINK_PIN_REQUEST.nudge(url=unpinned[0])) if unpinned else RuleAnswer.allowed()
+        line = tool.shell.line if tool.shell is not None else ""
+        return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, line, self.check.joined_text(hook.event.raw.get("tool_response"))))

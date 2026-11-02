@@ -158,7 +158,7 @@ export const STATE_SWITCHES = [
 export const KIND_SWITCHES = [
     {key: "environment", label: "Environment agents", icon: "branch", hidden: (n) => `${n} ${n === 1 ? "environment agent" : "environment agents"}`},
     {key: "worker", label: "Workers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "worker" : "workers"}`},
-    {key: "subagent", label: "Helpers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "helper" : "helpers"}`},
+    {key: "subagent", label: "Subagents", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "helper" : "helpers"}`},
 ];
 
 export const ORDERS = [

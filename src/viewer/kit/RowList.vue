@@ -12,6 +12,8 @@ const props = defineProps({
     shape: {type: String, default: "rows"},
     // reads the next page behind the rows and says whether it found any; with none given the list has no pages
     older: {type: Function, default: null},
+    // whether the server holds a page behind the rows, which is what shows the button to read it
+    more: {type: Boolean, default: true},
     // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
     arrival: {type: Object, default: null},
 });
@@ -40,7 +42,7 @@ async function showMore(older) {
                 </li>
             </template>
         </component>
-        <template v-if="older && !finished && rows.length">
+        <template v-if="older && more && !finished && rows.length">
             <button type="button" class="row-list-more" data-row-list-more @click="showMore(older)">Show more</button>
         </template>
     </template>

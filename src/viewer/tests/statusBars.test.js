@@ -160,3 +160,12 @@ test("the bar shows the branch, says nothing of working, and shows the effort le
     expect(element.querySelector('[data-fact="state"]')).toBeNull();
     expect(element.textContent).not.toContain("Working");
 });
+
+test("the cost in the information bar opens the cost dropdown, and the allowance opens the usage one", () => {
+    const opened = [];
+    const usage = {agents: [{id: 1, cost_dollars: 40.86}], windows: [{title: "7 days", used_percent: 12.4}]};
+    const element = mounted(InformationBar, {agent: MAIN, usage, onOpen: (name) => opened.push(name)});
+    element.querySelector("[data-fact='cost']").click();
+    element.querySelector("[data-fact='usage']").click();
+    expect(opened).toEqual(["cost", "usage"]);
+});

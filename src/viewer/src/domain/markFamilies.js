@@ -41,11 +41,25 @@ export const familyPresets = (declarations) => [
 export const presetOfOptions = (declarations, option) =>
     familyPresets(declarations).find((preset) => Object.entries(preset.options).every(([key, shown]) => (option(key) ?? true) === shown))?.key ?? "";
 
+const groupFamilies = (declarations, group) => families(declarations).filter((family) => family.group === group);
+
+// whether a group shows only its main marks: its families with a main mark are on and the others off
+export const isMainOnly = (declarations, group, option) => groupFamilies(declarations, group).every((family) => (option(familyKey(family.key)) ?? true) === family.main);
+
 // main only for a group: its families that have no main mark are switched off, the others on; flipping it again switches them all on
 export function mainOnlyOptions(declarations, group, option) {
-    const own = families(declarations).filter((family) => family.group === group);
-    const already = own.every((family) => (option(familyKey(family.key)) ?? true) === family.main);
-    return options(own, (family) => (already ? true : family.main));
+    const already = isMainOnly(declarations, group, option);
+    return options(groupFamilies(declarations, group), (family) => (already ? true : family.main));
+}
+
+// Show in chat below its presets, group by group: the group's name with Only its main marks, then a switch for each family in it
+export function groupOptions(declarations) {
+    const groups = new Map();
+    for (const declaration of declarations) groups.set(declaration.group, [...(groups.get(declaration.group) ?? []), declaration]);
+    return [...groups].flatMap(([group, own]) => [
+        {control: "main", key: `main-only-${group}`, label: "Only its main marks", title: own[0].group_label || group, group, declarations: own},
+        ...familyOptions(own),
+    ]);
 }
 
 // a version 4 pane's saved list of hidden kinds as family switches: a family is off when every one of its marks is among them, a kind being

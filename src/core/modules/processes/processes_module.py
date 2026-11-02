@@ -54,6 +54,7 @@ from core.modules.processes.rules.journal_pipe_rule import JournalPipeRule
 from core.modules.processes.rules.redirected_run_rule import RedirectedRunRule
 from core.modules.processes.rules.silent_run_rule import SilentRunRule
 from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
+from core.modules.processes.listeners.test_run_marker_listener import TestRunMarkerListener
 from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
 from core.modules.processes.guards.ended_process_dock_guard import EndedProcessDockGuard
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
@@ -121,7 +122,7 @@ class ProcessesModule(Module):
     subcommands = [ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule]
-    listeners = [WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
+    listeners = [TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	outputMonitorPause  = 2 * time.Second
+	outputMonitorPause  = 5 * time.Second
 	outputMonitorMost   = 2 * time.Hour
 	outputRunningWord   = "  running"
 	outputMonitorMisses = 60

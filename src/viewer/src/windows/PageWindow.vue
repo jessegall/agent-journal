@@ -14,6 +14,7 @@ const props = defineProps({
     prompts: {type: Object, default: null},
     options: {type: Object, default: () => ({})},
 });
+const emit = defineEmits(["option"]);
 const component = shallowRef(null);
 const loadFailure = ref("");
 
@@ -58,6 +59,7 @@ watch(
             :tabs="entry.tabs"
             :events="entry.events"
             :unavailable-reason="entry.unavailable_reason || loadFailure"
+            @option="(key, value) => emit('option', key, value)"
         />
     </template>
 </template>

@@ -9,7 +9,7 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 
 ## As the one who sends
 
-- `journal worker dispatch <task> [<task> ...]` starts a worker on the tasks, which it takes one by one with no report in
+- `journal worker dispatch <task> [<task> ...] --model <model>` starts a worker on the tasks on that model, which every dispatch names (`--profile` and `--name` show on its card), which it takes one by one with no report in
   between; the journal runs their tests after the last and tells you when all pass. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker models` lists each program's models from the cheapest to the strongest.

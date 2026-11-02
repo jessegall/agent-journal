@@ -1,8 +1,9 @@
 <script setup>
-import Segmented from "../src/kit/Segmented.vue";
-import TextInput from "../src/kit/TextInput.vue";
+import MenuItem from "../src/kit/MenuItem.vue";
+import MenuLabel from "../src/kit/MenuLabel.vue";
+import SearchBar from "./SearchBar.vue";
 
-// the search, the order and the open or closed choice of a list, as version 4's index pages had them
+// the search of a list, with its order and its open or closed choice in the bar's menu
 defineProps({tools: {type: Object, required: true}, placeholder: {type: String, default: "Search"}});
 const ORDERS = [
     {key: "newest", label: "Newest"},
@@ -17,25 +18,26 @@ const STATES = [
 
 <template>
     <div class="list-tools" data-list-tools>
-        <TextInput v-model="tools.words.value" icon="search" class="list-tools-search" :placeholder="placeholder" data-list-search />
-        <Segmented :options="ORDERS" :value="tools.order.value" data-list-order @pick="tools.order.value = $event" />
-        <template v-if="tools.hasStates">
-            <Segmented :options="STATES" :value="tools.state.value" data-list-state @pick="tools.state.value = $event" />
-        </template>
+        <SearchBar v-model="tools.words.value" class="list-tools-search" :placeholder="placeholder" data-list-search>
+            <template #menu>
+                <MenuLabel>Order</MenuLabel>
+                <template v-for="order in ORDERS" :key="order.key">
+                    <MenuItem :checked="tools.order.value === order.key" :data-list-order="order.key" @click="tools.order.value = order.key">{{ order.label }}</MenuItem>
+                </template>
+                <template v-if="tools.hasStates">
+                    <MenuLabel>Show</MenuLabel>
+                    <template v-for="state in STATES" :key="state.key">
+                        <MenuItem :checked="tools.state.value === state.key" :data-list-state="state.key" @click="tools.state.value = state.key">{{ state.label }}</MenuItem>
+                    </template>
+                </template>
+            </template>
+            <slot />
+        </SearchBar>
     </div>
 </template>
 
 <style scoped>
 .list-tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
     margin-bottom: 8px;
-}
-
-.list-tools-search {
-    flex: 1;
-    min-width: 160px;
 }
 </style>
