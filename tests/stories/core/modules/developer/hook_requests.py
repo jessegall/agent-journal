@@ -31,3 +31,12 @@ def test_only_the_last_hooks_the_setting_names_are_kept_newest_first(new_story):
     for firing in ("first", "second", "third"):
         log.record("claude", HEADERS, {"firing": firing})
     assert [(row.number, row.body["firing"]) for row in log.read()] == [(3, "third"), (2, "second")]
+
+
+def test_a_corrupt_log_file_costs_the_rows_and_not_the_hook(new_story):
+    story = logging_story(new_story)
+    log = story.container.get(HookRequestLog)
+    log.path.parent.mkdir(parents=True, exist_ok=True)
+    log.path.write_text("{not json")
+    log.record("claude", HEADERS, {"event": "stop"})
+    assert [row.number for row in log.read()] == [1]

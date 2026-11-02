@@ -80,3 +80,8 @@ def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
     start = HookSamples.subagent().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
     story.hook("s-1", start)
     story.expect_text("profile list", "critic  subagent  -  used 1", actor=story.user)
+
+
+def test_a_person_cannot_save_a_profile_under_a_shipped_name(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal('profile save journal-mine --description "Mine" --body "Read."', "a profile starting with journal- is reserved", actor=story.user)

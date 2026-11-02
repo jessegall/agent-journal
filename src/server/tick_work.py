@@ -7,6 +7,7 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
+from core.base.error_log import ErrorLog
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -28,6 +29,7 @@ PRUNE_PERIOD = timedelta(days=1)
 MINUTE_SECONDS = 60
 SLOW_TICK_SECONDS = 0.25
 MAIN_ACTOR = "agent"
+THREAD_NAME = "ticker"
 
 
 class TickWork(RoundWork):
@@ -35,8 +37,8 @@ class TickWork(RoundWork):
     writes its lines to their file and what it found on the output row, and wakes the listeners. Once a minute
     each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
     speak on their own, and the notices that wait on paired phones are pushed; once a day the old hook calls
-    are pruned. A tick over a quarter of a second says so in the chat, at most once a minute, when the
-    developer option is on."""
+    are pruned. Reading the outputs over a quarter of a second says so in the chat, at most once a minute, when
+    the developer option is on; a fault in that reading is logged and does not stop the minute's work."""
 
     def __init__(self, wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic) -> None:
         self.wake_listeners, self.seconds = wake_listeners, seconds
@@ -46,12 +48,16 @@ class TickWork(RoundWork):
 
     def run(self, container: Container) -> None:
         started = self.seconds()
-        self.read_running_outputs(container)
+        try:
+            self.read_running_outputs(container)
+        except Exception as error:
+            container.get(ErrorLog).reported([THREAD_NAME], error)
+        read_seconds = self.seconds() - started
         clock_time = container.get(Clock).timestamp()
         if self.minute_at is None or self.minute_at.elapsed_seconds(clock_time) >= MINUTE_SECONDS:
             self.minute_at = clock_time
             self.run_minute(container, clock_time)
-        self.warn_slow_tick(container, self.seconds() - started, clock_time)
+        self.warn_slow_tick(container, read_seconds, clock_time)
 
     def warn_slow_tick(self, container: Container, tick_seconds: float, clock_time: Timestamp) -> None:
         recently_warned = self.warned_at is not None and self.warned_at.elapsed_seconds(clock_time) < MINUTE_SECONDS

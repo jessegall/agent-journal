@@ -1,3 +1,4 @@
+from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
@@ -52,3 +53,16 @@ def test_a_plan_closes_by_itself_when_its_last_task_ends(new_story):
     story.run(lines.TASK_CANCEL)
     story.run_listeners()
     story.expect_success("plan show 1", "state: completed", actor=story.agent)
+
+
+def test_a_plan_is_cancelled_by_itself_when_every_task_is_cancelled(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
+    story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
+    story.run('task make "Only task" --environment main', actor=story.agent)
+    story.run("phase place 1 --phase 1", actor=story.agent)
+    for move in ("plan ready 1", "plan approve 1", "plan start 1"):
+        story.run(move)
+    story.run('task cancel 1 --reason "not needed"', actor=story.agent)
+    story.run_listeners()
+    story.expect_success("plan show 1", "state: cancelled", actor=story.agent)

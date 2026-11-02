@@ -3,6 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
@@ -11,10 +12,12 @@ from core.modules.plans.models.plan_task import PlanTask
 
 ENDED_TASK_EVENTS = ("task.close", "task.cancel")
 UNFINISHED_STATES = (PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED)
+CANCEL_REASON = "every task of the plan was cancelled"
 
 
 class FinishedPlanListener(CommitListener):
-    """When the last open task of an approved, started or blocked plan ends, the plan closes as completed."""
+    """When the last open task of an approved, started or blocked plan ends, the plan closes as completed, or is
+    cancelled if every task was."""
 
     name = "plans.finished-plan"
     event = "task.*"
@@ -30,5 +33,7 @@ class FinishedPlanListener(CommitListener):
         if plan is None or plan.state not in UNFINISHED_STATES:
             return
         progress = self.queries.query(PlanProgress).find(plan.id)
-        if progress.task_count and progress.completed_count == progress.task_count:
+        if not progress.task_count:
+            self.bus.run(CancelPlan(plan.id, CANCEL_REASON), Actor.core(), cause_id=event.id, environment_id=plan.environment_id)
+        elif progress.completed_count == progress.task_count:
             self.bus.run(ClosePlan(plan.id), Actor.core(), cause_id=event.id, environment_id=plan.environment_id)

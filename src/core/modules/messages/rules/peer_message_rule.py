@@ -6,7 +6,6 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
 from core.modules.messages.commands.record_peer_message.record_peer_message import RecordPeerMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
@@ -26,7 +25,7 @@ class PeerMessageRule(DriverRule):
         self.queries, self.providers = queries, providers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        provider = self.providers.provider(self.queries.query(Agent).find(hook.agent_id).program)
+        provider = self.providers.provider(hook.event.program)
         path = provider.transcript_path(hook.event)
         notes = [note for note in provider.peer_notes(path) if self.is_new(hook.agent_id, note)] if path is not None else []
         return RuleAnswer.allowed().running(*(RecordPeerMessage(hook.environment_id, hook.agent_id, note.sender, note.text, note.key) for note in notes))

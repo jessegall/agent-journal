@@ -15,6 +15,20 @@ def test_a_tick_round_reaches_each_open_agents_rules_and_a_silenced_history_rule
     story.expect_absent(f"hook-call list --agent {story.agent.id}", "tick")
 
 
+def test_a_fault_in_reading_the_outputs_does_not_stop_the_minute_work(new_story, monkeypatch):
+    story = new_story(fixture=BuilderStarted)
+    work, ticks = TickWork(lambda: None), []
+    route = story.container.get(HookRoute)
+    route.answer = lambda event: ticks.append(event)
+
+    def broken(_container) -> None:
+        raise ValueError("a bad output")
+
+    monkeypatch.setattr(work, "read_running_outputs", broken)
+    work.run(story.container)
+    assert ticks
+
+
 def test_the_minute_work_waits_for_the_minute_while_the_clock_ticks(new_story):
     story = new_story(fixture=BuilderStarted)
     work, ticks = TickWork(lambda: None), []

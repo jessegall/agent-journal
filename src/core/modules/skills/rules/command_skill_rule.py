@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
+from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
@@ -31,4 +31,4 @@ class CommandSkillRule(DriverRule):
         missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused_with_block(hook, READ_SKILL_FIRST.nudge(path=self.files.relative(missing[0].folder)), SkillLoaded(missing[0].folder))
+        return RuleAnswer.refused_with_block(hook, READ_COMMAND_SKILL_FIRST.nudge(path=self.files.relative(missing[0].folder)), SkillLoaded(missing[0].folder))

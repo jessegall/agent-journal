@@ -35,7 +35,7 @@ class RequiredCommandRule(DriverRule):
         if not required_commands:
             return RuleAnswer.allowed()
         command = str(hook.event.tool_input().get("command", ""))
-        completed_commands = [required_command for required_command in required_commands if RanCommand.is_in_line(required_command.required_command, command)]
+        completed_commands = [required_command for required_command in required_commands if RanCommand.matches_line(required_command.required_command, command)]
         open_commands = [required_command for required_command in required_commands if required_command not in completed_commands]
         for required_command in open_commands:
             if self.tool_uses(required_command) >= TOOL_USES_GIVEN:
