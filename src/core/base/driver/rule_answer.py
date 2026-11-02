@@ -47,6 +47,10 @@ class RuleAnswer:
         answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(nudge)
         return answer.running(BlockUntil(hook.agent_id, nudge, condition))
 
+    @classmethod
+    def refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
+        return cls.refused(nudge).running(BlockUntil(hook.agent_id, nudge, condition))
+
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])
 

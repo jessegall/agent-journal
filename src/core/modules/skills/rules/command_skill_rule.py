@@ -5,7 +5,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
+from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_files import SkillFiles
@@ -13,7 +13,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 
 class CommandSkillRule(DriverRule):
     """A journal command of a noun a skill covers is refused until the agent holds that skill loaded in its
-    current text, and the refusal gives the path to read."""
+    current text: every other tool but reading is blocked until it is read, and the refusal gives the path."""
 
     name = "skills.command"
     hook = HookEventName.PRE_TOOL_USE
@@ -27,11 +27,7 @@ class CommandSkillRule(DriverRule):
         tool = hook.event.tool
         parts = tool.shell.parts if tool is not None and tool.shell is not None else ()
         covered = {part.subcommand or part.arguments[0] for part in parts if part.classification.category is CommandCategory.JOURNAL and part.arguments}
-        missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.loaded(hook.agent_id, skill.folder, skill.digest)]
+        missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not missing:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(path=self.files.relative(missing[0].folder)))
-
-    def loaded(self, agent_id: int, folder: str, digest: str) -> bool:
-        row = self.rows.find(agent_id, folder)
-        return row is not None and row.state is AgentSkillState.LOADED and row.digest == digest
+        return RuleAnswer.refused_with_block(hook, READ_SKILL_FIRST.nudge(path=self.files.relative(missing[0].folder)), SkillLoaded(missing[0].folder))

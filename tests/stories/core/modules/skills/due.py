@@ -92,6 +92,18 @@ def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_i
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
 
 
+def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(new_story):
+    story = environment(new_story)
+    start(story)
+    for skill in DEFAULTS:
+        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first: .claude/skills/journal-tasks")
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", digest_of(story, "journal-tasks")), story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+
+
 def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environment(new_story):
     story = environment(new_story)
     start(story)
