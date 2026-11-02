@@ -1,11 +1,13 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
+from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
 from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
 from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
+from core.modules.plans.listeners.finished_plan_listener import FinishedPlanListener
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
@@ -50,7 +52,7 @@ from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 
-PLAN_COMMANDS = (BlockPlan, CancelPlan)
+PLAN_COMMANDS = (BlockPlan, CancelPlan, ClosePlan)
 
 
 class PlansModule(Module):
@@ -70,7 +72,7 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress, PlanCard]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
+                 NextPlanTaskStarterListener, FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]

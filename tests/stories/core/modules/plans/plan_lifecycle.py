@@ -44,8 +44,11 @@ def test_a_plan_with_open_tasks_is_not_closed_and_points_to_its_progress(new_sto
     story.expect_refusal("plan close 1", "plan 1 has 2 tasks still open: see them with journal plan progress 1", actor=story.agent)
 
 
-def test_a_plan_whose_tasks_are_all_completed_or_cancelled_is_closed(new_story):
+def test_a_plan_closes_by_itself_when_its_last_task_ends(new_story):
     story = new_story(fixture=PlanFirstTaskClosed)
     story.run('task close 3 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    story.expect_success("plan show 1", "state: started", actor=story.agent)
     story.run(lines.TASK_CANCEL)
-    story.expect_success("plan close 1", "state: completed", actor=story.agent)
+    story.run_listeners()
+    story.expect_success("plan show 1", "state: completed", actor=story.agent)

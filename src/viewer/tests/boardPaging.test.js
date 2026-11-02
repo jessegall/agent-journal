@@ -85,3 +85,12 @@ test("show more on an empty plan list asks for nothing", async () => {
     expect(element.querySelector("[data-plans-more]")).toBeNull();
     expect(reads.some((line) => line.includes("Infinity"))).toBe(false);
 });
+
+test("a plan card shows its state as a badge, and no phase once none is left", async () => {
+    const finished = {...plan(4, "Done"), state: "approved", task_count: 3, completed_count: 3, current_phase: 0};
+    const {window} = reader(() => ({ok: true, value: {open_total: 1, closed_total: 0, plans: [finished]}}));
+    const element = await mounted(PlanCards, window);
+    await settle();
+    expect(element.querySelector("[data-plan-state]").textContent).toBe("approved");
+    expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
+});

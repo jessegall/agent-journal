@@ -62,10 +62,10 @@ load();
             <div class="plans-grid">
                 <template v-for="row in shown" :key="row.id">
                     <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
-                        <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span class="plan-state">{{ row.state }}</span></span>
+                        <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span :class="['plan-state', row.state]" data-plan-state>{{ row.state }}</span></span>
                         <span class="plan-title">{{ row.title }}</span>
                         <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
-                        <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done · phase {{ row.current_phase }}</span>
+                        <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
                     </div>
                 </template>
             </div>
@@ -133,6 +133,22 @@ load();
 
 .plan-state {
     margin-left: auto;
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.plan-state.started,
+.plan-state.completed {
+    border-color: var(--tone-good, var(--green));
+    color: var(--tone-good, var(--green));
+}
+
+.plan-state.blocked {
+    border-color: var(--tone-warn);
+    color: var(--tone-warn);
 }
 
 .plan-title {

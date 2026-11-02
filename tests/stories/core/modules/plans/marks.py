@@ -40,7 +40,7 @@ def test_a_plan_closed_shows_a_mark(new_story):
 def test_a_refused_plan_move_shows_no_plan_mark(new_story):
     story = started_plan(new_story)
     starting_count = mark_count(story)
-    story.expect_refusal("plan close 1", "is approved", actor=story.agent)
+    story.expect_refusal("plan unblock 1", "is approved", actor=story.agent)
     story.run_listeners()
     assert mark_count(story) == starting_count
 

@@ -14,6 +14,6 @@ class PlanLifecycle(Lifecycle):
     start = Move("start", [PlanState.APPROVED], PlanState.STARTED)
     block = Move("block", [PlanState.STARTED], PlanState.BLOCKED)
     unblock = Move("unblock", [PlanState.BLOCKED], PlanState.STARTED)
-    close = Move("close", [PlanState.STARTED], PlanState.COMPLETED)
+    close = Move("close", [PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED], PlanState.COMPLETED)
     cancel = Move("cancel", (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED),
                   PlanState.CANCELLED)
