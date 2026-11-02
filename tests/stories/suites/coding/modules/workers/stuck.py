@@ -60,6 +60,46 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1 is still started")
 
 
+def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_which_its_main_agent_hears_of(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
+    story.expect_success('proof make 1 "cart.py:1, its story" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success("worker next", actor=worker)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent stop {worker.id}", actor=user)
+    story.expect_text(lines.TASK_DETAILS, "state: testing", f"delegated_to: {worker.id}")
+    assert "delegated_to" not in story.run(lines.SECOND_TASK_DETAILS).output_text
+
+
+def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"task 2 is still queued for worker {worker.id}")
+
+
+def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    story.run('task make "Other job" --brief "Do the other job" --environment main', actor=story.agent)
+    story.expect_success("task depend 2 --on 3", actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    session = worker_session(story, worker)
+    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_hook_allowed(session, HookSamples.stop())
+
+
 def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
     story = new_story(fixture=OrchestratorWithOpenTask)

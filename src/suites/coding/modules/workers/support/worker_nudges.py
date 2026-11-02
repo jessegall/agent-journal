@@ -14,6 +14,9 @@ WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTIO
 
 WORKER_TEST_TURN = NudgeDeclaration("workers.test_turn", NudgeType.REFUSAL, 'one test run goes at a time: process {process} of agent {agent} is running; monitor it, then run yours')
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.INSTRUCTION, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: {lines}. Fix them, then journal worker deliver', turn_limited=False)
-WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.INSTRUCTION, 'you ended with tasks left: go on with them in order, deliver after each, and stop only after the last')
-WORKER_NUDGES = [WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: {lines}. Fix them, then journal worker next, or journal worker deliver on your last task', turn_limited=False)
+WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.INSTRUCTION, 'you ended with tasks left: go on with journal worker next, deliver after the last, and stop only then')
+WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.INSTRUCTION, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False)
+WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.INSTRUCTION, 'the user commented: {job}', turn_limited=False)
+WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INSTRUCTION, 'your tests passed. Your next task, task:{task}: {job}', turn_limited=False)
+WORKER_NUDGES = [WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]

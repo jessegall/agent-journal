@@ -31,6 +31,10 @@ const socketSwitchName = "hooks-on-socket"
 // removes it once it takes requests.
 const restartMarkName = "server-restarting"
 
+// maxToolWait caps the wait a person sets for a tool's hook, so one more ask after RestartWindow stays inside the
+// program's hook timeout of 90 seconds and the program never kills the hook mid-wait.
+const maxToolWait = 25 * time.Second
+
 // restartTimedOut is the status post gives a hook whose restarting server did not come back within RestartWindow.
 const restartTimedOut = http.StatusGatewayTimeout
 
@@ -70,7 +74,7 @@ func limitIn(root, eventName string) time.Duration {
 	if err != nil || seconds < 1 {
 		return standard
 	}
-	return time.Duration(seconds) * time.Second
+	return min(time.Duration(seconds)*time.Second, maxToolWait)
 }
 
 // delivery is one hook on its way to the journal: where it goes, who sends it, the prepared object, and the timing

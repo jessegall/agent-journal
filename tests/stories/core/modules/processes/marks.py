@@ -61,6 +61,17 @@ def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_st
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1", "process:2")
 
 
+def test_a_short_run_whose_output_is_dropped_still_ends_the_mark_its_reader_gave_it(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run(PROGRESS, actor=story.agent)
+    process = start_process(story, "make plain", category=CommandCategory.PROCESS)
+    story.run_listeners()
+    story.expect_text(MARKS, "process:1")
+    end_run(story, process, "ok\n")
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --state ended", "process:1")
+
+
 def test_a_run_moved_to_the_background_updates_its_mark_in_place(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "make build", category=CommandCategory.BUILD)

@@ -23,11 +23,11 @@ class WorkerCommand:
         self.providers, self.models = providers, models
 
     def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
-        brief = f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\nProve each point with journal proof make, then journal worker deliver."
+        brief = f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\nProve each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last."
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
 
     def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:
-        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{job}\nProve each point with journal proof make, then journal worker deliver.")
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{job}\nProve each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last.")
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         provider = self.providers.provider(worker.program)

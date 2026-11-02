@@ -56,6 +56,16 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(new_story):
     assert (docked_state(story, leaves), docked_state(story, stays)) == ("undocked", "docked")
 
 
+def test_an_item_leaves_on_a_change_in_another_environment(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    leaves = docked(story, ended_task(story, "Leaving"))
+    story.expect_success("environment make other /work/other", actor=story.user)
+    story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
+    story.run('task make "Tick" --environment other', actor=story.user)
+    story.run_listeners()
+    assert docked_state(story, leaves) == "undocked"
+
+
 def test_a_row_is_docked_once_per_type(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     task_id = ended_task(story, "Once")

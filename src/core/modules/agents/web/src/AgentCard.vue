@@ -9,17 +9,22 @@ const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const now = useNow();
-const title = computed(() => props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role);
-const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
+const title = computed(() => {
+    const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
+    return name.slice(0, 1).toUpperCase() + name.slice(1);
+});
+const tasks = computed(() => props.facts?.tasks ?? []);
+// a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
+const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
+const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : "", waitingForTests.value ? "waiting for its tests" : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
-const dotState = computed(() => (props.row.ended_at ? "closed" : props.facts?.state || "running"));
+const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [`agent ${props.row.id}`];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
     if (props.facts?.cost_dollars) parts.push(`$${props.facts.cost_dollars.toFixed(2)}`);
     return parts.join(" · ");
 });
-const tasks = computed(() => props.facts?.tasks ?? []);
 const completedCount = computed(() => tasks.value.filter((task) => task.state === "completed").length);
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));

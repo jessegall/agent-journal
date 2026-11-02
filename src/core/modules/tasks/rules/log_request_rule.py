@@ -16,7 +16,7 @@ class LogRequestRule(DriverRule):
     name = "tasks.log-request"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, task_writes: TaskWriteCount) -> None:
         self.task_writes = task_writes
