@@ -53,8 +53,8 @@ class Console:
                 return self.handoff.run(shell_run, stream)
             if not argv or argv[0] in HELP_FLAGS:
                 return self.help_line_count("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
-            names_no_subcommand = len(argv) == 1 or (argv[1].startswith("-") and argv[1] not in HELP_FLAGS)
-            if names_no_subcommand and f"{argv[0]} {argv[0]}" in self.registry.subcommands:
+            subcommand_omitted = len(argv) == 1 or (argv[1].startswith("-") and argv[1] not in HELP_FLAGS)
+            if subcommand_omitted and f"{argv[0]} {argv[0]}" in self.registry.subcommands:
                 return self.chosen_run([argv[0], *argv], caller, output)
             if len(argv) == 1 or argv[1] in HELP_FLAGS:
                 return self.subcommand_help(argv[0], stream)
