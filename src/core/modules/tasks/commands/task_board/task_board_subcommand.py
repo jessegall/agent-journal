@@ -28,7 +28,7 @@ def board_group(text: str) -> TaskState | str:
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     """`journal task board [--environment <name>] [--state <state> --before-id <n> --before-closed-at <time>
-    --limit <n>]`: the first page of every state in one answer, or one more page of one state. A finished
+    --limit <n>]`: the first page of every state in one answer, or one more page of one state; `--limit` sets the rows of a page in either. A finished
     state runs from the task closed last and pages by that time; any other from the newest task, by its
     number. The tasks delegated to a worker that are not finished are the group `delegated`, apart from the
     state groups."""
@@ -54,8 +54,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
             if arguments.state in FINISHED_STATES:
                 return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, arguments.before_closed_at, arguments.limit or FINISHED_PAGE_ROWS)]))
             return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
-        active_groups = tuple(self.group(environment_id, state, None, PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN))
-        finished = tuple(self.finished_group(environment_id, state, None, FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
+        active_groups = tuple(self.group(environment_id, state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN))
+        finished = tuple(self.finished_group(environment_id, state, None, arguments.limit or FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
     def group(self, environment_id: int, state: TaskState | str, previous_id: int | None, size: int) -> TaskGroup:

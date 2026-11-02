@@ -22,7 +22,7 @@ test("a button has no visible border unless it is asked to be bordered", () => {
     expect(button).toMatch(/\.btn\.bordered \{\s*border-color: var\(--border-2\);/);
 });
 
-test("the dock's action buttons and Dump files are the bordered ones", () => {
+test("the dock's text action buttons and Dump files are the bordered ones", () => {
     expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small :kind="button\.primary \? 'primary' : 'ghost'" :bordered="!button\.primary" :data-dock-action="button\.action"/);
     expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered class="composer-send" data-dump-files/);
 });

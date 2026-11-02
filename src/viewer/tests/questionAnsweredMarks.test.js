@@ -15,8 +15,15 @@ function drawn(mark) {
 }
 
 test("an answered or closed question stays a card in its place", () => {
-    for (const variant of ["open", "answered", "closed"]) {
+    for (const variant of ["open", "user", "agent", "closed"]) {
         expect(drawn({type: "questions.question", variant, state: variant === "open" ? "shown" : "ended"}).querySelector(".whole-card")).not.toBeNull();
+    }
+});
+
+test("the card of a question the user answered sits on the user's side, and one the agent answered or one still open does not", () => {
+    expect(drawn({type: "questions.question", variant: "user", state: "ended"}).querySelector(".whole-card.user-side")).not.toBeNull();
+    for (const variant of ["agent", "open", "closed"]) {
+        expect(drawn({type: "questions.question", variant, state: "ended"}).querySelector(".user-side")).toBeNull();
     }
 });
 

@@ -5,7 +5,6 @@ import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
 // from the task closed last, and each group pages on its own
-const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
 const FOLDED_KEY = "journal.tasks.folded";
 const props = defineProps({
@@ -22,6 +21,9 @@ const failure = ref("");
 const loaded = ref(false);
 const extended = ref(new Set());
 const query = ref("");
+// the rows each group shows on a page, chosen in the window's menu and kept on the pane
+const pageRows = context.option("rows");
+const pageLimit = computed(() => (Number(pageRows.value) > 0 ? ` --limit ${Number(pageRows.value)}` : ""));
 
 // the groups folded away, kept for this browser
 function keptFolded() {
@@ -46,7 +48,7 @@ function toggleFold(state) {
 }
 
 async function load() {
-    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : "task board");
+    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : `task board${pageLimit.value}`);
     failure.value = answer.ok ? "" : answer.error;
     loaded.value = true;
     if (!answer.ok) return;
@@ -64,7 +66,7 @@ async function withHeldRows(group, held) {
 
 async function more(group) {
     const before = !group.rows.length ? "" : FINISHED.has(group.state) ? ` --before-closed-at ${group.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...group.rows.map((row) => row.id))}`;
-    const answer = await context.read(`task board --state ${group.state}${before}`);
+    const answer = await context.read(`task board --state ${group.state}${before}${pageLimit.value}`);
     if (!answer.ok) return void (failure.value = answer.error);
     extended.value = new Set([...extended.value, group.state]);
     const current = board.value.find((held) => held.state === group.state);
@@ -102,6 +104,10 @@ watch(() => props.display.grouping, async (grouping) => {
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
+watch(pageRows, () => {
+    extended.value = new Set();
+    load();
+});
 const stopFollowing = context.follow(["task.*"], load);
 onUnmounted(() => stopFollowing?.());
 load();

@@ -32,7 +32,7 @@ def test_an_answer_ends_the_card_mark_in_place_and_adds_a_mark_on_the_side_of_th
     with_question(story)
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.run_listeners()
-    story.expect_success("chat-mark show 1", "state: ended")
+    story.expect_text("chat-mark show 1", "type: questions.question", "variant: user", "state: ended")
     assert mark_count(story) == 2, marks_text(story)
     story.expect_text("chat-mark show 2", "type: questions.answer", "variant: user", "text: Question 1 answered")
 
@@ -42,6 +42,7 @@ def test_an_answer_by_the_agent_adds_a_mark_on_the_agents_side(new_story):
     with_question(story)
     story.run("question answer 1 --answer sqlite", actor=story.agent)
     story.run_listeners()
+    story.expect_text("chat-mark show 1", "variant: agent")
     story.expect_text("chat-mark show 2", "variant: agent")
 
 

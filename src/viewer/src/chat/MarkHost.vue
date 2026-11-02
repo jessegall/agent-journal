@@ -38,7 +38,7 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
 
 <template>
     <template v-if="declaration?.card">
-        <div class="thread-turn card whole-card" :data-ref="`chat_mark:${mark.id}`">
+        <div :class="['thread-turn', 'card', 'whole-card', {'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
             <MarkBody :declaration="declaration" :mark="mark" shown />
         </div>
     </template>
@@ -83,6 +83,11 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
     align-self: stretch;
     min-width: 0;
     max-width: none;
+}
+
+/* a card of what the user did keeps to the user's side as well */
+.thread-turn.whole-card.user-side {
+    align-items: flex-end;
 }
 
 .mark-row {
