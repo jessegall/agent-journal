@@ -27,7 +27,7 @@ or ask the user again: `journal search find "<words>"`.
 |---|---|---|
 | journal-etiquette, journal-messages | the chat, messages and questions | at every start; a message, a question |
 | journal-tasks, journal-plans | work in hand, blocks, waits; ordered tasks | a task or plan command |
-| journal-workers | workers, proofs and merging | a worker or proof command |
+| journal-workers, journal-work-modes | workers, proofs and merging; the builder and orchestrator modes | a worker or proof command; its words |
 | journal-shell, journal-memory | commands, outputs, readers, aliases; memories | an output or alias; a memory command |
 | journal-sequences, journal-documents, journal-templates | steps; documents and reports; templates | their commands |
 | journal-checks, journal-dumps, journal-flowcharts | checks; dropped material; flowcharts | their commands and words |
