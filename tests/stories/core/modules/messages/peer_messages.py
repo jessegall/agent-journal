@@ -1,5 +1,6 @@
 import json
 
+from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -47,3 +48,11 @@ def test_a_peer_message_does_not_wait_as_unread(new_story, tmp_path):
     story = new_story(fixture=BuilderWithUser)
     hook_with(story, transcript_with(tmp_path, queued(ENVELOPE)))
     assert "Check 138 failed" not in story.run("message unread", actor=story.agent).output_text
+
+
+def test_a_message_sent_to_another_agent_shows_in_the_chat_naming_who_it_went_to(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    sample = HookSamples.tool_use("SendMessage", ToolType.UNCATEGORISED, [], None).with_raw({"tool_input": {"to": "Dijkstra", "message": "Look at the merge"}}).with_fields(event="post_tool_use")
+    story.hook("s-1", sample)
+    listed = story.run("message list --json", actor=story.user).output_text
+    assert '"recipient": "Dijkstra"' in listed and "Look at the merge" in listed, listed

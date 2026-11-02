@@ -4,6 +4,8 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.message import Message
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
@@ -34,4 +36,6 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
         conflicts = self.git.sync(worktree)
         job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
+        self.repository.save(Message(environment_id=worktree.environment_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
+                                     recipient=f"worker {command.worker_id}"), context)
         return self.repository.save(AgentLine(agent_id=command.worker_id, creator_id=context.actor.id, text=job, source=WORKER_JOB_SOURCE), context)

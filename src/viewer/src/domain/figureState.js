@@ -287,7 +287,7 @@ export const withSystemCards = (agent, messages) =>
                         label: m.text,
                         process: m.data.card_type === "process",
                         processName: m.data.process || "",
-                        sentTo: m.data.sent_to || "",
+                        sentTo: m.data.recipient || "",
                         row: m.data.row || "",
                         task: m.data.task || 0,
                         active: Boolean(m.data.active),
