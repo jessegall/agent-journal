@@ -7,7 +7,6 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.journal_home import JournalHome
 from core.base.provider.launch import Launch
-from core.base.provider.model_tier import ModelTier
 from core.base.provider.providers import Providers
 from core.base.provider.session_start import SessionStart
 from core.base.query.queries import Queries
@@ -36,8 +35,7 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
             raise Refusal("an agent starts in an environment", "start it from an environment")
         environment = self.queries.query(Environment).find(context.environment_id)
         name = f"launch-{uuid4().hex}"
-        model = next(model.name for model in provider.models if model.tier is ModelTier.GENERAL)
-        launch = Launch(self.home.folder.parent, Path(environment.folder), model, name, SessionStart(str(uuid4())), {"JOURNAL_LAUNCH": name})
+        launch = Launch(self.home.folder.parent, Path(environment.folder), provider.session_model(), name, SessionStart(str(uuid4())), {"JOURNAL_LAUNCH": name})
         session_command = provider.session_command(launch)
         agent = self.bus.dispatch(StartAgent(name, command.program, AgentRole.MAIN), context)
         handed = self.link.sent({"agent_id": agent.id, "session": name, "environment": environment.name, "folder": environment.folder,

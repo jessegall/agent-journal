@@ -56,11 +56,12 @@ type Journal interface {
 
 // Request is what the command line asked for: the program, the project's folder, and a worktree when one is named.
 type Request struct {
-	Program       string
-	Root          string
-	Worktree      string
-	WorktreeGiven bool
-	Answers       map[string]string
+	Program          string
+	Root             string
+	Worktree         string
+	WorktreeGiven    bool
+	ProgramArguments []string
+	Answers          map[string]string
 }
 
 // Choice is what the boot menu settled: the suite, the environment and its folder, the conversation to carry on,

@@ -35,6 +35,7 @@ TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
+SESSION_EFFORT = "high"
 
 
 class ClaudeCodeProvider(Provider):
@@ -67,6 +68,7 @@ class ClaudeCodeProvider(Provider):
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
                 ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))))
     models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST)]
+    session_tier = ModelTier.STRONGEST
 
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
@@ -74,7 +76,9 @@ class ClaudeCodeProvider(Provider):
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
-        arguments = [self.executable, "--model", launch.model, *skip, *launch.session.arguments(self)]
+        model = [] if launch.names_flag("--model") else ["--model", launch.model]
+        effort = [] if launch.names_flag("--effort") else ["--effort", SESSION_EFFORT]
+        arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:

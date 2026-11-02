@@ -44,12 +44,16 @@ class Provider(ABC):
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]
+    session_tier: ClassVar[ModelTier] = ModelTier.GENERAL
 
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
 
     def model_names(self) -> list[str]:
         return [model.name for model in self.models]
+
+    def session_model(self) -> str:
+        return next(model.name for model in self.models if model.tier is self.session_tier)
 
     def nearest_general_model(self, names: Sequence[str]) -> str:
         all_names = self.model_names()

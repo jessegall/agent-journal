@@ -31,7 +31,15 @@ def provider(tmp_path: Path) -> ClaudeCodeProvider:
 def test_a_session_runs_claude_with_its_model_and_its_new_session_id(provider):
     command = provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES))
     assert (list(command.arguments), command.folder, dict(command.variables), command.session) == (
-        ["claude", "--model", "sonnet", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+        ["claude", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+
+
+def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):
+    assert provider.session_model() == "opus"
+    given = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--model", "sonnet", "--effort=low"))
+    assert list(provider.session_command(given).arguments) == ["claude", "--dangerously-skip-permissions", "--model", "sonnet", "--effort=low", "--session-id", "s-1"]
+    effort_alone = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--effort", "low"))
+    assert list(provider.session_command(effort_alone).arguments) == ["claude", "--model", "opus", "--dangerously-skip-permissions", "--effort", "low", "--session-id", "s-1"]
 
 
 def test_a_resumed_session_runs_claude_with_resume(provider):

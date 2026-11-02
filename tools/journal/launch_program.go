@@ -16,8 +16,9 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal/socket"
 )
 
-// LaunchProgram is `journal launch <program> [--worktree [name]]`: the boot menu, then the program in the chosen
-// environment's folder, with the launcher's socket open for the workers its session dispatches.
+// LaunchProgram is `journal launch <program> [--worktree [name]] [program arguments]`: the boot menu, then the program
+// in the chosen environment's folder, with the launcher's socket open for the workers its session dispatches. Arguments
+// other than the worktree's go to the program, over the journal's own defaults.
 func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	request, err := launchRequest(argv)
 	if err != nil {
@@ -65,7 +66,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	} else {
 		fmt.Fprintln(stderr, "the viewer link could not be asked: "+err.Error())
 	}
-	arguments, err := journal.ProgramCommand(request.Program, choice, launchName)
+	arguments, err := journal.ProgramCommand(request, choice, launchName)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode
@@ -103,11 +104,13 @@ func launchRequest(argv []string) (launch.Request, error) {
 	request := launch.Request{Program: argv[0], Root: root}
 	for index := 1; index < len(argv); index++ {
 		if argv[index] != "--worktree" && argv[index] != "-w" {
+			request.ProgramArguments = append(request.ProgramArguments, argv[index])
 			continue
 		}
 		request.WorktreeGiven = true
 		if index+1 < len(argv) && !strings.HasPrefix(argv[index+1], "-") {
 			request.Worktree = argv[index+1]
+			index++
 		}
 	}
 	return request, nil

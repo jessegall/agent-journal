@@ -21,6 +21,15 @@ def test_the_launcher_gets_each_programs_command_line_from_its_provider(new_stor
     story.expect_text(f"program command codex {folder} --launch launch-1 --resume t-1", "codex", "--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "t-1")
 
 
+def test_the_launcher_passes_the_person_s_flags_over_the_defaults(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = project_folder(story)
+    story.expect_text(f"program command claude {folder} --launch launch-1", "--model\nopus", "--effort\nhigh")
+    line = f"program command claude {folder} --launch launch-1 --program-argument=--model --program-argument=haiku"
+    story.expect_text(line, "--model\nhaiku", "--effort\nhigh")
+    story.expect_absent(line, "opus")
+
+
 def test_a_person_who_asks_for_prompts_gets_no_skip_flag(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)

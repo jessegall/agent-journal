@@ -150,24 +150,28 @@ func SaveAnswers(home string, answers map[string]string) error {
 }
 
 // ProgramCommand is the command line that starts the program on the choice, as the program's provider in the
-// journal builds it: its conversation, its prompts and its launch name.
-func (journal CommandJournal) ProgramCommand(program string, choice Choice, launchName string) ([]string, error) {
-	argv := []string{"program", "command", program, choice.Folder, "--launch", launchName}
+// journal builds it: its conversation, its prompts, its launch name and the arguments the person gave. Each argument
+// is one line of the answer, so one holding a space stays whole.
+func (journal CommandJournal) ProgramCommand(request Request, choice Choice, launchName string) ([]string, error) {
+	argv := []string{"program", "command", request.Program, choice.Folder, "--launch", launchName}
 	if choice.Session != "" {
 		argv = append(argv, "--resume", choice.Session)
 	}
 	if !choice.SkipPrompts {
 		argv = append(argv, "--ask-prompts")
 	}
+	for _, argument := range request.ProgramArguments {
+		argv = append(argv, "--program-argument="+argument)
+	}
 	output, err := journal.Run(argv...)
 	if err != nil {
 		return nil, err
 	}
-	arguments := strings.Fields(strings.TrimSpace(output))
-	if len(arguments) == 0 {
-		return nil, fmt.Errorf("the journal gave no command line for %s", program)
+	trimmed := strings.TrimSpace(output)
+	if trimmed == "" {
+		return nil, fmt.Errorf("the journal gave no command line for %s", request.Program)
 	}
-	return arguments, nil
+	return strings.Split(trimmed, "\n"), nil
 }
 
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.
