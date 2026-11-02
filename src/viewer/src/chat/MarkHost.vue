@@ -9,8 +9,7 @@ import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {markLook, STOPPED_VARIANTS} from "../domain/markLook.js";
 
 const OUTPUT_MODELS = new Set(["output", "process"]);
-const ENDED_STATE = "ended";
-const SETTLED_VARIANTS = new Set(["answered", "closed"]);
+const USER_SIDE_VARIANTS = new Set(["user"]);
 const DOCK_LINE = "dock add";
 
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
@@ -39,13 +38,13 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
 </script>
 
 <template>
-    <template v-if="declaration?.card && mark.state !== ENDED_STATE && !SETTLED_VARIANTS.has(mark.variant)">
+    <template v-if="declaration?.card">
         <div class="thread-turn card whole-card" :data-ref="`chat_mark:${mark.id}`">
             <MarkBody :declaration="declaration" :mark="mark" shown />
         </div>
     </template>
     <template v-else>
-        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked}]" :data-ref="`chat_mark:${mark.id}`">
+        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
                 <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
                     <template v-if="opens" #default="{shown}">
@@ -69,6 +68,12 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
 
     gap: 3px;
     max-width: min(78%, calc(100% - var(--turn-gutter)));
+}
+
+/* a mark of what the user did sits on the user's side of the chat */
+.thread-turn.user-side {
+    align-items: flex-end;
+    align-self: flex-end;
 }
 
 /* a mark drawn as a card takes the chat's width and keeps to the card's own limit */

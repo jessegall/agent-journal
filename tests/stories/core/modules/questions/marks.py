@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 
 QUESTION_LINE = 'question ask "Which database?" --options sqlite postgres --environment main'
 
@@ -27,13 +27,22 @@ def test_the_process_mark_is_updated_in_place_while_the_question_waits(new_story
     story.expect_success("chat-mark show 1", "text: Question 1: Which database engine?", "state: shown")
 
 
-def test_an_answer_ends_the_one_mark_in_place_and_says_it_is_answered(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_an_answer_ends_the_card_mark_in_place_and_adds_a_mark_on_the_side_of_the_user_who_answered(new_story):
+    story = new_story(fixture=BuilderWithUser)
     with_question(story)
-    story.expect_success("question answer 1 --answer sqlite")
+    story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.run_listeners()
     story.expect_success("chat-mark show 1", "state: ended")
-    assert mark_count(story) == 1 and "Question 1 answered" in marks_text(story), marks_text(story)
+    assert mark_count(story) == 2, marks_text(story)
+    story.expect_text("chat-mark show 2", "type: questions.answer", "variant: user", "text: Question 1 answered")
+
+
+def test_an_answer_by_the_agent_adds_a_mark_on_the_agents_side(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    with_question(story)
+    story.run("question answer 1 --answer sqlite", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark show 2", "variant: agent")
 
 
 def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
