@@ -1,3 +1,5 @@
+import os
+import pytest
 import statistics
 import time
 
@@ -11,6 +13,7 @@ WORST_BUDGET_MS = 500.0
 EXAMPLES = ("prompt", "edit", "stop")
 
 
+@pytest.mark.skipif("PYTEST_XDIST_WORKER" in os.environ, reason="a time limit means nothing beside five other workers: run this file alone")
 def test_a_hook_to_the_server_answers_within_the_budget_that_the_measuring_scripts_set(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
         durations_ms = []

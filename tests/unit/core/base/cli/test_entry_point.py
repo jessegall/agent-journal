@@ -1,3 +1,4 @@
+import pytest
 import os
 import subprocess
 import sys
@@ -13,6 +14,7 @@ TIMEOUT_SECONDS = 30
 SCRIPT = "import sys; from core.journal import main; sys.exit(main(sys.argv[1:]))"
 
 
+@pytest.mark.skipif("PYTEST_XDIST_WORKER" in os.environ, reason="a time limit means nothing beside five other workers: run this file alone")
 def test_a_run_answers_within_its_startup_limit(tmp_path):
     synced(JournalHome(tmp_path), ITEMS)
     environment = {**os.environ, "JOURNAL_HOME": str(tmp_path), "PYTHONPATH": f"{ROOT / 'src'}{os.pathsep}{ROOT}", "JOURNAL_AGENT_SESSION": ""}

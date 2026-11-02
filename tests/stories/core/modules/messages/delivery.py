@@ -264,3 +264,25 @@ def test_a_message_not_yet_announced_is_not_marked_read_by_unread(new_story):
     story.hook("s-1", UNREAD_LINE_HOOK.with_fields(event="post_tool_use"))
     story.run('message send "And the totals" --environment main', actor=story.user)
     assert "read_at: 2026" not in story.run("message show 2", actor=story.user).output_text
+
+
+def test_editing_a_message_the_agent_read_names_it_to_the_agent_without_its_text(new_story):
+    story = delivery_story(new_story)
+    story.container.bind(TerminalTyping, KeptTyping())
+    story.run('message send "First words" --environment main', actor=story.user)
+    story.hook("s-1", HookSamples.edit("cart.py"))
+    story.hook("s-1", READ_MESSAGE_HOOK)
+    story.expect_success('message edit 1 --text "Better words"', actor=story.user)
+    story.run_listeners()
+    lines = story.hook("s-1", HookSamples.edit("cart.py")).lines
+    assert "[journal] message 1 updated" in lines
+    assert not any("Better words" in line for line in lines)
+
+
+def test_editing_an_unread_message_says_nothing(new_story):
+    story = delivery_story(new_story)
+    story.container.bind(TerminalTyping, KeptTyping())
+    story.run('message send "First words" --environment main', actor=story.user)
+    story.expect_success('message edit 1 --text "Better words"', actor=story.user)
+    story.run_listeners()
+    assert not any("updated" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)

@@ -9,9 +9,13 @@ const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
-// a sent message shows at once as an echo, until its own row has been read: the echo is dropped when a message of the user with the same words has landed since
-const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
-const rows = computed(() => withDayLines(interleaved([...messages.value, ...echoes.value], marks.value)));
+// a sent message shows at once as an echo, until its own row has been read: the echo goes for good when a message of the user with the same words has landed since, so an edit of that row brings it back no more
+const landed = (echo) => messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS);
+watch(messages, () => {
+    const kept = outgoing.value.filter((echo) => !landed(echo));
+    if (kept.length !== outgoing.value.length) outgoing.value = kept;
+});
+const rows = computed(() => withDayLines(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value)));
 const {visible: pinned} = usePins(() => notices.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
@@ -124,11 +128,11 @@ async function removeMessage(message) {
     load();
 }
 // the arrow up in an empty box brings back the newest message of yours the agent has not read, to change it; the arrow down or escape leaves it
-const lastUnread = () => messages.value.find((row) => ["user", "comment"].includes(row.type) && !row.read_at);
+const lastOwn = () => messages.value.find((row) => ["user", "comment"].includes(row.type));
 function editUp(event) {
-    if (text.value || !lastUnread()) return;
+    if (text.value || !lastOwn()) return;
     event.preventDefault();
-    editing.value = lastUnread();
+    editing.value = lastOwn();
     replying.value = null;
     text.value = editing.value.text;
 }
@@ -137,10 +141,20 @@ function leaveEdit() {
     editing.value = null;
     text.value = "";
 }
+// the edit shows at once, and goes back with the words in the composer if the server refuses it
 async function saveEdit() {
-    const result = await context.run(["message", "edit", String(editing.value.id), "--text", text.value]);
+    const row = editing.value;
+    const before = row.text;
+    const words = text.value;
+    row.text = words;
+    leaveEdit();
+    const result = await context.run(["message", "edit", String(row.id), "--text", words]);
     sendFailure.value = result.ok ? "" : result.error;
-    if (result.ok) leaveEdit();
+    if (!result.ok) {
+        row.text = before;
+        editing.value = row;
+        text.value = words;
+    }
     load();
 }
 
