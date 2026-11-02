@@ -18,7 +18,7 @@ const kept = (row) => show.value === "all" || (show.value === "running") === !ro
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const found = (row) => `${row.id} ${row.session} ${row.program} ${row.role} ${factsOf(row)?.task_title ?? ""}`.toLowerCase().includes(words.value.trim().toLowerCase());
 const shown = computed(() => rows.value.filter((row) => props.only(row) && kept(row) && found(row)));
-const emptyText = computed(() => (rows.value.length ? "Nothing matches" : props.empty));
+const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches" : props.empty));
 </script>
 
 <template>

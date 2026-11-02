@@ -45,7 +45,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
 </script>
 
 <template>
-    <div class="search">
+    <div class="search" data-window-flush>
         <form class="search-form" @submit.prevent="find">
             <Icon name="search" :size="14" />
             <input v-model="terms" class="search-input" type="search" placeholder="Search the journal" aria-label="Search the journal" />

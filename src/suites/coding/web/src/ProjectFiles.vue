@@ -43,7 +43,7 @@ if (named) open({id: named, folder: false});
 </script>
 
 <template>
-    <div class="files">
+    <div class="files" data-window-flush>
         <div class="files-bar">
             <TextInput v-model="words" icon="search" class="files-search" placeholder="Find a file in the project" data-files-search />
             <Btn small data-files-root :disabled="!folder" @click="folder = ''">Project</Btn>

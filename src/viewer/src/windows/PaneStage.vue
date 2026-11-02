@@ -485,6 +485,10 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     padding: 16px;
 }
 
+.pane-body > :deep(.window:has([data-window-flush])) {
+    padding: 0;
+}
+
 .pane-empty {
     padding: 16px;
     color: var(--text-3);

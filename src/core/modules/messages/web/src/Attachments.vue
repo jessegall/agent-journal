@@ -45,7 +45,7 @@ read(0);
 </script>
 
 <template>
-    <section class="attachments" data-attachments>
+    <section class="attachments" data-attachments data-window-flush>
         <div class="bar">
             <TextInput v-model="words" icon="search" class="search" placeholder="Search file names and their messages" data-attachment-search />
             <Segmented :options="kinds" :value="kind" @pick="kind = $event" />

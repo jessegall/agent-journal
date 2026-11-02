@@ -35,7 +35,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <section class="git" data-git>
+    <section class="git" data-git data-window-flush>
         <div class="part">
             <h3>Branches</h3>
             <template v-if="branches.failure.value">

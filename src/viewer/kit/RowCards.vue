@@ -19,7 +19,7 @@ const emit = defineEmits(["new", "open"]);
 </script>
 
 <template>
-    <div class="cards-page">
+    <div class="cards-page" data-window-flush>
         <div class="cards-bar">
             <span class="cards-count">{{ rows.length }} {{ rows.length === 1 ? noun : `${noun}s` }}</span>
             <Btn small bordered v-bind="{[`data-${noun}-new`]: ''}" @click="emit('new')"><Icon name="plus" :size="12" /> New {{ noun }}</Btn>
