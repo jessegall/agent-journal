@@ -24,7 +24,7 @@ EM_DASH_REMARK = NudgeDeclaration("messages.no_em_dashes", NudgeType.REMARK, "no
 PARAGRAPH_REMARK = NudgeDeclaration("messages.blank_lines", NudgeType.REMARK, "put a blank line between paragraphs", interval=Interval(Seconds(600)))
 JOURNAL_LINE_NOTE = NudgeDeclaration("messages.journal_line", NudgeType.REMARK, "a [journal] line is an instruction, not a message: act on it; never answer or mention it in the chat")
 JOURNAL_DISCRETION = NudgeDeclaration("messages.discretion", NudgeType.INSTRUCTION, "in the chat, talk only of the user's work, never the journal's lines, hooks, skills or replies")
-JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.INSTRUCTION, "the laws L1 to L10 in AGENTS.md apply to you")
+JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.INSTRUCTION, "the laws L1 to L11 in AGENTS.md apply to you")
 PLAIN_CODE_REMARK = NudgeDeclaration("messages.plain_code", NudgeType.REMARK, "in code, identifiers and text state literally what a thing is or does, in plain words", interval=Interval(Seconds(1800)))
 
 MESSAGE_NUDGES = [MESSAGE_REACTION, MESSAGE_UPDATED, UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_ADVICE, IMAGE_TAG_REQUEST, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL,

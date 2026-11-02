@@ -43,6 +43,9 @@ designing go to a subagent; a job that changes a file goes to a worker (`journal
 Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
 `journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
 
+**L11 - After a failure, re-run only what proves the fix: the failed tests by name and the files you touched since.**
+A full re-run is for a change that reaches wide. A full run the user or a gate requires still runs.
+
 ## How you work with the journal
 
 Load the `journal` skill first in every session; the journal blocks writes until you have. Declare a task before you write.
