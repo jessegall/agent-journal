@@ -104,6 +104,7 @@ watch(
             :events="entry.events"
             :options="options"
             :declared="entry.options"
+            :auto-scroll="entry.auto_scroll"
             :unavailable-reason="entry.unavailable_reason"
         />
     </template>

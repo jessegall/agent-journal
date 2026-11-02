@@ -17,6 +17,7 @@ const props = defineProps({
     unavailableReason: {type: String, default: ""},
     options: {type: Object, default: () => ({})},
     declared: {type: Array, default: () => []},
+    autoScroll: {type: String, default: ""},
     readOnly: Boolean,
     shared: {type: Object, default: null},
 });
@@ -40,6 +41,7 @@ const context = windowContext({
     subscriptions: props.subscriptions,
     options: computed(() => props.options),
     declared: props.declared,
+    autoScroll: props.autoScroll,
     readOnly: props.readOnly,
     shared: props.shared,
     open: (window, agent) => {

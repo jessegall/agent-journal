@@ -1,6 +1,6 @@
 <script setup>
-import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {ago, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {computed, onMounted, ref} from "vue";
+import {ago, AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
 import FeedBar from "./FeedBar.vue";
 import {cardsOf} from "./fileCards.js";
 
@@ -16,7 +16,6 @@ const view = ref(DEFAULTS);
 const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
-const scroller = ref(null);
 const hasOlder = ref(true);
 
 const cards = computed(() => cardsOf([...rows.value].sort((one, two) => one.id - two.id)));
@@ -50,13 +49,6 @@ async function showOlder() {
     hasOlder.value = await older();
 }
 
-const atEnd = () => !scroller.value || scroller.value.scrollTop + scroller.value.clientHeight >= scroller.value.scrollHeight - 40;
-watch(() => rows.value.length, async () => {
-    const follow = atEnd();
-    await nextTick();
-    if (follow && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
-});
-
 onMounted(async () => {
     view.value = {...DEFAULTS, ...(await context.setting(SETTING_KEY, {}))};
 });
@@ -65,7 +57,7 @@ onMounted(async () => {
 <template>
     <div :class="['file-feed', {flush: view.flush}]" :style="sizing" data-file-feed data-window-flush>
         <FeedBar :options="view" :filter="filter" @options="setOptions" @filter="filter = $event" @expand="expand" />
-        <div ref="scroller" class="file-feed-scroll">
+        <AutoScrollPane :row-count="rows.length">
             <template v-if="failure">
                 <p class="file-feed-failure" role="alert">{{ failure }}</p>
             </template>
@@ -102,7 +94,7 @@ onMounted(async () => {
                 </template>
             </div>
             </template>
-        </div>
+        </AutoScrollPane>
     </div>
 </template>
 
@@ -113,12 +105,6 @@ onMounted(async () => {
     height: 100%;
     min-height: 0;
     container-type: inline-size;
-}
-
-.file-feed-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
 }
 
 .file-feed-flow {

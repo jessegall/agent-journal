@@ -91,7 +91,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
-                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""))
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
@@ -129,7 +129,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
-                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group} for window in self.windows],
+                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
             "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],

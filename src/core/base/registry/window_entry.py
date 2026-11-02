@@ -28,3 +28,4 @@ class WindowEntry:
     count: str
     shared_reads: Sequence[str] = ()
     group: str = ""
+    auto_scroll: str = ""

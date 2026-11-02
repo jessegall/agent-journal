@@ -1,6 +1,6 @@
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
-import {EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {AutoScrollPane, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
 
 // the commands an agent ran, as version 4's terminal listed them, oldest above, each opening to its whole line, and a line typed here goes to its terminal
 const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
@@ -11,7 +11,6 @@ const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${context.age
 const typed = ref("");
 const refusal = ref("");
 const input = ref(null);
-const body = ref(null);
 const opened = ref(new Set());
 
 // the pane menu's detail level: commands alone, with the journal's lines too, or every tool the agent used
@@ -30,12 +29,6 @@ function toggle(row) {
     if (!next.delete(row.id)) next.add(row.id);
     opened.value = next;
 }
-
-watch(() => commands.value.length, async () => {
-    const atEnd = !body.value || body.value.scrollTop + body.value.clientHeight >= body.value.scrollHeight - 4;
-    await nextTick();
-    if (atEnd && body.value) body.value.scrollTop = body.value.scrollHeight;
-});
 
 async function send() {
     const line = typed.value;
@@ -64,7 +57,7 @@ function focusInput(event) {
             <EmptyState title="No commands from this agent yet" />
         </template>
         <template v-else>
-            <div ref="body" class="terminal-body" data-terminal-log>
+            <AutoScrollPane :row-count="commands.length" pane-class="terminal-body" data-terminal-log>
                 <template v-for="row in commands" :key="row.id">
                     <div :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
                         <span class="terminal-mark">{{ markOf(row) }}</span>
@@ -74,7 +67,7 @@ function focusInput(event) {
                         </template>
                     </div>
                 </template>
-            </div>
+            </AutoScrollPane>
         </template>
         <form class="terminal-run" data-terminal-run @submit.prevent="send">
             <span class="terminal-prompt">$</span>
@@ -95,7 +88,7 @@ function focusInput(event) {
     background: var(--code-bg);
 }
 
-.terminal-body {
+.terminal :deep(.terminal-body) {
     flex: 1;
     min-height: 0;
     margin: 0;

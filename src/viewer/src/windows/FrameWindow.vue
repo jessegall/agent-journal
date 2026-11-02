@@ -29,6 +29,7 @@ const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
         :prompts="prompts"
         :options="options"
         :declared="entry.options"
+        :auto-scroll="entry.auto_scroll"
         :events="entry.events || []"
         :unavailable-reason="entry.unavailable_reason || ''"
     />

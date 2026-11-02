@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.declaration_names import DeclarationNames
+from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.toggle_option import ToggleOption
@@ -19,7 +20,7 @@ class WindowDeclaration:
     """A window a module adds to the viewer: its name and title, the file the viewer loads from the module's
     web folder and how, where it belongs and for which agent roles, the window kit versions it was built for,
     the read lines and commands it may run, the events it follows, its icon, the size it floats at, the
-    options of its pane menu, the read line its tab counts with and the read lines a share link may use, each
+    options of its pane menu, the end it follows as rows arrive, the read line its tab counts with and the read lines a share link may use, each
     written as the line and, after a space, the argument that names an id of the shared row or of a row
     it includes."""
 
@@ -39,6 +40,7 @@ class WindowDeclaration:
     count: str = ""
     shared_reads: Sequence[str] = ()
     group: str = ""
+    auto_scroll: AutoScroll = AutoScroll.NONE
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
