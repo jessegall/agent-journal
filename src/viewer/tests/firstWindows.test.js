@@ -71,15 +71,14 @@ test("the plans window shows each plan's title and state", async () => {
     expect(text).toContain("started");
 });
 
-test("the agents window shows each agent's role and session", async () => {
+test("the agents window shows each agent's role", async () => {
     const text = await drawn(AgentList, context({"agent list": page([{id: 2, role: "main", session: "s-1", program: "claude"}])}));
-    expect(text).toContain("main");
-    expect(text).toContain("s-1");
+    expect(text).toContain("Main agent 2");
 });
 
 test("the subagents window reads only the subagents of its own agent", async () => {
     const windowContext = context({"agent list": page([{id: 5, role: "subagent", session: "s-1/a", program: "claude"}])}, 2);
-    expect(await drawn(SubagentList, windowContext)).toContain("s-1/a");
+    expect(await drawn(SubagentList, windowContext)).toContain("Helper 5");
     expect(windowContext.reads[0]).toContain("--parent 2");
 });
 

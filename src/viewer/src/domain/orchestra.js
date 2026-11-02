@@ -20,7 +20,7 @@ export const agentState = (card) => {
 
 export function splitTask(task) {
     const named = /^([^:]{2,32}): (.+)$/.exec(task || "");
-    return named ? {name: named[1], job: named[2]} : {name: "Subagent", job: task || ""};
+    return named ? {name: named[1], job: named[2]} : {name: "Helper", job: task || ""};
 }
 
 function environmentEntry(standing) {
@@ -107,7 +107,7 @@ function subagentEntry(sub, agent, env) {
         n: 0,
         sub: true,
         session: sub.session,
-        label: "Subagent",
+        label: "Helper",
         name: splitTask(sub.task).name,
         title: splitTask(sub.task).job || sub.session,
         says: "",
@@ -158,7 +158,7 @@ export const STATE_SWITCHES = [
 export const KIND_SWITCHES = [
     {key: "environment", label: "Environment agents", icon: "branch", hidden: (n) => `${n} ${n === 1 ? "environment agent" : "environment agents"}`},
     {key: "worker", label: "Workers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "worker" : "workers"}`},
-    {key: "subagent", label: "Subagents", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "subagent" : "subagents"}`},
+    {key: "subagent", label: "Helpers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "helper" : "helpers"}`},
 ];
 
 export const ORDERS = [

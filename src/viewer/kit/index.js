@@ -30,7 +30,7 @@ export const VoiceFigure = defineAsyncComponent(() => import("../src/chat/VoiceF
 export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {foldedMarks, interleaved} from "../src/domain/chatTimeline.js";
-export {ago} from "../src/format/time.js";
+export {age, ago} from "../src/format/time.js";
 export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {useRows} from "./useRows.js";

@@ -101,3 +101,11 @@ def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):
     story.expect_text("usage tool --environment main", "waiting for your answer to question 1", actor=story.user)
     story.run('question ask "Which cache?" --environment main', actor=story.agent)
     story.expect_text("usage tool --environment main", "waiting for your answers to 2 questions", actor=story.user)
+
+
+def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.session_start())
+    story.run('task make "Fix the cart" --environment main', actor=story.user)
+    story.run("task start 1", actor=story.agent)
+    story.expect_text("usage agents --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)

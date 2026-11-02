@@ -4,6 +4,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand
 from core.modules.usage.commands.usage_show.usage_show_subcommand import UsageShowSubcommand
@@ -25,7 +26,7 @@ class UsageModule(Module):
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
     moves = [StatisticsMove]
-    subcommands = (UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
+    subcommands = (UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
                WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),

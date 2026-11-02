@@ -21,7 +21,7 @@ class SubagentMarkListener(MarkListener):
         if agent.role is not AgentRole.SUBAGENT:
             return
         if event.event == "agent.create":
-            self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.STARTED, f"Subagent {agent.id} started", agent.environment_id, agent.id, "agent", agent.id)
+            self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.STARTED, f"Helper {agent.id} started", agent.environment_id, agent.id, "agent", agent.id)
         ended = event.event == "agent.update" and "ended_at" in event.data and agent.ended_at is not None
         if ended:
-            self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.ENDED, f"Subagent {agent.id} ended", agent.environment_id, agent.id, "agent", agent.id)
+            self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.ENDED, f"Helper {agent.id} ended", agent.environment_id, agent.id, "agent", agent.id)

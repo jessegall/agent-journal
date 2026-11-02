@@ -32,7 +32,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
                 </Btn>
                 <span class="agent-divider" />
             </template>
-            <button type="button" class="agent-helpers" data-helpers title="Helpers running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
+            <button type="button" class="agent-helpers" data-helpers title="Running: helpers, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
             </button>
         </template>

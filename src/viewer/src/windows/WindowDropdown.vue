@@ -43,7 +43,9 @@ const placed = computed(() => {
                         {{ group.title }}<span class="group-count" data-dropdown-count>{{ group.count }}</span>
                     </h3>
                 </template>
-                <WindowPane dropdown :name="group.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
+                <div class="dropdown-body">
+                    <WindowPane dropdown :name="group.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
+                </div>
             </template>
         </div>
     </div>
@@ -67,7 +69,6 @@ const placed = computed(() => {
     overflow-wrap: anywhere;
     box-sizing: border-box;
     width: fit-content;
-    padding: 14px 16px;
     max-height: calc(100vh - 110px);
     border: 1px solid var(--border-2);
     border-radius: 10px;
@@ -78,16 +79,24 @@ const placed = computed(() => {
 .group-head {
     position: sticky;
     z-index: 1;
-    top: -14px;
+    top: 0;
     display: flex;
     gap: 8px;
     align-items: center;
-    padding: 8px 0;
+    padding: 8px 16px;
     margin: 0;
     background: var(--raised);
     color: var(--text-2);
     font-size: 12px;
     font-weight: 500;
+}
+
+.dropdown-body {
+    padding: 14px 16px;
+}
+
+.dropdown-body:has([data-window-flush]) {
+    padding: 0;
 }
 
 .group-count {
