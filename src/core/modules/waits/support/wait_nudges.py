@@ -1,6 +1,8 @@
+from core.base.driver.interval import Interval
+from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-WAIT_CHECK = NudgeDeclaration("waits.check_the_wait", NudgeType.INSTRUCTION, "you have waited {minutes} minutes on {focus}: read its latest lines and check it does what you expect", repeat_seconds=300)
+WAIT_CHECK = NudgeDeclaration("waits.check_the_wait", NudgeType.INSTRUCTION, "you have waited {minutes} minutes on {focus}: read its latest lines and check it does what you expect", interval=Interval(Seconds(300)))
 
 WAIT_NUDGES = [WAIT_CHECK]

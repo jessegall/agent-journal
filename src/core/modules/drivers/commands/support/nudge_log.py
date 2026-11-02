@@ -30,7 +30,7 @@ class NudgeLog:
         delivered_at = self.record(agent_id, nudge).last_said_at
         if delivered_at is None:
             return False
-        if nudge.repeat_seconds and delivered_at.elapsed_seconds(timestamp) < nudge.repeat_seconds:
+        if nudge.interval and not nudge.interval.has_passed(self.queries, agent_id, delivered_at, timestamp):
             return True
         return nudge.turn_limited and (turn_start is None or delivered_at.text >= turn_start.text)
 
@@ -40,7 +40,7 @@ class NudgeLog:
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
         rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
-        kept = (rows if nudge.repeat_seconds else rows.filter(text=nudge.text)).descending("last_said_at").page(1, 1).rows
+        kept = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_said_at").page(1, 1).rows
         return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:

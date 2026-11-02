@@ -1,3 +1,5 @@
+from core.base.driver.interval import Interval
+from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
@@ -23,7 +25,7 @@ READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.INSTRUCTI
 READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.INSTRUCTION, "reader {reader} found no summary in output {output}: give it one with journal reader add {reader} --summary \"<a pattern of the last line>\"")
 READER_PROGRESS_MISSING = NudgeDeclaration("processes.reader_no_progress", NudgeType.REMARK, "output {output} prints a count its card draws no bar for: give reader {reader} a --progress pattern such as \"\\[ *([0-9]+)%\\]\"")
 
-ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.REMARK, 'you ran {shape} {count} times: add an alias with journal alias add <name> "<line>"', repeat_seconds=3600)
-READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.REMARK, "reader {reader} already reads output {output}: journal output read {output} --summary gives its lines", repeat_seconds=600)
-SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.REMARK, "outputs {outputs} share the title {title}: give each its own with journal output title <n> \"<what it does>\"", repeat_seconds=600)
+ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.REMARK, 'you ran {shape} {count} times: add an alias with journal alias add <name> "<line>"', interval=Interval(Seconds(3600)))
+READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.REMARK, "reader {reader} already reads output {output}: journal output read {output} --summary gives its lines", interval=Interval(Seconds(600)))
+SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.REMARK, "outputs {outputs} share the title {title}: give each its own with journal output title <n> \"<what it does>\"", interval=Interval(Seconds(600)))
 PROCESS_NUDGES = [HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_ADVICE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, UNREAD_OUTPUT, SLEEP_REFUSED, RUN_NAME]

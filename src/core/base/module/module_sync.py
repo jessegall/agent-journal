@@ -145,7 +145,7 @@ class ModuleSync:
                      for module in modules for mark in module.marks)
 
     def nudges(self, modules: tuple[type[Module], ...]) -> tuple[NudgeEntry, ...]:
-        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.repeat_seconds, nudge.longest_characters) for module in modules for nudge in module.nudges)
+        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.longest_characters) for module in modules for nudge in module.nudges)
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())

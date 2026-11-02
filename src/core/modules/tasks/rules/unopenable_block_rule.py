@@ -10,7 +10,7 @@ SHOWN_TASK_COUNT = 10
 
 
 class UnopenableBlockRule(DriverRule):
-    """Blocked tasks with nothing that opens them are named to the main agent every 45 minutes."""
+    """Blocked tasks with nothing that opens them are named to the main agent, at the interval of the line."""
 
     name = "tasks.unopenable-blocks"
     hook = HookEventName.POST_TOOL_USE

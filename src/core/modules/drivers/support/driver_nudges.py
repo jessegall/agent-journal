@@ -1,3 +1,5 @@
+from core.base.driver.interval import Interval
+from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_outcome import RULE_FAILED
@@ -11,6 +13,6 @@ PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, "the user
 
 MISSING_MODEL = NudgeDeclaration("drivers.missing_model", NudgeType.REFUSAL, "name a model in the dispatch: the least expensive one that reliably fits the work", turn_limited=False)
 UNBOUND_DISPATCH = NudgeDeclaration("drivers.unbound_dispatch", NudgeType.REFUSAL, "the dispatch has no concrete job: give it a description and a bounded prompt", turn_limited=False)
-LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.REMARK, "that result was {lines} lines: read a range, or read the output by its number, so less stays in the context", repeat_seconds=600)
+LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.REMARK, "that result was {lines} lines: read a range, or read the output by its number, so less stays in the context", interval=Interval(Seconds(600)))
 
 DRIVER_NUDGES = [REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

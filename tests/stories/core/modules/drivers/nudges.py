@@ -7,6 +7,8 @@ from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.interval import Interval
+from core.base.driver.seconds import Seconds
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
@@ -79,6 +81,6 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
 
     write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.INSTRUCTION, "second text", turn_limited=False))
-    write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", repeat_seconds=60, turn_limited=False))
+    write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", interval=Interval(Seconds(60)), turn_limited=False))
     rows = story.container.get(Queries).query(NudgeRecord).filter(agent_id=story.agent.id, key="sample.clock").all_rows()
     assert sorted((row.text, row.said_count) for row in rows) == [("first text", 2), ("second text", 1)]

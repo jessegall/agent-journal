@@ -1,3 +1,4 @@
+import {reloadIfNewBuild} from "./staleBuild.js";
 import {transport} from "../api/transport.js";
 import {ref, computed, shallowRef} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
@@ -81,6 +82,7 @@ export function followEvents(environment, heard) {
     const source = transport.stream(`/api/events?environment=${encodeURIComponent(environment)}`);
     let gone = null;
     const back = () => {
+        if (gone !== null) reloadIfNewBuild();
         clearTimeout(gone);
         gone = null;
         streamAlive.value = true;

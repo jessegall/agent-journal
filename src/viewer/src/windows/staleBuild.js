@@ -1,4 +1,19 @@
+import {reloadWhenFree} from "../platform/busyField.js";
+
 const STORAGE_KEY = "journal.stale-build-reload";
+const BUNDLE = 'script[type="module"][src*="/assets/index-"]';
+const bundleOf = (page) => page.querySelector(BUNDLE)?.getAttribute("src") ?? "";
+
+// after a restart a tab may hold an older build than the server now serves, and only a new page load brings the new one; a field being typed in holds the reload
+export async function reloadIfNewBuild(page = document, ask = fetch, reload = () => reloadWhenFree(window)) {
+    const running = bundleOf(page);
+    const answer = running ? await ask("/viewer/", {cache: "no-store"}).catch(() => null) : null;
+    if (!answer?.ok) return false;
+    const served = bundleOf(new DOMParser().parseFromString(await answer.text(), "text/html"));
+    if (!served || served === running) return false;
+    reload();
+    return true;
+}
 
 // a window file newer than the kit this page holds in memory names an export the old kit lacks: only a new page load fixes that
 export const isStaleBuild = (error) => /does not provide an export/.test(String(error?.message ?? ""));
