@@ -62,10 +62,15 @@ test("a docked process that still runs has no line and stays", async () => {
 test("a docked process bar has a pin, and an unpin once it is kept", async () => {
     const host = stacked([process()]);
     await nextTick();
-    expect(host.querySelector("[data-dock-action=keep]").textContent.trim()).toBe("Pin");
+    const pin = host.querySelector("[data-dock-action=keep]");
+    expect(pin.textContent.trim()).toBe("");
+    expect(pin.getAttribute("aria-label")).toBe("Pin");
+    expect(pin.getAttribute("title")).toBe("Pin");
+    expect(pin.querySelector("svg")).not.toBeNull();
     app.unmount();
     const kept = stacked([process({kept: true})]);
     await nextTick();
-    expect(kept.querySelector("[data-dock-action=unkeep]").textContent.trim()).toBe("Unpin");
+    expect(kept.querySelector("[data-dock-action=unkeep]").getAttribute("aria-label")).toBe("Unpin");
+    expect(kept.querySelector("[data-dock-action=unkeep]").textContent.trim()).toBe("");
     expect(kept.querySelector("[data-dock-action=keep]")).toBeNull();
 });

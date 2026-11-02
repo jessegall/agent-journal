@@ -144,7 +144,7 @@ const tint = computed(() => ({
                 <span class="worker">{{ mark.worker }}</span>
             </template>
             <span class="head">
-                <TextDisplay :text="mark.label" inline />
+                <TextDisplay class="title" :text="mark.label" inline />
                 <template v-if="mark.name">
                     <strong>{{ mark.name }}</strong>
                 </template>
@@ -584,9 +584,18 @@ const tint = computed(() => ({
     font-size: 10.5px;
 }
 
+/* the title keeps its full width and the name beside it takes what is left, and is the one that is cut short */
+.head .title {
+    flex: none;
+    max-width: 100%;
+}
+
 .head strong {
+    min-width: 0;
+    overflow: hidden;
     color: var(--text-2);
     font-weight: 500;
+    text-overflow: ellipsis;
 }
 
 .mark .detail :deep(.row-pill) {
