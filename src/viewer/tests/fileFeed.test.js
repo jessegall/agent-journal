@@ -34,7 +34,7 @@ test("a file edit shows its path, its counts and its changed lines", async () =>
 test("the view menu hides removals and is kept", async () => {
     const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2);
     const kept = [];
-    window.keep = async (key, value) => kept.push([key, value]);
+    window.setOption = (key, value) => kept.push([key, value]);
     const element = await mounted(FileFeed, window);
     document.body.append(element);
     await settle();

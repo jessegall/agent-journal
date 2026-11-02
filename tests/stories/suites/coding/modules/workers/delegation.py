@@ -1,3 +1,5 @@
+import json
+
 from core.base.query.conditions.is_null import IsNull
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
@@ -70,3 +72,14 @@ def test_the_assigner_leaves_a_delegated_task_alone(new_story):
     story, _, _ = delegated_story(new_story)
     tasks = story.container.get(TaskQuery)
     assert tasks.next_open(1, None, IsNull("closed_at")) is None
+
+
+def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apart_from_the_states(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.run('task make "My own job" --environment main', actor=story.agent)
+    groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
+    assert [row["id"] for row in groups["delegated"]["rows"]] == [2, 1] and groups["delegated"]["total"] == 2
+    assert {row["delegated_to"] for row in groups["delegated"]["rows"]} == {worker.id}
+    assert groups["started"]["total"] == 0 and [row["id"] for row in groups["open"]["rows"]] == [3]
+    page = json.loads(story.run("task board --environment main --state delegated --before-id 2 --json", actor=story.user).output_text)["groups"][0]
+    assert [row["id"] for row in page["rows"]] == [1]

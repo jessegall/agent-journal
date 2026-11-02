@@ -1,14 +1,34 @@
 <script setup>
+import {nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 
-defineProps({tabs: {type: Array, required: true}, insertAt: {type: Number, default: -1}});
+const props = defineProps({tabs: {type: Array, required: true}, insertAt: {type: Number, default: -1}});
 const emit = defineEmits(["pick", "close", "grab"]);
+const row = ref(null);
+const compact = ref(false);
+let watcher = null;
+
+// the tabs show their labels while they all fit in the row's real width; one that does not fit has the labels of its inactive tabs left out
+async function fit() {
+    compact.value = false;
+    await nextTick();
+    if (row.value) compact.value = row.value.scrollWidth > row.value.clientWidth;
+}
+
+watch(() => props.tabs.map((tab) => `${tab.title}:${tab.count ?? ""}`).join("|"), fit);
+onMounted(() => {
+    fit();
+    if (typeof ResizeObserver === "undefined") return;
+    watcher = new ResizeObserver(fit);
+    watcher.observe(row.value);
+});
+onBeforeUnmount(() => watcher?.disconnect());
 </script>
 
 <template>
-    <div class="pane-tabs">
-        <div class="pane-tabs-row" role="tablist">
+    <div :class="['pane-tabs', {compact}]">
+        <div ref="row" class="pane-tabs-row" role="tablist">
             <template v-for="(t, i) in tabs" :key="t.key">
                 <div
                     role="tab"
@@ -188,10 +208,8 @@ const emit = defineEmits(["pick", "close", "grab"]);
     color: var(--text);
 }
 
-@container (max-width: 480px) {
-    .pane-tab:not(.on) .pane-tab-label,
-    .pane-tab:not(.on) .pane-tab-x {
-        display: none;
-    }
+.pane-tabs.compact .pane-tab:not(.on) .pane-tab-label,
+.pane-tabs.compact .pane-tab:not(.on) .pane-tab-x {
+    display: none;
 }
 </style>

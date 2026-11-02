@@ -1,6 +1,6 @@
 <script setup>
 import {computed, h, inject, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
-import {OPEN_VIEW, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
+import {OPEN_VIEW, PANE_PAGE, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import AllowancePrompt from "./AllowancePrompt.vue";
 import WindowPlaceholder from "./WindowPlaceholder.vue";
 
@@ -22,7 +22,7 @@ const props = defineProps({
     readOnly: Boolean,
     shared: {type: Object, default: null},
 });
-const emit = defineEmits(["open", "remove"]);
+const emit = defineEmits(["open", "option", "remove"]);
 const failure = ref("");
 const attempt = ref(0);
 
@@ -42,6 +42,8 @@ const context = windowContext({
     subscriptions: props.subscriptions,
     options: computed(() => props.options),
     declared: props.declared,
+    page: inject(PANE_PAGE, null),
+    setOption: (key, value) => emit("option", key, value),
     autoScroll: props.autoScroll,
     tabs: props.tabs,
     readOnly: props.readOnly,

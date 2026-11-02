@@ -18,6 +18,7 @@ const props = defineProps({
 const {floats, move, size, tune, front, dock, sendAway} = props.detached;
 const menu = ref(null);
 const entryOf = (f) => props.catalogue.window(f.view);
+const setOption = (f, key, value) => tune(f.id, {options: {...(f.options || {}), [key]: value}});
 
 function away(id) {
     menu.value = null;
@@ -45,7 +46,7 @@ function away(id) {
             >
                 <template v-if="menu === f.id">
                     <div class="float-menu" role="menu">
-                        <PaneMenuOptions :declared="entryOf(f)?.options || []" :values="f.options || {}" @set="(key, value) => tune(f.id, {options: {...(f.options || {}), [key]: value}})" />
+                        <PaneMenuOptions :declared="entryOf(f)?.options || []" :values="f.options || {}" @set="(key, value) => setOption(f, key, value)" />
                         <Btn :data-float-away="f.id" @click="away(f.id)">Send away</Btn>
                     </div>
                 </template>
@@ -58,6 +59,7 @@ function away(id) {
                     :options="f.options || {}"
                     :prompts="prompts"
                     :shell-read="shellRead"
+                    @option="(key, value) => setOption(f, key, value)"
                 />
             </FloatWindow>
         </template>

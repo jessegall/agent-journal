@@ -137,6 +137,9 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
                             <span class="task-title">{{ row.title }}</span>
+                            <template v-if="group.state === 'delegated'">
+                                <span class="task-worker" :title="`Delegated to agent ${row.delegated_to}, in state ${row.state}`" data-task-worker>Worker {{ row.delegated_to }} · {{ row.state }}</span>
+                            </template>
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>
                             </template>
@@ -153,6 +156,12 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </template>
 
 <style scoped>
+.task-worker {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
 .task-reason {
     overflow: hidden;
     min-width: 0;
@@ -267,10 +276,18 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     border-radius: 50%;
 }
 
-.task-mark.started,
-.task-mark.testing {
+.task-mark.started {
     border-color: var(--accent);
     background: linear-gradient(90deg, var(--accent) 50%, transparent 50%);
+}
+
+.task-mark.testing {
+    border-color: var(--tone-sequence);
+    background: linear-gradient(90deg, var(--tone-sequence) 50%, transparent 50%);
+}
+
+.tasks-group[data-state="testing"] .tasks-fold {
+    color: var(--tone-sequence);
 }
 
 .task-mark.blocked {

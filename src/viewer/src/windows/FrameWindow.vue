@@ -13,6 +13,7 @@ const props = defineProps({
     prompts: {type: Object, default: null},
     options: {type: Object, default: () => ({})},
 });
+const emit = defineEmits(["option"]);
 const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
 </script>
 
@@ -33,5 +34,6 @@ const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
         :tabs="entry.tabs"
         :events="entry.events || []"
         :unavailable-reason="entry.unavailable_reason || ''"
+        @option="(key, value) => emit('option', key, value)"
     />
 </template>

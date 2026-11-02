@@ -8,7 +8,7 @@ from core.modules.tasks.models.support.views import TASK_CARDS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class TaskCard(ViewModel):
-    """A task as the board draws it, read from the task_cards view without its brief, reason or outcome."""
+    """A task as the board draws it, read from the task_cards view without its brief, reason or outcome, with the worker it is delegated to."""
 
     cli_name = "task"
     view = "task_cards"
@@ -22,3 +22,4 @@ class TaskCard(ViewModel):
     priority: TaskPriority
     reason: str
     closed_at: str | None
+    delegated_to: int | None

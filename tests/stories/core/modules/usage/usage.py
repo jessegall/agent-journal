@@ -65,6 +65,11 @@ def test_the_usage_window_reads_the_usage(new_story):
     window.expect_window_allowed("usage.usage", "usage show")
 
 
+def test_the_cost_window_reads_the_usage(new_story):
+    window = WindowStory(new_story(fixture=UserJoined))
+    window.expect_window_allowed("usage.cost", "usage show")
+
+
 def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_task(new_story):
     story = new_story(fixture=UserJoined)
     story.run(HELPER_START.format(parent=story.agent.id))

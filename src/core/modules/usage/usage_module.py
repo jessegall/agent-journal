@@ -28,6 +28,7 @@ class UsageModule(Module):
     moves = [StatisticsMove]
     subcommands = (UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
+               WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
                WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
                WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"])]

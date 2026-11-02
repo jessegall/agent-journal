@@ -8,7 +8,7 @@ import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
 import WindowHost from "./WindowHost.vue";
 
-const emit = defineEmits(["remove"]);
+const emit = defineEmits(["remove", "option"]);
 const props = defineProps({
     name: {type: String, required: true},
     catalogue: {type: Object, required: true},
@@ -76,6 +76,7 @@ watch(
             :permissions="permissions"
             :prompts="prompts"
             :options="options"
+            @option="(key, value) => emit('option', key, value)"
         />
     </template>
     <template v-else-if="entry && entry.loading === 'frame'">
@@ -88,6 +89,7 @@ watch(
             :permissions="permissions"
             :prompts="prompts"
             :options="options"
+            @option="(key, value) => emit('option', key, value)"
         />
     </template>
     <template v-else-if="entry">
@@ -107,6 +109,7 @@ watch(
             :auto-scroll="entry.auto_scroll"
             :tabs="entry.tabs"
             :unavailable-reason="entry.unavailable_reason"
+            @option="(key, value) => emit('option', key, value)"
         />
     </template>
     <template v-else>

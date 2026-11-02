@@ -43,7 +43,8 @@ export const browserCopy = {
     },
 };
 
-const PANE_OWN_OPTIONS = ["width", "agent"];
+// view is the one value a window keeps on its pane without declaring a control for it, as the file feed does
+const PANE_OWN_OPTIONS = ["width", "agent", "view"];
 
 // each pane's tabs with the titles the catalogue gives them, a gone window keeping the title it had, and its options
 // only those its windows declare and those every pane has

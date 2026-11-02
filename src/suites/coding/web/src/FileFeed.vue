@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {ago, AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
 import FeedBar from "./FeedBar.vue";
 import {cardsOf} from "./fileCards.js";
@@ -9,14 +9,18 @@ const DEFAULTS = {lines: 0, flush: false, headers: false, collapse: false, edits
 const BIG_LINE_COUNT = 40;
 const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21px"]};
 const SETTING_KEY = "view";
+// on an agent's page and a worker's, the feed starts as five lines flush, the way version 4's inspector drew it
+const AGENT_PAGE = "agent";
+const AGENT_VIEW = {lines: 5, flush: true};
 
 const context = useWindow();
-const {rows, failure, loaded, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
-const view = ref(DEFAULTS);
+const {rows, failure, loaded, more, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
+const kept = context.option(SETTING_KEY);
+const startView = (own) => ({...DEFAULTS, ...(context.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
+const view = ref(startView({}));
 const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
-const hasOlder = ref(true);
 
 const cards = computed(() => cardsOf([...rows.value].sort((one, two) => one.id - two.id)));
 const listed = computed(() => {
@@ -30,7 +34,7 @@ const expand = () => (folds.value = Object.fromEntries(cards.value.map((card) =>
 
 function setOptions(options) {
     view.value = options;
-    context.keep(SETTING_KEY, options);
+    context.setOption(SETTING_KEY, options);
 }
 
 async function whole(card) {
@@ -45,12 +49,10 @@ async function whole(card) {
     wholes.value = {...wholes.value, [card.id]: answer.ok ? {text: answer.value.text} : {error: "The text of this file could not be read."}};
 }
 
-async function showOlder() {
-    hasOlder.value = await older();
-}
-
+// this pane's own view, else the one version 5 first kept for every feed
+watch(kept, (own) => own && (view.value = startView(own)));
 onMounted(async () => {
-    view.value = {...DEFAULTS, ...(await context.setting(SETTING_KEY, {}))};
+    view.value = startView(kept.value ?? (await context.setting(SETTING_KEY, {})));
 });
 </script>
 
@@ -69,8 +71,8 @@ onMounted(async () => {
             </template>
             <template v-else>
             <div class="file-feed-flow">
-                <template v-if="hasOlder && !filter">
-                    <Btn small data-feed-older @click="showOlder">Show older edits</Btn>
+                <template v-if="more && !filter">
+                    <Btn small data-feed-older @click="older">Show older edits</Btn>
                 </template>
                 <template v-for="card in listed" :key="card.id">
                     <DiffCard
