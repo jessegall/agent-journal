@@ -231,6 +231,7 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
 
 .growing-card-title {
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .growing-card-wrap.incoming {
