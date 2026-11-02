@@ -1,4 +1,5 @@
 from core.base.chat.dock_declaration import DockDeclaration
+from core.base.chat.mark_button import MarkButton
 from core.base.chat.mark_click import MarkClick
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.chat.mark_family import MarkFamily
@@ -12,5 +13,6 @@ PLANS_FAMILY = MarkFamily("plans.plans", "Plans", "plan", MarkGroup.WORK)
 PLAN_MARKS = [MarkDeclaration(PlanMarkType.PLAN, PlanMarkVariant, PLANS_FAMILY, "Plan moves", "plan", click=MarkClick.OPEN_ROW)]
 
 PLAN_DOCK_READS = ["plan show", "plan progress", "plan outline"]
-PLAN_BADGES = {PlanDockType.DRAFT: "Draft", PlanDockType.WAITING: "Waiting for you", PlanDockType.STARTED: "Started", PlanDockType.PAUSED: "Paused", PlanDockType.COMPLETED: "Done", PlanDockType.CANCELLED: "Cancelled"}
-PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS, badge=PLAN_BADGES[dock_type]) for dock_type in PlanDockType]
+PLAN_BADGES = {PlanDockType.DRAFT: "Draft", PlanDockType.STARTED: "Started", PlanDockType.PAUSED: "Paused", PlanDockType.COMPLETED: "Done", PlanDockType.CANCELLED: "Cancelled"}
+PLAN_BUTTONS = {PlanDockType.WAITING: (MarkButton("check", "Approve", "plan approve {row_id}"),)}
+PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS, badge=PLAN_BADGES.get(dock_type, ""), buttons=PLAN_BUTTONS.get(dock_type, ())) for dock_type in PlanDockType]
