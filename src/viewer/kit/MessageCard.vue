@@ -144,6 +144,9 @@ function pick(face) {
         </template>
         <div class="message-foot">
             <time class="message-time">{{ time }}</time>
+            <template v-if="Number.isInteger(message.id)">
+                <span class="message-id" data-message-id>#{{ message.id }}</span>
+            </template>
             <template v-if="fromPerson">
                 <ReadTicks :message="message" />
             </template>
@@ -424,7 +427,8 @@ function pick(face) {
     margin: 0 2px;
 }
 
-.message-time {
+.message-time,
+.message-id {
     color: var(--text-4);
     font-size: 11px;
 }
