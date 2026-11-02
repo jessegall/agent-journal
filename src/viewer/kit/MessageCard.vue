@@ -1,6 +1,7 @@
 <script setup>
 import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
 import {computed, ref} from "vue";
+import Icon from "../src/kit/Icon.vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
@@ -64,22 +65,25 @@ function pick(face) {
                     </template>
                 </template>
             </div>
-            <div class="message-tools" data-message-tools>
-                <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = !picking">React</button>
-                <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
-                <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
-                <template v-if="deletable">
-                    <button type="button" class="message-tool" data-message-action="delete" title="Only while it is unread" @click="emit('delete', message)">Delete</button>
+            <div :class="['message-tools', {picking}]" data-message-tools>
+                <template v-if="picking">
+                    <div class="message-faces" data-message-faces>
+                        <template v-for="face in FACES" :key="face">
+                            <button type="button" class="message-face" :title="`React ${face}`" :data-face="face" @click="pick(face)">{{ face }}</button>
+                        </template>
+                    </div>
+                    <button type="button" class="message-tool" data-message-action="cancel-react" title="Cancel" @click="picking = false"><Icon name="close" :size="11" /></button>
+                </template>
+                <template v-else>
+                    <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = true">React</button>
+                    <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
+                    <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
+                    <template v-if="deletable">
+                        <button type="button" class="message-tool" data-message-action="delete" title="Only while it is unread" @click="emit('delete', message)">Delete</button>
+                    </template>
                 </template>
             </div>
         </div>
-        <template v-if="picking">
-            <div class="message-faces" data-message-faces>
-                <template v-for="face in FACES" :key="face">
-                    <button type="button" class="message-face" :title="`React ${face}`" :data-face="face" @click="pick(face)">{{ face }}</button>
-                </template>
-            </div>
-        </template>
         <template v-if="reactions.length">
             <div class="message-reactions" data-message-reactions>
                 <template v-for="reaction in reactions" :key="reaction.emoji">
@@ -116,22 +120,20 @@ function pick(face) {
 <style scoped>
 .message-faces {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
-    margin-top: 4px;
-    padding: 3px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: var(--raised);
+    gap: 1px;
+    max-width: 144px;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .message-face {
-    padding: 2px 4px;
+    flex: none;
+    padding: 0 4px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 20px;
     background: none;
-    font-size: 15px;
-    line-height: 1;
+    font-size: 12px;
+    line-height: 18px;
     cursor: pointer;
 }
 
@@ -212,6 +214,7 @@ function pick(face) {
 }
 
 .message-body:hover .message-tools,
+.message-tools.picking,
 .message-tools:focus-within {
     opacity: 1;
     pointer-events: auto;

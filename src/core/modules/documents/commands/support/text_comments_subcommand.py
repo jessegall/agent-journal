@@ -10,14 +10,15 @@ from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.text_row import TextRow
 from core.modules.messages.models.message import Message
+from core.modules.plans.models.plan import Plan
 
 MESSAGE_MODEL = "message"
 
 
 class TextCommentsSubcommand(ReadSubcommand[TextComments]):
-    """`journal <doc or report> comments <n>`: the messages the user wrote on it, oldest first."""
+    """`journal <doc, report or plan> comments <n>`: the messages the user wrote on it, oldest first."""
 
-    model: ClassVar[type[TextRow]]
+    model: ClassVar[type[TextRow] | type[Plan]]
     name = "comments"
 
     def __init__(self, queries: Queries) -> None:

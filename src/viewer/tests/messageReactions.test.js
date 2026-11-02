@@ -45,3 +45,16 @@ test("React opens the faces, and picking one reacts and closes them", async () =
     expect(faces).toEqual(["🎉"]);
     expect(element.querySelector("[data-message-faces]")).toBeNull();
 });
+
+test("picking a reaction replaces the buttons with a bar, and cancel brings them back", async () => {
+    const element = document.createElement("div");
+    createApp({render: () => h(MessageCard, {message: {id: 1, type: "agent", text: "hi", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})}).mount(element);
+    element.querySelector('[data-message-action="react"]').click();
+    await nextTick();
+    expect(element.querySelector("[data-message-tools] [data-message-faces]")).not.toBeNull();
+    expect(element.querySelector('[data-message-action="reply"]')).toBeNull();
+    element.querySelector('[data-message-action="cancel-react"]').click();
+    await nextTick();
+    expect(element.querySelector("[data-message-faces]")).toBeNull();
+    expect(element.querySelector('[data-message-action="reply"]')).not.toBeNull();
+});

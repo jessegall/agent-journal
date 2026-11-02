@@ -33,6 +33,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.upgrade.plans_move import PlansMove
+from core.modules.plans.commands.comment_plan.comment_plan_subcommand import CommentPlanSubcommand
+from core.modules.plans.commands.plan_comments.plan_comments_subcommand import PlanCommentsSubcommand
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
@@ -57,7 +59,7 @@ class PlansModule(Module):
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
-    subcommands = (PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = (CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress, PlanCard]
     guards = [PhasePositionGuard, PlanCloseGuard]

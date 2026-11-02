@@ -14,6 +14,10 @@ import ProgressBar from "../kit/ProgressBar.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {render} from "../text/index.js";
 import RowMoves from "./RowMoves.vue";
+import CommentSide from "./CommentSide.vue";
+import PlanCritique from "./PlanCritique.vue";
+import QuickCommentBar from "../kit/QuickCommentBar.vue";
+import {useTextComments} from "../composables/textComments.js";
 
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
@@ -26,6 +30,8 @@ const VIEWS = [
 const view = ref("phases");
 const plan = ref(null);
 const failure = ref("");
+const critiquing = ref(false);
+const textComments = useTextComments(() => (plan.value ? {kind: "plan", id: props.id, title: plan.value.title} : {}), (line) => props.read(line));
 let reading = 0;
 
 const html = computed(() => (plan.value?.brief ? render(plan.value.brief, {env: "", rowNames: false}) : ""));
@@ -63,6 +69,7 @@ watch(() => props.id, () => {
             <a class="share-link" data-resource-share :href="shareAddress(`plans:${id}`)">Share</a>
             <CloseButton title="Close the plan" data-resource-close @click="emit('close')" />
         </header>
+        <div class="plan-row">
         <div class="scroll">
             <template v-if="failure">
                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -82,6 +89,11 @@ watch(() => props.id, () => {
                     </div>
                 </template>
                 <RowMoves inline kind="plan" :id="id" :row="plan" :read="read" @done="load" />
+                <template v-if="plan.state === 'ready'">
+                    <div class="plan-critique">
+                        <Btn small bordered data-plan-critique-open @click="critiquing = true">Ask for a critique</Btn>
+                    </div>
+                </template>
                 <template v-if="html">
                     <div class="brief">
                         <Folded :name="`plans:${id}:brief`" :at="220" :keep="160">
@@ -127,6 +139,16 @@ watch(() => props.id, () => {
                 <PlanReviews :id="id" :read="read" />
             </template>
         </div>
+        <template v-if="textComments.open.value">
+            <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
+        </template>
+        </div>
+        <template v-if="plan">
+            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
+        </template>
+        <template v-if="critiquing">
+            <PlanCritique :plan="plan" :read="read" @close="critiquing = false" />
+        </template>
     </article>
 </template>
 
@@ -151,6 +173,21 @@ watch(() => props.id, () => {
     color: var(--text-3);
     font-size: 11px;
     line-height: 18px;
+}
+
+.plan-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.plan-row > .scroll {
+    flex: 1;
+    min-width: 0;
+}
+
+.plan-critique {
+    margin-top: 8px;
 }
 
 .plan-inspector {
