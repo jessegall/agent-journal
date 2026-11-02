@@ -2,11 +2,11 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.triggers.commands.make_trigger.make_trigger import MakeTrigger
-from core.modules.triggers.commands.support.trigger_line_subcommand import TriggerLineSubcommand
+from core.modules.triggers.commands.support.show_trigger_line_subcommand import ShowTriggerLineSubcommand
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 
 
-class MakeTriggerSubcommand(TriggerLineSubcommand[MakeTrigger]):
+class MakeTriggerSubcommand(ShowTriggerLineSubcommand[MakeTrigger]):
     """`journal trigger make "deploy, release" "<text>" [--do nudge|instruct|deny]`."""
 
     cli_name = "trigger"

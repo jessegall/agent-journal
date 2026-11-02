@@ -16,16 +16,15 @@ class ServerPluginServices:
         self.processes = ServiceProcesses()
 
     def follow(self) -> None:
-        container = synced_container(self.home)
-        try:
-            container.get(PluginServiceRound).run(self.processes)
-        finally:
-            container.get(Database).close()
+        self.run_job(PluginServiceRound)
 
     def check_health(self) -> None:
+        self.run_job(PluginHealthCheck)
+
+    def run_job(self, job: type[PluginServiceRound] | type[PluginHealthCheck]) -> None:
         container = synced_container(self.home)
         try:
-            container.get(PluginHealthCheck).run(self.processes)
+            container.get(job).run(self.processes)
         finally:
             container.get(Database).close()
 

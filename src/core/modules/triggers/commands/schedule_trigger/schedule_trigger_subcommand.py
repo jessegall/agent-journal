@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.triggers.commands.schedule_trigger.schedule_trigger import ScheduleTrigger
-from core.modules.triggers.commands.support.trigger_line_subcommand import TriggerLineSubcommand
+from core.modules.triggers.commands.support.show_trigger_line_subcommand import ShowTriggerLineSubcommand
 
 
-class ScheduleTriggerSubcommand(TriggerLineSubcommand[ScheduleTrigger]):
+class ScheduleTriggerSubcommand(ShowTriggerLineSubcommand[ScheduleTrigger]):
     """`journal trigger schedule "<text>"` with `--at`, `--every <minutes>` or `--cron "<line>"`, and an end
     with `--until` or `--times <n>`."""
 

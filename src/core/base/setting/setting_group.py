@@ -1,7 +1,8 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field, replace
 
-from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, SettingDeclaration, SettingNode
+from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, SettingDeclaration
+from core.base.setting.setting_node import SettingNode
 from core.base.setting.setting_limits import length_problems
 from core.base.setting.setting_reference import SettingReference
 from core.base.setting.setting_scope import SettingScope

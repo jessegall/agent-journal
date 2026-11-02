@@ -13,7 +13,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)core/modules/plans/commands/(make_phase|move_phase|place_phase)/"
+                "fileMatches": "(^|/)core/modules/plans/(commands/(make_phase|move_phase|place_phase)/|support/positions\\.py)"
             },
             {
                 "testCode": true

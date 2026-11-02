@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from suites.coding.modules.checks.commands.edit_check.edit_check import EditCheck
-from suites.coding.modules.checks.commands.support.check_line_subcommand import CheckLineSubcommand
+from suites.coding.modules.checks.commands.support.show_check_line_subcommand import ShowCheckLineSubcommand
 
 
-class EditCheckSubcommand(CheckLineSubcommand[EditCheck]):
+class EditCheckSubcommand(ShowCheckLineSubcommand[EditCheck]):
     """`journal check edit <n> [--title ...] [--command ...] [--brief ...] [--every <minutes>]`."""
 
     cli_name = "check"

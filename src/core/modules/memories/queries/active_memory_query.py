@@ -10,8 +10,8 @@ from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.query import Query
 from core.base.query.select import Select
 from core.base.timestamp import Timestamp
-from core.modules.memories.queries.agent_scope import AgentScope
-from core.modules.memories.queries.due_memory import DueMemory
+from core.modules.memories.support.agent_scope import AgentScope
+from core.modules.memories.support.due_memory import DueMemory
 from core.modules.memories.models.context_memory import ContextMemory
 from core.modules.memories.models.active_memory import ActiveMemory
 

@@ -7,7 +7,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import DockLimits
 
 
-class TypeLimitGuard(Guard):
+class TypeCapacityGuard(Guard):
     """A dock holds no more items of a type than the type's capacity."""
 
     name = "docking.type-limit"

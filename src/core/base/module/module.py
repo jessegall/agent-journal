@@ -27,7 +27,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.query.shared_rows import SharedRows
-from core.base.setting.setting_declaration import SettingNode
+from core.base.setting.setting_node import SettingNode
 from core.base.tunnel.tunnel import Tunnel
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]

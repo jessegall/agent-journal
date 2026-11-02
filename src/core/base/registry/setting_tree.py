@@ -1,7 +1,7 @@
 from collections.abc import Iterator, Sequence
 
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import SettingNode
+from core.base.setting.setting_node import SettingNode
 
 
 class SettingTree:

@@ -9,7 +9,7 @@ from core.modules.triggers.models.trigger import Trigger
 C = TypeVar("C", bound=Command[Trigger])
 
 
-class TriggerLineSubcommand(Subcommand[C, Trigger], Generic[C]):
+class ShowTriggerLineSubcommand(Subcommand[C, Trigger], Generic[C]):
     """A trigger command that answers with the one line that tells what the trigger is."""
 
     def write_output(self, value: object, output: Output) -> None:

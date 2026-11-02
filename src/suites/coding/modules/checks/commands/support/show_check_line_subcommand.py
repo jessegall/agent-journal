@@ -9,7 +9,7 @@ from suites.coding.modules.checks.models.check import Check
 C = TypeVar("C", bound=Command[Check])
 
 
-class CheckLineSubcommand(Subcommand[C, Check], Generic[C]):
+class ShowCheckLineSubcommand(Subcommand[C, Check], Generic[C]):
     """A check command that answers with the one line that tells what the check is."""
 
     def write_output(self, value: object, output: Output) -> None:

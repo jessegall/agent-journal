@@ -4,7 +4,6 @@ import subprocess
 import sys
 import tempfile
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.code_copy import CodeCopy
@@ -13,22 +12,13 @@ from core.base.refusal import Refusal
 from core.base.seed.demo import DEMO_ENVIRONMENT
 from core.base.seed.demo_link import DemoLink
 from core.modules.demo.support.unix_connection import UnixConnection
+from core.modules.demo.support.demo_session import DemoSession
 
 STEP_SECONDS = 120
 SERVER_START_SECONDS = 30
 REQUEST_SECONDS = 10
 PERSON = "Demo"
 SOURCE = Path(__file__).resolve().parents[4]  # the src folder
-
-
-@dataclass(frozen=True)
-class DemoSession:
-    """A scratch journal with a server running: where it is, the server's pid and the link that logs a person
-    in."""
-
-    folder: Path
-    pid: int
-    link: str
 
 
 class DemoScratch:

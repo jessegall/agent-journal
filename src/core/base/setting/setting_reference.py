@@ -1,7 +1,8 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 
-from core.base.setting.setting_declaration import REFERENCE_TYPE, SettingDeclaration, SettingNode
+from core.base.setting.setting_declaration import REFERENCE_TYPE, SettingDeclaration
+from core.base.setting.setting_node import SettingNode
 from core.base.setting.setting_scope import SettingScope
 
 

@@ -61,8 +61,8 @@ class SequencesMove(VersionFourMove):
     def triggers(row: sqlite3.Row) -> list[dict[str, object]]:
         moved: list[dict[str, object]] = []
         for trigger in json.loads(row["triggers"] or "[]"):
-            moment = trigger.pop("moment", "")
-            moved.append({**trigger, "event": moment.replace(".created", ".create")} if moment else trigger)
+            event_name = trigger.pop("moment", "")
+            moved.append({**trigger, "event": event_name.replace(".created", ".create")} if event_name else trigger)
         return moved
 
     @staticmethod

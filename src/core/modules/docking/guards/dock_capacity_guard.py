@@ -7,7 +7,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
 
 
-class DockLimitGuard(Guard):
+class DockCapacityGuard(Guard):
     """A dock holds no more items than the setting docking.most-items, 6 unless it says otherwise."""
 
     name = "docking.dock-limit"

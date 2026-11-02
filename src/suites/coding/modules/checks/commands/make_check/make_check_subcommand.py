@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from suites.coding.modules.checks.commands.make_check.make_check import MakeCheck
-from suites.coding.modules.checks.commands.support.check_line_subcommand import CheckLineSubcommand
+from suites.coding.modules.checks.commands.support.show_check_line_subcommand import ShowCheckLineSubcommand
 
 
-class MakeCheckSubcommand(CheckLineSubcommand[MakeCheck]):
+class MakeCheckSubcommand(ShowCheckLineSubcommand[MakeCheck]):
     """`journal check make "<title>" --command "<command>" [--brief "<why>"] [--every <minutes>]`."""
 
     cli_name = "check"

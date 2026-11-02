@@ -9,11 +9,11 @@ from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand 
 from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
 from core.modules.docking.guards.kept_item_guard import KeptItemGuard
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
-from core.modules.docking.guards.dock_limit_guard import DockLimitGuard
+from core.modules.docking.guards.dock_capacity_guard import DockCapacityGuard
 from core.modules.docking.guards.dock_title_guard import DockTitleGuard
 from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
-from core.modules.docking.guards.type_limit_guard import TypeLimitGuard
+from core.modules.docking.guards.type_capacity_guard import TypeCapacityGuard
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
@@ -40,5 +40,5 @@ class DockingModule(Module):
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
-    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard, OwnEnvironmentGuard, KeptItemGuard]
+    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard, KeptItemGuard]
     seeders = [DockingSeeder]
