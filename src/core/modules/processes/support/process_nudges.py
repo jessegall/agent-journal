@@ -6,6 +6,7 @@ from core.base.driver.nudge_type import NudgeType
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.NUDGE, 'output {output} ended: {result}')
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.INSTRUCTION, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.INSTRUCTION, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}', required_command="")
+REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} moved to the background: set a Monitor on journal output monitor {output} first')
 MONITOR_TOOL_REQUIRED = NudgeDeclaration("processes.monitor_command_outside", NudgeType.REFUSAL, 'journal output monitor runs only in a Monitor: give it to the Monitor tool and keep working')
 HAND_MADE_MONITOR = NudgeDeclaration("processes.hand_made_monitor", NudgeType.REFUSAL, 'do not write your own wait on an output: give the Monitor the command journal output monitor <n>')
 PROCESS_MISSING = NudgeDeclaration("processes.process_lost", NudgeType.NUDGE, 'process {process} was lost: its shell is gone')
@@ -29,4 +30,4 @@ READER_PROGRESS_MISSING = NudgeDeclaration("processes.reader_no_progress", Nudge
 ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.NUDGE, 'you ran {shape} {count} times: add an alias with journal alias add <name> "<line>"', interval=Interval(Seconds(3600)))
 READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.NUDGE, "reader {reader} already reads output {output}", interval=Interval(Seconds(600)))
 SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.NUDGE, "outputs {outputs} share one title: give each its own with journal output title <n> \"<what it does>\"", interval=Interval(Seconds(600)))
-PROCESS_NUDGES = [MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]
+PROCESS_NUDGES = [REQUIRED_MONITOR, MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]

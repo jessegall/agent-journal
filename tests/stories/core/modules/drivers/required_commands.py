@@ -21,6 +21,7 @@ def journal_line(line):
 def story_with_required_command(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
+    story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": f"journal output monitor {process.id}"}}).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}}))
     story.advance(timedelta(seconds=6))
     story.hook("s-1", HookSamples.stop())
     story.expect_text("required-command list", TITLE_LINE.format(process=process.id), actor=story.agent)
