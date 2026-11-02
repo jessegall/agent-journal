@@ -361,7 +361,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <template v-if="context.option('floors').value">
             <FigureFloors />
         </template>
-        <div data-figure-chat-foot>
+        <div data-figure-chat-foot class="chat-foot">
             <DockStack :items="docked" :folded="short || !docksOpen" />
         </div>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
@@ -520,6 +520,13 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     color: var(--text-4);
     font-size: 10.5px;
     text-align: center;
+}
+
+/* many docks scroll inside their own share of the chat, so the history keeps room and the Newest pill stays at its foot */
+.chat-foot {
+    flex: none;
+    max-height: 40%;
+    overflow-y: auto;
 }
 
 .jump-holder {
