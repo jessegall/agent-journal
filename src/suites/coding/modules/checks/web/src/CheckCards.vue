@@ -7,6 +7,7 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
 </script>
 
 <template>
+    <ListTools :tools="tools" placeholder="Search the checks" />
     <div class="cards">
         <template v-if="!loaded">
             <Skeleton shape="cards" />
@@ -17,7 +18,6 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
         <template v-else-if="loaded && !rows.length">
             <p class="cards-note">No checks yet</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the checks" />
         <template v-for="row in tools.shown.value" :key="row.id">
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
                 <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
@@ -47,6 +47,7 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
 .card {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     gap: 8px;
     min-height: 110px;
     padding: 14px 16px;
@@ -83,6 +84,7 @@ const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !r
 .card-detail,
 .card-output {
     margin: 0;
+    overflow-wrap: anywhere;
     color: var(--text-2);
     font-size: 12px;
     white-space: pre-wrap;

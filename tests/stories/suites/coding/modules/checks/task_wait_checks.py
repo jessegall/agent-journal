@@ -40,6 +40,11 @@ def test_a_command_that_cannot_run_is_named_to_the_agent(new_story):
     assert any("task 1 waits on a command that cannot run" in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
+def test_the_check_of_a_wait_stays_out_of_the_list(new_story):
+    story = waiting_story(new_story, "false")
+    story.expect_absent("check list", "Task 1 waits")
+
+
 def test_unblocking_by_hand_removes_the_check(new_story):
     story = waiting_story(new_story, "false")
     story.run("task unblock 1")

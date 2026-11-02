@@ -23,7 +23,7 @@ class CheckListSubcommand(ReadSubcommand[Sequence[Check]]):
         return
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Check]:
-        return tuple(self.checks.kept())
+        return tuple(self.checks.filter(hidden=False).kept())
 
     def write_output(self, value: object, output: Output) -> None:
         RowLines.write(output, value, Check, CheckLines.listed)

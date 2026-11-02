@@ -28,6 +28,7 @@ class Check(Model):
     stopped: bool = False
     removed_at: Timestamp | None = None
     task_wait_id: int | None = None
+    hidden: bool = False
 
     def __post_init__(self) -> None:
         if not 1 <= len(self.title) <= TITLE_LIMIT_CHARACTERS:

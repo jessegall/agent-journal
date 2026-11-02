@@ -24,6 +24,7 @@ from suites.coding.modules.checks.listeners.task_wait_check_listener import Task
 from suites.coding.modules.checks.listeners.task_wait_pass_listener import TaskWaitPassListener
 from suites.coding.modules.checks.migrations.m001_checks import ChecksTableMigration
 from suites.coding.modules.checks.migrations.m002_check_task_wait import CheckTaskWaitMigration
+from suites.coding.modules.checks.migrations.m003_check_hidden import CheckHiddenMigration
 from suites.coding.modules.checks.rules.broken_task_wait_rule import BrokenTaskWaitRule
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.queries.check_query import CheckQuery
@@ -43,7 +44,7 @@ class ChecksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener]
-    migrations = [ChecksTableMigration, CheckTaskWaitMigration]
+    migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = (MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]

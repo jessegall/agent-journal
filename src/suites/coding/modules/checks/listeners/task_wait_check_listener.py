@@ -24,7 +24,7 @@ class TaskWaitCheckListener(SaveListener):
             return
         if wait.ended_at is None:
             self.repository.save(Check(creator_id=wait.creator_id, title=f"Task {wait.task_id} waits until this passes", command=wait.command,
-                                       interval_minutes=wait.interval_minutes, task_wait_id=wait.id), change.context)
+                                       interval_minutes=wait.interval_minutes, task_wait_id=wait.id, hidden=True), change.context)
             return
         for check in tuple(self.queries.query(Check).filter(task_wait_id=wait.id).all_rows()):
             if check.removed_at is None:
