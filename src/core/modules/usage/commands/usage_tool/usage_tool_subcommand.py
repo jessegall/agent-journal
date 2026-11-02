@@ -13,7 +13,9 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.questions.models.enums.question_state import QuestionState
@@ -47,8 +49,15 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ToolFacts()
         calls = self.queries.query(HookCall).filter(agent_id=mains[0].id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
-            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(calls[0].summary)) if part))
+            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary)) if part))
         return ToolFacts(wait_target=" and ".join((*self.running_titles(mains[0].id), *self.open_question_lines(environment_id))))
+
+    def running_part_text(self, call: HookCall) -> str:
+        runs = self.processes.agent(call.agent_id).running().newest().page(1, 1).rows
+        if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
+            return ""
+        waiting = self.queries.query(ProcessPart).filter(process_id=runs[0].id, state=PartState.WAITING).ordered("position").page(1, 1).rows
+        return waiting[0].text if waiting else ""
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)

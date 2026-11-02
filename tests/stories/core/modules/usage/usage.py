@@ -1,8 +1,11 @@
 import json
 
+from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
@@ -78,6 +81,16 @@ def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
     story.expect_text("usage tool --environment main", "Bash ls build", actor=story.user)
     story.hook("s-1", HookSamples.stop())
     story.expect_absent("usage tool --environment main", "Bash", actor=story.user)
+
+
+def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(new_story):
+    story = new_story(fixture=UserJoined)
+    line = "cat notes && pytest -q"
+    story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
+    process = start_process(story, line)
+    story.expect_text("usage tool --environment main", "Bash cat notes", actor=story.user)
+    story.container.get(Bus).run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=process.environment_id)
+    story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
 
 
 def test_a_session_says_when_it_was_last_compacted(new_story):
