@@ -8,6 +8,7 @@ from core.base.driver.tool_type import ToolType
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch import RecordSubagentDispatch
 from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
 
@@ -28,6 +29,8 @@ class DispatchMarkRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if hook.role is AgentRole.SUBAGENT and hook.event.event is HookEventName.SESSION_START:
+            return self.subagent_started(hook)
         if hook.role is AgentRole.SUBAGENT:
             return self.subagent_stopped(hook) if hook.event.event is HookEventName.STOP else RuleAnswer.allowed()
         tool = hook.event.tool
@@ -41,6 +44,12 @@ class DispatchMarkRule(DriverRule):
         if hook.event.event is HookEventName.POST_TOOL_USE and not dispatch.get(BACKGROUND_INPUT):
             return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.environment_id, hook.agent_id, key, profile, model, description, instruction, f"{hook.event.raw.get('tool_response', '')}", True))
         return RuleAnswer.allowed()
+
+    def subagent_started(self, hook: AgentHook) -> RuleAnswer:
+        parent = self.queries.query(Agent).find(hook.agent_id).parent_id
+        if parent is None:
+            return RuleAnswer.allowed()
+        return RuleAnswer.allowed().running(BindSubagentDispatch(parent, f"{hook.event.raw.get('agent_type') or DEFAULT_PROFILE}", hook.agent_id))
 
     def subagent_stopped(self, hook: AgentHook) -> RuleAnswer:
         parent = self.queries.query(Agent).find(hook.agent_id).parent_id

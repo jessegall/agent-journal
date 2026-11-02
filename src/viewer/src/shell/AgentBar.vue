@@ -32,8 +32,8 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
                 </Btn>
                 <span class="agent-divider" />
             </template>
-            <button type="button" class="agent-helpers" data-helpers title="Running: helpers, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
-                {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
+            <button type="button" class="agent-helpers" data-helpers title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
+                {{ helpers }} {{ helpers === 1 ? "subagent" : "subagents" }}
             </button>
         </template>
         <template v-else>

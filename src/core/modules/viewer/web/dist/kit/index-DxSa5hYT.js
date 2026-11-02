@@ -3632,30 +3632,18 @@ const Xd = ["data-ref"], Qd = ["data-from", "data-ref"], eh = { class: "message-
             inline: ""
           }, null, 8, ["text"])
         ]))
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-D21oaXiN.js
       ])) : N("", !0),
       p("div", mh, [
         p("time", gh, b(U.value), 1),
-        Number.isInteger(e.message.id) ? (l(), d("span", vh, "#" + b(e.message.id), 1)) : N("", !0),
+        Number.isInteger(e.message.id) ? (l(), d("span", vh, "message " + b(e.message.id), 1)) : N("", !0),
         r.value ? (l(), K(Ud, {
-========
-      ])) : j("", !0),
-      p("div", ph, [
-        p("time", mh, w(Q.value), 1),
-        Number.isInteger(e.message.id) ? (l(), d("span", gh, "message " + w(e.message.id), 1)) : j("", !0),
-        r.value ? (l(), G(Hd, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-BbHIAqT4.js
           key: 1,
           message: e.message
         }, null, 8, ["message"])) : N("", !0)
       ])
     ], 8, Qd));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-D21oaXiN.js
-}, jv = /* @__PURE__ */ Z($h, [["__scopeId", "data-v-5a08c284"]]), ln = [
-========
-}, Dv = /* @__PURE__ */ J(bh, [["__scopeId", "data-v-f50aa724"]]), ln = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-BbHIAqT4.js
+}, jv = /* @__PURE__ */ Z($h, [["__scopeId", "data-v-eb1d7000"]]), ln = [
   { key: 100, label: "Low" },
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
@@ -8379,11 +8367,7 @@ const Sv = /* @__PURE__ */ xv(_v), Ev = ["width", "height", "viewBox"], Av = ["w
       }, null, 8, Cv)
     ], 8, Ev));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-D21oaXiN.js
-}, Fy = /* @__PURE__ */ Z(Ov, [["__scopeId", "data-v-489f0852"]]), Hy = nr(() => import("./VoiceFigure-nJxMAknA.js").then((e) => e.V)), Uy = "1.0.0", zy = "3.5";
-========
-}, qy = /* @__PURE__ */ J(Av, [["__scopeId", "data-v-489f0852"]]), Wy = tr(() => import("./VoiceFigure-BXz1R7o9.js").then((e) => e.V)), Fy = "1.0.0", Hy = "3.5";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-BbHIAqT4.js
+}, Fy = /* @__PURE__ */ Z(Ov, [["__scopeId", "data-v-489f0852"]]), Hy = nr(() => import("./VoiceFigure-BdR2l2A1.js").then((e) => e.V)), Uy = "1.0.0", zy = "3.5";
 export {
   Dv as $,
   oy as A,

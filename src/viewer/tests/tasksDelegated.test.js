@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
-import {context, mounted} from "./support/windowContext.js";
+import {context, mounted, settle} from "./support/windowContext.js";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -24,6 +24,15 @@ test("tasks delegated to a worker are listed in a section of their own, with the
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
     expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
     expect(element.querySelector('[data-state="open"]')).toBeNull();
+});
+
+test("while searching, a group with no match is hidden", async () => {
+    const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
+    const search = element.querySelector(".tasks-search");
+    search.value = "mine";
+    search.dispatchEvent(new Event("input"));
+    await settle();
+    expect([...element.querySelectorAll("section[data-state]")].map((group) => group.dataset.state)).toEqual(["started"]);
 });
 
 test("the filter of the tasks dialog offers the delegated section", () => {

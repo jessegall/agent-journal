@@ -21,3 +21,4 @@ class SubagentDispatch(Model):
     instruction: str
     returned: str = ""
     ended_at: Timestamp | None = None
+    subagent_id: int | None = None

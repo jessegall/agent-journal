@@ -79,7 +79,8 @@ const stateGroups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     return board.value
         .filter(shownGroup)
-        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}));
+        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
+        .filter(({tasks}) => !wanted || tasks.length);
 });
 // the tasks held, under the plan and phase each is placed in; the tasks of no plan come last
 const planGroups = computed(() => {

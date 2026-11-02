@@ -1,13 +1,13 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-6b52e56ab5b7")) { const style = document.createElement("style"); style.id = "window-styles-6b52e56ab5b7"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-worker[data-v-a4a377f8]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-a4a377f8]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-a4a377f8]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-a4a377f8]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-a4a377f8]{display:flex;flex-direction:column;gap:14px}.tasks-tools[data-v-a4a377f8]{position:sticky;z-index:2;top:0;display:flex;gap:8px;align-items:center;padding:0 0 8px;background:var(--bg)}.tasks-fold[data-v-a4a377f8]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-a4a377f8]:hover{color:var(--text)}.tasks-caret.closed[data-v-a4a377f8]{transform:rotate(-90deg)}.tasks-search[data-v-a4a377f8]{flex:1;min-width:0;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.tasks-group-head[data-v-a4a377f8]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-a4a377f8]{margin-left:4px}.task[data-v-a4a377f8]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-a4a377f8]:hover{background:var(--hover)}.task.selected[data-v-a4a377f8]{background:var(--raised)}.task-mark[data-v-a4a377f8]{flex:none;width:12px;height:12px;border:1.5px solid var(--text-4);border-radius:50%}.task-mark.started[data-v-a4a377f8]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}.task-mark.testing[data-v-a4a377f8]{border-color:var(--tone-sequence);background:linear-gradient(90deg,var(--tone-sequence) 50%,transparent 50%)}.tasks-group[data-state=testing] .tasks-fold[data-v-a4a377f8]{color:var(--tone-sequence)}.task-mark.blocked[data-v-a4a377f8]{border-color:var(--tone-warn)}.task-mark.completed[data-v-a4a377f8]{border-color:var(--accent);background:var(--accent)}.task-mark.cancelled[data-v-a4a377f8]{opacity:.4}.task-id[data-v-a4a377f8]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-a4a377f8]{flex:1;min-width:0}.tasks-note[data-v-a4a377f8]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-2110d667]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-2110d667]{display:flex;gap:8px;align-items:center}.title[data-v-2110d667],.brief[data-v-2110d667]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-2110d667]{font-weight:500}.brief[data-v-2110d667]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-2110d667]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-2110d667]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-2110d667]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7f04b1f6]{overflow:auto;padding:16px 20px}.graph-note[data-v-7f04b1f6]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7f04b1f6]{position:relative}.graph-lines[data-v-7f04b1f6]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7f04b1f6]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7f04b1f6]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7f04b1f6]:hover,.graph-node.selected[data-v-7f04b1f6]{border-color:var(--accent)}.graph-title[data-v-7f04b1f6]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-9da4937c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-9da4937c]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-9da4937c],.clear[data-v-9da4937c]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-9da4937c]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-9da4937c]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-9da4937c]{margin:0;font-size:15px;font-weight:600}.standing[data-v-9da4937c]{color:var(--text-3);font-size:12px}.grow[data-v-9da4937c]{flex:1}.tasks-body[data-v-9da4937c]{display:flex;flex:1;min-height:0}.tasks-list[data-v-9da4937c]{flex:1;min-width:0;overflow:auto;padding:14px 16px}\n"; document.head.appendChild(style); }
-import { ref as h, computed as Y, watch as he, onUnmounted as te, openBlock as o, createElementBlock as v, createBlock as B, unref as u, toDisplayString as S, Fragment as L, createElementVNode as _, withDirectives as ae, vModelText as ne, renderSlot as we, createCommentVNode as K, renderList as q, createVNode as f, normalizeClass as Z, createTextVNode as x, withKeys as ee, onMounted as ce, withModifiers as ie, withCtx as m, normalizeStyle as re, vShow as ge, nextTick as $e, createSlots as be } from "vue";
+if (!document.getElementById("window-styles-2c584a10f05b")) { const style = document.createElement("style"); style.id = "window-styles-2c584a10f05b"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-worker[data-v-69914ff5]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-69914ff5]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-69914ff5]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-69914ff5]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-69914ff5]{display:flex;flex-direction:column;gap:14px}.tasks-tools[data-v-69914ff5]{position:sticky;z-index:2;top:0;display:flex;gap:8px;align-items:center;padding:0 0 8px;background:var(--bg)}.tasks-fold[data-v-69914ff5]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-69914ff5]:hover{color:var(--text)}.tasks-caret.closed[data-v-69914ff5]{transform:rotate(-90deg)}.tasks-search[data-v-69914ff5]{flex:1;min-width:0;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.tasks-group-head[data-v-69914ff5]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-69914ff5]{margin-left:4px}.task[data-v-69914ff5]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-69914ff5]:hover{background:var(--hover)}.task.selected[data-v-69914ff5]{background:var(--raised)}.task-mark[data-v-69914ff5]{flex:none;width:12px;height:12px;border:1.5px solid var(--text-4);border-radius:50%}.task-mark.started[data-v-69914ff5]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}.task-mark.testing[data-v-69914ff5]{border-color:var(--tone-sequence);background:linear-gradient(90deg,var(--tone-sequence) 50%,transparent 50%)}.tasks-group[data-state=testing] .tasks-fold[data-v-69914ff5]{color:var(--tone-sequence)}.task-mark.blocked[data-v-69914ff5]{border-color:var(--tone-warn)}.task-mark.completed[data-v-69914ff5]{border-color:var(--accent);background:var(--accent)}.task-mark.cancelled[data-v-69914ff5]{opacity:.4}.task-id[data-v-69914ff5]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-69914ff5]{flex:1;min-width:0}.tasks-note[data-v-69914ff5]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-2110d667]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-2110d667]{display:flex;gap:8px;align-items:center}.title[data-v-2110d667],.brief[data-v-2110d667]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-2110d667]{font-weight:500}.brief[data-v-2110d667]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-2110d667]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-2110d667]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-2110d667]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7f04b1f6]{overflow:auto;padding:16px 20px}.graph-note[data-v-7f04b1f6]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7f04b1f6]{position:relative}.graph-lines[data-v-7f04b1f6]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7f04b1f6]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7f04b1f6]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7f04b1f6]:hover,.graph-node.selected[data-v-7f04b1f6]{border-color:var(--accent)}.graph-title[data-v-7f04b1f6]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-9da4937c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-9da4937c]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-9da4937c],.clear[data-v-9da4937c]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-9da4937c]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-9da4937c]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-9da4937c]{margin:0;font-size:15px;font-weight:600}.standing[data-v-9da4937c]{color:var(--text-3);font-size:12px}.grow[data-v-9da4937c]{flex:1}.tasks-body[data-v-9da4937c]{display:flex;flex:1;min-height:0}.tasks-list[data-v-9da4937c]{flex:1;min-width:0;overflow:auto;padding:14px 16px}\n"; document.head.appendChild(style); }
+import { ref as w, computed as Y, watch as he, onUnmounted as te, openBlock as o, createElementBlock as v, createBlock as B, unref as u, toDisplayString as S, Fragment as L, createElementVNode as _, withDirectives as ae, vModelText as ne, renderSlot as we, createCommentVNode as K, renderList as q, createVNode as f, normalizeClass as Z, createTextVNode as x, withKeys as ee, onMounted as ce, withModifiers as ie, withCtx as h, normalizeStyle as re, vShow as ge, nextTick as $e, createSlots as be } from "vue";
 import { useWindow as R, Skeleton as ke, Icon as oe, priorityLabel as Ce, PriorityIcon as Se, peekRef as xe, TaskStatusIcon as ve, Btn as U, MenuPanel as pe, MenuItem as W, SwitchCase as _e, MenuLabel as X, Dialog as Me, Segmented as Te, TaskInspector as De } from "@journal/window-kit";
 import { _ as J } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-async function fe(w) {
-  const E = await w.read("plan board");
-  return E.ok ? (await Promise.all(E.value.plans.map((M) => w.read(`plan outline ${M.id}`)))).flatMap((M, k) => {
-    const g = E.value.plans[k];
-    return M.ok ? M.value.phases.map((d) => ({ phaseId: d.id, label: `Plan ${g.id}: ${g.title} › ${d.title}`, taskIds: d.tasks.map((y) => y.id) })) : [];
+async function fe(g) {
+  const E = await g.read("plan board");
+  return E.ok ? (await Promise.all(E.value.plans.map((M) => g.read(`plan outline ${M.id}`)))).flatMap((M, k) => {
+    const $ = E.value.plans[k];
+    return M.ok ? M.value.phases.map((d) => ({ phaseId: d.id, label: `Plan ${$.id}: ${$.title} › ${d.title}`, taskIds: d.tasks.map((y) => y.id) })) : [];
   }) : [];
 }
 const Ie = { class: "tasks" }, Ne = {
@@ -36,8 +36,8 @@ const Ie = { class: "tasks" }, Ne = {
     display: { type: Object, default: () => ({ grouping: "state", number: !0, reason: !1, showDone: !0 }) }
   },
   emits: ["select"],
-  setup(w, { expose: E, emit: N }) {
-    const M = /* @__PURE__ */ new Set(["completed", "cancelled"]), k = w, g = N, d = R(), y = h(null), C = h([]), $ = h(""), s = h(!1), p = h(/* @__PURE__ */ new Set()), i = h("");
+  setup(g, { expose: E, emit: N }) {
+    const M = /* @__PURE__ */ new Set(["completed", "cancelled"]), k = g, $ = N, d = R(), y = w(null), C = w([]), b = w(""), s = w(!1), p = w(/* @__PURE__ */ new Set()), i = w("");
     function T() {
       try {
         return new Set(JSON.parse(localStorage.getItem(ue) || "[]"));
@@ -45,59 +45,59 @@ const Ie = { class: "tasks" }, Ne = {
         return /* @__PURE__ */ new Set();
       }
     }
-    const I = h(T());
+    const I = w(T());
     function O(n) {
-      const b = new Set(I.value);
-      b.delete(n) || b.add(n), I.value = b;
+      const m = new Set(I.value);
+      m.delete(n) || m.add(n), I.value = m;
       try {
-        localStorage.setItem(ue, JSON.stringify([...b]));
+        localStorage.setItem(ue, JSON.stringify([...m]));
       } catch {
       }
     }
     async function D() {
       const n = await d.read(d.shared ? `${d.shared.model} show ${d.shared.id}` : "task board");
-      if ($.value = n.ok ? "" : n.error, s.value = !0, !n.ok) return;
+      if (b.value = n.ok ? "" : n.error, s.value = !0, !n.ok) return;
       if (d.shared) return void (C.value = [{ state: n.value.state, total: 1, rows: [n.value] }]);
-      const b = new Map(C.value.map((e) => [e.state, e]));
-      C.value = await Promise.all(n.value.groups.map((e) => r(e, b.get(e.state))));
+      const m = new Map(C.value.map((e) => [e.state, e]));
+      C.value = await Promise.all(n.value.groups.map((e) => r(e, m.get(e.state))));
     }
-    async function r(n, b) {
-      if (!p.value.has(n.state) || !(b != null && b.rows.length)) return n;
-      const e = await d.read(`task board --state ${n.state} --limit ${b.rows.length}`);
+    async function r(n, m) {
+      if (!p.value.has(n.state) || !(m != null && m.rows.length)) return n;
+      const e = await d.read(`task board --state ${n.state} --limit ${m.rows.length}`);
       return e.ok ? e.value.groups[0] : n;
     }
     async function l(n) {
-      const b = n.rows.length ? M.has(n.state) ? ` --before-closed-at ${n.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...n.rows.map((P) => P.id))}` : "", e = await d.read(`task board --state ${n.state}${b}`);
-      if (!e.ok) return void ($.value = e.error);
+      const m = n.rows.length ? M.has(n.state) ? ` --before-closed-at ${n.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...n.rows.map((P) => P.id))}` : "", e = await d.read(`task board --state ${n.state}${m}`);
+      if (!e.ok) return void (b.value = e.error);
       p.value = /* @__PURE__ */ new Set([...p.value, n.state]);
       const t = C.value.find((P) => P.state === n.state), a = new Set(t.rows.map((P) => P.id));
       t.rows = [...t.rows, ...e.value.groups[0].rows.filter((P) => !a.has(P.id))];
     }
-    const c = (n) => n.total && (k.states.length ? k.states.includes(n.state) : k.display.showDone || !M.has(n.state)), G = h([]), F = Y(() => {
+    const c = (n) => n.total && (k.states.length ? k.states.includes(n.state) : k.display.showDone || !M.has(n.state)), G = w([]), F = Y(() => {
       const n = i.value.trim().toLowerCase();
-      return C.value.filter(c).map((b) => ({ group: b, tasks: b.rows.filter((e) => !n || `${e.title} ${e.id}`.toLowerCase().includes(n)) }));
+      return C.value.filter(c).map((m) => ({ group: m, tasks: m.rows.filter((e) => !n || `${e.title} ${e.id}`.toLowerCase().includes(n)) })).filter(({ tasks: m }) => !n || m.length);
     }), se = Y(() => {
-      const n = new Map(G.value.flatMap((t) => t.taskIds.map((a) => [a, t.label]))), b = /* @__PURE__ */ new Map();
+      const n = new Map(G.value.flatMap((t) => t.taskIds.map((a) => [a, t.label]))), m = /* @__PURE__ */ new Map();
       for (const t of F.value.flatMap(({ tasks: a }) => a)) {
         const a = n.get(t.id) ?? le;
-        b.set(a, [...b.get(a) ?? [], t]);
+        m.set(a, [...m.get(a) ?? [], t]);
       }
-      return [...b.keys()].sort((t, a) => (t === le) - (a === le) || t.localeCompare(a)).map((t) => ({ group: { state: t, label: t, total: b.get(t).length, rows: b.get(t) }, tasks: b.get(t) }));
+      return [...m.keys()].sort((t, a) => (t === le) - (a === le) || t.localeCompare(a)).map((t) => ({ group: { state: t, label: t, total: m.get(t).length, rows: m.get(t) }, tasks: m.get(t) }));
     }), A = Y(() => k.display.grouping === "plan" ? se.value : F.value);
     he(() => k.display.grouping, async (n) => {
       n === "plan" && (G.value = await fe(d));
     }, { immediate: !0 });
-    const j = (n) => n.slice(0, 1).toUpperCase() + n.slice(1), Q = (n) => k.selectable ? g("select", n) : xe(`tasks:${n}`), H = d.follow(["task.*"], D);
+    const j = (n) => n.slice(0, 1).toUpperCase() + n.slice(1), Q = (n) => k.selectable ? $("select", n) : xe(`tasks:${n}`), H = d.follow(["task.*"], D);
     return te(() => H == null ? void 0 : H()), D(), E({ board: C, groups: A, query: i, focusSearch: () => {
       var n;
       return (n = y.value) == null ? void 0 : n.focus();
-    } }), (n, b) => (o(), v("div", Ie, [
-      s.value ? $.value ? (o(), v("p", Ne, S($.value), 1)) : (o(), v(L, { key: 2 }, [
+    } }), (n, m) => (o(), v("div", Ie, [
+      s.value ? b.value ? (o(), v("p", Ne, S(b.value), 1)) : (o(), v(L, { key: 2 }, [
         _("div", Ee, [
           ae(_("input", {
             ref_key: "search",
             ref: y,
-            "onUpdate:modelValue": b[0] || (b[0] = (e) => i.value = e),
+            "onUpdate:modelValue": m[0] || (m[0] = (e) => i.value = e),
             class: "tasks-search",
             type: "search",
             placeholder: "Search the tasks",
@@ -113,7 +113,7 @@ const Ie = { class: "tasks" }, Ne = {
           class: "tasks-group",
           "data-state": e.state
         }, [
-          w.display.grouping !== "none" ? (o(), v("h3", Le, [
+          g.display.grouping !== "none" ? (o(), v("h3", Le, [
             _("button", {
               type: "button",
               class: "tasks-fold",
@@ -132,7 +132,7 @@ const Ie = { class: "tasks" }, Ne = {
           ])) : K("", !0),
           (o(!0), v(L, null, q(I.value.has(e.state) ? [] : t, (a) => (o(), v("div", {
             key: a.id,
-            class: Z(["task", { selected: w.selectable && a.id === w.selected }]),
+            class: Z(["task", { selected: g.selectable && a.id === g.selected }]),
             "data-row": a.id,
             role: "button",
             tabindex: "0",
@@ -142,7 +142,7 @@ const Ie = { class: "tasks" }, Ne = {
             _("span", {
               class: Z(["task-mark", a.state])
             }, null, 2),
-            w.display.number ? (o(), v("span", Be, S(a.id), 1)) : K("", !0),
+            g.display.number ? (o(), v("span", Be, S(a.id), 1)) : K("", !0),
             _("span", Ue, S(a.title), 1),
             e.state === "delegated" ? (o(), v("span", {
               key: 1,
@@ -150,7 +150,7 @@ const Ie = { class: "tasks" }, Ne = {
               title: `Delegated to agent ${a.delegated_to}, in state ${a.state}`,
               "data-task-worker": ""
             }, "Worker " + S(a.delegated_to) + " · " + S(a.state), 9, Ye)) : K("", !0),
-            w.display.reason && a.reason ? (o(), v("span", qe, S(a.reason), 1)) : K("", !0),
+            g.display.reason && a.reason ? (o(), v("span", qe, S(a.reason), 1)) : K("", !0),
             _("span", {
               title: `Priority: ${u(Ce)(a.priority)}`,
               "data-task-priority": ""
@@ -174,18 +174,18 @@ const Ie = { class: "tasks" }, Ne = {
       }))
     ]));
   }
-}, ye = /* @__PURE__ */ J(We, [["__scopeId", "data-v-a4a377f8"]]), je = { class: "line" }, ze = ["onKeydown"], Re = {
+}, ye = /* @__PURE__ */ J(We, [["__scopeId", "data-v-69914ff5"]]), je = { class: "line" }, ze = ["onKeydown"], Re = {
   key: 0,
   class: "failure",
   role: "alert"
 }, He = { class: "foot" }, Xe = {
   __name: "NewTask",
   emits: ["filed", "cancel"],
-  setup(w, { emit: E }) {
-    const N = E, M = R(), k = h(""), g = h(""), d = h(""), y = h(null), C = Y(() => !!k.value.trim());
-    async function $() {
+  setup(g, { emit: E }) {
+    const N = E, M = R(), k = w(""), $ = w(""), d = w(""), y = w(null), C = Y(() => !!k.value.trim());
+    async function b() {
       if (!C.value) return;
-      const D = await M.run(["task", "make", k.value.trim(), ...g.value.trim() ? ["--brief", g.value.trim()] : []]);
+      const D = await M.run(["task", "make", k.value.trim(), ...$.value.trim() ? ["--brief", $.value.trim()] : []]);
       if (d.value = D.ok ? "" : D.error, !!D.ok) {
         if (s.value) {
           const r = await M.run(["phase", "place", String(D.value.id), "--phase", String(s.value.phaseId)]);
@@ -194,14 +194,14 @@ const Ie = { class: "tasks" }, Ne = {
         N("filed", D.value.id);
       }
     }
-    const s = h(null), p = h([]), i = h(null);
+    const s = w(null), p = w([]), i = w(null);
     async function T(D) {
       i.value = D.currentTarget, p.value = await fe(M);
     }
     function I(D) {
       s.value = D, i.value = null;
     }
-    const O = (D) => (D.metaKey || D.ctrlKey) && (D.preventDefault(), $());
+    const O = (D) => (D.metaKey || D.ctrlKey) && (D.preventDefault(), b());
     return ce(() => y.value.focus()), (D, r) => (o(), v("div", {
       class: "task-draft",
       "data-task-draft": "",
@@ -216,20 +216,20 @@ const Ie = { class: "tasks" }, Ne = {
           class: "title",
           placeholder: "Task title",
           "aria-label": "Task title",
-          onKeydown: ee(ie($, ["prevent"]), ["enter"])
+          onKeydown: ee(ie(b, ["prevent"]), ["enter"])
         }, null, 40, ze), [
           [ne, k.value]
         ])
       ]),
       ae(_("textarea", {
-        "onUpdate:modelValue": r[1] || (r[1] = (l) => g.value = l),
+        "onUpdate:modelValue": r[1] || (r[1] = (l) => $.value = l),
         class: "brief",
         rows: "1",
         placeholder: "Add a brief: what done looks like. You can leave this empty.",
         "aria-label": "Brief",
         onKeydown: ee(O, ["enter"])
       }, null, 544), [
-        [ne, g.value]
+        [ne, $.value]
       ]),
       d.value ? (o(), v("p", Re, S(d.value), 1)) : K("", !0),
       _("div", He, [
@@ -239,7 +239,7 @@ const Ie = { class: "tasks" }, Ne = {
           "data-task-place": "",
           onClick: T
         }, {
-          default: m(() => [
+          default: h(() => [
             x(S(s.value ? s.value.label : "Place in a plan"), 1)
           ]),
           _: 1
@@ -250,12 +250,12 @@ const Ie = { class: "tasks" }, Ne = {
           "min-width": 260,
           onClose: r[3] || (r[3] = (l) => i.value = null)
         }, {
-          default: m(() => [
+          default: h(() => [
             f(u(W), {
               "data-task-place-none": "",
               onClick: r[2] || (r[2] = (l) => I(null))
             }, {
-              default: m(() => [...r[6] || (r[6] = [
+              default: h(() => [...r[6] || (r[6] = [
                 x("Not in a plan", -1)
               ])]),
               _: 1
@@ -265,7 +265,7 @@ const Ie = { class: "tasks" }, Ne = {
               "data-task-place-phase": l.phaseId,
               onClick: (c) => I(l)
             }, {
-              default: m(() => [
+              default: h(() => [
                 x(S(l.label), 1)
               ]),
               _: 2
@@ -277,7 +277,7 @@ const Ie = { class: "tasks" }, Ne = {
           small: "",
           onClick: r[4] || (r[4] = (l) => N("cancel"))
         }, {
-          default: m(() => [...r[7] || (r[7] = [
+          default: h(() => [...r[7] || (r[7] = [
             x("Cancel", -1)
           ])]),
           _: 1
@@ -287,9 +287,9 @@ const Ie = { class: "tasks" }, Ne = {
           kind: "primary",
           disabled: !C.value,
           "data-file-task": "",
-          onClick: $
+          onClick: b
         }, {
-          default: m(() => [...r[8] || (r[8] = [
+          default: h(() => [...r[8] || (r[8] = [
             x("File the task", -1)
           ])]),
           _: 1
@@ -298,18 +298,18 @@ const Ie = { class: "tasks" }, Ne = {
     ], 32));
   }
 }, Je = /* @__PURE__ */ J(Xe, [["__scopeId", "data-v-2110d667"]]), V = { width: 188, height: 52, gapX: 40, gapY: 12 };
-function Qe(w, E) {
-  var $;
-  const N = new Map(w.map((s) => [s.id, []]));
-  for (const [s, p] of E) ($ = N.get(s)) == null || $.push(p);
+function Qe(g, E) {
+  var b;
+  const N = new Map(g.map((s) => [s.id, []]));
+  for (const [s, p] of E) (b = N.get(s)) == null || b.push(p);
   const M = /* @__PURE__ */ new Map(), k = (s, p = /* @__PURE__ */ new Set()) => {
     if (M.has(s)) return M.get(s);
     if (p.has(s)) return 0;
     const i = (N.get(s) ?? []).map((I) => k(I, /* @__PURE__ */ new Set([...p, s])) + 1), T = i.length ? Math.max(...i) : 0;
     return M.set(s, T), T;
-  }, g = /* @__PURE__ */ new Map(), d = w.map((s) => {
-    const p = k(s.id), i = g.get(p) ?? 0;
-    return g.set(p, i + 1), { task: s, x: p * (V.width + V.gapX), y: i * (V.height + V.gapY) };
+  }, $ = /* @__PURE__ */ new Map(), d = g.map((s) => {
+    const p = k(s.id), i = $.get(p) ?? 0;
+    return $.set(p, i + 1), { task: s, x: p * (V.width + V.gapX), y: i * (V.height + V.gapY) };
   }), y = new Map(d.map((s) => [s.task.id, s])), C = E.filter(([s, p]) => y.has(s) && y.has(p)).map(([s, p]) => ({ key: `${s}-${p}`, from: y.get(p), to: y.get(s) }));
   return {
     nodes: d,
@@ -331,8 +331,8 @@ const Ze = {
   __name: "TaskGraphView",
   props: { selected: { type: Number, default: 0 } },
   emits: ["select"],
-  setup(w, { emit: E }) {
-    const N = E, M = R(), k = h(null), g = h(""), d = Y(() => {
+  setup(g, { emit: E }) {
+    const N = E, M = R(), k = w(null), $ = w(""), d = Y(() => {
       var s, p;
       return Qe(((s = k.value) == null ? void 0 : s.tasks) ?? [], ((p = k.value) == null ? void 0 : p.edges) ?? []);
     }), y = (s) => {
@@ -341,11 +341,11 @@ const Ze = {
     };
     async function C() {
       const s = await M.read("task graph");
-      g.value = s.ok ? "" : s.error, s.ok && (k.value = s.value);
+      $.value = s.ok ? "" : s.error, s.ok && (k.value = s.value);
     }
-    const $ = M.follow(["task.*"], C);
-    return te(() => $ == null ? void 0 : $()), C(), (s, p) => (o(), v("div", Ze, [
-      g.value ? (o(), v("p", et, S(g.value), 1)) : k.value ? d.value.nodes.length ? (o(), v("div", {
+    const b = M.follow(["task.*"], C);
+    return te(() => b == null ? void 0 : b()), C(), (s, p) => (o(), v("div", Ze, [
+      $.value ? (o(), v("p", et, S($.value), 1)) : k.value ? d.value.nodes.length ? (o(), v("div", {
         key: 3,
         class: "graph-canvas",
         style: re({ width: `${d.value.width}px`, height: `${d.value.height}px` })
@@ -365,7 +365,7 @@ const Ze = {
         (o(!0), v(L, null, q(d.value.nodes, (i) => (o(), v("button", {
           key: i.task.id,
           type: "button",
-          class: Z(["graph-node", { selected: i.task.id === w.selected }]),
+          class: Z(["graph-node", { selected: i.task.id === g.selected }]),
           style: re({ left: `${i.x}px`, top: `${i.y}px`, width: `${u(V).width}px`, height: `${u(V).height}px` }),
           "data-graph-node": i.task.id,
           onClick: (T) => N("select", i.task.id)
@@ -389,7 +389,7 @@ const Ze = {
   __name: "TasksMenus",
   props: { states: { type: Array, required: !0 }, display: { type: Object, required: !0 }, selected: { type: Number, default: 0 } },
   emits: ["states", "display", "deleted"],
-  setup(w, { emit: E }) {
+  setup(g, { emit: E }) {
     const N = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"], M = [
       { key: "state", label: "Status" },
       { key: "plan", label: "Plan and phase" },
@@ -397,7 +397,7 @@ const Ze = {
     ], k = [
       { key: "number", label: "The task's number" },
       { key: "reason", label: "What blocks the task" }
-    ], g = [
+    ], $ = [
       ["↑ ↓", "Move through the list"],
       ["Enter", "Open the task"],
       ["Space", "Open or close the task beside the list"],
@@ -406,24 +406,24 @@ const Ze = {
       ["V", "List or graph"],
       ["/", "Search"],
       ["Esc", "Close"]
-    ], d = w, y = E, C = R(), $ = h(null), s = h(!1), p = h(""), i = (r) => r.slice(0, 1).toUpperCase() + r.slice(1);
+    ], d = g, y = E, C = R(), b = w(null), s = w(!1), p = w(""), i = (r) => r.slice(0, 1).toUpperCase() + r.slice(1);
     function T(r, l) {
-      s.value = !1, p.value = "", $.value = { kind: r, anchor: l.currentTarget };
+      s.value = !1, p.value = "", b.value = { kind: r, anchor: l.currentTarget };
     }
     const I = (r) => y("states", d.states.includes(r) ? d.states.filter((l) => l !== r) : [...d.states, r]), O = (r) => y("display", { ...d.display, ...r });
     async function D() {
       if (!s.value) return void (s.value = !0);
       const r = await C.run(["task", "delete", String(d.selected)]);
-      p.value = r.ok ? "" : r.error, r.ok && ($.value = null, y("deleted"));
+      p.value = r.ok ? "" : r.error, r.ok && (b.value = null, y("deleted"));
     }
     return (r, l) => (o(), v(L, null, [
       f(u(U), {
         small: "",
         "data-menu-filter": "",
-        title: w.states.length ? `Filter: ${w.states.length}` : "Filter",
+        title: g.states.length ? `Filter: ${g.states.length}` : "Filter",
         onClick: l[0] || (l[0] = (c) => T("filter", c))
       }, {
-        default: m(() => [...l[7] || (l[7] = [
+        default: h(() => [...l[7] || (l[7] = [
           x("Filter", -1)
         ])]),
         _: 1
@@ -433,7 +433,7 @@ const Ze = {
         "data-menu-display": "",
         onClick: l[1] || (l[1] = (c) => T("display", c))
       }, {
-        default: m(() => [...l[8] || (l[8] = [
+        default: h(() => [...l[8] || (l[8] = [
           x("Display", -1)
         ])]),
         _: 1
@@ -443,7 +443,7 @@ const Ze = {
         "data-menu-keys": "",
         onClick: l[2] || (l[2] = (c) => T("keys", c))
       }, {
-        default: m(() => [...l[9] || (l[9] = [
+        default: h(() => [...l[9] || (l[9] = [
           x("Keys", -1)
         ])]),
         _: 1
@@ -451,107 +451,107 @@ const Ze = {
       f(u(U), {
         small: "",
         "data-menu-more": "",
-        disabled: !w.selected,
+        disabled: !g.selected,
         onClick: l[3] || (l[3] = (c) => T("more", c))
       }, {
-        default: m(() => [...l[10] || (l[10] = [
+        default: h(() => [...l[10] || (l[10] = [
           x("More", -1)
         ])]),
         _: 1
       }, 8, ["disabled"]),
-      $.value ? (o(), B(u(pe), {
+      b.value ? (o(), B(u(pe), {
         key: 0,
-        anchor: $.value.anchor,
+        anchor: b.value.anchor,
         "min-width": 240,
         "max-width": 320,
-        onClose: l[6] || (l[6] = (c) => $.value = null)
+        onClose: l[6] || (l[6] = (c) => b.value = null)
       }, {
-        default: m(() => [
+        default: h(() => [
           f(u(_e), {
-            value: $.value.kind
+            value: b.value.kind
           }, {
-            filter: m(() => [
+            filter: h(() => [
               f(u(X), null, {
-                default: m(() => [...l[11] || (l[11] = [
+                default: h(() => [...l[11] || (l[11] = [
                   x("Show tasks that are", -1)
                 ])]),
                 _: 1
               }),
               (o(), v(L, null, q(N, (c) => f(u(W), {
                 key: c,
-                on: w.states.includes(c),
+                on: g.states.includes(c),
                 "data-filter-state": c,
                 onClick: (G) => I(c)
               }, {
-                default: m(() => [
+                default: h(() => [
                   x(S(i(c)), 1)
                 ]),
                 _: 2
               }, 1032, ["on", "data-filter-state", "onClick"])), 64)),
               f(u(W), {
                 "data-filter-clear": "",
-                onClick: l[4] || (l[4] = (c) => (y("states", []), $.value = null))
+                onClick: l[4] || (l[4] = (c) => (y("states", []), b.value = null))
               }, {
-                default: m(() => [...l[12] || (l[12] = [
+                default: h(() => [...l[12] || (l[12] = [
                   x("Show every task that is not done", -1)
                 ])]),
                 _: 1
               })
             ]),
-            display: m(() => [
+            display: h(() => [
               f(u(X), null, {
-                default: m(() => [...l[13] || (l[13] = [
+                default: h(() => [...l[13] || (l[13] = [
                   x("Group the list by", -1)
                 ])]),
                 _: 1
               }),
               (o(), v(L, null, q(M, (c) => f(u(W), {
                 key: c.key,
-                on: w.display.grouping === c.key,
+                on: g.display.grouping === c.key,
                 "data-grouping": c.key,
                 onClick: (G) => O({ grouping: c.key })
               }, {
-                default: m(() => [
+                default: h(() => [
                   x(S(c.label), 1)
                 ]),
                 _: 2
               }, 1032, ["on", "data-grouping", "onClick"])), 64)),
               f(u(X), null, {
-                default: m(() => [...l[14] || (l[14] = [
+                default: h(() => [...l[14] || (l[14] = [
                   x("Show on each task", -1)
                 ])]),
                 _: 1
               }),
               (o(), v(L, null, q(k, (c) => f(u(W), {
                 key: c.key,
-                on: w.display[c.key],
+                on: g.display[c.key],
                 "data-shown": c.key,
-                onClick: (G) => O({ [c.key]: !w.display[c.key] })
+                onClick: (G) => O({ [c.key]: !g.display[c.key] })
               }, {
-                default: m(() => [
+                default: h(() => [
                   x(S(c.label), 1)
                 ]),
                 _: 2
               }, 1032, ["on", "data-shown", "onClick"])), 64)),
               f(u(W), {
-                on: w.display.showDone,
+                on: g.display.showDone,
                 "data-show-done": "",
-                onClick: l[5] || (l[5] = (c) => O({ showDone: !w.display.showDone }))
+                onClick: l[5] || (l[5] = (c) => O({ showDone: !g.display.showDone }))
               }, {
-                default: m(() => [...l[15] || (l[15] = [
+                default: h(() => [...l[15] || (l[15] = [
                   x("Show completed tasks", -1)
                 ])]),
                 _: 1
               }, 8, ["on"])
             ]),
-            keys: m(() => [
+            keys: h(() => [
               f(u(X), null, {
-                default: m(() => [...l[16] || (l[16] = [
+                default: h(() => [...l[16] || (l[16] = [
                   x("Keys", -1)
                 ])]),
                 _: 1
               }),
-              (o(), v(L, null, q(g, ([c, G]) => _("span", {
+              (o(), v(L, null, q($, ([c, G]) => _("span", {
                 key: c,
                 class: "key-line"
               }, [
@@ -559,10 +559,10 @@ const Ze = {
                 _("kbd", null, S(c), 1)
               ])), 64))
             ]),
-            default: m(() => [
+            default: h(() => [
               f(u(X), null, {
-                default: m(() => [
-                  x("Task " + S(w.selected), 1)
+                default: h(() => [
+                  x("Task " + S(g.selected), 1)
                 ]),
                 _: 1
               }),
@@ -570,7 +570,7 @@ const Ze = {
                 "data-delete-task": "",
                 onClick: D
               }, {
-                default: m(() => [
+                default: h(() => [
                   x(S(s.value ? "Delete it for good" : "Delete"), 1)
                 ]),
                 _: 1
@@ -603,16 +603,16 @@ const Ze = {
 }, mt = { class: "tasks-body" }, ht = { class: "tasks-list" }, de = "input,textarea,select,[contenteditable],.menu-panel", wt = {
   __name: "TasksDialog",
   emits: ["close"],
-  setup(w, { emit: E }) {
-    const N = E, M = R(), k = h(!0), g = h(null), d = h(null), y = h(0), C = h(!1), $ = h(!1), s = h(0), p = [
+  setup(g, { emit: E }) {
+    const N = E, M = R(), k = w(!0), $ = w(null), d = w(null), y = w(0), C = w(!1), b = w(!1), s = w(0), p = [
       { key: "list", label: "List" },
       { key: "graph", label: "Graph" }
-    ], i = h("list"), T = h([]), I = h({ grouping: "state", number: !0, reason: !1, showDone: !1 }), O = Y(() => {
+    ], i = w("list"), T = w([]), I = w({ grouping: "state", number: !0, reason: !1, showDone: !1 }), O = Y(() => {
       var e;
-      return ((e = g.value) == null ? void 0 : e.query) ?? "";
+      return ((e = $.value) == null ? void 0 : e.query) ?? "";
     }), D = Y(() => i.value === "list" && !!(T.value.length || O.value)), r = (e) => e.slice(0, 1).toUpperCase() + e.slice(1);
     function l() {
-      T.value = [], g.value && (g.value.query = "");
+      T.value = [], $.value && ($.value.query = "");
     }
     function c() {
       C.value = !1, y.value = 0;
@@ -621,10 +621,10 @@ const Ze = {
     te(() => G == null ? void 0 : G());
     const F = Y(() => {
       var e;
-      return (((e = g.value) == null ? void 0 : e.groups) ?? []).flatMap(({ tasks: t }) => t.map((a) => a.id));
+      return (((e = $.value) == null ? void 0 : e.groups) ?? []).flatMap(({ tasks: t }) => t.map((a) => a.id));
     }), se = Y(() => {
       var a, P;
-      const e = (((a = g.value) == null ? void 0 : a.board) ?? []).filter((z) => z.state !== "completed" && z.state !== "cancelled"), t = (P = e.find((z) => z.state === "blocked")) == null ? void 0 : P.total;
+      const e = (((a = $.value) == null ? void 0 : a.board) ?? []).filter((z) => z.state !== "completed" && z.state !== "cancelled"), t = (P = e.find((z) => z.state === "blocked")) == null ? void 0 : P.total;
       return `${e.reduce((z, me) => z + me.total, 0)} not done${t ? `, ${t} blocked` : ""}`;
     });
     function A(e) {
@@ -639,7 +639,7 @@ const Ze = {
       });
     }
     function Q(e) {
-      $.value = !1, A(e);
+      b.value = !1, A(e);
     }
     const H = {
       ArrowDown: () => j(1),
@@ -648,7 +648,7 @@ const Ze = {
       k: () => j(-1),
       Enter: () => y.value && (C.value = !0),
       " ": () => y.value && (C.value = !C.value),
-      c: () => (i.value = "list", $.value = !0),
+      c: () => (i.value = "list", b.value = !0),
       v: () => i.value = i.value === "list" ? "graph" : "list",
       s: () => {
         var e;
@@ -656,7 +656,7 @@ const Ze = {
       },
       "/": () => {
         var e;
-        return (e = g.value) == null ? void 0 : e.focusSearch();
+        return (e = $.value) == null ? void 0 : e.focusSearch();
       }
     };
     function n(e) {
@@ -664,14 +664,14 @@ const Ze = {
       const t = H[e.key];
       !t || e.metaKey || e.ctrlKey || e.altKey || (P = (a = e.target).closest) != null && P.call(a, de) || (e.preventDefault(), t());
     }
-    function b(e) {
+    function m(e) {
       var t, a;
       e.key !== "Escape" || e.defaultPrevented || (a = (t = e.target).closest) != null && a.call(t, de) || (C.value ? C.value = !1 : k.value = !1);
     }
     return ce(() => {
-      window.addEventListener("keydown", n, !0), window.addEventListener("keydown", b);
+      window.addEventListener("keydown", n, !0), window.addEventListener("keydown", m);
     }), te(() => {
-      window.removeEventListener("keydown", n, !0), window.removeEventListener("keydown", b);
+      window.removeEventListener("keydown", n, !0), window.removeEventListener("keydown", m);
     }), (e, t) => (o(), B(u(Me), {
       wide: "",
       tall: "",
@@ -681,7 +681,7 @@ const Ze = {
       onDismiss: t[9] || (t[9] = (a) => k.value = !1),
       onClose: t[10] || (t[10] = (a) => N("close"))
     }, {
-      default: m(() => [
+      default: h(() => [
         _("div", ct, [
           _("header", kt, [
             t[12] || (t[12] = _("h2", null, "Tasks", -1)),
@@ -704,9 +704,9 @@ const Ze = {
               small: "",
               title: "New task (C)",
               "data-new-task": "",
-              onClick: t[3] || (t[3] = (a) => $.value = !0)
+              onClick: t[3] || (t[3] = (a) => b.value = !0)
             }, {
-              default: m(() => [
+              default: h(() => [
                 f(u(oe), {
                   name: "plus",
                   size: 12
@@ -721,7 +721,7 @@ const Ze = {
               "data-tasks-close": "",
               onClick: t[4] || (t[4] = (a) => k.value = !1)
             }, {
-              default: m(() => [
+              default: h(() => [
                 f(u(oe), {
                   name: "close",
                   size: 13
@@ -746,7 +746,7 @@ const Ze = {
                 type: "button",
                 title: "Clear the search",
                 "aria-label": "Clear the search",
-                onClick: t[6] || (t[6] = (a) => g.value.query = "")
+                onClick: t[6] || (t[6] = (a) => $.value.query = "")
               }, "×")
             ])) : K("", !0),
             _("button", {
@@ -758,10 +758,10 @@ const Ze = {
           ])) : K("", !0),
           _("div", mt, [
             _("div", ht, [
-              $.value ? (o(), B(Je, {
+              b.value ? (o(), B(Je, {
                 key: 0,
                 onFiled: Q,
-                onCancel: t[7] || (t[7] = (a) => $.value = !1)
+                onCancel: t[7] || (t[7] = (a) => b.value = !1)
               })) : K("", !0),
               i.value === "graph" ? (o(), B(it, {
                 key: 1,
@@ -771,7 +771,7 @@ const Ze = {
               ae(_("div", null, [
                 f(ye, {
                   ref_key: "list",
-                  ref: g,
+                  ref: $,
                   selectable: "",
                   selected: y.value,
                   states: T.value,
@@ -802,20 +802,20 @@ const Ze = {
   }
 }, gt = /* @__PURE__ */ J(wt, [["__scopeId", "data-v-9da4937c"]]), St = {
   __name: "TasksWindow",
-  setup(w) {
-    const E = R(), N = h(!1);
+  setup(g) {
+    const E = R(), N = w(!1);
     return (M, k) => (o(), v(L, null, [
       f(ye, null, be({ _: 2 }, [
         u(E).shared ? void 0 : {
           name: "tools",
-          fn: m(() => [
+          fn: h(() => [
             f(u(U), {
               small: "",
               bordered: "",
               "data-manage-tasks": "",
-              onClick: k[0] || (k[0] = (g) => N.value = !0)
+              onClick: k[0] || (k[0] = ($) => N.value = !0)
             }, {
-              default: m(() => [...k[2] || (k[2] = [
+              default: h(() => [...k[2] || (k[2] = [
                 x("Manage tasks", -1)
               ])]),
               _: 1
@@ -826,7 +826,7 @@ const Ze = {
       ]), 1024),
       N.value ? (o(), B(gt, {
         key: 0,
-        onClose: k[1] || (k[1] = (g) => N.value = !1)
+        onClose: k[1] || (k[1] = ($) => N.value = !1)
       })) : K("", !0)
     ], 64));
   }
