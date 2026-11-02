@@ -4,6 +4,7 @@ import sqlite3
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
+from core.base.database.statement import Statement
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -13,6 +14,11 @@ from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.messages.models.enums.message_type import MessageType
 
 TABLE = "messages"
+REACTIONS = "reactions"
+LINKS = "links"
+REACTS_LINK = "reacts"
+REACTION_PREFIX = "reactions:"
+MESSAGE_PREFIX = "messages:"
 TYPES = {"user": MessageType.USER, "agent": MessageType.AGENT}
 CARD_MARKS = {"task_card": "tasks.task", "plan_card": "plans.plan", "memory_card": "memories.memory", "skill_card": "skills.skill",
               "question_card": "questions.question", "wait_card": "waits.impasse"}
@@ -23,10 +29,10 @@ class MessagesMove(VersionFourMove):
     """Carries what the user and the agents wrote in version 4 with its number, type, text, environment,
     reading moment, the message it answers and the agent that wrote it. Version 4 also kept chat cards, marks,
     reports and notices as messages with a kind in their data: they are not messages, they are dropped and
-    counted by kind, since version 5 makes its chat marks from events."""
+    counted by kind, since version 5 makes its chat marks from events. Reactions go onto their message."""
 
     name = "messages"
-    reads = ["messages"]
+    reads = ["messages", "reactions"]
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
@@ -44,7 +50,21 @@ class MessagesMove(VersionFourMove):
                 report.skip(TABLE, row["id"], f"author {row['author']} is none of {', '.join(TYPES)}")
             else:
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators, sessions, self.parent_id(row, message_ids, map), context)))
+        self.move_reactions(source, target, map, creators)
         return report
+
+    def move_reactions(self, source: VersionFourSource, target: Database, map: MoveMap, creators: CreatorResolver) -> None:
+        """A version 4 reaction is its own row, tied to its message by a link."""
+        reactions = {row["id"]: row for row in source.rows(REACTIONS)}
+        faces: dict[int, list[dict[str, object]]] = {}
+        for link in source.rows(LINKS):
+            is_reaction = link["link_type"] == REACTS_LINK and link["source"].startswith(REACTION_PREFIX) and link["target"].startswith(MESSAGE_PREFIX)
+            reaction = reactions.get(int(link["source"].removeprefix(REACTION_PREFIX))) if is_reaction else None
+            message_id = map.new_id(TABLE, int(link["target"].removeprefix(MESSAGE_PREFIX))) if is_reaction else None
+            if reaction is not None and message_id is not None:
+                faces.setdefault(message_id, []).append({"emoji": reaction["emoji"], "actor_id": creators.actor_id(reaction["creator"]), "actor_type": reaction["author"]})
+        for message_id, rows in faces.items():
+            target.update(Statement(f"UPDATE {TABLE} SET reactions = ? WHERE id = ?", [json.dumps(rows), message_id]))
 
     def card_type(self, data: str | None) -> str:
         if not data:

@@ -34,3 +34,8 @@ def test_an_agents_message_names_the_agent_that_wrote_it(new_story):
 def test_a_message_of_an_environment_that_no_longer_exists_is_skipped_and_told(new_story):
     story = upgraded_story(new_story)
     assert "skipped messages 5: its environment 9 did not move" in story.upgrade_text
+
+
+def test_a_reaction_moves_onto_its_message(new_story):
+    story = upgraded_story(new_story)
+    assert '"actor_type": "user"' in story.run("message show 2").output_text

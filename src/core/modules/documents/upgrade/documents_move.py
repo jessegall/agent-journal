@@ -31,6 +31,7 @@ class DocumentsMove(VersionFourMove):
 
     name = "documents"
     reads = [*TEXT_TABLES, REVISIONS]
+    drops = ["library_items"]
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.messages", "journal.core.tasks", "journal.core.plans"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:

@@ -10,6 +10,7 @@ from core.modules.updates.commands.update_notes.update_notes_subcommand import U
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.support.update_setting import UPDATE_SETTINGS
 from core.modules.updates.models.release import Release
+from core.modules.updates.upgrade.updates_move import UpdatesMove
 
 
 class UpdatesModule(Module):
@@ -18,7 +19,7 @@ class UpdatesModule(Module):
 
     name = "journal.core.updates"
     seed_reason = "a demo installs no release"
-    move_reason = "version 4's release messages were written for version 4's releases"
+    moves = [UpdatesMove]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.settings"]
     settings = UPDATE_SETTINGS

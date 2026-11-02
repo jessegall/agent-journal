@@ -66,4 +66,4 @@ def test_a_move_without_a_name_or_without_tables_it_reads_is_refused():
         requires_core = ">=5,<6"
         moves = [Bare]
 
-    assert list(MoveCheck().problems([NamelessModule])) == ["the move Bare of unnamed states no name or no tables it reads"]
+    assert list(MoveCheck().problems([NamelessModule])) == ["the move Bare of unnamed states no name or no tables it reads or drops"]

@@ -19,6 +19,7 @@ from core.modules.schedules.migrations.m003_job_run_time import JobRunTimeMigrat
 from core.modules.schedules.migrations.m001_scheduled_jobs import ScheduledJobsTableMigration
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
+from core.modules.schedules.upgrade.schedules_move import SchedulesMove
 from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
 
 
@@ -29,7 +30,7 @@ class SchedulesModule(Module):
     name = "journal.core.schedules"
     nudges = SCHEDULE_NUDGES
     seed_reason = "its jobs are written by an agent's hooks, and the demo has no hooks"
-    move_reason = "version 4 kept its jobs in the agent program, not in a table"
+    moves = [SchedulesMove]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]

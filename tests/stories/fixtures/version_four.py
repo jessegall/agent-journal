@@ -99,6 +99,8 @@ ROWS = (
     ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "A task in a lost state", "", 100, "limbo", STAMP, USER)),
     ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "Ship the till", "", 100, "started", STAMP, USER)),
     ("task_logs", "(task_id, line, created_at, creator)", (1, "the totals are worked out", STAMP, "agent:s-1")),
+    ("reactions", "(id, environment_id, emoji, author, created_at, creator)", (1, 1, "👍", "user", "2026-10-01T10:00:00+00:00", "person:Ada")),
+    ("links", "(source, target, link_type, created_at, creator)", ("reactions:1", "messages:2", "reacts", "2026-10-01T10:00:00+00:00", "person:Ada")),
     ("links", "(source, target, link_type, created_at, creator)", ("tasks:2", "tasks:1", "depends", STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("tasks:1", "tasks:2", "depends", STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("agents:1", "tasks:2", "holds", STAMP, USER)),

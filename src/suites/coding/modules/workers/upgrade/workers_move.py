@@ -18,7 +18,7 @@ class WorkersMove(VersionFourMove):
 
     name = "workers"
     reads = [WORKERS]
-    drops = ["worker_todos", "proofs", "subagents"]
+    drops = ["worker_todos", "proofs", "subagents", "test_turns"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, workers = MoveReport(), source.rows(WORKERS)

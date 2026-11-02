@@ -19,7 +19,7 @@ class MoveCheck:
         return tuple(problems)
 
     def move_problems(self, module: type[Module], move: type[VersionFourMove], installed: set[str]) -> list[str]:
-        problems = [f"the move {move.__name__} of {module.name} states no name or no tables it reads"] if not getattr(move, "name", "") or not move.reads else []
+        problems = [f"the move {move.__name__} of {module.name} states no name or no tables it reads or drops"] if not getattr(move, "name", "") or not (move.reads or move.drops) else []
         problems += [f"the move of {module.name} reads ids of {source}, which is not installed" for source in move.id_modules if source not in installed]
         problems += [f"the move of {module.name} reads ids of {source}, and {module.name} does not depend on it" for source in move.id_modules
                      if source in installed and source not in module.dependencies]

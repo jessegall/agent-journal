@@ -1,6 +1,6 @@
 from core.base.upgrade.upgrade_report import UpgradeReport
 
-WAITING_TABLES = ("collections", "library_items", "reactions", "release_messages", "scheduled_jobs", "test_turns")
+WAITING_TABLES = ("collections",)
 BOOKKEEPING_TABLES = ("entries", "state_transitions", "migrations", "migrated_rows", "version3_migrations", "journal_versions", "timings", "dashboard_rows")
 BOOKKEEPING_NOTE = "version 4's own records, kept in the backup"
 WAITING_NOTE = "waits for its module and stays in the backup"
