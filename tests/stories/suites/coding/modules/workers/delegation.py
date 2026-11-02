@@ -27,6 +27,22 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
 
 
+def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_agent(new_story):
+    story, _, worker = delegated_story(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
+    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented: On task 1", "use the new cart")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
+    story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
+
+
+def test_a_comment_on_a_task_with_no_worker_tells_no_worker(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
+    assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+
+
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text("task show 1", "state: started", f"delegated_to: {worker.id}", actor=story.agent)

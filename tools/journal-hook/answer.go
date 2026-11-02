@@ -23,6 +23,9 @@ type Reply struct {
 // answer goes through, and the agent is lineAnswer so on an event whose answer takes lines.
 func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration) int {
 	reply := Reply{Lines: []string{missedLine(limit)}}
+	if status == restartTimedOut {
+		reply = restartTimedOutReply(event)
+	}
 	if status == http.StatusOK && json.Unmarshal(answer, &reply) != nil {
 		return 0
 	}
@@ -103,6 +106,16 @@ func joined(first, second string) string {
 func jsonText(value any) string {
 	text, _ := json.Marshal(value)
 	return string(text) + "\n"
+}
+
+// restartTimedOutReply refuses a tool whose restarting server did not come back; any other event goes on with the line,
+// so a person's prompt is never lost.
+func restartTimedOutReply(event string) Reply {
+	check := fmt.Sprintf("[journal] The journal restarted and did not come back within %d seconds, so %%s. Check it: curl -s --unix-socket .journal/server.sock http://journal/health should answer 200, and .journal/runtime/server.log says why it does not.", int(RestartWindow.Seconds()))
+	if event == "pre_tool_use" {
+		return Reply{Refusal: fmt.Sprintf(check, "this tool use did not run")}
+	}
+	return Reply{Lines: []string{fmt.Sprintf(check, "this went through unchecked")}}
 }
 
 // missedLine is the line given to an agent whose hook went around the journal.

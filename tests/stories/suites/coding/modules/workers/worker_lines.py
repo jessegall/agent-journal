@@ -1,4 +1,6 @@
 from core.base.query.queries import Queries
+from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
+from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
 from datetime import timedelta
@@ -44,3 +46,20 @@ def test_a_worker_silent_for_thirty_minutes_is_told_to_log(new_story):
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=31))
     assert any("you logged nothing for 31 min" in line for line in story.hook(session, finished).lines)
+
+
+def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    session = worker_session(story, worker)
+    edit = HookSamples.edit("cart.py")
+    for _ in range(LOG_REQUEST_WRITES - 1):
+        story.hook(session, edit)
+    story.expect_hook_allowed(session, edit, f"{LOG_REQUEST_WRITES} writes since you logged task:1")
+    for _ in range(UNLOGGED_WRITES_CEILING - LOG_REQUEST_WRITES - 1):
+        story.hook(session, edit)
+    story.expect_hook_refusal(session, edit, f"{UNLOGGED_WRITES_CEILING} writes since you logged task:1")
+    story.advance(timedelta(minutes=1))
+    story.expect_success("task log 1 'the cart total is worked out'", actor=worker)
+    story.expect_hook_allowed(session, edit)

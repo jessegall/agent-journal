@@ -27,6 +27,20 @@ const connectLimit = time.Second
 // instead of version 4's port.
 const socketSwitchName = "hooks-on-socket"
 
+// restartMarkName is the file a server writes in the journal's folder when it stops for new code; the next server
+// removes it once it takes requests.
+const restartMarkName = "server-restarting"
+
+// restartTimedOut is the status post gives a hook whose restarting server did not come back within RestartWindow.
+const restartTimedOut = http.StatusGatewayTimeout
+
+// RestartWindow is how long a hook waits for a restarting server. RestartMarkLimit is the age from which a mark counts
+// as left by a server that crashed, later than the window, so a hook that waits the whole window ends with a timeout.
+var (
+	RestartWindow    = 60 * time.Second
+	RestartMarkLimit = 2 * time.Minute
+)
+
 // LimitFor is how long the hook waits for the journal's answer before it goes on without it, as hook.sh's
 // ANSWER_SECONDS: a session start may wait on a boot, a stop and a prompt may wait on a decision, a tool waits least.
 func LimitFor(eventName string) time.Duration {
@@ -78,16 +92,41 @@ type delivery struct {
 
 // post sends the hook to the server of the project at root, as hook.sh does: it first stamps the time the hook fired,
 // and the version a session start runs on, then posts within the limit; a hook the server does not answer with 200 or
-// 409 in time goes on without it and is noted in bypass.log. The transport is the network's, or a test's. Once
-// version 5's install has set the switch, the hook goes to /hook on version 5's socket with its timing.
+// 409 in time goes on without it and is noted in bypass.log, unless the server is restarting, which it waits for. The
+// transport is the network's, or a test's. Once version 5's install has set the switch, the hook goes to /hook on
+// version 5's socket with its timing.
 func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (status int, answer []byte) {
 	stamped(outgoing, firedTime)
-	status, answer = posted(outgoing, transport)
-	if status != http.StatusOK && status != http.StatusConflict {
+	status, answer = heldThroughRestart(outgoing, transport)
+	if status != http.StatusOK && status != http.StatusConflict && status != restartTimedOut {
 		noteBypass(outgoing, firedTime)
 		startMissingServer(outgoing.root)
 	}
 	return status, answer
+}
+
+// heldThroughRestart posts the hook, and while the server does not answer with 200 and its restart mark is there it
+// asks again, resting between asks; the first ask that waits also starts the server when no client has yet.
+func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []byte) {
+	began := time.Now()
+	status, answer := posted(outgoing, transport)
+	for asks := 0; status != http.StatusOK && restartMarked(outgoing.root); asks++ {
+		if time.Since(began) >= RestartWindow {
+			return restartTimedOut, nil
+		}
+		if asks == 0 {
+			startMissingServer(outgoing.root)
+		}
+		time.Sleep(RetryPause)
+		status, answer = posted(outgoing, transport)
+	}
+	return status, answer
+}
+
+// restartMarked says whether a server left its restart mark, not older than RestartMarkLimit.
+func restartMarked(root string) bool {
+	info, err := os.Stat(filepath.Join(root, ".journal", restartMarkName))
+	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
 }
 
 // startMissingServer starts the journal's server when its socket is gone, as any journal command does, without
