@@ -27,7 +27,7 @@ def test_a_loop_that_does_real_work_between_its_sleeps_goes_on_through_the_runne
 
 
 def monitor_on(command):
-    return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_fields(raw={"tool_input": {"command": command}})
+    return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_raw({"tool_input": {"command": command}})
 
 
 def test_the_monitor_command_is_refused_as_a_plain_command(new_story):

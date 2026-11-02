@@ -103,15 +103,6 @@ async function toggleSettings(row) {
 
 const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
 
-
-// a plugin that reports cards writes them as JSON; what a person reads is each card's words
-function outputWords(text) {
-    try {
-        return JSON.parse(text).cards.map((card) => card.detail || card.title).join("\n");
-    } catch {
-        return text;
-    }
-}
 const {value: record, failure: recordFailure, load: showRecord} = useReadLine((row) => `plugin record ${row.name}`);
 </script>
 

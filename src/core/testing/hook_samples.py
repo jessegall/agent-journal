@@ -26,8 +26,7 @@ class HookSamples:
     @staticmethod
     def message_display(text: str, final: bool = True) -> HookSample:
         sample = HookSamples.sample("message_display")
-        return sample.with_fields(raw={"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": final, "delta": text},
-                                  accepts_lines=False)
+        return sample.with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": final, "delta": text}).with_fields(accepts_lines=False)
 
     @staticmethod
     def prompt(text: str) -> HookSample:
@@ -53,7 +52,7 @@ class HookSamples:
 
     @staticmethod
     def subagent() -> HookSample:
-        return HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_fields(raw={"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
+        return HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
 
     @staticmethod
     def tick() -> HookSample:

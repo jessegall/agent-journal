@@ -177,8 +177,8 @@ func (journal CommandJournal) ProgramCommand(request Request, choice Choice, lau
 
 // TellMenuAnswer shows in the chat what the launcher pressed on a menu in the agent's terminal; a journal that does not
 // answer loses the mark, never the press.
-func (journal CommandJournal) TellMenuAnswer(agentID int, question, said string) {
-	_, _ = journal.Run("agent", "menu-answer", strconv.Itoa(agentID), question, said)
+func (journal CommandJournal) TellMenuAnswer(agentID int, question, answer string) {
+	_, _ = journal.Run("agent", "menu-answer", strconv.Itoa(agentID), question, answer)
 }
 
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.

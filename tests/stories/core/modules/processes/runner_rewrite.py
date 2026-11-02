@@ -69,7 +69,7 @@ def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(
 
 def test_a_background_bash_call_of_claude_runs_in_the_foreground_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    background = SERVER.with_fields(raw={"tool_input": {"command": "node serve.js", "run_in_background": True, "description": "list"}})
+    background = SERVER.with_raw({"tool_input": {"command": "node serve.js", "run_in_background": True, "description": "list"}})
     assert dict(story.hook("s-1", background).updated_input) == {"command": runner_line(story, 1, "node serve.js"), "description": "list"}
 
 

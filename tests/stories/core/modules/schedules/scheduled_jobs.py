@@ -12,7 +12,7 @@ CRON = "*/10 * * * *"
 
 
 def cron_hook(tool: str, fields: dict, answer: str = ""):
-    return HookSamples.sample("post_tool_use", {"name": tool, "category": "other", "files": [], "diff": None}).with_fields(raw={"tool_input": fields, "tool_response": answer})
+    return HookSamples.sample("post_tool_use", {"name": tool, "category": "other", "files": [], "diff": None}).with_raw({"tool_input": fields, "tool_response": answer})
 
 
 def scheduled(new_story, recurring: bool = True):

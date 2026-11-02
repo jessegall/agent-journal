@@ -1,4 +1,4 @@
-from core.modules.messages.support.attachment_list_subcommand_listed_record import AttachmentListSubcommandListedRecord
+from core.modules.messages.support.attachment_list_row import AttachmentListRow
 import re
 from argparse import ArgumentParser, Namespace
 
@@ -50,5 +50,5 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
         return AttachmentPage(tuple(self.listed(row) for row in page), {ALL_CATEGORIES: len(matches), IMAGE_CATEGORY: images, FILE_CATEGORY: len(matches) - images}, arguments.skip + arguments.limit >= len(kept))
 
     @staticmethod
-    def listed(row: AttachedFile) -> AttachmentListSubcommandListedRecord:
+    def listed(row: AttachedFile) -> AttachmentListRow:
         return {"message_id": row.message_id, "name": row.name, "message_text": row.message_text, "created_at": row.created_at.text, "is_image": IMAGE_NAME.search(row.name) is not None}

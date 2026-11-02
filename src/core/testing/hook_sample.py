@@ -13,5 +13,8 @@ class HookSample:
     def firing(self) -> object:
         return self.body["firing"]
 
+    def with_raw(self, raw: Mapping[str, object]) -> "HookSample":
+        return self.with_fields(raw=raw)
+
     def with_fields(self, **fields: object) -> "HookSample":
         return HookSample({**self.body, **fields})

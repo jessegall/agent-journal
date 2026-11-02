@@ -2,9 +2,9 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-RESUME = HookSamples.session_start().with_fields(raw={"source": "resume"})
-COMPACTION = HookSamples.session_start().with_fields(raw={"source": "compact"})
-CLEAR = HookSamples.session_start().with_fields(raw={"source": "clear"})
+RESUME = HookSamples.session_start().with_raw({"source": "resume"})
+COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
+CLEAR = HookSamples.session_start().with_raw({"source": "clear"})
 
 
 def running_story(new_story):

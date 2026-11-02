@@ -31,7 +31,7 @@ class EndedOutputText:
         advice = self.advice(process)
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
         program = self.read_program(process)
-        draft = (READER_DRAFT.nudge(name=PurePath(program).name),) if advice and program else ()
+        draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if advice and program else []
         return (ended, *draft, *self.reader_nudges(process))
 
     def result(self, process: Process) -> str:

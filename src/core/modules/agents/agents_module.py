@@ -20,11 +20,14 @@ from core.modules.agents.commands.start_agent.start_agent_subcommand import Star
 from core.modules.agents.migrations.m001_agents import AgentsTableMigration
 from core.modules.agents.migrations.m002_agent_launch_row import AgentLaunchRowMigration
 from core.modules.agents.migrations.m003_agent_pause import AgentPauseMigration
+from core.modules.agents.migrations.m004_menu_answers import MenuAnswersMigration
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.upgrade.agents_move import AgentsMove
+from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
 from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
-from core.modules.agents.commands.show_menu_answer.show_menu_answer_handler import ShowMenuAnswerHandler
-from core.modules.agents.commands.show_menu_answer.show_menu_answer_subcommand import ShowMenuAnswerSubcommand
+from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler import RecordMenuAnswerHandler
+from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcommand import RecordMenuAnswerSubcommand
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
@@ -43,17 +46,17 @@ class AgentsModule(Module):
     name = "journal.core.agents"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
-    models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
+    models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration]
-    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, ShowMenuAnswerHandler]
-    subcommands = [ShowMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
+    migrations = [AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration]
+    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
+    subcommands = [RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list"],
                                  events=["agent.*"]),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
-    listeners = [SubagentMarkListener]
+    listeners = [SubagentMarkListener, MenuAnswerMarkListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

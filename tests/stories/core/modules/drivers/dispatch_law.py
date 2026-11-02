@@ -5,12 +5,12 @@ from tests.stories.core.support.fixtures import UserJoined
 
 def dispatch(**tool_input: str) -> HookSample:
     sample = HookSamples.sample("pre_tool_use", {"name": "Agent", "category": ToolType.AGENT, "files": [], "diff": None})
-    return sample.with_fields(raw={"tool_input": tool_input})
+    return sample.with_raw({"tool_input": tool_input})
 
 
 def finished(text: str) -> HookSample:
     sample = HookSamples.sample("post_tool_use", {"name": "Bash", "category": ToolType.UNCATEGORISED, "files": [], "diff": None})
-    return sample.with_fields(raw={"tool_response": {"stdout": text}})
+    return sample.with_raw({"tool_response": {"stdout": text}})
 
 
 def test_a_dispatch_with_no_model_is_refused(new_story):
@@ -39,6 +39,6 @@ def test_a_long_result_is_named_and_a_short_one_is_not(new_story):
 def test_a_long_read_of_a_file_is_named_too(new_story):
     story = new_story(fixture=UserJoined)
     read = HookSamples.sample("post_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
-    long = read.with_fields(raw={"tool_response": {"type": "text", "file": {"filePath": "a.py", "content": "line\n" * 500}}})
+    long = read.with_raw({"tool_response": {"type": "text", "file": {"filePath": "a.py", "content": "line\n" * 500}}})
     assert any("that result was 500 lines" in line for line in story.hook("s-1", long).lines)
-    story.expect_absent_hook_line("s-1", read.with_fields(raw={"tool_response": {"type": "text", "file": {"content": "line\n"}}}), "that result was")
+    story.expect_absent_hook_line("s-1", read.with_raw({"tool_response": {"type": "text", "file": {"content": "line\n"}}}), "that result was")

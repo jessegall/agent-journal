@@ -23,5 +23,5 @@ class RequiredCommand(Model):
 
     @property
     def subject(self) -> str:
-        command_words = self.required_command.split()
-        return f"{command_words[1]} {command_words[-1]}"
+        command_parts = self.required_command.split()
+        return f"{command_parts[1]} {command_parts[-1]}"

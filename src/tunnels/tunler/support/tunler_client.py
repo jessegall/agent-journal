@@ -40,8 +40,8 @@ class TunlerClient:
         command = self.command()
         if command is None:
             return TunlerStatus(False, False)
-        report = TunlerReport.from_text(self.answer(STATUS_LIMIT_SECONDS, {}, "status", "--json").text)
-        return TunlerStatus(True, report.logged_in and report.auth_ok is True, report.user, report.host, command, report.logged_in and report.auth_ok is False)
+        report = TunlerReport.parsed(self.answer(STATUS_LIMIT_SECONDS, {}, "status", "--json").text)
+        return TunlerStatus(True, report.has_login and report.auth_accepted is True, report.user, report.host, command, report.has_login and report.auth_accepted is False)
 
     def start(self, port: int, subdomain: str) -> None:
         command = self.command()
@@ -114,7 +114,7 @@ class TunlerClient:
             raise Refusal(answer.text or f"tunler did not release {domain}")
 
     def version(self) -> TunlerVersion:
-        report = TunlerReport.from_text(self.answer(COMMAND_LIMIT_SECONDS, {}, "update", "--check", "--json").text)
+        report = TunlerReport.parsed(self.answer(COMMAND_LIMIT_SECONDS, {}, "update", "--check", "--json").text)
         if report.update_available is not None:
             return TunlerVersion(report.current, report.latest, report.update_available)
         answer = self.answer(STATUS_LIMIT_SECONDS, {}, "version")

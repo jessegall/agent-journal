@@ -11,7 +11,7 @@ from core.base.upgrade.state_walk import StateWalk
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.tasks.support.task_priority import NORMAL_PRIORITY
+from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import TITLE_LIMIT_CHARACTERS

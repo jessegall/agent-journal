@@ -1,8 +1,8 @@
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-RESUME = HookSamples.session_start().with_fields(raw={"source": "resume"})
-COMPACTION = HookSamples.session_start().with_fields(raw={"source": "compact"})
+RESUME = HookSamples.session_start().with_raw({"source": "resume"})
+COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
 MEMORY = "1 memories to read"
 
 

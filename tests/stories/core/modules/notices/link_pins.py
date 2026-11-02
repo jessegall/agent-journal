@@ -6,7 +6,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 def shell_call(line: str, output: str = ""):
     sample = HookSamples.shell(line, ShellPart(line.split()[0], CommandCategory.READ, line.split()[1:])).with_fields(event="post_tool_use")
-    return sample.with_fields(raw={"tool_response": {"stdout": output}})
+    return sample.with_raw({"tool_response": {"stdout": output}})
 
 
 def test_a_link_in_a_commands_output_is_offered_as_a_pin(new_story):

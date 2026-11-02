@@ -10,9 +10,9 @@ CURRENT_FOLDER_HOOK = HookSamples.shell("cd /work/main && ls", ShellPart("cd", C
 
 def test_an_agent_that_moves_with_cd_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_refusal("s-1", MOVE.with_fields(raw={"cwd": "/work/main"}), "do not move with cd")
+    story.expect_hook_refusal("s-1", MOVE.with_raw({"cwd": "/work/main"}), "do not move with cd")
 
 
 def test_a_cd_into_the_folder_it_is_in_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_allowed("s-1", CURRENT_FOLDER_HOOK.with_fields(raw={"cwd": "/work/main"}))
+    story.expect_hook_allowed("s-1", CURRENT_FOLDER_HOOK.with_raw({"cwd": "/work/main"}))

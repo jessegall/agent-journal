@@ -8,8 +8,8 @@ class TunlerReport:
     """What the tunler program printed for --json: its login and its version; a line that is no JSON object
     is an empty report."""
 
-    logged_in: bool = False
-    auth_ok: bool | None = None
+    has_login: bool = False
+    auth_accepted: bool | None = None
     user: str | None = None
     host: str | None = None
     current: str | None = None
@@ -17,7 +17,7 @@ class TunlerReport:
     update_available: bool | None = None
 
     @classmethod
-    def from_text(cls, text: str) -> Self:
+    def parsed(cls, text: str) -> Self:
         try:
             fields = json.loads(text)
         except ValueError:
@@ -25,5 +25,7 @@ class TunlerReport:
         if not isinstance(fields, dict):
             return cls()
         texts = {name: value if isinstance(value := fields.get(name), str) and value else None for name in ("user", "host", "current", "latest")}
-        flags = {name: value if isinstance(value := fields.get(name), bool) else None for name in ("auth_ok", "update_available")}
-        return cls(logged_in=fields.get("logged_in") is True, **texts, **flags)
+        update_available = fields.get("update_available")
+        auth_accepted = fields.get("auth_ok")
+        return cls(has_login=fields.get("logged_in") is True, auth_accepted=auth_accepted if isinstance(auth_accepted, bool) else None,
+                   update_available=update_available if isinstance(update_available, bool) else None, **texts)

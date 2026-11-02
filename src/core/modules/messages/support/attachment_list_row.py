@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class AttachmentListSubcommandListedRecord(TypedDict):
+class AttachmentListRow(TypedDict):
     """The JSON form of AttachmentListSubcommand.listed."""
 
     message_id: object

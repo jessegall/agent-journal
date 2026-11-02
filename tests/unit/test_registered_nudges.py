@@ -59,7 +59,7 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_every_line_is_in_a_register_of_its_module(name, text, path):
-    module_sources = [other.read_text() for other in path.parent.glob("*.py")] + [other.read_text() for other in path.parents[1].glob("*_module.py")]
+    module_sources = [source.read_text() for source in path.parent.glob("*.py")] + [source.read_text() for source in path.parents[1].glob("*_module.py")]
     registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", text_of_file) for text_of_file in module_sources)
     assert registered or path.name == "rule_outcome.py", f"{name} of {path} is in no register"
 

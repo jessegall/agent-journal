@@ -4,7 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
-from core.modules.plans.queries.plan_shared_rows import PlanSharedRows
+from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 
 PLAN_MODEL = "plan"

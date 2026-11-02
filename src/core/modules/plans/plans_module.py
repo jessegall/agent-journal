@@ -24,7 +24,7 @@ from core.modules.plans.migrations.m003_plan_state_index import PlanStateIndexMi
 from core.modules.plans.commands.plan_progress.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.plans.queries.plan_shared_rows import PlanSharedRows
+from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon

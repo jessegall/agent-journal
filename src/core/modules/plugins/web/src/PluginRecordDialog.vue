@@ -13,7 +13,6 @@ function outputWords(text) {
         return text;
     }
 }
-
 </script>
 
 <template>
