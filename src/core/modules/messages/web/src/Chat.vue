@@ -291,13 +291,13 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 </button>
             </Transition>
         </div>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
         <template v-if="context.option('floors').value">
             <FigureFloors />
         </template>
         <div data-figure-chat-foot>
             <DockStack :items="docked" :folded="short || !docksOpen" />
         </div>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>

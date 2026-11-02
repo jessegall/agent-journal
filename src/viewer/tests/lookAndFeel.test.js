@@ -227,6 +227,15 @@ test("composer: a second file with the same name is left out, so one chip and on
     expect(element.querySelector("[data-send]")).not.toBeNull();
 });
 
+test("the running command bar sits between the docks and the composer", async () => {
+    const element = await mountedChat();
+    const docks = element.querySelector("[data-figure-chat-foot]");
+    const running = element.querySelector(".running-strip");
+    const composer = element.querySelector("form.composer");
+    expect(docks.compareDocumentPosition(running) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(running.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
 test("composer: Dump files opens a form where pasted paragraphs and dropped files become the parts of one dump made through dump make", async () => {
     const element = await mountedChat();
     element.querySelector("[data-dump-files]").click();

@@ -146,6 +146,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .head-share {
     width: auto;
     padding: 0 8px;
+    margin-right: 8px;
     color: var(--text-2);
     font-size: 12px;
     text-decoration: none;
