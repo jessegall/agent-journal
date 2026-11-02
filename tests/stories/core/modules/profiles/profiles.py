@@ -1,8 +1,10 @@
-from core.base.change.event_log import JOURNAL_BOOTING_EVENT
-from core.modules.profiles.listeners.profile_publish_listener import ProfilePublishListener
+from core.base.actor import CORE_ACTOR_ID
+from core.base.change.event_log import EventLog
+from core.base.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.shipped_profiles import SHIPPED_PROFILES
 from core.testing.hook_samples import HookSamples
+from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 SAVE_CRITIC = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
@@ -27,8 +29,20 @@ def test_the_journal_writes_its_own_profiles_at_every_start_and_keeps_a_saved_on
     assert names == {*(profile.name for profile in SHIPPED_PROFILES), "critic"}
 
 
-def test_the_listener_publishes_on_the_booting_event():
-    assert ProfilePublishListener.event == JOURNAL_BOOTING_EVENT
+def test_a_module_sync_writes_the_journals_own_profiles(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.run_listeners()
+    with story.container.get(Database).transaction():
+        story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
+    story.run_listeners()
+    assert (agents_folder(story) / "journal-senior.md").is_file()
+
+
+def test_the_journals_start_writes_its_own_profiles(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.run_listeners()
+    BootingWork().run(story.container)
+    assert (agents_folder(story) / "journal-senior.md").is_file()
 
 
 def test_a_shipped_profile_takes_its_model_from_the_setting_unless_it_names_its_own(new_story):
