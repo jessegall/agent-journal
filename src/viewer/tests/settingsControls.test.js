@@ -115,17 +115,17 @@ test("a list is edited one on each line and saved with commas", async () => {
     expect(ran[0]).toEqual(expect.arrayContaining(["setting", "set", "shop.names", "a,b,c"]));
 });
 
-test("the nav marks the first module, and the one scrolled to the top", async () => {
+test("picking a section in the nav shows that section alone", async () => {
     const {element} = await drawnWith([row("shop.size"), row("till.size", {module: "till"})]);
+    const shown = () => [...element.querySelectorAll("[data-module]")].map((section) => section.dataset.module);
+    expect(shown()).toEqual(["shop"]);
     expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("shop");
-    document.body.append(element);
-    const sections = element.querySelector("[data-settings-sections]");
-    sections.getBoundingClientRect = () => ({top: 100});
-    element.querySelector('[data-module="shop"]').getBoundingClientRect = () => ({top: -300});
-    element.querySelector('[data-module="till"]').getBoundingClientRect = () => ({top: 105});
-    sections.dispatchEvent(new Event("scroll"));
+    element.querySelector('[data-jump="till"]').click();
     await settle();
+    expect(shown()).toEqual(["till"]);
     expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("till");
+    expect(element.querySelector('[data-setting="shop.size"]')).toBeNull();
+    expect(element.querySelectorAll(".settings-nav-item")).toHaveLength(2);
 });
 
 test("an environment says whether its agent runs and how many tasks are not done", async () => {
