@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
-from core.modules.processes.support.process_nudges import HAND_MADE_MONITOR
+from core.modules.processes.support.process_nudges import HAND_MADE_MONITOR, MONITOR_COMMAND_OUTSIDE
 
 OUTPUT_LINE = "journal output "
 MONITOR_LINE = "journal output monitor "
@@ -12,7 +12,7 @@ MONITOR_LINE = "journal output monitor "
 
 class HandMadeMonitorRule(DriverRule):
     """A Monitor that loops over an output by hand is refused: its match can miss the end of the run, and the
-    command made for it cannot."""
+    command made for it cannot. That command runs only in a Monitor: as a plain command it blocks the agent."""
 
     name = "processes.hand-made-monitor"
     hook = HookEventName.PRE_TOOL_USE
@@ -21,6 +21,8 @@ class HandMadeMonitorRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
+        if tool is not None and tool.shell is not None and MONITOR_LINE in tool.shell.line:
+            return RuleAnswer.refused(MONITOR_COMMAND_OUTSIDE.nudge())
         if tool is None or tool.category != ToolType.MONITOR:
             return RuleAnswer.allowed()
         command = str(hook.event.tool_input().get("command", ""))

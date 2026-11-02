@@ -30,6 +30,12 @@ def monitor_on(command):
     return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_fields(raw={"tool_input": {"command": command}})
 
 
+def test_the_monitor_command_is_refused_as_a_plain_command(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    plain = HookSamples.shell("journal output monitor 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "monitor", "7"], subcommand="output"))
+    story.expect_hook_refusal("s-1", plain, "journal output monitor runs only in a Monitor")
+
+
 def test_a_hand_made_wait_on_an_output_is_refused_naming_the_command_and_that_command_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.expect_hook_refusal("s-1", monitor_on("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "journal output monitor <n>")

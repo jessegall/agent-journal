@@ -1,12 +1,19 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
+import QuestionOverlay from "./QuestionOverlay.vue";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
+const openQuestion = ref(0);
+const releaseQuestions = openInChat("question", (id) => {
+    openQuestion.value = id;
+    return true;
+});
+onUnmounted(releaseQuestions);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo goes for good when a message of the user with the same words has landed since, so an edit of that row brings it back no more
@@ -360,6 +367,9 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         </form>
         <template v-if="sendFailure">
             <p class="composer-failure">{{ sendFailure }}</p>
+        </template>
+        <template v-if="openQuestion">
+            <QuestionOverlay :key="openQuestion" :id="openQuestion" @close="openQuestion = 0" />
         </template>
     </div>
 </template>
