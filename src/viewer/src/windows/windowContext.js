@@ -49,7 +49,8 @@ export function windowContext({window, environment, agent, visible, permissions,
 export function refusalWords(text) {
     try {
         const refusal = JSON.parse(text);
-        return [refusal.refusal, refusal.error, refusal.message].find((words) => typeof words === "string") ?? text;
+        if (typeof refusal.refused === "string") return [refusal.refused, refusal.suggestion].filter(Boolean).join(": ");
+        return [refusal.error, refusal.message].find((words) => typeof words === "string") ?? text;
     } catch (error) {
         return text;
     }

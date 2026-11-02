@@ -1,3 +1,6 @@
+import json
+
+from core.base.database.database import Database
 from tests.stories.core.modules.questions.fixtures import AnsweredQuestion, OpenQuestion
 
 
@@ -14,6 +17,12 @@ def test_an_answered_question_leaves_the_list(new_story):
 def test_all_lists_an_answered_question_too(new_story):
     story = new_story(fixture=AnsweredQuestion)
     story.expect_success("question list --all", "1  Which database?  [sqlite / postgres]")
+
+
+def test_a_question_saved_before_the_limits_still_reads(new_story):
+    story = new_story(fixture=AnsweredQuestion)
+    story.container.get(Database).connection.execute("UPDATE questions SET options = ?", [json.dumps(["x" * 127])])
+    story.expect_success("question list --all", f"1  Which database?  [{'x' * 127}]")
 
 
 def test_show_says_an_open_question_is_not_answered_yet(new_story):

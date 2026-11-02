@@ -4086,7 +4086,7 @@ function Qh({ window: e, environment: t, agent: n, visible: s, permissions: a, e
 function ef(e) {
   try {
     const t = JSON.parse(e);
-    return [t.refusal, t.error, t.message].find((n) => typeof n == "string") ?? e;
+    return typeof t.refused == "string" ? [t.refused, t.suggestion].filter(Boolean).join(": ") : [t.error, t.message].find((n) => typeof n == "string") ?? e;
   } catch {
     return e;
   }
@@ -7554,7 +7554,7 @@ const Bg = /* @__PURE__ */ Og(Tg), Rg = ["width", "height", "viewBox"], Lg = ["w
       }, null, 8, Dg)
     ], 8, Rg));
   }
-}, qm = /* @__PURE__ */ Y(Ig, [["__scopeId", "data-v-489f0852"]]), Wm = Fo(() => import("./VoiceFigure-D6_DJd9j.js").then((e) => e.V)), Hm = "1.0.0", Fm = "3.5";
+}, qm = /* @__PURE__ */ Y(Ig, [["__scopeId", "data-v-489f0852"]]), Wm = Fo(() => import("./VoiceFigure-pekgJabK.js").then((e) => e.V)), Hm = "1.0.0", Fm = "3.5";
 export {
   Wg as $,
   lm as A,

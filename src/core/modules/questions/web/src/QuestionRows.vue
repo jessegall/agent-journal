@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, TextInput, useListTools, ListTools, useRows, peekRef} from "@journal/window-kit";
+import {Btn, RowList, TextInput, ago, useListTools, ListTools, useRows, peekRef} from "@journal/window-kit";
 
 // the questions as version 4 asked them: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
 // an answer shows the moment it is given and goes back if the server refuses it
@@ -45,7 +45,10 @@ async function elaborate(row) {
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
                 <section class="question" :data-state="shown(row).state">
-                    <p class="question-label">Question {{ row.id }}</p>
+                    <header class="question-head">
+                        <p class="question-label">Question {{ row.id }}</p>
+                        <time class="question-time" :datetime="row.created_at" :title="new Date(row.created_at).toLocaleString()" data-question-time>{{ ago(row.created_at) }}</time>
+                    </header>
                     <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
                     <template v-if="shown(row).state !== 'open'">
                         <p class="question-closed" data-question-settled>{{ shown(row).state === "answered" ? `Answered: ${shown(row).answer}` : "Closed" }}</p>
@@ -93,6 +96,19 @@ async function elaborate(row) {
     border-radius: 12px;
     background: var(--raised);
     overflow-wrap: anywhere;
+}
+
+.question-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.question-time {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .question-label {
