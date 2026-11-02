@@ -1,12 +1,13 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
+import {Icon, Skeleton, peekRef, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
 // from the task closed last, and each group pages on its own
 const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
+const FOLDED_KEY = "journal.tasks.folded";
 const props = defineProps({
     selectable: Boolean,
     selected: {type: Number, default: 0},
@@ -21,6 +22,28 @@ const failure = ref("");
 const loaded = ref(false);
 const extended = ref(new Set());
 const query = ref("");
+
+// the groups folded away, kept for this browser
+function keptFolded() {
+    try {
+        return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]"));
+    } catch {
+        return new Set();
+    }
+}
+
+const folded = ref(keptFolded());
+
+function toggleFold(state) {
+    const next = new Set(folded.value);
+    if (!next.delete(state)) next.add(state);
+    folded.value = next;
+    try {
+        localStorage.setItem(FOLDED_KEY, JSON.stringify([...next]));
+    } catch {
+        // a browser that keeps nothing still folds for this page
+    }
+}
 
 async function load() {
     const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : "task board");
@@ -100,9 +123,14 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
             <template v-for="{group, tasks} in groups" :key="group.state">
                 <section class="tasks-group" :data-state="group.state">
                     <template v-if="display.grouping !== 'none'">
-                        <h3 class="tasks-group-head" data-group-head>{{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
+                        <h3 class="tasks-group-head" data-group-head>
+                            <button type="button" class="tasks-fold" :data-fold="group.state" :aria-expanded="!folded.has(group.state)" @click="toggleFold(group.state)">
+                                <Icon name="caret" :size="12" :class="['tasks-caret', {closed: folded.has(group.state)}]" />
+                                {{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span>
+                            </button>
+                        </h3>
                     </template>
-                    <template v-for="row in tasks" :key="row.id">
+                    <template v-for="row in folded.has(group.state) ? [] : tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
                             <span :class="['task-mark', row.state]" />
                             <template v-if="display.number">
@@ -117,7 +145,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                             </template>
                         </div>
                     </template>
-                    <template v-if="group.rows.length < group.total">
+                    <template v-if="!folded.has(group.state) && group.rows.length < group.total">
                         <button type="button" class="tasks-more" :data-more="group.state" @click="more(group)">{{ group.rows.length ? "Show more" : `Show ${group.total} ${group.total === 1 ? "task" : "tasks"}` }}</button>
                     </template>
                 </section>
@@ -161,9 +189,36 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 }
 
 .tasks-tools {
+    position: sticky;
+    z-index: 2;
+    top: 0;
     display: flex;
     gap: 8px;
     align-items: center;
+    padding: 8px 0;
+    background: var(--bg);
+}
+
+.tasks-fold {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.tasks-fold:hover {
+    color: var(--text);
+}
+
+.tasks-caret.closed {
+    transform: rotate(-90deg);
 }
 
 .tasks-search {

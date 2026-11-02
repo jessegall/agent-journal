@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, settle} from "./support/windowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
@@ -34,6 +36,28 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     await settle();
     expect(reloaded).toBe(true);
     expect(element.textContent).not.toContain("Two");
+});
+
+test("a group folds and unfolds from its header, and stays folded on the next load", async () => {
+    localStorage.removeItem("journal.tasks.folded");
+    const {window} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}}));
+    const element = await mounted(TaskGroups, window);
+    expect(element.textContent).toContain("One");
+    element.querySelector('[data-fold="open"]').click();
+    await settle();
+    expect(element.textContent).not.toContain("One");
+    expect(element.querySelector('[data-fold="open"]').getAttribute("aria-expanded")).toBe("false");
+    const again = await mounted(TaskGroups, reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}})).window);
+    expect(again.textContent).not.toContain("One");
+    again.querySelector('[data-fold="open"]').click();
+    await settle();
+    expect(again.textContent).toContain("One");
+    localStorage.removeItem("journal.tasks.folded");
+});
+
+test("the search bar of the tasks window stays at the top as it scrolls", () => {
+    const source = readFileSync(resolve(__dirname, "../../core/modules/tasks/web/src/TaskGroups.vue"), "utf8");
+    expect(source).toMatch(/\.tasks-tools \{[^}]*position: sticky;[^}]*top: 0;/);
 });
 
 test("a plan answer for the tab left behind is dropped", async () => {
