@@ -4,12 +4,10 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.commands.support.output_lines import OutputLines
-from core.modules.processes.models.enums.process_state import ProcessState
+from core.modules.processes.models.enums.process_state import RUNNING_STATES, ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_access import OutputAccess
-
-RUNNING = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 
 
 class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
@@ -33,7 +31,7 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
         return OutputLines([self.line(process) for process in query.all_rows()])
 
     def line(self, process: Process) -> str:
-        if process.state in RUNNING:
+        if process.state in RUNNING_STATES:
             return f"{process.id}  running"
         if process.state is ProcessState.FAILED:
             return f"{process.id}  failed with code {process.exit_code}"

@@ -75,3 +75,18 @@ func TestAnOutputThatNeverEndsGivesUpAndAnUnknownOneSaysSo(t *testing.T) {
 		t.Fatalf("code %d, printed %q", code, printed.String())
 	}
 }
+
+func TestAnOutputThatGoesAwayEndsTheWaitAfterTwoMinutes(t *testing.T) {
+	asked := 0
+	var printed bytes.Buffer
+	ask := func(line ...string) (string, int) {
+		asked++
+		if asked == 1 {
+			return "7  running\n", SuccessCode
+		}
+		return "no output 7\n", ErrorCode
+	}
+	if code := WatchOutput("7", ask, func(time.Duration) {}, &printed); code != ErrorCode || asked != outputMonitorMisses+1 || printed.String() != "no output 7\n" {
+		t.Fatalf("code %d, asked %d, printed %q", code, asked, printed.String())
+	}
+}

@@ -2,7 +2,7 @@ import {lineBatch} from "./lineBatch.js";
 import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
-export {WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
+export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
 
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
@@ -10,9 +10,6 @@ const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
 // through the host, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
-// how a window opens another: the stage that holds the panes provides it
-export const OPEN_VIEW = Symbol("open-view");
-
 export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], readOnly = false, shared = null}) {
     const recent = new Map();
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all

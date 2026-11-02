@@ -35,7 +35,7 @@ export {useRows} from "./useRows.js";
 export {useListTools} from "./useListTools.js";
 export {default as ListTools} from "./ListTools.vue";
 export {useOpenRow} from "./useOpenRow.js";
-export {WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
+export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version
 export const KIT_VERSION = "1.0.0";

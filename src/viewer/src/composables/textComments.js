@@ -5,6 +5,7 @@ export function useTextComments(source, read) {
     const comments = ref([]);
     const open = ref(false);
     let sent = 0;
+    let reading = 0;
 
     // a comment reaches the chat as "On doc 1, Title: words", and here it is under the document already
     const words = (row) => {
@@ -16,8 +17,9 @@ export function useTextComments(source, read) {
     async function load() {
         const {kind, id} = source();
         if (!id) return;
+        const turn = ++reading;
         const answer = await read([kind, "comments", String(id)]);
-        comments.value = answer.ok ? (answer.value.rows ?? []) : [];
+        if (turn === reading) comments.value = answer.ok ? (answer.value.rows ?? []) : [];
     }
 
     async function send(text) {

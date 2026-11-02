@@ -11,3 +11,6 @@ class ProcessState(StrEnum):
     FAILED = "failed"
     STOPPED = "stopped"
     ORPHANED = "orphaned"
+
+
+RUNNING_STATES = (ProcessState.RUNNING, ProcessState.BACKGROUND)

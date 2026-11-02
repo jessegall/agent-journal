@@ -78,7 +78,7 @@ class Registry:
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
-                                        rule["unsilenced"], rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
+                                        rule.get("unsilenced", rule.get("permanent", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
                         for rule in entries.get("rules", [])),
             suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
