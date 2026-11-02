@@ -87,7 +87,7 @@ from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.support.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 
-WINDOW_READS = ["process feed", "output peek"]
+WINDOW_READS = ["process card", "process show", "process feed", "output peek"]
 WINDOW_RUNS = ["output stop", "output watch"]
 WINDOW_EVENTS = ["process.*", "output.*"]
 

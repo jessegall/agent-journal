@@ -6,8 +6,8 @@ def window_story(new_story) -> WindowStory:
     return WindowStory(new_story(fixture=UserJoined))
 
 
-def test_the_settings_window_is_a_component_window_of_the_environment(new_story):
-    window_story(new_story).expect_declared_window("settings.settings", "component", "environment")
+def test_the_settings_window_is_a_component_window_on_a_page_of_its_own(new_story):
+    window_story(new_story).expect_declared_window("settings.settings", "component", "page")
 
 
 def test_the_settings_window_reads_the_tree_and_sets_and_switches_settings(new_story):
