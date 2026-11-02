@@ -151,7 +151,7 @@ class ClaudeCodeProvider(Provider):
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))
         program_folder = TEMPORARY_FILES_FOLDER / f"claude-{os.getuid()}"
-        project_folders = [folder for folder in program_folder.iterdir() if folder.name.startswith(prefix)] if program_folder.is_dir() else []
+        project_folders = [folder for folder in program_folder.iterdir() if folder.name == prefix or folder.name.startswith(f"{prefix}--")] if program_folder.is_dir() else []
         return {session.name: session for folder in project_folders for session in folder.iterdir() if session.is_dir()}
 
     @classmethod
