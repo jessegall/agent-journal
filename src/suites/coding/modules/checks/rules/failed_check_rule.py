@@ -11,13 +11,14 @@ REPEAT_MINUTES = 60
 
 
 class FailedCheckRule(DriverRule):
-    """The main agent is told once that a check fails, with the last 800 characters it printed, and again
-    after an hour if it still fails."""
+    """The main agent is told once that a check fails, also while it waits, with the last 800 characters it printed,
+    and again after an hour if it still fails."""
 
     name = "checks.failed"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    overlay_proof = True
 
     def __init__(self, checks: CheckQuery) -> None:
         self.checks = checks
