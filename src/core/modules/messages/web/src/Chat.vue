@@ -87,6 +87,39 @@ const attached = ref([]);
 const picker = ref(null);
 const composerInput = ref(null);
 const focusComposer = () => nextTick(() => composerInput.value?.focus());
+
+// words put in without an input event, as dictation does, are in the box and not in text; a redraw must not write over them, so the box takes
+// text only when it still shows what text last gave it, and words it holds beyond that are taken into text
+let shownInBox = "";
+function takeFromBox() {
+    if (composerInput.value && composerInput.value.value !== shownInBox) shownInBox = text.value = composerInput.value.value;
+}
+const vComposerText = {
+    created(element, {value}) {
+        element.value = shownInBox = value;
+    },
+    beforeUpdate(element, {value}) {
+        if (element.value !== shownInBox) takeFromBox();
+        else if (element.value !== value) element.value = shownInBox = value;
+    },
+};
+function typed(event) {
+    shownInBox = text.value = event.target.value;
+}
+// dictation pastes into the focused field only, and coming back to the window leaves nothing focused: the box takes the focus back when
+// nothing else holds it, so the next words land in it
+function returned() {
+    takeFromBox();
+    if (document.activeElement === document.body || document.activeElement === null) focusComposer();
+}
+onMounted(() => {
+    window.addEventListener("focus", returned);
+    document.addEventListener("visibilitychange", returned);
+});
+onUnmounted(() => {
+    window.removeEventListener("focus", returned);
+    document.removeEventListener("visibilitychange", returned);
+});
 const dragging = ref(false);
 
 async function attach(files) {
@@ -167,6 +200,7 @@ async function saveEdit() {
 }
 
 async function send() {
+    takeFromBox();
     if (editing.value) return saveEdit();
     const sent = {text: text.value, attached: attached.value};
     const files = sent.attached.flatMap((entry) => ["--file", entry.pending]);
@@ -186,7 +220,7 @@ async function send() {
 }
 
 // enter sends, with or without the command key; shift enter is a new line, and an open input method keeps its enter
-const sendOnEnter = (event) => !event.shiftKey && !event.isComposing && (event.preventDefault(), sendable.value && send());
+const sendOnEnter = (event) => !event.shiftKey && !event.isComposing && (event.preventDefault(), takeFromBox(), sendable.value && send());
 // the slash key goes to the box from anywhere in the page that is not itself being typed in
 const TYPING_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 function slashFocus(event) {
@@ -351,7 +385,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </template>
                 </ul>
             </template>
-            <textarea ref="composerInput" v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @paste="pasted" />
+            <textarea ref="composerInput" v-composer-text="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @input="typed" @paste="pasted" />
             <div class="composer-row">
                 <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
                 <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">
