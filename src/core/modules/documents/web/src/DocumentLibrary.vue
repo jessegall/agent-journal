@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, peekRef, Segmented, Skeleton, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
 import {age, grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -99,7 +99,7 @@ load();
 <template>
     <div class="library" data-window-flush>
         <div class="library-bar">
-            <TextInput v-model="words" icon="search" class="library-search" placeholder="Search titles and abstracts" />
+            <SearchBar v-model="words" class="library-search" placeholder="Search titles and abstracts" />
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
             <Segmented :options="STATES" :value="state" data-library-state @pick="state = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />

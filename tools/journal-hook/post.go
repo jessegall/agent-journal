@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -84,8 +85,23 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 	status, answer = posted(outgoing, transport)
 	if status != http.StatusOK && status != http.StatusConflict {
 		noteBypass(outgoing, firedTime)
+		startMissingServer(outgoing.root)
 	}
 	return status, answer
+}
+
+// startMissingServer starts the journal's server when its socket is gone, as any journal command does, without
+// waiting for it: this hook goes on unchecked and the next finds a server, also while the agent runs no command.
+func startMissingServer(root string) {
+	home := filepath.Join(root, ".journal")
+	if _, err := os.Stat(filepath.Join(home, "server.sock")); err == nil {
+		return
+	}
+	command := exec.Command(filepath.Join(home, "bin", "journal"), "environment", "list")
+	command.Env = append(os.Environ(), "JOURNAL_HOME="+home)
+	if command.Start() == nil {
+		_ = command.Process.Release()
+	}
 }
 
 // StopWindow is how long a stop the journal does not answer with 200 is asked again before the hook holds it, shorter

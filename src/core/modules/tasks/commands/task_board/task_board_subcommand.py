@@ -54,7 +54,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
             if arguments.state in FINISHED_STATES:
                 return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, arguments.before_closed_at, arguments.limit or FINISHED_PAGE_ROWS)]))
             return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
-        active_groups = tuple(self.group(environment_id, state, None, PAGE_SIZE_ROWS) for state in (*ACTIVE_STATES, DELEGATED))
+        active_groups = tuple(self.group(environment_id, state, None, PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN))
         finished = tuple(self.finished_group(environment_id, state, None, FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 

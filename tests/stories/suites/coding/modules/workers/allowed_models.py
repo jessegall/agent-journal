@@ -28,8 +28,9 @@ def test_a_worker_runs_on_the_general_model_when_it_is_allowed(new_story):
     story.expect_text(DISPATCH, "--model sonnet", actor=story.agent)
 
 
-def test_a_worker_runs_on_the_nearest_allowed_model_when_the_general_one_is_not(new_story):
+def test_a_model_that_is_not_allowed_is_refused_and_an_allowed_one_runs(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     allow_opus(story)
-    story.expect_text(DISPATCH, "--model opus", actor=story.agent)
+    story.expect_refusal(DISPATCH, "may run: opus", actor=story.agent)
+    story.expect_text("worker dispatch --model opus 1", "--model opus", actor=story.agent)

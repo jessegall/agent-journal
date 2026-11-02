@@ -81,7 +81,7 @@ test("two file feed panes keep different views on their panes, and each is drawn
     const first = await stage();
     expect(flushed(first.element, FEEDS[0])).toBe(false);
     expect(flushed(first.element, FEEDS[1])).toBe(false);
-    first.element.querySelector(`[data-window="${FEEDS[0]}"] [data-feed-view]`).click();
+    first.element.querySelector(`[data-window="${FEEDS[0]}"] [data-search-menu]`).click();
     await settled();
     document.querySelector('[data-feed-toggle="flush"]').click();
     await settled();
@@ -106,7 +106,7 @@ test("a feed whose pane keeps no view starts from the view version 5 kept for ev
 test("on an agent's page a feed starts at 5 lines and flush", async () => {
     const {element} = await stage({page: "agent"});
     expect(flushed(element, FEEDS[0])).toBe(true);
-    element.querySelector(`[data-window="${FEEDS[0]}"] [data-feed-view]`).click();
+    element.querySelector(`[data-window="${FEEDS[0]}"] [data-search-menu]`).click();
     await settled();
     expect(document.querySelector(".feed-bar-lines [aria-checked='true']").textContent.trim()).toBe("5");
 });

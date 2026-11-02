@@ -2,7 +2,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
-WORKER_DISPATCH = HookSamples.shell("journal worker dispatch 1", ShellPart("journal", "journal", ["worker", "dispatch", "1"]))
+WORKER_DISPATCH = HookSamples.shell("journal worker dispatch --model sonnet 1", ShellPart("journal", "journal", ["worker", "dispatch", "1"]))
 
 
 def test_a_builder_whose_setting_keeps_it_solo_is_refused_a_dispatch(new_story):

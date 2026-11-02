@@ -1,6 +1,7 @@
 import hashlib
 from collections.abc import Sequence
 from pathlib import Path
+from typing import ClassVar
 
 from core.base.module.folder_listing import FolderListing
 from core.base.module.module import Module
@@ -13,14 +14,29 @@ class CodeFingerprint:
     """A hash of the core version and of every Python file in the core's folder and in each module's folder,
     by path, size and change time, so a run can tell that the registry was built from other code; a file that
     appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
-    kept, so it is walked again only when a folder changed."""
+    kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the
+    text, so a request reads the kept one and never the files."""
+
+    ticked: ClassVar[bool] = False
+    kept_texts: ClassVar[dict[tuple[Path, ...], str]] = {}
 
     def __init__(self) -> None:
         self.listings: dict[tuple[Path, ...], FolderListing] = {}
 
     def text(self, modules: Sequence[type[Module]]) -> str:
-        plugin_folders = (module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER))
-        return self.folder_text([CORE_FOLDER, *plugin_folders])
+        folders = self.folders(modules)
+        if self.ticked and folders in self.kept_texts:
+            return self.kept_texts[folders]
+        return self.refreshed(modules)
+
+    def refreshed(self, modules: Sequence[type[Module]]) -> str:
+        folders = self.folders(modules)
+        self.kept_texts[folders] = self.folder_text(folders)
+        return self.kept_texts[folders]
+
+    @staticmethod
+    def folders(modules: Sequence[type[Module]]) -> tuple[Path, ...]:
+        return (CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
         return self.folder_text([module.folder()])

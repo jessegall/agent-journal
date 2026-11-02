@@ -73,6 +73,7 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
 .thread-turn.user-side {
     align-items: flex-end;
     align-self: flex-end;
+    margin-left: auto;
 }
 
 /* a mark drawn as a card takes the chat's width and keeps to the card's own limit */

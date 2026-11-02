@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {ago, Btn, EmptyState, peekRef, Segmented, Skeleton, TextInput, useWindow} from "@journal/window-kit";
+import {ago, Btn, EmptyState, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
 
 // the files sent with messages, as version 4's Attachments page listed them: find a file, images or other files, images as tiles and the rest as rows
 const SEARCH_WAIT_MILLISECONDS = 250;
@@ -47,7 +47,7 @@ read(0);
 <template>
     <section class="attachments" data-attachments data-window-flush>
         <div class="bar">
-            <TextInput v-model="words" icon="search" class="search" placeholder="Search file names and their messages" data-attachment-search />
+            <SearchBar v-model="words" class="search" placeholder="Search file names and their messages" data-attachment-search />
             <Segmented :options="kinds" :value="kind" @pick="kind = $event" />
         </div>
         <template v-if="failure">

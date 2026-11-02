@@ -7,6 +7,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -19,6 +20,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
+from suites.coding.modules.workers.support.allowed_models import AllowedModels
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
@@ -37,9 +39,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
-                 worker_command: WorkerCommand, worktrees: WorktreeQuery) -> None:
+                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels) -> None:
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
-        self.git, self.worker_command, self.worktrees = git, worker_command, worktrees
+        self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         task = self.queries.query(Task).find(command.task_id)
@@ -57,7 +59,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if not program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         parent_id = callers[0].id if callers else None
-        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id)
+        self.check_model(program, command.program_model, environment.id)
+        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
         worktree = self.repository.save(Worktree(agent_id=worker.id, environment_id=environment.id, task_id=task.id, creator_id=context.actor.id,
@@ -75,3 +78,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.remove(environment.folder, worktree)
             raise
         return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))
+
+    def check_model(self, program: str, model: str, environment_id: int) -> None:
+        names = self.models.allowed(self.providers.provider(program), environment_id)
+        if model not in names:
+            raise Refusal(f"a worker is dispatched on a model {program} may run: {', '.join(names)}", "add --model <model>; journal worker models lists them")

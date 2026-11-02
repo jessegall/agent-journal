@@ -46,7 +46,7 @@ test("fitness and load come last in the bar, each an icon and a number with no w
 test("the agent bar shows its state and a helpers button asking to open the helpers", () => {
     const opened = [];
     const element = mounted(AgentBar, {agent: MAIN, helpers: 1, onOpen: (name) => opened.push(name)});
-    expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
+    expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 subagent");
     element.querySelector("[data-helpers]").click();
     expect(opened).toEqual(["helpers"]);
     expect(element.textContent).toContain("Working");
@@ -107,7 +107,7 @@ test("the agent bar names a paused agent, says nothing of what waits, and has on
     expect(element.querySelector("[data-workers]")).toBeNull();
     expect(element.querySelector("[data-reviewers]")).toBeNull();
     const helpers = element.querySelector("[data-helpers]");
-    expect(helpers.textContent.trim()).toBe("3 helpers");
+    expect(helpers.textContent.trim()).toBe("3 subagents");
     helpers.click();
     expect(opened).toEqual([["helpers", helpers]]);
 });
