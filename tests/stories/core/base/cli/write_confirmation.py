@@ -36,3 +36,10 @@ def test_a_refused_write_prints_its_refusal_and_no_confirmation(new_story):
     story = new_story(fixture=BuilderStarted)
     outcome = story.run('task make "" --environment main', actor=story.agent)
     assert outcome.code != 0 and "created:" not in outcome.output_text
+
+
+def test_a_row_another_command_of_the_same_actor_wrote_meanwhile_is_not_named(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+    story.run('task make "Fix the sums" --environment main', actor=story.agent)
+    assert story.run("task start 2", actor=story.agent).output_text.splitlines() == ["updated: task:2"]
