@@ -7,6 +7,7 @@ import MarkIcon from "../src/kit/MarkIcon.vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
+import TextDisplay from "../src/kit/TextDisplay.vue";
 import {peekChip, peekRef} from "../src/route.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
@@ -49,7 +50,7 @@ const SUBJECT_LINK = "about";
 const CHIPS_BELOW = 3;
 const links = ref([]);
 const linksOpen = ref(false);
-const linksHtml = computed(() => render(links.value.join(", "), {env: ""}));
+const linksLine = computed(() => `Linked: ${links.value.join(", ")}`);
 const linksCounted = computed(() => links.value.length >= CHIPS_BELOW);
 const linkCount = computed(() => `${links.value.length} linked ${links.value.every((name) => name.startsWith("task ")) ? "tasks" : "rows"}`);
 async function readLinks() {
@@ -134,7 +135,7 @@ function pick(face) {
                     <button type="button" class="message-links-count" data-message-links-count @click="linksOpen = true">{{ linkCount }}</button>
                 </template>
                 <template v-else>
-                    <span class="md" data-message-links-rows @click="peekChip">Linked: <span class="message-links-rows" v-html="linksHtml" /></span>
+                    <span data-message-links-rows><TextDisplay :text="linksLine" inline /></span>
                 </template>
             </div>
         </template>
@@ -194,10 +195,6 @@ function pick(face) {
     color: inherit;
     font: inherit;
     cursor: pointer;
-}
-
-.message-links-rows :deep(p) {
-    display: inline;
 }
 
 .message-links :deep(p) {

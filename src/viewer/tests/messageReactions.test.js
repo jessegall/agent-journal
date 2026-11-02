@@ -68,4 +68,8 @@ test("a person's message shows the rows it linked, under it", async () => {
     await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
     expect(element.querySelector("[data-message-links]").textContent).toContain("report 1");
+    const line = element.querySelector("[data-message-links-rows]");
+    expect(line.textContent).toMatch(/^Linked: /);
+    expect(line.textContent.match(/report 1/gi)).toHaveLength(1);
+    expect(line.querySelector(".md.inline")).not.toBeNull();
 });
