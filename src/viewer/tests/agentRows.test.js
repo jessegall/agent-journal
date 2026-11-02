@@ -83,34 +83,21 @@ const TASKS = [
     {id: 13, title: "Print the receipt", state: "open"},
 ];
 
-test("the tasks control counts what is completed and its dropdown has a section for each kind", async () => {
+test("the card counts what is completed and lists its tasks when opened, under the state names of the tasks window", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
-    document.body.append(element);
     const card = cardOf(element, 2);
-    const button = card.querySelector("[data-agent-tasks]");
-    expect(button.textContent.trim()).toBe("1 of 3 tasks");
-    expect(document.querySelector("[data-agent-task-menu]")).toBeNull();
-    button.click();
+    expect(card.querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 3 tasks");
+    expect(card.querySelector("[data-agent-delegated]")).toBeNull();
+    card.click();
     await settle();
-    expect(card.querySelector("[data-agent-instruction]")).toBeNull();
-    const menu = document.querySelector("[data-agent-task-menu]");
-    expect(menu.textContent).toContain("Working on");
-    expect(menu.textContent).toContain("Still queued");
-    expect(menu.textContent).toContain("Completed");
-    const rows = [...menu.querySelectorAll("[data-agent-delegated]")];
+    const labels = [...card.querySelectorAll("[data-agent-section]")].map((label) => label.textContent.trim());
+    expect(labels).toEqual(["Started 1", "Open 1", "Completed 1"]);
+    const rows = [...card.querySelectorAll("[data-agent-delegated]")];
     expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
     expect(rows[0].querySelector(".ring").classList.contains("started")).toBe(true);
     rows[0].click();
     await settle();
-    expect(document.querySelector("[data-agent-task-menu]")).toBeNull();
-});
-
-test("an empty section of the dropdown does not show", async () => {
-    const element = await drawn([{...FACTS[0], tasks: [TASKS[1]]}]);
-    document.body.append(element);
-    cardOf(element, 2).querySelector("[data-agent-tasks]").click();
-    await settle();
-    expect(document.querySelector("[data-agent-task-menu]").textContent).not.toContain("Completed");
+    expect(card.getAttribute("aria-expanded")).toBe("true");
 });
 
 test("an agent with no tasks has no tasks control", async () => {
