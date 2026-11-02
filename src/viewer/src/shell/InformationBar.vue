@@ -142,7 +142,7 @@ const uptime = computed(() => {
     gap: 16px;
     align-items: center;
     min-height: 30px;
-    padding: 0 16px;
+    padding: 0 8px 0 16px;
     border-bottom: 1px solid var(--border);
     color: var(--text-3);
     font-size: 12px;

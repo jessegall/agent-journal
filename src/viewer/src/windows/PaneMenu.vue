@@ -2,10 +2,9 @@
 import Btn from "../kit/Btn.vue";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 
-// one pane's menu: the color scheme, splitting, detaching, its width and agent, its window's options, moving and closing it
+// one pane's menu: splitting, detaching, its width and agent, its window's options, moving and closing it
 defineProps({
     pane: {type: Object, required: true},
-    schemeLabel: {type: String, required: true},
     floats: {type: Boolean, default: false},
     followable: {type: Array, required: true},
     agentWindow: {type: Boolean, default: false},
@@ -14,12 +13,11 @@ defineProps({
     canClose: {type: Boolean, default: false},
     canReset: {type: Boolean, default: false},
 });
-const emit = defineEmits(["scheme", "split", "detach", "option", "move", "close", "reset"]);
+const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]);
 </script>
 
 <template>
 <div class="pane-menu" role="menu">
-    <Btn data-menu="color-scheme" :title="`Color scheme: ${schemeLabel}`" @click="emit('scheme')">Color scheme: {{ schemeLabel }}</Btn>
     <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="emit('split', 'right')">Split right</Btn>
     <Btn data-menu="split-below" :disabled="pane.tabs.length < 2" @click="emit('split', 'bottom')">Split below</Btn>
     <template v-if="floats">
