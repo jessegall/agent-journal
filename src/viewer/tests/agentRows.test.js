@@ -99,6 +99,7 @@ test("the tasks control counts what is completed and its dropdown has a section 
     expect(menu.textContent).toContain("Completed");
     const rows = [...menu.querySelectorAll("[data-agent-delegated]")];
     expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
+    expect(rows[0].querySelector(".ring").classList.contains("started")).toBe(true);
     rows[0].click();
     await settle();
     expect(document.querySelector("[data-agent-task-menu]")).toBeNull();

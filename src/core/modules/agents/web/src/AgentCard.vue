@@ -73,7 +73,7 @@ function openTask(id) {
                     <MenuLabel>{{ section.label }}</MenuLabel>
                     <template v-for="task in section.tasks" :key="task.id">
                         <MenuItem :data-agent-delegated="task.id" @click="openTask(task.id)">
-                            <TaskStatusIcon :state="task.state" />
+                            <TaskStatusIcon :status="task.state" />
                             <span class="agent-task-number">{{ task.id }}</span>
                             {{ task.title }}
                         </MenuItem>
