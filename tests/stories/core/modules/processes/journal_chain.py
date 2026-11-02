@@ -62,7 +62,7 @@ def test_a_journal_command_piped_into_a_cutting_program_is_refused(new_story):
 def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     status = HookSamples.shell("journal output status 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "status", "7"], subcommand="output"))
-    story.expect_hook_allowed("s-1", status, "set a Monitor that ends when .journal/processes/7/end exists")
+    story.expect_hook_allowed("s-1", status, "set a Monitor on the command journal output monitor 7")
 
 
 def test_a_test_run_sent_to_a_file_is_told_no_reader_sees_it(new_story):
