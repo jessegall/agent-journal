@@ -102,3 +102,14 @@ test("each module's settings sit under one heading named for the module", async 
     expect(headings).toEqual(["Drivers", "Tunnel"]);
     expect(node(element, "journal.core.drivers.driver").contains(node(element, "journal.core.drivers.driver.builder"))).toBe(true);
 });
+
+test("a list setting shows each item on its own line, a comma inside an item stays, and saving keeps the items whole", async () => {
+    const commands = ["task list --columns id,title", "question list"];
+    const {element, runs} = mounted({rows: [row({key: "good.commands", title: "Commands", type: "list", value: JSON.stringify(commands), shown: commands.join(",")})]});
+    await settled();
+    const field = node(element, "good.commands").querySelector("[data-setting-list]");
+    expect(field.value).toBe("task list --columns id,title\nquestion list");
+    field.dispatchEvent(new Event("change"));
+    await settled();
+    expect(runs.at(-1).slice(0, 4)).toEqual(["setting", "set", "good.commands", JSON.stringify(commands)]);
+});
