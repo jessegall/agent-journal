@@ -28,10 +28,10 @@ MARK_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCateg
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A command that is a test run, a build, a check or a package shows one mark naming that command alone,
-    whatever else its line runs; the mark is kept up to date in place by the key process:<id>: running, with
+    """A command that is a test run, a build, a check or a package, or a line a reader reads, shows one mark
+    naming that command alone, whatever else its line runs; the mark is kept up to date in place by the key process:<id>: running, with
     the reader's progress as its figure, moved to the background, then ended with its outcome. A line with
-    no such command shows none, also when it moved to the background."""
+    no such command and no reader shows none, also when it moved to the background."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -45,11 +45,12 @@ class ProcessEndMarkListener(CommitListener):
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
-        part = next((part for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows() if part.category in MARK_CATEGORIES), None)
+        output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
+        parts = list(self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows())
+        part = next((part for part in parts if part.category in MARK_CATEGORIES), parts[0] if parts and output and output.reader_id is not None else None)
         if part is None:
             return
         variant = ProcessMarkVariant(process.state.value)
-        output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
         figure = self.figure(process, output)
         text = output.title if output and output.title else f"{PHRASES[process.state]} {ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS]}"
         self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
