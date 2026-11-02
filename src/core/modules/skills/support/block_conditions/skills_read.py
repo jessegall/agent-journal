@@ -1,6 +1,6 @@
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
-from core.modules.skills.support.due_skills import DueSkills
+from core.modules.skills.support.skills_to_read import SkillsToRead
 
 
 class SkillsRead(BlockCondition):
@@ -9,4 +9,4 @@ class SkillsRead(BlockCondition):
     name = "skills-read"
 
     def is_true(self, check: BlockCheck) -> bool:
-        return not check.container.get(DueSkills).folders(check.hook.agent_id)
+        return not check.container.get(SkillsToRead).names(check.hook.agent_id)
