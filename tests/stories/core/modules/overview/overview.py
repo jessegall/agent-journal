@@ -16,6 +16,7 @@ def test_the_overview_shows_each_default_command_under_its_heading(new_story):
     assert "## task list --state open" in text and "Fix the cart" in text
     assert "## question list" in text
     assert "has no" not in text and "journal failed" not in text
+    assert "Fix the cart  " not in text.replace("Fix the cart\n", "")
 
 
 def test_the_user_chooses_what_the_overview_shows(new_story):

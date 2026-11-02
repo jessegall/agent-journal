@@ -1,4 +1,5 @@
 import json
+from collections.abc import Sequence
 from dataclasses import fields, is_dataclass
 from typing import TextIO
 
@@ -31,8 +32,8 @@ class Output:
         is_confirmed = isinstance(record, Model) and bool(self.confirmation)
         self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
 
-    def page(self, page: Page[object]) -> None:
-        lines = ["  ".join(str(value) for column, value in self.values(record).items() if column not in LIST_HIDDEN_COLUMNS and is_shown(value))
+    def page(self, page: Page[object], columns: Sequence[str] = ()) -> None:
+        lines = ["  ".join(str(value) for column, value in self.values(record).items() if (column in columns if columns else column not in LIST_HIDDEN_COLUMNS) and is_shown(value))
                  for record in page.rows]
         if not page.is_last:
             lines.append(f"page {page.number}, {len(page.rows)} of {page.total} rows: --page {page.number + 1} for the next")
