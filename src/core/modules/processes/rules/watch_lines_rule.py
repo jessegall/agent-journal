@@ -5,7 +5,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.commands.record_given_percent.record_given_percent import RecordGivenPercent
-from core.modules.processes.models.watch import NOT_ANNOUNCED_PERCENT, Watch
+from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 
@@ -32,7 +32,7 @@ class WatchLinesRule(DriverRule):
         return answer
 
     def with_progress(self, answer: RuleAnswer, watch: Watch) -> RuleAnswer:
-        if watch.given_percent == NOT_ANNOUNCED_PERCENT:
+        if watch.given_percent == UNANNOUNCED_PERCENT:
             return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OUTPUT_RUNNING.nudge(output=watch.process_id)], commands=[*answer.commands, RecordGivenPercent(watch.id, 0)])
         progress = self.processes.find(watch.process_id).progress
         step = progress - progress % PROGRESS_STEP_PERCENT

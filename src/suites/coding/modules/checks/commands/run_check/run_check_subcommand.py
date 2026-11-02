@@ -30,7 +30,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
         check = self.checks.find(arguments.id)
         if check.stopped:
             raise Refusal(f"check {check.id} is stopped", "journal check remove ends it")
-        outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).heard)
+        outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).read_line)
         return RecordCheckRun(check.id, outcome.passed, outcome.output)
 
     def write_output(self, value: object, output: Output) -> None:

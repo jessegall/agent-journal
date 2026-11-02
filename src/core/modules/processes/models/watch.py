@@ -6,7 +6,7 @@ from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.lifecycles.watch_lifecycle import WatchLifecycle
 
-NOT_ANNOUNCED_PERCENT = -1
+UNANNOUNCED_PERCENT = -1
 
 
 @dataclass(frozen=True, kw_only=True)

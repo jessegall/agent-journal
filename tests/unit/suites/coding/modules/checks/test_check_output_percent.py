@@ -22,5 +22,5 @@ def test_a_percent_is_recorded_at_the_start_and_at_each_step_further():
     bus = RecordingBus()
     progress = CheckProgress(bus, 1)
     for line in ("1/4", "26%", "no number", "[ 50%]", "3/4"):
-        progress.heard(line)
+        progress.read_line(line)
     assert bus.percents == [0, 25, 50, 75]

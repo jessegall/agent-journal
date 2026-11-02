@@ -3,7 +3,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.watch import NOT_ANNOUNCED_PERCENT, Watch
+from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 
 
 class BackgroundRunWatchListener(SaveListener):
@@ -18,4 +18,4 @@ class BackgroundRunWatchListener(SaveListener):
     def handle(self, change: Change[Model]) -> None:
         process = change.row
         if isinstance(process, Process) and change.move is not None and change.move.name == "background":
-            self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=NOT_ANNOUNCED_PERCENT), change.context)
+            self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=UNANNOUNCED_PERCENT), change.context)

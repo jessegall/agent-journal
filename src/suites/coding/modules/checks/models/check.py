@@ -10,8 +10,8 @@ TITLE_LIMIT_CHARACTERS = 200
 @dataclass(frozen=True, kw_only=True)
 class Check(Model):
     """A command that proves a point, run by hand or every so many minutes: it keeps whether it last passed,
-    what it printed, when it ran, how far a running command has come and when the agent was last told it fails;
-    it can be stopped or removed."""
+    what it printed, when it ran, how far a running command has come and when the agent was last told it
+    fails; it can be stopped or removed."""
 
     model_name = "check"
     cli_name = "check"

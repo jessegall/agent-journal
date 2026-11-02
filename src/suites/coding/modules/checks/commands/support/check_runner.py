@@ -17,7 +17,7 @@ class CheckRunner:
     def __init__(self, home: JournalHome, limit_seconds: float = CHECK_LIMIT_SECONDS) -> None:
         self.home, self.limit_seconds = home, limit_seconds
 
-    def run(self, command: str, heard: Callable[[str], None]) -> CheckResult:
+    def run(self, command: str, read_line: Callable[[str], None]) -> CheckResult:
         running = subprocess.Popen(["sh", "-c", command], cwd=self.home.project_folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", start_new_session=True)
         expired = threading.Event()
         limit = threading.Timer(self.limit_seconds, self.stopped, [running, expired])
@@ -26,7 +26,7 @@ class CheckRunner:
         try:
             for line in running.stdout or ():
                 lines.append(line)
-                heard(line)
+                read_line(line)
             running.wait()
         finally:
             limit.cancel()

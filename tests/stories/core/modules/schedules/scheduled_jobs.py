@@ -76,3 +76,20 @@ def test_the_agent_bars_windows_are_offered_by_the_coding_suite(new_story):
     story = new_story(fixture=BuilderStarted)
     windows = {window.name for window in SuiteWindows(story.container.get(Registry)).windows("coding")}
     story.expect_rows({"schedules.jobs", "workers.workers", "reviews.reviewers"} <= windows)
+
+
+def test_a_prompt_that_is_a_jobs_words_is_its_run_and_shows_a_mark(new_story):
+    story = scheduled(new_story)
+    story.hook("s-1", HookSamples.prompt("something else"))
+    story.run_listeners()
+    story.expect_absent("chat-mark list --environment 1", "schedules.job-run")
+    story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1", f"Scheduled job {JOB} ran")
+    story.expect_text(f"scheduled-job show 1", "last_run_at: 2026", actor=story.user)
+
+
+def test_a_job_that_does_not_repeat_ends_with_its_run(new_story):
+    story = scheduled(new_story, recurring=False)
+    story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
+    story.expect_text(f"scheduled-job show 1", "ended_at: 2026", actor=story.user)

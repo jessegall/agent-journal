@@ -1,4 +1,5 @@
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
+from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -8,13 +9,17 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
+from core.modules.schedules.commands.record_scheduled_job_run.record_scheduled_job_run_handler import RecordScheduledJobRunHandler
 from core.modules.schedules.commands.scheduled_job_state.scheduled_job_state_subcommand import ScheduledJobStateSubcommand
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_handler import StopScheduledJobHandler
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_subcommand import StopScheduledJobSubcommand
 from core.modules.schedules.listeners.ended_agent_jobs_listener import EndedAgentJobsListener
+from core.modules.schedules.listeners.job_run_mark_listener import JobRunMarkListener
+from core.modules.schedules.migrations.m003_job_run_time import JobRunTimeMigration
 from core.modules.schedules.migrations.m001_scheduled_jobs import ScheduledJobsTableMigration
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
+from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
 
 
 class SchedulesModule(Module):
@@ -28,10 +33,11 @@ class SchedulesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ScheduledJobsTableMigration, StopRequestedMigration]
-    handlers = [RecordScheduledJobHandler, EndScheduledJobHandler, StopScheduledJobHandler]
+    migrations = [ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration]
+    handlers = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
-    driver_rules = [ScheduledJobRule]
-    listeners = [EndedAgentJobsListener]
-    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.AGENT,
+    driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
+    listeners = [EndedAgentJobsListener, JobRunMarkListener]
+    marks = SCHEDULE_MARKS
+    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN,
                                  reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"])]

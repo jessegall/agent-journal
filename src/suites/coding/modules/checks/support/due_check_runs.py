@@ -20,7 +20,7 @@ class DueCheckRuns(PeriodicChecks):
         for check in self.checks.due(self.clock.timestamp()):
             if check.stopped or check.removed_at is not None:
                 continue
-            outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).heard)
+            outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).read_line)
             try:
                 self.bus.run(RecordCheckRun(check.id, outcome.passed, outcome.output), Actor.core())
             except Refusal:

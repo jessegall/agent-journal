@@ -15,7 +15,7 @@ class CheckProgress:
         self.percent = 0
         self.record(0)
 
-    def heard(self, line: str) -> None:
+    def read_line(self, line: str) -> None:
         percent = CheckOutputPercent.parsed(line)
         if percent is not None and percent >= self.percent + SMALLEST_STEP_PERCENT:
             self.record(percent)

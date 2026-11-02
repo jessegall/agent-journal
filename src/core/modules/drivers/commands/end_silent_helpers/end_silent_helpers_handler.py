@@ -25,6 +25,6 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
         helpers = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.SUBAGENT).matching(IsNull("ended_at")).all_rows()
         for helper in tuple(helpers):
             calls = self.hook_calls.agent(helper.id).newest().page(1, 1).rows
-            last_heard = calls[0].creation_timestamp() if calls else helper.creation_timestamp()
-            if last_heard.elapsed_seconds(context.timestamp) >= SILENT_HELPER_SECONDS:
+            last_call_time = calls[0].creation_timestamp() if calls else helper.creation_timestamp()
+            if last_call_time.elapsed_seconds(context.timestamp) >= SILENT_HELPER_SECONDS:
                 self.bus.dispatch(EndAgent(helper.id), context)
