@@ -121,7 +121,7 @@ const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
-const HELPER_WINDOWS = [{name: "agents.subagents", role: "subagent"}, {name: "workers.workers", role: "worker"}, {name: "reviews.reviewers", role: "reviewer"}];
+const HELPER_WINDOW = "agents.subagents";
 const usage = ref({agents: [], windows: []});
 const fitness = ref(null);
 const branch = ref("");
@@ -147,11 +147,7 @@ provide(OPEN_VIEW, goTo);
 const openDropdown = ref(null);
 const windowTitle = (name) => (props.catalogue.dropdown(name) || props.catalogue.window(name)).title;
 const helperGroups = () =>
-    HELPER_WINDOWS.filter(({name}) => props.catalogue.dropdown(name) || props.catalogue.window(name)).map(({name, role}) => ({
-        name,
-        title: windowTitle(name),
-        count: usage.value.agents.filter((row) => row.role === role).length,
-    }));
+    (props.catalogue.dropdown(HELPER_WINDOW) || props.catalogue.window(HELPER_WINDOW) ? [{name: HELPER_WINDOW, title: windowTitle(HELPER_WINDOW), count: usage.value.agents.filter((row) => row.role !== "main").length}] : []);
 const openCount = (key, anchor) => {
     const name = COUNT_WINDOWS[key];
     const groups = key === "helpers" ? helperGroups() : props.catalogue.dropdown(name) ? [{name, title: windowTitle(name), count: 0}] : [];

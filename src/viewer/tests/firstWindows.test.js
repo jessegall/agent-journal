@@ -76,10 +76,12 @@ test("the agents window shows each agent's role", async () => {
     expect(text).toContain("Main agent 2");
 });
 
-test("the subagents window reads only the subagents of its own agent", async () => {
-    const windowContext = context({"agent list": page([{id: 5, role: "subagent", session: "s-1/a", program: "claude"}])}, 2);
-    expect(await drawn(SubagentList, windowContext)).toContain("Helper 5");
-    expect(windowContext.reads[0]).toContain("--parent 2");
+test("the helpers window lists every agent but the main one", async () => {
+    const windowContext = context({"agent list": page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "subagent", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}])}, 2);
+    const text = await drawn(SubagentList, windowContext);
+    expect(text).toContain("Helper 5");
+    expect(text).toContain("Worker 6");
+    expect(text).not.toContain("Main agent 2");
 });
 
 test("the hook calls window shows its agent's hook calls with their answers", async () => {

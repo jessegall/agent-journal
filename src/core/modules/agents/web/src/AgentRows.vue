@@ -8,7 +8,7 @@ const SHOWS = [
     {key: "closed", label: "Closed"},
     {key: "all", label: "All"},
 ];
-const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}});
+const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, only: {type: Function, default: () => true}});
 const {rows, failure, loaded, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: facts} = useRows("usage agents", ["agent.*", "task.*"]);
 const show = ref("running");
@@ -17,7 +17,7 @@ const words = ref("");
 const kept = (row) => show.value === "all" || (show.value === "running") === !row.ended_at;
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const found = (row) => `${row.id} ${row.session} ${row.program} ${row.role} ${factsOf(row)?.task_title ?? ""}`.toLowerCase().includes(words.value.trim().toLowerCase());
-const shown = computed(() => rows.value.filter((row) => kept(row) && found(row)));
+const shown = computed(() => rows.value.filter((row) => props.only(row) && kept(row) && found(row)));
 const emptyText = computed(() => (rows.value.length ? "Nothing matches" : props.empty));
 </script>
 
