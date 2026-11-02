@@ -6,7 +6,7 @@ from core.testing.story import Story
 from tests.stories.core.support import story_lines as lines
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
-DISPATCH = "worker dispatch 1"
+DISPATCH = "worker dispatch --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
 FIRST_PROOF = 'proof make 1 "cart.py:1, the cart total story"'
 DELIVERY = "worker deliver"

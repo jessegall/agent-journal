@@ -53,8 +53,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         tasks = tuple({"id": task.id, "title": task.title, "state": task.state.value} for task in (*agent_tasks, *delegated))
         dispatches = self.queries.query(SubagentDispatch).filter(subagent_id=agent.id).page(1, 1).rows
         dispatch = dispatches[0] if dispatches else None
-        return AgentFacts(agent.id, status.model or (dispatch.program_model if dispatch else ""), status.context_percent, status.cost_dollars, started[0].id if started else None, started[0].title if started else "", tasks,
-                          self.waiting_state(agent), dispatch.profile if dispatch else "", dispatch.description.split(",", 1)[0] if dispatch else "", dispatch.instruction if dispatch else "")
+        return AgentFacts(agent.id, status.model or agent.program_model or (dispatch.program_model if dispatch else ""), status.context_percent, status.cost_dollars, started[0].id if started else None, started[0].title if started else "", tasks,
+                          self.waiting_state(agent), agent.profile or (dispatch.profile if dispatch else ""), agent.given_name or (dispatch.description.split(",", 1)[0] if dispatch else ""), dispatch.instruction if dispatch else "")
 
     def waiting_state(self, agent: Agent) -> str:
         if self.queries.query(AgentBlock).filter(agent_id=agent.id).matching(IsNull("closed_at")).exists():

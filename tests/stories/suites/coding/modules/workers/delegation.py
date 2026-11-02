@@ -14,7 +14,7 @@ def delegated_story(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
 
 
@@ -83,3 +83,16 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
     assert groups["started"]["total"] == 0 and [row["id"] for row in groups["open"]["rows"]] == [3]
     page = json.loads(story.run("task board --environment main --state delegated --before-id 2 --json", actor=story.user).output_text)["groups"][0]
     assert [row["id"] for row in page["rows"]] == [1]
+
+
+def test_a_dispatch_with_no_model_is_refused(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.expect_refusal("worker dispatch 1", "add --model", actor=story.agent)
+
+
+def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = story.new_row_id("worker dispatch --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
+    story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-medior"', '"given_name": "Lovelace"', actor=story.agent)

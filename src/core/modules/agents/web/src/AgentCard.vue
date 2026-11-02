@@ -238,7 +238,7 @@ function openTask(id) {
 
 .agent-instruction {
     max-height: 240px;
-    padding-left: 10px;
+    padding: 0 0 20px 10px;
     overflow-y: auto;
     border-left: 2px solid var(--border-2);
     color: var(--text-2);

@@ -31,6 +31,6 @@ class WorkerCommand:
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         provider = self.providers.provider(worker.program)
-        launch = HelperLaunch(root=Path(environment.folder), folder=Path(worktree.folder), model=self.models.worker_model(provider, environment.id), launch="", session=session,
+        launch = HelperLaunch(root=Path(environment.folder), folder=Path(worktree.folder), model=worker.program_model or self.models.worker_model(provider, environment.id), launch="", session=session,
                               variables={ENVIRONMENT_VARIABLE: environment.name, ACTIVE_VARIABLE: "1"}, brief=brief)
         return provider.helper_command(launch)

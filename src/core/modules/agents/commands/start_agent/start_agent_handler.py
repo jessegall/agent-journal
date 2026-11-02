@@ -36,7 +36,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, environment_id=context.environment_id, parent_id=command.parent_id, creator_id=context.actor.id,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
-                      process_started_at=command.process_started_at or self.process_start(command.pid))
+                      process_started_at=command.process_started_at or self.process_start(command.pid),
+                      program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         return self.repository.save(agent, context)
 
     def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:

@@ -23,6 +23,9 @@ class Agent(Model):
     process_started_at: Timestamp | None = None
     launch_agent_id: int | None = None
     paused_at: Timestamp | None = None
+    program_model: str = ""
+    profile: str = ""
+    given_name: str = ""
     ended_at: Timestamp | None = None
 
     def ended(self, timestamp: Timestamp) -> "Agent":
