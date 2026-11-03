@@ -70,7 +70,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
     ended(story, started[0], 1)
     assert "1 failed, back with the worker" in marks_text(story), marks_text(story)
-    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed: pytest tests/cart.py")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {started[0]} --summary")
     expect_states(story, task1="started", task2="open", task3="open")
 
     # the worker fixes it: next again, and this time its test passes, which starts the second task with its brief
