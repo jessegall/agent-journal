@@ -23,6 +23,7 @@ class WaitingMessageTypingListener(CommitListener):
 
     name = "messages.waiting-message-typing"
     event = "agent_line.create"
+    run_order = -1
 
     def __init__(self, queries: Queries, typing: TerminalTyping, lines: WaitingMessageLines, bus: Bus) -> None:
         self.queries, self.typing, self.lines, self.bus = queries, typing, lines, bus
