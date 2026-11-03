@@ -16,13 +16,7 @@ CUT_END_CHARACTERS = 60
 
 @dataclass(frozen=True)
 class NudgeDeclaration:
-    """A line a module can say to an agent, declared once: its key, its type, its rendered with {fields}, the
-    interval before it may be said again, the longest it may be (120 characters, and 800 for info, which
-    explains big things), cut in its middle so its ask stays, whether a turn says it only once, as a reminder
-    on a clock does not, and the command with {fields} that pays it, which makes the line a required_command.
-    Each field is held to its own limit too. Lines of this key in one hook are written as one, each field
-    listing its values, in plural_text when it has one. A line that wakes its agent is typed to it when
-    idle."""
+    """An agent message template with delivery rules and text limits; declared path fields stay whole."""
 
     key: str
     type: NudgeType
@@ -34,6 +28,7 @@ class NudgeDeclaration:
     plural_text: str = ""
     field_limit_characters: int = LONGEST_FIELD_CHARACTERS
     wakes_agent: bool = False
+    path_fields: Sequence[str] = ()
 
     @property
     def limit(self) -> int:
@@ -53,8 +48,12 @@ class NudgeDeclaration:
         return self.rendered(self.plural_text or self.text, values)
 
     def rendered(self, text: str, fields: Mapping[str, object]) -> Nudge:
-        rendered = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
-        return Nudge(self.key, self.type, self.cut(rendered), self.interval, self.turn_limited, self.required_command.format(**fields) if self.required_command else "", tuple(fields.items()), self)
+        values = fields
+        if self.text != BARE_TEMPLATE:
+            values = {name: str(value) if name in self.path_fields else self.field_text(value) for name, value in fields.items()}
+        rendered = text.format(**values)
+        line = rendered if self.path_fields else self.cut(rendered)
+        return Nudge(self.key, self.type, line, self.interval, self.turn_limited, self.required_command.format(**fields) if self.required_command else "", tuple(fields.items()), self)
 
     def field_text(self, value: object) -> str:
         text = str(value)
