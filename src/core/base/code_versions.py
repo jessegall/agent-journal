@@ -6,7 +6,7 @@ from core.base.code_copy import CodeCopy
 from core.base.journal_home import JournalHome
 
 KEPT_VERSIONS = 2
-PARTIAL_SUFFIX = ".partial"
+PARTIAL_VERSION = ".partial"
 FIRST_VERSION = "first"
 NEW_LINK = "src.new"
 
@@ -24,7 +24,7 @@ class CodeVersions:
         return self.folder / tag
 
     def add(self, source: Path, tag: str) -> Path:
-        version, partial = self.version(tag), self.version(tag + PARTIAL_SUFFIX)
+        version, partial = self.version(tag), self.version(tag + PARTIAL_VERSION)
         if version.is_dir():
             return version
         shutil.rmtree(partial, ignore_errors=True)
@@ -50,6 +50,6 @@ class CodeVersions:
     def prune(self) -> None:
         running = self.link.resolve()
         spare = [version for version in self.folder.resolve().iterdir() if version != running]
-        newest = sorted((version for version in spare if version.suffix != PARTIAL_SUFFIX), key=lambda version: version.stat().st_mtime, reverse=True)
+        newest = sorted((version for version in spare if version.suffix != PARTIAL_VERSION), key=lambda version: version.stat().st_mtime, reverse=True)
         for version in set(spare) - set(newest[:KEPT_VERSIONS - 1]):
             shutil.rmtree(version)

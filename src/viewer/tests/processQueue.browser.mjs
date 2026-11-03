@@ -33,7 +33,7 @@ try {
     }, processId);
     assert.equal(stopped.code, 0, JSON.stringify(stopped));
     await page.locator('[data-queue-row="running"]').filter({hasText: "make checks"}).waitFor();
-    assert.equal(await page.locator('[data-queue-row="waiting"]').count(), 0);
+    await page.locator('[data-queue-row="waiting"]').waitFor({state: "detached"});
     await page.screenshot({path: capture.replace(".png", "-events.png"), fullPage: true});
     await page.getByRole("button", {name: "More runs at once"}).click();
     await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "2");
@@ -44,7 +44,7 @@ try {
     assert.equal(await page.locator("[data-queue-limit]").innerText(), "2");
     assert.equal(await page.locator("[data-queue-main-spots]").getAttribute("aria-checked"), "true");
     await page.setViewportSize({width: 390, height: 844});
-    assert.ok((await panel.boundingBox()).width <= 390);
+    await page.waitForFunction(() => document.querySelector("[data-resource-panel]").getBoundingClientRect().width <= 390, null, {timeout: 5000});
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();
