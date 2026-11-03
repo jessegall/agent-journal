@@ -34,6 +34,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		ReadPaths:      nonEmpty(classifier.ReadPaths(command.Text)),
 		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
 		JoinedBy:       command.JoinedBy,
+		IsFullTestRun:  classifier.IsFullTestRun(command.Text, classification),
 	}
 	if command.PipedInto >= 0 {
 		target := command.PipedInto

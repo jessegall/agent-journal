@@ -57,8 +57,9 @@ class ShellLine:
         run = next((part for part in self.parts if part.classification.category in WATCHED_CATEGORIES), None)
         return (run or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN
 
-    def all_parts_in_category(self, category: CommandCategory) -> bool:
-        return all(part.classification.category is category for part in self.parts)
+    @property
+    def has_full_test_run(self) -> bool:
+        return any(part.is_full_test_run for part in self.parts)
 
     def has_category(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)

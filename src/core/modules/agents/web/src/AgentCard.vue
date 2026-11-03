@@ -66,7 +66,7 @@ readCommand();
             </template>
         </span>
         <template v-if="showsCommand">
-            <span class="agent-command" data-agent-command><RunningCommand :text="runningCommand" /></span>
+            <span class="agent-command" data-agent-command><RunningCommand :text="waitingForTests ? 'waiting for its tests' : runningCommand" idle="thinking" /></span>
         </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>

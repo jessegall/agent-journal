@@ -24,6 +24,7 @@ class StartProcess(Command[Process]):
     limit_seconds: int
     parts: Sequence[PartSpec]
     reader_id: int | None = None
+    is_full_test_run: bool = False
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int) -> "StartProcess":
@@ -33,4 +34,4 @@ class StartProcess(Command[Process]):
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
         folder = hook.event.raw.get("cwd")
         parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, run.category or part.classification.category) for part in shell.parts)
-        return cls(hook.agent_id, None, shell.line, folder if isinstance(folder, str) else "", "", run.category or shell.watched_category, run.seconds, parts, run.reader_id)
+        return cls(hook.agent_id, None, shell.line, folder if isinstance(folder, str) else "", "", run.category or shell.watched_category, run.seconds, parts, run.reader_id, shell.has_full_test_run)

@@ -44,8 +44,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 
 
-CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "file-edit list"]
-CARD_EVENTS = ["agent.*", "hook_call.*", "file_edit.create"]
+CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list"]
+CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 

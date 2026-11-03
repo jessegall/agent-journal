@@ -57,6 +57,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.run_listeners()
     ended(story, started[2], 0)
     expect_states(story, task1="testing", task2="testing", task3="started")
+    story.expect_text("chat-mark list --environment 1", "worker-tests:1:1", "worker-tests:1:2")
 
     # the last task: there is no next, and the one delivery hands all three in and runs its test
     proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n")

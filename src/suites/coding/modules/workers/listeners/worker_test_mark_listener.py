@@ -11,8 +11,8 @@ ENDED_EVENTS = ("proof.check", "proof.short")
 
 
 class WorkerTestMarkListener(MarkListener):
-    """A worker's tests show as one mark in the chat: queued when they are handed in, then passed or failed when the
-    last has ended."""
+    """The tests of each task of a worker show as one mark in the chat: queued when they are handed over, failed
+    until they run again, and ended when the last has passed."""
 
     name = "workers.test-mark"
     event = "proof.*"
@@ -28,10 +28,10 @@ class WorkerTestMarkListener(MarkListener):
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         worker = worktree.agent_id
         if event.event == QUEUE_EVENT:
-            self.mark(event, worktree, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
+            self.mark(event, worktree, proof, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
         elif not any(row.state in TEST_WAITING_STATES for row in proofs):
             failed = sum(row.state is ProofState.SHORT for row in proofs)
-            self.mark(event, worktree, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", True)
+            self.mark(event, worktree, proof, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", not failed)
 
-    def mark(self, event: LoggedEvent, worktree: Worktree, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
-        self.show(event, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id, key=f"worker-tests:{worktree.id}", ended=ended)
+    def mark(self, event: LoggedEvent, worktree: Worktree, proof: Proof, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
+        self.show(event, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id, key=f"worker-tests:{worktree.id}:{proof.task_id}", ended=ended)
