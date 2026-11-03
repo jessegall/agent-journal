@@ -48,9 +48,22 @@ test("a docked process's card shows the title and steps its output keeps, in pla
     expect(head.querySelector("[data-output-steps]").textContent).toBe("12 passed, 1 failed");
 });
 
+test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
+    const line = "rm -rf /tmp/example && python3 - <<'PY'\nprint('private script')\nPY";
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});
+    const head = document.createElement("span");
+    document.body.append(head);
+    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    await mounted(OutputDock, window);
+    expect(head.querySelector(".output-dock-title").textContent).toBe("Removing files");
+    expect(head.querySelector("[data-output-toggle]").title).toBe("Removing files");
+    expect(head.textContent).not.toContain("python3");
+    expect(head.innerHTML).not.toContain("private script");
+});
+
 test("a docked process's card shows the run live, and unfolded its whole terminal output", async () => {
     const window = context({
-        "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0}},
+        "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "Running make", steps_passed: 0, steps_failed: 0}},
         "output peek 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"]}},
     });
     const head = document.createElement("span");
@@ -58,7 +71,7 @@ test("a docked process's card shows the run live, and unfolded its whole termina
     window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
     const element = await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
-    expect(head.querySelector(".output-dock-title").textContent).toBe("make build");
+    expect(head.querySelector(".output-dock-title").textContent).toBe("Running make");
     expect(window.reads.some((line) => line.startsWith("output peek"))).toBe(false);
     head.querySelector("[data-output-toggle]").click();
     await settle();
