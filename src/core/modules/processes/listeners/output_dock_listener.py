@@ -10,21 +10,22 @@ from core.modules.processes.models.enums.process_dock_type import ProcessDockTyp
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
+from core.modules.processes.support.worker_runs import WorkerRuns
 
 
 class OutputDockListener(CommitListener):
-    """A watch of a running output docks it above the chat, once; the dock lets it leave after its run ends.
-    """
+    """A watch of a running output docks it above the chat, once; the dock lets it leave after its run ends. A
+    worker's own command is never docked, only its test runs."""
 
     name = "processes.output-dock"
     event = "watch.create"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
-        self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery, worker_runs: WorkerRuns) -> None:
+        self.bus, self.actors, self.queries, self.items, self.worker_runs = bus, actors, queries, items, worker_runs
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(self.queries.query(Watch).find(event.row_id).process_id)
-        if process.state not in RUNNING_STATES or self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists():
+        if process.state not in RUNNING_STATES or self.worker_runs.hides(process) or self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists():
             return
         self.bus.run(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id), self.actors.actor(MODULE_NAME), cause_id=event.id,
                      environment_id=process.environment_id)
