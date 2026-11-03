@@ -11,14 +11,12 @@ class SkillPublishListener(CommitListener):
     and writes each declared skill again, so the latest text is always there; a person's own skill stays."""
 
     name = "skills.publish"
-    event = "*.*"
+    event = FILE_PUBLISHING_EVENTS
 
     def __init__(self, registry: Registry, files: SkillFiles) -> None:
         self.registry, self.files = registry, files
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event not in FILE_PUBLISHING_EVENTS:
-            return
         self.files.remove_all()
         for skill in self.registry.skills:
             self.files.write(skill)

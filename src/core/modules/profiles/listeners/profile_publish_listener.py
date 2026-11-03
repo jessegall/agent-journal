@@ -9,11 +9,10 @@ class ProfilePublishListener(CommitListener):
     its skills."""
 
     name = "profiles.publish"
-    event = "*.*"
+    event = FILE_PUBLISHING_EVENTS
 
     def __init__(self, files: ProfileFiles) -> None:
         self.files = files
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event in FILE_PUBLISHING_EVENTS:
-            self.files.publish()
+        self.files.publish()

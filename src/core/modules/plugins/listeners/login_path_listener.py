@@ -10,11 +10,10 @@ class LoginPathListener(CommitListener):
     hook waits on the shell's start files."""
 
     name = "plugins.login-path"
-    event = "*.*"
+    event = FILE_PUBLISHING_EVENTS
 
     def __init__(self, home: JournalHome) -> None:
         self.login_path = LoginPath(home)
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event in FILE_PUBLISHING_EVENTS:
-            self.login_path.read_shell()
+        self.login_path.read_shell()
