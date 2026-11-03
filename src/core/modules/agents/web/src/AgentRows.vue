@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {hiddenBy, hiddenSummary, ordered, RowList, SearchBar, Segmented, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
@@ -15,11 +15,46 @@ const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
 const show = ref("running");
 const words = ref("");
 
-const kept = (row) => show.value === "all" || (show.value === "running") === !row.ended_at;
+// an agent that ended stays in the running tab for ten seconds with a faint bar running down along its foot, which pauses while the pointer is over its row
+const LINGER_MS = 10000;
+const TICK_MS = 250;
+const now = ref(Date.now());
+const lingering = ref(new Map());
+const held = ref(new Set());
+let lastTick = Date.now();
+let lastRunning = new Map();
+const tick = setInterval(() => {
+    const at = Date.now();
+    const next = new Map(lingering.value);
+    for (const [id, linger] of next) {
+        if (held.value.has(id)) next.set(id, {...linger, leavesAt: linger.leavesAt + (at - lastTick)});
+        else if (at >= linger.leavesAt) next.delete(id);
+    }
+    lastTick = at;
+    now.value = at;
+    if (next.size !== lingering.value.size || [...next].some(([id, linger]) => linger !== lingering.value.get(id))) lingering.value = next;
+}, TICK_MS);
+onUnmounted(() => clearInterval(tick));
+watch(runningRows, (current) => {
+    const ids = new Set(current.map((row) => row.id));
+    const next = new Map(lingering.value);
+    for (const [id, row] of lastRunning) {
+        if (!ids.has(id) && !next.has(id)) next.set(id, {row: {...row, ended_at: row.ended_at ?? new Date().toISOString()}, leavesAt: Date.now() + LINGER_MS});
+    }
+    for (const id of ids) next.delete(id);
+    lastRunning = new Map(current.map((row) => [row.id, row]));
+    lingering.value = next;
+});
+const lingeringFor = (row) => lingering.value.get(row.id) ?? null;
+const hold = (row) => (held.value = new Set([...held.value, row.id]));
+const release = (row) => (held.value = new Set([...held.value].filter((id) => id !== row.id)));
+const leaveStyle = (row) => ({animationDuration: `${LINGER_MS}ms`, animationDelay: `${Math.min(0, lingeringFor(row).leavesAt - LINGER_MS - Date.now())}ms`});
+
+const kept = (row) => show.value === "all" || (show.value === "running") === !row.ended_at || (show.value === "running" && lingering.value.has(row.id));
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const found = (row) => `${row.id} ${row.session} ${row.program} ${row.role} ${factsOf(row)?.profile ?? ""} ${factsOf(row)?.given_name ?? ""}`.toLowerCase().includes(words.value.trim().toLowerCase());
-// the running tab reads every running agent, however old; the others page through all agents
-const listed = computed(() => (show.value === "running" ? runningRows.value : rows.value));
+// the running tab reads every running agent, however old, and those that ended a moment ago; the others page through all agents
+const listed = computed(() => (show.value === "running" ? [...runningRows.value, ...[...lingering.value.values()].map((linger) => linger.row)] : rows.value));
 const searched = computed(() => listed.value.filter((row) => props.only(row) && kept(row) && found(row)));
 
 // the pane menu's View options: which states and kinds of agent show, the order, and one switch that shows every agent
@@ -53,7 +88,12 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
         </template>
         <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText">
             <template #default="{row}">
-                <AgentCard :row="row" :facts="factsOf(row)" />
+                <div class="agent-row" :data-agent-row="row.id" @mouseenter="hold(row)" @mouseleave="release(row)">
+                    <AgentCard :row="row" :facts="factsOf(row)" />
+                    <template v-if="lingeringFor(row)">
+                        <span class="agent-leave" data-agent-leave aria-hidden="true"><i :style="leaveStyle(row)" /></span>
+                    </template>
+                </div>
             </template>
         </RowList>
     </div>
@@ -74,6 +114,43 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
 
 .agents :deep(.row-list-row) {
     padding: 0;
+}
+
+.agent-row {
+    position: relative;
+    flex: 1;
+}
+
+.agent-leave {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.agent-leave i {
+    display: block;
+    height: 100%;
+    background: color-mix(in srgb, var(--text-3) 45%, transparent);
+    transform-origin: left center;
+    animation: agent-leave-run-down linear forwards;
+}
+
+.agent-row:hover .agent-leave i {
+    animation-play-state: paused;
+}
+
+@keyframes agent-leave-run-down {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
 }
 
 .agents-bar {
