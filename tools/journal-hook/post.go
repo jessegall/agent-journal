@@ -132,11 +132,11 @@ func restartMarkRecent(root string) bool {
 	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
 }
 
-// serverStartMarkName is the file whose age says a hook started a server moments ago, and ServerStartPause how long
-// no other hook starts one after it, longer than a server takes to boot and take its lock.
+// serverStartMarkName is the file a client holds while the server it started boots, which the server removes once it
+// holds its lock; while it is fresher than ServerStartPause a hook starts no client. See Connect in tools/journal.
 const serverStartMarkName = "server-starting"
 
-var ServerStartPause = 10 * time.Second
+var ServerStartPause = 30 * time.Second
 
 // startMissingServer starts the journal's server when its socket is gone, as any journal command does, without
 // waiting for it: this hook goes on unchecked and the next finds a server, also while the agent runs no command.

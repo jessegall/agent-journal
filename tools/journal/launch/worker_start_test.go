@@ -61,6 +61,15 @@ func (refusingStarter) Start(start ProgramStart) error {
 	return errors.New("no such folder")
 }
 
+func TestASecondProgramOfARunningWorkerIsRefused(t *testing.T) {
+	inputs := NewTerminalInputs()
+	inputs.Open(16, strings.NewReader(""))
+	starter := ProcessStarter{Home: t.TempDir(), Inputs: inputs}
+	if err := starter.Start(ProgramStart{AgentID: 16, Folder: t.TempDir(), Command: []string{"true"}}); !errors.Is(err, ErrProgramRunning) {
+		t.Fatalf("the second start answered %v", err)
+	}
+}
+
 func TestTheLauncherAnswersWhetherItStartedTheProgram(t *testing.T) {
 	folder, err := os.MkdirTemp("/tmp", "launch")
 	if err != nil {

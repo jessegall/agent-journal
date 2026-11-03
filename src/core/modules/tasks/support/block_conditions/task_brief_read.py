@@ -9,6 +9,7 @@ class TaskBriefRead(BlockCondition):
     """The agent read this task's brief in its current context window, or no longer holds the task."""
 
     name = "task-brief-read"
+    is_per_subject = True
 
     def is_true(self, check: BlockCheck) -> bool:
         queries = check.container.get(Queries)
