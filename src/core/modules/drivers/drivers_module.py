@@ -56,6 +56,7 @@ from core.modules.drivers.commands.record_hook_call.record_hook_call_handler imp
 from core.modules.drivers.commands.hook_call_feed.hook_call_feed_subcommand import HookCallFeedSubcommand
 from core.modules.drivers.commands.hook_call_show.hook_call_show_subcommand import HookCallShowSubcommand
 from core.modules.drivers.models.hook_call_row import HookCallRow
+from core.modules.drivers.models.nudge_total import NudgeTotal
 from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
 from core.modules.drivers.migrations.m002_hook_call_updated_input import HookCallUpdatedInputMigration
@@ -116,7 +117,7 @@ class DriversModule(Module):
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
-    views = [HookCallRow]
+    views = [HookCallRow, NudgeTotal]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration]
     handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler,RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,

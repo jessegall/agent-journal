@@ -1,6 +1,6 @@
+import json
 from argparse import ArgumentParser, Namespace
 
-from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.greater import Greater
@@ -9,11 +9,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.task import Task
+from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
 from core.modules.usage.support.status_files import StatusFiles
@@ -21,6 +17,7 @@ from core.modules.usage.support.status_files import StatusFiles
 CLOSED_AGENTS_SHOWN = 50
 BLOCKED_STATE = "blocked"
 WAITING_STATE = "waiting"
+
 
 class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     """`journal usage agents [--environment <name>]`: for each agent still running, its model, context, cost
@@ -40,26 +37,22 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the agents are shown for one environment", "name it with --environment")
-        agents = self.queries.query(Agent).filter(environment_id=environment_id)
-        running = tuple(agents.matching(IsNull("ended_at")).oldest().all_rows())
-        ended = tuple(agents.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        return AgentFactsList(tuple(self.facts(agent) for agent in (*running, *ended)))
+        cards = self.queries.query(AgentCard).filter(environment_id=environment_id)
+        running = tuple(cards.matching(IsNull("ended_at")).oldest().all_rows())
+        ended = tuple(cards.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
+        return AgentFactsList(tuple(self.facts(card) for card in (*running, *ended)))
 
-    def facts(self, agent: Agent) -> AgentFacts:
-        status = self.files.status(agent.session)
-        started = self.queries.query(Task).filter(holder_id=agent.id, state=TaskState.STARTED).newest().page(1, 1).rows
-        delegated = tuple(self.queries.query(Task).filter(delegated_to=agent.id).oldest().all_rows())
-        agent_tasks = tuple(task for task in self.queries.query(Task).filter(holder_id=agent.id).oldest().all_rows() if task.delegated_to != agent.id) if agent.role is AgentRole.WORKER else tuple(started)
-        tasks = tuple({"id": task.id, "title": task.title, "state": task.state.value} for task in (*agent_tasks, *delegated))
-        dispatches = self.queries.query(SubagentDispatch).filter(subagent_id=agent.id).page(1, 1).rows
-        dispatch = dispatches[0] if dispatches else None
-        return AgentFacts(agent.id, status.model or agent.program_model or (dispatch.program_model if dispatch else ""), status.context_percent, status.cost_dollars, started[0].id if started else None, started[0].title if started else "", tasks,
-                          self.waiting_state(agent), agent.profile or (dispatch.profile if dispatch else ""), agent.given_name or (dispatch.description.split(",", 1)[0] if dispatch else ""), dispatch.instruction if dispatch else "")
+    def facts(self, card: AgentCard) -> AgentFacts:
+        status = self.files.status(card.session)
+        return AgentFacts(card.id, status.model or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
+                          tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
+                          card.dispatch_instruction)
 
-    def waiting_state(self, agent: Agent) -> str:
-        if self.queries.query(AgentBlock).filter(agent_id=agent.id).matching(IsNull("closed_at")).exists():
+    @staticmethod
+    def waiting_state(card: AgentCard) -> str:
+        if card.is_blocked:
             return BLOCKED_STATE
-        return WAITING_STATE if agent.paused_at is not None else ""
+        return WAITING_STATE if card.paused_at is not None else ""
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentFactsList):
