@@ -44,3 +44,10 @@ def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_stor
     story.expect_success("queue resume", actor=story.user)
     queue = json.loads(story.run("queue inspect --environment-id 1 --json", actor=story.user).output_text)
     story.expect_rows(not queue["halted"], queue["halt_reason"] == "")
+
+
+def test_the_inspector_explains_a_server_restart(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.home.restart_mark.write_text("1")
+    queue = json.loads(story.run("queue inspect --environment-id 1 --json", actor=story.user).output_text)
+    story.expect_rows(queue["halted"], queue["halt_reason"] == "Server restart")

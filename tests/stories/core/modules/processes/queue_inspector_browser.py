@@ -12,7 +12,7 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
-    task_id = story.new_row_id('task make "Build the package" --brief "Build and check the package"', actor=story.user)
+    task_id = story.new_row_id('task make "Build the package" --brief "Build and check the package" --environment main', actor=story.user)
     story.expect_success(f"task start {task_id}", actor=story.agent)
     finished = start_process(story, "make previous", category=CommandCategory.BUILD, is_queued=True)
     end_run(story, finished, "package built\n")
