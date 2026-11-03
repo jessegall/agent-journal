@@ -12,7 +12,7 @@ from core.base.type_guards import is_list
 READ_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
 WATCHED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK)
 JOURNAL_PROGRAM = "journal"
-NO_FILE_REDIRECT = re.compile(r"^\d*>&\d+$|^\d*>\s*/dev/null$")
+DESCRIPTOR_REDIRECT = re.compile(r"^\d*>&\d+$|^\d*>\s*/dev/null$")
 
 
 @dataclass(frozen=True)
@@ -49,7 +49,7 @@ class ShellLine:
 
     @property
     def has_file_redirects(self) -> bool:
-        return any(">" in redirect and not NO_FILE_REDIRECT.match(redirect) for redirect in self.redirects)
+        return any(">" in redirect and not DESCRIPTOR_REDIRECT.match(redirect) for redirect in self.redirects)
 
     @property
     def has_writes(self) -> bool:

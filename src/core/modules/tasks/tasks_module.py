@@ -15,6 +15,7 @@ from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigratio
 from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
 from core.modules.tasks.migrations.m006_task_started_at import TaskStartTimeMigration
 from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
+from core.modules.tasks.migrations.m008_delegated_task_index import DelegatedTaskIndexMigration
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
@@ -81,7 +82,7 @@ class TasksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration]
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration]
     subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [ClearDelegatedTasksHandler, RemoveTaskDependencyHandler, WaitTaskHandler]
