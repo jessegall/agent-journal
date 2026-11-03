@@ -301,7 +301,7 @@ readCommand();
 .agent-tabs {
     margin: 0 -22px -6px -27px;
     padding: 0 22px 0 27px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 .agent-tab-body {
