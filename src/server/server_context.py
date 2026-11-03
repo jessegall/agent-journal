@@ -8,7 +8,7 @@ from server.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_listener import ViewerListener
 
-HOOK_LIMIT_SECONDS = 3.0
+HOOK_LIMIT_SECONDS = 4.5
 
 
 @dataclass(frozen=True)
