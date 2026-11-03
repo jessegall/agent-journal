@@ -26,7 +26,7 @@ class CommandCategory(StrEnum):
         return self.reads_files or self is CommandCategory.EDIT
 
     @property
-    def is_read_only(self) -> bool:
+    def is_readonly(self) -> bool:
         return self.reads_files or self is CommandCategory.JOURNAL
 
     @property

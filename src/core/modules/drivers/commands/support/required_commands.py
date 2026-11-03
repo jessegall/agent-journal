@@ -27,8 +27,8 @@ class RequiredCommands:
 
     @staticmethod
     def block(agent_id: int, nudge: Nudge) -> BlockUntil:
-        words = nudge.required_command.split()
-        subject = " ".join(dict.fromkeys((*words[2:3], words[1], words[-1])))
+        parts = nudge.required_command.split()
+        subject = " ".join(dict.fromkeys((*parts[2:3], parts[1], parts[-1])))
         refusal = REQUIRED_COMMAND_REFUSAL.nudge(subject=subject, block="{block}")
         countdown = REQUIRED_COMMAND_COUNTDOWN.nudge(subject=subject, left="{left}")
         return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RanCommand(nudge.required_command), Interval(ToolUseSpan(TOOL_USES_GIVEN)), countdown)

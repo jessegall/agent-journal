@@ -76,7 +76,7 @@ def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
     story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
     process_id = start_process(story, "make test").id
     story.container.get(OutputFolder).write_output(process_id, 1, "[ 42%]\n")
-    reading = OutputReading()
-    assert reading(story.container) is True
+    output_tick = OutputReading()
+    assert output_tick(story.container) is True
     assert story.container.get(ProcessQuery).find(process_id).progress == 42
-    assert reading(story.container) is False
+    assert output_tick(story.container) is False

@@ -30,8 +30,8 @@ class TaskInspectSubcommand(ReadSubcommand[TaskInspection]):
 
     @staticmethod
     def opener(wait: dict[str, str]) -> str:
-        target_kind, _, target_id = wait["target"].partition(":")
-        return f"{wait['command']} passes" if wait["command"] else f"{target_kind.removesuffix('s')} {target_id} is settled"
+        target_model, _, target_id = wait["target"].partition(":")
+        return f"{wait['command']} passes" if wait["command"] else f"{target_model.removesuffix('s')} {target_id} is settled"
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskInspection):

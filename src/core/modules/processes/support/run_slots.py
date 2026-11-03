@@ -28,8 +28,8 @@ class RunSlots:
         if self.halt.is_halted:
             return
         runs = tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
-        taken = sum(self.folder.has_slot(process.id) for process in runs) + self.main_runs_taking_spots(runs, environment_id)
-        room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - taken
+        used_slots = sum(self.folder.has_slot(process.id) for process in runs) + self.main_runs_taking_spots(runs, environment_id)
+        room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
         for waiting in [process for process in runs if process.is_queued][:max(room, 0)]:
             process = self.queries.query(Process).find(waiting.id)
             if process.is_queued:
@@ -37,7 +37,7 @@ class RunSlots:
                 self.repository.save(replace(process, is_queued=False), context)
 
     def main_runs_taking_spots(self, runs: Sequence[Process], environment_id: int) -> int:
-        if not self.settings.flag(ProcessSetting.MAIN_RUNS_TAKE_SLOTS, environment_id):
+        if not self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id):
             return 0
         running = [process for process in runs if not process.is_queued and not self.folder.has_slot(process.id)]
         main: set[int] = set()
@@ -45,7 +45,7 @@ class RunSlots:
             main = {agent.id for agent in self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(Among("id", tuple({process.agent_id for process in running}))).all_rows()}
         return sum(1 for process in running if process.agent_id in main)
 
-    def grant_every_environment(self, context: Context) -> None:
+    def grant_all_environments(self, context: Context) -> None:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).filter(is_queued=True).oldest().all_rows()
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             self.grant(environment_id, context)

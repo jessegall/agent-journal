@@ -10,4 +10,4 @@ class TranscriptRow:
     author: str
     row_type: str
     text: str
-    at: str = ""
+    time: str = ""

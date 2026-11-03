@@ -1,6 +1,6 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
-import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, useReadLine, useRows, useWindow} from "@journal/window-kit";
+import {ref} from "vue";
+import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -22,9 +22,7 @@ const {rows: descriptions} = useRows("plugin descriptions", ["plugin.*"]);
 const descriptionOf = (row) => descriptions.value.find((each) => each.plugin === row.name)?.description ?? "";
 const {rows: services, load: loadServices} = useRows("plugin services", ["plugin.*"]);
 const servicesOf = (row) => services.value.filter((service) => service.plugin === row.name);
-let serviceTimer = 0;
-onMounted(() => (serviceTimer = setInterval(loadServices, SERVICE_POLL_MILLISECONDS)));
-onUnmounted(() => clearInterval(serviceTimer));
+usePoll(loadServices, () => true, SERVICE_POLL_MILLISECONDS);
 const refusal = ref("");
 const source = ref("");
 const making = ref(false);

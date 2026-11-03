@@ -10,9 +10,9 @@ ASSISTANT_TYPE = "assistant"
 
 
 class TranscriptAuthors:
-    """Names who wrote each row of a helper's transcript. A helper's own rows say its role, a worker's say worker; a
-    helper never hears from the user, so a row its program filed as the user's is the journal's, and a monitor's
-    stays a monitor's. The main agent's rows are left as its program wrote them."""
+    """Names who wrote each row of a helper's transcript. A helper's own rows say its role, a worker's say
+    worker; a helper never hears from the user, so a row its program filed as the user's is the journal's, and
+    a monitor's stays a monitor's. The main agent's rows are left as its program wrote them."""
 
     def tagged(self, agent: Agent, rows: Sequence[TranscriptRow]) -> tuple[TranscriptRow, ...]:
         if agent.role is AgentRole.MAIN:

@@ -42,8 +42,8 @@ def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays()
 
 
 def test_a_steering_line_and_a_refusal_are_cut_at_120_characters_and_only_info_may_be_longer():
-    words = "{text} " + "w" * 700
-    lengths = {kind: len(NudgeDeclaration("shop.kind", kind, words).nudge(text="x").text) for kind in NudgeType}
+    template = "{text} " + "w" * 700
+    lengths = {nudge_type: len(NudgeDeclaration("shop.kind", nudge_type, template).nudge(text="x").text) for nudge_type in NudgeType}
     assert lengths == {NudgeType.INFO: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120}
 
 

@@ -9,9 +9,9 @@ EXCEPTION_LISTENER = "listener chat.exception-mark"
 
 
 class ChatExceptionSink(ExceptionSink):
-    """Records each exception the journal meets as a row of the chat module, except an exception of the listener
-    that shows exceptions, which would only make more of them. An exception met inside a transaction waits until
-    the commit listeners next run."""
+    """Records each exception the journal meets as a row of the chat module, except an exception of the
+    listener that shows exceptions, which would only make more of them. An exception met inside a
+    transaction waits until the commit listeners next run."""
 
     def __init__(self, bus: Bus, actors: ModuleActors, database: Database) -> None:
         self.bus, self.actors, self.database = bus, actors, database

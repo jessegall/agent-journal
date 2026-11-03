@@ -22,7 +22,7 @@ def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
 
 
-KINDS: dict[str, str] = {}
+TYPES: dict[str, str] = {}
 
 
 def declarations() -> list[tuple[str, str, Path]]:
@@ -33,7 +33,7 @@ def declarations() -> list[tuple[str, str, Path]]:
             is_declaration = isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and getattr(node.value.func, "id", "") == "NudgeDeclaration"
             if is_declaration and isinstance(node.value.args[2], ast.Constant):
                 rows.append((node.targets[0].id, node.value.args[2].value, path))
-                KINDS[node.targets[0].id] = getattr(node.value.args[1], "attr", "")
+                TYPES[node.targets[0].id] = getattr(node.value.args[1], "attr", "")
     return rows
 
 
@@ -46,14 +46,14 @@ def test_the_scan_finds_the_declared_lines():
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_a_steering_line_and_a_refusal_are_at_most_120_characters_and_only_info_may_be_longer(name, text, path):
-    if KINDS[name] == "INFO":
+    if TYPES[name] == "INFO":
         assert len(text) <= LONGEST_INFO_CHARACTERS, f"{name} is {len(text)} characters: {text}"
         return
     assert len(text) <= LONGEST_LINE_CHARACTERS, f"{name} is {len(text)} characters and is no info: {text}"
 
 
 def test_every_declared_line_is_info_steering_or_a_refusal():
-    assert set(KINDS.values()) <= {"INFO", "STEERING", "REFUSAL"}
+    assert set(TYPES.values()) <= {"INFO", "STEERING", "REFUSAL"}
 
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])

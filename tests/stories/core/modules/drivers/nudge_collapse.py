@@ -5,17 +5,17 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_record import RuleRecord
 
-QUEUED = NudgeDeclaration("shop.queued", NudgeType.STEERING, "task {task} is still queued for worker {worker}", many_text="tasks {task} are still queued for worker {worker}")
+QUEUED = NudgeDeclaration("shop.queued", NudgeType.STEERING, "task {task} is still queued for worker {worker}", plural_text="tasks {task} are still queued for worker {worker}")
 STALE = NudgeDeclaration("shop.stale", NudgeType.STEERING, "cart {cart} is stale")
-PAID = NudgeDeclaration("shop.paid", NudgeType.STEERING, "pay {cart}", required_command="shop pay {cart}")
+CHARGED = NudgeDeclaration("shop.charged", NudgeType.STEERING, "charge {cart}", required_command="shop charge {cart}")
 FREE_TEXT = NudgeDeclaration("shop.free", NudgeType.STEERING, "{text}")
 
 
 def answers_of(*nudges: Nudge) -> RuleAnswers:
-    return answers_by_rule(*[[nudge] for nudge in nudges])
+    return rule_answers(*[[nudge] for nudge in nudges])
 
 
-def answers_by_rule(*rules: list[Nudge]) -> RuleAnswers:
+def rule_answers(*rules: list[Nudge]) -> RuleAnswers:
     records = [RuleRecord(f"rule_{number}", "lead", answer.outcome, answer) for number, answer in enumerate(RuleAnswer.with_nudges(*nudges) for nudges in rules)]
     return RuleAnswers(["lead"], records)
 
@@ -41,7 +41,7 @@ def test_a_kind_without_words_for_many_says_its_one_line_with_the_values_joined(
 
 
 def test_nudges_of_one_kind_from_different_rules_collapse_and_name_the_first_rule():
-    answers = answers_by_rule([QUEUED.nudge(task=1, worker=425)], [QUEUED.nudge(task=2, worker=425)])
+    answers = rule_answers([QUEUED.nudge(task=1, worker=425)], [QUEUED.nudge(task=2, worker=425)])
     assert answers.rule_lines == [("rule_0", "tasks 1, 2 are still queued for worker 425")]
 
 
@@ -56,8 +56,8 @@ def test_the_collapsed_line_keeps_its_key_type_and_labelled_words():
 
 
 def test_a_line_that_names_a_command_to_run_is_never_merged():
-    answers = answers_of(PAID.nudge(cart=1), PAID.nudge(cart=2))
-    assert answers.lines == ["pay 1", "pay 2"]
+    answers = answers_of(CHARGED.nudge(cart=1), CHARGED.nudge(cart=2))
+    assert answers.lines == ["charge 1", "charge 2"]
 
 
 def test_a_line_someone_wrote_is_never_merged():

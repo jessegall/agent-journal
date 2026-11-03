@@ -5,12 +5,12 @@ from core.base.driver.block_check import BlockCheck
 
 
 class BlockCondition:
-    """What ends a block on an agent. A block outlives its process, so a condition is a class stored by its name
-    and a text, given as one value or a list of them; each module registers the conditions it offers. A condition
-    per subject holds one block for each subject, where others share one block per line."""
+    """What ends a block on an agent. A block outlives its process, so a condition is a class stored by its
+    name and a text, given as one value or a list of them; each module registers the conditions it offers.
+    A condition per subject holds one block for each subject, where others share one block per line."""
 
     name: ClassVar[str]
-    is_per_subject: ClassVar[bool] = False
+    subject_scoped: ClassVar[bool] = False
 
     def __init__(self, subject: str | int | Sequence[int] = "") -> None:
         self.text = str(subject) if isinstance(subject, (str, int)) else ",".join(str(item) for item in subject)

@@ -57,7 +57,7 @@ class Tool:
             return True
         if self.shell is None or self.shell.has_file_redirects or not self.shell.parts:
             return False
-        return all(part.classification.category.is_read_only for part in self.shell.parts)
+        return all(part.classification.category.is_readonly for part in self.shell.parts)
 
     def is_writing_files(self) -> bool:
         if self.category.writes_files:

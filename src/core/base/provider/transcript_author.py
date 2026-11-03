@@ -14,8 +14,8 @@ class TranscriptAuthor:
     so a user row is told apart by how it opens."""
 
     @staticmethod
-    def row(position: int, row_type: object, text: str, at: object = "") -> TranscriptRow:
-        return TranscriptRow(position, TranscriptAuthor.author(str(row_type), text), str(row_type), text, str(at or ""))
+    def row(position: int, row_type: object, text: str, time: object = "") -> TranscriptRow:
+        return TranscriptRow(position, TranscriptAuthor.author(str(row_type), text), str(row_type), text, str(time or ""))
 
     @staticmethod
     def author(row_type: str, text: str) -> str:

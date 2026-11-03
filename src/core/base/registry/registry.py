@@ -218,7 +218,7 @@ class Registry:
         names = [suite.name]
         for required in suite.requires:
             parent = self.suite(required)
-            names.extend(name for name in (self.lineage(parent) if parent is not None else (required,)) if name not in names)
+            names.extend(name for name in (self.lineage(parent) if parent is not None else [required]) if name not in names)
         return tuple(names)
 
     def suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]:

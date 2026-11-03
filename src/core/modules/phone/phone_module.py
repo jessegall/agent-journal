@@ -62,4 +62,4 @@ class PhoneModule(Module):
                                  reads=["phone list", "tunnel status"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
-    tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", at_start=True)]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", starts_immediately=True)]

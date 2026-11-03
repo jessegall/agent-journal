@@ -18,9 +18,9 @@ OPEN_REMINDERS_READ = 200
 
 
 class DueReminderRule(DriverRule):
-    """On any hook, the server's tick included, the main agent is told each reminder that has come due, and held by
-    the block of one that has a block. The open reminders are read in one query, and the tool uses every reminder
-    counts are counted together in another."""
+    """On any hook, the server's tick included, the main agent is told each reminder that has come due, and
+    held by the block of one that has a block. The open reminders are read in one query, and the tool uses
+    every reminder counts are counted together in another."""
 
     name = "reminders.due"
     hook = HookWildcard.ALL_HOOKS

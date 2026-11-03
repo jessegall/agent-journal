@@ -1058,6 +1058,8 @@
         "coding.terminal"
     ],
     "command_verbs": [
+        "Grant",
+        "Halt",
         "Claim",
         "Abandon",
         "Accept",

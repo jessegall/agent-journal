@@ -5,7 +5,7 @@ import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue
 import Output from "../../core/modules/processes/web/src/Output.vue";
 
 const FOOT = 1000;
-const row = (id, fields = {}) => ({id, author: "worker", row_type: "assistant", text: `row ${id}`, at: `2026-11-03T05:00:0${id}.000Z`, ...fields});
+const row = (id, fields = {}) => ({id, author: "worker", row_type: "assistant", text: `row ${id}`, time: `2026-11-03T05:00:0${id}.000Z`, ...fields});
 const edit = (id) => ({id, path: `src/file${id}.py`, edit_type: "edit", added: 1, removed: 0, rows: "[]", created_at: "2026-11-03T05:00:00+00:00"});
 
 beforeEach(() => {

@@ -128,8 +128,8 @@ func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []
 
 // serverIsRestarting says whether a server left its restart mark, not older than RestartMarkLimit.
 func serverIsRestarting(root string) bool {
-	info, err := os.Stat(filepath.Join(root, ".journal", restartMarkName))
-	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
+	markFile, err := os.Stat(filepath.Join(root, ".journal", restartMarkName))
+	return err == nil && time.Since(markFile.ModTime()) < RestartMarkLimit
 }
 
 // serverStartMarkName is the file a client holds while the server it started boots, which the server removes once it

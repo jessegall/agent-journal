@@ -17,9 +17,9 @@ SENDER_ADDRESS = re.compile(r'\bfrom="([^"]*)"')
 
 
 class ClaudePeerNotes:
-    """The messages other sessions sent, read from the end of a Claude Code transcript, where each is queued as one
-    row. This runs at every hook, so the first read takes the last 256 KiB and each later one only what the file
-    gained since, up to its last whole line, and none when its size has not changed."""
+    """The messages other sessions sent, read from the end of a Claude Code transcript, where each is queued
+    as one row. This runs at every hook, so the first read takes the last 256 KiB and each later one only
+    what the file gained since, up to its last text_bytes line, and none when its size has not changed."""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -38,11 +38,11 @@ class ClaudePeerNotes:
             transcript.seek(start)
             data = transcript.read()
         length = data.rfind(b"\n") + 1
-        whole = data[:length]
+        text_bytes = data[:length]
         if start > 0 and not is_added:
-            whole = whole.split(b"\n", 1)[1] if b"\n" in whole else b""
+            text_bytes = text_bytes.split(b"\n", 1)[1] if b"\n" in text_bytes else b""
         self.offset, self.seen_size = start + length, size
-        return [note for line in whole.decode(errors="replace").splitlines() for note in self.note(line)]
+        return [note for line in text_bytes.decode(errors="replace").splitlines() for note in self.note(line)]
 
     @staticmethod
     def note(line: str) -> list[PeerNote]:

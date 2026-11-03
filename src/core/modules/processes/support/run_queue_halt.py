@@ -9,7 +9,7 @@ class RunQueueHalt:
         self.home = home
 
     @property
-    def is_halted_by_command(self) -> bool:
+    def command_halted(self) -> bool:
         return self.home.run_queue_halt_file.is_file()
 
     @property
@@ -18,11 +18,11 @@ class RunQueueHalt:
 
     @property
     def is_halted(self) -> bool:
-        return self.is_halted_by_command or self.is_restarting
+        return self.command_halted or self.is_restarting
 
     @property
     def reason(self) -> str:
-        return self.home.run_queue_halt_file.read_text().strip() if self.is_halted_by_command else ""
+        return self.home.run_queue_halt_file.read_text().strip() if self.command_halted else ""
 
     def halt(self, reason: str) -> None:
         self.home.run_queue_halt_file.write_text(reason)

@@ -9,7 +9,7 @@ from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPL
 from tests.stories.core.support.fixtures import UserJoined
 
 STAMP = "2026-01-01T00:00:00+00:00"
-DATABASE_BEFORE_THE_RENAME = (
+OLD_TABLE_STATEMENTS = (
     "ALTER TABLE journal_exceptions RENAME TO journal_faults",
     "DROP TRIGGER IF EXISTS chat_marks_rule_type_insert",
     "DROP TRIGGER IF EXISTS chat_marks_rule_type_update",
@@ -49,7 +49,7 @@ def test_a_failing_hook_rule_shows_one_exception_mark_and_the_file_keeps_the_tra
 def test_a_database_that_holds_faults_upgrades_to_exceptions_with_its_marks_events_and_cursor(new_story):
     story = new_story(fixture=UserJoined)
     database = story.container.get(Database)
-    for sql in DATABASE_BEFORE_THE_RENAME:
+    for sql in OLD_TABLE_STATEMENTS:
         database.update(Statement(sql))
     code, output = story.synced()
     assert code == 0, output

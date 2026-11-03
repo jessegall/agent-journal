@@ -16,9 +16,9 @@ WARNING_PERIOD_SECONDS = 60
 
 
 class OutputReading:
-    """Every second each running output that grew goes through its reader, which writes its lines to their file and
-    what it found on the output row; it answers True then, so the listeners wake. Reading too slowly goes to the
-    slow tick tool, at most once a minute."""
+    """Every second each running output that grew goes through its reader, which writes its lines to their
+    file and what it found on the output row; it answers True then, so the listeners wake. Reading too
+    slowly goes to the slow tick tool, at most once a minute."""
 
     def __init__(self, seconds: Callable[[], float] = time.monotonic) -> None:
         self.seconds = seconds

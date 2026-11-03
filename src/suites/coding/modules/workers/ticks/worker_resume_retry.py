@@ -16,9 +16,9 @@ AGENT_UPDATE_EVENT = "agent.update"
 
 
 class WorkerResumeRetry:
-    """Every few seconds, each ended worker with a job still waiting is resumed again, since the launcher refuses a
-    worker while its program is open and nothing else asks once the program has ended. A job sent before a person
-    or another agent stopped the worker stays waiting."""
+    """Every few seconds, each ended worker with a job still waiting is resumed again, since the launcher
+    refuses a worker while its program is open and nothing else asks once the program has ended. A job sent
+    before a person or another agent stopped the worker stays waiting."""
 
     def __call__(self, container: Container) -> None:
         queries, resume = container.get(Queries), container.get(WorkerResume)

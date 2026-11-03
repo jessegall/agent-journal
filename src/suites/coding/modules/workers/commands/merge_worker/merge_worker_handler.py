@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CLASH
+from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
 
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
@@ -71,5 +71,5 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         if task.state is TaskState.TESTING:
             self.repository.save(task.moved(TaskLifecycle.retest), context)
-        self.nudger.send(worktree.agent_id, WORKER_MERGE_CLASH, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
+        self.nudger.send(worktree.agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

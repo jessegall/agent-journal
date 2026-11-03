@@ -13,8 +13,8 @@ MAIN_ACTOR = "agent"
 
 
 class AgentTicks:
-    """Each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time speak on
-    their own."""
+    """Each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
+    speak on their own."""
 
     def __call__(self, container: Container) -> None:
         queries, route, clock_time = container.get(Queries), container.get(HookRoute), container.get(Clock).timestamp()

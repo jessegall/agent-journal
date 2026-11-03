@@ -26,7 +26,8 @@ class EndedWorkerListener(SaveListener):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
     agent hears nothing before its last delivery; one that ended while its tests wait gets its next task from
     them. A worker a person or another agent stopped holds no delegated task or was ended by them; that one,
-    one that reported being stuck and one that keeps ending leave its main agent one line naming all its tasks."""
+    one that reported being stuck and one that keeps ending leave its main agent one line naming all its
+    tasks."""
 
     name = "workers.ended-worker"
     event = "agent.update"

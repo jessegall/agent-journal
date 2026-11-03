@@ -41,7 +41,7 @@ class CountingFile:
         return self.wrapped.__exit__(*arguments)
 
 
-def bytes_read_by(monkeypatch, path: Path, work) -> int:
+def bytes_read_during(monkeypatch, path: Path, work) -> int:
     counts: list[int] = []
     opened = Path.open
 
@@ -57,11 +57,11 @@ def bytes_read_by(monkeypatch, path: Path, work) -> int:
 
 def selects_during(story, work) -> list[str]:
     connection = story.container.get(Database).connection
-    seen: list[str] = []
-    connection.set_trace_callback(seen.append)
+    statements: list[str] = []
+    connection.set_trace_callback(statements.append)
     work()
     connection.set_trace_callback(None)
-    return [statement for statement in seen if statement.lstrip().upper().startswith("SELECT") and ("reminders" in statement or "hook_calls" in statement)]
+    return [statement for statement in statements if statement.lstrip().upper().startswith("SELECT") and ("reminders" in statement or "hook_calls" in statement)]
 
 
 def test_a_hook_reads_the_open_reminders_and_counts_tool_uses_in_a_few_queries(new_story):
@@ -87,8 +87,8 @@ def listed(story) -> str:
 
 def test_a_second_hook_over_an_unchanged_transcript_reads_none_of_it(new_story, tmp_path, monkeypatch):
     story, path, hook = transcript_story(new_story, tmp_path)
-    first = bytes_read_by(monkeypatch, path, lambda: story.hook("s-1", hook))
-    second = bytes_read_by(monkeypatch, path, lambda: story.hook("s-1", hook))
+    first = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
+    second = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
     assert first > 0 and second == 0, (first, second)
 
 
@@ -98,7 +98,7 @@ def test_a_hook_over_a_transcript_that_grew_reads_only_what_was_added(new_story,
     added = json.dumps({"type": "assistant", "message": "later"}) + "\n"
     with path.open("a") as transcript:
         transcript.write(added)
-    read = bytes_read_by(monkeypatch, path, lambda: story.hook("s-1", hook))
+    read = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
     assert read == len(added.encode()), read
 
 
@@ -116,12 +116,12 @@ def test_a_note_in_the_added_part_still_reaches_the_chat_once(new_story, tmp_pat
 def test_a_line_written_in_two_parts_is_read_once_it_is_whole(new_story, tmp_path):
     story, path, hook = transcript_story(new_story, tmp_path)
     story.hook("s-1", hook)
-    whole = queued("in two parts")
+    full_line = queued("in two parts")
     with path.open("a") as transcript:
-        transcript.write(whole[:40])
+        transcript.write(full_line[:40])
     story.hook("s-1", hook)
     assert "in two parts" not in listed(story)
     with path.open("a") as transcript:
-        transcript.write(whole[40:])
+        transcript.write(full_line[40:])
     story.hook("s-1", hook)
     assert listed(story).count("in two parts") == 1

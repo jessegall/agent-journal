@@ -20,4 +20,4 @@ class RunQueueHaltedRule(DriverRule):
         self.halt = halt
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(RUN_QUEUE_HALTED.nudge()) if self.halt.is_halted_by_command else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(RUN_QUEUE_HALTED.nudge()) if self.halt.command_halted else RuleAnswer.allowed()

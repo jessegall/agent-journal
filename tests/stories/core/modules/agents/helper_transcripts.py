@@ -12,8 +12,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 AT = "2026-11-03T05:00:00.000Z"
 
 
-def row(kind: str, text: str, at: str = AT) -> dict[str, object]:
-    return {"type": kind, "timestamp": at, "message": {"content": text}}
+def row(row_type: str, text: str, at: str = AT) -> dict[str, object]:
+    return {"type": row_type, "timestamp": at, "message": {"content": text}}
 
 
 def transcript_of(tmp_path, monkeypatch, session: str, *rows) -> None:
@@ -27,7 +27,7 @@ def worker_of(story) -> int:
     return story.new_row_id(HELPER_START.format(parent=story.agent.id))
 
 
-def line_to(story, agent_id: int, creator_id: int, text: str) -> None:
+def deliver_line(story, agent_id: int, creator_id: int, text: str) -> None:
     with story.container.get(Database).transaction():
         story.container.get(Repository).save(AgentLine(agent_id=agent_id, creator_id=creator_id, text=text), Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
 
@@ -42,8 +42,8 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "your tests failed: two"), row("user", "Fix the footer too"))
     story = new_story(fixture=BuilderStarted)
     worker = worker_of(story)
-    line_to(story, worker, 1, "your tests failed: two")
-    line_to(story, worker, story.agent.id, "Fix the footer too")
+    deliver_line(story, worker, 1, "your tests failed: two")
+    deliver_line(story, worker, story.agent.id, "Fix the footer too")
     story.expect_text(f"agent transcript {worker}", "1  journal  user  your tests failed: two", "2  main agent  user  Fix the footer too")
 
 
@@ -57,7 +57,7 @@ def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(new
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "[journal] your next task"), row("user", "[journal] look at the cart"))
     story = new_story(fixture=BuilderStarted)
     worker = worker_of(story)
-    line_to(story, worker, story.agent.id, "[journal] look at the cart")
+    deliver_line(story, worker, story.agent.id, "[journal] look at the cart")
     story.expect_text(f"agent transcript {worker}", "1  journal  user  [journal] your next task", "2  main agent  user  [journal] look at the cart")
 
 
@@ -76,7 +76,7 @@ def test_the_main_agents_rows_keep_user_and_assistant(new_story, tmp_path, monke
 def test_each_row_carries_its_time_from_the_session_file(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart", "2026-11-03T05:00:01.000Z"), row("assistant", "Done", "2026-11-03T05:00:09.000Z"))
     story = new_story(fixture=BuilderStarted)
-    story.expect_text(f"agent transcript {story.agent.id} --json", '"at": "2026-11-03T05:00:01.000Z"', '"at": "2026-11-03T05:00:09.000Z"')
+    story.expect_text(f"agent transcript {story.agent.id} --json", '"time": "2026-11-03T05:00:01.000Z"', '"time": "2026-11-03T05:00:09.000Z"')
 
 
 def test_a_codex_row_carries_its_time_too(new_story, tmp_path, monkeypatch):
@@ -86,4 +86,4 @@ def test_a_codex_row_carries_its_time_too(new_story, tmp_path, monkeypatch):
     rollout.write_text(json.dumps({"timestamp": AT, "type": "response_item", "payload": {"role": "user", "content": [{"type": "input_text", "text": "Write the tests"}]}}) + "\n")
     story = new_story(fixture=BuilderStarted)
     codex = story.new_row_id("agent start t-1 codex main --environment main")
-    story.expect_text(f"agent transcript {codex} --json", f'"at": "{AT}"')
+    story.expect_text(f"agent transcript {codex} --json", f'"time": "{AT}"')

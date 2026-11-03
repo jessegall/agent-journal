@@ -7,7 +7,7 @@ import {AutoScrollPane, RowList, useRows} from "@journal/window-kit";
 const props = defineProps({line: {type: String, required: true}});
 const {rows, failure, loaded} = useRows(props.line, ["hook_call.create"]);
 const newest = computed(() => rows.value.at(-1)?.id ?? 0);
-const timeOf = (row) => (row.at ? new Date(row.at).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "");
+const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "");
 </script>
 
 <template>
@@ -16,7 +16,7 @@ const timeOf = (row) => (row.at ? new Date(row.at).toLocaleTimeString([], {hour:
             <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">
                 <template #default="{row}">
                     <span class="author" :data-author="row.author">{{ row.author }}</span>
-                    <time class="time" data-row-time :datetime="row.at">{{ timeOf(row) }}</time>
+                    <time class="time" data-row-time :datetime="row.time">{{ timeOf(row) }}</time>
                     <span class="text">{{ row.text }}</span>
                 </template>
             </RowList>

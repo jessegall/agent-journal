@@ -9,16 +9,16 @@ MAIN_AGENT_AUTHOR = "main agent"
 
 
 class LineTranscriptAuthors(TranscriptAuthors):
-    """Tells who sent a row a helper's program filed as the user's from the lines the journal kept for the agent,
-    whose text and sender it recorded: a line an agent made is that agent's, any other is the journal's, and a row
-    that no line holds the text of is the journal's too."""
+    """Tells who sent a row a helper's program filed as the user's from the lines the journal kept for the
+    agent, whose text and sender it recorded: a line an agent made is that agent's, any other is the
+    journal's, and a row that no line holds the text of is the journal's too."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
     def sender(self, agent: Agent, row: TranscriptRow) -> str:
         lines = self.queries.query(AgentLine).filter(agent_id=agent.id).oldest().all_rows()
-        line = next((held for held in lines if held.text and (held.text in row.text or row.text in held.text)), None)
+        line = next((candidate for candidate in lines if candidate.text and (candidate.text in row.text or row.text in candidate.text)), None)
         if line is None:
             return JOURNAL_AUTHOR
         return MAIN_AGENT_AUTHOR if self.queries.query(Agent).filter(id=line.creator_id).exists() else JOURNAL_AUTHOR

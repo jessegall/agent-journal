@@ -36,7 +36,7 @@ class StatusFiles:
         path = self.folder / f"{session}.json"
         if not path.is_file():
             return
-        if self.holds_newest_windows(path):
+        if self.has_newest_windows(path):
             shutil.copy2(path, self.plan_file)
         self.ended_folder.mkdir(exist_ok=True)
         self.prune_ended()
@@ -48,7 +48,7 @@ class StatusFiles:
             if path.stat().st_mtime < oldest:
                 path.unlink(missing_ok=True)
 
-    def holds_newest_windows(self, path: Path) -> bool:
+    def has_newest_windows(self, path: Path) -> bool:
         if not self.reported(path).windows:
             return False
         return not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime

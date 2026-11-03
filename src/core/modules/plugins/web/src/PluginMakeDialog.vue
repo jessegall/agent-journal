@@ -11,7 +11,7 @@ const emit = defineEmits(["close", "guide", "ask"]);
     <Dialog title="Make a plugin" small fits @close="emit('close')">
         <form class="ask" data-plugin-make-form @submit.prevent="emit('ask')">
             <p class="ask-lead">The agent builds it for you and answers in the chat.</p>
-            <TextInput v-model="repository" placeholder="A GitHub repository to build it in (optional)" aria-label="A GitHub repository to build it in" />
+            <TextInput v-model="repository" placeholder="A GitHub repository to build it in (optional)" aria-label="GitHub repository" />
             <textarea v-model="wish" class="wish" rows="4" placeholder="What should the plugin do?" aria-label="What should the plugin do?" />
         </form>
         <template #foot>

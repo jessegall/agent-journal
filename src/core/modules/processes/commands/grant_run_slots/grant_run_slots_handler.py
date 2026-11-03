@@ -13,4 +13,4 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
         self.slots = slots
 
     def handle(self, command: GrantRunSlots, context: Context) -> None:
-        self.slots.grant_every_environment(context)
+        self.slots.grant_all_environments(context)

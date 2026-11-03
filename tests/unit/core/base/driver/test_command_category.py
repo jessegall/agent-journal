@@ -11,7 +11,7 @@ def members(group: str) -> set[CommandCategory]:
 def test_each_group_of_categories_holds_the_categories_the_rules_used_to_list():
     assert members("reads_files") == {C.READ, C.SEARCH}
     assert members("accesses_files") == {C.READ, C.SEARCH, C.EDIT}
-    assert members("is_read_only") == {C.READ, C.SEARCH, C.JOURNAL}
+    assert members("is_readonly") == {C.READ, C.SEARCH, C.JOURNAL}
     assert members("is_short") == {C.READ, C.SEARCH, C.EDIT, C.JOURNAL}
     assert members("is_long_running") == {C.TEST_RUN, C.BUILD}
     assert members("is_watched") == {C.TEST_RUN, C.BUILD, C.CHECK}

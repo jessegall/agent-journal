@@ -20,12 +20,12 @@ class PluginCodeDiff:
         return {str(path.relative_to(folder)) for path in folder.rglob("*") if path.is_file() and GIT_FOLDER not in path.relative_to(folder).parts}
 
     def file_lines(self, relative: str, old: Path, new: Path) -> list[str]:
-        before, after = self.text(old), self.text(new)
-        if before is None or after is None:
+        old_text, new_text = self.text(old), self.text(new)
+        if old_text is None or new_text is None:
             return [f"changed {relative}: not text"] if old.exists() and new.exists() and old.read_bytes() != new.read_bytes() else self.presence(relative, old, new)
-        if before == after:
+        if old_text == new_text:
             return []
-        diff = list(difflib.unified_diff(before.splitlines(), after.splitlines(), f"{relative} (installed)", f"{relative} (new)", lineterm="", n=CONTEXT_LINES))
+        diff = list(difflib.unified_diff(old_text.splitlines(), new_text.splitlines(), f"{relative} (installed)", f"{relative} (new)", lineterm="", n=CONTEXT_LINES))
         return [*diff[:FILE_LINES], *([f"... {len(diff) - FILE_LINES} more lines of {relative}"] if len(diff) > FILE_LINES else [])]
 
     @staticmethod

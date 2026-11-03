@@ -11,8 +11,8 @@ TASK_COMMAND_START = ["task", "make"]
 
 
 class TaskFiledRule(DriverRule):
-    """After an agent makes a task it is told to leave it open: the task is started by whoever the suite an environment
-    runs has hand out tasks, if it has one."""
+    """After an agent makes a task it is told to leave it open: the task is started by whoever the suite an
+    environment runs has hand out tasks, if it has one."""
 
     name = "tasks.filed"
     hook = HookEventName.POST_TOOL_USE

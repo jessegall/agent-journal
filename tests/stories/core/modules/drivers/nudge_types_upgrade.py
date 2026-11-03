@@ -12,7 +12,7 @@ def old_registry(story) -> None:
     entries = connection.execute("SELECT entries FROM registry WHERE id = 1").fetchone()["entries"]
     for new, old in OLD_NAMES:
         entries = re.sub(rf'("type":\s*"){new}"', rf'\g<1>{old}"', entries)
-    connection.execute("UPDATE registry SET entries = ?, fingerprint = 'old' WHERE id = 1", (entries,))
+    connection.execute("UPDATE registry SET entries = ?, fingerprint = 'old' WHERE id = 1", [entries])
 
 
 def registered_types(story) -> set[str]:

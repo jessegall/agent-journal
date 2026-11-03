@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { computed as l, openBlock as r, createElementBlock as v, unref as o, createCommentVNode as y, createVNode as p, withCtx as T, ref as b, onUnmounted as _e, normalizeClass as le, createElementVNode as g, toDisplayString as m, Fragment as Z, withModifiers as ve, createBlock as pe, renderList as me, watch as fe, createTextVNode as Se, normalizeStyle as $e } from "vue";
 import { useRows as U, AutoScrollPane as Ce, RowList as he, DiffCard as Te, ago as xe, useNow as Ae, age as we, useWindow as ke, Icon as Ie, peekRef as de, RunningCommand as De, InnerTabs as Oe, SwitchCase as Ne, FoldGroup as Ee, TaskStatusIcon as Me, ordered as Re, hiddenBy as qe, hiddenSummary as Be, SearchBar as Le, Segmented as Fe, Btn as je } from "@journal/window-kit";
-import { _ as ie, T as Ve } from "./TranscriptRows-DbojnIi2.js";
+import { _ as ie, T as Ve } from "./TranscriptRows-CNFnFT3c.js";
 const Ke = { class: "file-feed" }, We = 5, ze = {
   __name: "AgentFileEdits",
   props: { agent: { type: Number, required: !0 } },

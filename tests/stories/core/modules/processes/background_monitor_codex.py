@@ -17,8 +17,8 @@ BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOW
 
 
 def shell_line(line: str):
-    words = line.split()
-    return HookSamples.shell(line, ShellPart(words[0], CommandCategory.JOURNAL, words[1:], subcommand=words[1])).with_fields(program="codex")
+    parts = line.split()
+    return HookSamples.shell(line, ShellPart(parts[0], CommandCategory.JOURNAL, parts[1:], subcommand=parts[1])).with_fields(program="codex")
 
 
 def codex_story(new_story):

@@ -54,10 +54,10 @@ def test_a_main_agents_run_that_ends_gives_its_place_back_to_the_queue(new_story
 
 def test_a_run_holding_a_spot_is_never_stopped_when_the_setting_goes_on_or_the_main_agent_fills_the_batch(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
-    holding = queued(story, "make one")
+    running_process = queued(story, "make one")
     story.expect_success(f"setting set {SETTING} on --environment main", actor=story.user)
     for number in range(3):
         start_process(story, f"make main {number}", category=CommandCategory.TEST_RUN)
     waiting = queued(story, "make two")
-    assert has_slot(story, holding) and state_of(story, holding).state is ProcessState.RUNNING
+    assert has_slot(story, running_process) and state_of(story, running_process).state is ProcessState.RUNNING
     assert waits(story, waiting)

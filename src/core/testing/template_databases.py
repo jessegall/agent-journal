@@ -42,7 +42,7 @@ class TemplateDatabases:
         return template
 
     def shared_template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template:
-        name = hashlib.sha1(repr((modules, fixture.__module__, fixture.__qualname__) if fixture else (modules,)).encode()).hexdigest()[:16]
+        name = hashlib.sha1(repr((modules, fixture.__module__, fixture.__qualname__) if fixture else [modules]).encode()).hexdigest()[:16]
         folder = self.folder / name
         with self.locked(self.folder / f"{name}.lock"):
             if not (folder / STATE_FILE).is_file():

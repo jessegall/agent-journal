@@ -19,28 +19,28 @@ INSPECT_READS_ALLOWED = 2
 
 def selects_of(story, line: str) -> list[str]:
     connection = story.container.get(Database).connection
-    seen: list[str] = []
-    connection.set_trace_callback(seen.append)
+    statements: list[str] = []
+    connection.set_trace_callback(statements.append)
     story.run(line, actor=story.agent)
     connection.set_trace_callback(None)
-    return [statement for statement in seen if statement.lstrip().upper().startswith(READ_STARTS)]
+    return [statement for statement in statements if statement.lstrip().upper().startswith(READ_STARTS)]
 
 
 def rows_loaded(story, line: str) -> int:
-    tally = story.container.get(Database).tally
-    before = tally.rows
+    database_counts = story.container.get(Database).tally
+    previous_count = database_counts.rows
     story.run(line, actor=story.agent)
-    return tally.rows - before
+    return database_counts.rows - previous_count
 
 
 def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    before = rows_loaded(story, "nudge list --json")
+    previous_count = rows_loaded(story, "nudge list --json")
     repository, context = story.container.get(Repository), Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         for number in range(6):
             repository.save(NudgeRecord(agent_id=story.agent.id, creator_id=story.agent.id, key="samples.said", text=f"said {number}", delivery_count=1, last_delivered_at=story.clock.timestamp()), context)
-    assert rows_loaded(story, "nudge list --json") == before + 1
+    assert rows_loaded(story, "nudge list --json") == previous_count + 1
 
 
 def test_the_plan_outline_reads_its_tasks_with_their_titles_and_workers_from_one_view(new_story):
@@ -73,8 +73,8 @@ def test_the_task_inspection_reads_the_task_and_one_view_row_for_its_waits_logs_
 
 def test_the_agents_window_reads_the_same_number_of_queries_for_one_agent_and_for_five(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    one = selects_of(story, "usage agents --environment main --json")
+    first_run = selects_of(story, "usage agents --environment main --json")
     for number in range(2, 6):
         story.run(HELPER_START.format(parent=story.agent.id).replace("s-2", f"s-{number + 1}"), actor=story.agent)
     five = selects_of(story, "usage agents --environment main --json")
-    assert len(five) == len(one) and len(one) <= READS_ALLOWED, (len(one), len(five))
+    assert len(five) == len(first_run) and len(first_run) <= READS_ALLOWED, (len(first_run), len(five))

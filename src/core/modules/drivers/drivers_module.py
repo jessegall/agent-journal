@@ -135,8 +135,8 @@ class DriversModule(Module):
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]
-    tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", at_start=True),
-                     TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", at_start=True)]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True),
+                     TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),

@@ -14,7 +14,7 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.step_tally import StepTally
 
 NEWLINE = b"\n"
-MILLISECONDS_PER_SECOND = 1000
+SECOND_MILLISECONDS = 1000
 
 
 class ReaderStep:
@@ -30,7 +30,7 @@ class ReaderStep:
         reader = self.readers.find(output.reader_id)
         started = time.monotonic()
         advanced = self.script_advance(process, output, reader, is_final) if reader.type is ReaderType.SCRIPT else self.text_advance(process, output, reader, is_final)
-        self.tools.run(ReaderTimeTool, reader.name, round((time.monotonic() - started) * MILLISECONDS_PER_SECOND), process.environment_id)
+        self.tools.run(ReaderTimeTool, reader.name, round((time.monotonic() - started) * SECOND_MILLISECONDS), process.environment_id)
         return advanced
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:

@@ -15,7 +15,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
-from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_LIMIT, WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_LIMIT
 
 
 class WorkerLimitListener(SaveListener):
@@ -44,7 +44,7 @@ class WorkerLimitListener(SaveListener):
         if isinstance(old, Setting):
             return int(json.loads(old.value))
         if setting.environment_id is None:
-            return DEFAULT_WORKER_LIMIT
+            return DEFAULT_WORKER_COUNT
         return self.settings.number(WORKER_LIMIT, None)
 
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:

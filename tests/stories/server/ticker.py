@@ -57,7 +57,7 @@ def test_a_handler_runs_once_its_interval_has_passed_and_then_again_each_interva
 def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
     story = new_story(fixture=UserJoined)
     counting = Counting()
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=60), counting, "counting", at_start=True))
+    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=60), counting, "counting", starts_immediately=True))
     tick_at(ticker, clock, 0)
     tick_at(ticker, clock, 30)
     assert counting.runs == 1
@@ -67,11 +67,11 @@ def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
 
 def test_a_lambda_registered_on_the_ticker_runs_on_a_fresh_container_of_the_journal(new_story):
     story = new_story(fixture=UserJoined)
-    seen = []
+    containers = []
     ticker, clock = ticker_of(story)
-    ticker.register(TickHandler(TickInterval(seconds=1), lambda container: seen.append(container), "lambda"))
+    ticker.register(TickHandler(TickInterval(seconds=1), lambda container: containers.append(container), "lambda"))
     tick_at(ticker, clock, 1)
-    assert len(seen) == 1 and isinstance(seen[0], Container) and seen[0] is not story.container
+    assert len(containers) == 1 and isinstance(containers[0], Container) and containers[0] is not story.container
 
 
 def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(new_story):
@@ -85,7 +85,7 @@ def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(new_st
 
 def test_each_module_declares_the_handlers_it_needs_and_the_ticker_takes_them(new_story):
     story = new_story(fixture=UserJoined)
-    declared = Ticker.declared_by(ModuleFinder(story.home))
+    declared = Ticker.module_handlers(ModuleFinder(story.home))
     names = [handler.label for handler in declared]
     assert {"read running outputs", "agent ticks", "hook pruning", "phone notices"} <= set(names)
     assert len(names) == len(set(names))
@@ -155,10 +155,10 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
 
 def test_a_handler_that_answers_true_wakes_the_listeners_and_one_that_does_not_leaves_them(new_story):
     story = new_story(fixture=UserJoined)
-    woken = []
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: woken.append(True))
+    wake_calls = []
+    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: wake_calls.append(True))
     tick_at(ticker, clock, 1)
-    assert woken == []
+    assert wake_calls == []
     ticker.register(TickHandler(TickInterval(seconds=1), lambda container: True, "wrote"))
     tick_at(ticker, clock, 2)
-    assert woken == [True]
+    assert wake_calls == [True]

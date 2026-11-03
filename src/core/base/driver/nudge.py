@@ -35,13 +35,13 @@ class Nudge:
 
     @staticmethod
     def collapsed(nudges: "Iterable[Nudge]") -> "list[Nudge]":
-        kinds: dict[tuple[str, str], list[Nudge]] = {}
+        groups: dict[tuple[str, str], list[Nudge]] = {}
         for nudge in nudges:
-            kinds.setdefault((nudge.key, "" if nudge.is_mergeable else nudge.text), []).append(nudge)
-        return [Nudge.merged(kind) for kind in kinds.values()]
+            groups.setdefault((nudge.key, "" if nudge.is_mergeable else nudge.text), []).append(nudge)
+        return [Nudge.merged(group) for group in groups.values()]
 
     @staticmethod
-    def merged(kind: "Sequence[Nudge]") -> "Nudge":
-        distinct = list({nudge.text: nudge for nudge in kind}.values())
+    def merged(group: "Sequence[Nudge]") -> "Nudge":
+        distinct = list({nudge.text: nudge for nudge in group}.values())
         declaration = distinct[0].declaration
         return distinct[0] if len(distinct) == 1 or declaration is None else declaration.merged(distinct)
