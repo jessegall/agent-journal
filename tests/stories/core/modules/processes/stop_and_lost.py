@@ -2,7 +2,7 @@ import pytest
 
 from core.base.leftover_process import LeftoverProcess
 import subprocess
-import time
+import select
 from datetime import timedelta
 
 from tests.stories.core.modules.processes.background import NOTHING
@@ -12,6 +12,8 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+
+GROUP_END_SECONDS = 5
 
 ORPHAN_LINE = "process 1 was lost: its shell is gone"
 
@@ -26,10 +28,7 @@ def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new
         story.expect_text("output stop 1", "stopped", actor=story.agent)
         story.expect_success("process show 1", "state: stopped", actor=story.agent)
         story.expect_text("wait show 1", "state: ended")
-        deadline = time.monotonic() + 5
-        while group.poll() is None and time.monotonic() < deadline:
-            time.sleep(0.05)
-        assert group.poll() is not None, "the group of the runner is still alive"
+        group.wait(timeout=GROUP_END_SECONDS)
     finally:
         group.kill()
         group.wait()
@@ -65,10 +64,7 @@ def test_a_run_whose_runner_pid_is_gone_is_lost_at_the_next_tick_after_ten_secon
 
 def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(orphaned_process_group):
     group = orphaned_process_group
-    deadline = time.monotonic() + 5
-    while group.poll() is None and time.monotonic() < deadline:
-        time.sleep(0.05)
-    assert group.poll() is not None, 'the group of the lost run is still alive'
+    group.wait(timeout=GROUP_END_SECONDS)
 
 
 def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder(new_story):
@@ -86,7 +82,7 @@ def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder
 def test_a_pid_gone_to_another_program_is_not_killed(reused_process_pid):
     story, second = reused_process_pid
     story.expect_success('process show 1', 'state: orphaned', actor=story.agent)
-    time.sleep(0.2)
+    story.run_listeners()
     assert second.poll() is None, 'another program with the pid was killed'
 
 
@@ -153,11 +149,10 @@ def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
 
 
 def test_a_lost_run_whose_leader_died_still_has_its_children_killed(orphaned_process_child):
-    child_pid = orphaned_process_child
-    deadline = time.monotonic() + 5
-    while LeftoverProcess.command_line(child_pid) and time.monotonic() < deadline:
-        time.sleep(0.05)
-    assert not LeftoverProcess.command_line(child_pid), 'the child of the dead leader is still alive'
+    child_pid, child_output = orphaned_process_child
+    readable, _, _ = select.select([child_output], [], [], GROUP_END_SECONDS)
+    assert readable and not child_output.read(), 'the child of the dead leader is still alive'
+    assert not LeftoverProcess.command_line(child_pid)
 
 
 @pytest.fixture
@@ -205,16 +200,16 @@ def orphaned_process_child(background_build):
     leader = subprocess.Popen(['sh', '-c', 'sleep 60 & echo $!; exit 0'], stdout=subprocess.PIPE, text=True, start_new_session=True)
     child_pid = int(leader.stdout.readline())
     leader.wait()
-    leader.stdout.close()
     try:
         folder = story.container.get(OutputFolder)
         folder.write_pid(process.id, leader.pid)
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
         story.tick('s-1')
-        yield child_pid
+        yield child_pid, leader.stdout
     finally:
         subprocess.run(['kill', '-9', str(child_pid)], capture_output=True, check=False)
+        leader.stdout.close()
 
 
 def test_a_run_no_runner_ever_started_is_lost_past_the_limit_with_no_tick_of_its_agent(new_story):
