@@ -29,8 +29,8 @@ class SecretsFolderRule(DriverRule):
         tool = hook.event.tool
         if tool is None:
             return RuleAnswer.allowed()
-        tool_text = " ".join((*tool.files, *(tool.shell.part_texts if tool.shell is not None else ()), json.dumps(dict(hook.event.tool_input()), default=str)))
-        if not any(spelling in tool_text for spelling in self.spellings()):
+        tool_texts = (*tool.files, *(tool.shell.part_texts if tool.shell is not None else ()), json.dumps(dict(hook.event.tool_input()), default=str))
+        if not any(spelling in tool_text for tool_text in tool_texts for spelling in self.spellings()):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(SECRETS_FOLDER_BAN.nudge())
 

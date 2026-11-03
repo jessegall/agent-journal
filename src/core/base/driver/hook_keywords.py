@@ -11,4 +11,6 @@ def text_keywords(text: str) -> tuple[str, ...]:
 
 def hook_keywords(event: HookEvent) -> tuple[str, ...]:
     tool = event.tool
-    return text_keywords(" ".join([event.prompt or "", *(tool.files if tool is not None else ()), *(tool.shell.part_texts if tool is not None and tool.shell is not None else ())]))
+    part_texts = tool.shell.part_texts if tool is not None and tool.shell is not None else ()
+    texts = [event.prompt or "", *(tool.files if tool is not None else ()), *part_texts]
+    return tuple(dict.fromkeys(keyword for text in texts for keyword in text_keywords(text)))

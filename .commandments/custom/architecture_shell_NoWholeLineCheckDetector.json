@@ -5,7 +5,7 @@
         "select": "member-access",
         "where": [
             {
-                "nameMatches": "^(line|_source_line)$"
+                "nameMatches": "^(line|_source_line|display_text|runner_text)$"
             },
             {
                 "of": "receiver",
@@ -18,6 +18,9 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "(record_hook_call_handler|start_process|runner_rewrite_rule)\\.py$"
             },
             {
                 "of": "receiver",
