@@ -42,6 +42,7 @@ from core.modules.plugins.listeners.plugin_delivery_listener import PluginDelive
 from core.modules.plugins.listeners.plugin_health_mark_listener import PluginHealthMarkListener
 from core.modules.plugins.listeners.plugin_output_listener import PluginOutputListener
 from core.modules.plugins.listeners.plugin_queue_file_listener import PluginQueueFileListener
+from core.modules.plugins.listeners.login_path_listener import LoginPathListener
 from core.modules.plugins.listeners.plugin_skill_publish_listener import PluginSkillPublishListener
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.models.plugin import Plugin
@@ -83,6 +84,6 @@ class PluginsModule(Module):
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule]
     marks = PLUGIN_MARKS
-    listeners = [PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    listeners = [LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = (PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand)

@@ -29,5 +29,4 @@ class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...
         orphans = [folder for folder, _ in self.git.folders(environment.folder) if Path(folder).resolve().is_relative_to(root) and str(Path(folder).resolve()) not in occupied]
         for folder in orphans:
             self.git.keep_tip(environment.folder, folder, Path(folder).name)
-            self.git.remove_orphan(environment.folder, folder)
-        return tuple(orphans)
+        return tuple(folder for folder in orphans if self.git.remove_orphan(environment.folder, folder))

@@ -13,6 +13,8 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -95,6 +97,14 @@ def test_pausing_and_resuming_must_fit_the_state(new_story):
     story.expect_refusal(f"agent resume {story.agent.id}", "is not paused", actor=story.agent)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.agent)
     story.expect_refusal(f"agent pause {story.agent.id}", "is paused already", actor=story.user)
+
+
+def test_a_helper_of_a_paused_agent_cannot_resume_it(new_story):
+    story = new_story(fixture=UserJoined)
+    helper = Actor(story.new_row_id(f"agent start s-sub claude subagent --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_refusal(f"agent resume {story.agent.id}", "neither can its helpers", actor=helper)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
 
 
 def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):

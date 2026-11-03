@@ -120,9 +120,10 @@ class WorktreeGit:
         tip = self.checked(path, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
         self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/worker-tips/{name}", tip)
 
-    def remove_orphan(self, folder: str, path: str) -> None:
+    def remove_orphan(self, folder: str, path: str) -> bool:
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
+        return not Path(path).exists()
 
     def folders(self, folder: str) -> list[tuple[str, str | None]]:
         blocks = self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "list", "--porcelain").stdout.strip().split("\n\n")

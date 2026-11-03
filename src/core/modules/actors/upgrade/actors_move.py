@@ -31,7 +31,7 @@ class ActorsMove(VersionFourMove):
             report.count(TABLE, map.transfer(TABLE, row["id"], "actors", lambda: rows.insert("actors", {
                 "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": row["name"], "created_at": row["created_at"] or context.timestamp,
                 "updated_at": row["updated_at"] or row["created_at"] or context.timestamp})))
-        if not users and source.rows(SIGNED_TABLE):
+        if not users and source.count(SIGNED_TABLE):
             report.count(TABLE, map.transfer(TABLE, FIRST_USER_ID, "actors", lambda: rows.insert("actors", {
                 "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": getpass.getuser(), "created_at": context.timestamp, "updated_at": context.timestamp})))
         return report

@@ -5,6 +5,7 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 
 MAIN_SESSION = "s-1"
@@ -140,6 +141,8 @@ def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
     story.run_listeners()
     story.expect_rows((folder / "unfinished.txt").exists())
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
+    removed = story.container.get(WorktreeGit).remove_orphan(str(repository.folder), str(folder))
+    story.expect_rows(removed is False)
 
 
 def test_a_start_of_the_journal_sweeps_the_worktrees_no_worker_holds(new_story):

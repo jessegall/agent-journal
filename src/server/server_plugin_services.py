@@ -3,6 +3,7 @@ from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
+from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.service_processes import ServiceProcesses
 
 
@@ -20,6 +21,9 @@ class ServerPluginServices:
 
     def check_health(self) -> None:
         self.run_job(PluginHealthCheck)
+
+    def fill_login_path(self) -> None:
+        LoginPath(self.home).fill_missing()
 
     def run_job(self, job: type[PluginServiceRound] | type[PluginHealthCheck]) -> None:
         container = synced_container(self.home)

@@ -26,8 +26,9 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")
-        if context.actor.id == agent.id:
-            raise Refusal("a paused agent cannot resume itself", "wait for the user to resume you")
+        helpers = self.queries.query(Agent).filter(parent_id=agent.id).all_rows()
+        if context.actor.id in (agent.id, *(helper.id for helper in helpers)):
+            raise Refusal("a paused agent cannot resume itself, and neither can its helpers", "wait for the user to resume it")
         resumed =self.repository.save(replace(agent, paused_at=None), context)
         self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed
