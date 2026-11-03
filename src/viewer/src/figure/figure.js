@@ -11,7 +11,7 @@ import {CHANGE_SECONDS, POSTURES, SEATED, SEAT_POSE, signedTurn} from "./places.
 import {VISOR, glowTurn} from "./visor.js";
 import {FRAMES_PER_SECOND, GRID, TICKER, litPixels} from "./visorPixels.js";
 import {HEAD, holdsHead} from "./looks.js";
-import {LIGHT_COLOURS, PARCEL, UFO, brightness} from "./parcels.js";
+import {LIGHT_COLOURS, PARCEL, brightness} from "./parcels.js";
 import {blendMoves} from "./blend.js";
 import {BUTLER, dressButler, topHatBandGeometry, topHatGeometry} from "./butler.js";
 import {HEADPHONES, dressHomie, headphoneContacts, headphoneGrip, headphonesAt, headphonesOf, moveHeadphones} from "./homie.js";
@@ -20,7 +20,6 @@ import {TELEPHONE, phoneHand} from "./phonePlacement.js";
 export {TELEPHONE} from "./phonePlacement.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {DRACOLoader} from "three/addons/loaders/DRACOLoader.js";
-import {transport} from "../api/transport.js";
 
 // render_clips.py and snaps.py: an orthographic camera eight units in front, framing 5.4 units about a height of 2.4
 export const CELL = 224;
@@ -28,7 +27,6 @@ const {height: FRAMED_HEIGHT, middle: FRAMED_MIDDLE} = FRAMED;
 const DISTANCE = 8;
 const DEPTH = 3;
 // three's own Draco decoder, for the review page, which has no server of its own
-const DECODER = "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/";
 // the share of the picture below the ground the figure stands on, where the chat box's top edge runs
 export const GROUND = (FRAMED_HEIGHT / 2 - FRAMED_MIDDLE) / FRAMED_HEIGHT;
 
@@ -765,7 +763,7 @@ const mix = (from, to, k) => from + (to - from) * k;
 // a ring that dies away over s from 0 to 1: `turns` swings, damped by `damping`, and exactly still at both ends
 const ringing = (s, turns, damping) => Math.exp(-damping * s) * Math.sin(2 * Math.PI * turns * s) * (1 - s);
 
-export function supportsClip(name, stance) {
+function supportsClip(name, stance) {
     return name !== "pull_ups" || !(stance.busy.size || stance.level.size);
 }
 
@@ -1361,7 +1359,7 @@ const SEARCH_CROUCH = 0.2;
 export const SEARCHING = {sweep: 14, lean: 10, nod: 16, turn: 70};
 
 // where the glass's lens is held as the figure looks from `eyes` at `spot`: `reach` along its sight, so it is before its eyes
-export const lensBefore = (eyes, spot, reach) => eyes.clone().add(spot.clone().sub(eyes).setLength(reach));
+const lensBefore = (eyes, spot, reach) => eyes.clone().add(spot.clone().sub(eyes).setLength(reach));
 
 // The page moves the whole canvas along the floor; only a small stride stays inside it, leaving room for the leading quill.
 const CHASE_REACH = 0.25;
@@ -1391,7 +1389,7 @@ function search(pose, stance, t) {
 export const GLASS_BUBBLE = {depth: 0.3, ahead: [1.6, 0.3, 0.2], out: 1.25, share: 0.8, lean: 8, size: 1.2};
 
 // The point of the page the look is at (pose.at), in the figure's units turned with its body (pose.facing), or null with no look
-export function lookedPoint(pose, depth) {
+function lookedPoint(pose, depth) {
     if (!pose.at) return null;
     const point = new THREE.Vector3((pose.at.x - 0.5) * FRAMED_HEIGHT, depth, FRAMED_MIDDLE + (0.5 - pose.at.y) * FRAMED_HEIGHT);
     return point.applyAxisAngle(new THREE.Vector3(0, 0, 1), radians(-pose.facing));
@@ -2016,7 +2014,7 @@ export function boxSeen(sign) {
 // The glass held over the box, as the viewer sees the figure, its eyes at `eyes`, swept `along` of its sweep: the middle of its lens,
 // `between` of the way across and down from the eyes to the box's top and held `front` toward the viewer; and the way from the eyes to
 // the box, across and up, which the glass is rolled to, its handle back toward the eyes
-export function glassSeen(eyes, sign, along) {
+function glassSeen(eyes, sign, along) {
     const box = boxSeen(sign);
     const way = new THREE.Vector3(box.x - eyes.x, 0, box.z - eyes.z).normalize();
     const lens = new THREE.Vector3(mix(eyes.x, box.x, INSPECTING.between) + INSPECTING.sweep * along, INSPECTING.front, mix(eyes.z, box.z, INSPECTING.between));
@@ -2683,7 +2681,7 @@ export const CALL = {bend: 0.8, pickupBend: 0.4, lean: 30, nod: 18, talkNod: 5, 
 
 // a point on the telephone, `local` in its own axes (across, back, up from the middle of its base), the base standing at `base` in the
 // figure's, the whole telephone tipped `tip` degrees toward the viewer so its dial shows
-export function onPhoneAt(local, base, turn = 0) {
+function onPhoneAt(local, base, turn = 0) {
     return local.clone().applyMatrix4(euler(TELEPHONE.tip, 0, turn)).add(base);
 }
 
@@ -2815,7 +2813,7 @@ function cradledTurn(side, turn) {
 
 // a point `turned` degrees round the dial from its first hole, on the ring of holes, just over the dial's face, in the figure's axes
 // against the telephone
-export function dialHole(turned) {
+function dialHole(turned) {
     const {dial} = TELEPHONE;
     const angle = radians(dial.first - turned);
     return fromSet(new THREE.Vector3(Math.cos(angle) * dial.ring, dial.face * 1.75 + 0.003, -Math.sin(angle) * dial.ring).applyMatrix4(dialFrame()));
@@ -3895,7 +3893,7 @@ export const MALLET_SWING = {
 };
 
 // The mallet lifts in a forward arc, accelerates into contact, rebounds clear, then settles before being put away.
-export function malletAt(t) {
+function malletAt(t) {
     const {raise, swing, lower} = ACTS.bug_smash;
     const hold = (name) => ({grip: new THREE.Vector3(...MALLET_SWING[name].grip), way: new THREE.Vector3(...MALLET_SWING[name].way).normalize()});
     const between = (from, to, k) => ({grip: from.grip.clone().lerp(to.grip, k), way: from.way.clone().lerp(to.way, k).normalize()});
@@ -4541,7 +4539,7 @@ const isHeadShell = (mesh) => mesh.name === "head_shell" || mesh.name.endsWith("
 
 // The surface of `geometry` seen from the model's front, along -z: where along z it is at its most forward at `x`, `y`, or null where none
 // of it is there. Its triangles are kept in a grid of `cell` squares across x and y, so each look tests only the few over that point.
-export function frontOf(geometry, cell = 0.05) {
+function frontOf(geometry, cell = 0.05) {
     const at = geometry.attributes.position;
     const corner = (index) => (geometry.index ? geometry.index.getX(index) : index);
     const count = geometry.index ? geometry.index.count : at.count;
@@ -4586,7 +4584,7 @@ const mostForward = (fronts, x, y) => fronts.map((front) => front(x, y)).reduce(
 // The `screen` geometry set into the head whose shells are the `shells` geometries, all in the model's own axes: moved back until its
 // most forward point is SCREEN_INSET.depth behind the head's front surface, and every point of the shells within the screen's outline set
 // SCREEN_INSET.behind the screen, the pocket it sits in
-export function setScreenIn(screen, shells) {
+function setScreenIn(screen, shells) {
     const head = shells.map((shell) => frontOf(shell));
     const at = screen.attributes.position;
     let proud = -Infinity;
@@ -4606,7 +4604,7 @@ export function setScreenIn(screen, shells) {
 // the pictures `lit` the face passes through, each shown in turn for one of the screen's frames, `frame` counting them, FRAMES_PER_SECOND
 // of them a second, or TICKER.fps while words scroll across it: a picture shorter than a frame, such as the shut eye of a blink, still
 // shows, and no more than SCREEN.framesBehind wait to be shown
-export function screenFrame(material, lit, frame) {
+function screenFrame(material, lit, frame) {
     const waiting = (material.userData.waiting ??= []);
     const key = lit.map(({column, row, colour}) => `${column},${row},${colour.join(",")}`).join(";");
     if (key !== (waiting.at(-1)?.key ?? material.userData.shownKey)) waiting.push({key, lit});
@@ -4619,7 +4617,7 @@ export function screenFrame(material, lit, frame) {
 }
 
 // a texture of one texel for each of the grid's pixels, row 0 the top, all of them off
-export function pixelTexture() {
+function pixelTexture() {
     const texture = new THREE.DataTexture(new Uint8Array(GRID.columns * GRID.rows * 4), GRID.columns, GRID.rows);
     texture.magFilter = texture.minFilter = THREE.NearestFilter;
     texture.needsUpdate = true;
@@ -4627,7 +4625,7 @@ export function pixelTexture() {
 }
 
 // the pixels `lit` (visorPixels.js litPixels) shown in `texture`, every other one off
-export function showPixels(texture, lit) {
+function showPixels(texture, lit) {
     const data = texture.image.data;
     data.fill(0);
     for (const {column, row, colour} of lit) data.set([...colour.map((part) => Math.round(part * 255)), 255], (row * GRID.columns + column) * 4);
@@ -4725,24 +4723,6 @@ function rigOf(root) {
         eyes.push(toBlender(new THREE.Box3().setFromBufferAttribute(mesh.geometry.attributes.position).getCenter(new THREE.Vector3()).applyMatrix4(mesh.matrixWorld)));
     });
     return {bones, order: bones.map((bone) => bone.name), parents, rest, heads, along, eyes};
-}
-
-// The glb's bytes; a host that serves no .glb, such as a claude.ai artifact, carries it as base64 in <url>.txt
-async function glbBytes(url) {
-    const glb = await transport.raw(url);
-    if (glb.ok) {
-        return glb.arrayBuffer();
-    }
-    const text = await transport.raw(`${url}.txt`).then((response) => response.text());
-    return Uint8Array.from(atob(text), (character) => character.charCodeAt(0)).buffer;
-}
-
-// The figure of one voice from its glb, its worn pieces drawn and the body parts they cover left out (rig.assemble)
-export async function loadFigure(url, wardrobe, voice) {
-    const [bytes, manifest] = await Promise.all([glbBytes(url), transport.raw(wardrobe).then((response) => response.json())]);
-    const bare = voice === "bare";
-    const covered = new Set((bare ? [] : manifest.outfits[voice]).flatMap((item) => manifest.assets[item].hide_base_parts));
-    return figureOf(bytes, voice, DECODER, (mesh) => !covered.has(mesh.name) && !(bare && mesh.userData.item));
 }
 
 // the voices dressed over their glb, including replacement accessories with rigid supports
@@ -4886,52 +4866,6 @@ function lightBlock(block, lit, phase) {
     block.lights.forEach((light, index) => {
         const shine = new THREE.Color().setRGB(...LIGHT_COLOURS[lit], THREE.SRGBColorSpace);
         light.material.color.copy(dark.clone().lerp(shine, brightness(lit, phase, index % UNIT_FRONT.lights.length)));
-    });
-}
-
-// The UFO that takes the work away (parcels.js UFO), each part shaded and outlined as the figure's own are: a saucer UFO width pixels
-// across, its hull turned from the profile `hull` (shares of its radius across and up from its middle), a band round its rim, a glass dome
-// `dome` of the radius on top with a short antenna and its ball, lights round the rim, `lights` of them `light` of the radius each, and the
-// lamp under its belly the beam shines from, `lamp` of the radius, UFO belly pixels below its middle as the page sees it. It is tipped
-// `tilt` degrees toward the viewer, so its top and dome show, its middle at the picture's middle.
-export const SAUCER = {
-    hull: [[0, -0.27], [0.32, -0.29], [0.64, -0.2], [0.92, -0.06], [1, 0], [0.93, 0.07], [0.62, 0.15], [0.38, 0.19], [0, 0.2]],
-    band: 0.04, dome: 0.4, antenna: [0.16, 0.05], lights: 10, light: 0.075, lamp: 0.26, tilt: 16,
-    colours: {hull: 0xb9bdc8, band: 0x5d6170, dome: 0xcfe6ff, antenna: 0x5d6170, dark: 0x3a3d4a, lamp: 0xfff3a8, lit: [0xe8b84a, 0x6366f1]},
-};
-
-export function saucerOf(perPixel) {
-    const radius = (UFO.width / 2) * perPixel;
-    const saucer = new THREE.Group();
-    saucer.name = "saucer";
-    const hull = new THREE.LatheGeometry(SAUCER.hull.map(([across, up]) => new THREE.Vector2(across * radius, up * radius)), 48);
-    shadedPart(saucer, "hull", hull, SAUCER.colours.hull);
-    shadedPart(saucer, "band", new THREE.TorusGeometry(radius * 0.985, radius * SAUCER.band, 8, 64), SAUCER.colours.band).rotation.x = Math.PI / 2;
-    const domeAt = SAUCER.hull.at(-1)[1] * radius * 0.9;
-    shadedPart(saucer, "dome", new THREE.SphereGeometry(radius * SAUCER.dome, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), SAUCER.colours.dome, [0, domeAt, 0]);
-    const [stalk, ball] = SAUCER.antenna.map((share) => share * radius);
-    shadedPart(saucer, "antenna", new THREE.CylinderGeometry(ball * 0.25, ball * 0.25, stalk, 8), SAUCER.colours.antenna, [0, domeAt + radius * SAUCER.dome + stalk / 2, 0]);
-    shadedPart(saucer, "ball", new THREE.SphereGeometry(ball, 12, 8), SAUCER.colours.lit[0], [0, domeAt + radius * SAUCER.dome + stalk, 0]);
-    const lights = Array.from({length: SAUCER.lights}, (_, index) => {
-        const turn = (index / SAUCER.lights) * Math.PI * 2;
-        return shadedPart(saucer, `light_${index}`, new THREE.SphereGeometry(radius * SAUCER.light, 12, 8), SAUCER.colours.dark, [Math.sin(turn) * radius, 0, Math.cos(turn) * radius]);
-    });
-    const lampAt = -(UFO.belly * perPixel) / Math.cos(radians(SAUCER.tilt));
-    shadedPart(saucer, "lamp", new THREE.CylinderGeometry(radius * SAUCER.lamp, radius * SAUCER.lamp * 1.15, radius * 0.07, 24), SAUCER.colours.lamp, [0, lampAt, 0]);
-    saucer.rotation.x = radians(SAUCER.tilt);
-    saucer.position.y = FRAMED_MIDDLE;
-    const scene = new THREE.Scene();
-    scene.add(saucer);
-    scene.updateMatrixWorld(true);
-    return {scene, lights, middle: new THREE.Vector3(0, FRAMED_MIDDLE, 0), bounds: new THREE.Box3().setFromObject(saucer)};
-}
-
-// the saucer's rim lights at step `phase` of their blink (parcels.js UFO blink): every UFO blink-th one lit, amber and indigo by turns, the
-// rest dark, so the light runs round the rim step by step
-export function lightSaucer(saucer, phase) {
-    saucer.lights.forEach((light, index) => {
-        const colour = new THREE.Color(index % UFO.blink === phase ? SAUCER.colours.lit[Math.floor(index / UFO.blink) % 2] : SAUCER.colours.dark);
-        light.material.uniforms.colour.value.set(colour.r, colour.g, colour.b);
     });
 }
 
@@ -5277,7 +5211,7 @@ export function bigMalletOf(prop) {
 }
 
 // the halo of a repented sin (HALO_RING), a golden ring lying flat over the head, as big as the act has grown it
-export function haloOf(prop) {
+function haloOf(prop) {
     const ring = shadedPart(poseSpace(prop), "ring", new THREE.TorusGeometry(HALO_RING.radius, HALO_RING.ring, 10, 40), 0xf2c84b);
     ring.rotation.x = radians(HALO_RING.tip);
     prop.userData.shape = ({size}) => ring.scale.setScalar(size ?? 1);
@@ -5298,7 +5232,7 @@ export function crucifixOf(prop) {
 // and `depth` thick, its cream face toward the viewer, the hour and the minute hands on it, and the bow it hangs from on top
 export const POCKET_WATCH = {radius: 0.2, depth: 0.08, bow: 0.06, colours: {gold: 0xe8b84a, face: 0xf6f1e3, hands: 0x272936}};
 
-export function pocketWatchOf(prop) {
+function pocketWatchOf(prop) {
     const root = poseSpace(prop);
     const {radius, depth, bow, colours} = POCKET_WATCH;
     const round = new THREE.Euler(Math.PI / 2, 0, 0);
@@ -5317,7 +5251,7 @@ export function pocketWatchOf(prop) {
 // edge, `rope` above that line
 export const SWING = {thick: 0.14, front: -0.12, back: 0.4, cord: 0.035, knot: 0.08, colours: {wood: 0x8a5a2b, rope: 0xc9a56a}};
 
-export function ropeSwingOf(prop) {
+function ropeSwingOf(prop) {
     const root = poseSpace(prop);
     const [seat, ties, rope, under] = ["seat", "ties", "rope", "under"].map((key) => ACTS.rope_swing[key] * FRAMED_HEIGHT);
     const {thick, front, back, cord, knot, colours} = SWING;
@@ -5361,7 +5295,7 @@ export function bugOf(perPixel, phase) {
     return {scene, foot: new THREE.Vector3(0, FRAMED_MIDDLE, 0), bounds: new THREE.Box3().setFromObject(bug)};
 }
 
-export function binocularsOf(root) {
+function binocularsOf(root) {
     const {barrel, length, apart, rim, eyepiece, bridge, colours} = BINOCULARS;
     const toward = (mesh) => {
         mesh.rotation.x = Math.PI / 2;
@@ -5394,7 +5328,7 @@ export const REPORT_SCROLL = {
 
 // the scroll's parts in its own axes, its middle at the root; its `shape` puts its rollers at `top` and `bottom` (from its middle, in the
 // figure's own axes, z up) and stretches the parchment between them, unrolled `open` of the way, 0 to 1
-export function reportScrollOf(root) {
+function reportScrollOf(root) {
     const {roller, length, knob, wound, unwound, turns, width, bow, curl, rows, columns, colours} = REPORT_SCROLL;
     const rollers = ["top", "bottom"].map((which) => {
         const group = new THREE.Group();
@@ -5534,7 +5468,7 @@ function bodyGeometry() {
 // its middle at the origin and its cups' mouths down, and its cord in `cord`, coiled from its shape's `from` to its `to` (in the figure's
 // own axes, against the root), and the poof it comes and goes in in `poof`, bursting as its shape's `puff` goes from 0 to 1. The body
 // squashes as its shape's `squash` says, flatter and wider for more, and the dial's wheel turns `dial` degrees
-export function telephoneOf(set, handset, cord, poof) {
+function telephoneOf(set, handset, cord, poof) {
     const {base, dial, cradle, colours} = TELEPHONE;
     const body = new THREE.Group();
     body.name = set.name;
@@ -5748,7 +5682,7 @@ export function lightFromBulb(figure, pose, lit = pose.bulbLit) {
 }
 
 // every prop placed where the pose holds it, and one whose shape moves, as the papers squared or the confetti flying, shaped as it says
-export function moveProps(figure, pose, moves, transitions = null) {
+function moveProps(figure, pose, moves, transitions = null) {
     for (const [name, prop] of figure.propByName) {
         restorePropOpacity(prop);
         const entry = name === "top_hat" ? null : transitions?.entries.get(`prop:${name}`);
@@ -6103,7 +6037,7 @@ export const LOOK_EASE = {into: 0.35, out: 0.45};
 export const lookStrength = ({seconds, lasts}) => partOf(seconds, [0, LOOK_EASE.into]) * (1 - partOf(seconds, [lasts - LOOK_EASE.out, lasts]));
 
 // how big the heart eyes are `seconds` into their look, at its full strength: a strong swell and a weaker one each beat
-export function heartBeat(seconds) {
+function heartBeat(seconds) {
     const beat = (seconds % BEAT_SECONDS) / BEAT_SECONDS;
     return 1 + 0.28 * swell(beat, 0, 0.3) + 0.14 * swell(beat, 0.3, 0.55);
 }
@@ -6133,7 +6067,7 @@ export const TOWARD_VIEWER = {share: 0.8, lean: 0.12, most: 20};
 // How far a figure seated on an edge turns toward the viewer by itself (turnToViewer), so its face shows however sideways it sits: by
 // SEATED_TOWARD while it looks at nothing, and not at all while it looks at something, which may be the other way
 export const SEATED_TOWARD = 0.55;
-export const seatedTurn = (posture, at) => (posture === "sit" && !at ? SEATED_TOWARD : 0);
+const seatedTurn = (posture, at) => (posture === "sit" && !at ? SEATED_TOWARD : 0);
 
 // the way `bone` faces in the figure's own axes as posed so far, in degrees from straight out of the page
 function yawOf(pose, bone) {
@@ -6157,7 +6091,7 @@ export function turnToViewer(pose, facing, strength) {
 }
 
 // the colour of a run's end shown in the eyes on the visor `screen` (visor.js visorAt), as white as its flash and as bright as it is lit
-export const signColour = (screen) => {
+const signColour = (screen) => {
     const sign = screen?.sign;
     return sign ? screen.colour.map((part) => (part + (1 - part) * sign.white) * sign.lit) : [1, 1, 1];
 };
@@ -6200,7 +6134,7 @@ export function drawnPose(rig, stance, clip, frame, facing, {posture = "stand", 
 
 // whether a figure in `posture` may turn to the viewer for a look or its lit visor, or turn its head to look at something: never lounging,
 // its legs straight out, as it is only ever drawn side-on
-export const turnsToViewer = (posture) => posture !== "lounge";
+const turnsToViewer = (posture) => posture !== "lounge";
 
 // One renderer for every picture on a page: it poses the figure, draws it and copies the result onto a canvas
 export class Stage {
@@ -6341,17 +6275,6 @@ export class Stage {
         lightBlock(this.block, lit, phase);
         const drawn = this.propPicture(this.block, new THREE.Vector3(0, 0, 0), picture, ratio);
         return {canvas: drawn.canvas, below: drawn.height - drawn.at.y};
-    }
-
-    // The UFO's saucer (saucerOf) with its rim lights at step `phase` of their blink, drawn through the figure's own camera at the scale of
-    // a figure whose picture is `picture` pixels high on the page, `ratio` canvas pixels to a page pixel: a canvas just holding it, and
-    // where its middle is on it, in page pixels from its top left
-    drawSaucer(phase, picture, ratio) {
-        if (this.saucerFor !== picture) this.saucer = saucerOf(FRAMED_HEIGHT / picture);
-        this.saucerFor = picture;
-        lightSaucer(this.saucer, phase);
-        const drawn = this.propPicture(this.saucer, this.saucer.middle, picture, ratio);
-        return {canvas: drawn.canvas, at: drawn.at};
     }
 
     // The bug (bugOf) at step `phase` of its stride drawn through the figure's own camera at the scale of a figure whose picture is `picture`

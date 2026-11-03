@@ -88,7 +88,7 @@ export function headphoneCollidersOf(meshes) {
     return {colliders, dynamic, matrices: new Map(), last: null};
 }
 
-export function posedHeadphoneColliders(state, moves, {radius = 0.012, outline = 0.008, bodyOutline = 0} = {}) {
+function posedHeadphoneColliders(state, moves, {radius = 0.012, outline = 0.008, bodyOutline = 0} = {}) {
     const matrices = state.matrices;
     if (state.last === moves) {
         for (const shape of state.colliders) {

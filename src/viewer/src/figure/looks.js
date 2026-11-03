@@ -25,19 +25,9 @@ export const SWITCH_SECONDS = 2;
 // seconds
 export const LINGER_SECONDS = 2;
 
-// how long the image of a message the agent reads is a look after the read began, in seconds
-export const ATTACHMENT_SECONDS = 3;
-
-// The message whose attached file the agent read in the last ATTACHMENT_SECONDS before `now`, from the timeline `entries` the viewer holds
-// (a ToolStarting whose call read a path under .journal/files/message/<n>/), or 0 when it read none
-export function attachmentRead(entries, now) {
-    const reads = entries
-        .filter((entry) => entry.entry_type === "ToolStarting" && now - Date.parse(entry.created_at) / 1000 <= ATTACHMENT_SECONDS)
-        .flatMap((entry) => (entry.data?.call?.read_paths || []).map((path) => ({path, at: Date.parse(entry.created_at)})))
-        .map(({path, at}) => ({message: Number(/\/files\/message\/(\d+)\//.exec(path)?.[1] ?? 0), at}))
-        .filter(({message}) => message);
-    return reads.sort((a, b) => b.at - a.at)[0]?.message ?? 0;
-}
+// The message whose attached file the agent reads now, from the tool line the chat shows (a path under .journal/files/message/<n>/), or 0 when
+// it reads none
+export const attachmentRead = (running) => Number(/\/files\/message\/(\d+)\//.exec(running)?.[1] ?? 0);
 
 // how long a new message is a look after it comes into the chat, in seconds
 export const MESSAGE_SECONDS = 4;

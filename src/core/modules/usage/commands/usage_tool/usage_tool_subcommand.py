@@ -59,7 +59,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
         has_run_command = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
-        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE)
+        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=bool(calls) and calls[0].hook == HookEventName.PROMPT, asking=bool(question_lines))
 
     def running_part_text(self, call: HookCall) -> str:
         runs = self.processes.agent(call.agent_id).newest().limited(1)
@@ -88,4 +88,4 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):
-            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else value.note), {"tool": value.tool, "wait_target": value.wait_target, "note": value.note})
+            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else value.note), {"tool": value.tool, "wait_target": value.wait_target, "note": value.note, "thinking": value.thinking, "asking": value.asking})

@@ -8,8 +8,6 @@ const FOLDERS = ["src/viewer", "src/core/modules", "src/suites", "src/tunnels"];
 const CHECKED = ["src/viewer/src", "src/viewer/kit"];
 const SKIPPED = new Set(["node_modules", "dist", ".vite"]);
 const EXTENSIONS = [".js", ".vue", ".ts", ".mjs", ".html"];
-// the figure's port from version 4, whose functions task 5661 wires into the chat next
-const FIGURE_PORT = ["src/viewer/src/figure/", "src/viewer/src/domain/figureState.js", "src/viewer/src/domain/figureMotion.js", "src/viewer/src/domain/falls.js"];
 
 function filesUnder(folder) {
     return readdirSync(folder, {withFileTypes: true}).flatMap((entry) => {
@@ -49,7 +47,6 @@ test("every exported function of the viewer is named in another file", () => {
     const unused = [];
     for (const file of CHECKED.flatMap((folder) => filesUnder(join(ROOT, folder))).filter((path) => path.endsWith(".js"))) {
         const mine = relative(ROOT, file);
-        if (FIGURE_PORT.some((port) => mine.startsWith(port))) continue;
         for (const name of exportedFunctions(readFileSync(file, "utf8"))) {
             if (![...(naming.get(name) || [])].some((other) => other !== file)) unused.push(`${mine}: ${name}`);
         }

@@ -164,6 +164,26 @@ def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):
     story.expect_text("usage tool --environment main", "waiting for your answers to 2 questions", actor=story.user)
 
 
+def test_a_turn_with_no_tool_yet_is_thinking_until_it_begins_one_or_stops(new_story):
+    story = new_story(fixture=UserJoined)
+    thinking = lambda: json.loads(story.run("usage tool --environment main --json", actor=story.user).output_text)["thinking"]
+    story.hook("s-1", HookSamples.prompt("fix the cart"))
+    assert thinking() is True
+    story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1))
+    assert thinking() is False
+    story.hook("s-1", HookSamples.stop())
+    assert thinking() is False
+
+
+def test_an_open_question_says_it_asks(new_story):
+    story = new_story(fixture=UserJoined)
+    asking = lambda: json.loads(story.run("usage tool --environment main --json", actor=story.user).output_text)["asking"]
+    story.hook("s-1", HookSamples.stop())
+    assert asking() is False
+    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    assert asking() is True
+
+
 def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
     story = new_story(fixture=UserJoined)
     story.hook("s-1", HookSamples.session_start())

@@ -15,7 +15,7 @@ const ease = (k) => k * k * (3 - 2 * k);
 
 // How the sign in the eyes stands `seconds` after it came on, or null once its time is over: how far the eyes are the sign rather than
 // their usual shape, 0 to 1; how brightly it glows, 0 to 1; and how white its flash still is
-export function signAt(seconds) {
+function signAt(seconds) {
     if (seconds < 0 || seconds >= SIGN.seconds) return null;
     const warming = span(seconds, ...SIGN.flicker);
     const on = Math.floor(warming * SIGN.flickers * 2) % 2 === 0;

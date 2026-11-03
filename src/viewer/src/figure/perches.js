@@ -242,7 +242,7 @@ export function wayUp(floors, figure, from, spot, scene, random) {
 }
 
 // the spot, when a figure at `near` can get up to it, hopping or on the pogo stick, else null
-export function climbable(spot, figure, near, scene = {}) {
+function climbable(spot, figure, near, scene = {}) {
     const floors = readFloors();
     return spot && (climbOf(floors, figure, near, spot.y) || pogoFits(floors, near, spot, scene)) ? spot : null;
 }
@@ -250,7 +250,7 @@ export function climbable(spot, figure, near, scene = {}) {
 // The next stay, drawn at `now` seconds from the pile, from the roam or the `moment` named: where, until when, and what it holds for the
 // stay, the perch on a bubble, the bubble whose edge it sits on, the tab it stands on, of those with a spot inside its world, or the point
 // along the home edge it strolls to. A hang from a bubble is a short one.
-export function nextStay(now, figure, hands, random, {tally = null, free = false, room = 0, memory = null, moment = "roam"} = {}) {
+function nextStay(now, figure, hands, random, {tally = null, free = false, room = 0, memory = null, moment = "roam"} = {}) {
     const swings = swingFloors(readFloors(), figure);
     const {where, stay: seconds} = roamNext(random, {moment, tally, free, room, swings: swings.length > 0, memory, now});
     const until = now + seconds;

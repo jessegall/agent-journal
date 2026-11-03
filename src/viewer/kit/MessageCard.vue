@@ -96,7 +96,7 @@ function pick(face) {
         </div>
     </template>
     <template v-else>
-        <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
+        <article class="message" data-message data-figure-bubble :data-figure-mark="`message:${message.id}`" :data-figure-agent="fromPerson ? null : ''" :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
             <div class="message-body">
                 <div ref="bubble" :class="['message-card', 'md', {comment: commentedRow}]" @click="peekChip">
                     <template v-if="commentedRow">
@@ -157,7 +157,7 @@ function pick(face) {
                 <div class="message-files" data-message-files>
                     <template v-for="file in files" :key="file.name">
                         <template v-if="file.isImage">
-                            <a :href="file.address" target="_blank" class="message-image" :title="file.title"><img :src="file.address" :alt="file.name"></a>
+                            <a :href="file.address" target="_blank" class="message-image" :title="file.title"><img :src="file.address" :alt="file.name" data-figure-picture></a>
                         </template>
                         <template v-else>
                             <a :href="file.address" target="_blank" class="message-file">{{ file.name }}</a>

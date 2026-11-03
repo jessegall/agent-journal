@@ -46,7 +46,7 @@ export const FRAMES = {
 };
 
 // the frame of the family `name` for `size`: the last whose least size it reaches, or none below the first
-export const frameFor = (name, size) => FRAMES[name].filter(([, least]) => size >= least).at(-1)?.[0] ?? null;
+const frameFor = (name, size) => FRAMES[name].filter(([, least]) => size >= least).at(-1)?.[0] ?? null;
 
 // The colours of the pictures, red, green and blue from 0 to 1, and their highlights
 export const COLOURS = {
@@ -121,19 +121,6 @@ function placed(shown, spot, face) {
 // TICKER.columnsPerFrame columns each of its `fps` frames a second, the screen stepping that fast while it shows, so a worker and its task
 // pass in under three seconds: it comes in at the right edge and has passed once it leaves at the left
 export const TICKER = {row: 4, columnsPerFrame: 2, fps: 30};
-
-// the width of `text` in the visor's letters, in columns, a gap after each letter
-export const tickerWidth = (text) => text.length * (LETTER.width + LETTER.gap);
-
-// how many columns `text` moves to pass the whole screen, and how many seconds that takes
-export const tickerSteps = (text) => GRID.columns + tickerWidth(text);
-export const tickerSeconds = (text) => tickerSteps(text) / TICKER.columnsPerFrame / TICKER.fps;
-
-// the ticker `seconds` into scrolling `text`, or null once it has passed
-export function tickerAt(text, seconds) {
-    const step = TICKER.columnsPerFrame * Math.floor(Math.max(0, seconds) * TICKER.fps);
-    return text && step < tickerSteps(text) ? {text, step} : null;
-}
 
 // the lit pixels of `text` moved `step` columns in from the right edge, in `colour`
 export function tickerPixels(text, step, colour) {
