@@ -14,11 +14,13 @@ func Script(parts []Part, folder string) string {
 	for index, part := range parts {
 		position := index + 1
 		outputFile, statusFile := quoted(fmt.Sprintf("%s/%d.out", folder, position)), quoted(fmt.Sprintf("%s/%d.status", folder, position))
+		startedFile := quoted(fmt.Sprintf("%s/%d.started", folder, position))
 		indent := ""
 		if index > 0 && parts[index-1].JoinedBy == "&&" {
 			script.WriteString("if [ \"$__journal_code\" -eq 0 ]; then\n")
 			indent = "  "
 		}
+		fmt.Fprintf(&script, "%s: > %s\n", indent, startedFile)
 		if part.JoinedBy == "&&" {
 			fmt.Fprintf(&script, "%s__journal_code=0\n%s{ %s\n} > %s 2>&1 || __journal_code=$?\n", indent, indent, part.Text, outputFile)
 		} else {

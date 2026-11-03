@@ -57,7 +57,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
-            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary)) if part))
+            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         return ToolFacts(wait_target=" and ".join((*self.running_titles(agent_id), *question_lines)))
 
     def running_part_text(self, call: HookCall) -> str:
@@ -66,8 +66,14 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ""
         if runs[0].is_queued:
             return QUEUE_LINE
-        waiting = self.queries.query(ProcessPart).filter(process_id=runs[0].id, state=PartState.WAITING).ordered("position").page(1, 1).rows
-        return waiting[0].text if waiting else ""
+        for state in (PartState.RUNNING, PartState.WAITING):
+            parts = self.queries.query(ProcessPart).filter(process_id=runs[0].id, state=state).ordered("position").page(1, 1).rows
+            if parts:
+                return parts[0].text
+        return ""
+
+    def line_changes(self, call: HookCall) -> str:
+        return f"+{call.lines_added} -{call.lines_removed}" if call.lines_added or call.lines_removed else ""
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)

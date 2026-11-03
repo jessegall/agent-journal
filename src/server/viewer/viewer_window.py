@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from core.base.registry.window_entry import WindowEntry
 from core.base.viewer.window_loading import WindowLoading
@@ -33,6 +33,7 @@ class ViewerWindow:
     group: str = ""
     auto_scroll: str = ""
     tabs: Sequence[Mapping[str, str]] = ()
+    search: Mapping[str, object] = field(default_factory=dict)
 
     @classmethod
     def listed(cls, window: WindowEntry, fingerprint: str) -> "ViewerWindow":
@@ -40,4 +41,5 @@ class ViewerWindow:
         entry_url = "" if document else f"/modules/{window.module}/{window.entry}?v={fingerprint}"
         return cls(window.name, window.module, window.title, entry_url, window.entry if document else "", window.loading, window.place, window.roles,
                    window.reads, window.runs, window.events, window.unavailable_reason, window.shipped, window.icon,
-                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll, window.tabs)
+                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll, window.tabs,
+                   {key: value for key, value in window.search.items() if key != "searcher"})

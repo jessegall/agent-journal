@@ -22,6 +22,7 @@ type Tracker struct {
 	Parts       int
 	LastJournal int
 	Reported    map[int]bool
+	Started     map[int]bool
 	Shown       int
 }
 
@@ -59,6 +60,9 @@ func (tracker *Tracker) Watch() {
 		if _, ended := tracker.Folder.Status(position); ended {
 			tracker.Reported[position] = true
 		}
+		if tracker.Folder.Started(position) {
+			tracker.markStarted(position)
+		}
 	}
 	if pid, recorded := tracker.Folder.Pid(); recorded {
 		go writeHeartbeats(tracker.Folder, pid, HeartbeatInterval)
@@ -76,15 +80,39 @@ func (tracker *Tracker) Watch() {
 	}
 }
 
+// reportParts reports each part that began and then each that ended, in the order of the line, so a part's start is
+// always told before its end.
 func (tracker *Tracker) reportParts(stdout io.Writer) {
 	for position := 1; position <= tracker.Parts; position++ {
-		if code, ended := tracker.Folder.Status(position); ended && !tracker.Reported[position] {
+		code, ended := tracker.Folder.Status(position)
+		if (ended || tracker.Folder.Started(position)) && !tracker.Reported[position] {
+			tracker.partStarted(position)
+		}
+		if ended && !tracker.Reported[position] {
 			tracker.partEnded(stdout, position, code)
 		}
 	}
 }
 
+// markStarted notes that a part's start is told, and says whether it was told before.
+func (tracker *Tracker) markStarted(position int) bool {
+	if tracker.Started == nil {
+		tracker.Started = map[int]bool{}
+	}
+	told := tracker.Started[position]
+	tracker.Started[position] = true
+	return told
+}
+
+func (tracker *Tracker) partStarted(position int) {
+	if tracker.markStarted(position) {
+		return
+	}
+	tracker.report("process", "part-start", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position))
+}
+
 func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
+	tracker.partStarted(position)
 	tracker.Reported[position] = true
 	uncapped := tracker.Options.LimitSeconds == 0
 	io.WriteString(stdout, Shown(tracker.Folder.Output(position), tracker.Options.Process, tracker.Options.CapCharacters, uncapped))

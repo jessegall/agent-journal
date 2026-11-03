@@ -39,6 +39,14 @@ class Tool:
         return [dict(row) for row in self.diff_rows] if self.diff is not None and self.diff.path == path else []
 
     @property
+    def lines_added(self) -> int:
+        return self.diff.lines_added if self.diff is not None else 0
+
+    @property
+    def lines_removed(self) -> int:
+        return self.diff.lines_removed if self.diff is not None else 0
+
+    @property
     def is_journal_line(self) -> bool:
         return self.shell is not None and self.shell.is_journal_line
 

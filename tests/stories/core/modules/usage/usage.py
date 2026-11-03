@@ -5,6 +5,7 @@ from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -96,9 +97,33 @@ def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(new_story):
     line = "cat notes && pytest -q"
     story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
     process = start_process(story, line)
+    bus = story.container.get(Bus)
+    bus.run(StartProcessPart(process.id, 1), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash cat notes", actor=story.user)
-    story.container.get(Bus).run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=process.environment_id)
+    bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=process.environment_id)
+    bus.run(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
+
+
+def test_the_tool_of_a_chain_names_the_part_that_began_and_not_one_that_waits(new_story):
+    story = new_story(fixture=UserJoined)
+    line = "cat notes && pytest -q"
+    story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
+    process = start_process(story, line)
+    story.container.get(Bus).run(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
+    story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
+
+
+def test_the_tool_of_an_edit_shows_the_lines_it_adds_and_removes(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1))
+    story.expect_text("usage tool --environment main", "Edit src/cart.py +3 -1", actor=story.user)
+
+
+def test_the_tool_of_an_edit_that_changes_no_line_shows_no_counts(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.edit("src/cart.py", 0, 0))
+    story.expect_absent("usage tool --environment main", "+0", actor=story.user)
 
 
 def test_a_session_says_when_it_was_last_compacted(new_story):

@@ -5,6 +5,7 @@ from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.core.modules.chat.support.mark_samples import mark_count
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 
@@ -91,15 +92,28 @@ def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
     assert story.hook("s-1", SERVER).refusal
 
 
-def test_a_line_that_only_reads_and_writes_files_runs_as_written_pipes_and_all_and_is_kept_as_no_output(new_story):
+def test_a_line_that_only_reads_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    line = "cat src/cart.py | grep total"
+    line = "cat src/cart.py | tail -n 3"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
-    assert not reply.updated_input
-    reply = story.hook("s-1", HookSamples.shell("sed -n 1,5p src/cart.py && cat > notes.txt", ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    assert not reply.updated_input
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+    story.expect_success("process show 1", f"line: {line}", "state: running")
+
+
+def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    line = "sed -n 1,5p src/cart.py && cat > notes.txt"
+    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
     assert not reply.refusal
-    story.expect_success("process list", "nothing found")
+    story.expect_success("process show 1", f"line: {line}")
+
+
+def test_a_read_that_went_through_the_runner_makes_no_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.hook("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
+    story.run_listeners()
+    assert mark_count(story) == 0
 
 
 def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_story):
