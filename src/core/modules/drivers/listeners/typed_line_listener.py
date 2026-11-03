@@ -9,6 +9,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
@@ -20,7 +21,7 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 class TypedLineListener(CommitListener):
     """Types a line for an agent that may be sitting idle and so sends no hook that could carry it: that it
     was paused or resumed, that a message waits, or that a task it waited on opened. With no terminal to type
-    in, the line waits for its next hook."""
+    in, the line waits for its next hook; a line a hook has taken is typed no more, and a line is typed once."""
 
     name = "drivers.typed-line"
     event = "agent_line.create"
@@ -30,10 +31,12 @@ class TypedLineListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         line = self.queries.query(AgentLine).find(event.row_id)
-        if line.source not in TERMINAL_SOURCES:
+        if line.source not in TERMINAL_SOURCES or line.state is not AgentLineState.WAITING:
             return
         try:
             self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
         except Refusal:
             return
-        self.bus.run(EnterAgentLine(line.id), Actor(event.actor_id, ActorType.USER), environment_id=event.environment_id)
+        # a hook of the agent may have taken the line while it was typed: it is entered only if it still waits, so the event is never handled twice
+        if self.queries.query(AgentLine).find(line.id).state is AgentLineState.WAITING:
+            self.bus.run(EnterAgentLine(line.id), Actor(event.actor_id, ActorType.USER), environment_id=event.environment_id)
