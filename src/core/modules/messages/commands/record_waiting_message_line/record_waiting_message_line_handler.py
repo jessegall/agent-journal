@@ -34,4 +34,4 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         waiting = self.lines.waiting(agent.id).limited(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
             return None
-        return self.nudger.say(agent.id, NEW_MESSAGE, WAITING_MESSAGE_SOURCE, context, message=message.id)
+        return self.nudger.send(agent.id, NEW_MESSAGE, WAITING_MESSAGE_SOURCE, context, message=message.id)

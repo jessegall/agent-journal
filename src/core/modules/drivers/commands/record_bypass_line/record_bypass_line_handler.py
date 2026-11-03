@@ -17,4 +17,4 @@ class RecordBypassLineHandler(Handler[RecordBypassLine, AgentLine]):
         self.nudger = nudger
 
     def handle(self, command: RecordBypassLine, context: Context) -> AgentLine:
-        return self.nudger.say(command.agent_id, HOOKS_UNCHECKED, LINE_SOURCE, context, count=command.count)
+        return self.nudger.send(command.agent_id, HOOKS_UNCHECKED, LINE_SOURCE, context, count=command.count)

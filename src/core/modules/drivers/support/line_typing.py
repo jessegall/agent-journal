@@ -14,7 +14,7 @@ TERMINAL_PREFIX = "[journal] "
 
 class LineTyping:
     """Types a waiting line into its agent's terminal. The line is claimed first, so a hook during the typing cannot
-    give it too; a line that could not be typed waits again for the next hook."""
+    give it too; a line that could not be typed, for any reason, waits again for the next hook."""
 
     def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus) -> None:
         self.queries, self.typing, self.bus = queries, typing, bus
@@ -26,8 +26,10 @@ class LineTyping:
             return False
         try:
             self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
-        except Refusal:
+        except Exception as error:
             self.bus.run(ReleaseAgentLine(line.id), actor, environment_id=environment_id)
-            return False
+            if isinstance(error, Refusal):
+                return False
+            raise
         self.bus.run(EnterAgentLine(line.id), actor, environment_id=environment_id)
         return True

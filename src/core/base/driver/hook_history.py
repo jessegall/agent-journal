@@ -17,7 +17,7 @@ class HookHistory:
     def last_answer(self, rule_name: str, hook: AgentHook) -> Timestamp | None:
         return self.answer_time(RuleHistoryKey(hook.agent_id, rule_name, hook.layer_ref))
 
-    def answered_within(self, rule_name: str, hook: AgentHook, seconds: int) -> bool:
+    def has_recent_answer(self, rule_name: str, hook: AgentHook, seconds: int) -> bool:
         answered_at = self.last_answer(rule_name, hook)
         return answered_at is not None and answered_at.elapsed_seconds(hook.timestamp) < seconds
 

@@ -25,4 +25,4 @@ class WaitEndListener(SaveListener):
         wait = change.row
         if not isinstance(wait, Wait) or wait.state is not WaitState.ENDED or not change.event.endswith(".end") or wait.outcome == WORK_CONTINUED:
             return
-        self.nudger.say(wait.agent_id, WAIT_ENDED, LINE_SOURCE, change.context, wait=wait.id, outcome=wait.outcome)
+        self.nudger.send(wait.agent_id, WAIT_ENDED, LINE_SOURCE, change.context, wait=wait.id, outcome=wait.outcome)

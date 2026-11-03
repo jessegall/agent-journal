@@ -24,4 +24,4 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         if not agents:
             return
         source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agents[0].id, context.timestamp) else UPDATED_SOURCE
-        self.nudger.say(agents[0].id, MESSAGE_UPDATED, source, context, message=command.message_id)
+        self.nudger.send(agents[0].id, MESSAGE_UPDATED, source, context, message=command.message_id)

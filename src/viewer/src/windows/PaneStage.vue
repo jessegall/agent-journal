@@ -105,8 +105,8 @@ let usageTimer = null;
 let branchTimer = null;
 // the bars follow events; what no event announces, the usage files of the agent programs and the checkout's branch, is read on a slow clock
 const EVENT_READ_GAP_MS = 5000;
-const USAGE_SECONDS = 30;
-const BRANCH_SECONDS = 60;
+const USAGE_SECONDS = 10;
+const BRANCH_SECONDS = 30;
 async function readActivity() {
     const answer = activityOpen.value && props.shellRead ? await props.shellRead(["event", "list", "--limit", "30"]) : null;
     if (answer?.ok) events.value = rowsOf(answer);

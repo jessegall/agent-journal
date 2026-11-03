@@ -27,7 +27,7 @@ class MergeCheckoutRule(DriverRule):
         self.queries, self.delivered, self.proofs, self.git, self.hook_history = queries, delivered, proofs, git, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.hook_history.answered_within(self.name, hook, REMINDER_SECONDS):
+        if self.hook_history.has_recent_answer(self.name, hook, REMINDER_SECONDS):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
         for worktree in self.delivered.delivered(hook.agent_id):

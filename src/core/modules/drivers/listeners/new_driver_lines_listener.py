@@ -28,4 +28,4 @@ class NewDriverLinesListener(SaveListener):
         for agent in tuple(agents):
             driver = self.choice.driver(setting.environment_id, agent.role)
             for line in driver.opening_lines if driver is not None else ():
-                self.nudger.say_text(agent.id, line, self.name, change.context)
+                self.nudger.send_text(agent.id, line, self.name, change.context)

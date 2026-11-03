@@ -43,6 +43,7 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
 from core.modules.drivers.commands.release_agent_line.release_agent_line import ReleaseAgentLine
 from core.modules.drivers.listeners.claimed_line_release_listener import ClaimedLineReleaseListener
+from core.modules.drivers.listeners.stop_line_typing_listener import StopLineTypingListener
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_handler import AllowEssentialRuleHandler
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_subcommand import AllowEssentialRuleSubcommand
 from core.modules.drivers.bindings.driver_change_filter import DriverChangeFilter
@@ -124,7 +125,7 @@ class DriversModule(Module):
     subcommands = [SkipRequiredCommandSubcommand, PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [DispatchMarkListener, RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [DispatchMarkListener, RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]

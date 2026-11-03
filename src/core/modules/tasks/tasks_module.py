@@ -3,6 +3,8 @@ from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
+from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
+from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
 from core.modules.tasks.commands.block_task.block_task import BlockTask
 from core.modules.tasks.commands.environment_cards.environment_cards_subcommand import EnvironmentCardsSubcommand
 from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGraphSubcommand
@@ -31,6 +33,8 @@ from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
+from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
+from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
 from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks_handler import ClearDelegatedTasksHandler
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
 from core.modules.tasks.commands.close_task.close_task import CloseTask
@@ -94,9 +98,9 @@ class TasksModule(Module):
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"]))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration]
-    subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, TaskBriefSubcommand, MakeTaskDependencySubcommand,
+    subcommands = (AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, TaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
-    handlers = [ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
+    handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
