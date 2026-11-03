@@ -38,6 +38,7 @@ const isNew = computed(() => !held);
 const missing = computed(() => {
     if (!draft.name.trim()) return "Give it a name.";
     if (draft.kind === "words" && !draft.phrases.length) return "Add at least one word.";
+    if (draft.kind === "words" && !draft.places.length) return "Choose where to look.";
     if (draft.kind === "time" && !{every: draft.every, once: draft.at, cron: draft.cron}[draft.time]) return "Choose when.";
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
@@ -49,13 +50,18 @@ watch(() => draft.kind, (kind) => {
 const timeValue = () => (draft.time === "once" ? new Date(draft.at).toISOString() : draft[draft.time]);
 const startFlags = () => [{every: "--every", once: "--at", cron: "--cron"}[draft.time], timeValue()];
 const editFlags = () => [{every: "--interval-minutes", once: "--next-at", cron: "--cron-line"}[draft.time], timeValue()];
-const startLine = () => (draft.kind === "words" ? ["trigger", "make", draft.phrases.join(", "), draft.text.trim(), "--do", draft.action] : ["trigger", "schedule", draft.text.trim(), ...startFlags()]);
+const detailFlags = () => ["--name", draft.name.trim(), "--description", draft.description.trim(), "--conditions", JSON.stringify(draft.conditions), "--extra-actions", JSON.stringify(draft.extra),
+    ...(draft.kind === "words" ? ["--watch-places", ...draft.places, "--match-mode", draft.match] : [])];
+const limitFlags = (flag) => (draft.limit ? [flag, draft.limit] : []);
 
-function detailLine(id) {
-    const line = ["trigger", "edit", String(id), "--name", draft.name.trim(), "--description", draft.description.trim(), "--text", draft.text.trim(), "--action", draft.action,
-        "--conditions", JSON.stringify(draft.conditions), "--extra-actions", JSON.stringify(draft.extra)];
-    if (draft.kind === "words") return [...line, "--phrases", ...draft.phrases, "--watch-places", ...draft.places, "--match-mode", draft.match];
-    return [...line, ...(isNew.value ? [] : editFlags()), ...(draft.limit ? ["--fire-limit", draft.limit] : [])];
+function newLine() {
+    if (draft.kind === "words") return ["trigger", "make", "--do", draft.action, ...detailFlags(), "--", draft.phrases.join(", "), draft.text.trim()];
+    return ["trigger", "schedule", "--do", draft.action, ...detailFlags(), ...startFlags(), ...limitFlags("--times"), "--", draft.text.trim()];
+}
+
+function editLine() {
+    const line = ["trigger", "edit", String(held.id), "--text", draft.text.trim(), "--action", draft.action, ...detailFlags()];
+    return draft.kind === "words" ? [...line, "--phrases", ...draft.phrases] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
 }
 
 async function ran(line) {
@@ -64,12 +70,7 @@ async function ran(line) {
     if (answer.ok) emit("close");
 }
 
-async function save() {
-    const made = isNew.value ? await context.run(startLine()) : {ok: true, value: held};
-    if (!made.ok) failure.value = made.error;
-    else await ran(detailLine(made.value.id));
-}
-
+const save = () => ran(isNew.value ? newLine() : editLine());
 const pause = () => ran(["trigger", "pause", String(held.id), ...(held.paused_at ? ["--off"] : [])]);
 const end = () => ran(["trigger", "strike", String(held.id)]);
 </script>

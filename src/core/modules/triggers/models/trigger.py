@@ -11,6 +11,7 @@ from core.modules.triggers.models.support.trigger_extra_action import TriggerExt
 
 TEXT_LIMIT_CHARACTERS = 600
 INSTRUCTION_PREFIX = "instruction: "
+ALL_PLACES = ("messages", "commands", "files")
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -35,7 +36,7 @@ class Trigger(Model):
     ended_at: Timestamp | None = None
     name: str = ""
     description: str = ""
-    watch_places: tuple[str, ...] = ("messages", "commands", "files")
+    watch_places: tuple[str, ...] = ALL_PLACES
     match_mode: TriggerMatch = TriggerMatch.PART
     conditions: str = "[]"
     extra_actions: str = "[]"

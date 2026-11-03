@@ -35,8 +35,10 @@ test("a new trigger needs a name, words and text, starts from an example and is 
     await settle();
     panel().querySelector("[data-trigger-save]").click();
     await settle();
-    expect(ran).toContainEqual(["trigger", "make", "push --force", "Never force-push. Ask me first.", "--do", "deny"]);
-    expect(ran.at(-1)).toEqual(expect.arrayContaining(["--name", "Block a command", "--description", "Blocks it", "--match-mode", "part"]));
+    expect(ran).toHaveLength(1);
+    expect(ran[0].slice(0, 4)).toEqual(["trigger", "make", "--do", "deny"]);
+    expect(ran[0].slice(-3)).toEqual(["--", "push --force", "Never force-push. Ask me first."]);
+    expect(ran[0]).toEqual(expect.arrayContaining(["--name", "Block a command", "--description", "Blocks it", "--match-mode", "part"]));
 });
 
 test("a trigger is a slip with only its name and line, and a time trigger asks how often", async () => {
@@ -56,10 +58,11 @@ test("a trigger is a slip with only its name and line, and a time trigger asks h
     await settle();
     panel().querySelector("[data-trigger-save]").click();
     await settle();
-    expect(ran).toContainEqual(["trigger", "schedule", "Check the build", "--every", "30"]);
+    expect(ran[0].slice(0, 2)).toEqual(["trigger", "schedule"]);
+    expect(ran[0].slice(-4)).toEqual(["--every", "30", "--", "Check the build"]);
 });
 
-test("a new time trigger can come by a cron line, and an agent condition and a web call go in its details", async () => {
+test("a new time trigger can come by a cron line, saved in one command", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-trigger-new]").click();
     await settle();
@@ -73,8 +76,8 @@ test("a new time trigger can come by a cron line, and an agent condition and a w
     await settle();
     panel().querySelector("[data-trigger-save]").click();
     await settle();
-    expect(ran).toContainEqual(["trigger", "schedule", "Look at the build", "--cron", "0 9 * * 1-5"]);
-    expect(ran.at(-1).slice(0, 3)).toEqual(["trigger", "edit", "9"]);
+    expect(ran).toHaveLength(1);
+    expect(ran[0].slice(-4)).toEqual(["--cron", "0 9 * * 1-5", "--", "Look at the build"]);
 });
 
 test("an opened trigger shows its conditions and extra actions and saves them back", async () => {

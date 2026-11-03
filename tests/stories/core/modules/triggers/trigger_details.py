@@ -28,6 +28,20 @@ def test_a_trigger_keeps_its_name_and_description(new_story):
     story.expect_text("trigger list --json", '"name": "Never force push"', '"description": "Blocks it"', actor=story.agent)
 
 
+def test_one_command_saves_a_new_trigger_with_all_its_details(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success("""trigger make --do deny --name "No force" --watch-places commands --match-mode word --conditions '[{"type": "agent", "value": "main"}]' -- "--force" "Never force push" """, actor=story.agent)
+    story.expect_text("trigger list --json", '"name": "No force"', '"match_mode": "word"', actor=story.agent)
+    story.expect_success("""trigger schedule --do instruct --name "Build check" --every 30 --times 2 -- "Look at the build" """, actor=story.agent)
+    story.expect_text("trigger list --json", '"name": "Build check"', '"action": "instruct"', '"fire_limit": 2', actor=story.agent)
+
+
+def test_a_new_trigger_with_a_wrong_condition_is_not_saved(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_refusal("""trigger make --conditions '[{"type": "fired", "value": "often"}]' cart "Mind the cart" """, "cannot test 'often'", actor=story.agent)
+    story.expect_text("trigger list --json", '{"rows": []}', actor=story.agent)
+
+
 def test_a_trigger_looks_only_in_the_places_it_watches(new_story):
     story = new_story(fixture=BuilderStarted)
     made(story, "--watch-places messages")

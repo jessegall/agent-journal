@@ -21,8 +21,14 @@ const pickedLabel = computed(() => props.choices?.find((choice) => choice.value 
         <template v-else>
             <label class="field"><span class="label">{{ label }}</span><input v-model="value" :placeholder="example" data-trigger-listed></label>
         </template>
-        <Btn small @click="emit('remove')">Remove</Btn>
+        <Btn class="remove" small @click="emit('remove')">Remove</Btn>
     </div>
 </template>
 
 <style scoped src="./triggerForm.css"></style>
+
+<style scoped>
+.remove {
+    align-self: flex-start;
+}
+</style>
