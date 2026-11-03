@@ -1,0 +1,23 @@
+/* @code-commandments-generated */
+if (!document.getElementById("window-styles-f8430cd76f6f")) { const style = document.createElement("style"); style.id = "window-styles-f8430cd76f6f"; style.textContent = ".setting-input[data-v-bb0492ed]{display:flex;gap:8px;align-items:center}.setting-unit[data-v-bb0492ed]{flex:none;color:var(--text-3);font-size:12px}.setting-list[data-v-bb0492ed]{resize:vertical}.setting-head[data-v-bb0492ed]{display:flex;gap:6px;align-items:center}.setting-dot[data-v-bb0492ed]{width:6px;height:6px;border-radius:50%;background:var(--accent)}.setting-reset[data-v-bb0492ed]{margin-left:auto;padding:0 6px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:11.5px;cursor:pointer}.setting-reset[data-v-bb0492ed]:hover{background:var(--hover);color:var(--text)}.setting-group[data-v-bb0492ed]{display:flex;flex-direction:column;gap:6px}.setting-group-head[data-v-bb0492ed]{display:flex;align-items:center;gap:10px}.setting-group-title[data-v-bb0492ed]{margin:0;font-size:13px;font-weight:600}.setting-children[data-v-bb0492ed]{display:flex;flex-direction:column;gap:14px;padding-left:14px;border-left:1px solid var(--line)}.setting-children.off[data-v-bb0492ed]{opacity:.5}.setting-value[data-v-bb0492ed]{display:flex;flex-direction:column;gap:4px}.setting-label[data-v-bb0492ed]{font-size:12px;color:var(--text)}.setting-description[data-v-bb0492ed],.setting-shown[data-v-bb0492ed]{margin:0;font-size:12px;color:var(--text-3)}.setting-field[data-v-bb0492ed]{max-width:360px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.setting-switch[data-v-bb0492ed]{align-self:flex-start;padding:2px 10px;border:0;border-radius:10px;color:var(--text-2);background:var(--raised);font-size:11px;cursor:pointer}.setting-switch[aria-checked=true][data-v-bb0492ed]{color:#fff;background:var(--accent)}.setting-choices[data-v-bb0492ed]{display:flex;gap:6px}.setting-refusal[data-v-bb0492ed]{margin:0;font-size:12px;color:var(--danger)}.environment[data-v-f4755e01]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.environment-names[data-v-f4755e01]{flex:1;min-width:0}.environment-name[data-v-f4755e01]{font-weight:500}.environment-here[data-v-f4755e01]{margin-left:8px;color:var(--accent-text);font-size:12px}.environment-folder[data-v-f4755e01]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.environment-refusal[data-v-f4755e01]{margin:2px 0 0;color:var(--danger);font-size:12.5px}.settings-nav-item.current[data-v-6efb2399]{background:var(--hover);color:var(--text)}.settings[data-v-6efb2399]{display:flex;flex-direction:column;gap:16px}.settings-bar[data-v-6efb2399]{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.settings-search[data-v-6efb2399]{flex:1;min-width:200px;max-width:360px}.settings-saved[data-v-6efb2399]{color:var(--text-3);font-size:12px}.settings-search-field[data-v-6efb2399]{width:100%;max-width:360px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.settings-body[data-v-6efb2399]{display:flex;gap:28px;align-items:flex-start}.settings-nav[data-v-6efb2399]{display:flex;flex:none;flex-direction:column;gap:2px;width:150px;position:sticky;top:0}.settings-nav-item[data-v-6efb2399]{padding:5px 10px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.settings-nav-item[data-v-6efb2399]:hover{background:var(--hover);color:var(--text)}.settings-sections[data-v-6efb2399]{display:flex;flex:1;flex-direction:column;gap:32px;min-width:0}.settings-module[data-v-6efb2399]{display:flex;flex-direction:column;gap:18px}.settings-module-heading[data-v-6efb2399]{margin:0;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}.settings-failure[data-v-6efb2399],.settings-empty[data-v-6efb2399]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { onMounted as d, openBlock as o, createBlock as i, unref as e, withCtx as s, createElementBlock as r, toDisplayString as n, createCommentVNode as l } from "vue";
+import { useReadLine as u, WindowRoom as _ } from "@journal/window-kit";
+const m = {
+  key: 0,
+  role: "alert"
+}, p = { key: 1 }, y = {
+  __name: "ProjectHooks",
+  setup(g) {
+    const { value: t, failure: a, load: c } = u(() => "managed-hook list");
+    return d(c), (f, h) => (o(), i(e(_), null, {
+      default: s(() => [
+        e(a) ? (o(), r("p", m, n(e(a)), 1)) : l("", !0),
+        e(t) ? (o(), r("p", p, "Managed: " + n(e(t).managed.length) + " · Pending: " + n(e(t).pending.length), 1)) : l("", !0)
+      ]),
+      _: 1
+    }));
+  }
+};
+export {
+  y as default
+};

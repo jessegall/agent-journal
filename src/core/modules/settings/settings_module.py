@@ -20,6 +20,7 @@ from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_handle
 from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_subcommand import ScanManagedHooksSubcommand
 from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_handler import RestoreManagedHooksHandler
 from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_subcommand import RestoreManagedHooksSubcommand
+from core.modules.settings.commands.list_managed_hooks.list_managed_hooks_subcommand import ListManagedHooksSubcommand
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
 from core.modules.settings.commands.setting_show.setting_show_subcommand import SettingShowSubcommand
@@ -42,7 +43,9 @@ class SettingsModule(Module):
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
-                                 reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"])]
-    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand)
+                                 reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"]),
+               WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
+                                 reads=["managed-hook list"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*"])]
+    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]
     moves = [SettingsMove]

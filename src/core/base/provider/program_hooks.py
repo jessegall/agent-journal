@@ -53,6 +53,10 @@ class ProgramHooks:
     def settings(self) -> dict[object, object]:
         return self.read(self.path)
 
+    @property
+    def uses_shell_runner(self) -> bool:
+        return JOURNAL_MARKS[1] in json.dumps(self.settings().get("hooks"))
+
     @staticmethod
     def read(path: Path) -> dict[object, object]:
         loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}

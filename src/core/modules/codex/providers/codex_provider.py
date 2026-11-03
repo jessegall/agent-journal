@@ -144,6 +144,10 @@ class CodexProvider(Provider):
     def trust_record(self) -> CodexTrust:
         return CodexTrust(self.folders.folder(HOME_VARIABLE, ".codex") / "config.toml")
 
+    def user_hook_files(self) -> tuple[Path, ...]:
+        folder = self.folders.folder(HOME_VARIABLE, ".codex")
+        return (folder / "hooks.json", folder / "config.toml")
+
     @classmethod
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
         config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"

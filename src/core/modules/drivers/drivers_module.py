@@ -41,6 +41,8 @@ from core.modules.drivers.rules.subagent_reuse_rule import SubagentReuseRule
 from core.modules.drivers.rules.long_output_rule import LongOutputRule
 from core.modules.drivers.rules.foreign_hooks_rule import ForeignHooksRule
 from core.modules.drivers.rules.manage_hooks_rule import ManageHooksRule
+from core.base.provider.managed_hook_history_reader import ManagedHookHistoryReader
+from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line_handler import RecordBypassLineHandler
@@ -143,7 +145,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, ForeignHooksRule, ManageHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
-    bindings = [(TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
+    bindings = [(ManagedHookHistoryReader, ManagedHookHistoryQuery), (TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,

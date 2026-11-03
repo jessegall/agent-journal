@@ -105,6 +105,9 @@ class Provider(ABC):
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
         pass
 
+    def user_hook_files(self) -> tuple[Path, ...]:
+        return ()
+
     def transcript_path(self, event: HookEvent) -> Path | None:
         path = event.raw.get("transcript_path")
         return Path(path).expanduser() if isinstance(path, str) and path else None

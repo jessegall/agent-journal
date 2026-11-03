@@ -6,7 +6,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.providers import Providers
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
-from core.modules.drivers.queries.support.managed_hook_history import ManagedHookHistory
+from core.base.provider.managed_hook_history import ManagedHookHistory
 from core.modules.drivers.queries.support.managed_hook_run import ManagedHookRun
 from core.modules.drivers.models.hook_call import HookCall
 

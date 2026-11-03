@@ -148,6 +148,9 @@ class ClaudeCodeProvider(Provider):
         ProgramHooks.hooks(type(self), folder).write(runner, root)
         ClaudeTrust(self.state_file()).trusted(folder)
 
+    def user_hook_files(self) -> tuple[Path, ...]:
+        return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])
+
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
