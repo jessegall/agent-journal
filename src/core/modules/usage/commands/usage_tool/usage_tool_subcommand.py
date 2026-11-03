@@ -53,7 +53,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         mains = MainAgentFinder.rows(self.queries, environment_id)
         if not mains:
             return ToolFacts()
-        return self.agent_tool(mains[0].id, self.open_question_lines(environment_id))
+        return self.agent_tool(mains[0].id, self.open_question_lines(environment_id, mains[0].id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
@@ -82,8 +82,8 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         kept = self.outputs.process(process.id).limited(1)
         return kept[0].title if kept and kept[0].title else process.line
 
-    def open_question_lines(self, environment_id: int) -> list[str]:
-        open_questions = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
+    def open_question_lines(self, environment_id: int, agent_id: int) -> list[str]:
+        open_questions = self.queries.query(Question).filter(environment_id=environment_id, agent_id=agent_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
         if open_questions.total > 1:
             return [f"your answers to {open_questions.total} questions"]
         return [f"your answer to question {question.id}" for question in open_questions.rows]
