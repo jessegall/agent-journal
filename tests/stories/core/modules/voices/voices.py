@@ -68,35 +68,41 @@ def test_show_prints_the_instruction_the_agent_is_given(new_story):
     assert "say worker, subagent, task and environment" in text
 
 
-def test_a_session_started_by_hand_gives_the_instruction_and_no_introduction(new_story):
+def speaking_story(new_story):
     story = new_story(fixture=BuilderWithUser)
+    story.expect_success("setting set journal.core.voices.speaks on --project", actor=story.user)
+    return story
+
+
+def test_with_talking_in_the_voice_off_an_agent_is_told_no_voice(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    second = hook_agent(story, story.hook("s-2", SECOND_START))
+    story.expect_rows(told(story, story.agent.id) == [], told(story, second.id) == [])
+
+
+def test_a_session_started_by_hand_gives_the_instruction_and_no_introduction(new_story):
+    story = speaking_story(new_story)
     given_names(story)
     second = hook_agent(story, story.hook("s-2", SECOND_START))
     [line] = told(story, second.id)
     assert BUTLER_TEXT in line and 'Address me as "Captain Ada".' in line and "introduce yourself in the chat" not in line, line
 
 
-def test_the_agent_the_builder_started_by_hand_was_told_when_it_started(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    [line] = told(story, story.agent.id)
-    assert BUTLER_TEXT in line and "introduce yourself in the chat" not in line, line
-
-
 def test_a_resume_is_told_nothing_more_since_its_conversation_holds_the_voice(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = speaking_story(new_story)
     story.hook("s-1", RESUME)
-    assert len(told(story, story.agent.id)) == 1
+    story.expect_rows(told(story, story.agent.id) == [])
 
 
 def test_a_compaction_tells_the_voice_again_without_the_introduction(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = speaking_story(new_story)
     story.hook("s-1", COMPACTION)
     again = told(story, story.agent.id)
-    assert len(again) == 2 and BUTLER_TEXT in again[1] and "introduce yourself" not in again[1], again
+    assert len(again) == 1 and BUTLER_TEXT in again[0] and "introduce yourself" not in again[0], again
 
 
 def test_changing_the_voice_tells_the_running_main_agent_the_new_voice(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = speaking_story(new_story)
     story.expect_success("voice choose squire", actor=story.user)
     line = told(story, story.agent.id)[-1]
     assert "from now on talk to the user like this: Talk like a loyal squire" in line
@@ -104,7 +110,7 @@ def test_changing_the_voice_tells_the_running_main_agent_the_new_voice(new_story
 
 
 def test_changing_the_name_the_voice_uses_tells_the_agent_as_well(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = speaking_story(new_story)
     story.expect_success("voice address --name Grace", actor=story.user)
     assert 'Address me as "Sir Grace".' in told(story, story.agent.id)[-1]
 
