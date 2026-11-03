@@ -140,7 +140,7 @@ class PluginManifest:
             raise Refusal("a setting of a plugin's settings file lacks its key, title or kind", "each setting states all three")
         choices: object = entry["choices"] if "choices" in entry else None
         return ManifestSetting(str(entry["key"]), str(entry["title"]), str(entry["kind"]), entry["default"] if "default" in entry else None,
-                               tuple(str(choice) for choice in choices) if is_list(choices) else ())
+                               tuple(str(choice) for choice in choices) if is_list(choices) else (), str(entry.get("help", "")), str(entry.get("group", "")), str(entry.get("parent", "")))
 
     def setting(self, key: str) -> ManifestSetting:
         matching = [setting for setting in self.settings if setting.key == key]

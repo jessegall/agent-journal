@@ -121,6 +121,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
+            <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
             <header class="summary">
                 <div class="stamp">
                     Task {{ task.id }} · updated
@@ -151,7 +152,6 @@ defineExpose({openStatus});
             </div>
             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="tab = 'comments'" />
         </template>
-        <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
         <template v-if="menu">
             <MenuPanel :anchor="menu" :min-width="220" :max-width="300" @close="menu = null">
                 <MenuLabel>Change the status of task {{ id }}</MenuLabel>

@@ -26,12 +26,12 @@ class TextCommentsSubcommand(ReadSubcommand[TextComments]):
 
     def read(self, arguments: Namespace, caller: Caller) -> TextComments:
         text_row = self.queries.query(self.model).find(arguments.id)
-        return TextComments(self.model.cli_name, arguments.id, self.comments.comments(text_row))
+        return TextComments(self.model.cli_name, arguments.id, self.comments.reads(text_row))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextComments):
             return
-        if not value.messages:
+        if not value.comments:
             output.line(f"no comments on {value.cli_name} {value.row_id}")
             return
-        output.write("\n".join(f"message {message.id}: {message.text}" for message in value.messages), {"rows": [output.values(message) for message in value.messages]})
+        output.write("\n".join(f"message {comment.id}: {comment.text}" for comment in value.comments), {"rows": [output.values(comment) for comment in value.comments]})

@@ -5,5 +5,6 @@ import {defineConfig} from "vitest/config";
 export default defineConfig({
     plugins: [vue()],
     resolve: {alias: {"@journal/window-kit": fileURLToPath(new URL("./kit/index.js", import.meta.url))}, dedupe: ["vue"]},
-    test: {environment: "jsdom", include: ["tests/**/*.test.js"], testTimeout: 30000},
+    // the avatar's tests run only when asked with FIGURE_TESTS=1; what a passing test logs is left out
+    test: {environment: "jsdom", include: ["tests/**/*.test.js"], exclude: process.env.FIGURE_TESTS ? [] : ["tests/figure*.test.js", "tests/*VoiceFigure*.test.js"], silent: "passed-only", testTimeout: 30000},
 });

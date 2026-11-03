@@ -2,11 +2,13 @@
 import {computed, toRef} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import SkeletonLine from "../kit/SkeletonLine.vue";
 import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
 const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
 const emit = defineEmits(["open", "changed"]);
+const LOADING_BARS = [{width: "220px", height: 12}];
 const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" : "Working"));
@@ -37,7 +39,10 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             </button>
         </template>
         <template v-else>
-            <template v-if="!loading">
+            <template v-if="loading">
+                <SkeletonLine :bars="LOADING_BARS" data-agent-bar-loading />
+            </template>
+            <template v-else>
                 <strong>No agent</strong>
             </template>
             <span class="agent-space" />

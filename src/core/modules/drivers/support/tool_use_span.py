@@ -9,6 +9,8 @@ from core.modules.drivers.support.tool_use_count import ToolUseCount
 class ToolUseSpan:
     """A span of tools the agent has used."""
 
+    unit = "tool uses"
+
     count: int
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:

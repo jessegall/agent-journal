@@ -9,13 +9,16 @@ FLAG_VALUES = {"true": True, "on": True, "yes": True, "false": False, "off": Fal
 @dataclass(frozen=True)
 class ManifestSetting:
     """A setting a plugin's settings file declares: its key, title, value type, default and, for a choice,
-    its choices."""
+    its choices, with its help line, the group it shows in and the setting it shows under."""
 
     key: str
     title: str
     value_type: str
     default: object
     choices: tuple[str, ...]
+    help_line: str = ""
+    group: str = ""
+    parent: str = ""
 
     def value_text(self, text: str) -> str:
         if self.value_type == "number":

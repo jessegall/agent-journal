@@ -28,7 +28,12 @@ async function drawn(refuse = false) {
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
         if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
         if (line[1] === "dashboard") return {ok: true, value: {missing: "sins has written nothing on its dashboard yet."}};
-        return {ok: true, value: {settings: [{key: "depth", type: "number", title: "Depth", value: 3}]}};
+        return {ok: true, value: {settings: [
+            {key: "depth", type: "number", title: "Depth", help: "How deep to look", group: "", parent: "", choices: [], value: 3},
+            {key: "mode", type: "choice", title: "Mode", help: "", group: "", parent: "", choices: ["fast", "full"], value: "fast"},
+            {key: "strict", type: "flag", title: "Strict", help: "", group: "", parent: "", choices: [], value: false},
+            {key: "loud", type: "flag", title: "Loud", help: "", group: "", parent: "", choices: [], value: "true"},
+        ]}};
     };
     window.run = async (line) => (ran.push(line), refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: line[1] === "upgrade" ? {name: "sins", installed: "1.0", version: "v2", changes: ["new setup packages: npm install"]} : {}});
     return {element: await mounted(PluginRows, window), ran};
@@ -141,11 +146,24 @@ test("a plugin's settings open and a change is saved", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-plugin-settings]").click();
     await settle();
-    const input = element.querySelector("[data-plugin-setting='depth']");
+    const input = document.querySelector("[data-plugin-setting='depth'] input");
     input.value = "5";
     input.dispatchEvent(new Event("change"));
     await settle();
     expect(ran).toContainEqual(["plugin", "configure", "sins", "depth", "5"]);
+    expect(document.querySelector("[data-plugin-setting-list]").textContent).toContain("How deep to look");
+});
+
+test("a plugin's settings show the control of their type and a group's switches turn on together", async () => {
+    const {element, ran} = await drawn();
+    element.querySelector("[data-plugin-settings]").click();
+    await settle();
+    expect(document.querySelector("[data-plugin-setting='strict'] [role=switch]")).not.toBeNull();
+    expect(document.querySelector("[data-plugin-setting='mode'] [role=radio]")).not.toBeNull();
+    document.querySelector("[data-plugin-all-on]").click();
+    await settle();
+    expect(ran).toContainEqual(["plugin", "configure", "sins", "strict", "true"]);
+    expect(ran).not.toContainEqual(["plugin", "configure", "sins", "loud", "true"]);
 });
 
 async function recordDrawn(answer) {

@@ -1,5 +1,6 @@
 <script setup>
 import {nextTick, ref} from "vue";
+import {submitOnEnter} from "../platform/keys.js";
 import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
 import {counted} from "../format/number.js";
@@ -32,12 +33,6 @@ function collapse() {
     error.value = "";
 }
 
-function enter(event) {
-    if (event.shiftKey || event.isComposing) return;
-    event.preventDefault();
-    submit();
-}
-
 async function submit() {
     const text = draft.value.trim();
     if (!text || !props.ready || sending.value) return;
@@ -64,7 +59,7 @@ defineExpose({expand});
         <template v-if="open">
             <form class="card compose" @submit.prevent="submit" @keydown.esc="collapse">
                 <slot name="who" />
-                <textarea ref="box" v-model="draft" rows="3" maxlength="2000" :placeholder="placeholder" @keydown.enter="enter" />
+                <textarea ref="box" v-model="draft" rows="3" maxlength="2000" :placeholder="placeholder" @keydown.enter="submitOnEnter($event, submit)" />
                 <div class="actions">
                     <span class="error">{{ error }}</span>
                     <Btn small @click="collapse">Cancel</Btn>

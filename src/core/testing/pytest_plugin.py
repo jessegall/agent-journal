@@ -21,6 +21,10 @@ def pytest_configure(config: pytest.Config) -> None:
     config.stash[STORY_OVERLAP] = StoryOverlap()
 
 
+def pytest_itemcollected(item: pytest.Item) -> None:
+    item.stash[STORY_RUNS] = []
+
+
 @pytest.fixture(scope="session")
 def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
     run_folder = tmp_path_factory.getbasetemp().parent if XDIST_WORKER_VARIABLE in os.environ else tmp_path_factory.getbasetemp()
@@ -32,7 +36,7 @@ def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
 @pytest.fixture
 def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., Story]]:
     overlap = request.config.stash[STORY_OVERLAP]
-    created = request.node.stash.setdefault(STORY_RUNS, [])
+    created = request.node.stash[STORY_RUNS]
 
     def started(*modules: str, fixture: type[StoryFixture] | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
@@ -45,12 +49,12 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
-    for steps in item.stash.get(STORY_RUNS, []):
+    for steps in item.stash[STORY_RUNS]:
         steps.begin_test()
     try:
         yield
     finally:
-        for steps in item.stash.get(STORY_RUNS, []):
+        for steps in item.stash[STORY_RUNS]:
             steps.finish_test()
 
 

@@ -1,5 +1,6 @@
 <script setup>
-import {computed, ref, toRef} from "vue";
+import {computed, ref, toRef, watch} from "vue";
+import AgentSkillsMenu from "./AgentSkillsMenu.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -35,6 +36,21 @@ function closeMenu() {
     opened.value = "";
     controls.asking.value = false;
 }
+
+const skills = ref([]);
+const skillsRead = computed(() => skills.value.filter((row) => row.state === "loaded"));
+
+async function readSkills() {
+    const answer = props.agent && props.run ? await props.run(["agent-skill", "list", "--agent", String(props.agent.id)]) : null;
+    skills.value = answer?.ok ? answer.value.rows ?? [] : [];
+}
+
+function openSkills(event) {
+    openMenu(event, "skills");
+    readSkills();
+}
+
+watch(() => props.agent?.id, readSkills, {immediate: true});
 
 const offers = (key) => controls.groups.value.some((one) => one.key === key);
 const model = computed(() => controls.chosen.value.model ?? status.value?.model ?? "");
@@ -84,6 +100,9 @@ const uptime = computed(() => {
                 <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
             </template>
             <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            <template v-if="run">
+                <button type="button" class="fact" data-fact="skills" title="Skills of this agent: which it has read" @click="openSkills"><Icon name="book" :size="12" /> {{ skillsRead.length }}</button>
+            </template>
             <template v-if="fitness">
                 <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="Fitness, how the agent is working: opens its measures" @click="emit('open', 'fitness', $event.currentTarget)">
                     <Icon name="heart" :size="12" /> {{ fitness.is_measured ? fitness.score : "–" }}
@@ -116,6 +135,9 @@ const uptime = computed(() => {
                     <template v-for="program in controls.programs.value" :key="program.name">
                         <MenuItem :data-agent-program="program.name" @click="closeMenu(), controls.start(program)">{{ program.title }}</MenuItem>
                     </template>
+                </template>
+                <template v-else-if="opened === 'skills'">
+                    <AgentSkillsMenu :skills="skills" @browse="closeMenu(), emit('open', 'skills', null)" />
                 </template>
                 <template v-else-if="group">
                     <MenuLabel>{{ group.label }}</MenuLabel>

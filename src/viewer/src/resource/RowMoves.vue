@@ -58,7 +58,7 @@ defineExpose({moves, press});
             <template v-else>
                 <div class="moves">
                     <template v-for="move in moves" :key="move.word">
-                        <Btn small :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
+                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
                     </template>
                 </div>
             </template>
@@ -69,13 +69,12 @@ defineExpose({moves, press});
 <style scoped>
 .foot {
     flex: none;
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
     background: var(--raised);
 }
 
 .foot.inline {
-    margin: 8px 0 16px;
     padding: 0;
     border: 0;
     background: none;

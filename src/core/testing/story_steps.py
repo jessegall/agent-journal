@@ -6,14 +6,14 @@ class StorySteps:
 
     def __init__(self, story: Story) -> None:
         self.story = story
-        self.first_result = 0
-        self.last_result = 0
+        self.first_step = 0
+        self.last_step = 0
 
     def begin_test(self) -> None:
-        self.first_result = len(self.story.results)
+        self.first_step = len(self.story.steps)
 
     def finish_test(self) -> None:
-        self.last_result = len(self.story.results)
+        self.last_step = len(self.story.steps)
 
     def lines(self) -> list[str]:
-        return [outcome.line for outcome in self.story.results[self.first_result:self.last_result]]
+        return self.story.steps[self.first_step:self.last_step]

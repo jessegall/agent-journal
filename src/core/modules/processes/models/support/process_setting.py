@@ -26,6 +26,9 @@ class ProcessSetting(Enum):
     SHORT_OUTPUT_BYTES = SettingValue("short-output", "Short output bytes", "Below how many bytes an output is shown whole and not kept.", SettingType.NUMBER,
                                       default=200)
 
+    LARGE_OUTPUT_LINES = SettingValue("large-output-lines", "Large output lines", "Above how many lines reading a whole output tells the agent which flag reads a part of it.", SettingType.NUMBER,
+                                      default=100)
+
     @property
     def key(self) -> str:
         return f"{MODULE_KEY}.{self.value.key}"

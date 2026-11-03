@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.messages.models.message import Message
+from core.modules.documents.commands.support.comment_read import CommentRead
 
 
 @dataclass(frozen=True)
@@ -9,4 +9,4 @@ class TextComments:
 
     cli_name: str
     row_id: int
-    messages: tuple[Message, ...]
+    comments: tuple[CommentRead, ...]

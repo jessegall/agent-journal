@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {opening, peek, route, shareAddress, unpeek} from "../route.js";
+import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -8,13 +8,11 @@ import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentFacts from "./AgentFacts.vue";
 import MemoryFacts from "./MemoryFacts.vue";
 import WorkerFacts from "./WorkerFacts.vue";
-import TextDetails from "./TextDetails.vue";
-import CommentedRow from "./CommentedRow.vue";
-import QuickCommentBar from "../kit/QuickCommentBar.vue";
-import {useTextComments} from "../composables/textComments.js";
+import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import TestQueueInspector from "./TestQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
+import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -26,12 +24,12 @@ const row = ref(null);
 const failure = ref("");
 let reading = 0;
 
-const LONG_KINDS = new Set(["plan", "doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue"]);
+const LONG_KINDS = new Set(["plan"]);
+const DOCUMENT_KINDS = new Set(["doc", "report"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", ...DOCUMENT_KINDS]);
 const TEXT_KINDS = new Set(["question", "memory"]);
-const commentable = computed(() => kind.value === "doc" || kind.value === "report");
-const textComments = useTextComments(() => (commentable.value && row.value ? {kind: kind.value, id: opened.value.id, title: row.value.title} : {}), (line) => props.read(line));
 const wide = computed(() => LONG_KINDS.has(kind.value));
+const isDocument = computed(() => DOCUMENT_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_KINDS.has(kind.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
@@ -62,7 +60,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear>
             <div v-if="opened" class="veil" @click.self="close">
-                <aside :class="['panel', {wide, task: kind === 'task'}]" role="dialog" :aria-label="title" data-resource-panel>
+                <aside :class="['panel', {wide, task: kind === 'task', document: isDocument}]" role="dialog" :aria-label="title" data-resource-panel>
                     <SwitchCase :value="kind">
                         <template #task>
                             <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
@@ -73,24 +71,21 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <template #test-queue>
                             <TestQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
                         </template>
+                        <template #doc>
+                            <DocumentInspector :table="opened.table" :id="opened.id" :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
+                        </template>
+                        <template #report>
+                            <DocumentInspector :table="opened.table" :id="opened.id" :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
+                        </template>
                         <template #default>
                         <header class="head">
                             <template v-if="route.stack.length > 1">
                                 <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
                             </template>
-                            <div class="names">
-                                <p class="kind">{{ kind }} {{ opened.id }}<template v-if="row?.state"> · {{ row.state }}</template></p>
-                                <h2 data-resource-title>{{ title }}</h2>
-                                <template v-if="row?.abstract">
-                                    <p class="abstract">{{ row.abstract }}</p>
-                                </template>
-                            </div>
-                            <template v-if="kind === 'doc' || kind === 'report'">
-                                <a class="head-button head-share" data-resource-share :href="shareAddress(`${opened.table}:${opened.id}`)">Share</a>
-                            </template>
+                            <ResourceHeading :label="`${kind} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`" :title="title" :abstract="row?.abstract" />
                             <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                         </header>
-                        <CommentedRow :open="commentable && textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
+                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                         <div class="body">
                             <template v-if="failure">
                                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -111,9 +106,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 <template v-if="kind === 'memory'">
                                     <MemoryFacts :id="opened.id" :read="read" />
                                 </template>
-                                <template v-if="kind === 'doc' || kind === 'report'">
-                                    <TextDetails :kind="kind" :id="opened.id" :row="row" :read="read" @changed="load" />
-                                </template>
                                 <section class="section" data-resource-fields>
                                     <template v-for="[name, value] in fields" :key="name">
                                         <p class="field-name">{{ name }}</p>
@@ -122,11 +114,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 </section>
                             </template>
                         </div>
-                        </CommentedRow>
-                        <template v-if="commentable && row">
-                            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
-                        </template>
-                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                         </template>
                     </SwitchCase>
                 </aside>
@@ -136,15 +123,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
-.head-share {
-    width: auto;
-    padding: 0 8px;
-    margin-right: 8px;
-    color: var(--text-2);
-    font-size: 12px;
-    text-decoration: none;
-}
-
 .veil {
     position: fixed;
     z-index: 40;
@@ -172,6 +150,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .panel.wide {
     width: min(760px, 100vw);
+}
+
+.panel.document {
+    width: min(980px, 100vw);
 }
 
 .side-enter-active,
@@ -222,24 +204,19 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     color: var(--text);
 }
 
-.names {
-    flex: 1;
-    min-width: 0;
-}
-
-.kind {
+:deep(.resource-kind) {
     margin: 0 0 2px;
     color: var(--text-3);
     font-size: 11.5px;
 }
 
-h2 {
+:deep(.resource-title) {
     margin: 0 0 4px;
     font-size: 16px;
     font-weight: 600;
 }
 
-.abstract {
+:deep(.resource-abstract) {
     margin: 0;
     color: var(--text-2);
     font-size: 12.5px;

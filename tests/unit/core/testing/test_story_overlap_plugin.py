@@ -5,20 +5,20 @@ pytest_plugins = ["pytester"]
 
 def test_shared_story_steps_fail_pytest_as_a_named_failure(pytester, monkeypatch):
     configure_run(pytester, monkeypatch)
-    result = pytester.runpytest_subprocess("-q", "--tb=short")
-    assert result.ret == pytest.ExitCode.TESTS_FAILED
-    result.assert_outcomes(passed=2, failed=1)
-    assert "stories::shared_first_steps" in result.stdout.str()
-    assert "test_first" in result.stdout.str() and "test_second" in result.stdout.str()
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
+    assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
+    pytest_run.assert_outcomes(passed=2, failed=1)
+    assert "stories::shared_first_steps" in pytest_run.stdout.str()
+    assert "test_first" in pytest_run.stdout.str() and "test_second" in pytest_run.stdout.str()
 
 
 def test_shared_story_steps_on_different_workers_fail_pytest(pytester, monkeypatch):
     configure_run(pytester, monkeypatch)
-    result = pytester.runpytest_subprocess("-q", "--tb=short", "-n", "2", "--maxschedchunk=1")
-    assert result.ret == pytest.ExitCode.TESTS_FAILED
-    result.assert_outcomes(passed=2, failed=1)
-    assert "stories::shared_first_steps" in result.stdout.str()
-    assert "test_first" in result.stdout.str() and "test_second" in result.stdout.str()
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short", "-n", "2", "--maxschedchunk=1")
+    assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
+    pytest_run.assert_outcomes(passed=2, failed=1)
+    assert "stories::shared_first_steps" in pytest_run.stdout.str()
+    assert "test_first" in pytest_run.stdout.str() and "test_second" in pytest_run.stdout.str()
 
 
 def test_shared_setup_in_a_fixture_passes_pytest(pytester, monkeypatch):
@@ -39,6 +39,6 @@ def test_second(new_story):
     story = new_story(fixture=AdaExists)
     story.expect_success('actor show 1')
 ''')
-    result = pytester.runpytest_subprocess("-q", "--tb=short")
-    assert result.ret == pytest.ExitCode.OK
-    result.assert_outcomes(passed=2)
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
+    assert pytest_run.ret == pytest.ExitCode.OK
+    pytest_run.assert_outcomes(passed=2)

@@ -1,8 +1,10 @@
 <script setup>
-import {computed, inject} from "vue";
+import {computed, inject, ref, useAttrs} from "vue";
 import {WINDOW_CONTEXT} from "../../kit/windowContextKey.js";
+import Icon from "./Icon.vue";
 import Spinner from "./Spinner.vue";
 
+defineOptions({inheritAttrs: false});
 const props = defineProps({
     kind: {type: String, default: "ghost"},
     small: Boolean,
@@ -12,22 +14,49 @@ const props = defineProps({
     fill: Boolean,
     bordered: Boolean,
     href: {type: String, default: ""},
+    icon: {type: String, default: ""},
 });
+// a click whose handler waits on something, such as a request, shows the spinner until it is done; one that answers at once never shows it
+const SPINNER_AFTER_MS = 120;
+const attrs = useAttrs();
+const passedOn = computed(() => Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== "onClick")));
+const waiting = ref(false);
+const shownBusy = computed(() => props.busy || waiting.value);
+const windowContext = inject(WINDOW_CONTEXT, null);
 // a window a share link shows is only looked at, so its buttons do nothing
-const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDOW_CONTEXT, null)?.readOnly));
+const idle = computed(() => shownBusy.value || props.disabled || Boolean(windowContext?.readOnly));
+
+async function clicked(event) {
+    const answers = [attrs.onClick].flat().filter(Boolean).map((handler) => handler(event)).filter((answer) => answer instanceof Promise);
+    if (!answers.length) return;
+    const timer = setTimeout(() => (waiting.value = true), SPINNER_AFTER_MS);
+    try {
+        await Promise.all(answers);
+    } finally {
+        clearTimeout(timer);
+        waiting.value = false;
+    }
+}
 </script>
 
 <template>
     <component
         :is="href ? 'a' : 'button'"
+        v-bind="passedOn"
         :type="href ? undefined : 'button'"
         :href="href || undefined"
-        :class="['btn', kind, {small, large, busy, fill, bordered}]"
-        :aria-busy="busy"
+        :class="['btn', kind, {small, large, busy: shownBusy, fill, bordered}]"
+        :aria-busy="shownBusy"
         :disabled="idle"
+        @click="clicked"
     >
-        <span :class="['btn-label', {hidden: busy}]"><slot /></span>
-        <template v-if="busy">
+        <span :class="['btn-label', {hidden: shownBusy}]">
+            <template v-if="icon">
+                <Icon :name="icon" :size="12" />
+            </template>
+            <slot />
+        </span>
+        <template v-if="shownBusy">
             <Spinner class="btn-spinner" />
         </template>
     </component>

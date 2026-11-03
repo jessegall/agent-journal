@@ -7,6 +7,8 @@ from core.base.timestamp import MINUTE_SECONDS, Timestamp
 class Seconds:
     """A span of time."""
 
+    unit = "seconds"
+
     count: int
 
     @classmethod

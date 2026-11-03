@@ -1,12 +1,10 @@
-from core.modules.tasks.support.task_nudges import LOG_REQUEST
+from core.modules.tasks.support.task_nudges import LOG_REQUEST, LOG_REQUEST_WRITES
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
 from core.base.agent_role import AgentRole
-
-LOG_REQUEST_WRITES = 25
 
 
 class LogRequestRule(DriverRule):
@@ -28,4 +26,4 @@ class LogRequestRule(DriverRule):
         current, writes = counted
         if writes != LOG_REQUEST_WRITES:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(LOG_REQUEST.nudge(writes=LOG_REQUEST_WRITES, task=current.task.id))
+        return RuleAnswer.with_nudges(LOG_REQUEST.nudge(LOG_REQUEST_WRITES, task=current.task.id))
