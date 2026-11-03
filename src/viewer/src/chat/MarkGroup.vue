@@ -49,6 +49,7 @@ const look = computed(() => ({
     position: relative;
     display: flex;
     flex-direction: column;
+    gap: 3px;
     align-items: flex-start;
     align-self: flex-start;
     max-width: 100%;

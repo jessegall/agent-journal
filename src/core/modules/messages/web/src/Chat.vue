@@ -521,6 +521,14 @@ async function runCommand(pin) {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    /* bubbles scrolled under the foot fade out over its last stretch, as in version 4 */
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+}
+
+/* version 4's spacing: 10 pixels between items, 18 above the first and 20 below the last, inside the scroll area */
+.history :deep(.row-list) {
+    gap: 10px;
+    padding: 18px 0 20px;
 }
 
 /* version 4's marks are quiet lines, about 28 pixels tall, in a muted colour */
@@ -529,7 +537,17 @@ async function runCommand(pin) {
 }
 
 .history :deep(.row-list-row) {
-    padding: 1px 8px;
+    padding: 0 8px;
+}
+
+/* marks one after another sit closer together than the messages around them */
+.history :deep(.row-list-row:has(.mark) + .row-list-row:has(.mark)) {
+    margin-top: -5px;
+}
+
+/* on a phone, whose marks always show their action, they keep 12 pixels between them for a thumb */
+:global(html.phone .history .row-list-row:has(.mark) + .row-list-row:has(.mark)) {
+    margin-top: 2px;
 }
 
 .history :deep(.mark.w-event) {

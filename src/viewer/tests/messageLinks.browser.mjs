@@ -18,6 +18,11 @@ try {
     assert.ok(await one.locator(".message-dot").isVisible());
     assert.equal(await one.locator("[data-message-links-count]").count(), 0);
     assert.match(await one.locator("[data-message-links-rows]").innerText(), /^Linked: task\s+1$/);
+    const oneRow = await page.locator(".history .row-list-row", {hasText: "One link here"}).boundingBox();
+    const fourRow = await page.locator(".history .row-list-row", {hasText: "Four links here"}).boundingBox();
+    assert.ok(Math.abs(fourRow.y - (oneRow.y + oneRow.height) - 10) < 1, "two items sit 10 pixels apart, as in version 4");
+    const padding = await page.locator(".history .row-list").evaluate((list) => [getComputedStyle(list).paddingTop, getComputedStyle(list).paddingBottom]);
+    assert.deepEqual(padding, ["18px", "20px"]);
     assert.equal(await four.locator("[data-message-links-rows]").isVisible(), false);
     assert.match(await four.locator("[data-message-links-count]").innerText(), /4 linked tasks/);
     await page.screenshot({path: capture});

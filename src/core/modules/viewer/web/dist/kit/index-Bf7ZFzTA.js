@@ -5529,7 +5529,7 @@ const $g = ["data-ref"], Mg = ["data-ref"], Sg = { class: "mark-row" }, _g = "do
       ], 10, Og)) : A("", !0)
     ], 8, Cg));
   }
-}, yb = /* @__PURE__ */ J(Rg, [["__scopeId", "data-v-594fc44f"]]);
+}, yb = /* @__PURE__ */ J(Rg, [["__scopeId", "data-v-45b58b9b"]]);
 function Bg(e) {
   const t = I(null), n = new ResizeObserver(() => t.value = e.value.offsetHeight);
   return qe(() => n.observe(e.value)), Dt(() => n.disconnect()), t;
@@ -10129,7 +10129,7 @@ const V2 = /* @__PURE__ */ H2(z2), G2 = ["width", "height", "viewBox"], K2 = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, yx = /* @__PURE__ */ J(Z2, [["__scopeId", "data-v-47e67f04"]]), wx = Qi(() => import("./VoiceFigure-CGmMfR6Y.js").then((e) => e.V)), kx = "1.0.0", bx = "3.5";
+}, yx = /* @__PURE__ */ J(Z2, [["__scopeId", "data-v-47e67f04"]]), wx = Qi(() => import("./VoiceFigure-BfVWYSKS.js").then((e) => e.V)), kx = "1.0.0", bx = "3.5";
 export {
   Ll as $,
   Me as A,
