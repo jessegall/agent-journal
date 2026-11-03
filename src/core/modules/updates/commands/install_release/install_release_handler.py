@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from core.base.code_copy import CodeCopy
+from core.base.code_versions import CodeVersions
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.journal_home import JournalHome
@@ -23,5 +23,5 @@ class InstallReleaseHandler(Handler[InstallRelease, Release]):
     def handle(self, command: InstallRelease, context: Context) -> Release:
         release = self.source.newest(online=True)
         with tempfile.TemporaryDirectory() as folder:
-            CodeCopy(self.source.unpacked(release, Path(folder)), self.home).make()
+            CodeVersions(self.home).install(self.source.unpacked(release, Path(folder)))
         return self.repository.save(Release(creator_id=context.actor.id, checksum=release.checksum, tag=release.tag), context)

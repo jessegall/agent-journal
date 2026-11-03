@@ -98,15 +98,22 @@ func StartServer(home string) (*os.Process, error) {
 	return command.Process, nil
 }
 
+// newSourceLink is the link a switch of the code versions builds before it replaces src; a crash between its two
+// steps leaves this link and no src.
+const newSourceLink = "src.new"
+
 // SourceFolder is the folder holding core and server: JOURNAL_SOURCE when set, else src inside the journal's
-// folder when it holds the server, as an installed project has it, else src beside the journal's folder, as the
-// journal's own repository has it.
+// folder when it holds the server, as an installed project has it, else the link a stopped switch left, which it
+// puts in place, else src beside the journal's folder, as the journal's own repository has it.
 func SourceFolder(home string) string {
 	if source := os.Getenv("JOURNAL_SOURCE"); source != "" {
 		return source
 	}
 	installed := filepath.Join(home, "src")
 	if _, err := os.Stat(filepath.Join(installed, "server", "server.py")); err == nil {
+		return installed
+	}
+	if _, err := os.Stat(filepath.Join(home, newSourceLink, "server", "server.py")); err == nil && os.Rename(filepath.Join(home, newSourceLink), installed) == nil {
 		return installed
 	}
 	return filepath.Join(filepath.Dir(home), "src")

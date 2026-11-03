@@ -1,55 +1,90 @@
+import fnmatch
+import hashlib
 import os
 import shutil
 from pathlib import Path
 
-from core.base.code_copy import CodeCopy
+from core.base.code_copy import IGNORED, CodeCopy
+from core.base.code_version_missing_error import CodeVersionMissingError
 from core.base.journal_home import JournalHome
 
-KEPT_VERSIONS = 2
 PARTIAL_VERSION = ".partial"
 FIRST_VERSION = "first"
 NEW_LINK = "src.new"
+PREVIOUS_FILE = "previous"
+TAG_CHARACTERS = 16
 
 
 class CodeVersions:
-    """The journal's code in one folder for each version, with the home's src a link to the version that runs, so
-    the next version is copied beside a running server without touching the files that server reads."""
+    """The journal's code in one folder for each version, named by a digest of its files, with the home's src
+    a link to the version that runs, so the next version is copied beside a running server without touching
+    the files that server reads. A complete version is never written to. The switch from a real src folder
+    runs only once no server runs from that folder, as such a server reads the new files at its next import.
+    A crash between the two steps of that switch leaves the new link, and the program that looks for src puts
+    it in place."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
         self.folder = home.folder / "versions"
         self.link = home.folder / "src"
+        self.new_link = home.folder / NEW_LINK
+        self.previous_file = self.folder / PREVIOUS_FILE
 
     def version(self, tag: str) -> Path:
         return self.folder / tag
 
-    def add(self, source: Path, tag: str) -> Path:
-        version, partial = self.version(tag), self.version(tag + PARTIAL_VERSION)
-        if version.is_dir():
-            return version
-        shutil.rmtree(partial, ignore_errors=True)
-        self.folder.mkdir(parents=True, exist_ok=True)
-        CodeCopy(source, self.home).write(partial)
-        partial.rename(version)
-        return version
+    def tag(self, source: Path) -> str:
+        digest = hashlib.sha256()
+        for folder, folders, files in os.walk(source):
+            folders[:] = sorted(name for name in folders if not self.is_ignored(name))
+            for name in sorted(name for name in files if not self.is_ignored(name)):
+                path = Path(folder) / name
+                digest.update(str(path.relative_to(source)).encode())
+                digest.update(path.read_bytes())
+        return digest.hexdigest()[:TAG_CHARACTERS]
+
+    def is_ignored(self, name: str) -> bool:
+        return any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED)
+
+    def add(self, source: Path) -> str:
+        tag = self.tag(source)
+        if not self.version(tag).is_dir():
+            partial = self.version(tag + PARTIAL_VERSION)
+            shutil.rmtree(partial, ignore_errors=True)
+            self.folder.mkdir(parents=True, exist_ok=True)
+            CodeCopy(source, self.home).write(partial)
+            partial.rename(self.version(tag))
+        return tag
 
     def switch(self, tag: str) -> None:
-        self.keep_real_folder()
-        new_link = self.home.folder / NEW_LINK
-        new_link.unlink(missing_ok=True)
-        new_link.symlink_to(self.version(tag).relative_to(self.home.folder))
-        os.replace(new_link, self.link)
+        if not self.version(tag).is_dir():
+            raise CodeVersionMissingError(tag)
+        self.new_link.unlink(missing_ok=True)
+        self.new_link.symlink_to(self.version(tag).relative_to(self.home.folder))
+        running = self.running_version()
+        if running not in ("", tag):
+            self.previous_file.write_text(running)
+        os.replace(self.new_link, self.link)
         self.prune()
 
-    def keep_real_folder(self) -> None:
-        if self.link.is_dir() and not self.link.is_symlink():
-            shutil.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
-            self.folder.mkdir(parents=True, exist_ok=True)
-            self.link.rename(self.version(FIRST_VERSION))
+    def running_version(self) -> str:
+        if self.link.is_symlink():
+            return self.link.resolve().name
+        if not self.link.is_dir():
+            return ""
+        shutil.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
+        self.folder.mkdir(parents=True, exist_ok=True)
+        self.link.rename(self.version(FIRST_VERSION))
+        return FIRST_VERSION
 
     def prune(self) -> None:
-        running = self.link.resolve()
-        spare = [version for version in self.folder.resolve().iterdir() if version != running]
-        newest = sorted((version for version in spare if version.suffix != PARTIAL_VERSION), key=lambda version: version.stat().st_mtime, reverse=True)
-        for version in set(spare) - set(newest[:KEPT_VERSIONS - 1]):
-            shutil.rmtree(version)
+        kept = {self.link.resolve().name, self.previous_file.read_text() if self.previous_file.is_file() else ""}
+        for version in self.folder.iterdir():
+            if version.is_dir() and version.suffix != PARTIAL_VERSION and version.name not in kept:
+                shutil.rmtree(version)
+
+    def install(self, source: Path) -> None:
+        if self.link.is_symlink():
+            self.switch(self.add(source))
+        else:
+            CodeCopy(source, self.home).make()

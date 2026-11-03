@@ -60,6 +60,27 @@ func TestAnUncheckedAnswerKeepsAProjectHooksLinesAndNewInput(t *testing.T) {
 	}
 }
 
+func TestARefusalBesideAProjectHooksNewInputKeepsTheToolFromRunning(t *testing.T) {
+	refusal := ForeignRun{ID: "guard", Stdout: refusingStdout}
+	rewrite := ForeignRun{ID: "rewrite", Stdout: `{"hookSpecificOutput":{"updatedInput":{"command":"ls"}}}`}
+	for name, runs := range map[string][]ForeignRun{"refusal first": {refusal, rewrite}, "rewrite first": {rewrite, refusal}} {
+		t.Run(name, func(t *testing.T) {
+			text := answeredOutput(t, http.StatusOK, `{"hook_call_id":null}`, runs...)
+			if !strings.Contains(text, `"permissionDecision":"deny"`) || strings.Contains(text, "updatedInput") {
+				t.Fatalf("the tool would run with the new input: %s", text)
+			}
+		})
+	}
+}
+
+func TestARestartTimeoutBesideAProjectHooksNewInputKeepsTheToolFromRunning(t *testing.T) {
+	rewrite := ForeignRun{ID: "rewrite", Stdout: `{"hookSpecificOutput":{"updatedInput":{"command":"ls"}}}`}
+	text := answeredOutput(t, restartTimedOut, "", rewrite)
+	if !strings.Contains(text, `"permissionDecision":"deny"`) || strings.Contains(text, "updatedInput") {
+		t.Fatalf("the tool would run after its refusal said it did not: %s", text)
+	}
+}
+
 func TestPlainOutputIsALineOnTheEventsTheProgramTakesItOn(t *testing.T) {
 	program := programs.Program{Events: map[string]string{"SessionStart": "session_start"}, PlainOutput: []string{"session_start"}, LineEvents: []string{"session_start"}}
 	run := ForeignRun{ID: "note", Stdout: "read the notes\n"}

@@ -52,6 +52,9 @@ func foreignReply(program programs.Program, event string, runs []ForeignRun) Rep
 		reply.Lines = append(reply.Lines, answer.Lines...)
 		reply.Terminal = joined(reply.Terminal, answer.Terminal)
 	}
+	if reply.Refusal != "" {
+		reply.UpdatedInput = nil
+	}
 	return reply
 }
 

@@ -187,6 +187,27 @@ func TestSourceFolderIsTheRepositorysSrcWhenTheJournalHoldsNoServer(t *testing.T
 	}
 }
 
+func TestSourceFolderPutsInPlaceTheLinkAStoppedSwitchLeft(t *testing.T) {
+	project := shortHome(t)
+	home := filepath.Join(project, ".journal")
+	server := filepath.Join(home, "versions", "1", "server")
+	if err := os.MkdirAll(server, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(server, "server.py"), []byte(""), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join("versions", "1"), filepath.Join(home, newSourceLink)); err != nil {
+		t.Fatal(err)
+	}
+	if got := SourceFolder(home); got != filepath.Join(home, "src") {
+		t.Fatalf("the code after a stopped switch is %s, not %s", filepath.Join(home, "src"), got)
+	}
+	if _, err := os.Stat(filepath.Join(home, "src", "server", "server.py")); err != nil {
+		t.Fatalf("src was not put in place: %v", err)
+	}
+}
+
 func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPort(t *testing.T) {
 	home := shortHome(t)
 	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {

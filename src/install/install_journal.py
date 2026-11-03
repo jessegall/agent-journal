@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from core.base.code_copy import CodeCopy
+from core.base.code_versions import CodeVersions
 from core.base.refusal import Refusal
 from core.base.journal_home import HOME_VARIABLE, JournalHome
 from install.code_replacement import CodeReplacement
@@ -42,7 +43,7 @@ class InstallJournal:
         return CodeCopy(self.source, self.home).folder()
 
     def copy_code(self) -> None:
-        CodeCopy(self.source, self.home).make()
+        CodeVersions(self.home).install(self.source)
 
     def sync(self) -> None:
         environment = {**os.environ, HOME_VARIABLE: str(self.home.folder)}

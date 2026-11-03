@@ -90,12 +90,15 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 }
 
 // withForeign adds the project hooks' reply to the journal's, for a reply the journal's rules did not make: a project
-// hook's refusal stands, so a fault in the journal never lets it go.
+// hook's refusal stands, so a fault in the journal never lets it go, and no rewrite runs a tool that was refused.
 func withForeign(reply, foreign Reply) Reply {
-	reply.Refusal = joined(foreign.Refusal, reply.Refusal)
-	if len(reply.UpdatedInput) == 0 {
+	if len(reply.UpdatedInput) == 0 && reply.Refusal == "" {
 		reply.UpdatedInput = foreign.UpdatedInput
 	}
+	if foreign.Refusal != "" {
+		reply.UpdatedInput = nil
+	}
+	reply.Refusal = joined(foreign.Refusal, reply.Refusal)
 	reply.Lines = append(reply.Lines, foreign.Lines...)
 	reply.Terminal = joined(reply.Terminal, foreign.Terminal)
 	return reply
