@@ -25,6 +25,6 @@ class WorkerStepCheck:
                 "files": list(self.git.changed_files(worktree))}
         environment = self.queries.query(Environment).find(worktree.environment_id).name
         for event in events:
-            refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp())
+            refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.agent_id)
             if refusal:
                 raise Refusal(refusal, hint)

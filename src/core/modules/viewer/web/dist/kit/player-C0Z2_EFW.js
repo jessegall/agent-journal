@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-DRVDBusx.js";
-import { bg as Q, aM as V, c7 as R } from "./index-kDPf_5wX.js";
-import { t as X } from "./VoiceFigure-BRFdCsv8.js";
+import { Stage as U, SIDES as j, reachSide as q } from "./figure-CoI0buFw.js";
+import { bg as Q, aM as V, c7 as R } from "./index-nw3TFO5z.js";
+import { t as X } from "./VoiceFigure-B2X3i_x2.js";
 const Y = 4, Z = (u) => u * u * (3 - 2 * u);
 class tt {
   constructor(t, s) {

@@ -1,4 +1,5 @@
 import {expect, test} from "vitest";
+import {reloadForNewStart} from "../src/state/updating.js";
 import {reloadIfNewBuild} from "../src/windows/staleBuild.js";
 
 const pageOf = (name) => new DOMParser().parseFromString(`<script type="module" src="/viewer/assets/index-${name}.js"></script>`, "text/html");
@@ -11,6 +12,16 @@ test.each([
     let reloaded = false;
     expect(await reloadIfNewBuild(pageOf("old"), serving(served), () => (reloaded = true))).toBe(reloads);
     expect(reloaded).toBe(reloads);
+});
+
+test("a page reloads when the server started again, not on its first answer or the same start", () => {
+    let reloads = 0;
+    const reload = () => (reloads += 1);
+    expect(reloadForNewStart("", reload)).toBe(false);
+    expect(reloadForNewStart("first", reload)).toBe(false);
+    expect(reloadForNewStart("first", reload)).toBe(false);
+    expect(reloadForNewStart("second", reload)).toBe(true);
+    expect(reloads).toBe(1);
 });
 
 test("a server that does not answer reloads nothing", async () => {

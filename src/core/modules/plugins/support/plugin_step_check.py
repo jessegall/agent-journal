@@ -22,12 +22,12 @@ class PluginStepCheck:
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings) -> None:
         self.plugins, self.folders, self.program, self.settings = plugins, folders, program, settings
 
-    def refusal(self, event: str, data: Mapping[str, object], environment: str, timestamp: Timestamp) -> str:
+    def refusal(self, event: str, data: Mapping[str, object], environment: str, timestamp: Timestamp, agent_id: int | None = None) -> str:
         for plugin in self.plugins.enabled_ones():
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if event not in manifest.window_names():
                 continue
-            call = PluginCall(manifest, PluginEvent(event, data), environment, timestamp, self.settings.values(plugin, manifest))
+            call = PluginCall(manifest, PluginEvent(event, data), environment, timestamp, self.settings.values(plugin, manifest), agent_id)
             try:
                 answer = self.program.run(call, manifest.window_ms(event, STEP_CEILING_MS))
             except PluginFaultError:

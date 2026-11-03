@@ -1,5 +1,6 @@
 import {reactive} from "vue";
 import {transport} from "../api/transport.js";
+import {reloadWhenFree} from "../platform/busyField.js";
 import {reloadIfNewBuild} from "../windows/staleBuild.js";
 
 const ASK_EVERY_MS = 2000;
@@ -24,6 +25,17 @@ async function stateOfServer() {
     }
 }
 
+// when the server last asked had started: a later start may run other code after an install, and this page holds its windows from before
+let knownStart = "";
+
+export function reloadForNewStart(startedAt, reload = () => reloadWhenFree(window)) {
+    if (!startedAt) return false;
+    const isNew = Boolean(knownStart) && knownStart !== startedAt;
+    knownStart = startedAt;
+    if (isNew) reload();
+    return isNew;
+}
+
 function arrived() {
     clearInterval(asking);
     clearTimeout(lateTimer);
@@ -43,7 +55,10 @@ async function askServer() {
     const state = await stateOfServer();
     isAsking = false;
     updating.external = state.updating;
-    if (!state.restarting && !state.updating) arrived();
+    if (!state.restarting && !state.updating) {
+        arrived();
+        reloadForNewStart(state.started_at);
+    }
 }
 
 // the server did not answer: the cover goes up and the server is asked until it answers again
@@ -58,6 +73,7 @@ export function serverGone() {
 // a broken event stream alone says nothing, as a stream also breaks with the server well: the server is asked
 export async function checkServer() {
     const state = await stateOfServer();
+    reloadForNewStart(state.started_at);
     if (state.restarting || state.updating) serverGone();
 }
 

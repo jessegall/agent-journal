@@ -32,4 +32,6 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests in turn; those that fail come back to you to fix and deliver again.
+- A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
+  next tool call, or stop and be started again when it ends.
 - Git is not yours to run: the journal commits your work.

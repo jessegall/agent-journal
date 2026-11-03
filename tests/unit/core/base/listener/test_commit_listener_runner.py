@@ -100,6 +100,23 @@ def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
     assert (HANDLED, cursor(container, PausedItemCounter.name)) == ([], 1)
 
 
+def test_a_listener_writes_one_claim_for_the_event_it_hears_and_one_move_over_the_rest(tmp_path):
+    container = container_with(tmp_path, PausedItemCounter)
+    bus = container.get(Bus)
+    for number in range(20):
+        bus.run(MakeItem(title=f"Dune {number}"), AGENT)
+    bus.run(ItemPause(row_id=1), AGENT)
+    for number in range(20):
+        bus.run(MakeItem(title=f"Arrakis {number}"), AGENT)
+    counter = container.get(Database).tally
+    first_points = counter.points()
+    container.get(CommitListenerRunner).run()
+    cursor_statements = counter.points().minus(first_points).update_statements
+    assert HANDLED == ["counted 1"]
+    assert sum(count for statement, count in cursor_statements.items() if "listener_cursors" in statement) == 2
+    assert cursor(container, PausedItemCounter.name) == 41
+
+
 def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
     container = container_with(tmp_path, NewItemPause, PausedItemCounter)
     container.get(CommitListenerRunner).run()

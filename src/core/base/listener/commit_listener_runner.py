@@ -19,8 +19,8 @@ COSTLY_LISTENER_POINTS = 500
 
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
-    run left undone is done by the next. It claims each event before handling it, so a second runner never
-    handles the same one; an event that fails is given back to be tried again, and one that fails three
+    run left undone is done by the next. It claims each event it listens to before handling it, so a second runner
+    never handles the same one, and moves over the events it does not hear in one write; an event that fails is given back to be tried again, and one that fails three
     times is skipped. Listeners a person waits on run first and again after each other listener that handled
     events, and the server runs them on a thread of their own; a costly one is noted with its points."""
 
@@ -75,14 +75,19 @@ class CommitListenerRunner:
 
     def run_listener(self, entry: ListenerEntry) -> bool:
         position = self.cursors.position(entry.name)
+        events = self.log.events_past(position)
         progress = False
-        for event in self.log.events_past(position):
+        for event in events:
+            if not entry.event.matches(event.event):
+                continue
             if not self.cursors.claimed(entry.name, position, event.id):
                 return progress
-            if entry.event.matches(event.event) and not self.handle_event(entry, event):
+            if not self.handle_event(entry, event):
                 self.cursors.claimed(entry.name, event.id, position)
                 return progress
             position, progress = event.id, True
+        if events and events[-1].id != position:
+            return self.cursors.claimed(entry.name, position, events[-1].id) or progress
         return progress
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:

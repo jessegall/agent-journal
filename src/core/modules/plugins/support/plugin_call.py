@@ -9,10 +9,11 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 @dataclass(frozen=True)
 class PluginCall:
     """One run of a plugin's program: the plugin's manifest, the event, the environment and time it came from,
-    and the settings the program reads."""
+    the settings the program reads, and the agent it came from, which the plugin writes back on what it queues."""
 
     manifest: PluginManifest
     event: PluginEvent
     environment: str
     timestamp: Timestamp
     settings: Mapping[str, object]
+    agent_id: int | None = None

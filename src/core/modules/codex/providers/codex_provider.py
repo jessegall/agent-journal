@@ -20,7 +20,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
-from core.base.provider.transcript_author import TRANSCRIPT_AUTHORS, TranscriptAuthor
+from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_list, is_mapping
@@ -30,6 +30,7 @@ from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
+DEVELOPER_ROLE = "developer"
 CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>")
 HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
 
@@ -111,7 +112,7 @@ class CodexProvider(Provider):
         payload = fields.get("payload") if is_mapping(fields) else None
         role = payload.get("role") if is_mapping(payload) else None
         content = payload.get("content") if is_mapping(payload) else None
-        if role not in TRANSCRIPT_AUTHORS or not is_list(content):
+        if role not in (*TRANSCRIPT_AUTHORS, DEVELOPER_ROLE) or not is_list(content):
             return None
         text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
         if text.startswith(CODEX_CONTEXT_OPENINGS):
@@ -119,7 +120,7 @@ class CodexProvider(Provider):
         shown = html.unescape(HOOK_PROMPT_TAG.sub("", text))
         if not shown.strip():
             return None
-        return TranscriptAuthor.row(position, role, shown, fields.get("timestamp") if is_mapping(fields) else "")
+        return TranscriptAuthor.row(position, JOURNAL_AUTHOR if role == DEVELOPER_ROLE else role, shown, fields.get("timestamp") if is_mapping(fields) else "")
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)

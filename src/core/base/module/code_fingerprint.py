@@ -8,6 +8,7 @@ from core.base.module.module import Module
 from core.base.version import CORE_VERSION
 
 CORE_FOLDER = Path(__file__).resolve().parents[2]
+BUILT_WINDOWS_FOLDER = Path("web") / "dist"
 
 
 class CodeFingerprint:
@@ -15,7 +16,8 @@ class CodeFingerprint:
     by path, size and change time, so a run can tell that the registry was built from other code; a file that
     appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
     kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the
-    text, so a request reads the kept one and never the files."""
+    text, so a request reads the kept one and never the files. A module's own text also counts its built window
+    files, since it is the version on their addresses, which a browser keeps for a year."""
 
     ticked: ClassVar[bool] = False
     kept_texts: ClassVar[dict[tuple[Path, ...], str]] = {}
@@ -39,7 +41,12 @@ class CodeFingerprint:
         return (CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
-        return self.folder_text([module.folder()])
+        folders = [module.folder()]
+        key = tuple(folders)
+        if key not in self.listings:
+            self.listings[key] = FolderListing(folders)
+        built_files = sorted(path for path in (module.folder() / BUILT_WINDOWS_FOLDER).rglob("*") if path.is_file())
+        return self.files_text([*self.listings[key].files(), *built_files])
 
     def folder_text(self, folders: Sequence[Path]) -> str:
         key = tuple(folders)

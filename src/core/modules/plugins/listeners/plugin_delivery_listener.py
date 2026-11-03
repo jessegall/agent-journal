@@ -46,7 +46,7 @@ class PluginDeliveryListener(CommitListener):
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
         plugin_event = PluginEvent(delivery.event, {str(key): value for key, value in data.items()} if is_mapping(data) else {})
-        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest))
+        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.agent_id)
         try:
             answer = self.program.run(call, DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
