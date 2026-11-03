@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {hiddenBy, hiddenSummary, ordered, RowList, SearchBar, Segmented, useRows, useWindow} from "@journal/window-kit";
+import {Btn, hiddenBy, hiddenSummary, ordered, peekRef, RowList, SearchBar, Segmented, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -12,6 +12,10 @@ const props = defineProps({line: {type: String, required: true}, empty: {type: S
 const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
+// the tests of proofs that wait in the journal's test queue, counted on the button that opens the queue inspector
+const {rows: proofs} = useRows("proof list --limit 50", ["proof.*"]);
+const WAITING = new Set(["queued", "running"]);
+const waiting = computed(() => proofs.value.filter((proof) => WAITING.has(proof.state)).length);
 const show = ref("running");
 const words = ref("");
 
@@ -81,6 +85,7 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
         <div class="agents-bar">
             <SearchBar v-model="words" class="agents-search" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
+                <Btn small bordered title="Open the test queue" data-agents-queue @click="peekRef('test_queue:0')">Test queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
             </SearchBar>
         </div>
         <template v-if="hidden">
@@ -172,6 +177,12 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
 .agents-search {
     flex: 1;
     min-width: 0;
+}
+
+.agents-queue-count {
+    margin-left: 4px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
 }
 
 </style>
