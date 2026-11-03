@@ -103,6 +103,16 @@ def test_a_fired_trigger_runs_its_extra_command(new_story, tmp_path):
     wait_for_file(marker)
 
 
+def test_a_trigger_that_blocks_counts_as_fired_and_runs_its_extra_command(new_story, tmp_path):
+    story = new_story(fixture=BuilderStarted)
+    marker = tmp_path / "ran"
+    made(story, f"""--extra-actions '[{{"type": "run", "target": "touch {marker}"}}]'""")
+    story.expect_hook_refusal("s-1", GIT_CHAIN, "Never force push")
+    story.run_listeners()
+    story.expect_text("trigger list --json", '"fired_count": 1', actor=story.agent)
+    wait_for_file(marker)
+
+
 def test_a_trigger_ends_at_its_limit_of_firings(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success('trigger make "cart" "Mind the cart"', actor=story.agent)

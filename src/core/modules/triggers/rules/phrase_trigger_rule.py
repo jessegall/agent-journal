@@ -18,7 +18,7 @@ FILES_PLACE = "files"
 
 class PhraseTriggerRule(DriverRule):
     """A trigger whose words appear in a place it watches and that passes its conditions gives the agent its
-    text or refuses the call; each one that gave its text counts as fired."""
+    text or refuses the call; each one that acted counts as fired."""
 
     name = "triggers.phrase"
     hook = HookWildcard.ALL_HOOKS
@@ -33,7 +33,7 @@ class PhraseTriggerRule(DriverRule):
         matching = [trigger for trigger in self.triggers.phrased() if self.watches_phrase(trigger, texts) and self.conditions.all_pass(trigger, hook)] if texts else []
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return RuleAnswer.refused(TRIGGER_DENIES.nudge(text=deny.text))
+            return RuleAnswer.refused(TRIGGER_DENIES.nudge(text=deny.text)).running(FireTrigger(deny.id))
         if not matching:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(text=trigger.agent_line) for trigger in matching)).running(*(FireTrigger(trigger.id) for trigger in matching))
