@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.base.module.performance_tools import PerformanceTools
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.modules.processes.models.enums.reader_type import ReaderType
@@ -15,8 +17,7 @@ NEWLINE = b"\n"
 
 
 class ReaderStep:
-    """Passes the bytes of an output that arrived since the reader last looked through the reader the output
-    keeps; a script reader needs the whole text, so it runs once, when the output ends."""
+    """Reads new complete lines for counts and progress, and runs a reader's script when the output ends."""
 
     def __init__(self, folder: OutputFolder, readers: ReaderQuery, run: ReaderRun, tools: PerformanceTools) -> None:
         self.folder, self.readers, self.run, self.tools = folder, readers, run, tools
@@ -33,21 +34,29 @@ class ReaderStep:
         return advanced
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
-        raw =self.folder.reader_bytes_after(process.id, output.reader_position, output.read_offset)
+        raw = self.folder.reader_bytes_after(process.id, output.reader_position, output.read_offset)
         ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
         if not ready_bytes:
             return None
         text = ColourCodes.removed(ready_bytes.decode(errors="replace"))
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
         steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
-        return ReaderAdvance(self.run.lines(reader, text, process.state.value, output.read_lines + 1), output.read_offset + len(ready_bytes), output.read_lines + counted,
-                             self.run.summary(reader, text) or output.reader_summary, self.run.progress(reader, text, output.progress),
-                             steps_passed=output.steps_passed + steps.passed, steps_failed=output.steps_failed + steps.failed)
+        passed, failed = output.steps_passed + steps.passed, output.steps_failed + steps.failed
+        test_count = self.run.count(reader, text, output.test_count)
+        progress = self.run.progress(reader, text, output.progress)
+        if not reader.progress_pattern and reader.step_pattern and test_count:
+            progress = min(100, (passed + failed) * 100 // test_count)
+        lines = self.run.lines(reader, text, process.state.value, output.read_lines + 1) if reader.type is ReaderType.PATTERN else []
+        return ReaderAdvance(lines, output.read_offset + len(ready_bytes), output.read_lines + counted,
+                             self.run.summary(reader, text) or output.reader_summary, progress,
+                             steps_passed=passed, steps_failed=failed, test_count=test_count)
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
+        advanced = self.text_advance(process, output, reader, is_final)
         if not is_final:
-            return None
+            return advanced
         text = self.folder.reader_text(process.id, output.reader_position)
-        steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
-        return ReaderAdvance(self.run.lines(reader, text, process.state.value), len(text.encode()), text.count("\n"), self.run.summary(reader, text), output.progress, replaces=True,
-                             steps_passed=steps.passed, steps_failed=steps.failed)
+        if advanced is None:
+            advanced = ReaderAdvance([], output.read_offset, output.read_lines, output.reader_summary, output.progress,
+                                     steps_passed=output.steps_passed, steps_failed=output.steps_failed, test_count=output.test_count)
+        return replace(advanced, lines=self.run.lines(reader, text, process.state.value), replaces=True)

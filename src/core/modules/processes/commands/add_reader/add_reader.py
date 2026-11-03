@@ -21,3 +21,5 @@ class AddReader(Command[Reader]):
     title: str = ""
     subject: str = ""
     step: str = ""
+    count: str = ""
+    count_command: str = ""

@@ -14,3 +14,4 @@ class ReaderAdvance:
     replaces: bool = False
     steps_passed: int = 0
     steps_failed: int = 0
+    test_count: int = 0
