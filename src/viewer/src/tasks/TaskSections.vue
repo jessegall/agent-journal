@@ -3,7 +3,6 @@ import {ref} from "vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 import {statusIcon as iconOf} from "../domain/taskStatus.js";
 
-// what a task says at length: what it waits on, how it was done, its brief and its log
 const LONG_BRIEF = 180;
 defineProps({task: {type: Object, required: true}});
 const emit = defineEmits(["select"]);
@@ -35,14 +34,6 @@ const briefWhole = ref(false);
             <p :class="['text', {clamped: !briefWhole}]">{{ task.brief }}</p>
             <template v-if="task.brief.length > LONG_BRIEF && !briefWhole">
                 <button type="button" class="more" @click="briefWhole = true">Show the whole brief</button>
-            </template>
-        </section>
-    </template>
-    <template v-if="task.logs.length">
-        <section class="part" data-resource-logs>
-            <h4>Log</h4>
-            <template v-for="log in task.logs" :key="log.id">
-                <p class="log">{{ log.line }}</p>
             </template>
         </section>
     </template>
@@ -117,14 +108,6 @@ const briefWhole = ref(false);
 
 .wait-title {
     min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.log {
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12.5px;
-    line-height: 1.45;
     overflow-wrap: anywhere;
 }
 </style>

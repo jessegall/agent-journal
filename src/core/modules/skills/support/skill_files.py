@@ -19,16 +19,16 @@ class SkillFiles:
     def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue) -> None:
         self.projects, self.providers, self.catalogue = projects, providers, catalogue
 
-    def for_agent(self, folder: str, hook: AgentHook) -> Path:
+    def path(self, folder: str, hook: AgentHook) -> Path:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
         return project / path if hook.role is AgentRole.WORKER else path
 
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:
         projects = self.projects.projects()
-        return {skill.folder: any(tuple(self.write_to(project, skill) for project in projects)) for skill in skills}
+        return {skill.folder: any(tuple(self.write(project, skill) for project in projects)) for skill in skills}
 
-    def write_to(self, project: Path, skill: SkillEntry) -> bool:
+    def write(self, project: Path, skill: SkillEntry) -> bool:
         text, changed = Path(skill.path).read_text(), False
         for program_folder in self.providers.skill_folders():
             target = project / program_folder / skill.folder / SKILL_FILE
@@ -41,7 +41,7 @@ class SkillFiles:
 
     def place(self, project: Path) -> tuple[str, ...]:
         for skill in self.catalogue.skills():
-            self.write_to(project, skill)
+            self.write(project, skill)
         return self.providers.skill_folders()
 
     def remove_all(self) -> None:
@@ -52,7 +52,7 @@ class SkillFiles:
 
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
-        legacy_roots = set(self.projects.roots((".codex/skills",)))
+        legacy_roots = set(self.projects.roots([".codex/skills"]))
         for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
             stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names)]
             for folder in stale:

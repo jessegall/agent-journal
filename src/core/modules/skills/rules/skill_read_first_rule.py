@@ -27,5 +27,5 @@ class SkillReadFirstRule(DriverRule):
         names = self.unread_skills.names(hook.agent_id)
         if not names or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        path = self.files.for_agent(names[0], hook)
+        path = self.files.path(names[0], hook)
         return RuleAnswer.blocked(hook, READ_SKILL_FIRST.nudge(path=path), SkillLoaded(names[0]))
