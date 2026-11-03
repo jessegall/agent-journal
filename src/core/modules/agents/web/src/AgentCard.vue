@@ -11,7 +11,7 @@ const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Work
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const MILLISECONDS_PER_HOUR = 3600000;
-const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
+const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
 const title = computed(() => {
@@ -31,12 +31,14 @@ const usage = computed(() => {
     if (props.facts?.cost_dollars) parts.push(`$${props.facts.cost_dollars.toFixed(2)}`);
     return parts.join(" · ");
 });
-const completedCount = computed(() => tasks.value.filter((task) => task.state === "completed").length);
-const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
-// a worker's pace: the tasks it completed per hour of its run, up to its end
+const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
+const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
+const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
+// A worker's pace uses its worktree's start and end, including time spent on corrections.
 const tasksPerHour = computed(() => {
-    const started = Date.parse(props.row.process_started_at || props.row.created_at);
-    const ended = props.row.ended_at ? Date.parse(props.row.ended_at) : now.value;
+    const started = Date.parse(props.progress?.started_at || props.row.created_at);
+    const finished = props.progress ? props.progress.finished_at : props.row.ended_at;
+    const ended = finished ? Date.parse(finished) : now.value;
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
     return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
@@ -81,7 +83,7 @@ readCommand();
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity>{{ identity }}</span>
-            <template v-if="tasks.length">
+            <template v-if="totalCount">
                 <template v-if="tasksPerHour">
                     <span class="agent-tasks" data-agent-pace>{{ tasksPerHour }}</span>
                 </template>

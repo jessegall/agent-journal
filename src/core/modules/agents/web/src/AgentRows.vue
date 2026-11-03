@@ -14,6 +14,8 @@ const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {i
 const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
 const {rows: workerWaits} = useRows("worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]);
+const {rows: workerProgress} = useRows("worker progress", ["task.*", "worker_worktree.*"]);
+const progressOf = (row) => workerProgress.value.find((progress) => progress.agent_id === row.id) ?? null;
 const waitReasonOf = (row) => workerWaits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
 // Proof tests waiting in the process queue, counted on the button that opens the inspector.
 const {rows: proofs} = useRows("proof list --limit 50", ["proof.*"]);
@@ -98,7 +100,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
         <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id" @mouseenter="hold(row)" @mouseleave="release(row)">
-                    <AgentCard :row="row" :facts="factsOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
+                    <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                     <template v-if="lingeringFor(row)">
                         <span class="agent-leave" data-agent-leave aria-hidden="true"><i :style="leaveStyle(row)" /></span>
                     </template>

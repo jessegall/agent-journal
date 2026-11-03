@@ -6,7 +6,7 @@ from core.modules.tasks.models.task import Task
 
 
 @dataclass(frozen=True)
-class MakeTaskInPhase(Command[Task]):
+class MakePlannedTask(Command[Task]):
     """Makes a task and places it at the end of a phase in one transaction."""
 
     task: MakeCommand[Task]

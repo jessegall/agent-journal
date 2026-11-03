@@ -5,7 +5,7 @@ from core.base.cli.make_subcommand import MakeSubcommand
 from core.base.command.command import Command
 from core.base.model.tables import Tables
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.plans.commands.make_task_in_phase.make_task_in_phase import MakeTaskInPhase
+from core.modules.plans.commands.make_planned_task.make_planned_task import MakePlannedTask
 from core.modules.tasks.models.task import Task
 
 
@@ -26,4 +26,4 @@ class MakeTaskSubcommand(Subcommand[Command[Task], Task]):
         task = self.make.command(arguments, caller)
         if arguments.phase_id is None:
             return task
-        return MakeTaskInPhase(task, arguments.phase_id)
+        return MakePlannedTask(task, arguments.phase_id)

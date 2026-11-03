@@ -28,3 +28,16 @@ JOIN agents ON agents.id = worktree.agent_id
 WHERE worktree.removed_at IS NULL
   AND worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.agent_id = worktree.agent_id)
 """
+
+WORKER_PROGRESS_SELECT = """
+SELECT worktree.agent_id, worktree.environment_id,
+       coalesce(worktree.cut_at, worktree.created_at) AS started_at,
+       worktree.removed_at AS finished_at,
+       count(tasks.id) AS task_count,
+       count(CASE WHEN tasks.state = 'completed' THEN 1 END) AS completed_count
+FROM worker_worktrees AS worktree
+LEFT JOIN tasks ON (tasks.delegated_to = worktree.agent_id OR tasks.holder_id = worktree.agent_id)
+    AND (tasks.closed_at IS NULL OR tasks.closed_at >= coalesce(worktree.cut_at, worktree.created_at))
+WHERE worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.agent_id = worktree.agent_id)
+GROUP BY worktree.id
+"""

@@ -302,6 +302,18 @@ test("a worker's card shows its completed tasks per hour", async () => {
     expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
 });
 
+test("worker totals and pace use its current worktree instead of session history", async () => {
+    const started = new Date(Date.now() - 1.5 * 3600000).toISOString();
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null,
+        created_at: new Date(Date.now() - 24 * 3600000).toISOString(), process_started_at: new Date(Date.now() - 3600000).toISOString()};
+    const tasks = [{id: 11, title: "Old task", state: "completed"}, {id: 12, title: "Old total", state: "completed"}, {id: 13, title: "Current job", state: "started"}];
+    const progress = {agent_id: 4, started_at: started, finished_at: null, completed_count: 1, task_count: 2};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker progress": page([progress])};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    expect(cardOf(element, 4).querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 2 tasks");
+    expect(cardOf(element, 4).querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
+});
+
 test("a worker's opened card shows its context and cost", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks: [], context_percent: 20, cost_dollars: 1.5}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
