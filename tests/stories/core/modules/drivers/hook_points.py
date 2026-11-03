@@ -7,6 +7,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
+from tests.stories.core.modules.processes.support.process_samples import moved_run
 
 ROW_COUNT = 40
 READS_MEASURED = 60
@@ -17,6 +18,7 @@ SAMPLES = {
     "shell": HookSamples.shell("ls -la", ShellPart("ls", CommandCategory.READ, ["-la"])),
     "stop": HookSamples.stop(),
     "tick": HookSamples.tick(),
+    "post_tool_use": HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use"),
 }
 
 
@@ -25,6 +27,14 @@ def filled(story) -> None:
         story.run(f'task make "Task {number}" --brief "A job to do" --environment main', actor=story.user)
         story.run(f'message send "Message {number}" --environment main', actor=story.user)
         story.expect_success(f'memory make "Fact {number}" --type fact --project', actor=story.user)
+
+
+def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_tasks(busy_hook_points):
+    story, database = busy_hook_points
+    start = database.tally.points()
+    story.hook("s-1", SAMPLES["post_tool_use"])
+    cost = database.tally.points().minus(start)
+    assert cost.total < HOOK_LIMIT_POINTS, f"{cost.total} points ({cost.line()}): {cost.statements.most_common(10)}"
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
@@ -64,3 +74,19 @@ def filled_hook_points(new_story):
     database = story.container.get(Database)
     over = {}
     return story, database, over
+
+
+@pytest.fixture
+def busy_hook_points(filled_hook_points):
+    story, database, _ = filled_hook_points
+    for task_id in range(1, 9):
+        story.expect_success(f"task start {task_id}", actor=story.agent)
+        story.expect_success(f"task brief {task_id}", actor=story.agent)
+    for task_id in range(9, 17):
+        story.expect_success(f"task block {task_id} --until 'false' --every 2", actor=story.user)
+        story.expect_success(f'check make "Check {task_id}" --command "true" --every 0', actor=story.user)
+    for task_id in range(17, 25):
+        story.expect_success(f'task block {task_id} --reason "Waiting on a decision"', actor=story.user)
+    for number in range(10):
+        moved_run(story, f"make build-{number}")
+    return story, database
