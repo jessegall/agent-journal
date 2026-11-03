@@ -17,10 +17,11 @@ class BackgroundCommands:
         return any(options.background for options in self.alias_runs(shell))
 
     def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
-        return tuple(part.arguments[0] for part in shell.parts if part.program == JOURNAL and part.arguments and self.aliases.options(part.arguments[0]) is not None)
+        commands = tuple(part.arguments[0] for part in shell.parts if part.program == JOURNAL and part.arguments and self.aliases.options(part.arguments[0]) is not None)
+        return tuple(dict.fromkeys((*shell.alias_names, *commands)))
 
     def alias_runs(self, shell: ShellLine) -> list[AliasOptions]:
-        runs = [self.aliases.options(part.arguments[0]) for part in shell.parts if part.program == JOURNAL and part.arguments]
+        runs = [self.aliases.options(name) for name in self.alias_names(shell)]
         return [options for options in runs if options is not None]
 
     def declared_category(self, shell: ShellLine) -> CommandCategory | None:

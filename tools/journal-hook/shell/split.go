@@ -55,13 +55,19 @@ func Split(line string) ([]Command, []string, error) {
 	return commands, redirects, nil
 }
 
-func read(line string) ([]Command, []string, error) {
+// Parse reads shell syntax using the supported Bash and Zsh grammars.
+func Parse(line string) (*syntax.File, error) {
 	file, err := parsed(line, syntax.LangBash)
 	if err != nil {
 		if zsh, zshErr := parsed(line, syntax.LangZsh); zshErr == nil {
 			file, err = zsh, nil
 		}
 	}
+	return file, err
+}
+
+func read(line string) ([]Command, []string, error) {
+	file, err := Parse(line)
 	if err != nil {
 		return nil, nil, err
 	}

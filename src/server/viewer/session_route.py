@@ -8,6 +8,8 @@ from server.viewer.shared_row import SharedRow
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.viewer_login import ViewerLogin
 from core.base.registry.window_listing import WindowListing
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 class SessionRoute:
@@ -20,10 +22,17 @@ class SessionRoute:
     def answer(self, token: str) -> SessionAnswer:
         session = self.login.session(token)
         if session.shared is None:
-            return SessionAnswer(session.type, session.person_id)
+            return SessionAnswer(session.type, session.person_id, tour_completed=self.tour_completed())
         shared = session.shared
         environment = self.login.shares.environment_name(shared.environment_id)
         return SessionAnswer(session.type, session.person_id, ShareAnswer(shared.model, shared.id, self.window(shared), environment, session.ends_at.text if session.ends_at else None, session.comments))
+
+    def tour_completed(self) -> bool:
+        container = synced_container(self.home)
+        try:
+            return container.get(SettingValues).flag(TOUR_COMPLETED, None)
+        finally:
+            container.get(Database).close()
 
     def window(self, shared: SharedRow) -> WindowListing:
         container = synced_container(self.home)

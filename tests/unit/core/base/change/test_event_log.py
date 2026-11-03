@@ -57,3 +57,12 @@ def test_events_are_read_past_an_id_in_id_order(log):
 def test_an_event_that_is_not_there_is_refused_by_id(log):
     with pytest.raises(MissingRowsError, match="no event 99"):
         log.event(99)
+
+
+def test_events_caused_by_one_event_exclude_other_changes_and_keep_their_order(log):
+    row = Item(id=5, version=1, title="Dune")
+    parent = log.write(Change(None, row, replace(CONTEXT, cause_id=None)), frozenset())
+    first = log.write(Change(None, row, replace(CONTEXT, cause_id=parent)), frozenset())
+    log.write(Change(None, row, replace(CONTEXT, cause_id=first)), frozenset())
+    last = log.write(Change(None, row, replace(CONTEXT, cause_id=parent)), frozenset())
+    assert [event.id for event in log.child_events(parent)] == [first, last]

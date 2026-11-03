@@ -1,5 +1,6 @@
 import {computed, ref, watch} from "vue";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
+import {readSession} from "../windows/startup.js";
 
 export const TOUR = [
     {
@@ -37,9 +38,13 @@ const key = (environment, part) => `journal.${part}.${environment}`;
 // the first-visit tour of the pane stage, five steps, and once it is over the hint at the pane menu; each is shown once
 // per environment in this browser; `menu` is {isOpen, open, close} for the pane menu the third and fourth steps point into
 export function usePaneGuide(environment, menu, storage = localStorage) {
-    const touring = ref(!storage.getItem(key(environment, "tour")));
+    const touring = ref(false);
     const step = ref(0);
-    const hinting = ref(touring.value || !storage.getItem(key(environment, "hint")));
+    const hinting = ref(false);
+    readSession().then((session) => {
+        touring.value = !session.tour_completed && !storage.getItem(key(environment, "tour"));
+        hinting.value = !session.tour_completed && !storage.getItem(key(environment, "hint"));
+    });
     const current = computed(() => (touring.value ? TOUR[step.value] : null));
 
     watch(

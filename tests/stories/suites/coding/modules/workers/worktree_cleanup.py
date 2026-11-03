@@ -7,6 +7,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree, orphan_worktree
 
 MAIN_SESSION = "s-1"
 DEFAULT_HOURS = 6
@@ -19,19 +20,6 @@ def hours(count: int) -> timedelta:
 def next_hour_start(story) -> timedelta:
     now = story.clock.timestamp().value
     return timedelta(minutes=60 - now.minute, seconds=-now.second)
-
-
-def commit_in_worktree(repository, worker_id: int, name: str) -> str:
-    repository.changed(worker_id, name, "TOTAL = 9\n")
-    repository.git("add", "-A", folder=repository.worktree_folder(worker_id))
-    repository.git("commit", "-m", "Work in progress", folder=repository.worktree_folder(worker_id))
-    return repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker_id)).stdout.strip()
-
-
-def orphan_worktree(repository, worker_id: int) -> str:
-    branch = repository.worker_branch(worker_id)
-    repository.git("worktree", "add", "-b", branch, str(repository.worktree_folder(worker_id)), "version-5")
-    return commit_in_worktree(repository, worker_id, "cart.py")
 
 
 def test_a_worker_idle_for_the_hours_of_the_setting_is_retired_with_its_task_open_and_its_worktree_removed(new_story):
@@ -92,13 +80,13 @@ def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
     story.expect_success("worker-worktree show 1", "state: removed")
 
 
-def test_the_hourly_sweep_removes_a_worktree_no_worker_holds_and_keeps_its_tip_as_a_ref(new_story):
+def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     story.advance(next_hour_start(story))
     story.tick(MAIN_SESSION)
-    repository.expect_no_folder(9)
+    story.expect_rows(repository.worktree_folder(9).is_dir())
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
 
 
@@ -115,7 +103,8 @@ def test_the_sweep_leaves_the_worktree_of_a_worker_that_holds_it(new_story):
 def test_the_sweep_runs_only_on_the_first_minute_of_an_hour(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
-    orphan_worktree(repository, 9)
+    tip = orphan_worktree(repository, 9)
+    repository.git("update-ref", "refs/heads/version-5", tip)
     story.advance(next_hour_start(story) + timedelta(minutes=5))
     story.tick(MAIN_SESSION)
     story.expect_rows(repository.worktree_folder(9).exists())
@@ -141,15 +130,15 @@ def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
     story.run_listeners()
     story.expect_rows((folder / "unfinished.txt").exists())
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
-    removed = story.container.get(WorktreeGit).remove_orphan(str(repository.folder), str(folder))
+    removed = story.container.get(WorktreeGit).remove_orphan(str(repository.folder), str(folder), "version-5", repository.worker_branch(9))
     story.expect_rows(removed is False)
 
 
-def test_a_start_of_the_journal_sweeps_the_worktrees_no_worker_holds(new_story):
+def test_a_start_of_the_journal_keeps_unmerged_work_no_worker_holds(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     BootingWork().run(story.container)
     story.run_listeners()
-    repository.expect_no_folder(9)
+    story.expect_rows(repository.worktree_folder(9).is_dir())
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)

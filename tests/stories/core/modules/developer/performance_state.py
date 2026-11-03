@@ -31,7 +31,7 @@ def warn_after_ready(story):
     story.expect_text("message list", f"{HOOK_LIMIT_POINTS + 1} points", actor=story.user)
 
 
-def starting_keeps_tools_quiet(story):
+def check_startup_measurements(story):
     tools = story.container.get(PerformanceTools)
     count = warning_count(story)
     BootingWork().run(story.container)
@@ -40,7 +40,7 @@ def starting_keeps_tools_quiet(story):
     warn_after_ready(story)
 
 
-def restarting_keeps_tools_quiet(story):
+def check_restart_measurements(story):
     tools = story.container.get(PerformanceTools)
     count = warning_count(story)
     story.home.restart_mark.write_text(str(os.getpid()))
@@ -49,7 +49,7 @@ def restarting_keeps_tools_quiet(story):
     warn_after_ready(story)
 
 
-def replacing_code_keeps_tools_quiet(story):
+def check_replacement_measurements(story):
     tools = story.container.get(PerformanceTools)
     measurements = []
     count = warning_count(story)
@@ -63,9 +63,9 @@ def replacing_code_keeps_tools_quiet(story):
 
 def test_performance_stays_quiet_through_start_restart_install_reload_and_tests_then_reports_points(new_story):
     story = install_runner(developer_story(new_story))
-    starting_keeps_tools_quiet(story)
-    restarting_keeps_tools_quiet(story)
-    replacing_code_keeps_tools_quiet(story)
+    check_startup_measurements(story)
+    check_restart_measurements(story)
+    check_replacement_measurements(story)
     tools = story.container.get(PerformanceTools)
     state = story.container.get(PerformanceState)
     with state.reload():

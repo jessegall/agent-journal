@@ -18,3 +18,5 @@ Performance, biggest win first, in points or rows scanned, never by duration: re
 Search first with journal search find, then file each real finding yourself: journal task make "<title under 80 characters>" --priority critical --brief "<what, the places as file:line, done when>". Name the task numbers in your report, one line each.
 
 Do not run the test suite. Verify before you report: read the code, never guess. Say plainly what you did not read or check. Plain words, no poetry, no em dashes.
+
+Journal commands for this review: journal search find "<topic>", journal task list, journal task show <n>, journal task brief <n>, journal doc show <n>, journal report show <n>, journal plan outline <n> and journal output read <n> --lines <first>-<last>. File findings with journal task make as described above. Use journal task --help and journal task make --help for the task commands and flags; journal <subject> --help lists each other command group. Read the journal skill for a subject before its first command.

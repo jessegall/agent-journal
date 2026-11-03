@@ -12,8 +12,7 @@ CONFLICT_MARKER = "<<<<<<< "
 
 
 class WorktreeGit:
-    """Runs the git of a worker's worktree under a time limit; it never reads or moves the checkout's own
-    branch."""
+    """Runs timed Git operations on worker branches and worktrees."""
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
@@ -110,8 +109,7 @@ class WorktreeGit:
         if Path(worktree.folder).exists():
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
-        unmerged = self.git(folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"refs/heads/{worktree.base_branch}..refs/heads/{worktree.branch}")
-        if unmerged.returncode == 0 and unmerged.stdout.strip() != "0":
+        if not self.is_merged(folder, worktree.base_branch, worktree.branch):
             return True
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
         return False
@@ -120,7 +118,15 @@ class WorktreeGit:
         tip = self.checked(path, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
         self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/worker-tips/{name}", tip)
 
-    def remove_orphan(self, folder: str, path: str) -> bool:
+    def is_merged(self, folder: str, base_branch: str, branch: str | None) -> bool:
+        if not base_branch or branch is None:
+            return False
+        finished = self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", f"refs/heads/{branch}", f"refs/heads/{base_branch}")
+        return finished.returncode == 0
+
+    def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
+        if not self.is_merged(folder, base_branch, branch):
+            return False
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         return not Path(path).exists()

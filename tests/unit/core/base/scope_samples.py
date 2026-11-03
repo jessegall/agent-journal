@@ -5,7 +5,7 @@ from core.base.database.database import Database
 from core.base.scope.scopes import Scopes
 
 
-def scopes_with_no_rows() -> Scopes:
+def empty_database_scopes() -> Scopes:
     container = Container()
     container.bind(Database, Database.configured(sqlite3.connect(":memory:")))
     return container.get(Scopes)

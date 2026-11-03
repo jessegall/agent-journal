@@ -40,6 +40,9 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	}
 	if options.CapCharacters == 0 {
 		options.CapCharacters = DefaultCapCharacters
+		if options.OnlyReads {
+			options.CapCharacters = ReadCapCharacters
+		}
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
 	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
