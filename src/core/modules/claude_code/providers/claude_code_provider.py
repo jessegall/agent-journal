@@ -123,7 +123,7 @@ class ClaudeCodeProvider(Provider):
         if author not in TRANSCRIPT_AUTHORS or not is_mapping(message):
             return None
         text = "\n".join(self.message_texts(message.get("content")))
-        return TranscriptAuthor.row(position, author, text) if text.strip() else None
+        return TranscriptAuthor.row(position, author, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
 
     @staticmethod
     def message_texts(content: object) -> list[str]:

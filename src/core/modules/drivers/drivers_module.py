@@ -4,6 +4,8 @@ from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDis
 from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
 from core.modules.drivers.support.dispatch_marks import DISPATCH_MARKS
 from core.modules.drivers.rules.dispatch_mark_rule import DispatchMarkRule
+from core.modules.agents.support.transcript_authors import TranscriptAuthors
+from core.modules.drivers.support.line_transcript_authors import LineTranscriptAuthors
 from core.modules.drivers.commands.skip_agent_block.skip_agent_block_subcommand import SkipAgentBlockSubcommand
 from core.modules.drivers.listeners.agent_block_skip_mark_listener import AgentBlockSkipMarkListener
 from core.modules.drivers.migrations.m014_block_graces import BlockGracesMigration
@@ -131,7 +133,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", at_start=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
-    bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
+    bindings = [(TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, shows=WindowShows.ONE_AGENT,
