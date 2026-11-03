@@ -19,6 +19,12 @@
                     "files": 2,
                     "eitherWay": true
                 }
+            },
+            {
+                "of": "condition",
+                "descendant": {
+                    "is": "member-access"
+                }
             }
         ]
     },
