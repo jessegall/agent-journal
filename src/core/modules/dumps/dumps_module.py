@@ -49,5 +49,5 @@ class DumpsModule(Module):
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
     windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
-                                 events=["dump.*", "dump_item.*"])]
+                                 runs=["dump name"], events=["dump.*", "dump_item.*"])]
     seeders = [DumpsSeeder]
