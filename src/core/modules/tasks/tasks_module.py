@@ -15,6 +15,14 @@ from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigratio
 from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
 from core.modules.tasks.migrations.m006_task_started_at import TaskStartTimeMigration
 from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
+from core.modules.tasks.migrations.m008_task_reads import TaskReadsTableMigration
+from core.modules.tasks.models.task_read import TaskRead
+from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
+from core.modules.tasks.commands.read_task_brief.task_brief_subcommand import TaskBriefSubcommand
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler import ResetTaskReadsHandler
+from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
+from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
+from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
@@ -77,18 +85,19 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
     requires_core = ">=5,<6"
-    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged]
+    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
-    models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration]
-    subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
+    models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
+              ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"]))
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, TaskReadsTableMigration]
+    subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, TaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
-    handlers = [ClearDelegatedTasksHandler, RemoveTaskDependencyHandler, WaitTaskHandler]
+    handlers = [ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
-    listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener]
+    listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
