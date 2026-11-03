@@ -24,6 +24,10 @@ class WorkerTaskAdvance:
         self.start(worktree, following, context)
         self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
 
+    def after_released_task(self, worktree: Worktree, following: Task, context: Context) -> None:
+        self.start(worktree, following, context)
+        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
+
     def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
         self.nudger.send(worktree.agent_id, WORKER_TASK_REASSIGNED, WORKER_JOB_SOURCE, context, task=reassigned.id)
