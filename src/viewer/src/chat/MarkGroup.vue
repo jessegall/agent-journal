@@ -24,10 +24,12 @@ const look = computed(() => ({
         <ChatMark :mark="look" :open="opened" @click="opened = !opened" />
         <template v-if="everOpened">
             <div :class="['group-rows', {open: opened}]" :inert="!opened" data-mark-group-rows>
-                <div class="thread-group">
-                    <template v-for="mark in group.marks" :key="mark.id">
-                        <MarkHost :mark="mark" />
-                    </template>
+                <div class="group-fold">
+                    <div class="thread-group">
+                        <template v-for="mark in group.marks" :key="mark.id">
+                            <MarkHost :mark="mark" />
+                        </template>
+                    </div>
                 </div>
             </div>
         </template>
@@ -58,9 +60,13 @@ const look = computed(() => ({
     transition: grid-template-rows 280ms cubic-bezier(0.2, 0.9, 0.25, 1), opacity 160ms ease 280ms;
 }
 
-.thread-group {
+/* the rows' margins stand inside what folds, so a closed group is as tall as one that never opened */
+.group-fold {
     min-height: 0;
     overflow: hidden;
+}
+
+.thread-group {
     display: flex;
     flex-direction: column;
     gap: 6px;

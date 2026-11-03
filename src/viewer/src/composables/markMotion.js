@@ -7,12 +7,18 @@ export const ENTER_MS = 160;
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 const STEPS = ["leaving", "resizing", "entering"];
 
+// the size to the fraction of a pixel: a rounded one locks the mark a little off its real size, so it jumps when the lock comes off, and a width rounded down wraps its title
+function measured(el) {
+    const {width, height} = el.getBoundingClientRect();
+    return {width, height};
+}
+
 // the size the mark has once its steps are over: read with the classes of the steps off, in the same breath, so what the steps change in how its
 // title wraps is part of the size it grows or shrinks to, and nothing jumps when the last step ends
 function finalSize(el) {
     const held = STEPS.filter((step) => el.classList.contains(step));
     el.classList.remove(...held);
-    const size = {width: el.offsetWidth, height: el.offsetHeight};
+    const size = measured(el);
     el.classList.add(...held);
     return size;
 }
@@ -36,7 +42,7 @@ export function useMarkMotion(root, wanted, later = (ms) => new Promise((done) =
             folded.value = next;
             return;
         }
-        const from = {width: el.offsetWidth, height: el.offsetHeight};
+        const from = measured(el);
         lock(el, from);
         phase.value = "leaving";
         await later(LEAVE_MS);

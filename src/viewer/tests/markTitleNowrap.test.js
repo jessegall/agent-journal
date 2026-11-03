@@ -78,9 +78,8 @@ test("a mark that closes keeps its title as it was while its contents fade out, 
 });
 
 test("the size a mark grows to is read as it will be once its steps are over, so its title wrapping at the end changes nothing", async () => {
-    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function () {
-        if (this.classList.contains("resizing")) return 24;
-        return this.hasAttribute("data-open") ? 60 : 24;
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+        return {width: 100, height: !this.classList.contains("resizing") && this.hasAttribute("data-open") ? 60 : 24};
     });
     const {open, mark} = opened();
     await nextTick();
