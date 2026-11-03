@@ -1,9 +1,7 @@
 from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from dataclasses import replace
 
-from core.base.agent_role import AgentRole
 from core.base.command.context import Context
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -12,6 +10,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 WAIT_ENDED_SOURCE = "tasks.wait-ended"
@@ -31,7 +30,7 @@ class TaskWaits:
             self.notify_agents(task, context)
 
     def notify_agents(self, task: Task, context: Context) -> None:
-        for agent in tuple(self.queries.query(Agent).filter(environment_id=task.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
+        for agent in tuple(MainAgentFinder.rows(self.queries, task.environment_id)):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=TASK_REOPENED.nudge(task=task.id).text, source=WAIT_ENDED_SOURCE), context)
 
     def open_waits(self, task_id: int):

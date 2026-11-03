@@ -1,18 +1,15 @@
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
-from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.project_paths import ProjectPaths
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
@@ -22,6 +19,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.usage.support.tool_facts import ToolFacts
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 SHOWN_RUNS = 2
 QUEUE_LINE = "waiting for a spot in the queue"
@@ -49,7 +47,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the tool is shown for one environment", "name it with --environment")
-        mains = self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().limited(1)
+        mains = MainAgentFinder.rows(self.queries, environment_id)
         if not mains:
             return ToolFacts()
         return self.agent_tool(mains[0].id, self.open_question_lines(environment_id))

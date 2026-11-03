@@ -1,12 +1,10 @@
-from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WaitingMessageLines
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 READ_FIELD = "read_at"
 
@@ -27,7 +25,7 @@ class ReadMessageLineListener(CommitListener):
         message = self.queries.query(Message).find(event.row_id)
         if message.type not in PERSON_MESSAGE_TYPES or message.read_at is None:
             return
-        for agent in self.queries.query(Agent).filter(environment_id=message.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows():
+        for agent in MainAgentFinder.rows(self.queries, message.environment_id):
             for line in tuple(self.lines.waiting(agent.id).all_rows()):
                 if self.lines.names(line, message):
                     self.lines.drop(line, event)

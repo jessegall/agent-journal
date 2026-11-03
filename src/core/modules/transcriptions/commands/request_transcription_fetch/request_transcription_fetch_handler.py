@@ -6,7 +6,8 @@ from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.support.server_catalogue import ServerCatalogue
 from core.modules.tasks.models.task import Task
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch import RequestTranscriptionFetch
-from core.modules.transcriptions.support.main_agent_line import MainAgentLine
+from core.modules.drivers.support.main_agent_line import MainAgentLine
+from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_IMPORT_REQUEST
 
 
@@ -27,5 +28,5 @@ class RequestTranscriptionFetchHandler(Handler[RequestTranscriptionFetch, Task])
         brief = (f"Use the tools of the MCP server {server.name} to find transcripts not yet here: journal transcription list shows those that are. "
                  f'Add each with journal transcription make "<title>" --text "<the whole transcript>" --source {server.name}.')
         task = self.repository.save(Task(environment_id=context.environment_id, creator_id=context.actor.id, title=f"Fetch transcriptions from {server.title}", brief=brief), context)
-        self.line.send(context.environment_id, TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id).text, context)
+        self.line.send(context.environment_id, TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id).text, LINE_SOURCE, context)
         return task
