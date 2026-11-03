@@ -25,7 +25,7 @@
                 "resolvesLike": "typing.*"
             },
             {
-                "nameMatches": "^delegated_to$"
+                "nameMatches": "^(delegated_to|timed_out)$"
             }
         ]
     },

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "program": "claude",
   "event": "pre_tool_use",
   "session": "4ddd741e-fab8-4b31-91f9-469ef0cf1c0c",
@@ -76,5 +76,6 @@
     "tool_input": {
       "command": "git status && grep -n foo src/app.py | head -5"
     }
-  }
+  },
+  "foreign": []
 }

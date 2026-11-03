@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "program": "claude",
   "event": "prompt",
   "session": "s-1",
@@ -12,5 +12,6 @@
   "prompt": "go on",
   "raw": {},
   "accepts_lines": true,
-  "launch": ""
+  "launch": "",
+  "foreign": []
 }

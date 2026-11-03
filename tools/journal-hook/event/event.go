@@ -11,9 +11,10 @@ import (
 //go:embed hook_event.schema.json
 var Schema []byte
 
-const Version = 2
+const Version = 3
 
 type HookEvent struct {
+	Foreign      []ForeignRun    `json:"foreign"`
 	Version      int             `json:"version"`
 	Program      string          `json:"program"`
 	Event        string          `json:"event"`
@@ -82,6 +83,12 @@ type DiffCount struct {
 }
 
 // The schema wants a list wherever it names one, so a list left empty is written [] and never null.
+
+func (hook HookEvent) MarshalJSON() ([]byte, error) {
+	type plain HookEvent
+	hook.Foreign = listed(hook.Foreign)
+	return json.Marshal(plain(hook))
+}
 
 func (tool Tool) MarshalJSON() ([]byte, error) {
 	type plain Tool

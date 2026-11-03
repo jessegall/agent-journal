@@ -36,8 +36,41 @@ def test_a_shell_line_is_read_with_its_parts_and_their_paths():
 
 def test_another_version_is_refused_with_both_versions_named():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
-    with pytest.raises(HookEventVersionError, match="version 1 .* reads version 2"):
+    with pytest.raises(HookEventVersionError, match="version 1 .* reads version 3"):
         HookEvent.parsed({**example, "version": 1})
+
+
+def test_foreign_hook_results_are_parsed():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    fields = {"id": "check", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False}
+    event = HookEvent.parsed({**example, "version": 3, "foreign": [fields]})
+    assert len(event.foreign) == 1
+    run = event.foreign[0]
+    assert (run.id, run.exit_code, run.stdout, run.stderr, run.milliseconds, run.timed_out) == ("check", 2, "blocked", "details", 17, False)
+
+
+def test_an_empty_foreign_list_is_parsed():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    assert HookEvent.parsed({**example, "version": 3, "foreign": []}).foreign == ()
+
+
+def test_version_two_has_no_compatibility_reader():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    with pytest.raises(HookEventVersionError, match="version 2 .* reads version 3"):
+        HookEvent.parsed({key: value for key, value in {**example, "version": 2}.items() if key != "foreign"})
+
+
+def test_foreign_results_are_required():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    with pytest.raises(HookEventError, match="needs foreign"):
+        HookEvent.parsed({key: value for key, value in {**example, "version": 3}.items() if key != "foreign"})
+
+
+@pytest.mark.parametrize("foreign", [None, {}, [None], [{"id": "check"}], [{"id": "check", "exit_code": 0, "stdout": "", "stderr": "", "milliseconds": 0, "timed_out": "false"}]])
+def test_invalid_foreign_results_are_refused(foreign):
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    with pytest.raises(HookEventError):
+        HookEvent.parsed({**example, "version": 3, "foreign": foreign})
 
 
 def test_a_missing_field_is_refused_by_its_name():

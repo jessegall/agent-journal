@@ -19,11 +19,12 @@
     "prompt",
     "raw",
     "accepts_lines",
-    "launch"
+    "launch",
+    "foreign"
   ],
   "properties": {
     "version": {
-      "const": 2
+      "const": 3
     },
     "program": {
       "type": "string",
@@ -88,6 +89,12 @@
     },
     "raw": {
       "type": "object"
+    },
+    "foreign": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/foreign_run"
+      }
     }
   },
   "allOf": [
@@ -433,6 +440,39 @@
         "hidden": {
           "type": "integer",
           "minimum": 0
+        }
+      }
+    },
+    "foreign_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "exit_code",
+        "stdout",
+        "stderr",
+        "milliseconds",
+        "timed_out"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string"
+        },
+        "milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timed_out": {
+          "type": "boolean"
         }
       }
     }

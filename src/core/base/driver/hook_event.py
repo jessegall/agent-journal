@@ -1,16 +1,17 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_event_version_error import HookEventVersionError
-from core.base.driver.hook_fields import mapping, number, text
+from core.base.driver.hook_fields import boolean, mapping, number, text
 from core.base.driver.tool import Tool
 
-HOOK_EVENT_VERSION = 2
+HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
 CONTINUING_SOURCES = ("compact", "clear")
-REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch")
+REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch", "foreign")
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class HookEvent:
     raw: Mapping[object, object]
     accepts_lines: bool = False
     launch: str = ""
+    foreign: tuple[ForeignRun, ...] = ()
 
     @classmethod
     def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
@@ -40,16 +42,14 @@ class HookEvent:
     @classmethod
     def parsed(cls, data: object) -> "HookEvent":
         fields = mapping(data, "a hook event")
-        missing = [key for key in REQUIRED_KEYS if key not in fields]
-        if missing:
-            raise HookEventError(f"a hook event needs {', '.join(missing)}")
         version = fields.get("version")
         if version != HOOK_EVENT_VERSION:
             raise HookEventVersionError(f"the hook sent version {version!r} of the prepared object, and this server reads version {HOOK_EVENT_VERSION}")
+        missing = [key for key in REQUIRED_KEYS if key not in fields]
+        if missing:
+            raise HookEventError(f"a hook event needs {', '.join(missing)}")
         tool, prompt, event = fields.get("tool"), fields.get("prompt"), text(fields, "event")
-        accepts_lines = fields.get("accepts_lines")
-        if not isinstance(accepts_lines, bool):
-            raise HookEventError(f"accepts_lines is true or false, not {accepts_lines!r}")
+        accepts_lines = boolean(fields, "accepts_lines")
         if event not in HookEventName:
             raise HookEventError(f"{event!r} names no hook event: {', '.join(HookEventName)}")
         if prompt is not None and not isinstance(prompt, str):
@@ -57,7 +57,7 @@ class HookEvent:
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
-                   text(fields, "launch"))
+                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]))
 
     @property
     def is_resume(self) -> bool:
