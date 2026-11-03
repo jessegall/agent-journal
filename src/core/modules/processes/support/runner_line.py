@@ -3,6 +3,7 @@ from pathlib import Path
 
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.base.caller.caller_request import SESSION_VARIABLE
+from core.base.cli.shell_handoff import RUNNER_VARIABLE
 
 
 class RunnerLine:
@@ -17,4 +18,4 @@ class RunnerLine:
         background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
         background += " --queue" if run.queued else ""
         background += " --only-reads" if run.read_command else ""
-        return f"{SESSION_VARIABLE}={shlex.quote(session)} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"
+        return f"{SESSION_VARIABLE}={shlex.quote(session)} {RUNNER_VARIABLE}={process_id} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

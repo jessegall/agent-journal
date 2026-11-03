@@ -31,8 +31,8 @@ const lastWindows = rememberedRef("sidebar-windows", []);
 const lastEnvironments = rememberedRef("sidebar-environments", []);
 const shownWindows = computed(() => (props.windows.length ? props.windows : lastWindows.value));
 const shownEnvironments = computed(() => (props.environments.length ? props.environments : lastEnvironments.value));
-watch(() => props.windows, (windows) => windows.length && (lastWindows.value = windows));
-watch(() => props.environments, (environments) => environments.length && (lastEnvironments.value = environments));
+watch(() => props.windows, (windows) => windows.length && (lastWindows.value = windows), {immediate: true});
+watch(() => props.environments, (environments) => environments.length && (lastEnvironments.value = environments), {immediate: true});
 // the windows in their groups, each in the order the suite lists them
 const inGroup = (group) => shownWindows.value.filter((window) => (window.group || "") === group);
 const sections = computed(() => [{key: "environment", title: "Environment", windows: inGroup("")}, {key: "project", title: "Project", windows: inGroup("project")}]);

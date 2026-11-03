@@ -48,7 +48,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
-                          card.dispatch_instruction, status.effort or self.providers.provider(card.program).session_effort(self.home, card.session))
+                          card.dispatch_instruction, status.effort or self.running_effort(card))
+
+    def running_effort(self, card: AgentCard) -> str:
+        return self.providers.session_effort(card.program, self.home, card.session) if card.ended_at is None else ""
 
     @staticmethod
     def waiting_state(card: AgentCard) -> str:

@@ -5,6 +5,11 @@ import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
+
 const SKILLS = [{id: 1, skill: "journal-tasks", state: "loaded"}, {id: 2, skill: "journal-memory", state: "due"}];
 
 function drawn() {
@@ -12,7 +17,7 @@ function drawn() {
     const opened = [];
     const run = async (line) => {
         ran.push(line.join(" "));
-        return line[0] === "agent-skill" ? {ok: true, value: {rows: SKILLS}} : {ok: true, value: {rows: []}};
+        return line[0] === "agent-skill" ? {ok: true, value: {rows: SKILLS}} : {ok: false, error: "not asked here"};
     };
     const element = document.createElement("div");
     document.body.append(element);

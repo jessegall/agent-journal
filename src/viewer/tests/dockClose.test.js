@@ -1,17 +1,28 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import DockStack from "../src/chat/DockStack.vue";
+import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {settle} from "./support/windowContext.js";
 
 const answers = vi.hoisted(() => ({next: null}));
 vi.mock("../src/chat/markButtons.js", () => ({pressButton: () => answers.next}));
 
-afterEach(() => (document.body.innerHTML = ""));
+afterEach(() => {
+    document.body.innerHTML = "";
+    vi.unstubAllGlobals();
+});
 
-const ITEM = {id: 5, type: "note", title: "Build", text: "Build it", target_model: "", target_id: 0};
+const DECLARATION = {type: "processes.output", icon: "terminal", title: "Output {row_id}", buttons: [], leaves_after_seconds: 5, reads: []};
+const ITEM = {id: 5, type: "processes.output", target_model: "processes", target_id: 3, state: "docked", kept: false, leaves_at: null};
 
 function drawn() {
+    loadDockDeclarations([DECLARATION]);
+    vi.stubGlobal("ResizeObserver", class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    });
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h(DockStack, {items: [ITEM]})});
@@ -27,7 +38,7 @@ test("a docked card leaves as soon as its close is pressed, before the server an
     expect(element.querySelector('[data-dock-action="undock"]')).not.toBeNull();
     element.querySelector('[data-dock-action="undock"]').click();
     await settle();
-    expect(element.querySelector('[data-dock-action="undock"]')).toBeNull();
+    expect(element.querySelector('.dock-leave-active [data-dock-action="undock"]')).not.toBeNull();
 });
 
 test("a refused close brings the card back with the reason", async () => {
