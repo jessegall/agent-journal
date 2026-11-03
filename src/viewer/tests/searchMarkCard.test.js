@@ -38,7 +38,7 @@ test("when more rows held the words than are shown the last child opens the sear
     expect(element.querySelectorAll("[data-search-child]")).toHaveLength(10);
     const last = [...element.querySelectorAll(".search-mark > button")].at(-1);
     expect(last.hasAttribute("data-search-more")).toBe(true);
-    expect(last.textContent).toContain("All 14 rows");
+    expect(last.textContent).toContain("All 14 results");
     last.click();
     expect(opened).toEqual(["search.search"]);
 });

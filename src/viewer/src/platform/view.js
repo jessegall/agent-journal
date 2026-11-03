@@ -1,8 +1,4 @@
 import {ref} from "vue";
-import {store} from "../state/store.js";
-import {ui} from "../state/ui.js";
-
-const FOCUS_FOR = 1800;
 const SETTLE = 120;
 
 export const chatOnly = new URLSearchParams(location.search).has("chat");
@@ -21,17 +17,3 @@ window.addEventListener("resize", () => {
     resizing = setTimeout(() => (laidOut.value += 1), SETTLE);
 });
 
-// opens files over the page, each {name, url}, at the one numbered `at`, to step through them
-export function openFiles(files, at) {
-    ui.lightbox.files = files;
-    ui.lightbox.at = at;
-}
-
-export function focusTurn(ref, {instant = false} = {}) {
-    const el = document.querySelector(`[data-ref="${ref}"]`);
-    if (!el) return false;
-    store.focus = ref;
-    el.scrollIntoView({behavior: instant ? "auto" : "smooth", block: "center"});
-    setTimeout(() => (store.focus = store.focus === ref ? "" : store.focus), FOCUS_FOR);
-    return true;
-}

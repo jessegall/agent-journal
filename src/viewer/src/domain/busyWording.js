@@ -347,4 +347,3 @@ export function busyWording(agent) {
     return wordings[seed % wordings.length];
 }
 
-export const wordingsOf = (kind) => WORDINGS[kind];

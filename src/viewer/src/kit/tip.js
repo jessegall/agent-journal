@@ -25,9 +25,9 @@ let spare = 0;
 
 export const shown = reactive({key: null, words: NO_WORDS, side: "below", arrow: 0, x: 0, y: 0, leaving: false, entering: false, sliding: false, prefer: "below"});
 
-export const obvious = (el, words) => !words.line && !words.keys && !/[\p{L}\p{N}]/u.test(el.textContent) && OBVIOUS.test(words.title);
+const obvious = (el, words) => !words.line && !words.keys && !/[\p{L}\p{N}]/u.test(el.textContent) && OBVIOUS.test(words.title);
 
-export const wordsOf = (value) => (value ? {...NO_WORDS, ...(typeof value === "string" ? {title: value} : value)} : null);
+const wordsOf = (value) => (value ? {...NO_WORDS, ...(typeof value === "string" ? {title: value} : value)} : null);
 
 export function place(target, size, bounds, prefer) {
     const noRoomBelow = target.bottom + GAP + size.height > bounds.bottom - EDGE;
@@ -95,10 +95,6 @@ function isKeyboardFocus(el) {
     } catch {
         return true;
     }
-}
-
-export function setLayer(el) {
-    layer.el = el;
 }
 
 export function listen(doc = document) {

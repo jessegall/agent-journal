@@ -10,7 +10,7 @@ export const isRunItem = (item, declarationOf) => (declarationOf(item.type)?.lea
 export const isLeaving = (item) => Boolean(item.leaves_at && !item.kept);
 
 // whether an item is docked at a moment, in seconds: docked, and either not leaving, not yet due, or held under the pointer
-export const isDocked = (item, now, held = new Set()) =>
+const isDocked = (item, now, held = new Set()) =>
     item.state === "docked" && (!isLeaving(item) || now < item.leaves_at || held.has(item.id));
 
 export const dockedItems = (items, now, held = new Set()) => items.filter((item) => isDocked(item, now, held)).sort((a, b) => a.id - b.id);
