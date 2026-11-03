@@ -2,7 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
-from core.base.fault_sink import FaultSink
+from core.base.exception_sink import ExceptionSink
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
@@ -25,14 +25,14 @@ class CommitListenerRunner:
     with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
-                 faults: FaultSink) -> None:
-        self.registry, self.log, self.container, self.errors, self.cursors, self.faults = registry, log, container, errors, cursors, faults
+                 exceptions: ExceptionSink) -> None:
+        self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions = registry, log, container, errors, cursors, exceptions
 
     def run(self) -> None:
         try:
-            self.faults.flush()
+            self.exceptions.flush()
         except Exception as failure:
-            self.errors.noted(f"waiting faults could not be recorded: {type(failure).__name__}: {failure}")
+            self.errors.noted(f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
         entries = sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order)
         urgent_entries = [entry for entry in entries if self.run_order(entry) < 0]
         for _ in range(CHAIN_LIMIT_ROUNDS):

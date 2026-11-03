@@ -1170,6 +1170,6 @@
         "memories.memory",
         "memories.reminder",
         "memories.compaction",
-        "chat.fault"
+        "chat.exception"
     ]
 }

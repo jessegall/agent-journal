@@ -1,8 +1,9 @@
 from core.base.database.migration import Migration
 
 
-class JournalFaultTableMigration(Migration):
-    """Creates the journal faults table; a fault outlives the environment it happened in, which it forgets."""
+class JournalExceptionTableMigration(Migration):
+    """Creates the table of journal exceptions, first named journal_faults and renamed by migration 4; an
+    exception outlives the environment it happened in, which it forgets."""
 
     number = 2
     statements = (

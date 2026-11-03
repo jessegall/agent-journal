@@ -1,7 +1,7 @@
 import traceback
 from datetime import datetime, timezone
 
-from core.base.fault_sink import FaultSink
+from core.base.exception_sink import ExceptionSink
 from core.base.journal_home import JournalHome
 
 
@@ -9,7 +9,7 @@ class ErrorLog:
     """Records unexpected errors in full, so the console can point to them in one line, and notes a hook the
     journal let through because no row holds its agent."""
 
-    def __init__(self, home: JournalHome, sink: FaultSink) -> None:
+    def __init__(self, home: JournalHome, sink: ExceptionSink) -> None:
         self.path, self.sink = home.error_log, sink
 
     def noted(self, line: str) -> None:
@@ -29,4 +29,4 @@ class ErrorLog:
         try:
             self.sink.record(" ".join(argv), f"{type(error).__name__}: {error}", environment_id)
         except Exception as failure:
-            self.noted(f"a fault could not be recorded as a row: {type(failure).__name__}: {failure}")
+            self.noted(f"an exception could not be recorded as a row: {type(failure).__name__}: {failure}")

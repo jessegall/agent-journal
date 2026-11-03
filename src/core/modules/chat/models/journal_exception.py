@@ -4,12 +4,12 @@ from core.base.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)
-class JournalFault(Model):
-    """One fault the journal met in its own work: where it happened, what went wrong, and the environment it
+class JournalException(Model):
+    """One exception the journal met in its own work: where it happened, what went wrong, and the environment it
     happened for, if one is known. The error log file keeps the trace."""
 
-    model_name = "journal_fault"
-    cli_name = "journal-fault"
+    model_name = "journal_exception"
+    cli_name = "journal-exception"
 
     environment_id: int | None = None
     creator_id: int

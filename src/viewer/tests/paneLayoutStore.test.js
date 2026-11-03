@@ -112,9 +112,9 @@ test("a placed tab keeps its window's title, and an option key no window of the 
     await layouts.load(KEY);
     const layout = layouts.layout.value;
     const id = Object.keys(layout.panes)[0];
-    layouts.replace({...layout, panes: {[id]: {...layout.panes[id], options: {hide: ["fault"], flush: true}}}});
+    layouts.replace({...layout, panes: {[id]: {...layout.panes[id], options: {hide: ["exception"], flush: true}}}});
     expect(firstPane(layouts.layout.value).titles).toEqual({"messages.chat": "Chat"});
-    expect(firstPane(layouts.layout.value).options).toEqual({hide: ["fault"]});
+    expect(firstPane(layouts.layout.value).options).toEqual({hide: ["exception"]});
 });
 
 test("of two tabs saving one layout, the second's save over a newer version loads that version instead", async () => {

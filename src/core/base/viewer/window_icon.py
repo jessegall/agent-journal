@@ -7,7 +7,7 @@ class WindowIcon(StrEnum):
     WINDOW = "window"
     SPEECH = "words"
     SUMMARY = "summary"
-    WARNING = "fault"
+    WARNING = "warning"
     VISITOR = "visitor"
     FLOWCHART = "flowchart"
     SKILL = "skill"
