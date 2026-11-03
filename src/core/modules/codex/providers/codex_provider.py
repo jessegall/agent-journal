@@ -28,6 +28,7 @@ from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
+CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>")
 
 
 class CodexProvider(Provider):
@@ -110,6 +111,8 @@ class CodexProvider(Provider):
         if role not in TRANSCRIPT_AUTHORS or not is_list(content):
             return None
         text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
+        if text.startswith(CODEX_CONTEXT_OPENINGS):
+            return None
         return TranscriptAuthor.row(position, role, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
