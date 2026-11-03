@@ -11,10 +11,12 @@ from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orpha
 
 class BootOrphanWorktreesListener(CommitListener):
     """As the journal starts, the worktrees no worker holds are swept away in every environment that is a
-    repository."""
+    repository, ahead of the listeners that publish skills into worktrees, whose files would make them look
+    changed."""
 
     name = "workers.boot-worktree-sweep"
     event = JOURNAL_BOOTING_EVENT
+    run_order = -1
 
     def __init__(self, queries: Queries, bus: Bus) -> None:
         self.queries, self.bus = queries, bus

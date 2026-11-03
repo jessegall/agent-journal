@@ -11,7 +11,7 @@ from core.base.agent_role import AgentRole
 
 class DeliveredWorkStopRule(DriverRule):
     """A main agent that stops while a worker's delivered work waits for its checks is refused once per
-    delivery."""
+    delivery, and always while a proof with no test waits, since nothing else ever moves it."""
 
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP
@@ -22,6 +22,10 @@ class DeliveredWorkStopRule(DriverRule):
         self.delivered, self.proofs, self.hook_history = delivered, proofs, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        for worktree in self.delivered.main_worktrees(hook.agent_id):
+            untested = [proof.id for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
+            if untested:
+                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.agent_id, task=worktree.task_id, proofs=', '.join(map(str, untested))))
         refused_at = self.hook_history.last_answer(self.name, hook)
         for worktree in self.delivered.delivered(hook.agent_id):
             proofs = [proof.id for proof in self.proofs.waiting_proofs(worktree.id).oldest().all_rows()]
