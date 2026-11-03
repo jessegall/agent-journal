@@ -3,6 +3,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
@@ -31,6 +32,7 @@ class EndedWorkerListener(SaveListener):
 
     name = "workers.ended-worker"
     event = "agent.update"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, tasks: TaskQuery, nudger: Nudger, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, stop: WorkerStop) -> None:
         self.tasks, self.nudger, self.queries, self.worktrees, self.proofs, self.stop = tasks, nudger, queries, worktrees, proofs, stop

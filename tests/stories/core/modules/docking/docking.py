@@ -112,8 +112,8 @@ def test_an_agent_undocks_an_item_a_person_kept(new_story):
 def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     window = Registry.read(story.container.get(Database)).window("messages.chat")
-    assert "dock-item list" in window.reads and "dock_item.*" in window.events
-    WindowStory(story).expect_window_allowed("messages.chat", "dock-item list")
+    assert "dock-item main" in window.reads and "dock_item.*" in window.events
+    WindowStory(story).expect_window_allowed("messages.chat", "dock-item main")
 
 
 def test_a_docked_document_carries_its_abstract_to_read_when_the_card_is_expanded(new_story):

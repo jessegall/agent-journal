@@ -1,3 +1,4 @@
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.driver_nudges import AGENT_RESUMED
 from dataclasses import replace
 
@@ -18,6 +19,7 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
     this is committed."""
 
     command = ResumeAgent
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

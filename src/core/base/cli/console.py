@@ -26,6 +26,7 @@ from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
+from core.base.scope.scopes import Scopes
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
@@ -39,10 +40,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes) -> None:
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
-        self.environment_names, self.resolver, self.aliases, self.handoff, self.events = environment_names, resolver, aliases, handoff, events
+        self.environment_names, self.resolver, self.aliases, self.handoff, self.events, self.scopes = environment_names, resolver, aliases, handoff, events, scopes
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
         output = Output(self.tables, "--json" in argv, stream)
@@ -101,7 +102,9 @@ class Console:
             output.stream.write(captured_output.getvalue())
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
         if not isinstance(subcommand, Subcommand):
-            subcommand.write_output(subcommand.read(arguments, caller), output)
+            with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id):
+                value = subcommand.read(arguments, caller)
+            subcommand.write_output(value, output)
             return SUCCESS_CODE
         self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)

@@ -6,6 +6,7 @@ from core.base.database.statement import Statement
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
+ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
@@ -14,6 +15,7 @@ class ActorTable:
 
     def __init__(self, database: Database) -> None:
         self.database = database
+        self.agent_answers: dict[int, bool] = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -28,6 +30,11 @@ class ActorTable:
     def agent_actor_id(self, session: str) -> int | None:
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
         return int(rows[0]["id"]) if rows else None
+
+    def is_agent(self, actor_id: int) -> bool:
+        if actor_id not in self.agent_answers:
+            self.agent_answers[actor_id] = bool(self.database.rows(Statement(ACTOR_ROW.sql, (actor_id, ActorType.AGENT.value))))
+        return self.agent_answers[actor_id]
 
     def newest_main_agent_id(self, environment_id: int) -> int | None:
         rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))

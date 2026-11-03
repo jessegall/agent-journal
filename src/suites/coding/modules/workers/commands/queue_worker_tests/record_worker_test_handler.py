@@ -2,6 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -29,6 +30,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     its next task, or, once handed in, tells the main agent to merge."""
 
     command = RecordWorkerTest
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger) -> None:
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger

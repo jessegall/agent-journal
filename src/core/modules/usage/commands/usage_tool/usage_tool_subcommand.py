@@ -7,6 +7,7 @@ from core.base.driver.project_paths import ProjectPaths
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -33,6 +34,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     going and, for the main agent, the open questions."""
 
     cli_name = "usage"
+    disabled_scopes = [ActorScope]
     name = "tool"
 
     def __init__(self, queries: Queries, environment_names: EnvironmentNames, processes: ProcessQuery, outputs: OutputQuery) -> None:

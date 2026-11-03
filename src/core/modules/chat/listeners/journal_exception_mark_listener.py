@@ -1,4 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
+from core.base.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.chat_mark_variant import ChatMarkVariant
@@ -12,6 +13,7 @@ class JournalExceptionMarkListener(MarkListener):
 
     name = "chat.exception-mark"
     event = "journal_exception.create"
+    disabled_scopes = [ActorScope]
     module_name = "journal.core.chat"
 
     def handle(self, event: LoggedEvent) -> None:

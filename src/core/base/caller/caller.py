@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 
 
 @dataclass(frozen=True)
@@ -9,3 +10,7 @@ class Caller:
 
     actor: Actor
     environment_id: int | None = None
+
+    @property
+    def read_actor_id(self) -> int | None:
+        return self.actor.id if self.actor.type is ActorType.AGENT else None

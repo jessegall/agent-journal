@@ -1,5 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_chain import ProcessChain
@@ -22,19 +23,26 @@ class AgentCallerResolver(CallerResolver):
     variable of its agent program names, in its environment; else the person the login name names, in the
     environment whose folder holds the working folder. A shell of an agent program is never taken for the
     person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
-    agent is refused, never run as anyone else."""
+    agent is refused, never run as anyone else. With no session variable, an agent with an open subagent cannot
+    be told from that subagent, so the command is recorded as the journal's."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers
 
     def caller(self, request: CallerRequest) -> Caller:
         program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
-        agent = self.session_agent(request) or self.ancestor_agent(request) or self.program_agent(program_sessions)
+        session_agent = self.session_agent(request)
+        if session_agent is not None:
+            return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
+        agent = self.ancestor_agent(request) or self.program_agent(program_sessions)
         if agent is not None:
-            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id)
+            return Caller(Actor.core() if self.has_open_subagent(agent) else Actor(agent.id, ActorType.AGENT), agent.environment_id)
         environment = self.environments.folder_environment(request.folder)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
         return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None)
+
+    def has_open_subagent(self, agent: Agent) -> bool:
+        return self.queries.query(Agent).filter(parent_id=agent.id, role=AgentRole.SUBAGENT).matching(IsNull("ended_at")).exists()
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
         return next(iter(self.queries.query(Agent).matching(Among("session", sessions)).matching(IsNull("ended_at")).all_rows()), None) if sessions else None

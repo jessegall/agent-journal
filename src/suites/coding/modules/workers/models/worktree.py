@@ -13,6 +13,7 @@ class Worktree(Model):
     branch."""
 
     model_name = "worker_worktree"
+    shared_rows = True
     cli_name = "worker-worktree"
     lifecycle = WorktreeLifecycle
 

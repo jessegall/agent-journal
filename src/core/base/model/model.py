@@ -19,6 +19,7 @@ class Model:
     lifecycle: ClassVar[type[Lifecycle] | None] = None
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
     search_fields: ClassVar[Sequence[str]] = ()
+    shared_rows: ClassVar[bool] = False
 
     id: int = 0
     version: int = 0
@@ -57,3 +58,6 @@ class Model:
 
     def current_state(self) -> StrEnum:
         return getattr(self, STATE)
+
+    def scoped(self, actor_id: int) -> Self:
+        return self

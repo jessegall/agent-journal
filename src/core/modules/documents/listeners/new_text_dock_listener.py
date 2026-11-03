@@ -5,6 +5,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.documents.models.enums.text_dock_type import TextDockType
@@ -19,6 +20,7 @@ class NewTextDockListener(CommitListener):
 
     row_model: ClassVar[type[TextRow]]
     dock_type: ClassVar[TextDockType]
+    disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries

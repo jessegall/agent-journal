@@ -4,6 +4,7 @@ from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -15,6 +16,7 @@ class WorkerJobResumeListener(CommitListener):
 
     name = "workers.worker-ended-with-job"
     event = "agent.update"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, resume: WorkerResume, stop: WorkerStop) -> None:
         self.queries, self.worker_resume, self.stop = queries, resume, stop

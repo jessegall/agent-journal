@@ -1,6 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
@@ -15,6 +16,7 @@ class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
     tells its main agent the message's number as a line."""
 
     command = RecordWorkerReport
+    disabled_scopes = [ActorScope]
 
     def __init__(self, repository: Repository, nudger: Nudger) -> None:
         self.repository, self.nudger = repository, nudger

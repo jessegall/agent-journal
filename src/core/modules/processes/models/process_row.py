@@ -17,5 +17,6 @@ class ProcessRow(ViewModel):
 
     id: int
     environment_id: int
+    agent_id: int
     line: str
     state: ProcessState

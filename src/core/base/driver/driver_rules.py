@@ -16,6 +16,7 @@ from core.base.error_log import ErrorLog
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
+from core.base.scope.scopes import Scopes
 
 
 class DriverRules:
@@ -24,9 +25,9 @@ class DriverRules:
     rule that raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog,
-                 allowances: EssentialAllowances) -> None:
+                 allowances: EssentialAllowances, scopes: Scopes) -> None:
         self.registry, self.container, self.switches, self.layers, self.history, self.errors = registry, container, switches, layers, history, errors
-        self.allowances = allowances
+        self.allowances, self.scopes = allowances, scopes
 
     def ask(self, hook: AgentHook) -> RuleAnswers:
         suite = self.registry.suite(hook.suite)
@@ -63,7 +64,8 @@ class DriverRules:
             if rule.start_line_rule and hook.event.is_resume:
                 return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
-            answer = rule.answer(replace(hook, control_return=control_return))
+            with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id):
+                answer = rule.answer(replace(hook, control_return=control_return))
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")
