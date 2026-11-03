@@ -47,7 +47,7 @@ async function save(profile, fields) {
 </script>
 
 <template>
-    <section class="profiles" data-profiles>
+    <section class="profiles" data-profiles data-window-flush>
         <div class="bar">
             <TextInput v-model="query" class="profiles-find" icon="search" placeholder="Find a profile" aria-label="Find a profile" data-profile-find @keydown.esc="query = ''" />
             <Btn kind="ghost" small data-profile-new @click="make">New profile</Btn>

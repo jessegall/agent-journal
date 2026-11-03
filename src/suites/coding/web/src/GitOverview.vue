@@ -114,7 +114,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 24px;
-    padding: 12px 16px;
+    padding: 24px 28px;
 }
 
 .part {

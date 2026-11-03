@@ -11,7 +11,13 @@ test("a pane gives a flush window no padding, so a window's own padding is not d
     expect(source("../src/windows/PaneStage.vue")).toMatch(/\.pane-body > :deep\(\.window:has\(\[data-window-flush\]\)\) \{\n {4}padding: 0;/);
 });
 
-test.each(["../kit/RowCards.vue", "../../core/modules/search/web/src/SearchWindow.vue", "../../suites/coding/web/src/GitOverview.vue", "../../core/modules/documents/web/src/DocumentLibrary.vue"])("%s pads its own parts", (path) => {
+test("a window on its own page keeps a pane's padding, and a flush window has none there either", () => {
+    const page = source("../src/layout/ViewWindow.vue");
+    expect(page).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 8px 12px;/);
+    expect(page).toMatch(/\.view-window\.standalone :deep\(\.window:has\(\[data-window-flush\]\)\) \{\n {4}padding: 0;/);
+});
+
+test.each(["../kit/RowCards.vue", "../../core/modules/search/web/src/SearchWindow.vue", "../../suites/coding/web/src/GitOverview.vue", "../../core/modules/documents/web/src/DocumentLibrary.vue", "../../core/modules/profiles/web/src/ProfileRows.vue", "../../core/modules/messages/web/src/Attachments.vue"])("%s pads its own parts", (path) => {
     expect(source(path)).toContain("data-window-flush");
 });
 

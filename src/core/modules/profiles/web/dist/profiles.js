@@ -1,11 +1,11 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-502aa8a73cf1")) { const style = document.createElement("style"); style.id = "window-styles-502aa8a73cf1"; style.textContent = ".profile-panel[data-v-57deba13]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-57deba13]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-57deba13]{flex:1}.profiles[data-v-bb7eea1d]{padding:0 0 40px}.bar[data-v-bb7eea1d]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:44px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border);color:var(--text-2)}.profiles-find[data-v-bb7eea1d]{flex:0 1 280px}.count[data-v-bb7eea1d]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-bb7eea1d]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-bb7eea1d]{color:var(--danger)}.empty[data-v-bb7eea1d]{margin:40px auto;max-width:480px}.rows[data-v-bb7eea1d]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-bb7eea1d]{text-align:left}.profile-meta[data-v-bb7eea1d]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-bb7eea1d]{color:var(--text-2)}.profile-used[data-v-bb7eea1d]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-bb7eea1d]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-bb7eea1d]{flex:1 1 100%}.profile-meta[data-v-bb7eea1d]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-181fbf72112a")) { const style = document.createElement("style"); style.id = "window-styles-181fbf72112a"; style.textContent = ".profile-panel[data-v-57deba13]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-57deba13]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-57deba13]{flex:1}.profiles[data-v-c7c80fdb]{padding:0 0 40px}.bar[data-v-c7c80fdb]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:44px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border);color:var(--text-2)}.profiles-find[data-v-c7c80fdb]{flex:0 1 280px}.count[data-v-c7c80fdb]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-c7c80fdb]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-c7c80fdb]{color:var(--danger)}.empty[data-v-c7c80fdb]{margin:40px auto;max-width:480px}.rows[data-v-c7c80fdb]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-c7c80fdb]{text-align:left}.profile-meta[data-v-c7c80fdb]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-c7c80fdb]{color:var(--text-2)}.profile-used[data-v-c7c80fdb]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-c7c80fdb]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-c7c80fdb]{flex:1 1 100%}.profile-meta[data-v-c7c80fdb]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as C, watch as D, computed as I, openBlock as u, createBlock as b, unref as e, withCtx as i, createElementVNode as h, createVNode as s, createCommentVNode as $, createElementBlock as w, createTextVNode as x, withKeys as W, toDisplayString as m, Fragment as K, renderList as M, normalizeClass as q } from "vue";
 import { SidePanel as z, FormField as y, TextInput as F, TextArea as j, Segmented as U, ModelPicker as E, Btn as N, useRows as H, EmptyState as T, ListRow as J, ago as Q } from "@journal/window-kit";
 const L = (p, _) => {
   const r = p.__vccOpts || p;
-  for (const [v, g] of _)
-    r[v] = g;
+  for (const [c, g] of _)
+    r[c] = g;
   return r;
 }, X = {
   class: "profile-panel",
@@ -18,7 +18,7 @@ const L = (p, _) => {
   props: { profile: { type: Object, required: !0 }, used: { type: String, default: "" } },
   emits: ["close", "save"],
   setup(p, { emit: _ }) {
-    const r = p, v = _, g = [
+    const r = p, c = _, g = [
       { key: "subagent", label: "Subagent" },
       { key: "worker", label: "Worker" }
     ], S = ["description", "tools", "profile_type", "model", "codex_model", "body"], o = C({});
@@ -29,11 +29,11 @@ const L = (p, _) => {
       },
       { immediate: !0 }
     );
-    const c = I(() => S.some((f) => o.value[f] !== r.profile[f]) || !r.profile.name), k = I(() => c.value && /^[a-z0-9_-]+$/i.test(o.value.name || "") && o.value.description.trim());
+    const v = I(() => S.some((f) => o.value[f] !== r.profile[f]) || !r.profile.name), k = I(() => v.value && /^[a-z0-9_-]+$/i.test(o.value.name || "") && o.value.description.trim());
     return (f, t) => (u(), b(e(z), {
       title: p.profile.name || "New profile",
       abstract: p.profile.name ? p.used : "A worker or a subagent the agent can dispatch for one kind of job",
-      onClose: t[9] || (t[9] = (n) => v("close"))
+      onClose: t[9] || (t[9] = (n) => c("close"))
     }, {
       foot: i(() => [
         t[12] || (t[12] = h("span", { class: "profile-panel-grow" }, null, -1)),
@@ -41,7 +41,7 @@ const L = (p, _) => {
           kind: "ghost",
           small: "",
           "data-profile-cancel": "",
-          onClick: t[7] || (t[7] = (n) => v("close"))
+          onClick: t[7] || (t[7] = (n) => c("close"))
         }, {
           default: i(() => [...t[10] || (t[10] = [
             x("Cancel", -1)
@@ -53,7 +53,7 @@ const L = (p, _) => {
           small: "",
           disabled: !k.value,
           "data-profile-save": "",
-          onClick: t[8] || (t[8] = (n) => v("save", p.profile, o.value))
+          onClick: t[8] || (t[8] = (n) => c("save", p.profile, o.value))
         }, {
           default: i(() => [...t[11] || (t[11] = [
             x("Save", -1)
@@ -178,7 +178,8 @@ const L = (p, _) => {
   }
 }, ee = /* @__PURE__ */ L(Z, [["__scopeId", "data-v-57deba13"]]), te = {
   class: "profiles",
-  "data-profiles": ""
+  "data-profiles": "",
+  "data-window-flush": ""
 }, le = { class: "bar" }, oe = {
   class: "count",
   "data-profile-count": ""
@@ -197,23 +198,23 @@ const L = (p, _) => {
 }, ie = { class: "profile-meta" }, re = { class: "profile-model" }, de = {
   __name: "ProfileRows",
   setup(p) {
-    const _ = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1, uses: 0 }, { rows: r, failure: v, loaded: g, act: S, actionFailure: o } = H("profile list", []), c = C(""), k = C(""), f = C(""), t = C(!1), n = I(() => {
+    const _ = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1, uses: 0 }, { rows: r, failure: c, loaded: g, act: S, actionFailure: o } = H("profile list", []), v = C(""), k = C(""), f = C(""), t = C(!1), n = I(() => {
       const d = k.value.toLowerCase().split(/\s+/).filter(Boolean);
       return r.value.filter((l) => d.every((a) => `${l.name} ${l.description} ${l.profile_type} ${l.model} ${l.codex_model}`.toLowerCase().includes(a)));
-    }), P = I(() => t.value ? _ : r.value.find((d) => d.name === c.value) || null), R = (d) => d.uses ? `Dispatched ${d.uses} ${d.uses === 1 ? "time" : "times"}, last ${Q(new Date(d.last_used * 1e3).toISOString())}` : "Never dispatched here";
+    }), P = I(() => t.value ? _ : r.value.find((d) => d.name === v.value) || null), R = (d) => d.uses ? `Dispatched ${d.uses} ${d.uses === 1 ? "time" : "times"}, last ${Q(new Date(d.last_used * 1e3).toISOString())}` : "Never dispatched here";
     function V() {
-      t.value = !0, c.value = "";
+      t.value = !0, v.value = "";
     }
     function A(d) {
-      t.value = !1, c.value = d.name;
+      t.value = !1, v.value = d.name;
     }
     function G() {
-      t.value = !1, c.value = "";
+      t.value = !1, v.value = "";
     }
     async function O(d, l) {
       f.value = "";
       const a = d.name || l.name;
-      (await S(["profile", "save", a, "--description", l.description, "--tools", l.tools, "--type", l.profile_type, "--model", l.model, "--codex-model", l.codex_model, "--body", l.body])).ok && (t.value = !1, c.value = a, f.value = `${a} saved; the agent reads it at its next dispatch.`);
+      (await S(["profile", "save", a, "--description", l.description, "--tools", l.tools, "--type", l.profile_type, "--model", l.model, "--codex-model", l.codex_model, "--body", l.body])).ok && (t.value = !1, v.value = a, f.value = `${a} saved; the agent reads it at its next dispatch.`);
     }
     return (d, l) => (u(), w("section", te, [
       h("div", le, [
@@ -242,13 +243,13 @@ const L = (p, _) => {
         f.value ? (u(), w("span", ae, m(f.value), 1)) : $("", !0),
         e(o) ? (u(), w("span", ne, m(e(o)), 1)) : $("", !0)
       ]),
-      e(v) ? (u(), b(e(T), {
+      e(c) ? (u(), b(e(T), {
         key: 0,
         class: "empty",
         title: "The profiles could not be read"
       }, {
         default: i(() => [
-          x(m(e(v)), 1)
+          x(m(e(c)), 1)
         ]),
         _: 1
       })) : !e(g) || !e(r).length ? (u(), b(e(T), {
@@ -308,7 +309,7 @@ const L = (p, _) => {
       }, null, 8, ["profile", "used"])) : $("", !0)
     ]));
   }
-}, fe = /* @__PURE__ */ L(de, [["__scopeId", "data-v-bb7eea1d"]]);
+}, fe = /* @__PURE__ */ L(de, [["__scopeId", "data-v-c7c80fdb"]]);
 export {
   fe as default
 };
