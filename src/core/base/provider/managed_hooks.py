@@ -11,6 +11,7 @@ from core.base.journal_home import JournalHome
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState
 from core.base.provider.hook_effect import HookEffect
+from core.base.refusal import Refusal
 
 
 class ManagedHooks:
@@ -40,8 +41,12 @@ class ManagedHooks:
             return merged_hooks
 
     def changed(self, hook_id: str, state: ManagedState, timeout: int) -> ManagedHook:
+        if timeout < 1:
+            raise Refusal("a hook timeout must be at least 1 second")
         with self._locked():
             hooks = {hook.id: hook for hook in self._read()}
+            if hook_id not in hooks:
+                raise Refusal(f"unknown managed hook {hook_id}")
             changed = replace(hooks[hook_id], state=state, timeout=timeout)
             hooks[hook_id] = changed
             self._write(list(hooks.values()))
