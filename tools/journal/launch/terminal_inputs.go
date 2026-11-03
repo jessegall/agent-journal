@@ -49,6 +49,14 @@ func (inputs *TerminalInputs) Open(agentID int, source io.Reader) io.Reader {
 	return reader
 }
 
+// IsOpen says whether a program of the agent runs.
+func (inputs *TerminalInputs) IsOpen(agentID int) bool {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	_, ok := inputs.writers[agentID]
+	return ok
+}
+
 // Close ends the agent's input once its program has ended.
 func (inputs *TerminalInputs) Close(agentID int) {
 	inputs.mutex.Lock()
