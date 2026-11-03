@@ -8,6 +8,7 @@ from core.base.timestamp import Timestamp
 from datetime import timedelta
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.queries.support.interval_passed import IntervalPassed
+from suites.coding.modules.checks.queries.conditions.task_wait_command_failure import TaskWaitCommandFailure
 
 
 
@@ -25,8 +26,8 @@ class CheckQuery(Query[Check]):
     def running(self) -> list[Check]:
         return [check for check in self.kept() if check.is_running]
 
-    def task_waits(self) -> list[Check]:
-        return list(self.matching(IsNull("removed_at")).matching(Greater("task_wait_id", 0)).oldest().all_rows())
+    def broken_task_waits(self) -> list[Check]:
+        return list(self.matching(IsNull("removed_at")).matching(Greater("task_wait_id", 0)).filter(last_passed=False).matching(TaskWaitCommandFailure()).oldest().all_rows())
 
     def due(self, present: Timestamp) -> list[Check]:
         return list(self.matching(IsNull("removed_at")).filter(stopped=False).matching(IntervalPassed(present.text)).oldest().all_rows())

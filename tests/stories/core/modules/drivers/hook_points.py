@@ -1,9 +1,13 @@
 import pytest
+from datetime import timedelta
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.tool_type import ToolType
+from core.modules.processes.support.output_folder import OutputFolder
+from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
@@ -29,8 +33,10 @@ def filled(story) -> None:
         story.expect_success(f'memory make "Fact {number}" --type fact --project', actor=story.user)
 
 
-def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_tasks(busy_hook_points):
+@pytest.mark.parametrize("elapsed_seconds", [0, 35])
+def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_tasks(busy_hook_points, elapsed_seconds):
     story, database = busy_hook_points
+    story.advance(timedelta(seconds=elapsed_seconds))
     start = database.tally.points()
     story.hook("s-1", SAMPLES["post_tool_use"])
     cost = database.tally.points().minus(start)
@@ -79,6 +85,11 @@ def filled_hook_points(new_story):
 @pytest.fixture
 def busy_hook_points(filled_hook_points):
     story, database, _ = filled_hook_points
+    for number in range(22):
+        story.expect_success(f'question ask "Choose database {number}" --options sqlite postgres --environment main', actor=story.agent)
+        story.expect_success(f"question answer {number + 1} --answer sqlite", actor=story.user)
+    for number in range(6):
+        story.expect_success(f'sequence make "Sequence {number}" --steps "Read the task | Do the task"', actor=story.user)
     for task_id in range(1, 9):
         story.expect_success(f"task start {task_id}", actor=story.agent)
         story.expect_success(f"task brief {task_id}", actor=story.agent)
@@ -87,6 +98,11 @@ def busy_hook_points(filled_hook_points):
         story.expect_success(f'check make "Check {task_id}" --command "true" --every 0', actor=story.user)
     for task_id in range(17, 25):
         story.expect_success(f'task block {task_id} --reason "Waiting on a decision"', actor=story.user)
+    story.container.get(DueCheckRuns).run()
     for number in range(10):
-        moved_run(story, f"make build-{number}")
+        process = moved_run(story, f"make build-{number}")
+        story.container.get(OutputFolder).write_output(process.id, 1, "building\n")
+        monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}})
+        story.hook("s-1", monitor)
+    story.hook("s-1", SAMPLES["post_tool_use"])
     return story, database

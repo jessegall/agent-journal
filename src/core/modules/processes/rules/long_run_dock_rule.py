@@ -30,7 +30,7 @@ class LongRunDockRule(DriverRule):
         self.processes, self.items, self.outputs, self.folder, self.visibility = processes, items, outputs, folder, visibility
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        running = tuple(self.processes.agent(hook.agent_id).running().all_rows())
+        running = tuple(self.processes.agent(hook.agent_id).running().long_run_candidates(hook.timestamp, DOCK_AFTER_SECONDS).all_rows())
         due = [process for process in running if self.needs_dock(process, hook)]
         docked = {item.target_id for item in self.items.type_items(ProcessDockType.OUTPUT.value).filter(state=DockItemState.DOCKED, target_model="process").all_rows()}
         shown = [process for process in running if process.id in docked or process in due]
@@ -44,6 +44,6 @@ class LongRunDockRule(DriverRule):
         return bool(kept) and RunTitle.is_descriptive(kept[0].title, process.line)
 
     def needs_dock(self, process: Process, hook: AgentHook) -> bool:
-        if process.started_at is None or not self.visibility.is_visible(process) or process.started_at.elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
+        if process.started_at is None or process.started_at.elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or not self.visibility.is_visible(process) or self.folder.end(process.id) is not None:
             return False
         return not self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists()

@@ -9,6 +9,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
+from core.base.query.conditions.maximum import Maximum
 from core.base.query.conditions.metadata_equal import MetadataEqual
 from core.base.query.conditions.metadata_key_error import MetadataKeyError
 
@@ -17,6 +18,7 @@ def test_each_condition_gives_its_sql_and_parameters():
     assert Equal("state", "open").statement() == Statement("state = ?", ["open"])
     assert Equal("state", "open", negated=True).statement() == Statement("state IS NOT ?", ["open"])
     assert Less("id", 12).statement() == Statement("id < ?", [12])
+    assert Maximum("id", 12).statement() == Statement("id <= ?", [12])
     assert Greater("id", 12).statement() == Statement("id > ?", [12])
     assert IsNull("closed_at").statement() == Statement("closed_at IS NULL")
     assert Among("id", (3, 4)).statement() == Statement("id IN (?, ?)", (3, 4))

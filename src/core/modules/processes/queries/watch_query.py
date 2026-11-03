@@ -5,6 +5,7 @@ from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.watch import Watch
+from core.modules.processes.queries.conditions.watch_progress_due import WatchProgressDue
 
 
 class WatchQuery(Query[Watch]):
@@ -18,3 +19,6 @@ class WatchQuery(Query[Watch]):
 
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id)
+
+    def progress_due(self, agent_id: int, step_percent: int) -> Self:
+        return self.open(agent_id).matching(WatchProgressDue(step_percent))
