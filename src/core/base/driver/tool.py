@@ -60,7 +60,7 @@ class Tool:
     def block_exempt(self) -> bool:
         if self.category in READ_TOOL_TYPES:
             return True
-        if self.shell is None or self.shell.redirects or not self.shell.parts:
+        if self.shell is None or self.shell.has_file_redirects or not self.shell.parts:
             return False
         return all(part.classification.category in BLOCK_EXEMPT_CATEGORIES for part in self.shell.parts)
 
