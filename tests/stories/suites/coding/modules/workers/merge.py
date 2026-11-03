@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 import subprocess
 
@@ -372,9 +373,29 @@ def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.expect_success(f"agent end {worker.id}", actor=user)
     story.run_listeners()
+    WorkerResumeRetry()(story.container)
     story.expect_rows(launcher.requests == [])
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
     launcher.server.close()
+
+
+def test_a_job_refused_because_the_program_still_runs_starts_the_worker_when_the_program_has_ended(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    story.advance(timedelta(seconds=5))
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answers=(b"running\n", b"started\n"), request_count=2)
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
+    WorkerResumeRetry()(story.container)
+    launcher.thread.join(10)
+    story.expect_rows(len(launcher.requests) == 2)
+    assert any("Add the tax as well" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "entered")
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(len(launcher.requests) == 2)
 
 
 def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(new_story):
@@ -388,7 +409,7 @@ def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(ne
     story.run_listeners()
     story.expect_rows(len(launcher.requests) == 1)
     story.advance(timedelta(minutes=3))
-    story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent.id)
+    story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent)
     launcher.thread.join(10)
     story.expect_rows(len(launcher.requests) == 2)
     assert any("Add the tax as well" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
