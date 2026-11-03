@@ -120,7 +120,7 @@ def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
 def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging")
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
@@ -130,7 +130,7 @@ def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
 def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "step" --summary "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging")
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "".join(f"step {number}\n" for number in range(60)))
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
@@ -142,7 +142,7 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
 def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "step"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging")
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
@@ -151,7 +151,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
 
 def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "./deploy.sh staging")
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     assert not any("may buffer" in line for line in lines_of(story, NOTHING))
     story.advance(timedelta(seconds=31))
     assert any(f"output {process.id} printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
@@ -169,11 +169,21 @@ def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
 def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging && echo one && echo two")
+    process = moved_run(story, "./deploy.sh staging && echo one && echo two", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
+    process = moved_run(story, "./deploy.sh staging")
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    assert not any("reader deploys" in line for line in lines_of(story, NOTHING))
 
 
 def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):
