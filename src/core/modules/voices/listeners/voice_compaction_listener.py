@@ -1,6 +1,5 @@
 from core.base.agent_role import AgentRole
 from core.base.change.change import Change
-from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -21,5 +20,5 @@ class VoiceCompactionListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         call = change.new_row
-        if isinstance(call, HookCall) and call.hook == HookEventName.COMPACT and self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
+        if isinstance(call, HookCall) and call.is_compaction and self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
             self.lines.tell(call.agent_id, VOICE_LINE, change)

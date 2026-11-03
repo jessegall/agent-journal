@@ -171,6 +171,7 @@
         "architecture_memories_MemoryBuiltInHandlersDetector",
         "architecture_nudges_NoRawLineFromARuleDetector",
         "architecture_nudges_InstructionDeclaresWhatPaysItDetector",
+        "listener_repeats_a_decision",
         "architecture_processes_ReaderOnlyOnTickDetector",
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",

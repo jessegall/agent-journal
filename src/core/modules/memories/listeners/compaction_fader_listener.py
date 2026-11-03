@@ -1,7 +1,6 @@
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
-from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
@@ -21,5 +20,5 @@ class CompactionFaderListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)
-        if call.hook == HookEventName.COMPACT:
+        if call.is_compaction:
             self.bus.run(FadeMemories(call.agent_id), Actor.core(), cause_id=event.id, environment_id=event.environment_id)

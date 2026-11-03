@@ -5,10 +5,6 @@
         "select": "branch",
         "where": [
             {
-                "of": "enclosingFunction",
-                "name": "handle"
-            },
-            {
                 "of": "enclosingType",
                 "fileMatches": "listeners/"
             },
@@ -23,15 +19,20 @@
             {
                 "of": "condition",
                 "descendant": {
-                    "is": "member-access"
+                    "name": "HookEventName"
                 }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
             }
         ]
     },
     "sin": {
         "name": "listener-repeats-a-decision",
-        "description": "Two listeners ask the same condition, so one decision lives in two places and grows apart.",
-        "rule": "Move the decision into one check that both listeners call.",
+        "description": "Two listeners ask which kind of hook this is in the same words, so one decision lives in two places and grows apart.",
+        "rule": "Move the decision into one method both listeners call, as HookCall.is_compaction.",
         "skill": "plain-code-words"
     }
 }
