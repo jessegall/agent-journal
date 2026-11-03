@@ -8,6 +8,7 @@ from core.base.chat.mark_colouring import MarkColouring
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.chat.mark_family import MarkFamily
 from core.base.chat.mark_group import MarkGroup
+from tests.unit.source_tree import source_tree
 
 
 class SampleType(StrEnum):
@@ -54,6 +55,6 @@ def test_a_dock_declaration_holds_one_item_and_never_leaves_by_default():
 
 def test_the_chat_base_imports_no_module():
     folder = Path(__file__).resolve().parents[5] / "src" / "core" / "base" / "chat"
-    imported = [node.module for path in folder.glob("*.py") for node in ast.walk(ast.parse(path.read_text()))
+    imported = [node.module for path in folder.glob("*.py") for node in ast.walk(source_tree(path))
                 if isinstance(node, ast.ImportFrom) and node.module]
     assert [name for name in imported if not name.startswith(("core.base.chat", "collections", "dataclasses", "enum", "string"))] == []

@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 from core.base.driver.command_category import CommandCategory
+from core.base.page import Page
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart
@@ -78,10 +79,10 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
     rows = [ProcessPart(id=position, version=1, process_id=position, position=1, text="journal compile", command="make build", program="journal", category=CommandCategory.BUILD)
             for position in range(SAMPLE_OUTPUTS + 2, 0, -1)]
     rows.insert(0, ProcessPart(id=100, version=1, process_id=100, position=1, text="other", program="other", category=CommandCategory.BUILD))
-    parts.with_kept_output.return_value.newest.return_value.all_rows.return_value = iter(rows)
+    parts.kept_samples.return_value.page.return_value = Page(tuple(rows), 1, len(rows), len(rows))
     folder.output.side_effect = lambda process_id, position: f"\x1b[32mdone {process_id}\x1b[0m\n"
     judgement = ReaderJudge(ReaderRun(), folder, parts).tested(reader())
     assert judgement.output_id == SAMPLE_OUTPUTS + 2
     assert judgement.missed == ()
-    parts.with_kept_output.assert_called_once_with()
+    parts.kept_samples.assert_called_once()
     assert folder.output.call_count == SAMPLE_OUTPUTS

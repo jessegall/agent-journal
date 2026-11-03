@@ -27,9 +27,9 @@ ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, Proce
 
 class ProcessEndMarkListener(CommitListener):
     """A visible run shows one mark naming its command alone, whatever else its line runs; the mark is kept up
-    to date in place by the key process:<id>: queued, running with the reader's progress as its figure, moved to
-    the background, then ended with its outcome. A mark once shown always ends, also when the run's output is
-    gone by then."""
+    to date in place by the key process:<id>: queued, running with the reader's progress as its figure, moved
+    to the background, then ended with its outcome. A mark once shown always ends, also when the run's output
+    is gone by then."""
 
     name = "processes.process-mark"
     event = "process.*"

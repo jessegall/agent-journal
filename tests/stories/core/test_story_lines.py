@@ -2,6 +2,8 @@ import ast
 from collections import Counter
 from pathlib import Path
 
+from tests.unit.source_tree import source_tree
+
 STORY_FOLDERS = (Path(__file__).parent.parent / "modules", Path(__file__).parent.parent / "base")
 STORY_CALLS = {"run", "expect_success", "expect_refusal", "expect_usage_error", "expect_absent", "new_row_id"}
 REPEAT_LIMIT = 3
@@ -11,7 +13,7 @@ def story_line_counts() -> Counter[tuple[str, str]]:
     lines: Counter[tuple[str, str]] = Counter()
     for folder in STORY_FOLDERS:
         for path in folder.rglob("*.py"):
-            for node in ast.walk(ast.parse(path.read_text())):
+            for node in ast.walk(source_tree(path)):
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in STORY_CALLS and node.args:
                     first = node.args[0]
                     if isinstance(first, ast.Constant) and isinstance(first.value, str):

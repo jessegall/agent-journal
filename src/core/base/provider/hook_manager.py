@@ -14,10 +14,7 @@ from core.base.type_guards import is_list, is_mapping
 
 
 class HookManager:
-    """Moves project command hooks into the managed store and restores their source files.
-
-    A tracked file is marked before it is stripped, so a failed mark leaves it whole for the next sweep;
-    a hook whose worktree is gone restores to nothing."""
+    """Moves project command hooks into the managed store and restores their source files."""
 
     def __init__(self, root: Path, managed: ManagedHooks, rules: Sequence[type[HookToolRule]] = ()) -> None:
         self.root = root

@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "text": "init"
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories|unit)/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)tests/(stories/suites/coding/modules/workers/support/git_repository|stories/core/modules/agents/hook_sweep_failures|stories/core/modules/plugins/previews_and_boards|stories/suites/coding/git_overview|unit/core/base/git/test_hook_files_git|unit/core/base/provider/test_hook_manager)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "git-init-in-a-test",
+        "description": "A test makes its own git repository, which starts several git processes.",
+        "rule": "Copy the sample through GitRepository.sample. A test whose subject is a fresh repository is named in this rule with that reason.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "CodeFingerprint"
+            },
+            {
+                "fileMatches": "(^|/)(tests/stories|src/core/testing)/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)tests/stories/server/support/server_client\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "fingerprint-per-story",
+        "description": "Story code builds its own CodeFingerprint, which walks and stats the whole source tree.",
+        "rule": "Use STORY_FINGERPRINT, which works the text out once per test process. The real server of server_client is the one exception, and goes with task 6201.",
+        "skill": "plain-code-words"
+    }
+}
