@@ -8,9 +8,6 @@ from core.base.query.queries import Queries
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 from suites.coding.modules.checks.support.check_nudges import BROKEN_TASK_WAIT
 
-RUN_FAILURE_TERMS = ("command not found", "not found", "syntax error")
-
-
 class BrokenTaskWaitRule(DriverRule):
     """A command a blocked task waits on that cannot run at all is named to the main agent, since it would
     wait forever."""
@@ -24,5 +21,5 @@ class BrokenTaskWaitRule(DriverRule):
         self.checks, self.queries = checks, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        broken = [check for check in self.checks.task_waits() if check.last_passed is False and any(terms in check.last_output for terms in RUN_FAILURE_TERMS)]
+        broken = self.checks.broken_task_waits()
         return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=self.queries.query(TaskWait).find(check.task_wait_id).task_id, output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))

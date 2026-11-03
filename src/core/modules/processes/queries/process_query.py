@@ -1,4 +1,5 @@
 from typing import Self
+from datetime import timedelta
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
@@ -11,6 +12,9 @@ from core.base.query.select import Select
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.maximum import Maximum
+from core.base.timestamp import Timestamp
+from core.modules.processes.queries.conditions.long_run_candidate import LongRunCandidate
 from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
@@ -43,6 +47,14 @@ class ProcessQuery(Query[Process]):
 
     def moved(self) -> Self:
         return self.matching(Greater("moved_at", ""))
+
+    def minimum_age(self, present: Timestamp, seconds: int) -> Self:
+        cutoff = Timestamp(present.value - timedelta(seconds=seconds))
+        return self.matching(Maximum("created_at", cutoff.text))
+
+    def long_run_candidates(self, present: Timestamp, seconds: int) -> Self:
+        cutoff = Timestamp(present.value - timedelta(seconds=seconds))
+        return self.matching(LongRunCandidate(cutoff.text))
 
     def has_moved_run(self, environment_id: int, text: str, seconds: int = 0) -> bool:
         conditions: list[Condition] = [Equal("text", text)]

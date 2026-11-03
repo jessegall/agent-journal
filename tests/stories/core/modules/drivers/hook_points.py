@@ -1,12 +1,17 @@
 import pytest
+from datetime import timedelta
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.tool_type import ToolType
+from core.modules.processes.support.output_folder import OutputFolder
+from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
+from tests.stories.core.modules.processes.support.process_samples import moved_run
 
 ROW_COUNT = 40
 READS_MEASURED = 60
@@ -17,6 +22,7 @@ SAMPLES = {
     "shell": HookSamples.shell("ls -la", ShellPart("ls", CommandCategory.READ, ["-la"])),
     "stop": HookSamples.stop(),
     "tick": HookSamples.tick(),
+    "post_tool_use": HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use"),
 }
 
 
@@ -25,6 +31,16 @@ def filled(story) -> None:
         story.run(f'task make "Task {number}" --brief "A job to do" --environment main', actor=story.user)
         story.run(f'message send "Message {number}" --environment main', actor=story.user)
         story.expect_success(f'memory make "Fact {number}" --type fact --project', actor=story.user)
+
+
+@pytest.mark.parametrize("elapsed_seconds", [0, 35])
+def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_tasks(busy_hook_points, elapsed_seconds):
+    story, database = busy_hook_points
+    story.advance(timedelta(seconds=elapsed_seconds))
+    start = database.tally.points()
+    story.hook("s-1", SAMPLES["post_tool_use"])
+    cost = database.tally.points().minus(start)
+    assert cost.total < HOOK_LIMIT_POINTS, f"{cost.total} points ({cost.line()}): {cost.statements.most_common(10)}"
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
@@ -64,3 +80,29 @@ def filled_hook_points(new_story):
     database = story.container.get(Database)
     over = {}
     return story, database, over
+
+
+@pytest.fixture
+def busy_hook_points(filled_hook_points):
+    story, database, _ = filled_hook_points
+    for number in range(22):
+        story.expect_success(f'question ask "Choose database {number}" --options sqlite postgres --environment main', actor=story.agent)
+        story.expect_success(f"question answer {number + 1} --answer sqlite", actor=story.user)
+    for number in range(6):
+        story.expect_success(f'sequence make "Sequence {number}" --steps "Read the task | Do the task"', actor=story.user)
+    for task_id in range(1, 9):
+        story.expect_success(f"task start {task_id}", actor=story.agent)
+        story.expect_success(f"task brief {task_id}", actor=story.agent)
+    for task_id in range(9, 17):
+        story.expect_success(f"task block {task_id} --until 'false' --every 2", actor=story.user)
+        story.expect_success(f'check make "Check {task_id}" --command "true" --every 0', actor=story.user)
+    for task_id in range(17, 25):
+        story.expect_success(f'task block {task_id} --reason "Waiting on a decision"', actor=story.user)
+    story.container.get(DueCheckRuns).run()
+    for number in range(10):
+        process = moved_run(story, f"make build-{number}")
+        story.container.get(OutputFolder).write_output(process.id, 1, "building\n")
+        monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}})
+        story.hook("s-1", monitor)
+    story.hook("s-1", SAMPLES["post_tool_use"])
+    return story, database

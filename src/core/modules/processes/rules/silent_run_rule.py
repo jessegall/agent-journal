@@ -27,8 +27,8 @@ class SilentRunRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
-        silent = [process for process in self.processes.agent(hook.agent_id).running().moved().all_rows()
-                  if process.creation_timestamp().elapsed_seconds(hook.timestamp) >= SILENT_SECONDS and not self.folder.total_bytes(process.id) and self.runs_python(process.id)]
+        silent = [process for process in self.processes.agent(hook.agent_id).running().moved().minimum_age(hook.timestamp, SILENT_SECONDS).all_rows()
+                  if not self.folder.total_bytes(process.id) and self.runs_python(process.id)]
         return RuleAnswer.with_nudges(*(SILENT_RUN.nudge(output=process.id, seconds=SILENT_SECONDS) for process in silent))
 
     def runs_python(self, process_id: int) -> bool:

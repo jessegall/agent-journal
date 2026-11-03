@@ -1,19 +1,9 @@
 from suites.coding.support.coding_nudges import WORKER_GIT_BAN
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from core.modules.drivers.rules.no_git_rule import NoGitRule
 
 
-class WorkerGitRule(DriverRule):
+class WorkerGitRule(NoGitRule):
     """A worker runs no git: the journal commits, rebases and merges its worktree."""
 
     name = "workers.no-git"
-    exempt = True
-    hook = HookEventName.PRE_TOOL_USE
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and any(part.program == "git" for part in shell.parts):
-            return RuleAnswer.refused(WORKER_GIT_BAN.nudge())
-        return RuleAnswer.allowed()
+    refusal = WORKER_GIT_BAN

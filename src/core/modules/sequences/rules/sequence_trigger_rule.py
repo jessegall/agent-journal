@@ -4,6 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.query.conditions.equal import Equal
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
@@ -26,7 +27,8 @@ class SequenceTriggerRule(DriverRule):
         self.queries, self.runs = queries, runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        triggered = [sequence for sequence in self.queries.query(Sequence).all_rows() if sequence.triggers != EMPTY_TRIGGERS and self.is_triggered(sequence, hook)]
+        candidates = self.queries.query(Sequence).matching(Equal("triggers", EMPTY_TRIGGERS, negated=True))
+        triggered = [sequence for sequence in candidates.all_rows() if self.is_triggered(sequence, hook)]
         if not triggered or self.runs.current(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         sequence = triggered[0]
