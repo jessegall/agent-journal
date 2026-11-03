@@ -10,6 +10,7 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_judge import ReaderJudge
+from core.modules.processes.support.reader_writers import ReaderWriters
 
 
 class AddReaderHandler(Handler[AddReader, Reader]):
@@ -17,10 +18,11 @@ class AddReaderHandler(Handler[AddReader, Reader]):
 
     command = AddReader
 
-    def __init__(self, readers: ReaderQuery, repository: Repository, judge: ReaderJudge) -> None:
-        self.readers, self.repository, self.judge = readers, repository, judge
+    def __init__(self, readers: ReaderQuery, repository: Repository, judge: ReaderJudge, writers: ReaderWriters) -> None:
+        self.readers, self.repository, self.judge, self.writers = readers, repository, judge, writers
 
     def handle(self, command: AddReader, context: Context) -> Reader:
+        self.writers.check(context.actor)
         self.check_patterns(command)
         existing = self.readers.with_name(command.name).page(1, 1).rows
         if existing:

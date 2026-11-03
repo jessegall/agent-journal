@@ -7,6 +7,7 @@ from core.base.repository.repository import Repository
 from core.modules.processes.commands.choose_default_reader.choose_default_reader import ChooseDefaultReader
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.support.reader_writers import ReaderWriters
 
 
 class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
@@ -15,10 +16,11 @@ class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
 
     command = ChooseDefaultReader
 
-    def __init__(self, readers: ReaderQuery, repository: Repository) -> None:
-        self.readers, self.repository = readers, repository
+    def __init__(self, readers: ReaderQuery, repository: Repository, writers: ReaderWriters) -> None:
+        self.readers, self.repository, self.writers = readers, repository, writers
 
     def handle(self, command: ChooseDefaultReader, context: Context) -> Reader:
+        self.writers.check(context.actor)
         matching = self.readers.with_name(command.name).page(1, 1).rows
         if not matching:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
