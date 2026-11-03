@@ -25,6 +25,7 @@ from core.modules.usage.support.tool_facts import ToolFacts
 
 SHOWN_RUNS = 2
 QUEUE_LINE = "waiting for a spot in the queue"
+NO_COMMAND_NOTE = "has run no command yet"
 TURN_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.STOP, HookEventName.PROMPT, HookEventName.SESSION_START)
 
 
@@ -58,7 +59,9 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
-        return ToolFacts(wait_target=" and ".join((*self.running_titles(agent_id), *question_lines)))
+        wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
+        has_run_command = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
+        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else NO_COMMAND_NOTE)
 
     def running_part_text(self, call: HookCall) -> str:
         runs = self.processes.agent(call.agent_id).newest().page(1, 1).rows
@@ -87,4 +90,4 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):
-            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else ""), {"tool": value.tool, "wait_target": value.wait_target})
+            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else value.note), {"tool": value.tool, "wait_target": value.wait_target, "note": value.note})

@@ -180,6 +180,29 @@ test("a running worker's card names the command it runs", async () => {
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
 });
 
+test("a running subagent's card names the command it runs", async () => {
+    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
+    const lines = {"agent list": page([subagent]), "agent running": page([subagent]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Read src/cart.py"));
+});
+
+test("a running subagent that ran no command says so plainly", async () => {
+    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
+    const lines = {"agent list": page([subagent]), "agent running": page([subagent]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "", note: "has run no command yet"}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("has run no command yet"));
+});
+
+test("an ended subagent and the main agent show no command line", async () => {
+    const ended = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: "2026-11-01T10:00:00Z"};
+    const main = {id: 1, session: "s-main", program: "claude", role: "main", ended_at: null};
+    const lines = {"agent list": page([ended, main]), "agent running": page([main]), "usage agents --closed": page([])};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await settle();
+    expect(element.querySelector("[data-agent-command]")).toBeNull();
+});
+
 test("a waiting worker's command line says it waits for its tests", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];

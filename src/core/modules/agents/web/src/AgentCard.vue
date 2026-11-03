@@ -43,15 +43,17 @@ const FOLDED_STATES = new Set(["completed"]);
 const folded = ref({});
 const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
-// a running worker's card names the command it runs, as the foot of the chat does for the main agent
+// a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
 const runningCommand = ref("");
-const showsCommand = computed(() => props.row.role === "worker" && !props.row.ended_at);
+const noCommandNote = ref("");
+const showsCommand = computed(() => props.row.role !== "main" && !props.row.ended_at);
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
     runningCommand.value = answer.ok ? answer.value.tool : "";
+    noCommandNote.value = answer.ok ? answer.value.note : "";
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
 onUnmounted(() => stopFollowing?.());
@@ -82,7 +84,7 @@ readCommand();
                     <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button>
                 </template>
                 <template v-else>
-                    <RunningCommand :text="runningCommand" idle="thinking" />
+                    <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />
                 </template>
             </span>
         </template>
