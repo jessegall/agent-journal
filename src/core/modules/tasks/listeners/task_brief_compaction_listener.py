@@ -1,6 +1,5 @@
 from core.base.change.change import Change
 from core.base.command.bus import Bus
-from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.modules.drivers.models.hook_call import HookCall
@@ -21,7 +20,7 @@ class TaskBriefCompactionListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         call = change.new_row
-        if not isinstance(call, HookCall) or call.hook != HookEventName.COMPACT:
+        if not isinstance(call, HookCall) or not call.is_compaction:
             return
         self.bus.dispatch(ResetTaskReads(call.agent_id), change.context)
         for task in tuple(self.tasks.holder(call.agent_id).started().all_rows()):

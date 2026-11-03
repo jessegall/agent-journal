@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.support.worker_nudges import WORKER_JUDGE_SCOPE
 
-WHOLE_TREE_JUDGE = r"(commandments-release judge|journal sins)(?!.*--(changes|branch))"
+UNSCOPED_JUDGE_PATTERN = r"(commandments-release judge|journal sins)(?!.*--(changes|branch))"
 
 
 class WorkerJudgeScopeRule(DriverRule):
@@ -19,6 +19,6 @@ class WorkerJudgeScopeRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is not None and tool.shell is not None and tool.shell.part_matches(WHOLE_TREE_JUDGE):
+        if tool is not None and tool.shell is not None and tool.shell.part_matches(UNSCOPED_JUDGE_PATTERN):
             return RuleAnswer.refused(WORKER_JUDGE_SCOPE.nudge())
         return RuleAnswer.allowed()

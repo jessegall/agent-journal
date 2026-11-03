@@ -1,5 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.driver.hook_event_name import HookEventName
 from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from core.modules.skills.listeners.skill_listener import SkillListener
 
@@ -12,5 +11,5 @@ class CompactionResetListener(SkillListener):
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.call(event)
-        if call.hook == HookEventName.COMPACT:
+        if call.is_compaction:
             self.run(event, ResetSkills(call.agent_id))
