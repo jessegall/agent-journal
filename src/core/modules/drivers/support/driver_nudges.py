@@ -6,7 +6,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_outcome import RULE_FAILED
 
-REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create', required_command="")
+REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create')
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
