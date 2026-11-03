@@ -177,13 +177,13 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
-        return self.files_since(worktree, worktree.base_commit)
+        return self.changed_paths(worktree, worktree.base_commit)
 
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", worktree.base_branch, worktree.branch).stdout.strip()
-        return WorktreeChanges(base, self.files_since(worktree, base))
+        return WorktreeChanges(base, self.changed_paths(worktree, base))
 
-    def files_since(self, worktree: Worktree, base: str) -> tuple[str, ...]:
+    def changed_paths(self, worktree: Worktree, base: str) -> tuple[str, ...]:
         tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", base).stdout.splitlines()
         untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
         return tuple(dict.fromkeys(path for path in (*tracked, *untracked) if path))
