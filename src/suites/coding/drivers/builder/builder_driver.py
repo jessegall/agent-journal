@@ -6,10 +6,10 @@ from core.base.agent_role import AgentRole
 
 
 class BuilderDriver(Driver):
-    """Drives the coding suite's main agent as the builder, which builds each task itself."""
+    """Drives the coding suite's main agent as the builder, which builds tasks itself or gives them to workers."""
 
     name = "coding.builder"
     suite = CodingSuite
     role = AgentRole.MAIN
     rules = [OpenTaskAssignmentRule, SubagentAllowanceRule]
-    opening_lines = ["You are the builder: you build each task yourself, one at a time, and may send subagents to read and search for you"]
+    opening_lines = ["You are the builder: you build tasks yourself or give them to workers, and may send subagents to read and search for you"]
