@@ -23,6 +23,7 @@ def test_a_script_that_changes_a_file_leaves_a_file_edit_with_its_line_counts(ne
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)
     repository.committed("cart.py", "TOTAL = 1\n", "the cart")
+    story.hook("s-1", script_sample(repository, "cart.py").with_fields(event="pre_tool_use"))
     (repository.folder / "cart.py").write_text("TOTAL = 2\nTAX = 1\n")
     story.hook("s-1", script_sample(repository, "cart.py"))
     story.expect_success("file-edit show 1", "path: cart.py", "added: 2", "removed: 1", f"agent_id: {story.agent.id}")
@@ -36,24 +37,28 @@ def test_a_script_that_changes_a_file_keeps_the_lines_it_changed(new_story):
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)
     repository.committed("cart.py", "TOTAL = 1\nNAME = 'cart'\n", "the cart")
+    story.hook("s-1", script_sample(repository, "cart.py").with_fields(event="pre_tool_use"))
     (repository.folder / "cart.py").write_text("TOTAL = 2\nNAME = 'cart'\n")
     story.hook("s-1", script_sample(repository, "cart.py"))
-    assert [(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("del", 1, "TOTAL = 1"), ("add", 1, "TOTAL = 2"), ("ctx", 2, "NAME = 'cart'")]
+    story.expect_rows([(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("del", 1, "TOTAL = 1"), ("add", 1, "TOTAL = 2"), ("ctx", 2, "NAME = 'cart'")])
 
 
 def test_a_script_that_makes_a_new_file_keeps_its_lines_as_added(new_story):
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)
+    story.hook("s-1", script_sample(repository, "fresh.py").with_fields(event="pre_tool_use"))
     (repository.folder / "fresh.py").write_text("ONE = 1\nTWO = 2\n")
     story.hook("s-1", script_sample(repository, "fresh.py"))
-    assert [(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("add", 1, "ONE = 1"), ("add", 2, "TWO = 2")]
+    story.expect_rows([(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("add", 1, "ONE = 1"), ("add", 2, "TWO = 2")])
 
 
 def test_a_script_that_makes_a_new_file_counts_its_lines_and_one_that_leaves_a_file_as_it_was_records_nothing(new_story):
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)
     repository.committed("cart.py", "TOTAL = 1\n", "the cart")
+    story.hook("s-1", script_sample(repository, "cart.py").with_fields(event="pre_tool_use"))
     story.hook("s-1", script_sample(repository, "cart.py"))
+    story.hook("s-1", script_sample(repository, "tax.py").with_fields(event="pre_tool_use"))
     (repository.folder / "tax.py").write_text("TAX = 1\nRATE = 2\n")
     story.hook("s-1", script_sample(repository, "tax.py"))
     story.expect_success("file-edit show 1", "path: tax.py", "added: 2", "edit_type: new")
@@ -91,14 +96,14 @@ def test_a_file_edit_keeps_the_lines_it_changed(new_story):
     story.hook("s-1", edit_with_rows())
     story.run_listeners()
     row = json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)
-    assert json.loads(row["rows"]) == ROWS and row["edit_type"] == "edit"
+    story.expect_rows(json.loads(row["rows"]) == ROWS, row["edit_type"] == "edit")
 
 
 def test_an_edit_that_made_the_file_says_so(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", edit_with_rows(existed=False))
     story.run_listeners()
-    assert json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["edit_type"] == "new"
+    story.expect_rows(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["edit_type"] == "new")
 
 
 def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_story):
@@ -106,5 +111,5 @@ def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_stor
     folder = json.loads(story.run("environment show 1 --json", actor=story.agent).output_text)["folder"]
     story.hook("s-1", HookSamples.edit(f"{folder}/src/cart.py", 1, 0).with_fields(event="post_tool_use"))
     story.run_listeners()
-    assert json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["path"] == "src/cart.py"
+    story.expect_rows(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["path"] == "src/cart.py")
 

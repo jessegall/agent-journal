@@ -1,57 +1,69 @@
-import re
+from collections import OrderedDict
 from collections.abc import Mapping, Sequence
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from core.base.driver.diff_count import DiffCount
-from suites.coding.modules.workers.support.worktree_git import GIT_LIMIT_SECONDS, WorktreeGit
 from suites.coding.support.patch_row import PatchRow
 from suites.coding.support.shell_file_change import ShellFileChange
+from suites.coding.support.shell_file_state import ShellFileState
+from suites.coding.support.shell_read_budget import ShellReadBudget
 
-NEW_FILE_STATUS = "??"
+READ_LIMIT_BYTES = 64 * 1024
+READ_LIMIT_LINES = 2048
+FILE_LIMIT = 32
+PENDING_LIMIT = 64
 ROW_LIMIT_ROWS = 600
-PATCH_SECTION_LINE = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 
 
 class ShellFileChanges:
-    """What a shell command did to a file it names as written, read from git: the lines changed against the last
-    commit, all of a new file's lines as added, and nothing for a file the command left as it was. Its rows have
-    the shape the hook gives an edit tool's lines, cut at the same limits."""
+    """Compare a command's pre and post file states. Each hook reads at most 64 KiB and 2048 lines across
+    32 files. Larger files and commands with no pre state have no line counts or rows recorded. At most
+    64 commands keep a pre state; a post hook consumes it once."""
 
-    def __init__(self, git: WorktreeGit) -> None:
-        self.git = git
+    def __init__(self) -> None:
+        self.pending: OrderedDict[tuple[int, str], dict[str, ShellFileState]] = OrderedDict()
 
-    def change(self, folder: str, path: str) -> ShellFileChange | None:
-        if (Path(folder) / path).is_dir():
-            return None
-        patch = self.git.git(folder, GIT_LIMIT_SECONDS, "diff", "HEAD", "--", path).stdout
-        if patch.strip():
-            rows = self.patch_rows(patch)
-            return ShellFileChange(DiffCount(path, True, self.counted(rows, "add"), self.counted(rows, "del")), self.limited(rows))
-        if not self.git.git(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--", path).stdout.startswith(NEW_FILE_STATUS):
-            return None
-        lines = (Path(folder) / path).read_text(errors="replace").splitlines()
-        rows = [PatchRow("add", number, line) for number, line in enumerate(lines, start=1)]
-        return ShellFileChange(DiffCount(path, False, len(lines), 0), self.limited(rows))
+    def capture(self, key: tuple[int, str], folder: str, paths: Sequence[str]) -> None:
+        self.pending.pop(key, None)
+        states: dict[str, ShellFileState] = {}
+        budget = ShellReadBudget(READ_LIMIT_BYTES, READ_LIMIT_LINES)
+        for path in paths[:FILE_LIMIT]:
+            state = ShellFileState.read(Path(folder) / path, budget)
+            if state is None:
+                continue
+            states[path] = state
+        self.pending[key] = states
+        if len(self.pending) > PENDING_LIMIT:
+            self.pending.popitem(last=False)
+
+    def changes(self, key: tuple[int, str], folder: str) -> list[ShellFileChange]:
+        states = self.pending.pop(key, {})
+        changes: list[ShellFileChange] = []
+        budget = ShellReadBudget(READ_LIMIT_BYTES, READ_LIMIT_LINES)
+        for path, before in states.items():
+            after = ShellFileState.read(Path(folder) / path, budget)
+            if after is None:
+                continue
+            rows = self.changed_rows(before.lines, after.lines)
+            if not rows:
+                continue
+            changes.append(ShellFileChange(DiffCount(path, before.existed, self.counted(rows, "add"), self.counted(rows, "del")), self.limited(rows)))
+        return changes
+
+    def discard(self, key: tuple[int, str]) -> None:
+        self.pending.pop(key, None)
 
     @staticmethod
-    def patch_rows(patch: str) -> list[PatchRow]:
+    def changed_rows(before: Sequence[str], after: Sequence[str]) -> list[PatchRow]:
         rows: list[PatchRow] = []
-        old_line, new_line = 0, 0
-        lines = patch.splitlines()
-        first_section = next((index for index, line in enumerate(lines) if PATCH_SECTION_LINE.match(line)), len(lines))
-        for line in lines[first_section:]:
-            section = PATCH_SECTION_LINE.match(line)
-            if section:
-                old_line, new_line = int(section[1]), int(section[2])
-            elif line.startswith("+"):
-                rows.append(PatchRow("add", new_line, line[1:]))
-                new_line += 1
-            elif line.startswith("-"):
-                rows.append(PatchRow("del", old_line, line[1:]))
-                old_line += 1
-            elif line.startswith(" "):
-                rows.append(PatchRow("ctx", new_line, line[1:]))
-                old_line, new_line = old_line + 1, new_line + 1
+        for group in SequenceMatcher(a=before, b=after).get_grouped_opcodes():
+            for tag, old_start, old_end, new_start, new_end in group:
+                if tag in ("delete", "replace"):
+                    rows.extend(PatchRow("del", index + 1, before[index].rstrip("\r\n")) for index in range(old_start, old_end))
+                if tag in ("insert", "replace", "equal"):
+                    kind = "ctx" if tag == "equal" else "add"
+                    rows.extend(PatchRow(kind, index + 1, after[index].rstrip("\r\n")) for index in range(new_start, new_end))
         return rows
 
     @staticmethod

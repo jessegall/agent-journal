@@ -3,6 +3,7 @@ from pathlib import Path
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.base.query.queries import Queries
@@ -17,17 +18,19 @@ class RecordFileEditRule(DriverRule):
     windows; a file elsewhere, such as in a temp folder, is left out."""
 
     name = "coding.record-file-edit"
-    hook = HookEventName.POST_TOOL_USE
+    hook = HookWildcard.ALL_HOOKS
     drivers = ["coding.*"]
 
     def __init__(self, queries: Queries, changes: ShellFileChanges) -> None:
         self.queries, self.changes = queries, changes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if hook.hook_name not in (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE):
+            return RuleAnswer.allowed()
         tool = hook.event.tool
         if tool is not None and tool.shell is not None:
             return RuleAnswer.allowed().running(*self.shell_edits(hook, tool.shell))
-        if tool is None or tool.diff is None or not tool.is_writing_files() or self.is_external_path(tool.diff.path, hook.environment_id):
+        if hook.hook_name != HookEventName.POST_TOOL_USE or tool is None or tool.diff is None or not tool.is_writing_files() or self.is_external_path(tool.diff.path, hook.environment_id):
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(RecordFileEdit(hook.agent_id, hook.environment_id, tool.diff, tool.diff_rows))
 
@@ -37,8 +40,14 @@ class RecordFileEditRule(DriverRule):
             return []
         cwd = hook.event.raw.get("cwd")
         folder = cwd if isinstance(cwd, str) else self.queries.query(Environment).find(hook.environment_id).folder
-        changes = (self.changes.change(folder, path) for path in sorted(paths))
-        return [RecordFileEdit(hook.agent_id, hook.environment_id, change.diff, change.rows) for change in changes if change is not None]
+        key = (hook.agent_id, str(hook.event.raw.get("tool_use_id", hook.event.raw.get("call_id", ""))))
+        if hook.hook_name == HookEventName.PRE_TOOL_USE:
+            self.changes.capture(key, folder, sorted(paths))
+            return []
+        if hook.hook_name == HookEventName.POST_TOOL_USE_FAILURE:
+            self.changes.discard(key)
+            return []
+        return [RecordFileEdit(hook.agent_id, hook.environment_id, change.diff, change.rows) for change in self.changes.changes(key, folder)]
 
     def is_external_path(self, path: str, environment_id: int) -> bool:
         return Path(path).is_absolute() and not Path(path).is_relative_to(self.queries.query(Environment).find(environment_id).folder)
