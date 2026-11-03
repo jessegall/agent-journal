@@ -11,3 +11,8 @@ def test_the_session_route_answers_a_person_cookie_with_its_kind_and_person(new_
 def test_the_session_route_answers_no_cookie_with_401(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         story.expect_viewer_status("/api/session", 401)
+
+
+def test_the_server_state_route_answers_without_a_cookie_that_nothing_is_marked(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')

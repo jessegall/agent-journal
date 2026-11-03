@@ -47,6 +47,7 @@ WINDOWS_ROUTE = "/api/windows"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
+SERVER_STATE_ROUTE = "/api/server-state"
 NOTICES_ROUTE = "/api/push"
 FILES_ROUTE = "/api/files"
 MESSAGE_FILES = "/api/files/message/"
@@ -86,6 +87,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 self.answer_redirect(kept_query, {})
                 return
             self.answer_redirect(kept_query, {"Set-Cookie": f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"})
+            return
+        if route.path == SERVER_STATE_ROUTE:
+            self.answer(200, asdict(viewer.routes.server_state_route.state()))
             return
         if route.path.startswith(MODULES_ROUTE):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")

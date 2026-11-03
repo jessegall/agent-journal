@@ -2,6 +2,7 @@ import {createApp} from "vue";
 import {tip} from "./kit/tip.js";
 import "./tokens.css";
 import "./phone/phone.css";
+import ServerCover from "./layout/ServerCover.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
 import EnvironmentPage from "./pages/EnvironmentPage.vue";
 import AgentPage from "./pages/AgentPage.vue";
@@ -31,6 +32,7 @@ const start = (answer) => {
             : createApp(PAGES[page], props);
     app.directive("tip", tip);
     app.mount("#app");
+    createApp(ServerCover).mount(document.body.appendChild(document.createElement("div")));
 };
 
 // the cookie says which face this is: a share link's visitor gets the share page (so does a page the server marks as a gone link), anyone else the viewer

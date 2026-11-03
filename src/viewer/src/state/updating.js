@@ -1,36 +1,57 @@
 import {reactive} from "vue";
+import {transport} from "../api/transport.js";
+import {reloadIfNewBuild} from "../windows/staleBuild.js";
 
-export const STEPS = ["Installing the new version", "Restarting the journal", "Loading the new version"];
+const ASK_EVERY_MS = 2000;
+export const LATE_AFTER_MS = 30000;
 
-export const updating = reactive({
-    version: "",
-    failure: "",
-    late: false,
-    since: 0,
-    external: false,
-    step: "",
-    countdown: null,
-    target: "",
-    starting: false,
-    bootStep: "",
-});
+// whether the server is away, whether an install holds it, and whether it has been away for longer than a restart takes
+export const updating = reactive({starting: false, external: false, late: false});
 
-const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
+export const covered = () => updating.starting;
 
-// Whether the update cover is up: counting down to an update, or one under way.
-export const covered = () => Boolean(updating.countdown) || locked() || updating.starting;
+let asking = 0;
+let lateTimer = 0;
+let waiting = [];
 
-function clear() {
-    Object.assign(updating, {version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: ""});
+// what the server says of itself; one that cannot be reached is still on its way back
+async function stateOfServer() {
+    try {
+        const answer = await transport.serverState();
+        return answer.ok ? await answer.json() : {restarting: false, updating: false};
+    } catch {
+        return {restarting: true, updating: updating.external};
+    }
 }
 
-// Follows the server's own report of an upgrade; true once an upgrade seen running has finished.
-export function follow(running, step = "") {
-    if (running && step) updating.step = step;
-    if (updating.version) return false;
-    if (running && !updating.external) Object.assign(updating, {external: true, since: Date.now() / 1000});
-    if (running || !updating.external) return false;
-    clear();
-    return true;
+function arrived() {
+    clearInterval(asking);
+    clearTimeout(lateTimer);
+    asking = 0;
+    Object.assign(updating, {starting: false, external: false, late: false});
+    waiting.splice(0).forEach((resolve) => resolve());
+    reloadIfNewBuild();
 }
 
+async function askServer() {
+    const state = await stateOfServer();
+    updating.external = state.updating;
+    if (!state.restarting && !state.updating) arrived();
+}
+
+// the server did not answer: the cover goes up and the server is asked until it answers again
+export function serverGone() {
+    if (updating.starting) return;
+    updating.starting = true;
+    asking = setInterval(askServer, ASK_EVERY_MS);
+    lateTimer = setTimeout(() => (updating.late = true), LATE_AFTER_MS);
+}
+
+// a broken event stream alone says nothing, as a stream also breaks with the server well: the server is asked
+export async function checkServer() {
+    const state = await stateOfServer();
+    if (state.restarting || state.updating) serverGone();
+}
+
+// answers once the server is back, at once when it never left
+export const serverBack = () => (updating.starting ? new Promise((resolve) => waiting.push(resolve)) : Promise.resolve());

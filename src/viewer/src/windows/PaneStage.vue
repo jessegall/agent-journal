@@ -29,7 +29,6 @@ import InformationBar from "../shell/InformationBar.vue";
 import OptionsPicker from "../shell/OptionsPicker.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
-import {streamAlive} from "./windowCatalogue.js";
 import UpdateBand from "../shell/UpdateBand.vue";
 import {peekRef} from "../route.js";
 import {rememberedRef} from "./rememberedState.js";
@@ -335,9 +334,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <template v-if="openDropdown">
                     <WindowDropdown :groups="openDropdown.groups" :anchor="openDropdown.anchor" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
-            <template v-if="!streamAlive">
-                <div class="offline-band" role="status" data-offline-band>The journal is not answering. The page will catch up when it is back.</div>
-            </template>
             <template v-if="shellRead">
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
@@ -461,14 +457,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </template>
 
 <style scoped>
-.offline-band {
-    flex: none;
-    padding: 5px 16px;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--danger) 12%, var(--bg));
-    font-size: 13px;
-}
-
 .bar-buttons {
     display: inline-flex;
     flex: none;

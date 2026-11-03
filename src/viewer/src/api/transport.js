@@ -1,6 +1,6 @@
 import {onPhone} from "../platform/phone.js";
 import {holdPressed} from "../platform/pressed.js";
-import {covered} from "../state/updating.js";
+import {covered, serverGone} from "../state/updating.js";
 
 const WAIT_MS = 20000;
 const UPLOAD_WAIT_MS = 300000;
@@ -8,6 +8,7 @@ export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 const UPDATE_STATUS = "/journal/summary";
+const SERVER_STATE = "/api/server-state";
 // Every call says it is the viewer's, so the journal knows a tab is open and a plugin's program or the shim never counts as one.
 // the viewer names itself so the journal knows the desk is open; the phone names itself so its writes are trusted
 const VIEWER = onPhone ? {"X-Phone": "1"} : {"X-Journal-Viewer": "1"};
@@ -67,6 +68,7 @@ class Transport {
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });
         } catch (error) {
+            if (error instanceof TypeError) serverGone();
             if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) throw error;
             await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
             return this.reach(method, url, body, wait, tries - 1, headers);
@@ -111,10 +113,20 @@ class Transport {
         return new EventSource(url);
     }
 
+    // what the server says of itself while the cover is up: a request that fails here is the cover's own question, so it says nothing more
+    serverState() {
+        return fetch(SERVER_STATE, {cache: "no-store"});
+    }
+
     // a request of the phone app or a shared page to an address beside the page, or a file the build carries, answered
-    // as the browser's own response
-    raw(url, init = {}) {
-        return fetch(url, init);
+    // as the browser's own response; one the server never answered puts the cover up
+    async raw(url, init = {}) {
+        try {
+            return await fetch(url, init);
+        } catch (error) {
+            if (error instanceof TypeError) serverGone();
+            throw error;
+        }
     }
 }
 

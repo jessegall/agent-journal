@@ -2,6 +2,7 @@ import {lineBatch} from "./lineBatch.js";
 import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
+import {covered, serverBack} from "../state/updating.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
 
 // the page a pane stage draws, given to the windows in its panes
@@ -20,7 +21,7 @@ export function windowContext({window, environment, agent, visible, permissions,
     const read = (line) => {
         const last = recent.get(line);
         if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
-        const answer = lineResult(window, line, environment, requests.signal);
+        const answer = lineRead(window, line, environment, requests.signal);
         recent.set(line, {answer, at: performance.now()});
         return answer;
     };
@@ -66,6 +67,7 @@ function refusalWords(text) {
 }
 
 export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
+const UNREACHABLE = "The journal did not answer, so this did not go through. Try again.";
 
 // a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
 // gone never draws the answer
@@ -76,8 +78,16 @@ export async function lineResult(window, line, environment, signal = undefined) 
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {
         if (signal?.aborted) return CANCELLED;
-        return {ok: false, failure: "unreachable", error: String(error)};
+        return {ok: false, failure: "unreachable", error: UNREACHABLE};
     }
+}
+
+// a read the server could not answer waits for the server to come back and asks again, so a window never draws the restart as a failure
+async function lineRead(window, line, environment, signal) {
+    const answer = await lineResult(window, line, environment, signal);
+    if (answer.failure !== "unreachable" || !covered()) return answer;
+    await serverBack();
+    return signal.aborted ? CANCELLED : lineRead(window, line, environment, signal);
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
@@ -89,7 +99,7 @@ async function uploaded(file, signal = undefined) {
         return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};
     } catch (error) {
         if (signal?.aborted) return CANCELLED;
-        return {ok: false, failure: "unreachable", error: String(error)};
+        return {ok: false, failure: "unreachable", error: UNREACHABLE};
     }
 }
 
