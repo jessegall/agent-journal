@@ -72,8 +72,6 @@
         "naming_SentenceLabelScriptDetector",
         "naming_PoeticTypeNameDetector",
         "naming_SentenceTypeNameDetector",
-        "naming_PoeticMethodNameDetector",
-        "naming_SentenceMethodNameDetector",
         "naming_SentenceVariableNameDetector",
         "naming_SentenceParameterNameDetector",
         "naming_PoeticVariableNameDetector",
@@ -202,7 +200,7 @@
                 ]
             }
         ],
-        "naming_PoeticMethodNameDetector": [
+        "naming_GoPoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"
