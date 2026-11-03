@@ -11,6 +11,7 @@ class Plugin(Model):
 
     model_name = "plugin"
     cli_name = "plugin"
+    search_fields = ["name", "title"]
 
     creator_id: int
     name: str

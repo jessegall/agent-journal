@@ -9,11 +9,6 @@ export const SILENT_WORD = "Not responding";
 
 const REPORTED = ["stopped", "idle", "compacting"];
 
-// The task the environment's live agent holds, as the summary names it: its id, title and what it waits for on it.
-export const heldTask = (summary, env) => (summary?.environments || []).find((e) => e.environment.name === env)?.task || null;
-
-export const silentIn = (summary, env) => Boolean((summary?.environments || []).find((e) => e.environment.name === env)?.silent);
-
 const WORKER = "workers:";
 const STATUS_PREFIXES = {worker: "At work", question: "Waiting on you"};
 const statusOf = (item) => (item.reported ? WORKER_WORDS.reported : STATUS_PREFIXES[item.kind] || "At work");
@@ -44,13 +39,10 @@ export function waitingFor({text, on, since}, {workers = [], now = Date.now() / 
     return {text, items, working, kind: kinds.length === 1 ? kinds[0] : "", since, label, line: `${label}${since ? ` · ${elapsed(now - since)}` : ""}`};
 }
 
-export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
+function waitingOn(agent, workers = [], now = Date.now() / 1000) {
     if (!agent?.awaiting) return null;
     return waitingFor({text: agent.awaiting, on: agent.wait_refs, since: seconds(agent.awaiting_since)}, {workers, now});
 }
-
-// whether the agent is at work, by the same reading the top bar shows: working, compacting, or a state of its own that is neither idle nor stopped
-export const isBusy = (agent) => Boolean(agent) && ["working", "busy", "compacting"].includes(stateOf(agent));
 
 // Seconds after its last hook with no tool running that an agent that awaits something is shown as waiting again.
 export const WAITING_AGAIN_AFTER = 3;
@@ -88,14 +80,8 @@ export function queued(tasks, auto) {
     return auto && tasks.some((t) => t.state === "open" && !t.worker_id);
 }
 
-const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
-
-export function wordOf(state) {
-    return WORDS[state] || "Idle";
-}
-
 // The title of a state pushed over the agent's floor, such as Choosing paused work, which the bar names while the agent is idle in it.
-export const pushedTitle = (agent) => ((agent.stack || []).length > 1 && agent.state_title ? agent.state_title.toLowerCase() : "");
+const pushedTitle = (agent) => ((agent.stack || []).length > 1 && agent.state_title ? agent.state_title.toLowerCase() : "");
 
 export function lineOf(agent, task, auto = false, workers = []) {
     const state = stateOf(agent);
@@ -108,15 +94,6 @@ export function lineOf(agent, task, auto = false, workers = []) {
     return ["working", "busy"].includes(state) ? busyWording(agent) : phrase("bearings");
 }
 
-// What the chat's status line says while the agent works: the part or tool running now, else the helper it waits on, else thinking,
-// the word alone, once the server says the agent is thinking (agent_activity thinking_at), else what it last did.
-export function busyLine(agent, helping = null) {
-    if (agent.status === "compacting") return {doing: "compacting"};
-    if (agent.tool_running) return {doing: agent.doing || "working"};
-    if (helping) return {doing: `Waiting: ${helping.task}`};
-    return {doing: agent.thinking_at ? "thinking" : agent.doing || "working"};
-}
-
 const PHRASES = {
     auto: "ready for the next task",
     idle: "ready for your next message",
@@ -127,20 +104,3 @@ export function phrase(kind) {
     return PHRASES[kind] || PHRASES.bearings;
 }
 
-const namesOf = (names) => (names.length ? names.join(", ") : "nothing");
-
-const valueWords = (values) =>
-    Array.isArray(values)
-        ? values.map(String)
-        : Object.entries(values || {})
-              .filter(([, value]) => value !== "" && value !== null && value !== undefined)
-              .map(([key, value]) => `${key.replaceAll("_", " ")} ${value}`);
-
-// The agent's stack of states top first, each with the words of its own values and what it waits for.
-export const stackOf = (agent) => (agent?.stack || []).map((s) => ({name: s.name, title: s.title, values: valueWords(s.values).join(" · "), awaits: s.awaits ? `Waiting for ${s.awaits}` : ""}));
-
-// The last changes of the stack, newest first, each in one plain line.
-export const trailOf = (agent) =>
-    [...(agent?.trail || [])]
-        .reverse()
-        .map((t) => (t.refused ? `push of ${t.refused} refused: ${t.line}` : `${namesOf(t.before)} > ${namesOf(t.after)}, by ${t.cause}`));

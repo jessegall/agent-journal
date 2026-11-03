@@ -137,7 +137,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
         <template v-else-if="failure">
             <p class="plugin-note">{{ failure }}</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the plugins" />
+        <ListTools :tools="tools" />
         <template v-for="row in tools.shown.value" :key="row.id">
             <div class="plugin" :data-row="row.id">
                 <span class="plugin-head">

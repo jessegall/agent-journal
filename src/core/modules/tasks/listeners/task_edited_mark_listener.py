@@ -15,6 +15,6 @@ class TaskEditedMarkListener(MarkListener):
     module_name = "journal.core.tasks"
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.command == EDIT_COMMAND and self.by_agent(event):
+        if self.is_agent_command(event, EDIT_COMMAND):
             task = self.queries.query(Task).find(event.row_id)
             self.show(event, TaskMarkType.TASK, TaskMarkVariant.EDITED, f"Task {task.id} edited: {task.title}", task.environment_id, None, "task", task.id)

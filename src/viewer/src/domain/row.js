@@ -11,7 +11,7 @@ const firstLine = (text) => (text || "").split("\n").find((line) => line.trim())
 export const TITLE_CHARACTERS = 80;
 
 // A line short enough for a title: cut after the last whole word that fits, with an ellipsis where it was cut.
-export function cutShort(line) {
+function cutShort(line) {
     if (line.length <= TITLE_CHARACTERS) return line;
     const cut = line.slice(0, TITLE_CHARACTERS + 1).replace(/\s+\S*$/, "");
     return `${cut || line.slice(0, TITLE_CHARACTERS)}…`;
@@ -36,18 +36,6 @@ const TITLES = {
 
 export const titleOf = (row) => (TITLES[row.table] ? TITLES[row.table](row) : row.title || "") || "";
 
-const BODIES = {
-    docs: (r) => r.body,
-    reports: (r) => r.body,
-    messages: (r) => r.text,
-    comments: (r) => r.text,
-    rules: (r) => r.reason,
-    triggers: (r) => r.text,
-    pins: (r) => r.link,
-};
-
-export const bodyOf = (row) => (BODIES[row.table] ? BODIES[row.table](row) : row.brief) || "";
-
 const ENDED = ["done", "cancelled"];
 
 const CLOSED = {
@@ -65,7 +53,7 @@ const CLOSED = {
 };
 
 // When the row closed, in seconds; 0 while it is open, and always for a table whose rows never close.
-export const closedAt = (row) => (CLOSED[row.table] ? CLOSED[row.table](row) : 0);
+const closedAt = (row) => (CLOSED[row.table] ? CLOSED[row.table](row) : 0);
 export const isClosed = (row) => closedAt(row) > 0;
 // whether a table's rows close, as a task is done or a question answered; a message never does
 export const closable = (table) => Boolean(CLOSED[table]);
@@ -75,10 +63,3 @@ export const updatedAt = (row) => seconds(row.updated_at) || createdAt(row);
 // Who made the row: the user, the agent, the journal or a plugin, from its stamp, user:1 or agent:s1.
 export const madeBy = (row) => (row.creator || "system").split(":")[0];
 
-// The second-level headings of a document's or report's body, each with the text under it.
-export function sectionsOf(body) {
-    const parts = (body || "").split(/^## +(.+)$/m);
-    const found = [];
-    for (let i = 1; i < parts.length - 1; i += 2) found.push({title: parts[i].trim(), body: parts[i + 1].trim()});
-    return found;
-}

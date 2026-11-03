@@ -14,7 +14,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.shown_runs import ShownRuns
+from core.modules.processes.support.run_visibility import RunVisibility
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
@@ -26,15 +26,16 @@ ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, Proce
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A run that ShownRuns says shows one mark naming its command alone, whatever else its line runs; the mark is
-    kept up to date in place by the key process:<id>: running, with the reader's progress as its figure, moved to the
-    background, then ended with its outcome. A mark once shown always ends, also when the run's output is gone by then."""
+    """A visible run shows one mark naming its command alone, whatever else its line runs; the mark is kept up
+    to date in place by the key process:<id>: running, with the reader's progress as its figure, moved to the
+    background, then ended with its outcome. A mark once shown always ends, also when the run's output is gone
+    by then."""
 
     name = "processes.process-mark"
     event = "process.*"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, shown_runs: ShownRuns) -> None:
-        self.bus, self.actors, self.queries, self.folder, self.shown_runs = bus, actors, queries, folder, shown_runs
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, visibility: RunVisibility) -> None:
+        self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(event.row_id)
@@ -42,7 +43,7 @@ class ProcessEndMarkListener(CommitListener):
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
-        part = self.shown_runs.part(process)
+        part = self.visibility.visible_part(process)
         if part is None:
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)

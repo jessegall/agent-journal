@@ -4,7 +4,7 @@ from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 
-TITLE_LIMIT_CHARACTERS = 200
+CHECK_TITLE_LIMIT_CHARACTERS = 200
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -33,8 +33,8 @@ class Check(Model):
     run_percent: int | None = None
 
     def __post_init__(self) -> None:
-        if not 1 <= len(self.title) <= TITLE_LIMIT_CHARACTERS:
-            raise Refusal(f"a check's title is 1 to {TITLE_LIMIT_CHARACTERS} characters, not {len(self.title)}", "say it shorter")
+        if not 1 <= len(self.title) <= CHECK_TITLE_LIMIT_CHARACTERS:
+            raise Refusal(f"a check's title is 1 to {CHECK_TITLE_LIMIT_CHARACTERS} characters, not {len(self.title)}", "say it shorter")
         if not self.command.strip():
             raise Refusal("a check needs a command", "give it with --command")
         if self.interval_minutes < 0:

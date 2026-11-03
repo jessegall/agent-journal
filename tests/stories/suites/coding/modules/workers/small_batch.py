@@ -6,7 +6,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 
 MAIN_SESSION = "s-1"
 DEFAULT_SIZE = 3
-QUEUE_MORE = "queue more tasks on a worker"
+QUEUE_EXTRA = "queue more tasks on a worker"
 
 
 def dispatched(*task_ids: int):
@@ -16,7 +16,7 @@ def dispatched(*task_ids: int):
 
 
 def queue_lines(story, *task_ids: int) -> list[str]:
-    return [line for line in story.hook(MAIN_SESSION, dispatched(*task_ids)).lines if QUEUE_MORE in line]
+    return [line for line in story.hook(MAIN_SESSION, dispatched(*task_ids)).lines if QUEUE_EXTRA in line]
 
 
 def test_a_dispatch_of_fewer_tasks_than_the_batch_size_tells_the_main_agent_to_queue_more(new_story):
@@ -57,4 +57,4 @@ def test_the_setting_moves_the_batch_size_down(new_story):
 def test_a_line_that_dispatches_nothing_is_told_nothing(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     sample = HookSamples.shell("journal worker send 5 job", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "send", "5", "job"], subcommand="worker")).with_fields(event="post_tool_use")
-    assert not [line for line in story.hook(MAIN_SESSION, sample).lines if QUEUE_MORE in line]
+    assert not [line for line in story.hook(MAIN_SESSION, sample).lines if QUEUE_EXTRA in line]

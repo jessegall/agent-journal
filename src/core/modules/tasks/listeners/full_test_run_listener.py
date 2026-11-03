@@ -6,7 +6,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -24,8 +24,8 @@ class FullTestRunListener(SaveListener):
     name = "tasks.full-test-run"
     event = "process.*"
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, change: Change[Model]) -> None:
         run, old = change.new_row, change.old_row
@@ -51,7 +51,7 @@ class FullTestRunListener(SaveListener):
     def send_line(self, run: Process, tasks: tuple[Task, ...], declaration: NudgeDeclaration, context: Context) -> None:
         if tasks:
             names = ", ".join(f"task:{task.id}" for task in tasks)
-            self.repository.save(AgentLine(agent_id=run.agent_id, creator_id=context.actor.id, text=declaration.nudge(tasks=names).text, source=SOURCE), context)
+            self.nudger.send(run.agent_id, declaration, SOURCE, context, tasks=names)
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
         waiting = self.queries.query(Task).filter(environment_id=run.environment_id, state=TaskState.TESTING).matching(IsNull("delegated_to")).oldest().all_rows()

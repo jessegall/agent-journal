@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from core.base.change.logged_event import LoggedEvent
 from suites.coding.modules.checks.support.check_run_record import CheckRunRecord
 
-RUN_FIELD = "last_run_at"
+CHECK_RUN_FIELD = "last_run_at"
 PASSED_FIELD = "last_passed"
 OUTPUT_FIELD = "last_output"
 RUNS_SHOWN = 50
@@ -24,8 +24,8 @@ class CheckRunHistory:
         for event in events:
             passed = bool(event.data[PASSED_FIELD][1]) if PASSED_FIELD in event.data else passed
             output = str(event.data[OUTPUT_FIELD][1]) if OUTPUT_FIELD in event.data else output
-            if RUN_FIELD in event.data and event.data[RUN_FIELD][1] is not None:
-                records.append(CheckRunRecord(str(event.data[RUN_FIELD][1]), passed, output))
+            if CHECK_RUN_FIELD in event.data and event.data[CHECK_RUN_FIELD][1] is not None:
+                records.append(CheckRunRecord(str(event.data[CHECK_RUN_FIELD][1]), passed, output))
         return cls(tuple(reversed(records[-RUNS_SHOWN:])))
 
     def lines(self) -> Sequence[str]:

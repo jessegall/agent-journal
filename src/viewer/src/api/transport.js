@@ -12,7 +12,7 @@ const UPDATE_STATUS = "/journal/summary";
 // the viewer names itself so the journal knows the desk is open; the phone names itself so its writes are trusted
 const VIEWER = onPhone ? {"X-Phone": "1"} : {"X-Journal-Viewer": "1"};
 
-export const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATUS);
+const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATUS);
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 

@@ -23,6 +23,6 @@ def test_every_module_has_stories():
 
 
 def test_a_module_with_no_stories_is_found():
-    lonely = SimpleNamespace(__module__="core.modules.lonely.lonely_module", name="journal.core.lonely")
+    single = SimpleNamespace(__module__="core.modules.lonely.lonely_module", name="journal.core.lonely")
 
-    assert modules_without_stories([lonely], {}) == ["journal.core.lonely"]
+    assert modules_without_stories([single], {}) == ["journal.core.lonely"]

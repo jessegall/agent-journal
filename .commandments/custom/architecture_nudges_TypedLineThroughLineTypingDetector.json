@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "type_line"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/(drivers/support/line_typing|agents/commands/type_terminal_line/type_terminal_line_handler|agents/commands/choose_agent_control/choose_agent_control_handler)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "terminal-line-outside-line-typing",
+        "description": "A line is typed into an agent's terminal without being a row, so a hook can give it too and the journal has no record of it.",
+        "rule": "The journal's lines go through Nudger and LineTyping. Only a person's own words and a person's choice of a control are typed directly, by the two handlers this rule allows.",
+        "skill": "plain-code-words"
+    }
+}

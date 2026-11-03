@@ -15,8 +15,3 @@ export function isText(bytes) {
 
 export const textOf = (bytes) => new TextDecoder("utf-8").decode(bytes);
 
-export function fileSize(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`;
-    return `${(bytes / 1048576).toFixed(1)} MB`;
-}

@@ -15,8 +15,9 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 
 class PruneOutputsHandler(Handler[PruneOutputs, int]):
-    """Prunes the kept outputs beyond the limit and removes their folders: never one that ended within the kept
-    minutes; those that ended first, and among them the outputs no reader reads before a test run's or a build's."""
+    """Prunes the kept outputs beyond the limit and removes their folders: never one that ended within the
+    kept minutes; those that ended first, and among them the outputs no reader reads before a test run's or a
+    build's."""
 
     command = PruneOutputs
 

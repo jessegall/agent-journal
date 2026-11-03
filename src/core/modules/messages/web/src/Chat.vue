@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, patched, removed, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
@@ -27,8 +27,23 @@ const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.va
 const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
+// the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
+const VOICE_SETTINGS = ["profile", "avatar", "avatar-shown"];
+const voice = ref(null);
+async function readVoice() {
+    const answers = await Promise.all(VOICE_SETTINGS.map((key) => context.read(`setting show journal.core.voices.${key}`)));
+    const [profile, avatar, shown] = answers.map((answer) => (answer.ok ? answer.value.value : null));
+    voice.value = answers.every((answer) => answer.ok) ? {profile, avatar, avatar_shown: shown} : null;
+}
+context.follow(["setting.*"], readVoice);
+readVoice();
+const voiceFigure = () => {
+    if (!voice.value?.avatar || voice.value.avatar_shown === "never") return "";
+    return voice.value.avatar_shown === "working" && !runningTool.value ? "" : voice.value.profile;
+};
 const figureVoice = computed(() => {
     const chosen = context.option("figure").value;
+    if (chosen === "voice") return voiceFigure();
     return chosen && chosen !== "none" ? chosen : "";
 });
 const runningTool = ref("");
@@ -106,6 +121,9 @@ const vComposerText = {
 function typed(event) {
     shownInBox = text.value = event.target.value;
 }
+// words put in with no input event are read from the box at each moment they could be lost or needed: when the box gets focus or a key comes up in
+// it, when a press lands on the row of buttons (which decides whether there is anything to send), when the window is come back to, before the
+// box is taken off the page, and before a send
 // dictation pastes into the focused field only, and coming back to the window leaves nothing focused: the box takes the focus back when
 // nothing else holds it, so the next words land in it
 function returned() {
@@ -116,7 +134,9 @@ onMounted(() => {
     window.addEventListener("focus", returned);
     document.addEventListener("visibilitychange", returned);
 });
-onUnmounted(() => {
+onBeforeUnmount(() => {
+    takeFromBox();
+    if (!editing.value) keepDraft(text.value);
     window.removeEventListener("focus", returned);
     document.removeEventListener("visibilitychange", returned);
 });
@@ -366,7 +386,7 @@ async function runCommand(pin) {
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Write to the agent below; what it answers shows here.">
                 <template #default="{row}">
                     <SwitchCase :value="row.kind">
                         <template #day>
@@ -424,8 +444,8 @@ async function runCommand(pin) {
                     </template>
                 </ul>
             </template>
-            <textarea ref="composerInput" v-composer-text="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @input="typed" @paste="pasted" />
-            <div class="composer-row">
+            <textarea ref="composerInput" v-composer-text="text" class="composer-input" rows="3" placeholder="Message the agent" @focus="takeFromBox" @keyup="takeFromBox" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @input="typed" @paste="pasted" />
+            <div class="composer-row" @pointerdown="takeFromBox">
                 <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
                 <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">
                     <Icon name="clip" :size="16" />

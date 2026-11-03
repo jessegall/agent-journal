@@ -11,9 +11,7 @@ from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-
-
-ENVIRONMENT_COLUMN = "environment_id"
+from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):

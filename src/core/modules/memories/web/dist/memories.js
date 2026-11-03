@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-0998ff0cca95")) { const style = document.createElement("style"); style.id = "window-styles-0998ff0cca95"; style.textContent = ".memories[data-v-27f37bdb],.memories-form[data-v-27f37bdb]{display:flex;flex-direction:column;gap:8px}.memories-form[data-v-27f37bdb]{align-items:flex-start}.memories-form textarea[data-v-27f37bdb]{width:100%}.memories-refusal[data-v-27f37bdb]{margin:0;color:var(--danger);font-size:12.5px}.memory[data-v-27f37bdb]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.memory-kind[data-v-27f37bdb]{color:var(--text-3);font-size:12px}.memories-page[data-v-e72d53ed]{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.memories-page[data-v-e72d53ed]>.memories{align-self:stretch}.memory-dock[data-v-19bd84d7]{display:flex;gap:8px;font-size:12px;line-height:1.45}.memory-dock-weight[data-v-19bd84d7]{color:var(--text-4)}.memory-round[data-v-03fe1c3a]{margin:0 0 0 20px}.memory-round-rows[data-v-03fe1c3a]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-03fe1c3a]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-03fe1c3a]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-03fe1c3a]{color:var(--text-4)}\n"; document.head.appendChild(style); }
-import { ref as i, openBlock as u, createElementBlock as y, createElementVNode as m, createVNode as n, unref as e, withCtx as x, createTextVNode as R, withModifiers as E, withDirectives as W, vModelText as A, createCommentVNode as S, toDisplayString as p, computed as D, createBlock as I } from "vue";
-import { useWindow as N, useRows as C, useListTools as j, Btn as M, Segmented as L, ListTools as F, RowList as O, peekRef as U } from "@journal/window-kit";
+if (!document.getElementById("window-styles-dd0a30a3ecf6")) { const style = document.createElement("style"); style.id = "window-styles-dd0a30a3ecf6"; style.textContent = ".memories[data-v-a3ef6a6c],.memories-form[data-v-a3ef6a6c]{display:flex;flex-direction:column;gap:8px}.memories-form[data-v-a3ef6a6c]{align-items:flex-start}.memories-form textarea[data-v-a3ef6a6c]{width:100%}.memories-refusal[data-v-a3ef6a6c]{margin:0;color:var(--danger);font-size:12.5px}.memory[data-v-a3ef6a6c]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.memory-kind[data-v-a3ef6a6c]{color:var(--text-3);font-size:12px}.memories-page[data-v-e72d53ed]{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.memories-page[data-v-e72d53ed]>.memories{align-self:stretch}.memory-dock[data-v-19bd84d7]{display:flex;gap:8px;font-size:12px;line-height:1.45}.memory-dock-weight[data-v-19bd84d7]{color:var(--text-4)}.memory-round[data-v-03fe1c3a]{margin:0 0 0 20px}.memory-round-rows[data-v-03fe1c3a]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-03fe1c3a]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-03fe1c3a]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-03fe1c3a]{color:var(--text-4)}\n"; document.head.appendChild(style); }
+import { ref as i, openBlock as u, createElementBlock as y, createElementVNode as m, createVNode as n, unref as e, withCtx as x, createTextVNode as R, withModifiers as A, withDirectives as E, vModelText as W, createCommentVNode as M, toDisplayString as p, computed as j, createBlock as D } from "vue";
+import { useWindow as S, useRows as C, useListTools as I, Btn as N, Segmented as L, ListTools as F, RowList as O, peekRef as U } from "@journal/window-kit";
 import { _ as P } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const Y = { class: "memories" }, q = { class: "memories-tools" }, z = {
   key: 1,
@@ -11,19 +11,19 @@ const Y = { class: "memories" }, q = { class: "memories-tools" }, z = {
 }, G = ["data-memory", "onClick"], H = { class: "memory-text" }, J = { class: "memory-kind" }, K = {
   __name: "MemoryRows",
   props: { environment: { type: String, default: "" } },
-  setup(h) {
+  setup(g) {
     const f = [
       { key: "fact", label: "Fact" },
       { key: "rule", label: "Rule" },
       { key: "reminder", label: "Reminder" }
-    ], d = h, a = d.environment ? ["--environment", d.environment] : [], _ = N(), { rows: l, failure: c, loaded: k, more: T, load: V, older: $ } = C(["memory list", ...a].join(" "), ["memory.*"], { incremental: !0 }), g = j(l, { title: (s) => s.text, isOpen: (s) => s.state === "active" }), v = i(!1), r = i(""), b = i("fact"), w = i("");
+    ], d = g, a = d.environment ? ["--environment", d.environment] : [], k = S(), { rows: r, failure: c, loaded: _, more: T, load: V, older: $ } = C(["memory list", ...a].join(" "), ["memory.*"], { incremental: !0 }), b = I(r, { title: (s) => s.text, isOpen: (s) => s.state === "active" }), v = i(!1), l = i(""), w = i("fact"), h = i("");
     async function B() {
-      const s = await _.run(["memory", "make", r.value.trim(), "--type", b.value, ...a]);
-      w.value = s.ok ? "" : s.error, s.ok && (r.value = "", v.value = !1, V());
+      const s = await k.run(["memory", "make", l.value.trim(), "--type", w.value, ...a]);
+      h.value = s.ok ? "" : s.error, s.ok && (l.value = "", v.value = !1, V());
     }
     return (s, t) => (u(), y("div", Y, [
       m("div", q, [
-        n(e(M), {
+        n(e(N), {
           small: "",
           bordered: "",
           "data-memory-new": "",
@@ -39,45 +39,44 @@ const Y = { class: "memories" }, q = { class: "memories-tools" }, z = {
         key: 0,
         class: "memories-form",
         "data-memory-form": "",
-        onSubmit: E(B, ["prevent"])
+        onSubmit: A(B, ["prevent"])
       }, [
-        W(m("textarea", {
-          "onUpdate:modelValue": t[1] || (t[1] = (o) => r.value = o),
+        E(m("textarea", {
+          "onUpdate:modelValue": t[1] || (t[1] = (o) => l.value = o),
           rows: "2",
           placeholder: "What should be remembered?",
           "aria-label": "What should be remembered?"
         }, null, 512), [
-          [A, r.value]
+          [W, l.value]
         ]),
         n(e(L), {
           options: f,
-          value: b.value,
-          onPick: t[2] || (t[2] = (o) => b.value = o)
+          value: w.value,
+          onPick: t[2] || (t[2] = (o) => w.value = o)
         }, null, 8, ["value"]),
-        n(e(M), {
+        n(e(N), {
           small: "",
           kind: "primary",
           type: "submit",
-          disabled: !r.value.trim()
+          disabled: !l.value.trim()
         }, {
           default: x(() => [...t[4] || (t[4] = [
             R("Save it", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
-      ], 32)) : S("", !0),
-      w.value ? (u(), y("p", z, p(w.value), 1)) : S("", !0),
-      n(e(F), {
-        tools: e(g),
-        placeholder: "Search the memories"
-      }, null, 8, ["tools"]),
+      ], 32)) : M("", !0),
+      h.value ? (u(), y("p", z, p(h.value), 1)) : M("", !0),
+      n(e(F), { tools: e(b) }, null, 8, ["tools"]),
       n(e(O), {
-        rows: e(g).shown.value,
+        rows: e(b).shown.value,
         failure: e(c),
-        loaded: e(k),
+        loaded: e(_),
         more: e(T),
         older: e($),
-        empty: "No memories yet"
+        empty: "No memories yet",
+        hint: "A memory an agent or you keep with journal memory make shows here.",
+        searching: e(b).filtering.value
       }, {
         default: x(({ row: o }) => [
           m("button", {
@@ -91,21 +90,21 @@ const Y = { class: "memories" }, q = { class: "memories-tools" }, z = {
           ], 8, G)
         ]),
         _: 1
-      }, 8, ["rows", "failure", "loaded", "more", "older"])
+      }, 8, ["rows", "failure", "loaded", "more", "older", "searching"])
     ]));
   }
-}, Q = /* @__PURE__ */ P(K, [["__scopeId", "data-v-27f37bdb"]]), X = { class: "memories-page" }, Z = "", ee = {
+}, Q = /* @__PURE__ */ P(K, [["__scopeId", "data-v-a3ef6a6c"]]), X = { class: "memories-page" }, Z = "", ee = {
   __name: "MemoriesPage",
-  setup(h) {
-    const f = N(), { rows: d } = C("environment list", ["environment.*"]), a = i(f.environment), _ = D(() => [{ key: Z, label: "All" }, ...d.value.map((l) => ({ key: l.name, label: l.name }))]);
-    return (l, c) => (u(), y("div", X, [
+  setup(g) {
+    const f = S(), { rows: d } = C("environment list", ["environment.*"]), a = i(f.environment), k = j(() => [{ key: Z, label: "All" }, ...d.value.map((r) => ({ key: r.name, label: r.name }))]);
+    return (r, c) => (u(), y("div", X, [
       n(e(L), {
-        options: _.value,
+        options: k.value,
         value: a.value,
         "data-memory-tabs": "",
-        onPick: c[0] || (c[0] = (k) => a.value = k)
+        onPick: c[0] || (c[0] = (_) => a.value = _)
       }, null, 8, ["options", "value"]),
-      (u(), I(Q, {
+      (u(), D(Q, {
         key: a.value,
         environment: a.value
       }, null, 8, ["environment"]))

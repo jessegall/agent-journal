@@ -150,8 +150,7 @@ def test_deleting_the_task_it_waits_on_opens_a_task(new_story):
     story.expect_success("task show 1", "state: open")
 
 
-def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(new_story):
-    story = new_story(fixture=TwoTasks)
+def kept_typing(story) -> list[tuple[int, str]]:
     entered: list[tuple[int, str]] = []
 
     class KeptTyping(TerminalTyping):
@@ -162,11 +161,48 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
             entered.append((agent_id, line))
 
     story.container.bind(TerminalTyping, KeptTyping())
+    return entered
+
+
+def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(new_story):
+    story = new_story(fixture=TwoTasks)
+    entered = kept_typing(story)
     story.run("task block 1 --on task:2")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
     story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended")])
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
+
+
+def test_an_agent_at_work_is_not_typed_that_its_task_opened_and_hears_it_by_its_next_hook(new_story):
+    story = new_story(fixture=TwoTasks)
+    entered = kept_typing(story)
+    story.run("task block 1 --on task:2")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.run('task cancel 2 --reason "no"')
+    story.run_listeners()
+    story.expect_rows(entered == [])
+    assert any("task:1 is open again" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
+
+
+def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(new_story):
+    story = new_story(fixture=TwoTasks)
+    entered = kept_typing(story)
+    story.run("task block 1 --on task:2")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.run('task cancel 2 --reason "no"')
+    story.run_listeners()
+    story.expect_rows(entered == [])
+    story.run('task cancel 1 --reason "no"')
+    stop = HookSamples.stop().with_fields(accepts_lines=False)
+    story.hook("s-1", stop)
+    story.run_listeners()
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended")])
+    story.hook("s-1", stop)
+    story.run_listeners()
+    story.expect_rows(len(entered) == 1)
 
 
 def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):

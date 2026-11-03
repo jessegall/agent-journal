@@ -12,8 +12,7 @@ from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
-
-ENVIRONMENT_COLUMN = "environment_id"
+from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 
 class ListSubcommand(ReadSubcommand[Page[Model]]):

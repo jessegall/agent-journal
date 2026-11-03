@@ -18,5 +18,5 @@ class ResumeRunQueueHandler(Handler[ResumeRunQueue, str]):
         if not self.halt.is_halted_by_command:
             raise Refusal("the test queue is not halted", "journal queue halt \"<why>\" halts it")
         self.halt.resume()
-        self.slots.grant_for_oldest_queued(context)
+        self.slots.grant_every_environment(context)
         return "the test queue is resumed"

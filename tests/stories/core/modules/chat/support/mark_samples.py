@@ -54,7 +54,7 @@ def mark_count(story: Story) -> int:
 
 
 class StrangeVariant(StrEnum):
-    STRANGE = "strange"
+    UNKNOWN = "strange"
 
 
 def marks_text(story: Story) -> str:

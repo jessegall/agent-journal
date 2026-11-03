@@ -6,9 +6,9 @@ from pathlib import Path
 from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
-from core.base.timestamp import MINUTE_SECONDS
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.settings_tree import BACKUP_COUNT_SETTING, BACKUP_MINUTES_SETTING
+from core.base.timestamp import SECONDS_PER_MINUTE
 
 BACKUP_FOLDER = "backups-watch"
 COPY_PREFIX = "version-5-"
@@ -33,7 +33,7 @@ class ServerBackup:
         finally:
             container.get(Database).close()
         copies = self.copies()
-        if minutes == 0 or (copies and time.time() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS):
+        if minutes == 0 or (copies and time.time() - copies[0].stat().st_mtime < minutes * SECONDS_PER_MINUTE):
             return
         self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:

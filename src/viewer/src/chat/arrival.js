@@ -6,6 +6,25 @@ const OWN_SLIDE_PX = 6;
 const SLIDE_PX = 14;
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
+// how far down from its place a row is drawn at this moment, read from the transform the browser works out
+function slideOf(el) {
+    const transform = getComputedStyle(el).transform;
+    const matrix = /matrix\(([^)]+)\)/.exec(transform);
+    if (matrix) return Number(matrix[1].split(",")[5]) || 0;
+    return Number(/translateY\((-?[\d.]+)px\)/.exec(transform)?.[1]) || 0;
+}
+
+// Where the pane is held to show the foot of its content: a row sliding up from below lies past the end of the layout while it moves, and the scrollable
+// area grows to hold it, so a pane held at the area's end rides that far too high and falls back when the row settles; the foot is taken as the layout has it.
+function holdFoot(pane, el) {
+    const slide = Math.max(0, slideOf(el));
+    const area = pane.scrollHeight;
+    if (!slide) return area - pane.clientHeight;
+    const reach = el.getBoundingClientRect().bottom - pane.getBoundingClientRect().top - pane.clientTop + pane.scrollTop;
+    const padding = Number.parseFloat(getComputedStyle(pane).paddingBottom) || 0;
+    return (reach >= area - 1 ? Math.min(area, reach - slide + padding) : area) - pane.clientHeight;
+}
+
 // A turn that arrives while the reader follows the foot: the chat first glides up by the turn's height, the turn still unseen in the room
 // being made (the pane held at its foot every frame), and only then the turn fades in and slides up from a little below into that room.
 // A reader who is away sees nothing move: `done` is called at once. `frame` and `clock` are the page's own, given so a test can step them.
@@ -19,7 +38,7 @@ export function arrive(el, {pane, follows, frame = requestAnimationFrame, clock 
     const began = clock();
     let fading = false;
     const hold = () => {
-        if (follows()) pane.scrollTop = pane.scrollHeight;
+        if (follows()) pane.scrollTop = holdFoot(pane, el);
         const elapsed = clock() - began;
         if (!fading && elapsed >= PUSH_MS) {
             fading = true;
@@ -44,7 +63,7 @@ export function arriveAtOnce(el, {pane, follows, frame = requestAnimationFrame, 
     Object.assign(el.style, {opacity: "1", transform: "translateY(0)"});
     const began = clock();
     const hold = () => {
-        if (follows()) pane.scrollTop = pane.scrollHeight;
+        if (follows()) pane.scrollTop = holdFoot(pane, el);
         if (clock() - began < OWN_MS) return frame(hold);
         Object.assign(el.style, {opacity: "", transform: "", transition: ""});
         done();
@@ -110,15 +129,3 @@ export function depart(el, done, later = setTimeout) {
     later(done, DEPART_MS);
 }
 
-// Something that joins a bubble, as the chips of a task made from it: the bubble's height opens to take it instead of jumping.
-export function growHeight(el, done, later = setTimeout) {
-    const height = el.scrollHeight;
-    Object.assign(el.style, {boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0"});
-    void el.offsetHeight;
-    el.style.transition = `height ${PUSH_MS}ms ${EASE}, opacity ${FADE_MS}ms ease-out`;
-    Object.assign(el.style, {height: `${height}px`, opacity: "1"});
-    later(() => {
-        Object.assign(el.style, {boxSizing: "", height: "", overflow: "", opacity: "", transition: ""});
-        done();
-    }, PUSH_MS);
-}

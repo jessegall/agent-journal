@@ -15,7 +15,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
-from core.base.provider.transcript_author import TranscriptAuthor
+from core.base.provider.transcript_author import TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
@@ -36,7 +36,6 @@ from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
 TEMPORARY_FILES_FOLDER = Path("/tmp")
-TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 
 MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))

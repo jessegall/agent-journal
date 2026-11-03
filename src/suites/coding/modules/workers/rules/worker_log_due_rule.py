@@ -4,7 +4,6 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
-from core.base.timestamp import MINUTE_SECONDS
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
@@ -30,5 +29,5 @@ class WorkerLogDueRule(DriverRule):
             return RuleAnswer.allowed()
         proofs = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().page(1, 1).rows
         latest = proofs[0].creation_timestamp() if proofs else worktree.creation_timestamp()
-        minutes = int(latest.elapsed_seconds(hook.timestamp) / MINUTE_SECONDS)
+        minutes = latest.elapsed_minutes(hook.timestamp)
         return RuleAnswer.with_nudges(WORKER_LOG_DUE.nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()

@@ -4,7 +4,8 @@ from tests.stories.core.support.fixtures import AgentStarted
 
 
 class OpenQuestion(StoryFixture):
-    """One open question, Which database? (1), with the options sqlite and postgres, asked by the main agent in main."""
+    """One open question, Which database? (1), with the options sqlite and postgres, asked by the main agent
+    in main."""
 
     parent = AgentStarted
 

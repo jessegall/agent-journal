@@ -10,7 +10,7 @@ export const isRunItem = (item, declarationOf) => (declarationOf(item.type)?.lea
 export const isLeaving = (item) => Boolean(item.leaves_at && !item.kept);
 
 // whether an item is docked at a moment, in seconds: docked, and either not leaving, not yet due, or held under the pointer
-export const isDocked = (item, now, held = new Set()) =>
+const isDocked = (item, now, held = new Set()) =>
     item.state === "docked" && (!isLeaving(item) || now < item.leaves_at || held.has(item.id));
 
 export const dockedItems = (items, now, held = new Set()) => items.filter((item) => isDocked(item, now, held)).sort((a, b) => a.id - b.id);
@@ -23,5 +23,5 @@ export function keptRuns(runs, now, most = MOST_DOCKED_RUNS) {
     return runs.filter((run) => !cleared.has(run.id));
 }
 
-// whether runs share one compact row: from three at once, and on until one run is left
-export const groupedRuns = (count, wasGrouped) => (count >= GROUP_FROM ? true : count <= 1 ? false : wasGrouped);
+// whether runs share one compact row: from three at once, and on until fewer than two of them are still going (going defaults to all of them)
+export const groupedRuns = (count, wasGrouped, going = count) => (going < 2 ? false : count >= GROUP_FROM ? true : wasGrouped);

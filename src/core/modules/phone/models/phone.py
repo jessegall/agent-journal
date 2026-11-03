@@ -14,6 +14,7 @@ class Phone(Model):
 
     model_name = "phone"
     cli_name = "phone"
+    search_fields = ["name"]
     lifecycle = PhoneLifecycle
     hidden_fields = frozenset({"token_digest", "subscription"})
 

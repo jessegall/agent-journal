@@ -7,8 +7,8 @@ from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
+from core.modules.processes.support.background_commands import JOURNAL
 
-JOURNAL = "journal"
 OUTPUT_STATUS_COMMAND = ["output", "status"]
 
 

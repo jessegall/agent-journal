@@ -9,8 +9,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
 from core.modules.drivers.listeners.typed_line_listener import PAUSE_SOURCE
-from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
+from core.modules.drivers.support.nudger import Nudger
 
 
 class PauseAgentHandler(Handler[PauseAgent, Agent]):
@@ -19,8 +19,8 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
 
     command = PauseAgent
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: PauseAgent, context: Context) -> Agent:
         PersonCheck.require(context, "only a person pauses an agent")
@@ -30,5 +30,5 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
         if agent.paused_at is not None:
             raise Refusal(f"agent {agent.id} is paused already")
         paused = self.repository.save(replace(agent, paused_at=context.timestamp), context)
-        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=PAUSED_REFUSAL.nudge().text, source=PAUSE_SOURCE), context)
+        self.nudger.send(agent.id, PAUSED_REFUSAL, PAUSE_SOURCE, context)
         return paused

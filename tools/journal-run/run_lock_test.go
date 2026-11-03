@@ -27,11 +27,17 @@ func TestANewRunWaitsOnTheRunLockAndStartsWhenItIsGone(t *testing.T) {
 
 func TestAJournalCommandDoesNotWaitOnTheRunLock(t *testing.T) {
 	journalLine := Parts("journal message read 7; journal task list")
-	if strings.Contains(LockWait("/home", 4, journalLine, nil), "while") {
-		t.Errorf("a journal line waits: %q", LockWait("/home", 4, journalLine, nil))
+	if strings.Contains(LockWait("/home", 4, journalLine, nil, false), "while") {
+		t.Errorf("a journal line waits: %q", LockWait("/home", 4, journalLine, nil, false))
 	}
-	if !strings.Contains(LockWait("/home", 4, Parts("journal task list; make build"), nil), "while") {
+	if !strings.Contains(LockWait("/home", 4, Parts("journal task list; make build"), nil, false), "while") {
 		t.Error("a line with another command in it does not wait")
+	}
+}
+
+func TestALineThatOnlyReadsDoesNotWaitOnTheRunLock(t *testing.T) {
+	if strings.Contains(LockWait("/home", 4, Parts("grep -n word notes | head"), nil, true), "while") {
+		t.Error("a line that only reads waits")
 	}
 }
 
@@ -67,7 +73,7 @@ func TestAnEndIsToldAgainWhileTheServerIsAway(t *testing.T) {
 }
 
 func TestAnAliasWaitsOnTheRunLockAsTheCommandUnderItDoes(t *testing.T) {
-	if !strings.Contains(LockWait("/home", 4, Parts("journal go-tests ."), []string{"go-tests"}), "while") {
+	if !strings.Contains(LockWait("/home", 4, Parts("journal go-tests ."), []string{"go-tests"}, false), "while") {
 		t.Error("an alias does not wait on the run lock")
 	}
 }

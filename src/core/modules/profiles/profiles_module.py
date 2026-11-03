@@ -26,5 +26,5 @@ class ProfilesModule(Module):
     subcommands = (ProfileListSubcommand, SaveProfileSubcommand)
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
-    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WINDOW,
+    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER,
                                  reads=["profile list"], runs=["profile save"])]

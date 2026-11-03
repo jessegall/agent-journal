@@ -6,7 +6,12 @@ import Skeleton from "../src/kit/Skeleton.vue";
 const props = defineProps({
     rows: {type: Array, required: true},
     failure: {type: String, default: ""},
+    // what is empty, in the window's own terms, and under it the sentence that says what brings rows there
     empty: {type: String, required: true},
+    hint: {type: String, default: ""},
+    // whether a search or a filter is on: with it, and no row left, the list says nothing matches (`matches` names it in the window's words) and what to try, not that it is empty
+    searching: Boolean,
+    matches: {type: String, default: "Nothing matches"},
     loaded: {type: Boolean, required: true},
     // what the skeleton looks like while the first read is out: the shape of what is coming
     shape: {type: String, default: "rows"},
@@ -32,7 +37,7 @@ async function showMore(older) {
         <p class="row-list-failure">{{ failure }}</p>
     </template>
     <template v-else-if="!rows.length && loaded">
-        <EmptyState :title="empty" />
+        <EmptyState :title="searching ? matches : empty" data-row-list-empty :data-searching="searching ? '' : undefined">{{ searching ? "Try other words, or clear the search." : hint }}</EmptyState>
     </template>
     <template v-else>
         <component :is="arrival ? TransitionGroup : 'ul'" v-bind="motion" class="row-list">

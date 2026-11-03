@@ -21,8 +21,8 @@ class MarkListener(CommitListener):
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries
 
-    def by_agent(self, event: LoggedEvent) -> bool:
-        return self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT
+    def is_agent_command(self, event: LoggedEvent, command: str) -> bool:
+        return event.command == command and self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT
 
     def show(self, event: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
              row_model: str = "", row_id: int | None = None, detail: str = "", key: str = "", ended: bool = True) -> None:

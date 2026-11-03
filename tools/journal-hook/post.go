@@ -110,25 +110,24 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 }
 
 // heldThroughRestart posts the hook, and while the server does not answer with 200 and its restart mark is there it
-// asks again, resting between asks; the first ask that waits also starts the server when no client has yet.
+// asks again, resting between asks; every ask that waits starts the server when its socket is gone, since the server
+// that is stopping may keep its socket past the first ask, and no other client may come.
 func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	began := time.Now()
 	status, answer := posted(outgoing, transport)
-	for asks := 0; status != http.StatusOK && restartMarked(outgoing.root); asks++ {
+	for status != http.StatusOK && restartMarkRecent(outgoing.root) {
 		if time.Since(began) >= RestartWindow {
 			return restartTimedOut, nil
 		}
-		if asks == 0 {
-			startMissingServer(outgoing.root)
-		}
+		startMissingServer(outgoing.root)
 		time.Sleep(RetryPause)
 		status, answer = posted(outgoing, transport)
 	}
 	return status, answer
 }
 
-// restartMarked says whether a server left its restart mark, not older than RestartMarkLimit.
-func restartMarked(root string) bool {
+// restartMarkRecent says whether a server left its restart mark, not older than RestartMarkLimit.
+func restartMarkRecent(root string) bool {
 	info, err := os.Stat(filepath.Join(root, ".journal", restartMarkName))
 	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
 }

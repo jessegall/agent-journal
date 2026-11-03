@@ -13,7 +13,7 @@ const timeOf = (row) => (row.at ? new Date(row.at).toLocaleTimeString([], {hour:
 <template>
     <div class="transcript">
         <AutoScrollPane :row-count="newest">
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">
                 <template #default="{row}">
                     <span class="author" :data-author="row.author">{{ row.author }}</span>
                     <time class="time" data-row-time :datetime="row.at">{{ timeOf(row) }}</time>

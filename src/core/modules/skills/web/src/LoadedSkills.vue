@@ -10,7 +10,7 @@ const newestLast = computed(() => [...props.rows].reverse());
 <template>
     <div class="skills">
         <p class="skills-note">Loaded in this window, newest last. Compacting the conversation empties it.</p>
-        <RowList :rows="newestLast" :failure="failure" :loaded="answered" empty="No skill is loaded in this conversation.">
+        <RowList :rows="newestLast" :failure="failure" :loaded="answered" empty="No skill is loaded in this conversation." hint="A skill the agent reads shows here with when it read it.">
             <template #default="{row}">
                 <button type="button" class="skill-row" @click="emit('open', row.skill)">
                     <svg class="skill-book" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">

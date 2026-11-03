@@ -1,11 +1,11 @@
 from core.base.viewer.menu_item import MenuItem
 from core.base.viewer.window_search import WindowSearch
-from core.base.viewer.window_searcher import ModelSearcher
-from core.modules.questions.models.question import Question
+from core.base.viewer.model_searcher import ModelSearcher
+from tests.unit.core.base.model.test_model import Item
 
 
 class SampleSearcher(ModelSearcher):
-    model = Question
+    model = Item
 
 
 def test_a_menu_entry_opens_a_menu_or_sends_a_click():

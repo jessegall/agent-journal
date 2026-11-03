@@ -19,8 +19,9 @@ MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.STEERING, 'log what 
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.STEERING, "a wait is a block: journal task block <n> --on task:<m>, or --until '<command>'", interval=Interval(Seconds(1800)), required_command="")
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.STEERING, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", turn_limited=False)
 UNOPENABLE_BLOCKS = NudgeDeclaration("tasks.unopenable_blocks", NudgeType.STEERING, 'blocked with nothing to open them: {tasks}: give each --on or --until, or unblock it', interval=Interval(Seconds(2700), ClosedTasks(5)), turn_limited=False)
+TASK_BRIEF_FIRST = NudgeDeclaration("tasks.brief_first", NudgeType.REFUSAL, "read task {task} first: journal task brief {task}")
 TASK_FILED = NudgeDeclaration("tasks.filed", NudgeType.STEERING, "filed: the assigner hands it out by priority", turn_limited=False)
 TASK_FILED_KEEP_CURRENT = NudgeDeclaration("tasks.filed_keep_current", NudgeType.STEERING, "filed: carry on with task:{task}, the assigner hands it out by priority", turn_limited=False)
 TESTING_TASKS_FULL_RUN = NudgeDeclaration("tasks.testing_tasks_full_run", NudgeType.INFO, '{tasks} wait in testing: this full test run closes them if it passes', turn_limited=False)
 TESTING_TASKS_FAILED_RUN = NudgeDeclaration("tasks.testing_tasks_failed_run", NudgeType.INFO, 'the full test run failed: {tasks} stay in testing', turn_limited=False)
-TASK_NUDGES = [TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]
+TASK_NUDGES = [TASK_BRIEF_FIRST, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]

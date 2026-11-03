@@ -6,9 +6,9 @@ from core.modules.processes.support.run_slots import RunSlots
 
 
 class RunSlotListener(SaveListener):
-    """The one queue of a machine's runs: whenever a run starts or ends, the queued runs get a spot, oldest first,
-    while fewer hold one than the batch size, and none while the queue is halted. The runner holds a queued run's
-    line until its spot is written. The main agent's runs never queue and hold no spot."""
+    """The queue of an environment's runs: whenever one of its runs starts or ends, its queued runs get a spot,
+    oldest first, while fewer hold one than the environment's batch size, and none while the queue is halted. The
+    runner holds a queued run's line until its spot is written. The main agent's runs never queue and hold no spot."""
 
     name = "processes.run-slots"
     event = "process.*"

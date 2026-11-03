@@ -4,14 +4,13 @@ import sys
 from pathlib import Path
 
 from core.base.code_copy import CodeCopy
-from core.base.journal_home import JournalHome
+from core.base.journal_home import HOME_VARIABLE, JournalHome
 from install.code_replacement import CodeReplacement
 from install.version_four import ANSWER, VersionFour
 
 INSTALLED = 3
 REFUSED = 1
 SYNC_LIMIT_SECONDS = 120
-HOME_VARIABLE = "JOURNAL_HOME"
 
 
 class InstallJournal:

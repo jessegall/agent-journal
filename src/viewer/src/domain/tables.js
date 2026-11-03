@@ -173,16 +173,6 @@ export const tableOfWord = (word) => WORDS.get(String(word).toLowerCase()) || ""
 export const WORD_PATTERN = [...WORDS.keys()].sort((a, b) => b.length - a.length).join("|");
 export const label = (table, field, fallback) => (TABLES[table]?.labels || {})[field] || fallback;
 
-const NAMED_CLOSES = {
-    plugins: "Remove plugin",
-    environments: "Remove environment",
-    shares: "Stop sharing",
-    questions: "Answer",
-};
-const STOPS = {triggers: "It stops running.", sequences: "It stops starting by itself.", rules: "The agent stops following it."};
-
-export const closeWord = (table) => NAMED_CLOSES[table] || `Close the ${meta(table).title.toLowerCase()}`;
-export const closeNote = (table) => `Moves it to Closed. ${STOPS[table] ? `${STOPS[table]} ` : ""}You can reopen it.`;
 export const SHARED = ["docs", "reports", "plans"];
 export const MENUED = ["rules", "memories", "triggers"];
 export const DELETE_NOTE = "It leaves every list. Its history stays in Activity.";

@@ -30,28 +30,10 @@ export function token() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function encode(bytes) {
-    let binary = "";
-    for (let at = 0; at < bytes.length; at += 0x8000) binary += String.fromCharCode(...bytes.subarray(at, at + 0x8000));
-    return btoa(binary);
-}
-
-async function fileRecord(file) {
-    return {name: file.name, type: file.type, lastModified: file.lastModified, data: encode(new Uint8Array(await file.arrayBuffer()))};
-}
-
 function fileFrom(record) {
     const binary = atob(record.data);
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
     return new File([bytes], record.name, {type: record.type, lastModified: record.lastModified});
-}
-
-function enqueue(record) {
-    return serial(KEY, async () => {
-        const queue = await readQueue();
-        queue.push(record);
-        await writeQueue(queue);
-    });
 }
 
 function stored(record) {
@@ -139,13 +121,6 @@ export function onOutboxChange(fn) {
     listeners.push(fn);
 }
 
-export const isQueued = async (id) => (await serial(KEY, readQueue)).some((kept) => kept.id === id);
-
-// a message asked of a session whose holder is offline is answered with what happens to it, which the thread shows its writer
-export function onOutboxNotice(fn) {
-    noticed = fn;
-}
-
 export function startOutbox(env) {
     active = {env, origin: here()};
     if (polling) {
@@ -157,25 +132,3 @@ export function startOutbox(env) {
     startPoll("outbox.retry", {params: () => ({retry})});
 }
 
-export async function sendMessage(env, body, files = [], id = token()) {
-    const storable = files.reduce((sum, file) => sum + file.size, 0) <= STORE_BYTES;
-    if (!storable) held.set(id, files);
-    const record = {
-        id,
-        origin: here(),
-        env,
-        text: body.text,
-        reply_target: body.reply_target,
-        on: body.on,
-        refers: body.refers,
-        files: storable ? await Promise.all(files.map(fileRecord)) : [],
-        held: storable ? 0 : files.length,
-        uploaded: [],
-    };
-    await enqueue(record);
-    const delivered = flush(record.env, record.origin).then((ids) => {
-        report(ids);
-        return ids.includes(record.id);
-    });
-    return {id: record.id, delivered};
-}

@@ -1,9 +1,11 @@
 import selectors
 import socket
+import sys
 import threading
 import time
 from socketserver import BaseRequestHandler, ThreadingMixIn, UnixStreamServer
 from typing import Any
+from server.client_disconnected import client_disconnected
 from server.server_context import ServerContext
 
 
@@ -11,7 +13,8 @@ DRAIN_LIMIT_SECONDS = 10
 DRAIN_POLL_SECONDS = 0.05
 class JournalServer(ThreadingMixIn, UnixStreamServer):
     """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to
-    its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once."""
+    its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once. A client
+    that left before its answer is no error."""
 
     daemon_threads = True
 
@@ -34,6 +37,10 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
                         self.handle_request()
         finally:
             self.stopped.set()
+
+    def handle_error(self, request: Any, client_address: Any) -> None:
+        if not client_disconnected(sys.exception()):
+            super().handle_error(request, client_address)
 
     def process_request(self, request: Any, client_address: Any) -> None:
         thread = threading.Thread(target=self.tracked_request, args=(request, client_address), daemon=True)

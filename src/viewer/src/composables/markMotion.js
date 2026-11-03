@@ -5,6 +5,17 @@ export const RESIZE_MS = 280;
 export const ENTER_MS = 160;
 
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+const STEPS = ["leaving", "resizing", "entering"];
+
+// the size the mark has once its steps are over: read with the classes of the steps off, in the same breath, so what the steps change in how its
+// title wraps is part of the size it grows or shrinks to, and nothing jumps when the last step ends
+function finalSize(el) {
+    const held = STEPS.filter((step) => el.classList.contains(step));
+    el.classList.remove(...held);
+    const size = {width: el.offsetWidth, height: el.offsetHeight};
+    el.classList.add(...held);
+    return size;
+}
 
 // How a chat mark opens and closes: its contents fade out quickly and are taken out while the mark keeps its size, so no text wraps;
 // then the mark changes size in one transition, its top where it was; and only at its new size do the new contents fade in. `wanted`
@@ -34,7 +45,7 @@ export function useMarkMotion(root, wanted, later = (ms) => new Promise((done) =
         phase.value = "resizing";
         await nextTick();
         release(el);
-        const to = {width: el.offsetWidth, height: el.offsetHeight};
+        const to = finalSize(el);
         lock(el, from);
         void el.offsetWidth;
         el.style.transition = `width ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1), height ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1)`;

@@ -9,10 +9,3 @@ export const autoOn = computed(() => !store.settings || !store.settings.tasks ||
 export const reviewerOn = computed(() => Boolean(store.settings && store.settings.reviewing && store.settings.reviewing.reviewer));
 export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);
 
-const viewer = () => (store.settings && store.settings.viewer) || {};
-
-export const viewerSetting = (key, fallback) => viewer()[key] ?? fallback;
-
-export const settingsLoaded = () => Boolean(store.settings);
-
-export const agentRunningIn = (name) => store.live.some((live) => live.environment === name);

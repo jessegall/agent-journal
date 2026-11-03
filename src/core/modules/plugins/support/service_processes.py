@@ -1,7 +1,6 @@
 from core.base.child_process import ChildProcess
 from core.base.timestamp import Timestamp
-
-STOP_LIMIT_SECONDS = 5
+from core.base.leftover_process import STOP_LIMIT_SECONDS
 
 
 class ServiceProcesses:

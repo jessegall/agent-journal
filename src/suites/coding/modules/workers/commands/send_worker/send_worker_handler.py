@@ -4,6 +4,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -22,8 +23,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
 
     command = SendWorker
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit) -> None:
-        self.queries, self.worktrees, self.repository, self.git = queries, worktrees, repository, git
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
+        self.queries, self.worktrees, self.repository, self.git, self.nudger = queries, worktrees, repository, git, nudger
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -39,4 +40,4 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
         self.repository.save(Message(environment_id=worktree.environment_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=f"worker {command.worker_id}"), context)
-        return self.repository.save(AgentLine(agent_id=command.worker_id, creator_id=context.actor.id, text=job, source=WORKER_JOB_SOURCE), context)
+        return self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)

@@ -5,8 +5,7 @@ from core.base.module.module_actors import ModuleActors
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.queries.process_query import ProcessQuery
-
-ENDED_FIELD = "ended_at"
+from core.modules.agents.models.agent import ENDED_FIELD
 
 
 class EndedAgentRunsListener(CommitListener):

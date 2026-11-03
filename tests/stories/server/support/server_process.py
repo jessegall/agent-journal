@@ -21,8 +21,8 @@ class ServerProcess:
     """A real server process on a story's journal, for what only a process shows: its lock, its pid file and its
     stop on a signal. It is killed by its pid when the story ends, and every wait has a time limit."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home, self.socket = home, socket_path(home)
+    def __init__(self, home: JournalHome, logged: bool = False) -> None:
+        self.home, self.socket, self.logged = home, socket_path(home), logged
         self.process: ChildProcess | None = None
 
     def __enter__(self) -> "ServerProcess":
@@ -38,8 +38,12 @@ class ServerProcess:
 
     def started(self) -> ChildProcess:
         environment = {"PATH": os.environ.get("PATH", ""), "PYTHONPATH": str(ROOT / "src")}
-        return ChildProcess(subprocess.Popen([sys.executable, str(ROOT / "src" / "server" / "server.py"), "--home", str(self.home.folder)], env=environment, text=True,
-                                             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE))
+        log = ServerFiles(self.home).log.open("a") if self.logged else None
+        command = [sys.executable, str(ROOT / "src" / "server" / "server.py"), "--home", str(self.home.folder)]
+        if log is not None:
+            with log:
+                return ChildProcess(subprocess.Popen(command, env=environment, text=True, stdout=log, stderr=log))
+        return ChildProcess(subprocess.Popen(command, env=environment, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE))
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket, "GET", "/health")

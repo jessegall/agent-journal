@@ -45,8 +45,8 @@ async function make() {
         <template v-if="refusal">
             <p class="memories-refusal" role="alert" data-memory-refusal>{{ refusal }}</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the memories" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No memories yet">
+        <ListTools :tools="tools" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No memories yet" hint="A memory an agent or you keep with journal memory make shows here." :searching="tools.filtering.value">
             <template #default="{row}">
                 <button type="button" class="memory" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">
                     <span class="memory-text">{{ row.text }}</span>

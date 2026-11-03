@@ -1,9 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.driver_nudges import HOOKS_BYPASSED
+from core.modules.drivers.support.driver_nudges import HOOKS_UNCHECKED
+from core.modules.drivers.support.nudger import Nudger
 
 LINE_SOURCE = "drivers.bypass"
 
@@ -13,8 +13,8 @@ class RecordBypassLineHandler(Handler[RecordBypassLine, AgentLine]):
 
     command = RecordBypassLine
 
-    def __init__(self, repository: Repository) -> None:
-        self.repository = repository
+    def __init__(self, nudger: Nudger) -> None:
+        self.nudger = nudger
 
     def handle(self, command: RecordBypassLine, context: Context) -> AgentLine:
-        return self.repository.save(AgentLine(agent_id=command.agent_id, creator_id=context.actor.id, source=LINE_SOURCE, text=HOOKS_BYPASSED.nudge(count=command.count).text), context)
+        return self.nudger.send(command.agent_id, HOOKS_UNCHECKED, LINE_SOURCE, context, count=command.count)

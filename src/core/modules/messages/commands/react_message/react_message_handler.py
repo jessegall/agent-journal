@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.commands.react_message.react_message import ReactMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions
@@ -20,8 +20,8 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
 
     command = ReactMessage
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: ReactMessage, context: Context) -> Message:
         if not MessageReactions.is_emoji(command.emoji):
@@ -34,6 +34,5 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
         return saved
 
     def notify_agents(self, message: Message, emoji: str, context: Context) -> None:
-        line = MESSAGE_REACTION.nudge(emoji=emoji, message=message.id).text
         for agent in tuple(MainAgentFinder.rows(self.queries, message.environment_id)):
-            self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=line, source=REACTION_SOURCE), context)
+            self.nudger.send(agent.id, MESSAGE_REACTION, REACTION_SOURCE, context, emoji=emoji, message=message.id)

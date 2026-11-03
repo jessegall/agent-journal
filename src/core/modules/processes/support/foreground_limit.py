@@ -5,7 +5,7 @@ from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
-from core.modules.processes.queries.conditions.part_ran_seconds import PartRanSeconds
+from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.foreground_run import ForegroundRun
@@ -36,7 +36,7 @@ class ForegroundLimit:
 
     def has_moved_run(self, environment_id: int, shell: ShellLine) -> bool:
         commands = tuple(part.text for part in shell.parts)
-        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands), PartRanSeconds(self.seconds_allowed(environment_id))).moved().exists()
+        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands), PartRunSeconds(self.seconds_allowed(environment_id))).moved().exists()
 
     def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()

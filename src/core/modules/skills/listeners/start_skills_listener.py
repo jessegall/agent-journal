@@ -42,4 +42,4 @@ class StartSkillsListener(SkillListener):
 
     def compacted(self, call: HookCall) -> bool:
         recent = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().page(1, 2).rows
-        return len(recent) == 2 and recent[1].hook == HookEventName.COMPACT
+        return len(recent) == 2 and recent[1].is_compaction

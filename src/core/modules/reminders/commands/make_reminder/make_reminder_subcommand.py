@@ -3,10 +3,9 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.base.timestamp import MINUTE_SECONDS, Timestamp
+from core.base.timestamp import SECONDS_PER_MINUTE, Timestamp
 from core.modules.reminders.commands.make_reminder.make_reminder import MakeReminder
 from core.modules.reminders.models.reminder import Reminder
-
 
 
 class MakeReminderSubcommand(Subcommand[MakeReminder, Reminder]):
@@ -27,7 +26,7 @@ class MakeReminderSubcommand(Subcommand[MakeReminder, Reminder]):
         parser.add_argument("--block-subject", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeReminder:
-        return MakeReminder(arguments.text, arguments.every_minutes * MINUTE_SECONDS, arguments.every_tool_uses, arguments.every_tasks, arguments.at, arguments.once, arguments.block, arguments.block_subject)
+        return MakeReminder(arguments.text, arguments.every_minutes * SECONDS_PER_MINUTE, arguments.every_tool_uses, arguments.every_tasks, arguments.at, arguments.once, arguments.block, arguments.block_subject)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Reminder):

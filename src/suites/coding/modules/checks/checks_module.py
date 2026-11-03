@@ -3,6 +3,8 @@ from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from suites.coding.modules.checks.support.check_searcher import CheckSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.periodic_checks import PeriodicChecks
@@ -58,7 +60,7 @@ class ChecksModule(Module):
     subcommands = (CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = [(PeriodicChecks, DueCheckRuns)]
-    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
+    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]
     moves = [ChecksMove]

@@ -8,9 +8,5 @@ export const migrationOffered = computed(() => Boolean(migration.value?.kept) &&
 export const migrationPutOff = computed(() => Boolean(migration.value?.kept) && migration.value.state === "later");
 export const migrationRunning = computed(() => migration.value?.state === "running");
 
-export async function loadMigration() {
-    migration.value = await api.migration().catch(() => null);
-}
-
 export const putMigrationOff = async () => (migration.value = await api.putMigrationOff());
 export const startMigration = async () => (migration.value = await api.startMigration());

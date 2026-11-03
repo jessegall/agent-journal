@@ -67,7 +67,7 @@ load();
         <template v-else-if="!cards.length">
             <p class="dumps-note">No dumps</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the dumps" />
+        <ListTools :tools="tools" />
         <template v-for="card in shown" :key="card.id">
             <section v-if="card.id === openId" class="dump" :data-dump="card.id">
                 <header class="dump-head">

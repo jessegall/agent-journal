@@ -54,12 +54,42 @@ test("the mark goes through leaving, resizing and entering, each a step the titl
     expect(mark().classList.contains("entering")).toBe(true);
 });
 
-test("the title stays on one line through leaving, resizing and entering", () => {
-    for (const phase of ["leaving", "resizing", "entering"]) {
+test("the title stays on one line through leaving and resizing, and through entering a mark that closes", () => {
+    for (const phase of ["leaving", "resizing"]) {
         expect(SOURCE).toContain(`.mark.${phase} .head,`);
         expect(SOURCE).toContain(`.mark.${phase} .head :deep(.md)`);
     }
-    expect(SOURCE).toMatch(/\.mark\.entering \.head :deep\(\.md\) \{\s*white-space: nowrap;/);
+    expect(SOURCE).toContain(".mark.entering:not([data-open]) .head,");
+    expect(SOURCE).toMatch(/\.mark\.entering:not\(\[data-open\]\) \.head :deep\(\.md\) \{\s*white-space: nowrap;/);
+});
+
+test("a mark that closes keeps its title as it was while its contents fade out, and one that opens does not", async () => {
+    expect(SOURCE).toMatch(/\.mark\.leaving\.folding \.head :deep\(\.md\) \{\s*white-space: normal;/);
+    const {open, mark} = opened();
+    await nextTick();
+    open.value = true;
+    await nextTick();
+    expect(mark().classList.contains("folding")).toBe(false);
+    await vi.advanceTimersByTimeAsync(LEAVE_MS + RESIZE_MS + 300);
+    open.value = false;
+    await nextTick();
+    expect(mark().classList.contains("leaving")).toBe(true);
+    expect(mark().classList.contains("folding")).toBe(true);
+});
+
+test("the size a mark grows to is read as it will be once its steps are over, so its title wrapping at the end changes nothing", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function () {
+        if (this.classList.contains("resizing")) return 24;
+        return this.hasAttribute("data-open") ? 60 : 24;
+    });
+    const {open, mark} = opened();
+    await nextTick();
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(LEAVE_MS);
+    await nextTick();
+    expect(mark().classList.contains("resizing")).toBe(true);
+    expect(mark().style.height).toBe("60px");
 });
 
 test("the title of a growing card stays on one line as well", () => {

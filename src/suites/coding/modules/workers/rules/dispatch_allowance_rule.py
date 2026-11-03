@@ -7,8 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
-
-DISPATCH_ARGUMENTS = ("worker", "dispatch")
+from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
 
 class DispatchAllowanceRule(DriverRule):

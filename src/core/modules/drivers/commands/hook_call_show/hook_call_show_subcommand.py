@@ -6,8 +6,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_list, is_mapping
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.support.hook_call_view import HookCallView
-
-DRIVERS_MODULE = "journal.core.drivers"
+from core.base.module.driver_entries import DRIVERS_MODULE
 
 
 class HookCallShowSubcommand(ReadSubcommand[HookCallView]):

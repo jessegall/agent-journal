@@ -3,6 +3,8 @@ from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.base.agent_role import AgentRole
 
+ENDED_FIELD = "ended_at"
+
 
 @dataclass(frozen=True, kw_only=True)
 class Agent(Model):
@@ -12,6 +14,7 @@ class Agent(Model):
 
     model_name = "agent"
     cli_name = "agent"
+    search_fields = ["given_name", "program", "program_model", "profile", "session"]
 
     environment_id: int
     parent_id: int | None = None

@@ -14,7 +14,7 @@ from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
-from core.base.title_limit import TITLE_LIMIT_CHARACTERS
+from core.modules.tasks.models.task import TASK_TITLE_LIMIT_CHARACTERS
 
 TABLE = "tasks"
 FORMER_NAMES = {"parked": TaskState.BLOCKED, "paused": TaskState.BLOCKED, "done": TaskState.COMPLETED, "delegated": TaskState.STARTED}
@@ -71,8 +71,8 @@ class TasksMove(VersionFourMove):
         reason = row["block_reason"] or ""
         if state is TaskState.STARTED and holder_id is None:
             state, reason = TaskState.BLOCKED, MISSING_HOLDER_REASON
-        if len(title) > TITLE_LIMIT_CHARACTERS:
-            title, brief = title[:TITLE_LIMIT_CHARACTERS], f"{row['title']}\n\n{brief}".strip()
+        if len(title) > TASK_TITLE_LIMIT_CHARACTERS:
+            title, brief = title[:TASK_TITLE_LIMIT_CHARACTERS], f"{row['title']}\n\n{brief}".strip()
         created = row["created_at"] or context.timestamp
         closed = (row["completed_at"] or row["updated_at"] or created) if state in CLOSED else None
         task_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "holder_id": holder_id if state is TaskState.STARTED else None,

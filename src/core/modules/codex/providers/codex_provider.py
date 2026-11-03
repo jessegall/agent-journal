@@ -18,7 +18,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
-from core.base.provider.transcript_author import TranscriptAuthor
+from core.base.provider.transcript_author import TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_list, is_mapping
@@ -28,7 +28,6 @@ from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
-TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 
 class CodexProvider(Provider):
@@ -88,14 +87,14 @@ class CodexProvider(Provider):
         return HelperOutcome(replies[-1].strip() if replies else errors.strip(), session, failures[-1] if failures else None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        known = self.rollouts.get(session)
-        if known is not None and known.is_file():
-            return known
+        cached = self.rollouts.get(session)
+        if cached is not None and cached.is_file():
+            return cached
         sessions = self.folders.folder(HOME_VARIABLE, ".codex") / "sessions"
-        found = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
-        if found is not None:
-            self.rollouts[session] = found
-        return found
+        located = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+        if located is not None:
+            self.rollouts[session] = located
+        return located
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         path = self.transcript(home.folder.parent, session)

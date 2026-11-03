@@ -8,7 +8,8 @@ from core.modules.transcriptions.commands.request_transcription_fetch.request_tr
 
 
 class RequestTranscriptionFetchSubcommand(Subcommand[RequestTranscriptionFetch, Task]):
-    """`journal transcription fetch <server> [--environment <name>]`: asks the main agent to bring in transcriptions."""
+    """`journal transcription fetch <server> [--environment <name>]`: asks the main agent to bring in
+    transcriptions."""
 
     cli_name = "transcription"
     name = "fetch"

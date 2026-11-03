@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.driver.hook_event_name import HookEventName
 from core.base.model.model import Model
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
@@ -28,3 +29,7 @@ class HookCall(Model):
     refusal: str = ""
     lines: str = ""
     updated_input: str = "{}"
+
+    @property
+    def is_compaction(self) -> bool:
+        return self.hook == HookEventName.COMPACT

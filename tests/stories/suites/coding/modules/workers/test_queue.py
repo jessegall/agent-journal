@@ -56,7 +56,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     ended(story, started[0], 1)
     story.expect_text("proof show 1", "state: short", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed: pytest tests/cart.py")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {started[0]} --summary")
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
     story.expect_success("worker deliver", actor=worker)

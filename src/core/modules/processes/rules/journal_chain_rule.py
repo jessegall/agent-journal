@@ -7,8 +7,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.processes.support.background_commands import JOURNAL
 
-JOURNAL = "journal"
 LOOPS = ("until", "while", "for")
 QUOTED = re.compile(r'\'[^\']*\'|"(?:\\.|[^"\\])*"')
 JOURNAL_COMMAND = re.compile(rf"(^|[;(|&]\s*|\bdo\s+|\buntil\s+|\bwhile\s+|\bthen\s+){JOURNAL}\s+[a-z]")

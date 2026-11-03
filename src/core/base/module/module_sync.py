@@ -22,7 +22,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.registry_table import RegistryTable
 from core.base.listener.save_listener import SaveListener
 from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.change.event_pattern import EventPattern
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry

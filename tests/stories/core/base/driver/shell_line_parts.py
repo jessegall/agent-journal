@@ -38,6 +38,9 @@ def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
     assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_reading
     assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_reading
     assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_reading
+    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_reading
+    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_reading
+    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_reading
 
 
 def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():

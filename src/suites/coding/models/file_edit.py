@@ -10,6 +10,7 @@ class FileEdit(Model):
 
     model_name = "file_edit"
     cli_name = "file-edit"
+    search_fields = ["path"]
 
     environment_id: int
     agent_id: int

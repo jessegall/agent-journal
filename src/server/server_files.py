@@ -7,20 +7,25 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 from core.base.journal_home import SERVER_SOCKET, JournalHome
+from core.base.rotated_file import RotatedFile
 from server.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
+LOG_FILE_MODE = 0o600
 LOCK_POLL_SECONDS = 0.05
+SERVER_LOG_LIMIT_BYTES = 10_000_000
+OUTPUT_DESCRIPTORS = (1, 2)
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
     the server's whole life or, for a while, by a helper; its pid file and the pid of the tunnel program it
-    started; the maintenance mark a change of the code keeps while the server is stopped, which tells a client
-    to start none; and the restart mark from a stop for new code until the next server takes requests, which
-    makes a hook wait. Only the server that keeps the lock removes a leftover socket, and a stopping server
-    removes the socket and pid file only while the pid file still names it."""
+    started; the maintenance mark a change of the code keeps while the server is stopped, which tells a
+    client to start none; and the restart mark from a stop for new code until the next server takes
+    requests, which makes a hook wait; and its log, which a start past the limit moves aside, keeping one
+    old file. Only the server that keeps the lock removes a leftover socket, and a stopping server removes
+    the socket and pid file only while the pid file still names it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)
@@ -75,6 +80,18 @@ class ServerFiles:
         if self.pid_file.exists() and self.pid_file.read_text().strip() == str(os.getpid()):
             self.socket.unlink(missing_ok=True)
             self.pid_file.unlink(missing_ok=True)
+
+    def rotate_log(self, limit_bytes: int = SERVER_LOG_LIMIT_BYTES) -> None:
+        """Moves a log past its limit aside as server.log.1, and points the output the starter opened on the
+        old file at the new one; only the server that holds the lock calls it."""
+        inode = self.log.stat().st_ino if self.log.exists() else None
+        if not RotatedFile(self.log, limit_bytes).rotate():
+            return
+        descriptor = os.open(self.log, os.O_WRONLY | os.O_APPEND | os.O_CREAT, LOG_FILE_MODE)
+        for output in OUTPUT_DESCRIPTORS:
+            if os.fstat(output).st_ino == inode:
+                os.dup2(descriptor, output)
+        os.close(descriptor)
 
     def log_line(self, text: str) -> None:
         self.log.parent.mkdir(parents=True, exist_ok=True)

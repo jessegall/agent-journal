@@ -38,7 +38,7 @@ async function make() {
         <template v-if="actionFailure">
             <p class="failure">{{ actionFailure }}</p>
         </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet" hint="A reminder you set for the agent shows here with when it is due.">
             <template #default="{row}">
                 <div class="row" :data-reminder="row.id">
                     <span class="text">{{ row.text }}</span>

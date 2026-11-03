@@ -5,6 +5,7 @@ import SidebarPages from "../shell/SidebarPages.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import {usageRead} from "../../kit/useUsage.js";
 import {useViewTab} from "../composables/viewTabs.js";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
@@ -23,38 +24,58 @@ const props = defineProps({
 
 const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
 const {dock} = useViewTab(props.float);
+// the page shown: a click on another page in the sidebar changes only this, so the sidebar, the breadcrumb, the panel, the event stream and the
+// catalogue stay as they are and the window of the page alone is drawn anew; the address and the back button follow it
+const page = ref(props.view);
+const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
+
+function navigate(name) {
+    history.pushState(null, "", pageAddress(name));
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    page.value = name;
+}
+
+function followHistory() {
+    const named = new URLSearchParams(location.search).get("page");
+    if (named) page.value = named;
+    else location.reload();
+}
 const environments = ref([]);
 const mainAgent = ref(null);
 const agentAsked = ref(false);
 onMounted(async () => {
-    const usage = await shellLine(["usage", "show"]);
+    const usage = await usageRead(props.environment, () => shellLine(["usage", "show"]));
     mainAgent.value = usage.ok ? (usage.value.agents.find((row) => row.role === "main")?.id ?? null) : null;
     agentAsked.value = true;
     if (!props.standalone) return;
     const answer = await shellLine(["environment", "list"]);
     environments.value = answer.ok ? answer.value.rows : [];
 });
-onUnmounted(stop);
+if (props.standalone) window.addEventListener("popstate", followHistory);
+onUnmounted(() => {
+    window.removeEventListener("popstate", followHistory);
+    stop();
+});
 watchEffect(() => {
-    const entry = catalogue.window(props.view);
+    const entry = catalogue.window(page.value);
     if (entry) document.title = `${entry.title} · ${props.environment}`;
 });
 </script>
 
 <template>
-    <div :class="['view-window', {standalone}]" :data-face="face" :data-page="standalone ? view : undefined">
+    <div :class="['view-window', {standalone}]" :data-face="face" :data-page="standalone ? page : undefined">
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="view" />
+                <SidebarPages :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">
-                    <Breadcrumb :environment="environment" :page="catalogue.window(view)?.title || view" />
+                    <Breadcrumb :environment="environment" :page="catalogue.window(page)?.title || page" />
                 </template>
                 <template v-else>
                     <div class="view-window-bar">
-                        <MarkIcon :name="catalogue.window(view)?.icon || 'window'" />
-                        <span class="view-window-title">{{ catalogue.window(view)?.title || view }}</span>
+                        <MarkIcon :name="catalogue.window(page)?.icon || 'window'" />
+                        <span class="view-window-title">{{ catalogue.window(page)?.title || page }}</span>
                         <span class="view-window-env">{{ environment }}</span>
                         <span class="view-window-space" />
                         <Btn small @click="dock()">
@@ -64,7 +85,7 @@ watchEffect(() => {
                     </div>
                 </template>
                 <template v-if="agentAsked">
-                    <WindowPane :name="view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="mainAgent" :prompts="prompts" :shell-read="shellLine" />
+                    <WindowPane :key="page" :name="page" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="mainAgent" :prompts="prompts" :shell-read="shellLine" />
                 </template>
             </div>
             <ResourcePanel :read="shellLine" />

@@ -1,9 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
@@ -21,8 +21,8 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
 
     command = RecordWaitingMessageLine
 
-    def __init__(self, queries: Queries, repository: Repository, hook_calls: HookCallQuery, lines: WaitingMessageLines) -> None:
-        self.queries, self.repository, self.hook_calls, self.lines = queries, repository, hook_calls, lines
+    def __init__(self, queries: Queries, nudger: Nudger, hook_calls: HookCallQuery, lines: WaitingMessageLines) -> None:
+        self.queries, self.nudger, self.hook_calls, self.lines = queries, nudger, hook_calls, lines
 
     def handle(self, command: RecordWaitingMessageLine, context: Context) -> AgentLine | None:
         agent = MainAgentFinder.newest(self.queries, command.environment_id)
@@ -34,4 +34,4 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         waiting = self.lines.waiting(agent.id).limited(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
             return None
-        return self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=NEW_MESSAGE.nudge(message=message.id).text, source=WAITING_MESSAGE_SOURCE), context)
+        return self.nudger.send(agent.id, NEW_MESSAGE, WAITING_MESSAGE_SOURCE, context, message=message.id)

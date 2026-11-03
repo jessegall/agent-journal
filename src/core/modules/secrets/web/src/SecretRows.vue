@@ -101,7 +101,7 @@ async function fill(row, field) {
     <template v-for="row in deleted" :key="row.id">
         <p class="removed" data-secret-removed>{{ row.title }} was deleted. <button type="button" data-secret-restore @click="restore(row)">Restore</button></p>
     </template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet" hint="A key or a login you add shows here by its name, never by its value.">
         <template #default="{row}">
             <div class="secret" :data-row="row.id">
                 <template v-if="editing === row.id">

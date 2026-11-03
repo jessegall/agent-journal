@@ -1,16 +1,18 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
-// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed
+// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
+// whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const MILLISECONDS_PER_HOUR = 3600000;
-const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
+const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, open: Boolean});
+const emit = defineEmits(["toggle"]);
 const now = useNow();
 const title = computed(() => {
     const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
@@ -38,20 +40,21 @@ const tasksPerHour = computed(() => {
     return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
-const opened = ref(false);
 const FOLDED_STATES = new Set(["completed"]);
 const folded = ref({});
 const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
-// a running worker's card names the command it runs, as the foot of the chat does for the main agent
+// a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
 const runningCommand = ref("");
-const showsCommand = computed(() => props.row.role === "worker" && !props.row.ended_at);
+const noCommandNote = ref("");
+const showsCommand = computed(() => props.row.role !== "main" && !props.row.ended_at);
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
     runningCommand.value = answer.ok ? answer.value.tool : "";
+    noCommandNote.value = answer.ok ? answer.value.note : "";
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
 onUnmounted(() => stopFollowing?.());
@@ -59,13 +62,13 @@ readCommand();
 </script>
 
 <template>
-    <div class="agent-card" :data-agent-open="row.id" :aria-expanded="opened" :title="row.session" @click="opened = !opened">
+    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :title="row.session" @click="emit('toggle')">
         <span class="agent-head">
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
             <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
             <span class="agent-time">{{ runTime }}</span>
-            <Icon :class="['agent-chevron', {opened}]" name="caret" :size="12" />
+            <Icon :class="['agent-chevron', {opened: open}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity>{{ identity }}</span>
@@ -79,43 +82,45 @@ readCommand();
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
                 <template v-if="waitingForTests">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button>
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
                 </template>
                 <template v-else>
-                    <RunningCommand :text="runningCommand" idle="thinking" />
+                    <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />
                 </template>
             </span>
         </template>
-        <template v-if="opened">
+        <template v-if="open">
             <div class="agent-more" data-agent-more @click.stop>
                 <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                 </template>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
-                    <template v-if="tab?.key === 'tasks'">
-                        <template v-for="section in sections" :key="section.state">
-                            <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
-                                <template v-for="task in section.tasks" :key="task.id">
-                                    <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                                        <TaskStatusIcon :status="task.state" />
-                                        <span class="agent-task-number">{{ task.id }}</span>
-                                        <span class="agent-task-title">{{ task.title }}</span>
-                                    </button>
-                                </template>
-                            </FoldGroup>
+                    <SwitchCase :value="tab?.key">
+                        <template #tasks>
+                            <template v-for="section in sections" :key="section.state">
+                                <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
+                                    <template v-for="task in section.tasks" :key="task.id">
+                                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                                            <TaskStatusIcon :status="task.state" />
+                                            <span class="agent-task-number">{{ task.id }}</span>
+                                            <span class="agent-task-title">{{ task.title }}</span>
+                                        </button>
+                                    </template>
+                                </FoldGroup>
+                            </template>
+                            <template v-if="facts?.instruction">
+                                <p class="agent-label">Instruction</p>
+                                <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                            </template>
                         </template>
-                        <template v-if="facts?.instruction">
-                            <p class="agent-label">Instruction</p>
-                            <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                        <template #transcript>
+                            <TranscriptRows :line="`agent transcript ${row.id}`" />
                         </template>
-                    </template>
-                    <template v-else-if="tab?.key === 'transcript'">
-                        <TranscriptRows :line="`agent transcript ${row.id}`" />
-                    </template>
-                    <template v-else-if="tab?.key === 'file-feed'">
-                        <AgentFileEdits :agent="row.id" />
-                    </template>
+                        <template #file-feed>
+                            <AgentFileEdits :agent="row.id" />
+                        </template>
+                    </SwitchCase>
                 </div>
             </div>
         </template>
@@ -296,6 +301,22 @@ readCommand();
     gap: 6px;
     padding: 6px 0 2px 15px;
     cursor: default;
+}
+
+/* the open card is the whole window: its tab body takes what is left and scrolls inside it */
+.agent-card.open {
+    min-height: 0;
+}
+
+.agent-card.open .agent-more {
+    flex: 1;
+    min-height: 0;
+}
+
+.agent-card.open .agent-tab-body {
+    flex: 1;
+    max-height: none;
+    min-height: 0;
 }
 
 .agent-tabs {

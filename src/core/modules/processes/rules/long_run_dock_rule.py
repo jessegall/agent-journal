@@ -11,13 +11,13 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.shown_runs import ShownRuns
+from core.modules.processes.support.run_visibility import RunVisibility
 
 DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """A run that ShownRuns says shows, of any agent, that has gone on for more than 5 seconds docks its output above
+    """A visible run, of any agent, that has gone on for more than 5 seconds docks its output above
     the chat, once, and the agent is told if its card has only the raw command to show; no other run does, nor
     one whose folder says it has ended already."""
 
@@ -25,8 +25,8 @@ class LongRunDockRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, shown_runs: ShownRuns) -> None:
-        self.processes, self.items, self.outputs, self.folder, self.shown_runs = processes, items, outputs, folder, shown_runs
+    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility) -> None:
+        self.processes, self.items, self.outputs, self.folder, self.visibility = processes, items, outputs, folder, visibility
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         running = tuple(self.processes.agent(hook.agent_id).running().all_rows())
@@ -43,6 +43,6 @@ class LongRunDockRule(DriverRule):
         return bool(kept) and bool(kept[0].title)
 
     def needs_dock(self, process: Process, hook: AgentHook) -> bool:
-        if not self.shown_runs.shows(process) or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
+        if not self.visibility.is_visible(process) or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
             return False
         return not self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists()

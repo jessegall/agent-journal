@@ -3,7 +3,6 @@ from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
-from core.base.driver.hook_event_name import HookEventName
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import Memory
@@ -22,7 +21,7 @@ class MemoryFadedMarkListener(MemoryMarkListener):
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)
-        memories = self.scope.memories(call.agent_id) if call.hook == HookEventName.COMPACT else []
+        memories = self.scope.memories(call.agent_id) if call.is_compaction else []
         if memories:
             shown = [memory for memory in memories if memory.weight > 0]
             self.show_memory(event, MemoryMarkVariant.FADED, f"Memories faded by one: {len(shown)} of {len(memories)} still shown", agent_id=call.agent_id, row_model="",

@@ -52,6 +52,34 @@ func TestAHookWaitsWhileTheServerRestartsAndIsAnsweredWhenItIsBack(t *testing.T)
 	}
 }
 
+func TestAHookStartsTheServerWhenItsSocketGoesAfterTheFirstAsk(t *testing.T) {
+	root, mark := restartingProject(t)
+	RestartWindow = 10 * time.Second
+	home := filepath.Join(root, ".journal")
+	started := filepath.Join(home, "started")
+	socket := filepath.Join(home, "server.sock")
+	writeFile(t, socket, "")
+	writeFile(t, filepath.Join(home, "bin", "journal"), "#!/bin/sh\ntouch "+started+"\n")
+	if err := os.Chmod(filepath.Join(home, "bin", "journal"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	asks := 0
+	post(sample(root, "pre_tool_use"), fakeTransport(func(request *http.Request) (*http.Response, error) {
+		asks++
+		if asks == 3 {
+			os.Remove(socket)
+		}
+		if _, err := os.Stat(started); err == nil {
+			os.Remove(mark)
+			return answer(http.StatusOK, `{"lines":[]}`)(request)
+		}
+		return nil, errors.New("connection refused")
+	}), time.Unix(1793395000, 0))
+	if _, err := os.Stat(started); err != nil {
+		t.Fatalf("the server was not started after %d asks", asks)
+	}
+}
+
 func TestAHookIsAnsweredAtOnceWhenTheServerIsBackAndAMarkWasLeft(t *testing.T) {
 	root, _ := restartingProject(t)
 	status, _ := post(sample(root, "pre_tool_use"), answer(http.StatusOK, `{"lines":[]}`), time.Unix(1793395000, 0))

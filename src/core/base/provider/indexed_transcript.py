@@ -7,4 +7,4 @@ class IndexedTranscript:
     the file the index has read."""
 
     lines: list[tuple[int, int]] = field(default_factory=list[tuple[int, int]])
-    read_to: int = 0
+    end_offset: int = 0

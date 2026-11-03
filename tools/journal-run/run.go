@@ -20,6 +20,7 @@ type Options struct {
 	LimitSeconds   int
 	Background     bool
 	Queue          bool
+	OnlyReads      bool
 	Aliases        []string
 	Line           string
 	Home           string
@@ -41,7 +42,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		options.CapCharacters = DefaultCapCharacters
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}

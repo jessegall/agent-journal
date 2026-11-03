@@ -1,15 +1,18 @@
 import json
 
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.modules.messages.models.message import Message
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
@@ -21,6 +24,10 @@ def delegated_story(new_story):
     return story, repository, worker
 
 
+def last_message_id(story) -> int:
+    return story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].id
+
+
 def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -30,21 +37,84 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
 
 
+def judge_sample(*arguments: str):
+    return HookSamples.shell(f"journal sins {' '.join(arguments)}", ShellPart("journal", CommandCategory.JOURNAL, ["sins", *arguments], subcommand="sins"))
+
+
+def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(new_story):
+    story, _, worker = delegated_story(new_story)
+    session = worker_session(story, worker)
+    story.expect_hook_refusal(session, judge_sample("src"), "a worker judges only its own changes")
+    story.expect_hook_refusal(session, judge_sample(), "a worker judges only its own changes")
+    story.expect_hook_allowed(session, judge_sample("--changes"))
+    story.expect_hook_allowed(session, judge_sample("--branch"))
+    story.expect_hook_allowed("s-1", judge_sample("src"))
+
+
+def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    story.run('worker dispatch 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
+    story.run_listeners()
+    assert "Noah Webster started task 1" in marks_text(story), marks_text(story)
+    story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
+
+
 def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_agent(new_story):
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented on task:1: journal task brief 1")
-    story.expect_absent(f"agent-line list --agent {worker.id}", "use the new cart")
+    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented on task:1: journal task comments 1")
+    story.expect_text("task comments 1", "use the new cart", actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
 
 
-def test_a_comment_on_a_task_with_no_worker_tells_no_worker(new_story):
+def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_also_sent_to(new_story):
+    story, _, worker = delegated_story(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
+    message_id = last_message_id(story)
+    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
+
+
+def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_text(f"task assign 2 --to {story.agent.id}", f"task:2", actor=story.agent)
+    story.expect_text("task show 2", f"delegated_to: {story.agent.id}", "state: open", actor=story.agent)
+    story.expect_text(f"task assign 2 --to {worker.id}", "task:2", actor=story.agent)
+    story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
+
+
+def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
+    story.expect_text("task show 1", "state: open", f"delegated_to: {story.agent.id}", "reason: assigned to agent", actor=story.agent)
+    story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2: journal task show 2")
+
+
+def test_a_workers_last_task_goes_back_with_the_worker(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.agent.id}", f"task 1 is the last of worker {worker.id}", actor=story.agent)
+
+
+def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)
+    story.run('task cancel 2 --reason "no"', actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open or started task moves", actor=story.agent)
+
+
+def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    assert "sent_to" not in story.run(f"link list --source message:{last_message_id(story)}").output_text
 
 
 def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):

@@ -17,7 +17,7 @@ const newest = computed(() => rows.value[0]?.id ?? 0);
             <button type="button" class="file-feed-older" data-file-feed-older @click="older">Show older edits</button>
         </template>
         <AutoScrollPane :row-count="newest">
-            <RowList :rows="edits" :failure="failure" :loaded="loaded" empty="No edits by this agent yet">
+            <RowList :rows="edits" :failure="failure" :loaded="loaded" empty="No edits by this agent yet" hint="The files it changes show here as it works.">
                 <template #default="{row}">
                     <DiffCard flush :lines="CARD_LINES" :path="row.path" :kind="row.edit_type" :added="row.added" :removed="row.removed" :ago="ago(row.created_at)" :rows="row.lines" />
                 </template>

@@ -5,7 +5,7 @@ from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
 from core.base.container import Container
 from core.base.database.registry_table import RegistryTable
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry

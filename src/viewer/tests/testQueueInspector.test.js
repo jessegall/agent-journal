@@ -51,11 +51,49 @@ test("the waiting status of an agent opens the test queue", async () => {
     expect(element.querySelector("[data-agent-more]")).toBeNull();
 });
 
-test("the test queue lists what waits and what ran lately, each with its worker, task, state and output", async () => {
-    await panel(async (line) => answers[line.join(" ")] ?? {ok: true, value: {rows: []}});
-    const rows = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)].map((row) => [...row.children].map((part) => part.textContent.trim()).join(" "));
-    expect(rows("queued")).toEqual(["Worker 21 Task 11 running Output 70 pytest tests/cart", "Worker 22 Task 12 queued pytest tests/tax"]);
-    expect(rows("recent")).toEqual(["Worker 21 Task 9 checked Output 66 pytest tests/old", "Worker 22 Task 8 short Output 60 pytest tests/older"]);
+const OUTPUT_LINES = ["collected 3 items", "tests/cart passed"];
+const reader = async (line) => answers[line.join(" ")] ?? (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: {rows: []}});
+const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
+const states = (kind) => rowsOf(kind).map((row) => row.querySelector("[data-queue-state]").textContent.trim());
+
+test("the test queue lists what waits and what ran lately, each with its worker, task and command", async () => {
+    await panel(reader);
+    const parts = (row) => [...row.querySelectorAll("[data-queue-worker], [data-queue-task], .command")].map((part) => part.textContent.trim());
+    expect(rowsOf("queued").map(parts)).toEqual([["Worker 21", "Task 11", "pytest tests/cart"], ["Worker 22", "Task 12", "pytest tests/tax"]]);
+    expect(rowsOf("recent").map(parts)).toEqual([["Worker 21", "Task 9", "pytest tests/old"], ["Worker 22", "Task 8", "pytest tests/older"]]);
+});
+
+test("a row says Waiting, Running, Passed or Failed, and a passed proof never reads as checked", async () => {
+    await panel(reader);
+    expect(states("queued")).toEqual(["Running", "Waiting"]);
+    expect(states("recent")).toEqual(["Passed", "Failed"]);
+    expect(document.body.querySelector("[data-test-queue]").textContent).not.toMatch(/checked|queued|short/i);
+});
+
+test("the headings are Queue and Recent", async () => {
+    await panel(reader);
+    const heading = (kind) => document.body.querySelector(`[data-queue-heading=${kind}]`).textContent.replace(/\d+$/, "").trim();
+    expect(heading("queued")).toBe("Queue");
+    expect(heading("recent")).toBe("Recent");
+});
+
+test("a row's output opens in place under it and collapses again", async () => {
+    await panel(reader);
+    const row = rowsOf("recent")[0];
+    expect(row.querySelector("[data-queue-output-body]")).toBeNull();
+    row.querySelector("[data-queue-output]").click();
+    await settle();
+    expect(row.querySelector("[data-queue-output-body]").textContent).toBe(OUTPUT_LINES.join("\n"));
+    expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("true");
+    row.querySelector("[data-queue-output]").click();
+    await settle();
+    expect(row.querySelector("[data-queue-output-body]")).toBeNull();
+    expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("false");
+});
+
+test("a row whose test has not run has no output to open", async () => {
+    await panel(reader);
+    expect(rowsOf("queued")[1].querySelector("[data-queue-output]")).toBeNull();
 });
 
 test("an empty queue says no test waits", async () => {

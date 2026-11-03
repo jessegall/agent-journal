@@ -55,7 +55,7 @@ class Tool:
     def block_exempt(self) -> bool:
         if self.category.reads_files:
             return True
-        if self.shell is None or self.shell.redirects or not self.shell.parts:
+        if self.shell is None or self.shell.has_file_redirects or not self.shell.parts:
             return False
         return all(part.classification.category.is_read_only for part in self.shell.parts)
 

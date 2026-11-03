@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from core.base.command.command import Command
 from core.modules.sequences.commands.support.sequence_line import SequenceLine
 
+START = "start"
+
 
 @dataclass(frozen=True)
 class MoveSequenceRun(Command[SequenceLine]):

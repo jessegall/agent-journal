@@ -26,11 +26,6 @@ window.addEventListener("hashchange", () => {
     leaveOldAddress();
 });
 
-export function knowPages(test) {
-    isPage.value = test;
-    leaveOldAddress();
-}
-
 export const route = computed(() => {
     const [path, query = ""] = hash.value.replace(/^#\/?/, "").split("?");
     const [page = "", n = ""] = path.split("/");
@@ -71,11 +66,6 @@ export function go(page = "", n = 0, q = "") {
     location.hash = href.page(page, n, q);
 }
 
-export function goIn(env, page = "", n = 0, q = "") {
-    choose(env);
-    go(page, n, q);
-}
-
 // the address of the Shares window with a row filled in, ready to share
 export function shareAddress(ref, from = window.location.href) {
     const address = new URL(from);
@@ -83,11 +73,6 @@ export function shareAddress(ref, from = window.location.href) {
     address.searchParams.set("share", ref);
     address.hash = "";
     return address.href;
-}
-
-export function showFile(path, line = 0, env = "") {
-    if (env) choose(env);
-    location.hash = href.file(path, line);
 }
 
 const entry = (open) => `${open.table}:${open.id}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
@@ -117,23 +102,11 @@ export function peek(table, id, comment = 0, sub = "") {
     opening([...(at < 0 ? stack : stack.slice(0, at)), {table, id, comment}], sub);
 }
 
-export function peekThere(env, table, id, comment = 0, sub = "") {
+function peekThere(env, table, id, comment = 0, sub = "") {
     if (env === route.value.env) return peek(table, id, comment, sub);
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.table === table && open.id === id && open.env === env);
     opening([...(at < 0 ? stack : stack.slice(0, at)), {table, id, comment, env}], sub);
-}
-
-const ROW_REF = /^[a-z_]+:\d+(@.+)?$/;
-
-export const isRef = (link) => ROW_REF.test(link);
-
-// the row ref a link to this journal's own address names with open=, or "": such a link opens in place, not in a new tab
-export function refOfOwnLink(link, origin = window.location.origin) {
-    if (!link.startsWith(origin)) return "";
-    const open = new URL(link).searchParams.get("open") || "";
-    const first = open.split(",")[0];
-    return isRef(first) ? first : "";
 }
 
 // opens the row a ref names, at the place `sub` names in it, a line or a section; a row already open is only scrolled there
@@ -143,7 +116,7 @@ export function peekRef(ref, sub = "") {
     return env ? peekThere(env, table, Number(id), 0, sub) : peek(table, Number(id), 0, sub);
 }
 
-export function chipTarget(event) {
+function chipTarget(event) {
     const chip = event.target.closest("[data-peek]");
     if (!chip) return "";
     event.preventDefault();
@@ -158,22 +131,6 @@ export function peekChip(event) {
 
 export function swap(table, id) {
     opening([...route.value.stack.slice(0, -1), {table, id, comment: 0}]);
-}
-
-export function showSession(sub) {
-    const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
-    const params = new URLSearchParams(query);
-    if (sub) params.set("sub", sub);
-    else params.delete("sub");
-    const rest = params.toString().replace(/%3A/g, ":");
-    location.replace(`#${path}${rest ? `?${rest}` : ""}`);
-}
-
-export function showTab(tab) {
-    const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
-    const params = new URLSearchParams(query);
-    params.set("tab", tab);
-    location.replace(`#${path}?${params.toString().replace(/%3A/g, ":").replace(/%2C/g, ",")}`);
 }
 
 export function unpeek() {

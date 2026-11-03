@@ -2,6 +2,8 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
+HOME_VARIABLE = "JOURNAL_HOME"
+
 SOCKET_PATH_LIMIT_CHARACTERS = 100
 SHORT_SOCKET_FOLDER = Path("/tmp")
 SERVER_SOCKET = "server"

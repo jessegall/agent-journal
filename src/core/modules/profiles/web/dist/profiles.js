@@ -1,181 +1,314 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-6aa3409759e9")) { const style = document.createElement("style"); style.id = "window-styles-6aa3409759e9"; style.textContent = ".bar[data-v-3b81dbc6]{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px}.count[data-v-3b81dbc6],.subject[data-v-3b81dbc6]{color:var(--text-3);font-size:12px}.failure[data-v-3b81dbc6]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.profile[data-v-3b81dbc6]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-3b81dbc6]{font-weight:600}.form[data-v-3b81dbc6]{display:flex;flex-direction:column;gap:12px}.field[data-v-3b81dbc6]{display:flex;flex-direction:column;gap:4px;color:var(--text-2);font-size:12px}.field input[data-v-3b81dbc6],.field textarea[data-v-3b81dbc6]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
-import { ref as V, reactive as D, computed as S, openBlock as r, createElementBlock as c, Fragment as E, createElementVNode as l, createVNode as b, unref as n, withCtx as _, createTextVNode as i, toDisplayString as a, createCommentVNode as v, createBlock as I, withModifiers as P, withDirectives as u, vModelText as p } from "vue";
-import { useRows as W, useListTools as B, Btn as T, ListTools as F, RowList as G, Dialog as L, Segmented as O, ago as z } from "@journal/window-kit";
-const Y = (y, k) => {
-  const m = y.__vccOpts || y;
-  for (const [f, x] of k)
-    m[f] = x;
-  return m;
-}, q = { class: "bar" }, A = { class: "count" }, H = {
-  key: 0,
-  class: "count",
-  "data-profile-notice": ""
-}, J = {
-  key: 0,
-  class: "failure"
-}, K = ["data-profile", "onClick"], Q = { class: "title" }, X = { class: "subject" }, Z = { class: "subject" }, ee = { class: "subject" }, te = {
-  key: 0,
-  class: "field"
-}, oe = { class: "field" }, le = { class: "field" }, se = { class: "field" }, ne = { class: "field" }, ae = { class: "field" }, ie = { class: "field" }, de = {
+if (!document.getElementById("window-styles-502aa8a73cf1")) { const style = document.createElement("style"); style.id = "window-styles-502aa8a73cf1"; style.textContent = ".profile-panel[data-v-57deba13]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-57deba13]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-57deba13]{flex:1}.profiles[data-v-bb7eea1d]{padding:0 0 40px}.bar[data-v-bb7eea1d]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:44px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border);color:var(--text-2)}.profiles-find[data-v-bb7eea1d]{flex:0 1 280px}.count[data-v-bb7eea1d]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-bb7eea1d]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-bb7eea1d]{color:var(--danger)}.empty[data-v-bb7eea1d]{margin:40px auto;max-width:480px}.rows[data-v-bb7eea1d]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-bb7eea1d]{text-align:left}.profile-meta[data-v-bb7eea1d]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-bb7eea1d]{color:var(--text-2)}.profile-used[data-v-bb7eea1d]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-bb7eea1d]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-bb7eea1d]{flex:1 1 100%}.profile-meta[data-v-bb7eea1d]{display:none}}\n"; document.head.appendChild(style); }
+import { ref as C, watch as D, computed as I, openBlock as u, createBlock as b, unref as e, withCtx as i, createElementVNode as h, createVNode as s, createCommentVNode as $, createElementBlock as w, createTextVNode as x, withKeys as W, toDisplayString as m, Fragment as K, renderList as M, normalizeClass as q } from "vue";
+import { SidePanel as z, FormField as y, TextInput as F, TextArea as j, Segmented as U, ModelPicker as E, Btn as N, useRows as H, EmptyState as T, ListRow as J, ago as Q } from "@journal/window-kit";
+const L = (p, _) => {
+  const r = p.__vccOpts || p;
+  for (const [v, g] of _)
+    r[v] = g;
+  return r;
+}, X = {
+  class: "profile-panel",
+  "data-profile-panel": ""
+}, Y = {
   key: 1,
-  class: "count"
-}, re = {
-  __name: "ProfileRows",
-  setup(y) {
-    const k = [
+  class: "profile-panel-note"
+}, Z = {
+  __name: "ProfilePanel",
+  props: { profile: { type: Object, required: !0 }, used: { type: String, default: "" } },
+  emits: ["close", "save"],
+  setup(p, { emit: _ }) {
+    const r = p, v = _, g = [
       { key: "subagent", label: "Subagent" },
       { key: "worker", label: "Worker" }
-    ], m = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1 }, { rows: f, failure: x, loaded: h, act: R, actionFailure: C } = W("profile list", []), $ = B(f, { title: (s) => `${s.name} ${s.description} ${s.profile_type} ${s.model} ${s.codex_model}` }), d = V(null), t = D({ ...m }), g = V(""), M = S(() => /^[a-z0-9_-]+$/i.test(t.name)), U = S(() => M.value && t.description.trim()), j = (s) => s.uses ? `Dispatched ${s.uses} ${s.uses === 1 ? "time" : "times"}, last ${z(new Date(s.last_used * 1e3).toISOString())}` : "Never dispatched here";
-    function N(s) {
-      d.value = s, Object.assign(t, s);
-    }
-    async function w() {
-      (await R(["profile", "save", t.name, "--description", t.description, "--tools", t.tools, "--type", t.profile_type, "--model", t.model, "--codex-model", t.codex_model, "--body", t.body])).ok && (g.value = `${t.name} saved; the agent reads it at its next dispatch.`, d.value = null);
-    }
-    return (s, e) => (r(), c(E, null, [
-      l("div", q, [
-        b(n(T), {
+    ], S = ["description", "tools", "profile_type", "model", "codex_model", "body"], o = C({});
+    D(
+      () => r.profile.name,
+      () => {
+        o.value = { name: r.profile.name, ...Object.fromEntries(S.map((f) => [f, r.profile[f]])) };
+      },
+      { immediate: !0 }
+    );
+    const c = I(() => S.some((f) => o.value[f] !== r.profile[f]) || !r.profile.name), k = I(() => c.value && /^[a-z0-9_-]+$/i.test(o.value.name || "") && o.value.description.trim());
+    return (f, t) => (u(), b(e(z), {
+      title: p.profile.name || "New profile",
+      abstract: p.profile.name ? p.used : "A worker or a subagent the agent can dispatch for one kind of job",
+      onClose: t[9] || (t[9] = (n) => v("close"))
+    }, {
+      foot: i(() => [
+        t[12] || (t[12] = h("span", { class: "profile-panel-grow" }, null, -1)),
+        s(e(N), {
+          kind: "ghost",
           small: "",
-          "data-profile-new": "",
-          onClick: e[0] || (e[0] = (o) => N(m))
+          "data-profile-cancel": "",
+          onClick: t[7] || (t[7] = (n) => v("close"))
         }, {
-          default: _(() => [...e[9] || (e[9] = [
-            i("New profile", -1)
+          default: i(() => [...t[10] || (t[10] = [
+            x("Cancel", -1)
           ])]),
           _: 1
         }),
-        l("span", A, a(n(f).length) + " " + a(n(f).length === 1 ? "profile" : "profiles") + " in .claude/agents", 1),
-        g.value ? (r(), c("span", H, a(g.value), 1)) : v("", !0)
+        s(e(N), {
+          kind: "primary",
+          small: "",
+          disabled: !k.value,
+          "data-profile-save": "",
+          onClick: t[8] || (t[8] = (n) => v("save", p.profile, o.value))
+        }, {
+          default: i(() => [...t[11] || (t[11] = [
+            x("Save", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])
       ]),
-      n(C) ? (r(), c("p", J, a(n(C)), 1)) : v("", !0),
-      b(n(F), {
-        tools: n($),
-        placeholder: "Find a profile"
-      }, null, 8, ["tools"]),
-      b(n(G), {
-        rows: n($).shown.value,
-        failure: n(x),
-        loaded: n(h),
-        empty: "No profiles yet",
-        "row-key": "name"
-      }, {
-        default: _(({ row: o }) => [
-          l("button", {
-            type: "button",
-            class: "profile",
-            "data-profile": o.name,
-            onClick: (ue) => N(o)
-          }, [
-            l("span", Q, a(o.name), 1),
-            l("span", X, a(o.description), 1),
-            l("span", Z, a(o.profile_type) + " · " + a(o.model || "the agent's model") + " on Claude · " + a(o.codex_model || "the agent's model") + " on Codex", 1),
-            l("span", ee, a(j(o)), 1)
-          ], 8, K)
-        ]),
-        _: 1
-      }, 8, ["rows", "failure", "loaded"]),
-      d.value ? (r(), I(n(L), {
-        key: 1,
-        title: d.value.name || "New profile",
-        onClose: e[8] || (e[8] = (o) => d.value = null)
-      }, {
-        default: _(() => [
-          l("form", {
-            class: "form",
-            "data-profile-form": "",
-            onSubmit: P(w, ["prevent"])
-          }, [
-            d.value.name ? v("", !0) : (r(), c("label", te, [
-              e[10] || (e[10] = i("Name", -1)),
-              u(l("input", {
-                "onUpdate:modelValue": e[1] || (e[1] = (o) => t.name = o),
+      default: i(() => [
+        h("div", X, [
+          p.profile.name ? $("", !0) : (u(), b(e(y), {
+            key: 0,
+            label: "Name",
+            for: "profile-name",
+            help: "Letters, digits and dashes; the agent starts it by this name."
+          }, {
+            default: i(() => [
+              s(e(F), {
+                id: "profile-name",
+                value: o.value.name,
                 placeholder: "critic",
-                "aria-label": "Name"
-              }, null, 512), [
-                [
-                  p,
-                  t.name,
-                  void 0,
-                  { trim: !0 }
-                ]
-              ])
-            ])),
-            l("label", oe, [
-              e[11] || (e[11] = i("When it is used", -1)),
-              u(l("textarea", {
-                "onUpdate:modelValue": e[2] || (e[2] = (o) => t.description = o),
-                rows: "3",
-                "aria-label": "When it is used"
-              }, null, 512), [
-                [p, t.description]
-              ])
-            ]),
-            l("label", le, [
-              e[12] || (e[12] = i("Tools", -1)),
-              u(l("input", {
-                "onUpdate:modelValue": e[3] || (e[3] = (o) => t.tools = o),
-                placeholder: "Read, Grep, Glob",
-                "aria-label": "Tools"
-              }, null, 512), [
-                [p, t.tools]
-              ])
-            ]),
-            l("div", se, [
-              e[13] || (e[13] = i("Type", -1)),
-              b(n(O), {
-                options: k,
-                value: t.profile_type,
-                onPick: e[4] || (e[4] = (o) => t.profile_type = o)
+                onInput: t[0] || (t[0] = (n) => o.value.name = n.target.value.trim())
               }, null, 8, ["value"])
             ]),
-            l("label", ne, [
-              e[14] || (e[14] = i("Model on Claude Code", -1)),
-              u(l("input", {
-                "onUpdate:modelValue": e[5] || (e[5] = (o) => t.model = o),
-                "aria-label": "Model on Claude Code"
-              }, null, 512), [
-                [p, t.model]
-              ])
+            _: 1
+          })),
+          s(e(y), {
+            label: "When it is used",
+            for: "profile-description",
+            help: "The agent reads this to decide when to start it."
+          }, {
+            default: i(() => [
+              s(e(j), {
+                id: "profile-description",
+                rows: "3",
+                value: o.value.description,
+                onInput: t[1] || (t[1] = (n) => o.value.description = n.target.value)
+              }, null, 8, ["value"])
             ]),
-            l("label", ae, [
-              e[15] || (e[15] = i("Model on Codex", -1)),
-              u(l("input", {
-                "onUpdate:modelValue": e[6] || (e[6] = (o) => t.codex_model = o),
-                "aria-label": "Model on Codex"
-              }, null, 512), [
-                [p, t.codex_model]
-              ])
+            _: 1
+          }),
+          s(e(y), {
+            label: "Tools",
+            for: "profile-tools",
+            help: "Comma separated. A profile that only reads keeps to Read, Grep, Glob and the like."
+          }, {
+            default: i(() => [
+              s(e(F), {
+                id: "profile-tools",
+                value: o.value.tools,
+                placeholder: "Read, Grep, Glob",
+                onInput: t[2] || (t[2] = (n) => o.value.tools = n.target.value)
+              }, null, 8, ["value"])
             ]),
-            l("label", ie, [
-              e[16] || (e[16] = i("Instructions", -1)),
-              u(l("textarea", {
-                "onUpdate:modelValue": e[7] || (e[7] = (o) => t.body = o),
-                rows: "12",
-                "aria-label": "Instructions"
-              }, null, 512), [
-                [p, t.body]
-              ])
+            _: 1
+          }),
+          s(e(y), {
+            label: "Kind",
+            for: "profile-kind",
+            help: "A subagent only reads and is started with the Agent tool; a worker writes and is sent out by the agent with a journal command."
+          }, {
+            default: i(() => [
+              s(e(U), {
+                options: g,
+                value: o.value.profile_type,
+                onPick: t[3] || (t[3] = (n) => o.value.profile_type = n)
+              }, null, 8, ["value"])
             ]),
-            d.value.shipped ? (r(), c("p", de, "The journal ships this profile; the next start puts it back as shipped.")) : v("", !0),
-            b(n(T), {
-              small: "",
-              kind: "primary",
-              type: "submit",
-              disabled: !U.value
-            }, {
-              default: _(() => [...e[17] || (e[17] = [
-                i("Save", -1)
-              ])]),
-              _: 1
-            }, 8, ["disabled"])
-          ], 32)
+            _: 1
+          }),
+          s(e(y), {
+            label: "Model on Claude Code",
+            for: "profile-model",
+            help: "The least expensive model that reliably fits the work."
+          }, {
+            default: i(() => [
+              s(e(E), {
+                provider: "claude",
+                inherits: "",
+                value: o.value.model,
+                "data-profile-model": "claude",
+                onPick: t[4] || (t[4] = (n) => o.value.model = n)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          s(e(y), {
+            label: "Model on Codex",
+            for: "profile-codex-model",
+            help: "The model it runs on when the agent is Codex."
+          }, {
+            default: i(() => [
+              s(e(E), {
+                provider: "codex",
+                inherits: "",
+                value: o.value.codex_model,
+                "data-profile-model": "codex",
+                onPick: t[5] || (t[5] = (n) => o.value.codex_model = n)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          s(e(y), {
+            label: "Instructions",
+            for: "profile-body",
+            help: "What it is told each time it starts, after the brief."
+          }, {
+            default: i(() => [
+              s(e(j), {
+                id: "profile-body",
+                rows: "16",
+                value: o.value.body,
+                onInput: t[6] || (t[6] = (n) => o.value.body = n.target.value)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          p.profile.shipped ? (u(), w("p", Y, "The journal ships this profile; setup puts it back as shipped.")) : $("", !0)
+        ])
+      ]),
+      _: 1
+    }, 8, ["title", "abstract"]));
+  }
+}, ee = /* @__PURE__ */ L(Z, [["__scopeId", "data-v-57deba13"]]), te = {
+  class: "profiles",
+  "data-profiles": ""
+}, le = { class: "bar" }, oe = {
+  class: "count",
+  "data-profile-count": ""
+}, ae = {
+  key: 0,
+  class: "notice",
+  "data-profile-notice": ""
+}, ne = {
+  key: 1,
+  class: "notice failed",
+  role: "alert",
+  "data-profile-failure": ""
+}, se = {
+  key: 3,
+  class: "rows"
+}, ie = { class: "profile-meta" }, re = { class: "profile-model" }, de = {
+  __name: "ProfileRows",
+  setup(p) {
+    const _ = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1, uses: 0 }, { rows: r, failure: v, loaded: g, act: S, actionFailure: o } = H("profile list", []), c = C(""), k = C(""), f = C(""), t = C(!1), n = I(() => {
+      const d = k.value.toLowerCase().split(/\s+/).filter(Boolean);
+      return r.value.filter((l) => d.every((a) => `${l.name} ${l.description} ${l.profile_type} ${l.model} ${l.codex_model}`.toLowerCase().includes(a)));
+    }), P = I(() => t.value ? _ : r.value.find((d) => d.name === c.value) || null), R = (d) => d.uses ? `Dispatched ${d.uses} ${d.uses === 1 ? "time" : "times"}, last ${Q(new Date(d.last_used * 1e3).toISOString())}` : "Never dispatched here";
+    function V() {
+      t.value = !0, c.value = "";
+    }
+    function A(d) {
+      t.value = !1, c.value = d.name;
+    }
+    function G() {
+      t.value = !1, c.value = "";
+    }
+    async function O(d, l) {
+      f.value = "";
+      const a = d.name || l.name;
+      (await S(["profile", "save", a, "--description", l.description, "--tools", l.tools, "--type", l.profile_type, "--model", l.model, "--codex-model", l.codex_model, "--body", l.body])).ok && (t.value = !1, c.value = a, f.value = `${a} saved; the agent reads it at its next dispatch.`);
+    }
+    return (d, l) => (u(), w("section", te, [
+      h("div", le, [
+        s(e(F), {
+          modelValue: k.value,
+          "onUpdate:modelValue": l[0] || (l[0] = (a) => k.value = a),
+          class: "profiles-find",
+          icon: "search",
+          placeholder: "Find a profile",
+          "aria-label": "Find a profile",
+          "data-profile-find": "",
+          onKeydown: l[1] || (l[1] = W((a) => k.value = "", ["esc"]))
+        }, null, 8, ["modelValue"]),
+        s(e(N), {
+          kind: "ghost",
+          small: "",
+          "data-profile-new": "",
+          onClick: V
+        }, {
+          default: i(() => [...l[2] || (l[2] = [
+            x("New profile", -1)
+          ])]),
+          _: 1
+        }),
+        h("span", oe, m(e(r).length) + " " + m(e(r).length === 1 ? "profile" : "profiles") + " in .claude/agents", 1),
+        f.value ? (u(), w("span", ae, m(f.value), 1)) : $("", !0),
+        e(o) ? (u(), w("span", ne, m(e(o)), 1)) : $("", !0)
+      ]),
+      e(v) ? (u(), b(e(T), {
+        key: 0,
+        class: "empty",
+        title: "The profiles could not be read"
+      }, {
+        default: i(() => [
+          x(m(e(v)), 1)
         ]),
         _: 1
-      }, 8, ["title"])) : v("", !0)
-    ], 64));
+      })) : !e(g) || !e(r).length ? (u(), b(e(T), {
+        key: 1,
+        class: "empty",
+        loading: !e(g),
+        title: "No profiles yet"
+      }, {
+        default: i(() => [...l[3] || (l[3] = [
+          x(" A profile is a subagent the agent can start for one kind of job: its description says when, its tools what it may do, its model what it runs on. The journal writes a researcher, a planner and a debugger at setup. ", -1)
+        ])]),
+        _: 1
+      }, 8, ["loading"])) : n.value.length ? (u(), w("div", se, [
+        (u(!0), w(K, null, M(n.value, (a) => (u(), b(e(N), {
+          key: a.name,
+          kind: "text",
+          fill: "",
+          class: "profile-open",
+          "aria-label": `Open ${a.name}`,
+          "data-profile": a.name,
+          onClick: (B) => A(a)
+        }, {
+          default: i(() => [
+            s(e(J), {
+              title: a.name,
+              text: a.description
+            }, {
+              end: i(() => [
+                h("span", ie, [
+                  h("span", re, m(a.profile_type) + " · " + m(a.model || "the agent's model") + " on Claude · " + m(a.codex_model || "the agent's model") + " on Codex", 1),
+                  h("span", {
+                    class: q(["profile-used", { never: !a.uses }])
+                  }, m(R(a)), 3)
+                ])
+              ]),
+              _: 2
+            }, 1032, ["title", "text"])
+          ]),
+          _: 2
+        }, 1032, ["aria-label", "data-profile", "onClick"]))), 128))
+      ])) : (u(), b(e(T), {
+        key: 2,
+        class: "empty",
+        title: "No profile matches"
+      }, {
+        default: i(() => [...l[4] || (l[4] = [
+          x("Try other words.", -1)
+        ])]),
+        _: 1
+      })),
+      P.value ? (u(), b(ee, {
+        key: 4,
+        profile: P.value,
+        used: R(P.value),
+        onClose: G,
+        onSave: O
+      }, null, 8, ["profile", "used"])) : $("", !0)
+    ]));
   }
-}, fe = /* @__PURE__ */ Y(re, [["__scopeId", "data-v-3b81dbc6"]]);
+}, fe = /* @__PURE__ */ L(de, [["__scopeId", "data-v-bb7eea1d"]]);
 export {
   fe as default
 };

@@ -5,15 +5,11 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.documents.commands.support.row_comments import RowComments
 from core.modules.documents.commands.support.text_comments import TextComments
-from core.modules.documents.models.enums.link_type import LinkType
-from core.modules.documents.models.link import Link
 from core.modules.documents.models.text_row import TextRow
-from core.modules.messages.models.message import Message
 from core.modules.plans.models.plan import Plan
 from core.modules.tasks.models.task import Task
-
-MESSAGE_MODEL = "message"
 
 
 class TextCommentsSubcommand(ReadSubcommand[TextComments]):
@@ -22,16 +18,15 @@ class TextCommentsSubcommand(ReadSubcommand[TextComments]):
     model: ClassVar[type[TextRow] | type[Plan] | type[Task]]
     name = "comments"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, comments: RowComments) -> None:
+        self.queries, self.comments = queries, comments
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> TextComments:
         text_row = self.queries.query(self.model).find(arguments.id)
-        links = self.queries.query(Link).filter(target_model=text_row.model_name, target_id=text_row.id, link_type=LinkType.COMMENT, source_model=MESSAGE_MODEL).oldest()
-        return TextComments(self.model.cli_name, arguments.id, tuple(self.queries.query(Message).find_many([link.source_id for link in links.all_rows()])))
+        return TextComments(self.model.cli_name, arguments.id, self.comments.comments(text_row))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextComments):

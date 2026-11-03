@@ -1,6 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
-from core.base.driver.hook_event_name import HookEventName
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
@@ -20,5 +19,5 @@ class CompactionMarkListener(MemoryMarkListener):
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)
-        if call.hook == HookEventName.COMPACT:
+        if call.is_compaction:
             self.show_memory(event, MemoryMarkVariant.COMPACTED, "Conversation compacted", MemoryMarkType.COMPACTION, call.environment_id, call.agent_id, row_model="")

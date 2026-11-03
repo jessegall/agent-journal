@@ -13,4 +13,4 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
         self.slots = slots
 
     def handle(self, command: GrantRunSlots, context: Context) -> None:
-        self.slots.grant_for_oldest_queued(context)
+        self.slots.grant_every_environment(context)

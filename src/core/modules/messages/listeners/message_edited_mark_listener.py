@@ -15,6 +15,6 @@ class MessageEditedMarkListener(MarkListener):
     module_name = "journal.core.messages"
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.command == EDIT_COMMAND and self.by_agent(event):
+        if self.is_agent_command(event, EDIT_COMMAND):
             message = self.queries.query(Message).find(event.row_id)
             self.show(event, MessageMarkType.EDITED, MessageMarkVariant.EDITED, f"Message {message.id} edited", message.environment_id, None, "message", message.id)

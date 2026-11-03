@@ -60,7 +60,7 @@ def test_a_project_wide_limit_raised_tells_the_main_agent_of_each_environment(ne
 
 def test_a_task_a_worker_holds_is_not_counted_as_open_and_not_delegated(new_story):
     story = story_with_person(new_story)
-    story.run(f"task start 1", actor=story.agent)
+    story.run("task start 1", actor=story.agent)
     set_limit(story, 4)
     assert limit_lines(story) == ["worker limit is now 4: 0 workers out, 0 open tasks not delegated; hand out more"]
 

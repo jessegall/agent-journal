@@ -16,9 +16,10 @@ from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 
 class RunSlots:
-    """Gives the queued runs a spot, oldest first, while fewer hold one than the batch size and the queue is not
-    halted; a run that holds a spot goes on whatever the queue does. With main-runs-take-slots on, the main
-    agent's running runs, which hold no spot and never wait, count against the batch size too."""
+    """Gives the queued runs of an environment a spot, oldest first, while fewer of its runs hold one than its
+    batch size and the queue is not halted; a run that holds a spot goes on whatever the queue does. With
+    main-runs-take-slots on, the main agent's running runs, which hold no spot and never wait, count against
+    the batch size too."""
 
     def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
@@ -26,7 +27,7 @@ class RunSlots:
     def grant(self, environment_id: int, context: Context) -> None:
         if self.halt.is_halted:
             return
-        runs = tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
+        runs = tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
         taken = sum(self.folder.has_slot(process.id) for process in runs) + self.main_runs_taking_spots(runs, environment_id)
         room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - taken
         for waiting in [process for process in runs if process.is_queued][:max(room, 0)]:
@@ -44,7 +45,7 @@ class RunSlots:
             main = {agent.id for agent in self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(Among("id", tuple({process.agent_id for process in running}))).all_rows()}
         return sum(1 for process in running if process.agent_id in main)
 
-    def grant_for_oldest_queued(self, context: Context) -> None:
-        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).filter(is_queued=True).oldest().first()
-        if queued is not None:
-            self.grant(queued.environment_id, context)
+    def grant_every_environment(self, context: Context) -> None:
+        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).filter(is_queued=True).oldest().all_rows()
+        for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
+            self.grant(environment_id, context)

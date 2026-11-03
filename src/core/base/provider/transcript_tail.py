@@ -5,8 +5,8 @@ TAIL_BYTES = 256 * 1024
 
 class TranscriptTail:
     """The last lines of a log file, read from its end so that a read made at every hook or poll costs the same
-    however long the file has grown: at least the last 256 KiB, a window that doubles until it holds one more line
-    than the count asked, which drops a line cut by the window's start; a missing file has none."""
+    however long the file has grown: at least the last 256 KiB, a window that doubles until it holds one more
+    line than the count asked, which drops a line cut by the window's start; a missing file has none."""
 
     def __init__(self, path: Path) -> None:
         self.path = path

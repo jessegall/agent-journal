@@ -5,9 +5,10 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.title_limit import TITLE_LIMIT_CHARACTERS
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
 from core.modules.dumps.models.dump import Dump
+
+DUMP_NAME_LIMIT_CHARACTERS = 80
 
 
 class NameDumpHandler(Handler[NameDump, Dump]):
@@ -22,6 +23,6 @@ class NameDumpHandler(Handler[NameDump, Dump]):
         dump = self.queries.query(Dump).find(command.dump_id)
         if dump.closed_at is not None:
             raise Refusal(f"dump {dump.id} is closed", "a closed dump takes no more")
-        if not 1 <= len(command.title) <= TITLE_LIMIT_CHARACTERS:
-            raise Refusal(f"a dump's title is 1 to {TITLE_LIMIT_CHARACTERS} characters", "say it shorter")
+        if not 1 <= len(command.title) <= DUMP_NAME_LIMIT_CHARACTERS:
+            raise Refusal(f"a dump's title is 1 to {DUMP_NAME_LIMIT_CHARACTERS} characters", "say it shorter")
         return self.repository.save(replace(dump, title=command.title), context)

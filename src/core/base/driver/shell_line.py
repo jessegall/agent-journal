@@ -10,6 +10,7 @@ from core.base.type_guards import is_list
 
 
 JOURNAL_PROGRAM = "journal"
+DESCRIPTOR_REDIRECT = re.compile(r"^\d*>&\d+$|^\d*>\s*/dev/null$")
 
 
 @dataclass(frozen=True)
@@ -45,8 +46,12 @@ class ShellLine:
         return self.has_category(CommandCategory.CHECK)
 
     @property
+    def has_file_redirects(self) -> bool:
+        return any(">" in redirect and not DESCRIPTOR_REDIRECT.match(redirect) for redirect in self.redirects)
+
+    @property
     def has_writes(self) -> bool:
-        return bool(self.redirects) or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
+        return self.has_file_redirects or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
     def is_reading(self) -> bool:

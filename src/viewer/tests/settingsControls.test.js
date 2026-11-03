@@ -105,14 +105,14 @@ test("a number whose key names its unit shows the unit", async () => {
     expect(element.querySelector('[data-setting="shop.size"] [data-setting-unit]')).toBeNull();
 });
 
-test("a list is edited one on each line and saved as a JSON list", async () => {
-    const {element, ran} = await drawnWith([row("shop.names", {type: "list", value: '["a","b"]', shown: "a, b"})]);
+test("a list is edited one on each line and saved as a list", async () => {
+    const {element, ran} = await drawnWith([row("shop.names", {type: "list", value: JSON.stringify(["a", "b"]), shown: "a, b"})]);
     const box = element.querySelector("[data-setting-list]");
     expect(box.value).toBe("a\nb");
     box.value = "a\nb\n\nc";
     box.dispatchEvent(new Event("change"));
     await settle();
-    expect(ran[0]).toEqual(expect.arrayContaining(["setting", "set", "shop.names", '["a","b","c"]']));
+    expect(ran[0]).toEqual(expect.arrayContaining(["setting", "set", "shop.names", JSON.stringify(["a", "b", "c"])]));
 });
 
 test("picking a section in the nav shows that section alone", async () => {

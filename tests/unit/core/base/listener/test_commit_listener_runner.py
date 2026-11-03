@@ -21,7 +21,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
@@ -143,6 +143,32 @@ def test_a_listener_a_person_waits_on_goes_first_and_again_after_each_other_list
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
     assert HANDLED == ["urgent 1", "slow 1", "urgent 2", "slow 2"]
+
+
+def test_the_urgent_listeners_and_the_ordinary_ones_run_apart(tmp_path):
+    container = container_with(tmp_path, SlowCounter, UrgentCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    runner.run_urgent()
+    assert HANDLED == ["urgent 1"]
+    runner.run_ordinary()
+    assert HANDLED == ["urgent 1", "slow 1", "slow 2"]
+    runner.run_urgent()
+    assert HANDLED == ["urgent 1", "slow 1", "slow 2", "urgent 2"]
+
+
+def test_a_listener_with_nothing_to_handle_does_not_run_the_urgent_listeners_again(tmp_path, monkeypatch):
+    container = container_with(tmp_path, UrgentCounter, PausedItemCounter)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    listeners_read: list[str] = []
+    position = ListenerCursorTable.position
+    monkeypatch.setattr(ListenerCursorTable, "position", lambda table, name: (listeners_read.append(name), position(table, name))[1])
+    urgent, counter = sorted((entry for entry in runner.registry.listeners), key=runner.run_order)
+    runner.run_entry(counter, [urgent])
+    assert listeners_read == [PausedItemCounter.name]
 
 
 def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp_path):

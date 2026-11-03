@@ -14,9 +14,9 @@ function foot(row) {
 }
 
 test("a message shows its id next to the time under the bubble", () => {
-    expect(foot(message)).toMatch(/\d:\d\d.*#100130/);
+    expect(foot(message)).toMatch(/\d:\d\d.*message 100130/);
 });
 
 test("a message still being sent has no id yet and shows none", () => {
-    expect(foot({...message, id: "sending-1", local: true})).not.toContain("#");
+    expect(foot({...message, id: "sending-1", local: true})).not.toContain("message sending-1");
 });

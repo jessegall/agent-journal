@@ -10,6 +10,7 @@ from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBa
 from core.modules.usage.commands.usage_show.usage_show_subcommand import UsageShowSubcommand
 from core.modules.usage.commands.usage_fitness.usage_fitness_subcommand import UsageFitnessSubcommand
 from core.modules.usage.commands.usage_tool.usage_tool_subcommand import UsageToolSubcommand
+from core.modules.usage.listeners.ended_agent_status_listener import EndedAgentStatusListener
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
 from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.models.statistic import Statistic
@@ -27,6 +28,7 @@ class UsageModule(Module):
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
     views = [AgentCard]
+    listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     subcommands = (UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),

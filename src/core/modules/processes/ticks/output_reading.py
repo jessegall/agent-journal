@@ -5,7 +5,7 @@ from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.container import Container
-from core.base.performance.performance_tools import PerformanceTools
+from core.base.module.performance_tools import PerformanceTools
 from core.base.timestamp import Timestamp
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput

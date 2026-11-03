@@ -1,5 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -90,3 +91,40 @@ class BuilderWithUser(StoryFixture):
 
     def expect(self, story) -> None:
         story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+
+
+class BuilderWithBriefedTask(StoryFixture):
+    """Task 1, Fix the cart, has a brief and is open; nobody holds it."""
+
+    parent = BuilderWithUser
+
+    def steps(self, story) -> None:
+        story.run('task make "Fix the cart" --brief "the total is in cents" --environment main', actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: open", "brief: the total is in cents")
+
+
+class BuilderWithUnreadTask(StoryFixture):
+    """The builder's agent started task 1 and has not read its brief, so it is blocked."""
+
+    parent = BuilderWithBriefedTask
+
+    def steps(self, story) -> None:
+        story.container.get(TaskBriefRequirement).is_required = True
+        story.run(lines.TASK_START, actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+
+
+class BuilderWithReadTask(StoryFixture):
+    """The builder's agent holds task 1 and ran its brief, so it is no longer blocked."""
+
+    parent = BuilderWithUnreadTask
+
+    def steps(self, story) -> None:
+        story.run("task brief 1", actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success("task brief 1", "task 1: Fix the cart", actor=story.agent)

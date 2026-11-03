@@ -52,10 +52,10 @@ def test_a_failure_while_the_finish_is_written_leaves_version_4_in_place_and_the
     story, version_four = upgrading(new_story, NOTES, TAGS)
     original = version_four.read_bytes()
 
-    def failing_write(self: EventLog, *arguments: object) -> None:
+    def failing_upgrade_end(self: EventLog, *arguments: object) -> None:
         raise RecordFailure("the record of the upgrade could not be written")
 
-    monkeypatch.setattr(EventLog, "write_upgrade_finished", failing_write)
+    monkeypatch.setattr(EventLog, "write_upgrade_finished", failing_upgrade_end)
     with pytest.raises(RecordFailure):
         UpgradeJournal(story.home).run(confirmed=True)
     expect_version_four_working(story, original)

@@ -46,7 +46,7 @@ export function frames(message, elapsed) {
 
 export const CLOCK_AFTER = 3;
 
-export function queueClock(message, elapsed = 0) {
+function queueClock(message, elapsed = 0) {
     const seconds = message && message.done ? message.for : elapsed;
     return message && message.clock && seconds >= CLOCK_AFTER ? span(seconds, true) : "";
 }

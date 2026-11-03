@@ -14,6 +14,7 @@ class ShareLink(Model):
 
     model_name = "share_link"
     cli_name = "share"
+    search_fields = ["row_model", "state"]
     lifecycle = ShareLinkLifecycle
     hidden_fields = frozenset({"token_digest", "password_digest"})
 

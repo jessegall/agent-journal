@@ -7,7 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.base.agent_role import AgentRole
-from core.base.timestamp import MINUTE_SECONDS
+from core.base.timestamp import SECONDS_PER_MINUTE
 
 INACTIVE_MINUTES = 15
 
@@ -31,6 +31,6 @@ class InactiveTaskReminderRule(DriverRule):
         reminded_at = self.hook_history.last_answer(self.name, hook)
         if reminded_at is not None and reminded_at >= newest.created_at:
             return RuleAnswer.allowed()
-        if newest.created_at.elapsed_seconds(hook.timestamp) < INACTIVE_MINUTES * MINUTE_SECONDS:
+        if newest.created_at.elapsed_seconds(hook.timestamp) < INACTIVE_MINUTES * SECONDS_PER_MINUTE:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=INACTIVE_MINUTES, task=current.task.id))

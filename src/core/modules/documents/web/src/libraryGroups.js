@@ -30,11 +30,3 @@ export function grouped(rows, order, now = Date.now()) {
     }
     return groups.filter((group) => group.rows.length);
 }
-
-// how long ago a row was written, in the shortest plain form
-export function age(text, now = Date.now()) {
-    const minutes = Math.max(0, Math.round((now - Date.parse(text)) / 60000));
-    if (minutes < 60) return `${minutes}m`;
-    if (minutes < 60 * 24) return `${Math.round(minutes / 60)}h`;
-    return `${Math.round(minutes / (60 * 24))}d`;
-}

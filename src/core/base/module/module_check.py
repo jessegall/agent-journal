@@ -3,7 +3,7 @@ from core.base.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVEN
 from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.name_groups import NameGroups
