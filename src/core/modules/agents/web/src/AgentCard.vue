@@ -35,7 +35,7 @@ const tasksPerHour = computed(() => {
     const started = Date.parse(props.row.process_started_at || props.row.created_at);
     const ended = props.row.ended_at ? Date.parse(props.row.ended_at) : now.value;
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
-    return props.row.role === "worker" && hours > 0 && completedCount.value ? `${(completedCount.value / hours).toFixed(1)}/h` : "";
+    return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);

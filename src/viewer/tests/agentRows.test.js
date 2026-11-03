@@ -194,7 +194,7 @@ test("a worker's card shows its completed tasks per hour", async () => {
     const tasks = [{id: 11, title: "Fix the cart", state: "completed"}, {id: 12, title: "Add the totals", state: "completed"}, {id: 13, title: "Print", state: "started"}];
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
-    expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1.0/h");
+    expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
 });
 
 test("the running list has no show more button", async () => {
