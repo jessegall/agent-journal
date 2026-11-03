@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.driver.block_until import BlockUntil
@@ -20,5 +18,4 @@ class TaskBriefBlocks:
     def block_unread(self, agent_id: int, task: Task, context: Context) -> None:
         if not self.requirement.is_required or self.queries.query(TaskRead).filter(task_id=task.id, agent_id=agent_id).exists():
             return
-        nudge = TASK_BRIEF_FIRST.nudge(task=task.id)
-        self.bus.dispatch(BlockUntil(agent_id, replace(nudge, key=f"{nudge.key}.{task.id}"), TaskBriefRead(task.id)), context)
+        self.bus.dispatch(BlockUntil(agent_id, TASK_BRIEF_FIRST.nudge(task=task.id), TaskBriefRead(task.id)), context)
