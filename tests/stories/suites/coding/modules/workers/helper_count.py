@@ -1,6 +1,5 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.driver.hook_event_name import HookEventName
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
@@ -14,4 +13,3 @@ def test_a_worker_between_runs_with_work_left_counts_as_a_helper(new_story, monk
     story.expect_text("usage bars --environment main", "1 helpers", actor=story.user)
     story.expect_success(f'agent edit {worker.id} --ended-at "2026-11-03T12:00:00+00:00"', actor=story.user)
     story.expect_text("usage bars --environment main", "1 helpers", actor=story.user)
-    assert HookEventName.STOP

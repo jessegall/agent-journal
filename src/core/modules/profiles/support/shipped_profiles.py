@@ -1,8 +1,10 @@
 from core.modules.profiles.support.agent_profile import WORKER, AgentProfile
 
-READER_RULES = ("You only read: change no file, run no tests and write nothing to the journal; the agent that started you does the writing. "
+READER_RULES = ("You only read: change no file and run no tests. "
                      "Read narrowly: search for the line, read the range you need, never a whole large file. Answer in a short report written to "
-                     "the agent that started you, with the files and lines that show each point and what you could not check.")
+                     "the agent that started you, with the files and lines that show each point and what you could not check. When your findings are long or "
+                     "will be read again, file them yourself so they show in the viewer: journal doc make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", "
+                     "or journal report make with the same options, and name its number in your report.")
 DOCUMENT_RULES = ("You change no file and run no tests, and use Bash only for journal commands. Read narrowly: search for the line, read the range you need, "
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "
@@ -20,7 +22,7 @@ SHIPPED_PROFILES = (
                  "Read, Grep, Glob, Bash",
                  f"You plan one change. Find what in the code already does the job or most of it, and plan to extend that rather than write a second way. Name every file to touch and why, the order of the steps, the tests that prove each, and what could go wrong. {DOCUMENT_RULES}"),
     AgentProfile("journal-debugger", "Traces a fault to where it starts and states the fix that belongs there. Read-only.",
-                 "Read, Grep, Glob",
+                 "Read, Grep, Glob, Bash",
                  f"You debug one fault. Start from what was observed, then walk back through the code to where the bad value, missing check or wrong shape originates, and name the fix there, never where the fault only shows. Say how to reproduce it and which test would prove the fix. {READER_RULES}"),
     AgentProfile("journal-plan-reviewer", "Reviews a plan before it is approved: whether its phases and tasks reach its goal and nothing more, and what must change. Read-only.",
                  "Read, Grep, Glob, Bash",
