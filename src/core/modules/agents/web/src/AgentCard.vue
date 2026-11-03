@@ -16,7 +16,7 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
-const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : "", waitingForTests.value ? "waiting for its tests" : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
 const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
@@ -59,7 +59,7 @@ readCommand();
             </template>
         </span>
         <template v-if="showsCommand">
-            <span class="agent-command" data-agent-command><RunningCommand :text="runningCommand" /></span>
+            <span class="agent-command" data-agent-command><RunningCommand :text="waitingForTests ? 'waiting for its tests' : runningCommand" idle="thinking" /></span>
         </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>

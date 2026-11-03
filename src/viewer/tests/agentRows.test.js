@@ -102,7 +102,7 @@ test("the card counts what is completed and lists its tasks when opened, under t
 
 test("a worker with a task in testing and none started says it waits for its tests", async () => {
     const element = await drawn([{...FACTS[0], tasks: [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}]}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toContain("waiting for its tests");
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("waiting");
     expect(cardOf(element, 2).querySelector(".agent-dot").dataset.state).toBe("waiting");
 });
 
@@ -121,6 +121,14 @@ test("a running worker's card names the command it runs", async () => {
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
+});
+
+test("a waiting worker's command line says it waits for its tests", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("waiting for its tests"));
 });
 
 test("the running list has no show more button", async () => {
