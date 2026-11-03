@@ -26,7 +26,9 @@ class HookManager:
                 continue
             detected = self._detected(provider, folder, name, commands)
             self.managed.added(detected)
-            ProgramHooks.store(path, {**settings, "hooks": kept})
+            stripped = {**settings, "hooks": kept}
+            ProgramHooks.store(path, stripped)
+            provider.hooks_rewritten(path, settings.get("hooks"), kept)
             if any(hook.tracked for hook in detected):
                 HookFilesGit(folder).skip_worktree(name)
         return self.managed.all()
