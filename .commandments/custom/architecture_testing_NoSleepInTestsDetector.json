@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "sleep"
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories|unit)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "sleep-in-a-test",
+        "description": "A test waits with a sleep.",
+        "rule": "Wait for the event, a process, a pipe or a thread, or move the clock with Story.advance; sleeping in a test is never allowed, only time travel.",
+        "skill": "plain-code-words"
+    }
+}

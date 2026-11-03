@@ -228,7 +228,6 @@ class ServerStory:
         while time.monotonic() < deadline:
             if expected_line in self.story.run(line).output_text.splitlines():
                 return
-            time.sleep(POLL_SECONDS)
         raise AssertionError(f"{line} never printed {expected_line!r}: {self.story.run(line).output_text}")
 
     def expect_line(self, line: str, expected_line: str) -> None:

@@ -178,6 +178,7 @@
         "architecture_processes_ReaderOnlyOnTickDetector",
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",
+        "architecture_testing_NoSleepInTestsDetector",
         "architecture_viewer_NoTimerOutsideClocksDetector",
         "architecture_nudges_TypedLineThroughLineTypingDetector",
         "architecture_providers_HookNamesByMemberDetector",
