@@ -78,10 +78,10 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
     rows = [ProcessPart(id=position, version=1, process_id=position, position=1, text="journal compile", command="make build", program="journal", category=CommandCategory.BUILD)
             for position in range(SAMPLE_OUTPUTS + 2, 0, -1)]
     rows.insert(0, ProcessPart(id=100, version=1, process_id=100, position=1, text="other", program="other", category=CommandCategory.BUILD))
-    parts.with_kept_output.return_value.filter.return_value.newest.return_value.all_rows.return_value = iter(rows)
+    parts.with_kept_output.return_value.newest.return_value.all_rows.return_value = iter(rows)
     folder.output.side_effect = lambda process_id, position: f"\x1b[32mdone {process_id}\x1b[0m\n"
-    selection = ReaderJudge(ReaderRun(), folder, parts).samples(reader(), CommandCategory.BUILD)
-    assert selection == tuple(f"done {position}\n" for position in range(SAMPLE_OUTPUTS + 2, 2, -1))
+    judgement = ReaderJudge(ReaderRun(), folder, parts).tested(reader())
+    assert judgement.output_id == SAMPLE_OUTPUTS + 2
+    assert judgement.missed == ()
     parts.with_kept_output.assert_called_once_with()
-    parts.with_kept_output.return_value.filter.assert_called_once_with(category=CommandCategory.BUILD)
     assert folder.output.call_count == SAMPLE_OUTPUTS

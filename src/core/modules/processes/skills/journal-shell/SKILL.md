@@ -21,6 +21,8 @@ Every shell command you run goes through the journal's runner.
 
 ## Readers
 
+- A worker writes no reader; it asks the main agent to write one.
+
 - A reader picks the lines that matter from one kind of output:
   `journal reader add <name> --commands "pytest*" --lines "<pattern>"`.
 - A reader says what a run is doing with `--title`, how far it is with `--progress` and how it ended with `--summary`.

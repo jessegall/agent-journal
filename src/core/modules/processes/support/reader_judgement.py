@@ -7,6 +7,7 @@ class ReaderJudgement:
 
     missing: tuple[str, ...] = ()
     missed: tuple[str, ...] = ()
+    output_id: int | None = None
 
     @property
     def is_proper(self) -> bool:
