@@ -39,20 +39,20 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: p
     terminalreporter.write_line(f"{len(real_reports)} stories used a real Claude Code or Codex")
 
 
-def names_real_program(command: object) -> bool:
+def names_real_program(command: object, stand_in_folder: Path) -> bool:
     tokens = command.split() if isinstance(command, str) else list(command) if isinstance(command, (list, tuple)) else []
-    return bool(tokens) and Path(str(tokens[0])).name in REAL_PROGRAMS
+    return bool(tokens) and Path(str(tokens[0])).name in REAL_PROGRAMS and not Path(str(tokens[0])).is_relative_to(stand_in_folder)
 
 
 @pytest.fixture(autouse=True)
-def refuse_real_programs(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+def refuse_real_programs(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> None:
     if request.config.getoption(REAL_PROGRAM_FLAG):
         return
     real_popen = subprocess.Popen
 
     class GuardedPopen(real_popen):
         def __init__(self, args: object, *arguments: object, **options: object) -> None:
-            if names_real_program(args):
+            if names_real_program(args, tmp_path_factory.getbasetemp()):
                 raise RealProgramLaunchError(f"a test may start {args} only with {REAL_PROGRAM_FLAG}")
             super().__init__(args, *arguments, **options)
 
