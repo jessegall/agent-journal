@@ -1,13 +1,7 @@
 /* @code-commandments-generated */
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/player-C80pExcD.js
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-DDcUPmvc.js";
-import { bg as Q, aM as V, c7 as R } from "./index-_TWMC7dz.js";
-import { t as X } from "./VoiceFigure-CaHCY_zy.js";
-========
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-DI_Uq_He.js";
-import { bg as Q, aM as V, c7 as R } from "./index-DQKuLORv.js";
-import { t as X } from "./VoiceFigure-CE4rxFKe.js";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/player-Bl7IhtmY.js
+import { Stage as U, SIDES as j, reachSide as q } from "./figure-CVzUrvn3.js";
+import { bg as Q, aM as V, c7 as R } from "./index-5AZLvA4k.js";
+import { t as X } from "./VoiceFigure-DXFtg_zY.js";
 const Y = 4, Z = (u) => u * u * (3 - 2 * u);
 class tt {
   constructor(t, s) {

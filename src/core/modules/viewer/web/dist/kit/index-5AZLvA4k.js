@@ -1,11 +1,6 @@
 /* @code-commandments-generated */
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 import { openBlock as c, createElementBlock as h, renderSlot as me, createElementVNode as p, normalizeClass as Z, Fragment as G, renderList as se, normalizeStyle as pe, defineComponent as Di, Comment as Ni, h as ia, cloneVNode as Pi, createBlock as V, withCtx as F, unref as z, createVNode as D, toDisplayString as b, createCommentVNode as C, inject as Oe, useAttrs as Hn, computed as L, ref as B, resolveDynamicComponent as xt, mergeProps as tt, Transition as Bt, watch as be, shallowRef as Un, createTextVNode as le, TransitionGroup as Do, reactive as la, onMounted as Fe, onUnmounted as Ie, nextTick as Lt, useId as No, Teleport as ca, withModifiers as xe, isRef as Da, onBeforeUnmount as Dt, resolveComponent as ji, resolveDirective as qi, withDirectives as dt, useModel as Bs, getCurrentInstance as Fi, mergeModels as Ls, getCurrentScope as Po, onScopeDispose as jo, provide as Wi, onErrorCaptured as Hi, toHandlers as Ui, createSlots as zi, vShow as Vi, useSlots as Gi, withKeys as Kt, vModelText as Ds, defineAsyncComponent as Ki } from "vue";
 const K = (e, t) => {
-========
-import { openBlock as c, createElementBlock as h, renderSlot as he, createElementVNode as p, normalizeClass as J, Fragment as K, renderList as se, normalizeStyle as pe, defineComponent as Bi, Comment as Li, h as ia, cloneVNode as Ni, createBlock as V, withCtx as H, unref as z, createVNode as P, toDisplayString as b, createCommentVNode as C, inject as Oe, useAttrs as Hn, computed as B, ref as L, resolveDynamicComponent as xt, mergeProps as tt, Transition as Bt, watch as xe, shallowRef as Un, createTextVNode as ce, TransitionGroup as Bo, reactive as la, onMounted as Le, onUnmounted as Ie, nextTick as Lt, useId as Lo, Teleport as ca, withModifiers as be, isRef as La, onBeforeUnmount as Nt, resolveComponent as Di, resolveDirective as Pi, withDirectives as dt, useModel as Bs, getCurrentInstance as ji, mergeModels as Ls, getCurrentScope as No, onScopeDispose as Do, provide as qi, onErrorCaptured as Fi, toHandlers as Wi, createSlots as Hi, vShow as Ui, useSlots as zi, withKeys as Gt, vModelText as Ns, defineAsyncComponent as Vi } from "vue";
-const G = (e, t) => {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   const n = e.__vccOpts || e;
   for (const [s, a] of t)
     n[s] = a;
@@ -14,25 +9,14 @@ const G = (e, t) => {
   __name: "SkeletonLine",
   props: { filled: Boolean, still: Boolean, bars: { type: Array, default: () => [] } },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (t, n) => (c(), h("span", Yi, [
       me(t.$slots, "default", {}, void 0, !0),
       p("span", {
         class: Z(["bars", { faded: e.filled }])
-========
-    return (t, n) => (c(), h("span", Gi, [
-      he(t.$slots, "default", {}, void 0, !0),
-      p("span", {
-        class: J(["bars", { faded: e.filled }])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       }, [
         (c(!0), h(G, null, se(e.bars, (s) => (c(), h("span", {
           key: s.width,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           class: Z(["bar", { still: e.still }]),
-========
-          class: J(["bar", { still: e.still }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           style: pe({ width: s.width, height: `${s.height}px`, borderRadius: `${s.height / 2}px` })
         }, null, 6))), 128))
       ], 2)
@@ -84,36 +68,21 @@ const G = (e, t) => {
       { width: "86%", height: 24 },
       { width: "52%", height: 24 }
     ];
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (l, u) => (c(), V(ln, { value: e.shape }, {
       messages: F(() => [
-========
-    return (l, u) => (c(), V(zn, { value: e.shape }, {
-      messages: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-messages",
           "aria-busy": "true",
           "aria-label": e.label
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           (c(), h(G, null, se(t, (d) => p("div", {
             key: d.id,
             class: Z(["skeleton-message", { mine: d.mine }]),
-========
-          (c(), h(K, null, se(t, (d) => p("div", {
-            key: d.id,
-            class: J(["skeleton-message", { mine: d.mine }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             style: pe({ width: `${d.width}%`, height: `${d.height}px` })
           }, null, 6)), 64))
         ], 8, Zi)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       older: F(() => [
-========
-      older: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-messages skeleton-older",
           "aria-busy": "true",
@@ -121,20 +90,12 @@ const G = (e, t) => {
         }, [
           (c(!0), h(G, null, se(t.slice(0, 3), (d) => (c(), h("div", {
             key: d.id,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             class: Z(["skeleton-message", { mine: d.mine }]),
-========
-            class: J(["skeleton-message", { mine: d.mine }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             style: pe({ width: `${d.width}%`, height: `${d.height}px` })
           }, null, 6))), 128))
         ], 8, Xi)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       cards: F(() => [
-========
-      cards: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-cards",
           "aria-busy": "true",
@@ -151,11 +112,7 @@ const G = (e, t) => {
           ]))), 128))
         ], 8, Qi)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       file: F(() => [
-========
-      file: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-files",
           "aria-busy": "true",
@@ -176,11 +133,7 @@ const G = (e, t) => {
           ]))), 128))
         ], 8, el)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       page: F(() => [
-========
-      page: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-text",
           "aria-busy": "true",
@@ -196,11 +149,7 @@ const G = (e, t) => {
           }, null, 8, ["bars"]))), 128))
         ], 8, tl)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       text: F(() => [
-========
-      text: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-text",
           "aria-busy": "true",
@@ -212,11 +161,7 @@ const G = (e, t) => {
           }, null, 8, ["bars"]))), 128))
         ], 8, nl)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       default: F(() => [
-========
-      default: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           class: "skeleton-rows",
           "aria-busy": "true",
@@ -245,17 +190,10 @@ const G = (e, t) => {
     return (t, n) => e.loading ? (c(), V(Nt, {
       key: 0,
       shape: e.shape
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, null, 8, ["shape"])) : e.title ? (c(), h("div", ol, [
       p("p", rl, b(e.title), 1),
       p("p", il, [
         me(t.$slots, "default", {}, void 0, !0)
-========
-    }, null, 8, ["shape"])) : e.title ? (c(), h("div", sl, [
-      p("p", al, b(e.title), 1),
-      p("p", ol, [
-        he(t.$slots, "default", {}, void 0, !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ])
     ])) : (c(), h("p", ll, [
       me(t.$slots, "default", {}, void 0, !0)
@@ -276,28 +214,17 @@ const G = (e, t) => {
   emits: ["toggle"],
   setup(e, { emit: t }) {
     const n = t;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (s, a) => (c(), h("div", ul, [
-========
-    return (s, a) => (c(), h("div", ll, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       p("button", {
         type: "button",
         class: Z(["fold-head", { flush: e.flush, bar: e.bar }]),
         "aria-expanded": e.open,
         onClick: a[0] || (a[0] = (o) => n("toggle"))
       }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("span", hl, b(e.label), 1),
         e.count !== "" ? (c(), h("span", fl, b(e.count), 1)) : C("", !0),
         p("span", {
           class: Z(["fold-mark", { shut: !e.open }])
-========
-        p("span", ul, b(e.label), 1),
-        e.count !== "" ? (c(), h("span", dl, b(e.count), 1)) : C("", !0),
-        p("span", {
-          class: J(["fold-mark", { shut: !e.open }])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, null, 2)
       ], 10, dl),
       e.open ? me(s.$slots, "default", {}, void 0, !0, 0) : C("", !0)
@@ -309,11 +236,7 @@ function zn() {
   if (!e) throw new Error("useWindow is called only inside a window the viewer hosts");
   return e;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const gl = ["stroke-width", "innerHTML"], ye = {
-========
-const ml = ["stroke-width", "innerHTML"], ve = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -467,15 +390,9 @@ const ml = ["stroke-width", "innerHTML"], ve = {
       "stroke-linejoin": "round",
       "aria-hidden": "true",
       innerHTML: a[s[e.name] || e.name] || a.dot
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, null, 12, gl));
   }
 }, vl = {
-========
-    }, null, 12, ml));
-  }
-}, pl = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "Spinner",
   props: { size: { type: Number, default: 9 } },
   setup(e) {
@@ -484,11 +401,7 @@ const ml = ["stroke-width", "innerHTML"], ve = {
       style: pe({ width: `${e.size}px`, height: `${e.size}px`, borderWidth: e.size > 14 ? "2px" : "1px" })
     }, null, 4));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, yl = /* @__PURE__ */ K(vl, [["__scopeId", "data-v-eb453d6f"]]), wl = 120, kl = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
-========
-}, gl = /* @__PURE__ */ G(pl, [["__scopeId", "data-v-eb453d6f"]]), vl = 120, yl = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "Btn",
   props: {
     kind: { type: String, default: "ghost" },
@@ -521,15 +434,9 @@ const ml = ["stroke-width", "innerHTML"], ve = {
       disabled: i.value,
       onClick: l
     }), {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       default: F(() => [
         p("span", {
           class: Z(["btn-label", { hidden: o.value }])
-========
-      default: H(() => [
-        p("span", {
-          class: J(["btn-label", { hidden: o.value }])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, [
           e.icon ? (c(), V(ye, {
             key: 0,
@@ -594,15 +501,9 @@ const ml = ["stroke-width", "innerHTML"], ve = {
       onClick: a[0] || (a[0] = (o) => n("change", !e.on))
     }, [
       p("span", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         class: Z(["switch", { on: e.on, labelled: e.labelled, large: e.large }])
       }, [
         e.labelled ? (c(), h("span", _l, b(e.word), 1)) : C("", !0),
-========
-        class: J(["switch", { on: e.on, labelled: e.labelled, large: e.large }])
-      }, [
-        e.labelled ? (c(), h("span", Ml, b(e.word), 1)) : C("", !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         a[1] || (a[1] = p("span", { class: "knob" }, null, -1))
       ], 2),
       e.word && !e.labelled ? (c(), h("span", El, b(e.word), 1)) : C("", !0)
@@ -965,36 +866,21 @@ const un = (e) => cn[e], Go = new Map(Vo.flatMap((e) => [e, e.replace(/s$/, ""),
   __name: "AgentRowList",
   props: { rows: { type: Array, required: !0 }, loaded: Boolean, failure: { type: String, default: "" }, none: { type: String, required: !0 } },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const t = e, n = L(() => [...t.rows].sort((a, o) => !!a.ended_at - !!o.ended_at || o.id - a.id)), s = L(() => t.rows.filter((a) => !a.ended_at).length);
     return (a, o) => (c(), h("div", Hl, [
       e.loaded ? e.failure ? (c(), h("p", Ul, b(e.failure), 1)) : e.rows.length ? (c(), h(G, { key: 3 }, [
         p("p", Vl, b(s.value) + " running", 1),
         (c(!0), h(G, null, se(n.value, (r) => (c(), h("button", {
-========
-    const t = e, n = B(() => [...t.rows].sort((a, o) => !!a.ended_at - !!o.ended_at || o.id - a.id)), s = B(() => t.rows.filter((a) => !a.ended_at).length);
-    return (a, o) => (c(), h("div", Fl, [
-      e.loaded ? e.failure ? (c(), h("p", Wl, b(e.failure), 1)) : e.rows.length ? (c(), h(K, { key: 3 }, [
-        p("p", Ul, b(s.value) + " running", 1),
-        (c(!0), h(K, null, se(n.value, (r) => (c(), h("button", {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: r.id,
           type: "button",
           class: "agent-row",
           "data-agent-row": r.id,
           onClick: (i) => z(Xe)(`agents:${r.id}`)
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", Kl, "#" + b(r.id) + " " + b(r.session), 1),
           p("span", Yl, b(r.ended_at ? "Closed" : "Running"), 1)
         ], 8, Gl))), 128))
       ], 64)) : (c(), h("p", zl, b(e.none), 1)) : (c(), V(Nt, {
-========
-          p("span", Vl, "#" + b(r.id) + " " + b(r.session), 1),
-          p("span", Gl, b(r.ended_at ? "Closed" : "Running"), 1)
-        ], 8, zl))), 128))
-      ], 64)) : (c(), h("p", Hl, b(e.none), 1)) : (c(), V(rn, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         key: 0,
         shape: "text"
       }))
@@ -1045,25 +931,15 @@ const un = (e) => cn[e], Go = new Map(Vo.flatMap((e) => [e, e.replace(/s$/, ""),
         class: Z(["bar-row", l.tone, { opens: l.open }]),
         onClick: (d) => l.open && s("open", l.open)
       }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         default: F(() => [
           p("span", nc, b(l.label), 1),
           D(ec, {
-========
-        default: H(() => [
-          p("span", ec, b(l.label), 1),
-          P(Xl, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             value: Number(l.value) || 0,
             max: a.value,
             tone: l.tone,
             least: 2
           }, null, 8, ["value", "max", "tone"]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", sc, b(l.value) + b(o.value), 1)
-========
-          p("span", tc, b(l.value) + b(o.value), 1)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         ]),
         _: 2
       }, 1032, ["type", "class", "onClick"]))), 128))
@@ -1098,11 +974,7 @@ const un = (e) => cn[e], Go = new Map(Vo.flatMap((e) => [e, e.replace(/s$/, ""),
       grid: (r) => ({ gap: `${r.gap || 12}px`, gridTemplateColumns: `repeat(${r.columns || 2}, minmax(0, 1fr))` })
     }, s = e, a = t, o = L(() => n[s.node.type](s.node));
     return (r, i) => (c(), h("div", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       class: Z([e.node.type, { wrap: e.node.type === "row" && e.node.wrap !== !1 }]),
-========
-      class: J([e.node.type, { wrap: e.node.type === "row" && e.node.wrap !== !1 }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       style: pe(o.value)
     }, [
       (c(!0), h(G, null, se(e.node.children || [], (l, u) => (c(), V(Sr, {
@@ -1129,15 +1001,9 @@ const un = (e) => cn[e], Go = new Map(Vo.flatMap((e) => [e, e.replace(/s$/, ""),
       class: Z(["card", { opens: e.node.open }]),
       onClick: a[2] || (a[2] = (o) => e.node.open && n("open", e.node.open))
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       e.node.title ? (c(), h("header", dc, [
         p("span", hc, b(e.node.title), 1),
         e.node.note ? (c(), h("span", fc, b(e.node.note), 1)) : C("", !0)
-========
-      e.node.title ? (c(), h("header", cc, [
-        p("span", uc, b(e.node.title), 1),
-        e.node.note ? (c(), h("span", dc, b(e.node.note), 1)) : C("", !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ])) : C("", !0),
       D(Cn, {
         node: { type: "stack", gap: 10, children: e.node.children },
@@ -1146,13 +1012,8 @@ const un = (e) => cn[e], Go = new Map(Vo.flatMap((e) => [e, e.replace(/s$/, ""),
       }, null, 8, ["node"])
     ], 2));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, pc = /* @__PURE__ */ K(mc, [["__scopeId", "data-v-67b72d40"]]), gc = (e) => "task_ids" in e, Jo = 1024, vc = Jo * 1024 * 1024, yc = (e) => `"${e.name}" is ${Math.ceil(e.size / (1024 * 1024))} MB, over the ${Jo} MB limit for one file.`;
 function wc() {
-========
-}, fc = /* @__PURE__ */ G(hc, [["__scopeId", "data-v-67b72d40"]]), mc = (e) => "task_ids" in e, Ko = 1024, pc = Ko * 1024 * 1024, gc = (e) => `"${e.name}" is ${Math.ceil(e.size / (1024 * 1024))} MB, over the ${Ko} MB limit for one file.`;
-function vc() {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return () => {
   };
 }
@@ -1469,13 +1330,8 @@ class da {
     return this.post(this.here(t.path), {}, Ke);
   }
   upload(t, n, s) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     if (Kn) return Promise.reject(Object.assign(new Error(Nl), { status: 403 }));
     if (s.size > vc) return Promise.reject(new Error(yc(s)));
-========
-    if (Yn) return Promise.reject(Object.assign(new Error(Ll), { status: 403 }));
-    if (s.size > pc) return Promise.reject(new Error(gc(s)));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     const a = new FormData();
     return a.append("file", s, s.name), this.post(this.here(`/${t}/${n}/files`), a);
   }
@@ -1925,11 +1781,7 @@ const Va = {
   agents: (e) => e.state === "ended" ? Ee(e.updated_at) : 0,
   // a check a wait made for itself is listed apart from the project's own, under Waits
   checks: (e) => e.wait_target ? Ee(e.created_at) : 0
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, iu = (e) => qs[e.table] ? qs[e.table](e) : 0, or = (e) => iu(e) > 0, lu = (e) => !!qs[e], bt = (e) => Ee(e.created_at), ma = (e) => Ee(e.updated_at) || bt(e), cu = 60, uu = (e, t) => Ee(e.created_at) >= Ee(t.created_at) - cu, du = (e, t) => e.id > 0 && e.table === t.table && uu(e, t) && Object.entries(t.same || {}).every(([n, s]) => JSON.stringify(e[n]) === JSON.stringify(s)), pa = (e, t) => e.filter((n) => n.id !== 0 || !t.some((s) => du(s, n))), hu = { me: 1, people: [] }, ue = la({
-========
-}, ou = (e) => qs[e.table] ? qs[e.table](e) : 0, sr = (e) => ou(e) > 0, ru = (e) => !!qs[e], bt = (e) => Ee(e.created_at), Fs = (e) => Ee(e.updated_at) || bt(e), iu = 60, lu = (e, t) => Ee(e.created_at) >= Ee(t.created_at) - iu, cu = (e, t) => e.id > 0 && e.table === t.table && lu(e, t) && Object.entries(t.same || {}).every(([n, s]) => JSON.stringify(e[n]) === JSON.stringify(s)), ma = (e, t) => e.filter((n) => n.id !== 0 || !t.some((s) => cu(s, n))), uu = { me: 1, people: [] }, ue = la({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   spec: null,
   drafting: 0,
   quoting: null,
@@ -1973,19 +1825,11 @@ function pu(e, t) {
     if (t[s].author !== "system" && (n += 1), n === He(e)) return s;
   return 0;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const ht = /* @__PURE__ */ new Set(), ga = B(0), dn = /* @__PURE__ */ new Set(), hn = /* @__PURE__ */ new Set(), rt = /* @__PURE__ */ new Set(), Fs = /* @__PURE__ */ new Set(), gu = /* @__PURE__ */ new Map(), vu = /* @__PURE__ */ new Map();
 let Ft = !1, Wt = null;
 const yu = (e, t) => e.id - t.id, wu = (e, t) => String(e.created_at).localeCompare(String(t.created_at)) || e.id - t.id, ku = { messages: wu }, ir = (e) => ku[e] || yu;
 function lr(e) {
   return ga.value, ht.has(e) || (ht.add(e), ue.booted && (!dn.has(e) || hn.has(e)) && queueMicrotask(() => va([e], !1))), ue.rows[e] || [];
-========
-const ht = /* @__PURE__ */ new Set(), pa = L(0), un = /* @__PURE__ */ new Set(), dn = /* @__PURE__ */ new Set(), rt = /* @__PURE__ */ new Set(), Ws = /* @__PURE__ */ new Set(), mu = /* @__PURE__ */ new Map(), pu = /* @__PURE__ */ new Map();
-let qt = !1, Ft = null;
-const gu = (e, t) => e.id - t.id, vu = (e, t) => String(e.created_at).localeCompare(String(t.created_at)) || e.id - t.id, yu = { messages: vu }, or = (e) => yu[e] || gu;
-function rr(e) {
-  return pa.value, ht.has(e) || (ht.add(e), ue.booted && (!un.has(e) || dn.has(e)) && queueMicrotask(() => ga([e], !1))), ue.rows[e] || [];
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function bu(e) {
   const t = ue.rows[e] || [], n = pu(e, t);
@@ -1993,15 +1837,9 @@ function bu(e) {
   const s = new Set(t.slice(n));
   ue.rows[e] = t.filter((a) => s.has(a) || lu(e) && !or(a)), ue.paging.size[e] = He(e), ue.paging.more[e] = !0;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const xu = /* @__PURE__ */ new Set();
 function $u() {
   ht.forEach(bu), ht.clear(), gu.clear(), vu.clear(), ga.value += 1;
-========
-const ku = /* @__PURE__ */ new Set();
-function bu() {
-  ht.forEach(wu), ht.clear(), mu.clear(), pu.clear(), pa.value += 1;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 be(() => `${Ze.value.env}/${Ze.value.page}/${Ze.value.open ? Ze.value.open.table : ""}`, $u);
 be(
@@ -2011,20 +1849,14 @@ be(
     !1
   )
 );
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ws = (e) => (e.table === "docs" || e.table === "reports") && !("body" in e) || e.table === "workers" && !("report" in e) || e.table === "plans" && !gc(e) || e.table === "reactions" && !("message_id" in e) || e.table === "tasks" && !("plan_id" in e);
 function cr(e, t) {
-========
-const Hs = (e) => (e.table === "docs" || e.table === "reports") && !("body" in e) || e.table === "workers" && !("report" in e) || e.table === "plans" && !mc(e) || e.table === "reactions" && !("message_id" in e) || e.table === "tasks" && !("plan_id" in e);
-function ir(e, t) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   const n = new Map(e.filter((s) => s.id > 0).map((s) => [s.id, s]));
   return t.map((s) => {
     const a = n.get(s.id);
     return a && (Ws(s) && !Ws(a) && a.updated_at === s.updated_at && s.table !== "plans" || JSON.stringify(a) === JSON.stringify(s)) ? a : s;
   });
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function ur(e, t) {
   dn.add(e), ga.value += 1;
   const n = ue.rows[e] || [];
@@ -2042,25 +1874,6 @@ async function Su(e) {
   if (Zn(e, a.counts), !a.is_last_page) return Mu(e);
   const o = new Map(a.rows.map((i) => [i.id, i])), r = pa(t.filter((i) => !o.has(i.id)), a.rows).concat(cr(t, a.rows));
   return ue.rows[e] = r.sort(ir(e)), ue.paging.size[e] = ue.rows[e].length, ue.rows[e];
-========
-function lr(e, t) {
-  un.add(e), pa.value += 1;
-  const n = ue.rows[e] || [];
-  ue.rows[e] = [...ir(n, t.rows), ...ma(n.filter((s) => s.id === 0), t.rows)], ue.paging.size[e] = ue.paging.size[e] || ze(e), ue.paging.more[e] = !t.is_last_page;
-}
-async function xu(e) {
-  const t = new Set((ue.rows[e] || []).map((o) => o.id)), n = await Ve.list(e, { limit: ze(e) });
-  Xn(e, n.counts);
-  const s = new Set(n.rows.map((o) => o.id)), a = ma((ue.rows[e] || []).filter((o) => !t.has(o.id) && !s.has(o.id)), n.rows);
-  return lr(e, { ...n, rows: [...n.rows, ...a].sort(or(e)) }), ue.paging.size[e] = ze(e), cr.has(e) && await ur(e), ue.rows[e];
-}
-const Xn = (e, t) => ue.counts = { ...ue.counts, [e]: t };
-async function $u(e) {
-  const t = ue.rows[e] || [], n = Math.max(0, ...t.map(Fs)), s = t.length ? Math.min(...t.map((i) => i.id)) - 1 : 0, a = await Ve.list(e, { limit: ze(e), since: n, after: s });
-  if (Xn(e, a.counts), !a.is_last_page) return xu(e);
-  const o = new Map(a.rows.map((i) => [i.id, i])), r = ma(t.filter((i) => !o.has(i.id)), a.rows).concat(ir(t, a.rows));
-  return ue.rows[e] = r.sort(or(e)), ue.paging.size[e] = ue.rows[e].length, ue.rows[e];
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 const us = /* @__PURE__ */ new Set();
 async function _u(e, t = !1) {
@@ -2140,11 +1953,7 @@ const Hs = [], Nu = 2e3, ot = /* @__PURE__ */ new Map(), Pu = /(^|[^"'>=\w/])(ht
 function $t(e, { first: t = !1 } = {}) {
   t ? Hs.unshift(e) : Hs.push(e), ot.clear();
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function gr(e, t, n) {
-========
-function mr(e, t, n) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   var a;
   const s = lr(t).find((o) => o.id === n);
   return (a = e.reads) == null || a.push({ table: t, id: n, row: s }), s;
@@ -2190,13 +1999,8 @@ function zu(e) {
   const s = t ? "ol" : "ul";
   return `<${s}>${n.map((a) => `<li>${Jt(a)}</li>`).join("")}</${s}>`;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ka = (e, t) => e[t].includes("|") && /^\s*\|?\s*:?-{3,}/.test(e[t + 1] || "");
 function vr(e) {
-========
-const Ga = (e, t) => e[t].includes("|") && /^\s*\|?\s*:?-{3,}/.test(e[t + 1] || "");
-function pr(e) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   const t = String(e || "").replace(/\r\n/g, `
 `).split(`
 `), n = [];
@@ -2239,11 +2043,7 @@ function pr(e) {
       let i = s;
       for (; i < t.length && /^(?:>|&gt;)\s?/.test(t[i]); ) i += 1;
       n.push(
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         `<blockquote>${vr(
-========
-        `<blockquote>${pr(
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           t.slice(s, i).map((l) => l.replace(/^(?:>|&gt;)\s?/, "")).join(`
 `)
         )}</blockquote>`
@@ -2263,11 +2063,7 @@ function Ku(e) {
   const t = [], n = [];
   let s = "";
   const a = () => {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     s && n.push(vr(s).replace(/\u0001(\d+)\u0001/g, (o, r) => t[Number(r)])), s = "";
-========
-    s && n.push(pr(s).replace(/\u0001(\d+)\u0001/g, (o, r) => t[Number(r)])), s = "";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   };
   for (const o of e)
     o.kind === "text" ? s += o.text : Gu(o) ? s += `${t.push(o.html) - 1}` : (a(), n.push(o.html));
@@ -2317,15 +2113,9 @@ $t((e) => {
     { kind: "text", text: n.tail }
   ] : null;
 });
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const ed = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, td = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, nd = /[\w\]]\(/, sd = /^[\w$.[\]'"]+\s*=\s*[^=]/, ad = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, od = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, rd = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, id = /[[({,]$/, ld = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, cd = /^(\t|\s{2,})\S/, ud = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*\/?|<!--)/, dd = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, hd = /[{}()[\];=<>$&|*\\@+^~%]/g, kr = /^\s*(?:[-*+]|\d+[.)])\s/, fd = /^\s*>/, md = /^\s*\|/, pd = 0.6, gd = 0.4, vd = 5, yd = 0.03, br = (e) => {
   const t = e.trim().split(/\s+/);
   return t.length >= vd && t.every((n) => dd.test(n) || /^[\w'’-]+$/.test(n)) && (e.match(hd) ?? []).length / e.length < yd;
-========
-const Xu = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, Qu = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, ed = /[\w\]]\(/, td = /^[\w$.[\]'"]+\s*=\s*[^=]/, nd = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, sd = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, ad = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, od = /[[({,]$/, rd = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, id = /^(\t|\s{2,})\S/, ld = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*\/?|<!--)/, cd = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, ud = /[{}()[\];=<>$&|*\\@+^~%]/g, yr = /^\s*(?:[-*+]|\d+[.)])\s/, dd = /^\s*>/, hd = /^\s*\|/, fd = 0.6, md = 0.4, pd = 5, gd = 0.03, wr = (e) => {
-  const t = e.trim().split(/\s+/);
-  return t.length >= pd && t.every((n) => cd.test(n) || /^[\w'’-]+$/.test(n)) && (e.match(ud) ?? []).length / e.length < gd;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }, ds = (e) => {
   const t = e.trim();
   return [ed, td, nd, sd, ad, od, rd, id, ld].some((n) => n.test(t)) || /[;{}]$/.test(t) || cd.test(e) && !kr.test(e) && !br(e);
@@ -2336,13 +2126,8 @@ function wd(e) {
   const n = t.filter((o) => !ud.test(o.trim()));
   if (t.length === 1) return !n.length || ds(t[0]) ? "line" : "text";
   if (!n.length) return "line";
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   const s = n.filter(ds).length, a = n.filter((o) => !ds(o) && br(o)).length;
   return s >= n.length * pd && a <= n.length * gd ? "code" : "text";
-========
-  const s = n.filter(ds).length, a = n.filter((o) => !ds(o) && wr(o)).length;
-  return s >= n.length * fd && a <= n.length * md ? "code" : "text";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 const zs = "if else for while do switch case default break continue return function class new this super extends import export from as const let var static public private protected readonly interface enum type namespace try catch finally throw await async yield typeof instanceof in of void delete null undefined true false abstract final implements package struct union int float double char bool string long short unsigned signed var fn pub use mod impl trait match where mut ref self crate func go defer chan map range nil select", kd = "if elif else for while def class return import from as with try except finally raise lambda yield pass break continue and or not in is None True False global nonlocal assert del async await match case", bd = `${zs} echo print isset unset empty array list foreach endforeach endif endwhile elseif require require_once include include_once namespace use trait clone instanceof insteadof declare enddeclare goto fn match yield`, xd = "if then else elif fi for while until do done case esac in function return exit export local readonly set unset shift source true false", $d = "select from where insert into values update set delete create table drop alter index join left right inner outer on as and or not null primary key group by order limit offset having union distinct case when then else end exists between like is in", Ya = {
   js: { keywords: zs, line: "//", block: ["/*", "*/"], quotes: ['"', "'", "`"] },
@@ -2583,15 +2368,9 @@ function Wd(e) {
   const n = Fd.exec(e), s = n && kt(n[1]);
   return s ? { at: n.index, length: n[0].length, table: s, id: Number(n[2]), label: n[0] } : null;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function Hd(e, t, n, s) {
   const a = gr(s, e, t), o = Zt(a ? ou(a) : n);
   return `<a class="row-card" href="#" data-peek="${e}:${t}"><span class="row-card-kind">${et(un(e).title)} ${t}</span><span class="row-card-title">${et(o)}</span></a>`;
-========
-function Fd(e, t, n, s) {
-  const a = mr(s, e, t), o = Jt(a ? su(a) : n);
-  return `<a class="row-card" href="#" data-peek="${e}:${t}"><span class="row-card-kind">${et(cn(e).title)} ${t}</span><span class="row-card-title">${et(o)}</span></a>`;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 $t(
   (e, t) => {
@@ -2604,15 +2383,9 @@ $t(
   },
   { first: !0 }
 );
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ud = /\.(png|jpe?g|gif|webp|svg)$/i, zd = (e) => Ud.test(e), Vd = /^(?:\[\[chip ([a-z]+):(\d+)\|[^\]]*\]\]|([A-Za-z][\w-]*) #?(\d+)) ([\w .()-]+\.[A-Za-z0-9]{1,8})$/m, Gd = /^(?:\[\[file ([^|\]#]+)(?:#L\d+)?\|[^\]]*\]\]|(\/[\w .()/-]+\.[A-Za-z0-9]{1,8}))$/m;
 function Kd(e, t) {
   const n = Vd.exec(e), [, s, a, o, r, i] = n || [], l = n && kt(s || o), u = l && gr(t, l, Number(a || r));
-========
-const Wd = /\.(png|jpe?g|gif|webp|svg)$/i, Hd = (e) => Wd.test(e), Ud = /^(?:\[\[chip ([a-z]+):(\d+)\|[^\]]*\]\]|([A-Za-z][\w-]*) #?(\d+)) ([\w .()-]+\.[A-Za-z0-9]{1,8})$/m, zd = /^(?:\[\[file ([^|\]#]+)(?:#L\d+)?\|[^\]]*\]\]|(\/[\w .()/-]+\.[A-Za-z0-9]{1,8}))$/m;
-function Vd(e, t) {
-  const n = Ud.exec(e), [, s, a, o, r, i] = n || [], l = n && kt(s || o), u = l && mr(t, l, Number(a || r));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   if (!u || !(u.files || []).includes(i)) return null;
   const d = Ve.in(t.env).fileUrl(l, u.id, i), f = `${un(l).title} ${u.id} · ${et(i)}`, g = zd(i) ? `<img class="file-card-image" src="${d}" alt="${et(i)}">` : "";
   return { at: n.index, length: n[0].length, html: `<a class="file-card" href="${d}" data-attached="${et(i)}">${g}<span class="file-card-name">${f}</span></a>` };
@@ -2687,15 +2460,9 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
   __name: "DashboardFact",
   props: { label: { type: String, required: !0 }, body: { type: String, required: !0 } },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (t, n) => (c(), h("div", rh, [
       p("span", ih, b(e.label), 1),
       D(lt, {
-========
-    return (t, n) => (c(), h("div", ah, [
-      p("span", oh, b(e.label), 1),
-      P(lt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         class: "fact-body",
         text: e.body
       }, null, 8, ["text"])
@@ -2717,15 +2484,9 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
         class: Z(["list-item", { opens: o.open }]),
         onClick: (i) => o.open && n("open", o.open)
       }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         default: F(() => [
           p("span", dh, b(o.label), 1),
           o.badge ? (c(), V(Yo, {
-========
-        default: H(() => [
-          p("span", ch, b(o.label), 1),
-          o.badge ? (c(), V(Go, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             key: 0,
             text: o.badge,
             tone: o.tone || ""
@@ -2736,28 +2497,16 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
       }, 1032, ["type", "class", "onClick"]))), 128))
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, mh = /* @__PURE__ */ K(fh, [["__scopeId", "data-v-ebe2ae0a"]]), ph = { class: "table" }, gh = {
   key: 0,
   class: "table-row empty"
 }, vh = {
-========
-}, hh = /* @__PURE__ */ G(dh, [["__scopeId", "data-v-ebe2ae0a"]]), fh = { class: "table" }, mh = {
-  key: 0,
-  class: "table-row empty"
-}, ph = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "DataTable",
   props: { columns: { type: Array, required: !0 }, rows: { type: Array, required: !0 }, empty: { type: String, default: "" } },
   emits: ["open"],
   setup(e, { emit: t }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const n = e, s = t, a = L(() => ({ gridTemplateColumns: `2fr repeat(${Math.max(0, n.columns.length - 1)}, 1fr)` }));
     return (o, r) => (c(), h("div", ph, [
-========
-    const n = e, s = t, a = B(() => ({ gridTemplateColumns: `2fr repeat(${Math.max(0, n.columns.length - 1)}, 1fr)` }));
-    return (o, r) => (c(), h("div", fh, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       p("div", {
         class: "table-row head",
         style: pe(a.value)
@@ -2770,11 +2519,7 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
       (c(!0), h(G, null, se(e.rows, (i, l) => (c(), V(xt(i.open ? "button" : "div"), {
         key: l,
         type: i.open ? "button" : void 0,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         class: Z(["table-row", i.tone, { opens: i.open }]),
-========
-        class: J(["table-row", i.tone, { opens: i.open }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         style: pe(a.value),
         onClick: (u) => i.open && s("open", i.open)
       }, {
@@ -2786,17 +2531,10 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
         ]),
         _: 2
       }, 1032, ["type", "class", "style", "onClick"]))), 128)),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       !e.rows.length && e.empty ? (c(), h("div", gh, b(e.empty), 1)) : C("", !0)
     ]));
   }
 }, yh = /* @__PURE__ */ K(vh, [["__scopeId", "data-v-9326a52e"]]), wh = { class: "stat-value" }, kh = { class: "stat-label" }, bh = {
-========
-      !e.rows.length && e.empty ? (c(), h("div", mh, b(e.empty), 1)) : C("", !0)
-    ]));
-  }
-}, gh = /* @__PURE__ */ G(ph, [["__scopeId", "data-v-9326a52e"]]), vh = { class: "stat-value" }, yh = { class: "stat-label" }, wh = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   key: 0,
   class: "stat-note"
 }, xh = {
@@ -2816,17 +2554,10 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
       class: Z(["stat", e.tone, { opens: e.opens }]),
       onClick: a[0] || (a[0] = (o) => e.opens && n("open"))
     }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       default: F(() => [
         p("span", wh, b(e.value), 1),
         p("span", kh, b(e.label), 1),
         e.note ? (c(), h("span", bh, b(e.note), 1)) : C("", !0)
-========
-      default: H(() => [
-        p("span", vh, b(e.value), 1),
-        p("span", yh, b(e.label), 1),
-        e.note ? (c(), h("span", wh, b(e.note), 1)) : C("", !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ]),
       _: 1
     }, 8, ["type", "class"]));
@@ -2868,21 +2599,12 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
           onFile: a
         }, null, 8, ["node"])
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       heading: F(() => [
         p("h3", {
           class: Z(["heading", `level-${e.node.level || 2}`])
         }, b(e.node.text), 3)
       ]),
       divider: F(() => [...r[2] || (r[2] = [
-========
-      heading: H(() => [
-        p("h3", {
-          class: J(["heading", `level-${e.node.level || 2}`])
-        }, b(e.node.text), 3)
-      ]),
-      divider: H(() => [...r[2] || (r[2] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("hr", { class: "divider" }, null, -1)
       ])]),
       stat: F(() => [
@@ -2932,21 +2654,12 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
           tone: e.node.tone || ""
         }, null, 8, ["text", "tone"])
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       code: F(() => [
         p("pre", Mh, [
           p("code", null, b(e.node.text), 1)
         ])
       ]),
       file: F(() => [
-========
-      code: H(() => [
-        p("pre", xh, [
-          p("code", null, b(e.node.text), 1)
-        ])
-      ]),
-      file: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("button", {
           type: "button",
           class: "file",
@@ -2990,13 +2703,8 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
           le(b(e.document.missing), 1)
         ]),
         _: 1
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       })) : l.value ? (c(), h(G, { key: 2 }, [
         p("nav", Eh, [
-========
-      })) : l.value ? (c(), h(K, { key: 2 }, [
-        p("nav", Sh, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           p("button", {
             type: "button",
             class: Z(["step", { current: !r.value.length }]),
@@ -3005,11 +2713,7 @@ const sh = ["innerHTML"], ah = ["innerHTML"], oh = {
           (c(!0), h(G, null, se(r.value, (I, M) => (c(), h(G, {
             key: `${M}-${I}`
           }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             v[2] || (v[2] = p("span", { class: "sep" }, "/", -1)),
-========
-            y[2] || (y[2] = p("span", { class: "sep" }, "/", -1)),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("button", {
               type: "button",
               class: Z(["step", { current: M === r.value.length - 1 }]),
@@ -3141,15 +2845,9 @@ const Dh = ["aria-modal", "aria-label", "aria-labelledby"], Nh = {
         default: F(() => [
           z(a) ? (c(), h("div", {
             key: 0,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             class: Z(["dialog", { large: e.large, sheet: e.sheet }]),
             style: pe({ zIndex: z(i) }),
             onClick: xe(I, ["self"])
-========
-            class: J(["dialog", { large: e.large, sheet: e.sheet }]),
-            style: pe({ zIndex: z(i) }),
-            onClick: be(R, ["self"])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           }, [
             p("section", {
               ref_key: "panel",
@@ -3161,11 +2859,7 @@ const Dh = ["aria-modal", "aria-label", "aria-labelledby"], Nh = {
               "aria-labelledby": e.modal ? z(f) : void 0,
               onKeydownCapture: M
             }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               e.bare ? C("", !0) : (c(), h("header", Nh, [
-========
-              e.bare ? C("", !0) : (c(), h("header", Lh, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("h3", {
                   id: z(f),
                   ref_key: "heading",
@@ -3345,15 +3039,9 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       large: "",
       onClose: _[4] || (_[4] = (x) => s("close"))
     }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       default: F(() => [
         p("div", af, [
           D(ve, {
-========
-      default: H(() => [
-        p("div", nf, [
-          P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             small: "",
             onClick: _[0] || (_[0] = (x) => f(o.step))
           }, {
@@ -3400,11 +3088,7 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
             "aria-label": e.title,
             style: pe({ transform: `translate(${i.value.x}px, ${i.value.y}px) scale(${i.value.zoom})` })
           }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             _[8] || (_[8] = p("defs", null, [
-========
-            M[8] || (M[8] = p("defs", null, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               p("marker", {
                 id: "flowchart-head",
                 viewBox: "0 0 10 10",
@@ -3433,11 +3117,7 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
                 width: x.width,
                 height: x.height,
                 rx: "8"
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               }, null, 8, lf),
-========
-              }, null, 8, of),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               p("text", {
                 x: x.x + x.width / 2,
                 y: x.y + x.padY + x.line / 2
@@ -3452,22 +3132,14 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
             (c(!0), h(G, null, se(a.value.arrows, (x, T) => (c(), h(G, {
               key: `label-${T}`
             }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               x.label ? (c(), h("g", df, [
-========
-              x.label ? (c(), h("g", cf, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("rect", {
                   x: x.label.x,
                   y: x.label.y,
                   width: x.label.width,
                   height: x.label.height,
                   rx: "4"
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
                 }, null, 8, hf),
-========
-                }, null, 8, uf),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("text", {
                   x: x.label.x + x.label.width / 2,
                   y: x.label.y + x.label.pad + x.label.line / 2
@@ -3486,11 +3158,7 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       _: 1
     }, 8, ["title"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, gf = /* @__PURE__ */ K(pf, [["__scopeId", "data-v-51d24cfe"]]), eo = {
-========
-}, mf = /* @__PURE__ */ G(ff, [["__scopeId", "data-v-51d24cfe"]]), Qa = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   words: '<rect x="2.5" y="3" width="11" height="8" rx="2"/><polyline points="5,11 5,13.5 8,11"/>',
   summary: '<line x1="3" y1="4.5" x2="13" y2="4.5"/><line x1="3" y1="8" x2="11" y2="8"/><line x1="3" y1="11.5" x2="8" y2="11.5"/>',
   warning: '<polygon points="8,2.5 14,13 2,13"/><line x1="8" y1="6.5" x2="8" y2="9.3"/><circle class="f" cx="8" cy="11.2" r=".75"/>',
@@ -3556,11 +3224,7 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
   hash: '<line x1="6" y1="3" x2="5" y2="13"/><line x1="11" y1="3" x2="10" y2="13"/><line x1="3" y1="6.5" x2="13" y2="6.5"/><line x1="3" y1="10" x2="13" y2="10"/>',
   dot: '<circle class="f" cx="8" cy="8" r="2.5"/>',
   window: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><line x1="2.5" y1="6" x2="13.5" y2="6"/>'
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, vf = ["innerHTML"], yf = {
-========
-}, pf = ["innerHTML"], gf = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "MarkIcon",
   props: { name: { type: String, required: !0 } },
   setup(e) {
@@ -3570,11 +3234,7 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       viewBox: "0 0 16 16",
       "aria-hidden": "true",
       innerHTML: n.value
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, null, 8, vf));
-========
-    }, null, 8, pf));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
 }, nt = /* @__PURE__ */ K(yf, [["__scopeId", "data-v-beb5935c"]]), wf = {
   __name: "FoldSign",
@@ -3600,17 +3260,10 @@ const Qa = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       "data-tip": e.label,
       "aria-label": e.label
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       D(nt, { name: "open" }),
       e.open ? (c(), h("span", bf, b(e.label), 1)) : C("", !0),
       n[0] || (n[0] = p("span", { class: "hit" }, null, -1))
     ], 10, kf));
-========
-      P(nt, { name: "open" }),
-      e.open ? (c(), h("span", wf, b(e.label), 1)) : C("", !0),
-      n[0] || (n[0] = p("span", { class: "hit" }, null, -1))
-    ], 10, yf));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
 }, Cr = /* @__PURE__ */ K(xf, [["__scopeId", "data-v-3b292e09"]]), $f = 120, hs = 280, Mf = 160, Sf = () => {
   var e;
@@ -3666,22 +3319,14 @@ const Af = { class: "growing-card-top" }, Cf = ["aria-expanded"], Of = { class: 
       ref: o,
       class: Z(["growing-card-wrap", z(i), { open: !z(r), bad: e.bad, incoming: e.incoming }])
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", Af, [
-========
-      p("div", _f, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("button", {
           type: "button",
           class: "growing-card",
           "aria-expanded": a.value,
           onClick: f[0] || (f[0] = (g) => a.value = !a.value)
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", Of, [
-========
-          p("span", Af, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             e.bad ? (c(), V(nt, {
               key: 0,
               name: "cross"
@@ -3693,17 +3338,10 @@ const Af = { class: "growing-card-top" }, Cf = ["aria-expanded"], Of = { class: 
               size: 12
             }, null, 8, ["name"]))
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", Tf, b(e.title), 1),
           D(Xt, { open: a.value }, null, 8, ["open"])
         ], 8, Cf),
         e.action ? (c(), V(Cr, {
-========
-          p("span", Cf, b(e.title), 1),
-          P(Zt, { open: a.value }, null, 8, ["open"])
-        ], 8, Ef),
-        e.action ? (c(), V(Er, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: 0,
           label: e.action,
           open: a.value,
@@ -3724,17 +3362,10 @@ const Af = { class: "growing-card-top" }, Cf = ["aria-expanded"], Of = { class: 
           })
         ])) : C("", !0)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", If, [
         p("div", Rf, [
           (c(!0), h(G, null, se(u.value, (g, v) => (c(), h("p", {
             key: v,
-========
-      p("div", Of, [
-        p("div", Tf, [
-          (c(!0), h(K, null, se(u.value, (v, y) => (c(), h("p", {
-            key: y,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             class: "growing-card-text"
           }, b(g), 1))), 128))
         ])
@@ -3762,15 +3393,9 @@ const Af = { class: "growing-card-top" }, Cf = ["aria-expanded"], Of = { class: 
       title: n[s.value],
       "aria-label": n[s.value]
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       (c(), h("svg", Nf, [
         o[0] || (o[0] = p("path", { d: "M1.5 6.6 4.4 9.5 10 2.8" }, null, -1)),
         s.value !== "sent" ? (c(), h("path", Pf)) : C("", !0)
-========
-      (c(), h("svg", Lf, [
-        o[0] || (o[0] = p("path", { d: "M1.5 6.6 4.4 9.5 10 2.8" }, null, -1)),
-        s.value !== "sent" ? (c(), h("path", Nf)) : C("", !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ]))
     ], 10, Df));
   }
@@ -3862,11 +3487,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
   key: 3,
   class: "message-sent-to",
   "data-message-sent-to": ""
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, g1 = ["data-sent-worker", "title", "onClick"], v1 = { class: "message-foot" }, y1 = { class: "message-time" }, w1 = {
-========
-}, m1 = ["data-sent-worker", "title", "onClick"], p1 = { class: "message-foot" }, g1 = { class: "message-time" }, v1 = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   key: 0,
   class: "message-id",
   "data-message-id": ""
@@ -3890,15 +3511,9 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
       const Q = document.querySelector(`[data-ref="message:${n.message.parent_id}"]`);
       Q ? Q.scrollIntoView({ block: "center", behavior: "smooth" }) : Xe(`messages:${n.message.parent_id}`);
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     Kf(o, () => `${n.message.text} ${n.quote}`);
     const T = /\.(png|jpe?g|gif|webp|svg|bmp)$/i, Y = (Q) => `/api/files/message/${n.message.id}/${encodeURIComponent(Q)}`, O = L(() => JSON.parse(n.message.captions || "{}")), y = L(() => (n.message.files ?? []).map((Q) => ({ name: Q, address: Y(Q), isImage: T.test(Q), title: O.value[Q] || Q }))), $ = L(() => Ir(new Date(n.message.created_at).getTime() / 1e3 || n.message.created_at)), E = Oe(Re, null), S = B([]), w = B([]), A = B(!1), k = L(() => `Linked: ${S.value.join(", ")}`), m = L(() => S.value.length >= _1), N = L(() => `${S.value.length} linked ${S.value.every((Q) => Q.startsWith("task ")) ? "tasks" : "rows"}`);
     async function P() {
-========
-    Vf(o, () => `${n.message.text} ${n.quote}`);
-    const T = /\.(png|jpe?g|gif|webp|svg|bmp)$/i, Y = (Q) => `/api/files/message/${n.message.id}/${encodeURIComponent(Q)}`, O = B(() => JSON.parse(n.message.captions || "{}")), g = B(() => (n.message.files ?? []).map((Q) => ({ name: Q, address: Y(Q), isImage: T.test(Q), title: O.value[Q] || Q }))), $ = B(() => Or(new Date(n.message.created_at).getTime() / 1e3 || n.message.created_at)), E = Oe(Re, null), _ = L([]), w = L([]), A = L(!1), k = B(() => `Linked: ${_.value.join(", ")}`), m = B(() => _.value.length >= M1), N = B(() => `${_.value.length} linked ${_.value.every((Q) => Q.startsWith("task ")) ? "tasks" : "rows"}`);
-    async function D() {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       if (!r.value || !(E != null && E.read) || n.message.local) return;
       const Q = await E.read(`link list --source message:${n.message.id}`);
       if (!Q.ok) return;
@@ -3936,11 +3551,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
       "data-from": r.value ? "user" : e.message.type,
       "data-ref": `message:${e.message.id}`
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", Qf, [
-========
-      p("div", Zf, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("div", {
           ref_key: "bubble",
           ref: o,
@@ -3960,11 +3571,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
               size: 12
             }),
             p("span", null, "Comment on " + b(i.value.label), 1)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           ], 8, e1)) : C("", !0),
-========
-          ], 8, Xf)) : C("", !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           e.message.parent_id ? (c(), h("div", {
             key: 1,
             class: "message-quote",
@@ -3979,17 +3586,10 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
             class: "message-worker",
             "data-message-worker": "",
             title: `Open worker ${l.value}`,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             onClick: ee[2] || (ee[2] = xe((J) => z(Xe)(`agents:${l.value}`), ["stop"]))
           }, "Worker " + b(l.value), 9, n1)) : C("", !0),
           p("div", {
             class: Z({ "message-folded": d.value && !u.value }),
-========
-            onClick: ee[2] || (ee[2] = be((Z) => z(Xe)(`agents:${l.value}`), ["stop"]))
-          }, "Worker " + b(l.value), 9, e1)) : C("", !0),
-          p("div", {
-            class: J({ "message-folded": d.value && !u.value }),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             "data-message-text": "",
             innerHTML: v.value
           }, null, 10, s1),
@@ -4000,22 +3600,14 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
             "data-message-more": "",
             onClick: ee[3] || (ee[3] = xe((J) => u.value = !u.value, ["stop"]))
           }, b(u.value ? "Show less" : "Show more"), 1)) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           I.value.length ? (c(), h(G, { key: 4 }, [
-========
-          R.value.length ? (c(), h(K, { key: 4 }, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("button", {
               type: "button",
               class: "message-flowchart",
               "data-flowchart-open": "",
               onClick: ee[4] || (ee[4] = (J) => M.value = !0)
             }, "Open the flowchart"),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             M.value ? (c(), V(gf, {
-========
-            S.value ? (c(), V(mf, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               key: 0,
               title: e.message.text,
               edges: I.value,
@@ -4024,7 +3616,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
           ], 64)) : C("", !0)
         ], 2),
         p("div", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           class: Z(["message-tools", { picking: W.value }]),
           "data-message-tools": ""
         }, [
@@ -4032,15 +3623,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
             p("div", a1, [
               (c(!0), h(G, null, se(z(Yf), (J) => (c(), h("button", {
                 key: J,
-========
-          class: J(["message-tools", { picking: F.value }]),
-          "data-message-tools": ""
-        }, [
-          F.value ? (c(), h(K, { key: 0 }, [
-            p("div", n1, [
-              (c(!0), h(K, null, se(z(Gf), (Z) => (c(), h("button", {
-                key: Z,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 type: "button",
                 class: "message-face",
                 title: `React ${J}`,
@@ -4060,11 +3642,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
                 size: 11
               })
             ])
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           ], 64)) : (c(), h(G, { key: 1 }, [
-========
-          ], 64)) : (c(), h(K, { key: 1 }, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("button", {
               type: "button",
               class: "message-tool",
@@ -4120,13 +3698,8 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
             title: J.title
           }, [
             p("img", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               src: J.address,
               alt: J.name,
-========
-              src: Z.address,
-              alt: Z.name,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               "data-figure-picture": ""
             }, null, 8, d1)
           ], 8, u1)) : (c(), h("a", {
@@ -4164,7 +3737,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
           key: J,
           type: "button",
           class: "message-sent-worker",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           "data-sent-worker": J,
           title: `Open worker ${J}`,
           onClick: xe((Le) => z(Xe)(`agents:${J}`), ["stop"])
@@ -4174,17 +3746,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
         p("time", y1, b($.value), 1),
         Number.isInteger(e.message.id) ? (c(), h("span", w1, "message " + b(e.message.id), 1)) : C("", !0),
         r.value ? (c(), V(qf, {
-========
-          "data-sent-worker": Z,
-          title: `Open worker ${Z}`,
-          onClick: be((Ne) => z(Xe)(`agents:${Z}`), ["stop"])
-        }, "Also sent to worker " + b(Z), 9, m1))), 128))
-      ])) : C("", !0),
-      p("div", p1, [
-        p("time", g1, b($.value), 1),
-        Number.isInteger(e.message.id) ? (c(), h("span", v1, "message " + b(e.message.id), 1)) : C("", !0),
-        r.value ? (c(), V(Pf, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: 1,
           message: e.message
         }, null, 8, ["message"])) : C("", !0)
@@ -4203,50 +3764,31 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
           key: d,
           value: l.shape
         }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           line: F(() => [
-========
-          line: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("span", {
               class: "shimmer shimmer-line",
               "data-skeleton-line": "",
               style: pe({ width: l.width, height: `${t[l.size]}px` })
             }, null, 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           circle: F(() => [
-========
-          circle: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("span", {
               class: "shimmer shimmer-circle",
               "data-skeleton-circle": "",
               style: pe({ width: `${n[l.size]}px`, height: `${n[l.size]}px` })
             }, null, 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           block: F(() => [
-========
-          block: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("span", {
               class: "shimmer shimmer-block",
               "data-skeleton-block": "",
               style: pe({ width: l.width, height: `${l.height}px` })
             }, null, 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           grow: F(() => [...r[0] || (r[0] = [
             p("span", { class: "skeleton-grow" }, null, -1)
           ])]),
           row: F(() => [
-========
-          grow: H(() => [...r[0] || (r[0] = [
-            p("span", { class: "skeleton-grow" }, null, -1)
-          ])]),
-          row: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("div", {
               class: "skeleton-row",
               style: pe(s(l))
@@ -4256,11 +3798,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
               }, null, 8, ["parts"])
             ], 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           stack: F(() => [
-========
-          stack: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("div", {
               class: "skeleton-stack",
               style: pe(s(l))
@@ -4270,11 +3808,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
               }, null, 8, ["parts"])
             ], 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           card: F(() => [
-========
-          card: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("div", {
               class: "skeleton-stack skeleton-card",
               "data-skeleton-card": "",
@@ -4285,11 +3819,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
               }, null, 8, ["parts"])
             ], 4)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           grid: F(() => [
-========
-          grid: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("div", {
               class: "skeleton-grid",
               style: pe(a(l))
@@ -4322,11 +3852,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
   { key: 400, label: "Critical" }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 ], ms = 200, Br = (e) => {
-========
-], ms = 200, Ir = (e) => {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   var t;
   return ((t = Nn.findLast((n) => n.key <= e)) == null ? void 0 : t.key) ?? Nn[0].key;
 }, Kk = (e) => {
@@ -4336,11 +3862,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
   __name: "PriorityIcon",
   props: { value: { type: Number, default: ms } },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const t = e, n = L(() => Br(t.value)), s = L(() => n.value < ms ? [1, 0.25, 0.25] : n.value === ms ? [1, 1, 0.25] : [1, 1, 1]);
-========
-    const t = e, n = B(() => Ir(t.value)), s = B(() => n.value < ms ? [1, 0.25, 0.25] : n.value === ms ? [1, 1, 0.25] : [1, 1, 1]);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     return (a, o) => (c(), h("svg", {
       class: Z(["ico", "prio", { hot: n.value >= no, high: n.value >= R1 && n.value < no }]),
       viewBox: "0 0 16 16",
@@ -4418,13 +3940,8 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
     help: { type: String, default: "" }
   },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (t, n) => (c(), h("div", F1, [
       p("div", W1, [
-========
-    return (t, n) => (c(), h("div", q1, [
-      p("div", F1, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("label", {
           class: "form-field-label",
           for: t.$props.for
@@ -4457,21 +3974,12 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
     text: { type: String, default: "" }
   },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (t, n) => (c(), h("div", G1, [
       e.kind ? (c(), h("span", K1, b(e.kind), 1)) : C("", !0),
       p("div", Y1, [
         e.title ? (c(), h("span", J1, b(e.title), 1)) : C("", !0),
         p("div", Z1, [
           me(t.$slots, "default", {}, void 0, !0)
-========
-    return (t, n) => (c(), h("div", V1, [
-      e.kind ? (c(), h("span", G1, b(e.kind), 1)) : C("", !0),
-      p("div", K1, [
-        e.title ? (c(), h("span", Y1, b(e.title), 1)) : C("", !0),
-        p("div", J1, [
-          he(t.$slots, "default", {}, void 0, !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         ]),
         t.$slots.end ? (c(), h("div", X1, [
           me(t.$slots, "end", {}, void 0, !0)
@@ -4480,11 +3988,7 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
       e.text ? (c(), h("span", Q1, b(e.text), 1)) : C("", !0)
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Xk = /* @__PURE__ */ K(em, [["__scopeId", "data-v-63155fba"]]), tm = {
-========
-}, Fk = /* @__PURE__ */ G(Q1, [["__scopeId", "data-v-63155fba"]]), em = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   claude: [
     { key: "haiku", label: "haiku", note: "fast, for mechanical work" },
     { key: "sonnet", label: "sonnet", note: "careful work without invention" },
@@ -4497,7 +4001,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
     { key: "gpt-6.1-sol", label: "gpt-6.1-sol", note: "judgement" },
     { key: "gpt-6-astra", label: "gpt-6-astra", note: "the most demanding work, for rare occasions" }
   ]
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, nm = { claude: "Claude Code", codex: "Codex" }, sm = {
   key: 0,
   class: "menu-item-check",
@@ -4506,16 +4009,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
   key: 1,
   class: "menu-item-text"
 }, om = {
-========
-}, tm = { claude: "Claude Code", codex: "Codex" }, nm = {
-  key: 0,
-  class: "menu-item-check",
-  "aria-hidden": "true"
-}, sm = {
-  key: 1,
-  class: "menu-item-text"
-}, am = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "MenuItem",
   props: { on: Boolean, danger: Boolean, checked: { type: Boolean, default: null }, description: { type: String, default: "" } },
   setup(e) {
@@ -4523,7 +4016,6 @@ const Zf = ["data-incoming", "data-ref"], Xf = ["data-figure-mark", "data-figure
       type: "button",
       class: Z(["menu-item", { on: e.on, danger: e.danger, described: e.description }])
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       e.checked !== null ? (c(), h("span", sm, b(e.checked ? "✓" : ""), 1)) : C("", !0),
       e.description ? (c(), h("span", am, [
         p("span", null, [
@@ -4547,31 +4039,6 @@ function um(e, t) {
   window.addEventListener("click", n), Ie(() => window.removeEventListener("click", n));
 }
 const At = 8, dm = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
-========
-      e.checked !== null ? (c(), h("span", nm, b(e.checked ? "✓" : ""), 1)) : C("", !0),
-      e.description ? (c(), h("span", sm, [
-        p("span", null, [
-          he(t.$slots, "default", {}, void 0, !0)
-        ]),
-        p("small", null, b(e.description), 1)
-      ])) : he(t.$slots, "default", {}, void 0, !0, 2)
-    ], 2));
-  }
-}, It = /* @__PURE__ */ G(am, [["__scopeId", "data-v-fec99974"]]), om = (e, t, n) => Math.max(t, Math.min(n, e)), rm = (e, t, n = `${t}s`) => `${e} ${e === 1 ? t : n}`, Rr = /* @__PURE__ */ new WeakMap(), im = (e, t) => Rr.set(e, t);
-function lm(e, t) {
-  for (let n = t; n; n = Rr.get(n) ?? n.parentElement) if (n === e) return !0;
-  return !1;
-}
-function cm(e, t) {
-  const n = (s) => {
-    var o, r;
-    const a = ((o = e.value) == null ? void 0 : o.element) || ((r = e.value) == null ? void 0 : r.$el) || e.value;
-    a && !lm(a, s.target) && t(s);
-  };
-  window.addEventListener("click", n), Ie(() => window.removeEventListener("click", n));
-}
-const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "MenuPanel",
   props: {
     anchor: { type: Object, default: null },
@@ -4585,20 +4052,12 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   },
   emits: ["close"],
   setup(e, { expose: t, emit: n }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const s = e, a = B(null), o = (m) => m ? `${m}px` : void 0, r = L(() => ({
-========
-    const s = e, a = L(null), o = (m) => m ? `${m}px` : void 0, r = B(() => ({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       minWidth: o(s.minWidth),
       maxWidth: o(s.maxWidth),
       maxHeight: o(s.maxHeight),
       height: o(s.height)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     })), i = B({ w: 0, h: 0 }), l = B(s.anchor ? s.anchor.getBoundingClientRect() : null), u = () => ({ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }), d = (m) => ({
-========
-    })), i = L({ w: 0, h: 0 }), l = L(s.anchor ? s.anchor.getBoundingClientRect() : null), u = () => ({ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }), d = (m) => ({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       left: Math.max(0, m.left),
       top: Math.max(0, m.top),
       right: Math.min(window.innerWidth, m.right),
@@ -4606,32 +4065,20 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     }), f = (m) => {
       const N = m.closest(".pane, .float-window");
       return N ? d(N.getBoundingClientRect()) : u();
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, g = (m, N) => `${Math.max(0, m ? Math.min(m, N) : N)}px`;
     function v(m, N) {
-========
-    }, v = (m, N) => `${Math.max(0, m ? Math.min(m, N) : N)}px`;
-    function y(m, N) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       return {
         below: m.bottom - N.bottom - s.gap - At,
         above: N.top - m.top - s.gap - At,
         across: m.right - m.left - 2 * At
       };
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     function I(m) {
       const N = f(s.anchor), P = v(N, m);
       return i.value.w <= P.across && i.value.h <= Math.max(P.below, P.above) ? N : u();
-========
-    function R(m) {
-      const N = f(s.anchor), D = y(N, m);
-      return i.value.w <= D.across && i.value.h <= Math.max(D.below, D.above) ? N : u();
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     }
     const M = L(() => {
       if (!l.value) return r.value;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       const m = l.value, N = I(m), P = v(N, m), { w: W, h: re } = i.value, ce = s.align === "auto" ? m.left + m.right > N.left + N.right : s.align === "right", de = rm(ce ? m.right - W : m.left, N.left + At, Math.max(N.left + At, N.right - W - At)), ee = re > P.below && P.above > P.below ? { bottom: `${window.innerHeight - m.top + s.gap}px`, maxHeight: g(s.maxHeight, P.above) } : { top: `${m.bottom + s.gap}px`, maxHeight: g(s.maxHeight, P.below) };
       return { ...r.value, ...ee, left: `${de}px`, maxWidth: g(s.maxWidth, P.across) };
     }), _ = n, x = () => [...a.value.querySelectorAll("button:not(:disabled)")];
@@ -4640,32 +4087,16 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       N[(P + m + N.length) % N.length].focus();
     }
     const Y = { ArrowDown: () => T(1), ArrowUp: () => T(-1), Escape: () => _("close") }, O = (m) => Y[m.key] && (m.preventDefault(), Y[m.key]()), y = () => a.value && (i.value = { w: a.value.offsetWidth, h: a.value.scrollHeight });
-========
-      const m = l.value, N = R(m), D = y(N, m), { w: F, h: re } = i.value, le = s.align === "auto" ? m.left + m.right > N.left + N.right : s.align === "right", de = om(le ? m.right - F : m.left, N.left + At, Math.max(N.left + At, N.right - F - At)), ee = re > D.below && D.above > D.below ? { bottom: `${window.innerHeight - m.top + s.gap}px`, maxHeight: v(s.maxHeight, D.above) } : { top: `${m.bottom + s.gap}px`, maxHeight: v(s.maxHeight, D.below) };
-      return { ...r.value, ...ee, left: `${de}px`, maxWidth: v(s.maxWidth, D.across) };
-    }), M = n, x = () => [...a.value.querySelectorAll("button:not(:disabled)")];
-    function T(m) {
-      const N = x(), D = N.indexOf(document.activeElement);
-      N[(D + m + N.length) % N.length].focus();
-    }
-    const Y = { ArrowDown: () => T(1), ArrowUp: () => T(-1), Escape: () => M("close") }, O = (m) => Y[m.key] && (m.preventDefault(), Y[m.key]()), g = () => a.value && (i.value = { w: a.value.offsetWidth, h: a.value.scrollHeight });
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     let $ = 0;
     const E = new ResizeObserver(() => {
       cancelAnimationFrame($), $ = requestAnimationFrame(y);
     });
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     um(a, (m) => s.anchor && !s.anchor.contains(m.target) && _("close"));
     const S = (m, N) => ["top", "left", "right", "bottom"].some((P) => Math.abs(m[P] - N[P]) > 1), w = (m) => m.bottom < 0 || m.top > window.innerHeight;
-========
-    cm(a, (m) => s.anchor && !s.anchor.contains(m.target) && M("close"));
-    const _ = (m, N) => ["top", "left", "right", "bottom"].some((D) => Math.abs(m[D] - N[D]) > 1), w = (m) => m.bottom < 0 || m.top > window.innerHeight;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     let A = 0;
     function k() {
       if (s.anchor) {
         const m = s.anchor.getBoundingClientRect();
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         if (!s.anchor.isConnected || w(m)) return _("close");
         S(m, l.value) && (l.value = m);
       }
@@ -4673,15 +4104,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     }
     return Fe(() => {
       s.anchor && a.value && lm(a.value, s.anchor), y(), a.value && E.observe(a.value), !s.plain && x()[0] && x()[0].focus(), k();
-========
-        if (!s.anchor.isConnected || w(m)) return M("close");
-        _(m, l.value) && (l.value = m);
-      }
-      A = requestAnimationFrame(k);
-    }
-    return Le(() => {
-      s.anchor && a.value && im(a.value, s.anchor), g(), a.value && E.observe(a.value), !s.plain && x()[0] && x()[0].focus(), k();
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     }), Ie(() => {
       E.disconnect(), cancelAnimationFrame(A), cancelAnimationFrame($);
     }), t({ element: a }), (m, N) => (c(), V(ca, {
@@ -4696,7 +4118,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         style: M.value,
         onKeydown: O
       }), [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         me(m.$slots, "default", {}, void 0, !0)
       ], 16)
     ], 8, ["disabled"]));
@@ -4711,22 +4132,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   key: 1,
   class: "drop-none"
 }, wm = {
-========
-        he(m.$slots, "default", {}, void 0, !0)
-      ], 16)
-    ], 8, ["disabled"]));
-  }
-}), wa = /* @__PURE__ */ G(um, [["__scopeId", "data-v-3d203970"]]), dm = ["aria-expanded"], hm = { class: "drop-label" }, fm = ["value"], mm = {
-  key: 1,
-  class: "drop-lead"
-}, pm = { class: "drop-item-text" }, gm = {
-  key: 2,
-  class: "drop-note"
-}, vm = {
-  key: 1,
-  class: "drop-none"
-}, ym = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "DropList",
   props: {
     label: { type: String, default: "" },
@@ -4765,7 +4170,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
           name: e.icon,
           size: 12
         }, null, 8, ["name"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("span", fm, b(e.label), 1),
         D(ye, {
           name: "down",
@@ -4773,15 +4177,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         })
       ], 10, hm),
       a.value ? (c(), V(ka, {
-========
-        p("span", hm, b(e.label), 1),
-        P(ve, {
-          name: "down",
-          size: 11
-        })
-      ], 10, dm),
-      a.value ? (c(), V(wa, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         key: 0,
         anchor: o.value,
         "min-width": e.menuWidth,
@@ -4798,13 +4193,8 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             "aria-label": "Search the list",
             autofocus: "",
             onInput: d[1] || (d[1] = (f) => r.value = f.target.value)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           }, null, 40, mm)) : C("", !0),
           (c(!0), h(G, null, se(i.value, (f) => (c(), V(It, {
-========
-          }, null, 40, fm)) : C("", !0),
-          (c(!0), h(K, null, se(i.value, (f) => (c(), V(It, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             key: f.key,
             on: f.key === e.picked,
             "data-drop-item": f.key,
@@ -4815,7 +4205,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
                 key: 0,
                 class: Z(["drop-dot", { live: f.running }])
               }, null, 2)) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               f.lead ? (c(), h("span", pm, b(f.lead), 1)) : C("", !0),
               p("span", gm, b(f.label), 1),
               f.note ? (c(), h("span", vm, b(f.note), 1)) : C("", !0)
@@ -4823,25 +4212,12 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             _: 2
           }, 1032, ["on", "data-drop-item", "onClick"]))), 128)),
           i.value.length ? C("", !0) : (c(), h("p", ym, b(e.empty), 1))
-========
-              f.lead ? (c(), h("span", mm, b(f.lead), 1)) : C("", !0),
-              p("span", pm, b(f.label), 1),
-              f.note ? (c(), h("span", gm, b(f.note), 1)) : C("", !0)
-            ]),
-            _: 2
-          }, 1032, ["on", "data-drop-item", "onClick"]))), 128)),
-          i.value.length ? C("", !0) : (c(), h("p", vm, b(e.empty), 1))
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         ]),
         _: 1
       }, 8, ["anchor", "min-width"])) : C("", !0)
     ], 2));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, km = /* @__PURE__ */ K(wm, [["__scopeId", "data-v-29dfcce5"]]), Qk = {
-========
-}, wm = /* @__PURE__ */ G(ym, [["__scopeId", "data-v-29dfcce5"]]), Wk = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "ModelPicker",
   props: {
     provider: { type: String, default: "claude" },
@@ -4850,25 +4226,16 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   },
   emits: ["pick"],
   setup(e, { emit: t }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const n = e, s = t, a = L(() => [
       ...tm[n.provider],
       ...n.inherits ? [{ key: "", label: "the agent's model", note: "the model of the agent that starts it" }] : []
     ]), o = L(() => (a.value.find((r) => r.key === n.value) || { label: n.value || "the agent's model" }).label);
     return (r, i) => (c(), V(km, {
-========
-    const n = e, s = t, a = B(() => [
-      ...em[n.provider],
-      ...n.inherits ? [{ key: "", label: "the agent's model", note: "the model of the agent that starts it" }] : []
-    ]), o = B(() => (a.value.find((r) => r.key === n.value) || { label: n.value || "the agent's model" }).label);
-    return (r, i) => (c(), V(wm, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       label: o.value,
       icon: "model",
       items: a.value,
       picked: e.value,
       "menu-width": 280,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       "aria-label": `${z(nm)[e.provider]} model`,
       onPick: i[0] || (i[0] = (l) => s("pick", l.key))
     }, null, 8, ["label", "items", "picked", "aria-label"]));
@@ -4877,16 +4244,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   key: 0,
   class: "foot"
 }, _m = {
-========
-      "aria-label": `${z(tm)[e.provider]} model`,
-      onPick: i[0] || (i[0] = (l) => s("pick", l.key))
-    }, null, 8, ["label", "items", "picked", "aria-label"]));
-  }
-}, km = ["aria-label"], bm = { class: "head" }, xm = { class: "names" }, $m = { class: "body" }, Mm = {
-  key: 0,
-  class: "foot"
-}, Sm = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "SidePanel",
   props: {
     title: { type: String, default: "" },
@@ -4909,17 +4266,12 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         default: F(() => [
           z(a) ? (c(), h("div", {
             key: 0,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             class: Z(["veil", { over: e.over, under: e.depth }]),
-========
-            class: J(["veil", { over: e.over, under: e.depth }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             style: pe({ "--depth": e.depth, zIndex: z(i) }),
             "data-side-panel": "",
             onClick: u[0] || (u[0] = xe((...d) => z(o) && z(o)(...d), ["self"]))
           }, [
             p("aside", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               class: Z(["panel", e.width]),
               role: "dialog",
               "aria-label": e.title
@@ -4927,15 +4279,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
               e.title ? (c(), h(G, { key: 0 }, [
                 p("header", xm, [
                   p("div", $m, [
-========
-              class: J(["panel", e.width]),
-              role: "dialog",
-              "aria-label": e.title
-            }, [
-              e.title ? (c(), h(K, { key: 0 }, [
-                p("header", bm, [
-                  p("div", xm, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                     p("h2", null, b(e.title), 1),
                     e.abstract ? (c(), V(lt, {
                       key: 0,
@@ -4949,7 +4292,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
                     onClick: z(o)
                   }, null, 8, ["title", "onClick"])
                 ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
                 p("div", Mm, [
                   me(l.$slots, "default", {}, void 0, !0)
                 ]),
@@ -4958,38 +4300,20 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
                 ])) : C("", !0)
               ], 64)) : me(l.$slots, "default", {}, void 0, !0, 1)
             ], 10, bm)
-========
-                p("div", $m, [
-                  he(l.$slots, "default", {}, void 0, !0)
-                ]),
-                l.$slots.foot ? (c(), h("footer", Mm, [
-                  he(l.$slots, "foot", {}, void 0, !0)
-                ])) : C("", !0)
-              ], 64)) : he(l.$slots, "default", {}, void 0, !0, 1)
-            ], 10, km)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           ], 6)) : C("", !0)
         ]),
         _: 3
       }, 8, ["onAfterLeave"])
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, eb = /* @__PURE__ */ K(_m, [["__scopeId", "data-v-c9a3f43a"]]), Ks = {
-========
-}, Hk = /* @__PURE__ */ G(Sm, [["__scopeId", "data-v-c9a3f43a"]]), Ys = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   mounted(e, { value: t }) {
     e.value = t ?? "";
   },
   beforeUpdate(e, { value: t, oldValue: n }) {
     t === n || document.activeElement === e || (e.value = t ?? "");
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Em = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
-========
-}, _m = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "TextArea",
   setup(e) {
     const t = Hn(), n = L(() => Object.fromEntries(Object.entries(t).filter(([s]) => s !== "value")));
@@ -5000,7 +4324,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       [z(Ks), z(t).value]
     ]);
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }), tb = /* @__PURE__ */ K(Em, [["__scopeId", "data-v-e130a5b9"]]), Am = {
   key: 1,
   class: "text-field-label"
@@ -5008,15 +4331,6 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   key: 2,
   class: "text-field-end"
 }, Om = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
-========
-}), Uk = /* @__PURE__ */ G(_m, [["__scopeId", "data-v-e130a5b9"]]), Em = {
-  key: 1,
-  class: "text-field-label"
-}, Am = {
-  key: 2,
-  class: "text-field-end"
-}, Cm = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "TextInput",
   props: /* @__PURE__ */ Ls({ label: { type: String, default: "" }, icon: { type: String, default: "" }, large: Boolean }, {
     modelValue: { type: String, default: null },
@@ -5030,11 +4344,7 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     ), l = L(() => Object.fromEntries(Object.entries(s).filter(([f]) => f !== "value"))), u = B(null);
     return t({ focus: () => u.value && u.value.focus() }), (f, g) => e.label || e.icon || f.$slots.end ? (c(), h("label", {
       key: 0,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       class: Z(["text-field", { large: e.large, ended: f.$slots.end }, z(s).class]),
-========
-      class: J(["text-field", { large: e.large, ended: f.$slots.end }, z(s).class]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       style: pe(z(s).style)
     }, [
       e.icon ? (c(), V(ye, {
@@ -5043,11 +4353,7 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         size: 13,
         class: "text-field-icon"
       }, null, 8, ["name"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       e.label ? (c(), h("span", Am, b(e.label), 1)) : C("", !0),
-========
-      e.label ? (c(), h("span", Em, b(e.label), 1)) : C("", !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       dt(p("input", tt({
         ref_key: "input",
         ref: u,
@@ -5056,13 +4362,8 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       }, i.value, { onInput: r }), null, 16), [
         [z(Ks), o.value]
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       f.$slots.end ? (c(), h("span", Cm, [
         me(f.$slots, "end", {}, void 0, !0)
-========
-      f.$slots.end ? (c(), h("span", Am, [
-        he(f.$slots, "end", {}, void 0, !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ])) : C("", !0)
     ], 6)) : dt((c(), h("input", tt({
       key: 1,
@@ -5074,26 +4375,15 @@ const At = 8, um = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       [z(Ks), o.value]
     ]);
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }), nb = /* @__PURE__ */ K(Om, [["__scopeId", "data-v-d9c38ca8"]]), Tm = 150;
 function Nr(e, t, n = Tm, s = performance.now()) {
-========
-}), zk = /* @__PURE__ */ G(Cm, [["__scopeId", "data-v-d9c38ca8"]]), Om = 150;
-function Br(e, t, n = Om, s = performance.now()) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   const a = e + n - s;
   if (a <= 0) return void t();
   setTimeout(t, a);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const io = (e) => e.page * e.size < e.total;
 function Im(e, t, { incremental: n = !1 } = {}) {
   const s = zn(), a = B([]), o = B(""), r = B(!1), i = performance.now(), l = B(!1), u = B(""), d = B(null);
-========
-const ro = (e) => e.page * e.size < e.total;
-function Tm(e, t, { incremental: n = !1 } = {}) {
-  const s = Vn(), a = L([]), o = L(""), r = L(!1), i = performance.now(), l = L(!1), u = L(""), d = L(null);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   async function f(x) {
     const T = await s.read(`${e} --before-id ${x + 1} --limit 1`);
     if (!T.ok) return M();
@@ -5132,11 +4422,7 @@ function Tm(e, t, { incremental: n = !1 } = {}) {
   }
   return s.follow(t, g), M(), { rows: a, failure: o, loaded: r, more: l, load: M, older: v, act: _, actionFailure: u, answer: d, context: s };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Rm = { class: "title" }, Bm = { class: "state" }, Lm = {
-========
-const Im = { class: "title" }, Rm = { class: "state" }, Bm = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "StateRows",
   props: {
     line: { type: String, required: !0 },
@@ -5144,47 +4430,29 @@ const Im = { class: "title" }, Rm = { class: "state" }, Bm = {
     empty: { type: String, required: !0 }
   },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const t = e, { rows: n, failure: s, loaded: a } = Im(t.line, t.events);
     return (o, r) => (c(), V(Wl, {
-========
-    const t = e, { rows: n, failure: s, loaded: a } = Tm(t.line, t.events);
-    return (o, r) => (c(), V(ql, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       rows: z(n),
       failure: z(s),
       loaded: z(a),
       empty: e.empty
     }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       default: F(({ row: i }) => [
         p("span", Rm, b(i.title), 1),
         p("span", Bm, b(i.state), 1)
-========
-      default: H(({ row: i }) => [
-        p("span", Im, b(i.title), 1),
-        p("span", Rm, b(i.state), 1)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ]),
       _: 1
     }, 8, ["rows", "failure", "loaded", "empty"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, sb = /* @__PURE__ */ K(Lm, [["__scopeId", "data-v-a69084cd"]]);
 function Dm(e = 1e3, t = null) {
   const n = B(Date.now() / 1e3);
-========
-}, Vk = /* @__PURE__ */ G(Bm, [["__scopeId", "data-v-a69084cd"]]);
-function Lm(e = 1e3, t = null) {
-  const n = L(Date.now() / 1e3);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   let s = 0;
   const a = (o) => {
     clearInterval(s), s = o ? setInterval(() => n.value = Date.now() / 1e3, e) : 0;
   };
   return t ? be(t, a, { immediate: !0 }) : a(!0), Ie(() => clearInterval(s)), n;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const ps = B(Date.now() / 1e3);
 let lo = 0, $n = 0;
 function Nm() {
@@ -5224,47 +4492,6 @@ const Pm = ["title", "data-figure-mark", "data-folded", "data-open"], jm = {
   key: 0,
   class: "body-label"
 }, Xm = ["title"], Qm = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
-========
-const ps = L(Date.now() / 1e3);
-let io = 0, xn = 0;
-function Nm() {
-  return xn || (ps.value = Date.now() / 1e3, io = setInterval(() => ps.value = Date.now() / 1e3, 1e3)), xn += 1, No() && Do(() => {
-    xn -= 1, xn || clearInterval(io);
-  }), ps;
-}
-const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
-  key: 2,
-  class: "worker"
-}, jm = { class: "head" }, qm = { key: 0 }, Fm = {
-  key: 3,
-  class: "status"
-}, Wm = {
-  key: 0,
-  class: "figure"
-}, Hm = {
-  key: 1,
-  class: "ran-for"
-}, Um = { key: 2 }, zm = {
-  key: 3,
-  class: "news"
-}, Vm = {
-  key: 4,
-  class: "spin",
-  "aria-label": "Still running"
-}, Gm = {
-  key: 6,
-  class: "settled"
-}, Km = {
-  key: 1,
-  class: "bar"
-}, Ym = {
-  key: 3,
-  class: "detail body"
-}, Jm = {
-  key: 0,
-  class: "body-label"
-}, Zm = ["title"], Xm = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "ChatMark",
   props: { mark: { type: Object, required: !0 }, open: { type: Boolean, default: void 0 } },
   setup(e) {
@@ -5277,7 +4504,6 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
         (J = n.onAct || n.onClick) == null || J(Q);
       }
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const T = (Q) => n.onAct(Q), Y = ["failed", "unfinished"], O = L(() => t.mark.stopped || t.mark.state === "stopped" ? "stopped" : t.mark.tone ? t.mark.tone : t.mark.ended ? Y.includes(t.mark.state) ? "danger" : "good" : ""), y = L(() => t.mark.color ? t.mark.color : O.value === "stopped" ? "var(--text-3)" : t.mark.asks ? "var(--asks)" : O.value ? `var(--tone-${O.value})` : t.mark.group ? `var(--group-${t.mark.group})` : ""), $ = L(() => y.value || "var(--tone-work)"), E = L(() => !t.mark.ending && !t.mark.ended && O.value !== "stopped"), S = Nm(), w = L(
       () => t.mark.began_at && E.value && !t.mark.figure && !t.mark.counting ? Hf(S.value - t.mark.began_at) : ""
     ), A = L(() => {
@@ -5287,17 +4513,6 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
       () => !!(t.mark.figure || A.value || t.mark.docked || t.mark.stopping || W.value || t.mark.settled || t.mark.news)
     ), ce = L(() => [t.mark.title, t.mark.time ? Ir(t.mark.time) : ""].filter(Boolean).join(" · ")), de = L(() => ({
       ...y.value ? { "--mark": y.value } : {},
-========
-    const T = (Q) => n.onAct(Q), Y = ["failed", "unfinished"], O = B(() => t.mark.stopped || t.mark.state === "stopped" ? "stopped" : t.mark.tone ? t.mark.tone : t.mark.ended ? Y.includes(t.mark.state) ? "danger" : "good" : ""), g = B(() => t.mark.color ? t.mark.color : O.value === "stopped" ? "var(--text-3)" : t.mark.asks ? "var(--asks)" : O.value ? `var(--tone-${O.value})` : t.mark.group ? `var(--group-${t.mark.group})` : ""), $ = B(() => g.value || "var(--tone-work)"), E = B(() => !t.mark.ending && !t.mark.ended && O.value !== "stopped"), _ = Nm(), w = B(
-      () => t.mark.began_at && E.value && !t.mark.figure && !t.mark.counting ? Ff(_.value - t.mark.began_at) : ""
-    ), A = B(() => {
-      const { started: Q, ended: ee } = t.mark;
-      return Q ? ee ? `ran ${eo(ee - Q, !0)}` : eo(_.value - Q, !0) : w.value;
-    }), k = ["bad", "danger", "warn"], m = B(() => k.includes(O.value) || t.mark.asks ? "attention" : E.value && (t.mark.active || t.mark.figure || t.mark.counting || t.mark.began_at || t.mark.started && !t.mark.ended) ? "process" : "event"), N = ["bad", "danger"], D = B(() => N.includes(O.value)), F = B(() => m.value === "process" ? "running" : D.value ? "cross" : O.value === "stopped" ? "stopped" : O.value === "good" ? "tick" : ""), re = B(
-      () => !!(t.mark.figure || A.value || t.mark.docked || t.mark.stopping || F.value || t.mark.settled || t.mark.news)
-    ), le = B(() => [t.mark.title, t.mark.time ? Or(t.mark.time) : ""].filter(Boolean).join(" · ")), de = B(() => ({
-      ...g.value ? { "--mark": g.value } : {},
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ...t.mark.depth ? { "--depth": t.mark.depth } : {}
     }));
     return (Q, ee) => (c(), h("div", tt(a.value, {
@@ -5306,11 +4521,7 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
       class: [
         "mark",
         `w-${m.value}`,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         z(_),
-========
-        z(M),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         {
           open: u.value,
           folding: i.value && d.value,
@@ -5347,54 +4558,30 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
             key: 1,
             name: e.mark.icon || "dot"
           }, null, 8, ["name"])),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           e.mark.worker ? (c(), h("span", jm, b(e.mark.worker), 1)) : C("", !0),
           p("span", qm, [
             D(lt, {
-========
-          e.mark.worker ? (c(), h("span", Pm, b(e.mark.worker), 1)) : C("", !0),
-          p("span", jm, [
-            P(lt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               class: "title",
               text: e.mark.label,
               inline: ""
             }, null, 8, ["text"]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             e.mark.name ? (c(), h("strong", Fm, b(e.mark.name), 1)) : C("", !0),
             l.value ? (c(), V(Xt, {
-========
-            e.mark.name ? (c(), h("strong", qm, b(e.mark.name), 1)) : C("", !0),
-            l.value ? (c(), V(Zt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               key: 1,
               open: !!u.value
             }, null, 8, ["open"])) : C("", !0)
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           re.value ? (c(), h("span", Wm, [
             e.mark.figure ? (c(), h("span", Hm, b(e.mark.figure), 1)) : C("", !0),
             A.value ? (c(), h("span", Um, b(A.value), 1)) : C("", !0),
             e.mark.stopping ? (c(), h("span", zm, "Stopping")) : C("", !0),
             e.mark.news ? (c(), h("span", Vm, b(e.mark.news), 1)) : C("", !0),
             W.value === "running" ? (c(), h("span", Gm)) : W.value ? (c(), V(nt, {
-========
-          re.value ? (c(), h("span", Fm, [
-            e.mark.figure ? (c(), h("span", Wm, b(e.mark.figure), 1)) : C("", !0),
-            A.value ? (c(), h("span", Hm, b(A.value), 1)) : C("", !0),
-            e.mark.stopping ? (c(), h("span", Um, "Stopping")) : C("", !0),
-            e.mark.news ? (c(), h("span", zm, b(e.mark.news), 1)) : C("", !0),
-            F.value === "running" ? (c(), h("span", Vm)) : F.value ? (c(), V(nt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               key: 5,
               class: Z(["sign", W.value]),
               name: W.value
             }, null, 8, ["class", "name"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             e.mark.settled ? (c(), h("span", Km, b(e.mark.settled), 1)) : C("", !0)
-========
-            e.mark.settled ? (c(), h("span", Gm, b(e.mark.settled), 1)) : C("", !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           ])) : C("", !0)
         ]),
         _: 1
@@ -5405,11 +4592,7 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
         open: !!u.value,
         onClick: xe(T, ["stop"])
       }, null, 8, ["label", "open"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       (e.mark.figure || e.mark.counting) && E.value ? (c(), h("span", Ym, [
-========
-      (e.mark.figure || e.mark.counting) && E.value ? (c(), h("span", Km, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("span", {
           class: "progress",
           style: pe({ width: `${Math.round((e.mark.fraction || 0) * 100)}%`, background: $.value })
@@ -5422,15 +4605,9 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
         inline: "",
         "row-names": !1
       }, null, 8, ["text"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       e.mark.body && !z(M) ? (c(), h("div", Jm, [
         e.mark.bodyLabel ? (c(), h("p", Zm, b(e.mark.bodyLabel), 1)) : C("", !0),
         D(lt, {
-========
-      e.mark.body && !z(S) ? (c(), h("div", Ym, [
-        e.mark.bodyLabel ? (c(), h("p", Jm, b(e.mark.bodyLabel), 1)) : C("", !0),
-        P(lt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           text: e.mark.body,
           "row-names": !1
         }, null, 8, ["text"])
@@ -5439,11 +4616,7 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
         key: 4,
         class: "detail command",
         title: e.mark.command
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       }, b(e.mark.command), 9, Xm)) : C("", !0),
-========
-      }, b(e.mark.command), 9, Zm)) : C("", !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       e.mark.card ? (c(), V(lt, {
         key: 5,
         class: "card",
@@ -5453,7 +4626,6 @@ const Dm = ["title", "data-figure-mark", "data-folded", "data-open"], Pm = {
       me(Q.$slots, "default", {
         shown: !z(M)
       }, void 0, !0)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     ], 16, Pm));
   }
 }), Pr = /* @__PURE__ */ K(Qm, [["__scopeId", "data-v-74d78abb"]]), ep = { outputs: "output", skills: "skill", agents: "agent", subagents: "agent", pages: "page" };
@@ -5468,32 +4640,12 @@ const tp = (e) => jr(String(e).split(":")[0]), qr = /* @__PURE__ */ new Set(["fa
 }, ap = { "open row": (e) => tp(e.target_model), "open page": () => jr("pages") };
 function op(e, t) {
   const n = t || {}, s = co[n.click] && e.target_model ? n.click : "";
-========
-    ], 16, Dm));
-  }
-}), Lr = /* @__PURE__ */ G(Xm, [["__scopeId", "data-v-74d78abb"]]), Qm = { outputs: "output", skills: "skill", agents: "agent", subagents: "agent", pages: "page" };
-function Nr(e) {
-  var n;
-  const t = Qm[e] || ((n = cn(e)) == null ? void 0 : n.title.toLowerCase());
-  return t ? `Open the ${t}` : "Open it";
-}
-const ep = (e) => Nr(String(e).split(":")[0]), Dr = /* @__PURE__ */ new Set(["failed", "stopped", "lost", "blocked", "cancelled", "orphaned"]), tp = { passed: "good", failed: "danger", warned: "warn", running: "" }, np = { good: "good", warn: "warn", danger: "danger" }, lo = {
-  "open row": (e) => Xe(`${e.target_model}:${e.target_id}`),
-  "open page": (e) => Tl(e.target_model, e.target_id || 0)
-}, sp = { "open row": (e) => ep(e.target_model), "open page": () => Nr("pages") };
-function ap(e, t) {
-  const n = t || {}, s = lo[n.click] && e.target_model ? n.click : "";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return {
     key: `chat_mark:${e.id}`,
     icon: n.family_icon || (t ? "" : "dot"),
     markIcon: n.mark_icon || "",
     group: n.group || "",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     tone: n.colouring === "outcome" ? np[e.outcome] || "" : sp[e.variant] || "",
-========
-    tone: n.colouring === "outcome" ? tp[e.outcome] || "" : np[e.variant] || "",
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     label: e.text,
     // an opened mark shows its whole lines in its body, so their cut-off first part is not a second line
     detail: n.body_url || e.lines ? "" : e.detail || "",
@@ -5503,7 +4655,6 @@ function ap(e, t) {
     ended: !!n.process && e.state === "ended",
     active: !!n.process && e.state === "shown",
     time: Date.parse(e.created_at) / 1e3,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     action: s ? ap[s](e) : "",
     handlers: s ? { onAct: () => co[s](e) } : {}
   };
@@ -5511,15 +4662,6 @@ function ap(e, t) {
 const rp = 24, ip = 1e3, uo = 2e3, lp = 0.25, cp = 5e3;
 function up(e, t = rp, n = () => !0) {
   const s = B(!1), a = B(0), o = B(!1);
-========
-    action: s ? sp[s](e) : "",
-    handlers: s ? { onAct: () => lo[s](e) } : {}
-  };
-}
-const op = 24, rp = 1e3, co = 2e3, ip = 0.25, lp = 5e3;
-function cp(e, t = op, n = () => !0) {
-  const s = L(!1), a = L(0), o = L(!1);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   let r = 0, i = 0, l = 0;
   const u = () => e && "value" in e ? e.value : e, d = () => {
     const O = u();
@@ -5530,13 +4672,8 @@ function cp(e, t = op, n = () => !0) {
       o.value = !1, l = Date.now();
       return;
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const y = Date.now() - l < uo ? uo : ip;
     r = setTimeout(() => o.value = s.value, y);
-========
-    const g = Date.now() - l < co ? co : rp;
-    r = setTimeout(() => o.value = s.value, g);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
   function v() {
     clearTimeout(i), s.value = !1, a.value = 0, g(!1);
@@ -5548,15 +4685,9 @@ function cp(e, t = op, n = () => !0) {
   function M() {
     x(), !s.value && (s.value = !0, g(!0));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   const _ = () => !!u() && d() <= u().clientHeight * lp;
   function x() {
     clearTimeout(i), _() && (i = setTimeout(() => s.value && _() && n() && I(!0), cp));
-========
-  const M = () => !!u() && d() <= u().clientHeight * ip;
-  function x() {
-    clearTimeout(i), M() && (i = setTimeout(() => s.value && M() && n() && R(!0), lp));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
   function T() {
     f() ? v() : M();
@@ -5566,22 +4697,13 @@ function cp(e, t = op, n = () => !0) {
   }
   return Po() && jo(() => [r, i].forEach(clearTimeout)), { away: s, missed: a, showNewest: o, gap: d, atBottom: f, follow: v, toBottom: I, left: M, scrolled: T, arrived: Y };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const dp = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, hp = (e) => String(e ?? "").replace(dp, ""), fp = {
-========
-const up = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, dp = (e) => String(e ?? "").replace(up, ""), hp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "OutputLines",
   props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "It printed nothing yet." } },
   emits: ["older"],
   setup(e, { emit: t }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const n = e, s = t, a = B(null), { away: o, scrolled: r, arrived: i, toBottom: l } = up(a);
     be(
-========
-    const n = e, s = t, a = L(null), { away: o, scrolled: r, arrived: i, toBottom: l } = cp(a);
-    xe(
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       () => n.lines.length,
       () => Lt(() => i()),
       { immediate: !0 }
@@ -5595,11 +4717,7 @@ const up = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       class: "output-lines",
       onScroll: u
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       le(b(z(hp)(e.lines.join(`
-========
-      ce(b(z(dp)(e.lines.join(`
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 `)) || e.empty), 1),
       z(o) ? (c(), h("button", {
         key: 0,
@@ -5610,13 +4728,8 @@ const up = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       }, "Follow")) : C("", !0)
     ], 544));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, mp = /* @__PURE__ */ K(fp, [["__scopeId", "data-v-d9fa8127"]]), pp = 1e4;
 class gp {
-========
-}, fp = /* @__PURE__ */ G(hp, [["__scopeId", "data-v-d9fa8127"]]), mp = 1e4;
-class pp {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   constructor(t, n) {
     this.frame = t, this.context = n, this.heardAt = null, this.received = this.received.bind(this);
   }
@@ -5627,11 +4740,7 @@ class pp {
     window.removeEventListener("message", this.received);
   }
   silent(t = Date.now()) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return this.heardAt !== null && t - this.heardAt > pp;
-========
-    return this.heardAt !== null && t - this.heardAt > mp;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
   async received(t) {
     if (t.source !== this.frame.contentWindow) return;
@@ -5644,7 +4753,6 @@ class pp {
     (s = this.frame.contentWindow) == null || s.postMessage({ id: t, answer: n }, "*");
   }
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const vp = {
   key: 0,
   class: "frame-note"
@@ -5652,21 +4760,11 @@ const vp = {
   key: 0,
   class: "frame-note"
 }, wp = ["src", "title"], kp = 1e3, bp = {
-========
-const gp = {
-  key: 0,
-  class: "frame-note"
-}, vp = {
-  key: 0,
-  class: "frame-note"
-}, yp = ["src", "title"], wp = 1e3, kp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "FrameContent",
   props: { src: { type: String, required: !0 } },
   setup(e) {
     const t = e, n = zn(), s = B(null), a = B(!1), o = B(!1);
     let r = null, i = 0;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return Fe(() => {
       r = new gp(s.value, n), r.start(), i = setInterval(() => {
         a.value = r.silent();
@@ -5677,18 +4775,6 @@ const gp = {
       a.value ? (c(), h("div", yp, [
         u[2] || (u[2] = p("p", null, "This window has not answered for ten seconds.", -1)),
         D(ve, {
-========
-    return Le(() => {
-      r = new pp(s.value, n), r.start(), i = setInterval(() => {
-        a.value = r.silent();
-      }, wp);
-    }), Ie(() => {
-      r == null || r.stop(), clearInterval(i);
-    }), (l, u) => o.value ? (c(), h("p", gp, "This window was closed because it stopped answering.")) : (c(), h(K, { key: 1 }, [
-      a.value ? (c(), h("div", vp, [
-        u[2] || (u[2] = p("p", null, "This window has not answered for ten seconds.", -1)),
-        P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           onClick: u[0] || (u[0] = (d) => o.value = !0)
         }, {
           default: F(() => [...u[1] || (u[1] = [
@@ -5704,29 +4790,17 @@ const gp = {
         sandbox: "allow-scripts",
         src: t.src,
         title: z(n).window
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       }, null, 8, wp)
     ], 64));
   }
 }, xp = /* @__PURE__ */ K(bp, [["__scopeId", "data-v-32a49046"]]), $p = 0, Mp = "/api/lines", Sp = "/api/line";
 class _p {
-========
-      }, null, 8, yp)
-    ], 64));
-  }
-}, bp = /* @__PURE__ */ G(kp, [["__scopeId", "data-v-32a49046"]]), xp = 0, $p = "/api/lines", Mp = "/api/line";
-class Sp {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   constructor() {
     this.waiting = [], this.timer = null;
   }
   add(t, n) {
     return new Promise((s, a) => {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       this.waiting.push({ body: t, signal: n, resolve: s, reject: a }), this.timer ?? (this.timer = setTimeout(() => this.send(), $p));
-========
-      this.waiting.push({ body: t, signal: n, resolve: s, reject: a }), this.timer ?? (this.timer = setTimeout(() => this.send(), xp));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     });
   }
   async send() {
@@ -5740,11 +4814,7 @@ class Sp {
     }).forEach((n) => n.reject(new DOMException("cancelled", "AbortError"))), this.waiting = [], this.timer = null, t.length === 1) return this.alone(t[0]);
     if (t.length)
       try {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         const n = await je.raw(Mp, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines: t.map((a) => a.body) }) }), { answers: s } = await n.json();
-========
-        const n = await qe.raw($p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines: t.map((a) => a.body) }) }), { answers: s } = await n.json();
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         t.forEach((a, o) => a.resolve(s[o]));
       } catch (n) {
         t.forEach((s) => s.reject(n));
@@ -5752,24 +4822,15 @@ class Sp {
   }
   async alone(t) {
     try {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       const n = await je.raw(Sp, { signal: t.signal, method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(t.body) });
-========
-      const n = await qe.raw(Mp, { signal: t.signal, method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(t.body) });
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       t.resolve(await n.json());
     } catch (n) {
       t.reject(n);
     }
   }
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ep = new _p();
 class Ap {
-========
-const _p = new Sp();
-class Ep {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   constructor() {
     this.follows = [], this.held = /* @__PURE__ */ new Set();
   }
@@ -5796,7 +4857,6 @@ function Fr(e, t) {
   const [n, s] = e.split("."), [a, o] = t.split(".");
   return (n === "*" || n === a) && (s === "*" || s === o);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Cp = Symbol("pane-page"), Op = { 1: "refused", 2: "usage", 3: "fault" }, Tp = 100, Ip = 50, Rp = /"([^"]*)"|'([^']*)'|(\S+)/g;
 function Bp({ window: e, environment: t, agent: n, visible: s, permissions: a, events: o = [], subscriptions: r, open: i, options: l = B({}), declared: u = [], page: d = null, setOption: f = () => {
 }, autoScroll: g = "", tabs: v = [], search: I = {}, readOnly: M = !1, shared: _ = null }) {
@@ -5812,23 +4872,6 @@ function Bp({ window: e, environment: t, agent: n, visible: s, permissions: a, e
     y += 1;
     const k = Hr(e, w, t, T.signal).finally(() => {
       y -= 1, E();
-========
-const Ap = Symbol("pane-page"), Cp = { 1: "refused", 2: "usage", 3: "fault" }, Op = 100, Tp = 50, Ip = /"([^"]*)"|'([^']*)'|(\S+)/g;
-function Rp({ window: e, environment: t, agent: n, visible: s, permissions: a, events: o = [], subscriptions: r, open: i, options: l = L({}), declared: u = [], page: d = null, setOption: f = () => {
-}, autoScroll: v = "", tabs: y = [], search: R = {}, readOnly: S = !1, shared: M = null }) {
-  const x = /* @__PURE__ */ new Map(), T = new AbortController(), Y = L(!1), O = performance.now();
-  let g = 0, $ = 0;
-  const E = () => {
-    clearTimeout($), $ = setTimeout(() => {
-      g === 0 && Br(O, () => Y.value = !0);
-    }, Tp);
-  }, _ = (w) => {
-    const A = x.get(w);
-    if (A && performance.now() - A.at < Op) return A.answer;
-    g += 1;
-    const k = qr(e, w, t, T.signal).finally(() => {
-      g -= 1, E();
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     });
     return x.set(w, { answer: k, at: performance.now() }), k;
   };
@@ -5841,7 +4884,6 @@ function Rp({ window: e, environment: t, agent: n, visible: s, permissions: a, e
     page: d,
     visible: L(() => s()),
     permissions: a,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     autoScroll: g,
     tabs: v,
     search: I,
@@ -5853,19 +4895,6 @@ function Rp({ window: e, environment: t, agent: n, visible: s, permissions: a, e
     cancel: () => T.abort(),
     subscriptions: r,
     follow: (w, A) => r.follow(e, w.filter((k) => o.some((m) => Fr(m, k))), A, s),
-========
-    autoScroll: v,
-    tabs: y,
-    search: R,
-    readOnly: S,
-    shared: M,
-    read: _,
-    run: (w) => Qt(e, w, t, T.signal),
-    upload: (w) => Lp(w, T.signal),
-    cancel: () => T.abort(),
-    subscriptions: r,
-    follow: (w, A) => r.follow(e, w.filter((k) => o.some((m) => Pr(m, k))), A, s),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     open: i,
     face: document.documentElement.classList.contains("phone") ? "phone" : "person",
     option: (w) => L(() => {
@@ -5880,11 +4909,7 @@ function Rp({ window: e, environment: t, agent: n, visible: s, permissions: a, e
     keep: (w, A) => en(e, ["window", "save-setting", e, w, JSON.stringify(A)], t, T.signal)
   };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function Lp(e) {
-========
-function Bp(e) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   try {
     const t = JSON.parse(e);
     return typeof t.refused == "string" ? [t.refused, t.suggestion].filter(Boolean).join(": ") : [t.error, t.message].find((n) => typeof n == "string") ?? e;
@@ -5895,13 +4920,8 @@ function Bp(e) {
 const Qt = { ok: !1, failure: "cancelled", error: "" }, Wr = "The journal did not answer, so this may or may not have gone through. Check before you try again.";
 async function en(e, t, n, s = void 0) {
   try {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const a = await Ep.add({ window: e, line: Array.isArray(t) ? t : Np(t), environment: n }, s);
     return s != null && s.aborted ? Qt : a.code === 0 ? { ok: !0, value: a.value } : { ok: !1, failure: Op[a.code] || "fault", error: Lp(a.error) };
-========
-    const a = await _p.add({ window: e, line: Array.isArray(t) ? t : Np(t), environment: n }, s);
-    return s != null && s.aborted ? Xt : a.code === 0 ? { ok: !0, value: a.value } : { ok: !1, failure: Cp[a.code] || "fault", error: Bp(a.error) };
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   } catch {
     return s != null && s.aborted ? Qt : { ok: !1, failure: "unreachable", error: Wr };
   }
@@ -5910,11 +4930,7 @@ async function Hr(e, t, n, s) {
   const a = await en(e, t, n, s);
   return a.failure !== "unreachable" || !ua() ? a : (await Ic(), s.aborted ? Qt : Hr(e, t, n, s));
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 async function Dp(e, t = void 0) {
-========
-async function Lp(e, t = void 0) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   try {
     const n = await je.raw(`/api/files?name=${encodeURIComponent(e.name)}`, { signal: t, method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: e }), s = await n.json();
     return t != null && t.aborted ? Qt : n.ok ? { ok: !0, value: s.file } : { ok: !1, failure: "refused", error: s.error ?? "the file was not taken" };
@@ -5923,7 +4939,6 @@ async function Lp(e, t = void 0) {
   }
 }
 function Np(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   return [...e.matchAll(Rp)].map((t) => t[1] ?? t[2] ?? t[3]);
 }
 function Pp({ title: e, type: t, lines: n }) {
@@ -5933,33 +4948,15 @@ const jp = {
   class: "allowance-prompt",
   role: "dialog"
 }, qp = { class: "allowance-prompt-text" }, Fp = { class: "allowance-prompt-buttons" }, Wp = {
-========
-  return [...e.matchAll(Ip)].map((t) => t[1] ?? t[2] ?? t[3]);
-}
-function Dp({ title: e, type: t, lines: n }) {
-  return `${e} wants to ${t === "reads" ? "read" : "run"}: ${n.join(", ")}. Allow?`;
-}
-const Pp = {
-  class: "allowance-prompt",
-  role: "dialog"
-}, jp = { class: "allowance-prompt-text" }, qp = { class: "allowance-prompt-buttons" }, Fp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "AllowancePrompt",
   props: { request: { type: Object, required: !0 } },
   emits: ["answer"],
   setup(e, { emit: t }) {
     const n = t;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (s, a) => (c(), h("div", jp, [
       p("p", qp, b(z(Pp)(e.request)), 1),
       p("div", Fp, [
         D(ve, {
-========
-    return (s, a) => (c(), h("div", Pp, [
-      p("p", jp, b(z(Dp)(e.request)), 1),
-      p("div", qp, [
-        P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           kind: "primary",
           onClick: a[0] || (a[0] = (o) => n("answer", !0))
         }, {
@@ -5979,11 +4976,7 @@ const Pp = {
       ])
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Hp = /* @__PURE__ */ K(Wp, [["__scopeId", "data-v-102dc765"]]), gs = {
-========
-}, Wp = /* @__PURE__ */ G(Fp, [["__scopeId", "data-v-102dc765"]]), gs = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "WindowPlaceholder",
   props: { name: { type: String, required: !0 }, reason: { type: String, required: !0 }, retry: Boolean, removable: Boolean },
   emits: ["retry", "remove"],
@@ -6017,11 +5010,7 @@ const Pp = {
       _: 1
     }, 8, ["title"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Up = ["data-window", "data-agent"], zp = {
-========
-}, Hp = ["data-window", "data-agent"], Up = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "WindowHost",
   props: {
     name: { type: String, required: !0 },
@@ -6049,11 +5038,7 @@ const Pp = {
     function r() {
       a.value = "", o.value++;
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const i = Oe(pl, null), l = Bp({
-========
-    const i = Oe(fl, null), l = Rp({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       window: n.name,
       environment: n.environment,
       agent: n.agent,
@@ -6063,13 +5048,8 @@ const Pp = {
       subscriptions: n.subscriptions,
       options: L(() => n.options),
       declared: n.declared,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       page: Oe(Cp, null),
       setOption: (f, g) => s("option", f, g),
-========
-      page: Oe(Ap, null),
-      setOption: (f, v) => s("option", f, v),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       autoScroll: n.autoScroll,
       tabs: n.tabs,
       search: n.search,
@@ -6091,11 +5071,7 @@ const Pp = {
       "data-window": e.name,
       "data-agent": e.agent ?? void 0
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       d() ? (c(), V(Hp, {
-========
-      d() ? (c(), V(Wp, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         key: 0,
         request: d(),
         onAnswer: g[0] || (g[0] = (v) => e.prompts.answer(v))
@@ -6124,15 +5100,9 @@ const Pp = {
         removable: "",
         onRemove: g[1] || (g[1] = (v) => s("remove"))
       }, null, 8, ["name"]))
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     ], 8, Up));
   }
 }, Ur = /* @__PURE__ */ K(zp, [["__scopeId", "data-v-1db91f82"]]), Vp = {
-========
-    ], 8, Hp));
-  }
-}, Fr = /* @__PURE__ */ G(Up, [["__scopeId", "data-v-1db91f82"]]), zp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "FrameWindow",
   props: {
     entry: { type: Object, required: !0 },
@@ -6146,13 +5116,8 @@ const Pp = {
   },
   emits: ["option"],
   setup(e, { emit: t }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const n = e, s = t, a = { render: () => ia(xp, { src: n.entry.entry_url }) };
     return (o, r) => (c(), V(Ur, {
-========
-    const n = e, s = t, a = { render: () => ia(bp, { src: n.entry.entry_url }) };
-    return (o, r) => (c(), V(Fr, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       key: e.entry.entry_url,
       name: e.entry.name,
       component: a,
@@ -6172,11 +5137,7 @@ const Pp = {
       onOption: r[0] || (r[0] = (i, l) => s("option", i, l))
     }, null, 8, ["name", "subscriptions", "environment", "agent", "visible", "permissions", "prompts", "options", "declared", "auto-scroll", "tabs", "search", "events", "unavailable-reason"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Gp = ["data-window"], Kp = {
-========
-}, Vp = ["data-window"], Gp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "PageWindow",
   props: {
     entry: { type: Object, required: !0 },
@@ -6214,11 +5175,7 @@ const Pp = {
       D(Rr, {
         parts: e.entry.skeleton
       }, null, 8, ["parts"])
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     ], 8, Gp)) : (c(), V(Ur, {
-========
-    ], 8, Vp)) : (c(), V(Fr, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       key: e.entry.entry_url,
       name: e.entry.name,
       component: a.value,
@@ -6239,20 +5196,12 @@ const Pp = {
       onOption: i[0] || (i[0] = (l, u) => s("option", l, u))
     }, null, 8, ["name", "component", "subscriptions", "environment", "agent", "visible", "permissions", "prompts", "options", "declared", "auto-scroll", "tabs", "search", "events", "skeleton", "unavailable-reason"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, ho = "*.*", Yp = {
-========
-}, uo = "*.*", Kp = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "ModuleBody",
   props: { declaration: { type: Object, required: !0 }, row: { type: Object, default: null }, head: { type: Object, default: null } },
   setup(e) {
     var u;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const t = e, n = Oe(Re, null), s = new Ap(), a = (u = n == null ? void 0 : n.subscriptions) == null ? void 0 : u.follow(`body of ${t.declaration.type}`, [ho], (d) => s.dispatch(d));
-========
-    const t = e, n = Oe(Re, null), s = new Ep(), a = (u = n == null ? void 0 : n.subscriptions) == null ? void 0 : u.follow(`body of ${t.declaration.type}`, [uo], (d) => s.dispatch(d));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     Ie(() => a == null ? void 0 : a());
     const o = (n == null ? void 0 : n.environment) ?? "", r = { reads: [], runs: [], missing: [], ask: async () => !0 }, i = L(() => !!(t.declaration.shipped || t.declaration.trusted)), l = L(() => ({
       // a body reads as the window its type names, which the module declares with the reads the body needs
@@ -6262,22 +5211,14 @@ const Pp = {
       events: i.value ? [ho] : t.declaration.events ?? [],
       options: []
     }));
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (d, f) => i.value ? (c(), V(Kp, {
-========
-    return (d, f) => i.value ? (c(), V(Gp, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       key: 0,
       entry: l.value,
       subscriptions: z(s),
       environment: z(o),
       permissions: r,
       options: { row: e.row, head: e.head }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, null, 8, ["entry", "subscriptions", "environment", "options"])) : (c(), V(Vp, {
-========
-    }, null, 8, ["entry", "subscriptions", "environment", "options"])) : (c(), V(zp, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       key: 1,
       entry: l.value,
       subscriptions: z(s),
@@ -6286,7 +5227,6 @@ const Pp = {
       options: { row: e.row }
     }, null, 8, ["entry", "subscriptions", "environment", "options"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Jp = { class: "mark-more-inner" }, Zp = {
   class: "mark-lines",
   "data-mark-reason": ""
@@ -6303,24 +5243,6 @@ const Pp = {
   setup(e) {
     const t = e, n = Oe(Re), s = L(() => String(t.mark.lines || "").split(`
 `).filter(Boolean)), a = L(() => qr.has(t.mark.variant) && t.mark.detail || ""), o = L(() => t.mark.target_model === fo ? t.mark.target_id : 0), r = B([]), i = B(!1), l = B(""), u = L(() => t.mark.target_model === eg && !!t.mark.target_id);
-========
-}, Yp = { class: "mark-more-inner" }, Jp = {
-  class: "mark-lines",
-  "data-mark-reason": ""
-}, Zp = {
-  key: 1,
-  class: "mark-lines",
-  role: "alert"
-}, Xp = {
-  key: 3,
-  class: "mark-lines"
-}, Qp = "process", ho = "task", eg = 2e3, tg = {
-  __name: "MarkBody",
-  props: { declaration: { type: Object, required: !0 }, mark: { type: Object, required: !0 }, shown: Boolean, head: { type: Object, default: null } },
-  setup(e) {
-    const t = e, n = Oe(Re), s = B(() => String(t.mark.lines || "").split(`
-`).filter(Boolean)), a = B(() => Dr.has(t.mark.variant) && t.mark.detail || ""), o = B(() => t.mark.target_model === ho ? t.mark.target_id : 0), r = L([]), i = L(!1), l = L(""), u = B(() => t.mark.target_model === Qp && !!t.mark.target_id);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     async function d() {
       const v = await n.run(["output", "peek", String(t.mark.target_id), "--all"]);
       i.value = !0, l.value = v.ok ? "" : v.error, v.ok && (r.value = v.value.lines);
@@ -6334,18 +5256,12 @@ const Pp = {
       onClick: I[1] || (I[1] = xe(() => {
       }, ["stop"]))
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", Jp, [
         e.declaration.body_url ? (c(), V(Yp, {
-========
-      p("div", Yp, [
-        e.declaration.body_url ? (c(), V(Kp, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: 0,
           declaration: e.declaration,
           row: e.mark,
           head: e.head
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, null, 8, ["declaration", "row", "head"])) : (c(), h(G, { key: 1 }, [
           a.value ? (c(), h(G, { key: 0 }, [
             I[2] || (I[2] = p("p", { class: "mark-label" }, "Why it stopped", -1)),
@@ -6358,20 +5274,6 @@ const Pp = {
               lines: r.value
             }, null, 8, ["lines"])
           ], 64)) : s.value.length ? (c(), h("p", Qp, b(s.value.join(`
-========
-        }, null, 8, ["declaration", "row", "head"])) : (c(), h(K, { key: 1 }, [
-          a.value ? (c(), h(K, { key: 0 }, [
-            R[2] || (R[2] = p("p", { class: "mark-label" }, "Why it stopped", -1)),
-            p("p", Jp, b(a.value), 1)
-          ], 64)) : C("", !0),
-          u.value && l.value ? (c(), h("p", Zp, b(l.value), 1)) : u.value && i.value ? (c(), h(K, { key: 2 }, [
-            R[3] || (R[3] = p("p", { class: "mark-label" }, "Output", -1)),
-            P(fp, {
-              class: "mark-terminal",
-              lines: r.value
-            }, null, 8, ["lines"])
-          ], 64)) : s.value.length ? (c(), h("p", Xp, b(s.value.join(`
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 `)), 1)) : C("", !0),
           o.value ? (c(), h("button", {
             key: 4,
@@ -6445,11 +5347,7 @@ function Gr(e, t, n = hg) {
     await e(), a();
   }), Dt(() => clearTimeout(s));
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const fg = ["data-ref"], mg = ["data-ref"], pg = { class: "mark-row" }, gg = "dock add", vg = {
-========
-const hg = ["data-ref"], fg = ["data-ref"], mg = { class: "mark-row" }, pg = "dock add", gg = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "MarkHost",
   props: { mark: { type: Object, required: !0 }, allowedRuns: { type: Array, default: null }, docked: Boolean },
   setup(e) {
@@ -6459,7 +5357,6 @@ const hg = ["data-ref"], fg = ["data-ref"], mg = { class: "mark-row" }, pg = "do
       const v = await o.read(["output", "list", "--process", String(s.mark.target_id)]);
       v.ok && v.value.rows.length && (i.value = v.value.rows[0].progress);
     }, () => r.value);
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const l = L(() => {
       const v = op(s.mark, a.value), I = !v.figure || v.figure.endsWith("%");
       return i.value && r.value && I ? { ...v, figure: `${i.value}%`, fraction: i.value / 100 } : v;
@@ -6469,30 +5366,14 @@ const hg = ["data-ref"], fg = ["data-ref"], mg = { class: "mark-row" }, pg = "do
     }), d = B(!1);
     function f(v) {
       if (l.value.handlers.onAct && !v.target.closest(".fold")) return l.value.handlers.onAct();
-========
-    const l = B(() => {
-      const y = ap(s.mark, a.value), R = !y.figure || y.figure.endsWith("%");
-      return i.value && r.value && R ? { ...y, figure: `${i.value}%`, fraction: i.value / 100 } : y;
-    }), u = B(() => {
-      var y;
-      return !!(s.mark.lines || s.mark.detail && Dr.has(s.mark.variant) || t.has(s.mark.target_model) || (y = a.value) != null && y.body_url);
-    }), d = L(!1);
-    function f(y) {
-      if (l.value.handlers.onAct && !y.target.closest(".fold")) return l.value.handlers.onAct();
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       d.value = !d.value;
     }
     const g = L(() => {
       var v, I, M;
       return s.docked ? (I = (v = a.value) == null ? void 0 : v.buttons) == null ? void 0 : I.filter((_) => {
         var x;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         return !((x = _.runs) != null && x.startsWith(gg));
       }) : (M = a.value) == null ? void 0 : M.buttons;
-========
-        return !((x = M.runs) != null && x.startsWith(pg));
-      }) : (S = a.value) == null ? void 0 : S.buttons;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     });
     return (v, I) => {
       var M, _;
@@ -6511,13 +5392,8 @@ const hg = ["data-ref"], fg = ["data-ref"], mg = { class: "mark-row" }, pg = "do
         class: Z(["thread-turn", "card", { "full-width": (_ = a.value) == null ? void 0 : _.full_width, docked: e.docked, "user-side": z(n).has(e.mark.variant) }]),
         "data-ref": `chat_mark:${e.mark.id}`
       }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("span", pg, [
           D(Pr, tt({
-========
-        p("span", mg, [
-          P(Lr, tt({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             mark: l.value,
             open: u.value ? d.value : void 0
           }, Ui(l.value.handlers), { onClick: f }), zi({ _: 2 }, [
@@ -6577,15 +5453,9 @@ const hg = ["data-ref"], fg = ["data-ref"], mg = { class: "mark-row" }, pg = "do
         inert: !n.value,
         "data-mark-group-rows": ""
       }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("div", bg, [
           p("div", xg, [
             (c(!0), h(G, null, se(e.group.marks, (u) => (c(), V(yg, {
-========
-        p("div", kg, [
-          p("div", bg, [
-            (c(!0), h(K, null, se(e.group.marks, (u) => (c(), V(vg, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               key: u.id,
               mark: u
             }, null, 8, ["mark"]))), 128))
@@ -6608,18 +5478,13 @@ const Sg = { class: "chat-dock-fold" }, _g = ["aria-label"], Eg = { class: "chat
     return Fe(() => r = setTimeout(() => o.value = !0, Kr)), Dt(() => clearTimeout(r)), t({ card: n }), (i, l) => (c(), h("div", {
       class: Z(["chat-dock", { lifted: e.lifted }])
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", Sg, [
-========
-      p("div", Mg, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("section", {
           ref_key: "card",
           ref: n,
           class: Z(["chat-dock-card", e.kind]),
           "aria-label": e.label
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           me(i.$slots, "edge"),
           p("header", Eg, [
             me(i.$slots, "head")
@@ -6630,18 +5495,6 @@ const Sg = { class: "chat-dock-fold" }, _g = ["aria-label"], Eg = { class: "chat
             p("div", Ag, [
               p("div", {
                 class: Z(["chat-dock-grow", { settled: o.value }]),
-========
-          he(i.$slots, "edge"),
-          p("header", _g, [
-            he(i.$slots, "head")
-          ]),
-          p("div", {
-            class: J(["chat-dock-body", { folded: e.folded, settled: o.value }])
-          }, [
-            p("div", Eg, [
-              p("div", {
-                class: J(["chat-dock-grow", { settled: o.value }]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 style: pe(z(a) === null ? null : { height: `${z(a)}px` })
               }, [
                 p("div", {
@@ -6665,11 +5518,7 @@ const Sg = { class: "chat-dock-fold" }, _g = ["aria-label"], Eg = { class: "chat
   props: { endsAt: { type: Number, required: !0 } },
   setup(e) {
     const n = Math.min(vs, Math.max(0, e.endsAt - Date.now() / 1e3)), s = { animationDuration: `${vs}s`, animationDelay: `${(n - vs).toFixed(2)}s` };
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (a, o) => (c(), h("span", Og, [
-========
-    return (a, o) => (c(), h("span", Cg, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       p("i", { style: s })
     ]));
   }
@@ -6733,11 +5582,7 @@ const Pg = (e, t) => ({
               name: r.value.icon,
               class: "dock-icon"
             }, null, 8, ["name"]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             p("span", jg, b(r.value.title), 1)
-========
-            p("span", Pg, b(r.value.title), 1)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           ], 64)),
           (_ = a.value) != null && _.badge ? (c(), h("span", {
             key: 2,
@@ -6756,15 +5601,9 @@ const Pg = (e, t) => ({
             D(Xt, {
               open: !e.folded
             }, null, 8, ["open"])
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           ], 8, qg)),
           p("span", Fg, [
             (c(!0), h(G, null, se(f.value, (T) => (c(), h(G, {
-========
-          ], 8, jg)),
-          p("span", qg, [
-            (c(!0), h(K, null, se(f.value, (T) => (c(), h(K, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               key: T.action + T.runs
             }, [
               T.iconOnly ? (c(), V(ve, {
@@ -6821,11 +5660,7 @@ const Pg = (e, t) => ({
       _: 1
     }, 8, ["label", "folded", "data-figure-closing"]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, mo = /* @__PURE__ */ K(Ug, [["__scopeId", "data-v-1ac9db13"]]), zg = 6, Vg = 3, po = (e, t) => {
-========
-}, fo = /* @__PURE__ */ G(Hg, [["__scopeId", "data-v-1ac9db13"]]), Ug = 6, zg = 3, mo = (e, t) => {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   var n;
   return (((n = t(e.type)) == null ? void 0 : n.leaves_after_seconds) || 0) > 0;
 }, yt = (e) => !!(e.leaves_at && !e.kept), Gg = (e, t, n = /* @__PURE__ */ new Set()) => e.state === "docked" && (!yt(e) || t < e.leaves_at || n.has(e.id)), Kg = (e, t, n = /* @__PURE__ */ new Set()) => e.filter((s) => Gg(s, t, n)).sort((s, a) => s.id - a.id);
@@ -6865,7 +5700,6 @@ const Jg = (e, t, n = e) => n < 2 ? !1 : e >= Vg ? !0 : t, Zg = ["title", "aria-
           key: 0,
           "ends-at": e.item.leaves_at
         }, null, 8, ["ends-at"])) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("span", Xg, [
           r.value ? (c(), h("span", Qg)) : (c(), V(nt, {
             key: 1,
@@ -6876,18 +5710,6 @@ const Jg = (e, t, n = e) => n < 2 ? !1 : e >= Vg ? !0 : t, Zg = ["title", "aria-
         p("span", t0, [
           p("i", {
             style: pe({ width: r.value ? `${((v = o.value) == null ? void 0 : v.progress) ?? 0}%` : "100%", background: l.value })
-========
-        p("span", Zg, [
-          r.value ? (c(), h("span", Xg)) : (c(), V(nt, {
-            key: 1,
-            name: n[o.value.state] ?? "stop"
-          }, null, 8, ["name"])),
-          p("span", Qg, b(i.value), 1)
-        ]),
-        p("span", e0, [
-          p("i", {
-            style: pe({ width: r.value ? `${((y = o.value) == null ? void 0 : y.progress) ?? 0}%` : "100%", background: l.value })
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           }, null, 4)
         ])
       ], 12, Zg);
@@ -6905,21 +5727,13 @@ const l0 = (e, t) => e === void 0 ? t : e, c0 = {
   __name: "DockStack",
   props: { items: { type: Array, required: !0 }, folded: Boolean },
   setup(e) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const t = e, n = Dm(500), s = B(/* @__PURE__ */ new Set()), a = B(!1), o = B(!1), r = Oe(Re), i = B(/* @__PURE__ */ new Set()), l = B({});
-========
-    const t = e, n = Lm(500), s = L(/* @__PURE__ */ new Set()), a = L(!1), o = L(!1), r = Oe(Re), i = L(/* @__PURE__ */ new Set()), l = L({});
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     async function u($, E) {
       i.value = /* @__PURE__ */ new Set([...i.value, $.id]);
       const S = await ba(E, $, r.environment);
       (S == null ? void 0 : S.ok) === !1 && (i.value = new Set([...i.value].filter((w) => w !== $.id)), l.value = { ...l.value, [$.id]: S.error });
     }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const d = L(() => Kg(t.items.filter(($) => !i.value.has($.id)), n.value, s.value)), f = L(() => Yg(d.value.filter(($) => po($, Js)), n.value)), g = L(() => d.value.filter(($) => !f.value.includes($) && !po($, Js))), v = L(() => f.value.filter(($) => !yt($))), I = L(() => (a.value = Jg(f.value.length, a.value, v.value.length)) && !o.value), M = B({}), _ = ($) => l0(M.value[$.id], t.folded);
-========
-    const d = B(() => Gg(t.items.filter(($) => !i.value.has($.id)), n.value, s.value)), f = B(() => Kg(d.value.filter(($) => mo($, Zs)), n.value)), v = B(() => d.value.filter(($) => !f.value.includes($) && !mo($, Zs))), y = B(() => f.value.filter(($) => !yt($))), R = B(() => (a.value = Yg(f.value.length, a.value, y.value.length)) && !o.value), S = L({}), M = ($) => i0(S.value[$.id], t.folded);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     function x($) {
       M.value = { ...M.value, [$.id]: !_($) };
     }
@@ -6954,11 +5768,7 @@ const l0 = (e, t) => e === void 0 ? t : e, c0 = {
           onMouseenter: (w) => O(S),
           onMouseleave: (w) => y(S)
         }, null, 8, ["item", "class", "leaving", "folded", "refusal", "onFold", "onUndock", "onMouseenter", "onMouseleave"]))), 128)),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         a.value && o.value ? (c(), h("div", c0, [
-========
-        a.value && o.value ? (c(), h("div", l0, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           p("button", {
             type: "button",
             class: "dock-runs-toggle",
@@ -6988,11 +5798,7 @@ const l0 = (e, t) => e === void 0 ? t : e, c0 = {
           label: `${f.value.length} runs`,
           kind: "dock-runs-row"
         }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           head: F(() => [
-========
-          head: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             p("button", {
               type: "button",
               class: "dock-runs-toggle",
@@ -7005,19 +5811,11 @@ const l0 = (e, t) => e === void 0 ? t : e, c0 = {
               le(" " + b(f.value.length) + " runs ", 1),
               D(Xt)
             ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             p("span", u0, [
               (c(!0), h(G, null, se(f.value, (S) => (c(), V(o0, {
                 key: S.id,
                 item: S,
                 onClick: (w) => T(S)
-========
-            p("span", c0, [
-              (c(!0), h(K, null, se(f.value, (_) => (c(), V(a0, {
-                key: _.id,
-                item: _,
-                onClick: (w) => T(_)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               }, null, 8, ["item", "onClick"]))), 128))
             ])
           ]),
@@ -7030,15 +5828,9 @@ const l0 = (e, t) => e === void 0 ? t : e, c0 = {
 }, ub = /* @__PURE__ */ K(d0, [["__scopeId", "data-v-7f46f4cf"]]), wt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, On = (e) => Math.min(Math.max(e, 0), 1), h0 = (e) => {
   const t = On(e);
   return t * t * (3 - 2 * t);
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, mt = (e, t, n) => h0((e - t) / (n - t));
 function db(e) {
   const t = On(e), n = On((t - 0.12) / 0.76) * wt.shuffles, s = Math.min(Math.floor(n), wt.shuffles - 1), a = n - s, o = mt(a, 0.26, 0.38) * (1 - mt(a, 0.76, 0.96)), r = mt(a, 0.38, 0.76), i = mt(t, 0, 0.12) * (1 - mt(t, 0.88, 1)), l = mt(a, 0.2, 0.34) * (1 - mt(a, 0.84, 1)), u = Math.sin(Math.PI * On((a - 0.45) / 0.55)) ** 2;
-========
-}, mt = (e, t, n) => d0((e - t) / (n - t));
-function eb(e) {
-  const t = Cn(e), n = Cn((t - 0.12) / 0.76) * wt.shuffles, s = Math.min(Math.floor(n), wt.shuffles - 1), a = n - s, o = mt(a, 0.26, 0.38) * (1 - mt(a, 0.76, 0.96)), r = mt(a, 0.38, 0.76), i = mt(t, 0, 0.12) * (1 - mt(t, 0.88, 1)), l = mt(a, 0.2, 0.34) * (1 - mt(a, 0.84, 1)), u = Math.sin(Math.PI * Cn((a - 0.45) / 0.55)) ** 2;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return { moved: r, across: (s + r) / wt.shuffles, lift: wt.lift * o, ready: i, weight: l, follow: u, shuffle: s, phase: a };
 }
 function hb(e, t, n, s, a) {
@@ -7049,25 +5841,15 @@ function hb(e, t, n, s, a) {
     seatPose: { face: s, from: e.facing, to: s, since: a, next: a + 4 }
   };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const go = {
-========
-const po = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   butler: { ms: 420, squash: 0.04, bounce: 0 },
   coach: { ms: 340, squash: 0.1, bounce: 10 },
   colleague: { ms: 480, squash: 0.06, bounce: 3 },
   homie: { ms: 380, squash: 0.14, bounce: 14 },
   squire: { ms: 300, squash: 0.18, bounce: 2 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, fb = (e) => go[e] ?? go.butler, xa = 2400, f0 = 0.05;
 function m0({ y: e, speed: t }, n, s, a = 1 / 0) {
   const o = Math.min(s, f0), r = Math.min(t + xa * o, a), i = e + r * o;
-========
-}, nb = (e) => po[e] ?? po.butler, ba = 2400, h0 = 0.05;
-function f0({ y: e, speed: t }, n, s, a = 1 / 0) {
-  const o = Math.min(s, h0), r = Math.min(t + ba * o, a), i = e + r * o;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return i < n ? { y: i, speed: r, landed: !1 } : { y: n, speed: 0, landed: !0 };
 }
 function mb(e, t, n = null) {
@@ -7075,7 +5857,7 @@ function mb(e, t, n = null) {
   const s = e.intro || 0, a = e.outro || 0;
   return n !== null && t >= n ? Math.min(e.frames - a + t - n, e.frames - 1) : t < s ? t : s + (t - s) % (e.frames - s - a);
 }
-function m0(e, t) {
+function p0(e, t) {
   if (!t || e < t.to) return e;
   const { from: n, to: s, extra: a } = t;
   return e < s + a ? n + (e - s) % (s - n) : e - a;
@@ -7092,21 +5874,12 @@ function yb(e, t, n) {
   const s = e.leaves || e.frames;
   return Math.floor(t / s) > Math.floor(n / s);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const wb = (e, t, n) => !!(e.once && (t != null && t.once) && e.clip.name === t.clip.name && !n), g0 = "[data-figure-bubble], [data-figure-mark], [data-figure-home], [data-figure-docked-bars]", vo = (e, t) => ({ left: Math.max(e.left, t.left), right: Math.min(e.right, t.right), top: Math.max(e.top, t.top), bottom: Math.min(e.bottom, t.bottom) }), v0 = (e) => e.right > e.left && e.bottom > e.top;
 function kb(e = ((t) => (t = document.querySelector("[data-figure-home]")) == null ? void 0 : t.closest("[data-figure-world]"))()) {
   var a;
   if (!e) return [];
   const n = e.getBoundingClientRect(), s = (a = e.querySelector("[data-figure-chat-foot]")) == null ? void 0 : a.getBoundingClientRect();
   return [...e.querySelectorAll(g0)].flatMap((o) => {
-========
-const lb = (e, t, n) => !!(e.once && (t != null && t.once) && e.clip.name === t.clip.name && !n), p0 = "[data-figure-bubble], [data-figure-mark], [data-figure-home], [data-figure-docked-bars]", go = (e, t) => ({ left: Math.max(e.left, t.left), right: Math.min(e.right, t.right), top: Math.max(e.top, t.top), bottom: Math.min(e.bottom, t.bottom) }), g0 = (e) => e.right > e.left && e.bottom > e.top;
-function cb(e = ((t) => (t = document.querySelector("[data-figure-home]")) == null ? void 0 : t.closest("[data-figure-world]"))()) {
-  var a;
-  if (!e) return [];
-  const n = e.getBoundingClientRect(), s = (a = e.querySelector("[data-figure-chat-foot]")) == null ? void 0 : a.getBoundingClientRect();
-  return [...e.querySelectorAll(p0)].flatMap((o) => {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     if (o.checkVisibility && !o.checkVisibility({ opacityProperty: !0, visibilityProperty: !0 })) return [];
     const r = o.getBoundingClientRect();
     let i = vo(r, n);
@@ -7307,21 +6080,12 @@ function $b(e, t) {
   }
   return { index: 0, s: 1, height: 0 };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Mb = () => Array.from({ length: Se.pogo.count }, (e, t) => Se.pogo.bounce * (t + 1) / Se.pogo.count), Tt = { reach: 1.2, margin: 0.25, tall: 0.14, stride: 0.5, carried: 5 };
 function Sb(e, t, n) {
   const { away: s, side: a } = Se.bug_smash, o = a * s * n, [r, i] = [t.left + Tt.margin * n, t.right - Tt.margin * n], l = Math.min(Math.max(e + o + a * Tt.reach * n, r), i), u = l - o - e, d = l - (a * u > 0 ? u / 2 : 0);
   return { figure: [e - t.left, d - o - t.left], bug: [l - t.left, d - t.left] };
 }
 function _b(e, t, n) {
-========
-const fb = () => Array.from({ length: Se.pogo.count }, (e, t) => Se.pogo.bounce * (t + 1) / Se.pogo.count), Tt = { reach: 1.2, margin: 0.25, tall: 0.14, stride: 0.5, carried: 5 };
-function mb(e, t, n) {
-  const { away: s, side: a } = Se.bug_smash, o = a * s * n, [r, i] = [t.left + Tt.margin * n, t.right - Tt.margin * n], l = Math.min(Math.max(e + o + a * Tt.reach * n, r), i), u = l - o - e, d = l - (a * u > 0 ? u / 2 : 0);
-  return { figure: [e - t.left, d - o - t.left], bug: [l - t.left, d - t.left] };
-}
-function pb(e, t, n) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   const s = Se.bug_smash, a = _e(t, s.walk), o = ([r, i]) => r + (i - r) * a;
   return {
     figure: o(e.figure),
@@ -7355,13 +6119,8 @@ function Xs(e, t, n) {
   const s = e.wall === "top" ? t.right - t.left : t.bottom - t.top, a = 1 - 2 * Te.margin, r = ((e.along - Te.margin + e.way * Te.speed * n / s) / a % 2 + 2) % 2, i = Te.margin + a * (r <= 1 ? r : 2 - r);
   return e.wall === "top" ? { x: t.left + i * s, y: t.top + Te.inset, turn: 180 } : { x: e.wall === "left" ? t.left + Te.inset : t.right - Te.inset, y: t.top + i * s, turn: e.wall === "left" ? 90 : -90 };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function $0(e, t) {
   const n = Se.bug_shot, [s, a] = n.turn.map((d) => d * n.frames), o = { from: s, to: a, extra: (t - 1) * (a - s) }, r = p0(e, o), i = e < s ? 0 : Math.min(Math.floor((e - s) / (a - s)), t - 1), u = e >= s + t * (a - s) ? t : i + (r / n.frames >= n.splat ? 1 : 0);
-========
-function x0(e, t) {
-  const n = Se.bug_shot, [s, a] = n.turn.map((d) => d * n.frames), o = { from: s, to: a, extra: (t - 1) * (a - s) }, r = m0(e, o), i = e < s ? 0 : Math.min(Math.floor((e - s) / (a - s)), t - 1), u = e >= s + t * (a - s) ? t : i + (r / n.frames >= n.splat ? 1 : 0);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return { frame: r, stretch: o, bug: i, shot: u };
 }
 function Cb(e, t, n, { surfaces: s = [], bursts: a = null } = {}) {
@@ -7528,11 +6287,7 @@ const T0 = { after: 3 }, $a = 10, I0 = { hop_up: 1200, disco: 7200, rope_swing: 
   "⚔️": "angry",
   "🛡️": "worried",
   "🏰": "amused"
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, fn = (e, t, n, s) => ({ name: e, kind: t, weight: n, when: s, lifetime: $a }), te = (e, t, n = {}) => fn(e, "clip", t, n), ys = (e, t, n = {}) => fn(e, "look", t, n), yo = (e, t, n = {}) => fn(e, "gaze", t, n), fe = (e, t, n = {}, s = {}) => ({ ...fn(e, "pick", t, n), ...s }), we = (e) => fn("nothing", "nothing", e, {}), N0 = 120, P0 = 300, ws = (e, t) => ({ ...te(e, t), cooldown: P0 }), oe = (e, { cooldown: t = 0, ...n }, s) => s.map((a) => ({ ...n, ...a, when: { moment: e, ...a.when }, group: { name: e, cooldown: t } })), j0 = () => [te("joy", 2)], pt = (e, t, n, s, a = {}) => ({ ...te(e, t, { free: !0, lasted: n, ...a.when }), cooldown: s }), gt = (e) => ({ ...e, cooldown: I0[e.name] }), Ht = (e) => ({ ...e, shenanigan: !0, lasts: R0[e.name] }), Xn = [
-========
-}, hn = (e, t, n, s) => ({ name: e, kind: t, weight: n, when: s, lifetime: xa }), te = (e, t, n = {}) => hn(e, "clip", t, n), ys = (e, t, n = {}) => hn(e, "look", t, n), vo = (e, t, n = {}) => hn(e, "gaze", t, n), me = (e, t, n = {}, s = {}) => ({ ...hn(e, "pick", t, n), ...s }), ye = (e) => hn("nothing", "nothing", e, {}), N0 = 120, D0 = 300, ws = (e, t) => ({ ...te(e, t), cooldown: D0 }), oe = (e, { cooldown: t = 0, ...n }, s) => s.map((a) => ({ ...n, ...a, when: { moment: e, ...a.when }, group: { name: e, cooldown: t } })), P0 = () => [te("joy", 2)], pt = (e, t, n, s, a = {}) => ({ ...te(e, t, { free: !0, lasted: n, ...a.when }), cooldown: s }), gt = (e) => ({ ...e, cooldown: T0[e.name] }), Wt = (e) => ({ ...e, shenanigan: !0, lasts: I0[e.name] }), Qn = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   // a test run's end: celebrated on its card, or a start at a failure; a pass soon after a failure is the bug solved, most often shot
   // as it crawls into the chat instead of the visor's glow
   ...oe("tests_passed", { cooldown: 20, toward: "card", onto: !0 }, [te("nod", 2), we(1)]),
@@ -7574,17 +6329,10 @@ const T0 = { after: 3 }, $a = 10, I0 = { hop_up: 1200, disco: 7200, rope_swing: 
   // while the agent thinks, the thinking act, at most once in 30 to 60 seconds, and nothing of thinking between plays; its two parts
   // each on a cooldown of their own, so neither shows every play: the thought cloud with the finger at the cheek, and the bulb at its
   // end (reactions.js thinkingAct)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   ...oe("pondering", { cooldown: [30, 60] }, [fe("ponder", 1)]),
   ...oe("thought_cloud", { cooldown: 90 }, [fe("cloud", 1)]),
   ...oe("light_bulb", { cooldown: 150 }, [fe("bulb", 1)]),
   ...oe("answered", { cooldown: 15 }, [ys("amused", 3), we(2)]),
-========
-  ...oe("pondering", { cooldown: [30, 60] }, [me("ponder", 1)]),
-  ...oe("thought_cloud", { cooldown: 90 }, [me("cloud", 1)]),
-  ...oe("light_bulb", { cooldown: 150 }, [me("bulb", 1)]),
-  ...oe("answered", { cooldown: 15 }, [ys("amused", 3), ye(2)]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   ...oe("heard", { cooldown: 30 }, [
     te("bow", 1, { voices: ["butler"] }),
     te("salute", 1, { voices: ["squire"] }),
@@ -7627,11 +6375,7 @@ const T0 = { after: 3 }, $a = 10, I0 = { hop_up: 1200, disco: 7200, rope_swing: 
   ...oe("held:compacting", {}, [te("pack_box", 3), te("vacuum", 2), te("compacting", 1)]),
   // the work's own acts, each only while that work goes on and then weighted heavily, a spell keeping it up a while so it is seen though
   // the tool lasts a moment: the laptop while the agent edits, the book while it reads, the searching while it searches
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   ...oe("spell", {}, [fe("writing", 12, { state: "writing" }), fe("reading", 12, { state: "reading" }), fe("searching", 12, { state: "searching" }), we(4)]),
-========
-  ...oe("spell", {}, [me("writing", 12, { state: "writing" }), me("reading", 12, { state: "reading" }), me("searching", 12, { state: "searching" }), ye(4)]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   // the mouse pointer tickling it (tickle.js): it swats at the pointer every time, as often as it is tickled, and never once the pointer
   // has long gone
   ...oe("tickled", {}, [{ ...gt(te("tickle_swat", 1)), lifetime: 3 }]),
@@ -7640,20 +6384,13 @@ const T0 = { after: 3 }, $a = 10, I0 = { hop_up: 1200, disco: 7200, rope_swing: 
   // a jump up more than the figure's own height now and then turns over backwards on the way
   ...oe("jump", {}, [Ht(gt(te("backflip", 7, { high: !0 }))), te("jump", 13)]),
   // a climb of at least half the chat window's height (climbs.js POGO) hops up the bubbles on the way; with none to hop on it is not climbed
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   ...oe("climb", {}, [fe("hops", 3, { footholds: !0 })]),
   // while a run goes, whether the figure builds a server unit now (UNIT), the build's sequence waiting its cooldown
   ...oe("unit", { cooldown: ei.build.cooldown }, [fe("unit", B0.weight), we(1)]),
-========
-  ...oe("climb", {}, [me("hops", 3, { footholds: !0 })]),
-  // while a run goes, whether the figure builds a server unit now (UNIT), the build's sequence waiting its cooldown
-  ...oe("unit", { cooldown: Zr.build.cooldown }, [me("unit", R0.weight), ye(1)]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   // the bar of a run the figure waits on seated jumping ahead or passing its near end (runWait.js): it looks up at it
   ...oe("progress_jump", { cooldown: 6 }, [te("look_up", 1)]),
   // a perch on a bubble: a hang from its corner by a free hand while it has nothing to do, at most once every HANG.every, or a stand on
   // its corner
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   ...oe("perch", {}, [{ ...fe("hang", 1, { hands: !0, free: !0 }), cooldown: L0.every }, fe("stand", 5)]),
   // a digit a blow's dust lets out
   ...oe("digit", {}, [fe("0", 1), fe("1", 1)]),
@@ -7683,54 +6420,15 @@ const T0 = { after: 3 }, $a = 10, I0 = { hop_up: 1200, disco: 7200, rope_swing: 
   ...oe("laptop", {}, [fe("seat", 6, {}, { stay: [60, 150] }), fe("bubble_ledge", 1, {}, { stay: [30, 60] })]),
   // where along the floor it sits on the edge: around the middle, or a third of the way from either end, never at an end
   ...oe("ledge_at", {}, [fe("middle", 2, {}, { along: 1 / 2 }), fe("third", 1, {}, { along: 1 / 3 }), fe("two_thirds", 1, {}, { along: 2 / 3 })]),
-========
-  ...oe("perch", {}, [{ ...me("hang", 1, { hands: !0, free: !0 }), cooldown: B0.every }, me("stand", 5)]),
-  // a digit a blow's dust lets out
-  ...oe("digit", {}, [me("0", 1), me("1", 1)]),
-  // where the figure goes when nothing calls it, and how long it stays, in seconds between the two: rests on a corner of the edge, sits on
-  // the corner itself with its legs over the end, strolls the edge, perches on a bubble or stands on a tab
-  ...oe("roam", {}, [
-    me("rest", 35, {}, { stay: [25, 60] }),
-    me("seat", 15, {}, { stay: [15, 40] }),
-    me("edge", 25, {}, { stay: [8, 20] }),
-    Wt(me("bubble", 15, {}, { stay: [30, 80] })),
-    // while its agent works, now and then, bored of the spot, it takes its work up onto a bubble a while
-    me("bubble", 6, { free: !1 }, { stay: [20, 45] }),
-    me("tab", 10, {}, { stay: [10, 25] }),
-    // with nothing to do, it sits on the edge of the floor it stands on, facing the viewer, its legs over the edge
-    me("ledge", 9, { free: !0 }, { stay: [20, 45] }),
-    // with nothing to do, it walks to near the middle of the floor it stands on and sits there composed, facing the viewer, its hands
-    // flat on the floor at its sides (perches.js composedSpot)
-    me("composed", 8, { free: !0 }, { stay: [25, 50] }),
-    // with nothing to do, beside the side of a bubble rising over the floor it stands on, it leans against it to rest a while (perches.js
-    // leanSpot)
-    me("lean", 2, { free: !0 }, { stay: [20, 45] }),
-    // with nothing to do and a bubble near the middle of the chat above it, it ties a rope swing under that bubble and swings
-    Wt(gt(me("rope_swing", 8, { free: !0, swings: !0 }, { stay: [25, 50] })))
-  ]),
-  // where it sits at its laptop while its agent works at it: mostly on a corner at home, now and then, bored of the spot, on the edge of
-  // a bubble, keeping to each a while
-  ...oe("laptop", {}, [me("seat", 6, {}, { stay: [60, 150] }), me("bubble_ledge", 1, {}, { stay: [30, 60] })]),
-  // where along the floor it sits on the edge: around the middle, or a third of the way from either end, never at an end
-  ...oe("ledge_at", {}, [me("middle", 2, {}, { along: 1 / 2 }), me("third", 1, {}, { along: 1 / 3 }), me("two_thirds", 1, {}, { along: 2 / 3 })]),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   // how it sits composed, drawn once a stay (figure.js COMPOSED): most often facing the viewer, both hands flat on the floor beside it;
   // now and then turned a little to the left or right, `turn` degrees, one arm free; sometimes leaning over on one arm, its left (`leans`
   // 1, figure.js SIDES) or its right (-1)
   ...oe("composed_as", {}, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     fe("facing", 4, {}, { turn: 0, leans: 0 }),
     fe("turned_left", 1, {}, { turn: 335, leans: 0 }),
     fe("turned_right", 1, {}, { turn: 25, leans: 0 }),
     fe("leaning_on_left_arm", 1, {}, { turn: 0, leans: 1 }),
     fe("leaning_on_right_arm", 1, {}, { turn: 0, leans: -1 })
-========
-    me("facing", 4, {}, { turn: 0, leans: 0 }),
-    me("turned_left", 1, {}, { turn: 335, leans: 0 }),
-    me("turned_right", 1, {}, { turn: 25, leans: 0 }),
-    me("leaning_on_left_arm", 1, {}, { turn: 0, leans: 1 }),
-    me("leaning_on_right_arm", 1, {}, { turn: 0, leans: -1 })
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   ])
 ], si = (e, t) => Object.entries(e).every(([n, s]) => n === "voices" ? s.includes(t.voice) : n === "lasted" ? t.lasted >= s : t[n] === s), ai = (e) => [[e.group.name, e.group.cooldown], [`${e.group.name}/${e.name}`, e.cooldown]].filter(([, t]) => t), q0 = (e) => Array.isArray(e) ? e[0] : e, F0 = (e, t) => Array.isArray(e) ? t() * (e[1] - e[0]) : 0, W0 = (e) => Xn.some((t) => t.when.moment === e);
 function H0(e) {
@@ -7980,20 +6678,13 @@ function p5(e, t, n, s) {
   const a = Qs[e], o = [...t ? [{ beat: "typing", time: s }] : [], ...(mv[a] ?? []).map((r) => ({ beat: r, time: s }))];
   return e === "thinking" && o.push({ beat: "pondering", time: s, during: "thinking" }), ii.has(e) ? { moments: o, began: n || s } : (n && s - n >= iv && o.push({ beat: "work_done", time: s }), { moments: o, began: 0 });
 }
-function mv(e, t, n) {
+function pv(e, t, n) {
   return !We({ moment: "pondering", memory: e, now: t }, n) || !We({ moment: "thought_cloud", memory: e, now: t }, n) ? null : We({ moment: "light_bulb", memory: e, now: t }, n) ? "ponder" : "think_cloud";
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const So = { pondering: pv };
 function g5(e, t, n, s, a, o) {
   if (So[e.beat]) {
     const i = So[e.beat](n.reacted, s, a);
-========
-const Mo = { pondering: mv };
-function o5(e, t, n, s, a, o) {
-  if (Mo[e.beat]) {
-    const i = Mo[e.beat](n.reacted, s, a);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     return i && o(i) ? { beat: { clip: i, card: "", ...e.during && { during: e.during } } } : null;
   }
   const r = dv(e.beat, n.reacted, s, a, t, o, n.tally);
@@ -8016,28 +6707,16 @@ function k5(e, t) {
   const n = e.findIndex((s) => s.clip === t);
   return n < 0 ? e : [...e.slice(0, n), ...e.slice(n + 1)];
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const b5 = (e, t) => !!(e != null && e.watches) && !t.once, x5 = 10, $5 = (e, t, n) => e.filter((s, a) => a === 0 && s.clip === t || !s.queuedAt || U0(s, s.queuedAt, n)), M5 = (e, t) => t ? null : e[0] ?? null;
 function S5(e, t, n) {
-========
-const u5 = (e, t) => !!(e != null && e.watches) && !t.once, d5 = 10, h5 = (e, t, n) => e.filter((s, a) => a === 0 && s.clip === t || !s.queuedAt || H0(s, s.queuedAt, n)), f5 = (e, t) => t ? null : e[0] ?? null;
-function m5(e, t, n) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   var a;
   const s = e.filter((o) => !o.during || o.during === t);
   return { beats: s, cut: !!n && ((a = e[0]) == null ? void 0 : a.clip) === n && s[0] !== e[0] };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const _5 = (e, t) => !t.during || !e.some((n) => n.during === t.during), gv = 2 * Math.PI, vv = 500;
 function E5(e, t, n, s, a = null, o = 1) {
   const r = s - (e.at || s), i = r / vv, l = t && e.point && !!t.behind != !!e.point.behind, u = l && e.amount > 0, d = t && !u ? o : 0, f = e.amount < d ? Math.min(e.amount + i, d) : Math.max(e.amount - i, d), g = gv * r / 1e3, v = e.toward ? { ...e.point, x: n.x + e.toward.x, y: n.y + e.toward.y } : e.point, M = (u ? v : t != null && t.behind && t.mood === "reading" ? { ...t } : t && v && !l ? a && !t.behind && !v.behind ? wv(v, t, n, g, a) : bv(v, t, n, g) : t) ?? v, _ = M != null && M.behind && M.mood === "reading" ? yv(e.point, M, n, r, a) : M;
   return { point: _ ?? null, toward: _ ? { x: _.x - n.x, y: _.y - n.y } : null, amount: f, at: s };
-========
-const p5 = (e, t) => !t.during || !e.some((n) => n.during === t.during), pv = 2 * Math.PI, gv = 500;
-function g5(e, t, n, s, a = null, o = 1) {
-  const r = s - (e.at || s), i = r / gv, l = t && e.point && !!t.behind != !!e.point.behind, u = l && e.amount > 0, d = t && !u ? o : 0, f = e.amount < d ? Math.min(e.amount + i, d) : Math.max(e.amount - i, d), v = pv * r / 1e3, y = e.toward ? { ...e.point, x: n.x + e.toward.x, y: n.y + e.toward.y } : e.point, S = (u ? y : t != null && t.behind && t.mood === "reading" ? { ...t } : t && y && !l ? a && !t.behind && !y.behind ? yv(y, t, n, v, a) : kv(y, t, n, v) : t) ?? y, M = S != null && S.behind && S.mood === "reading" ? vv(e.point, S, n, r, a) : S;
-  return { point: M ?? null, toward: M ? { x: M.x - n.x, y: M.y - n.y } : null, amount: f, at: s };
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function yv(e, t, n, s, a) {
   const o = (w) => w * 180 / Math.PI, r = (w) => o(Math.atan2(Math.sin(w * Math.PI / 180), Math.cos(w * Math.PI / 180))), i = (a == null ? void 0 : a.facing) ?? 0, l = (a == null ? void 0 : a.depth) ?? 24, u = r(o(Math.atan2(t.x - n.x, -l)) - i), d = r(o(Math.atan2((t.readingCenter ?? t.x) - n.x, -l)) - i), f = (e == null ? void 0 : e.mood) === "reading" && Number.isFinite(e.readingYaw), g = f ? r(e.readingFacing - i) : 0, v = f ? e.readingYaw + g : d, I = v + r(u - v), M = Math.min(Math.max(s / 1e3, 0), 0.1), _ = Ce.turnSpeed * M, x = f ? v + Math.min(Math.max(I - v, -_), _) : I, T = f ? e.readingFollow + g : x, Y = T + (x - T) * (1 - Math.exp(-M / Ce.followSeconds)), O = (a == null ? void 0 : a.tip) ?? { up: 25, down: 35 }, y = o(Ma(t.x - n.x, -l, n.y - t.y, (a == null ? void 0 : a.above) ?? 0).pitch), $ = Math.min(Math.max(y, -O.up), O.down), E = Ce.tipSpeed * M, S = f ? e.readingPitch + Math.min(Math.max($ - e.readingPitch, -E), E) : $;
@@ -8195,11 +6874,7 @@ function s4(e, t, n, s = fi()) {
   const a = es(t), o = (0.5 - Math.min(a.left, 0.27)) * e.size, r = (Math.max(a.right, 0.73) - 0.5) * e.size, i = Mt(), l = t.posture === "stand" ? Ea * e.size : bi * e.size, u = Math.max(n.left + l, i.left + o), d = Math.min(n.right - l, i.right - r);
   return [s.left - wt.gap - r, s.right + wt.gap + o].map((g) => ({ ...t, x: g })).filter((g) => g.x >= u && g.x <= d && an(g, e, s) && my(g, e)).sort((g, v) => Math.abs(g.x - t.x) - Math.abs(v.x - t.x))[0] ?? null;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ms = 0.26, mi = 0.54, qv = 1.25 / 5.4, pn = {
-========
-const Ms = 0.26, di = 0.54, jv = 1.25 / 5.4, mn = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   stand: { drop: 0, travels: "stand" },
   sit: { drop: Ms, travels: "stand" },
   lounge: { drop: Ms, travels: "stand" },
@@ -8213,13 +6888,8 @@ const Ms = 0.26, di = 0.54, jv = 1.25 / 5.4, mn = {
 function r4(e, t) {
   return e.facing === t.facing || !zt.has(e.posture) && !zt.has(t.posture) ? t : { posture: "stand", facing: zt.has(e.posture) ? e.facing : t.facing };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const i4 = 0.25, l4 = (e, t) => zt.has(e) && pn[t].drop === 0, pi = 2, Wv = 90, Hv = 180, Uv = 140, zv = 280, Vv = 420, Gv = 0.25, Kv = 290, Yv = 600, Jv = "cubic-bezier(0.2, 0.7, 0.4, 1)", Zv = "cubic-bezier(0.55, 0, 0.9, 0.6)", Ss = 5;
 function qn(e, t, n, { straight: s = !1, hangs: a = !1, pace: o = 1, pressing: r = !1, sprinting: i = !1, random: l = Math.random, memory: u = null, now: d = 0, room: f = 0, pogo: g = !1 } = {}) {
-========
-const J5 = 0.25, Z5 = (e, t) => Ut.has(e) && mn[t].drop === 0, hi = 2, Fv = 90, Wv = 180, Hv = 140, Uv = 280, zv = 420, Vv = 0.25, Gv = 290, Kv = 600, Yv = "cubic-bezier(0.2, 0.7, 0.4, 1)", Jv = "cubic-bezier(0.55, 0, 0.9, 0.6)", Ss = 5;
-function jn(e, t, n, { straight: s = !1, hangs: a = !1, pace: o = 1, pressing: r = !1, sprinting: i = !1, random: l = Math.random, memory: u = null, now: d = 0, room: f = 0, pogo: v = !1 } = {}) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   if (Math.hypot(t.x - e.x, t.y - e.y) < Ss) return null;
   (r || i) && (o = Math.max(o, pi));
   const v = o > 1, I = Math.abs(t.x - e.x), M = I < Ss ? 0 : I / (Wv * o) * 1e3, _ = Math.min(M, v ? Uv : Hv), x = Math.abs(t.y - e.y), T = t.y < e.y, Y = T && !g && fv(x, n, l, u, d, f), O = T ? Vv + Math.min(x, 400) * Gv : Math.sqrt(2 * x / xa) * 1e3, y = {
@@ -8233,13 +6903,8 @@ function jn(e, t, n, { straight: s = !1, hangs: a = !1, pace: o = 1, pressing: r
   }, $ = { x: t.x, y: t.y, ms: M + _, lead: 0, easing: "linear", ramp: _, ...v ? { clip: "run" } : {} }, E = g ? Xv(t, n) : y, S = T && !s ? [{ ...$, y: e.y }, E] : [{ ...y, x: e.x }, $];
   return { way: Math.sign(t.x - e.x) || 1, legs: S, lands: !a, pace: o, running: v };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Xv = (e, t) => ({ x: e.x, y: e.y, ms: Se.pogo.frames / Se.pogo.fps * 1e3, lead: 0, easing: "linear", hopping: !0, pogo: !0, size: t, clip: "pogo" }), Qv = (e, t) => e.postures.includes(t) ? t : e.postures[0], c4 = (e, t, n) => e.posture === "walk" && n ? "walk" : Qv(e.clip, t), st = (e, { size: t, below: n }, s = e.posture) => {
   const a = e.y - (1 - n - pn[s].drop) * t;
-========
-const Zv = (e, t) => ({ x: e.x, y: e.y, ms: Se.pogo.frames / Se.pogo.fps * 1e3, lead: 0, easing: "linear", hopping: !0, pogo: !0, size: t, clip: "pogo" }), Xv = (e, t) => e.postures.includes(t) ? t : e.postures[0], X5 = (e, t, n) => e.posture === "walk" && n ? "walk" : Xv(e.clip, t), st = (e, { size: t, below: n }, s = e.posture) => {
-  const a = e.y - (1 - n - mn[s].drop) * t;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return { left: e.x - t / 2, right: e.x + t / 2, top: a, bottom: a + t };
 }, Qn = (e, t) => e.left < t.right && t.left < e.right && e.top < t.bottom && t.top < e.bottom, Sa = (e) => {
   var t;
@@ -8270,15 +6935,9 @@ function ty(e, { size: t }, n = Mt()) {
   const s = es(e);
   return { ...e, x: Math.min(Math.max(e.x, n.left + (0.5 - s.left) * t), n.right - (s.right - 0.5) * t) };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const Ea = (Ae.right - Ae.left) / 2 + 0.08;
 function d4(e, t) {
   return e === "hang" ? Ae : { ...Ae, bottom: Math.min(Ae.bottom, 1 - t - pn[e].drop) };
-========
-const _a = (Ae.right - Ae.left) / 2 + 0.08;
-function e4(e, t) {
-  return e === "hang" ? Ae : { ...Ae, bottom: Math.min(Ae.bottom, 1 - t - mn[e].drop) };
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 const ny = "[data-figure-agent]";
 function gi(e, t, n = "", s = "") {
@@ -8293,7 +6952,6 @@ function gi(e, t, n = "", s = "") {
   }
   return !1;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const vi = (e) => Wn.flatMap(
   (t) => Fn.map((n) => [e.left + n * (e.right - e.left), e.top + t * (e.bottom - e.top)])
 );
@@ -8301,23 +6959,10 @@ function Aa(e, t, n = "") {
   if (!an(e, t)) return Fn.length * Wn.length;
   const s = st(e, t), a = e.posture === "hang" ? s : { ...s, bottom: Math.min(s.bottom, e.y) }, o = [...document.querySelectorAll(Pv)].map((i) => ({ control: i, rect: i.getBoundingClientRect() })).filter(({ control: i, rect: l }) => l.width && l.height && Qn(a, l) && Sa(i)).map(({ rect: i }) => i), r = (i, l) => o.some((u) => i >= u.left && i <= u.right && l >= u.top && l <= u.bottom);
   return vi(a).filter(([i, l]) => r(i, l) || gi(i, l, n)).length;
-========
-const mi = (e) => Fn.flatMap(
-  (t) => qn.map((n) => [e.left + n * (e.right - e.left), e.top + t * (e.bottom - e.top)])
-);
-function Ea(e, t, n = "") {
-  if (!sn(e, t)) return qn.length * Fn.length;
-  const s = st(e, t), a = e.posture === "hang" ? s : { ...s, bottom: Math.min(s.bottom, e.y) }, o = [...document.querySelectorAll(Dv)].map((i) => ({ control: i, rect: i.getBoundingClientRect() })).filter(({ control: i, rect: l }) => l.width && l.height && es(a, l) && Ma(i)).map(({ rect: i }) => i), r = (i, l) => o.some((u) => i >= u.left && i <= u.right && l >= u.top && l <= u.bottom);
-  return mi(a).filter(([i, l]) => r(i, l) || fi(i, l, n)).length;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function sy(e, t) {
   const n = st(e, t);
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   return vi({ ...n, bottom: Math.min(n.bottom, e.y) }).filter(([s, a]) => gi(s, a, "", ny)).length;
-========
-  return mi({ ...n, bottom: Math.min(n.bottom, e.y) }).filter(([s, a]) => fi(s, a, "", ty)).length;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 const Oo = 4;
 function h4(e, t, n) {
@@ -8336,11 +6981,7 @@ function on(e, t, n) {
     (r, i) => i.covered < r.covered || i.covered === r.covered && i.away < r.away ? i : r
   ).spot : null;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const yi = (e, t) => t.map((n) => ({ x: e.left + e.width * n, y: e.top, posture: "stand" })), ay = [0.5, 0.25, 0.75], oy = (e) => yi(e.getBoundingClientRect(), ay), wi = {
-========
-const pi = (e, t) => t.map((n) => ({ x: e.left + e.width * n, y: e.top, posture: "stand" })), sy = [0.5, 0.25, 0.75], ay = (e) => pi(e.getBoundingClientRect(), sy), gi = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   right: { along: 1, inboard: -1, face: 60 },
   left: { along: 0, inboard: 1, face: 300 }
 }, ry = Ea, iy = (e, t, { size: n }, s = ry) => ki(e, wi[t], s * n, "stand");
@@ -8359,30 +7000,8 @@ const Vt = { every: [8, 20], seconds: 1.2, turns: [-20, -10, 0, 10, 20] }, dy = 
 function m4(e, t, n, s) {
   const a = (e == null ? void 0 : e.face) === t;
   if (a && n < e.next) return e;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   const o = dy(t), r = Vt.every[0] + s() * (Vt.every[1] - Vt.every[0]);
   return { face: t, from: a ? hy(e, n) : t, to: o[Math.floor(s() * o.length)], since: n, next: n + r };
-========
-  const o = uy(t), r = zt.every[0] + s() * (zt.every[1] - zt.every[0]);
-  return { face: t, from: a ? dy(e, n) : t, to: o[Math.floor(s() * o.length)], since: n, next: n + r };
-}
-function dy(e, t) {
-  const n = Math.min(1, Math.max(0, (t - e.since) / zt.seconds)), s = ((e.to - e.from + 180) % 360 + 360) % 360 - 180;
-  return (e.from + s * n * n * (3 - 2 * n) + 360) % 360;
-}
-function a4(e, t) {
-  const { element: n, edge: s } = ns(), a = ["left", "right"].map((i) => pn(ly(s, i, e), e)).filter((i) => n && Sa(i, e) && !Ea(i, e)), o = (i) => t ? Math.abs(i.x - t.x) : 0, r = a.sort((i, l) => o(i) - o(l))[0];
-  return r ? { ...r, view: null, on: n } : null;
-}
-function o4(e, t, { size: n }) {
-  const s = (Ae.right - Ae.left) / 2 * n;
-  return t && e.posture === "stand" && Math.abs(e.y - t.top) < 1 && e.x + s > t.left && e.x - s < t.right ? { ...e, x: t.left - s - wi } : e;
-}
-const wi = 7;
-function ki() {
-  const e = [...document.querySelectorAll($v)].map((t) => t.getBoundingClientRect()).filter((t) => t.width && t.height);
-  return e.length ? { left: Math.min(...e.map((t) => t.left)), right: Math.max(...e.map((t) => t.right)), top: Math.min(...e.map((t) => t.top)), bottom: Math.max(...e.map((t) => t.bottom)) } : null;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function hy(e, t) {
   const n = Math.min(1, Math.max(0, (t - e.since) / Vt.seconds)), s = ((e.to - e.from + 180) % 360 + 360) % 360 - 180;
@@ -8409,7 +7028,6 @@ function my(e, t) {
   const n = $i();
   return !n || !Qn(fy(e, t), n);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const py = 4;
 function ts() {
   const e = vn(), t = $i(), { left: n, width: s, top: a } = e.edge;
@@ -8424,22 +7042,6 @@ const ta = (e, t) => Object.keys(wi).map((n) => gn(iy(e, n, t), t)), Ca = (e, t)
 function y4(e, t) {
   const { element: n, edge: s } = ts();
   return { ...Mi(ta(s, e), e, t), view: null, on: n };
-========
-const my = 4;
-function ns() {
-  const e = gn(), t = ki(), { left: n, width: s, top: a } = e.edge;
-  return !t || Math.abs(t.bottom - a) > my || t.left > n + s || t.right < n ? e : { ...e, edge: { ...e.edge, width: Math.max(t.left - wi - n, 0) } };
-}
-const r4 = ({ size: e, below: t }) => (1 - t) * e;
-function pn(e, t) {
-  const n = Mt(), { size: s, below: a } = t, o = mn[e.posture].drop * s;
-  return { ...ey(e, t, n), y: Math.min(Math.max(e.y, n.top + (1 - a) * s - o), n.bottom) };
-}
-const na = (e, t) => Object.keys(gi).map((n) => pn(ry(e, n, t), t)), Aa = (e, t) => pi(e, Lv).map((n) => pn(n, t)), bi = (e, t, n) => an(e, t, n) ?? e[0];
-function i4(e, t) {
-  const { element: n, edge: s } = ns();
-  return { ...bi(na(s, e), e, t), view: null, on: n };
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function w4(e, t, n, s) {
   const { element: a, edge: o } = ts(), r = (s ? ta(o, t) : [...ta(o, t), ...Ca(o, t)]).filter(
@@ -8465,19 +7067,11 @@ function k4(e) {
   const a = ns().edge;
   return s.left > a.left + To.within || s.left + s.width < a.left + a.width - To.within;
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const gy = "[data-figure-closing]";
 function b4() {
   var n;
   const { element: e, docked: t } = vn();
   return t && !!((n = e.firstElementChild) != null && n.matches(gy));
-========
-const py = "[data-figure-closing]";
-function u4() {
-  var n;
-  const { element: e, docked: t } = gn();
-  return t && !!((n = e.firstElementChild) != null && n.matches(py));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 const Si = "[data-figure-progress]";
 function x4(e) {
@@ -8495,7 +7089,6 @@ function M4(e) {
   const { across: t, above: n, below: s } = vy;
   return [...document.querySelectorAll("[data-figure-picture]")].map((a) => ({ element: a, at: yy(a.getBoundingClientRect()) })).filter(({ at: a }) => Math.abs(a.x - e.x) <= t && a.y >= e.y - n && a.y <= e.y + s).sort((a, o) => Math.hypot(a.at.x - e.x, a.at.y - e.y) - Math.hypot(o.at.x - e.x, o.at.y - e.y)).map(({ element: a }) => a);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const yy = (e) => ({ x: (e.left + e.right) / 2, y: (e.top + e.bottom) / 2 }), _i = "[data-figure-bar]", na = { back: 144, along: 0.4 };
 function S4(e) {
   const { element: t, docked: n, edge: s } = vn(), a = n ? t.querySelector(_i) : null;
@@ -8505,17 +7098,6 @@ function S4(e) {
 }
 function _4(e, t, n, s) {
   return { x: Math.abs(e.x - t.x) < na.along * s.size ? t.x + na.along * s.size : e.x, y: e.y, behind: !0 };
-========
-const vy = (e) => ({ x: (e.left + e.right) / 2, y: (e.top + e.bottom) / 2 }), $i = "[data-figure-bar]", sa = { back: 144, along: 0.4 };
-function m4(e) {
-  const { element: t, docked: n, edge: s } = gn(), a = n ? t.querySelector($i) : null;
-  if (!(a != null && a.querySelector(xi))) return null;
-  const o = a.getBoundingClientRect().right;
-  return { ...pn({ x: o - sa.back, y: s.top, face: 0, posture: "stand" }, e), view: null, on: t };
-}
-function p4(e, t, n, s) {
-  return { x: Math.abs(e.x - t.x) < sa.along * s.size ? t.x + sa.along * s.size : e.x, y: e.y, behind: !0 };
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 }
 function E4(e) {
   const t = e.querySelector(_i), n = t == null ? void 0 : t.firstElementChild;
@@ -8529,32 +7111,19 @@ function ns() {
   const t = e.getBoundingClientRect();
   return { element: e, edge: { left: t.left, width: t.width, top: t.top } };
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 function A4(e, t, { x: n = null, beside: s = 0, before: a = 1 / 0, aim: o = null } = {}) {
   const { element: r, edge: i } = ns(), l = n === null ? wy(i, e, o === null ? t : { x: o, y: i.top }, s, a) : gn({ x: n, y: i.top, posture: "stand" }, e);
-========
-function v4(e, t, { x: n = null, beside: s = 0, before: a = 1 / 0, aim: o = null } = {}) {
-  const { element: r, edge: i } = ss(), l = n === null ? yy(i, e, o === null ? t : { x: o, y: i.top }, s, a) : pn({ x: n, y: i.top, posture: "stand" }, e);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   return l && { ...l, view: null, on: r, stays: !0 };
 }
 function wy(e, t, n, s, a) {
   const o = Ca(e, t), r = Math.min(...o.map((l) => l.x)), i = o.filter((l) => l.x + s + it.width < a && l.x + s - ut.reach - ut.room >= r);
   return on(i.length ? i : o, t, n);
 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 const ky = { lean: 22, steepest: 38, most: 1.6, over: 0.3, within: 6, climb: 90, rung: 11 };
 function C4(e, t, n, { straight: s = !1, pace: a = 1, pressing: o = !1, sprinting: r = !1, random: i = Math.random, via: l = [], memory: u = null, now: d = 0, room: f = 0, pogo: g = !1 } = {}) {
   (o || r) && (a = Math.max(a, pi));
   const v = (Y) => {
     const O = st(Y, n, pn[Y.posture].travels);
-========
-const wy = { lean: 22, steepest: 38, most: 1.6, over: 0.3, within: 6, climb: 90, rung: 11 };
-function y4(e, t, n, { straight: s = !1, pace: a = 1, pressing: o = !1, sprinting: r = !1, random: i = Math.random, via: l = [], memory: u = null, now: d = 0, room: f = 0, pogo: v = !1 } = {}) {
-  (o || r) && (a = Math.max(a, hi));
-  const y = (Y) => {
-    const O = st(Y, n, mn[Y.posture].travels);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
     return { x: O.left, y: O.top };
   }, I = t.ladder ?? e.ladder;
   if (I && !(t.ladder && e.ladder)) return by(v(e), v(t), v({ ...I.foot, posture: "stand" }), I.way, !!t.ladder, n, a);
@@ -8679,13 +7248,8 @@ const Py = ["data-kind"], jy = { class: "figure-floor-name" }, qy = {
       "data-kind": e.floor.kind,
       style: pe({ left: `${e.floor.left}px`, top: `${e.floor.top}px`, width: `${e.floor.right - e.floor.left}px` })
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("span", jy, b(e.floor.kind), 1)
     ], 12, Py));
-========
-      p("span", Py, b(e.floor.kind), 1)
-    ], 12, Dy));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   }
 }, Fy = /* @__PURE__ */ K(qy, [["__scopeId", "data-v-8f6132da"]]), Wy = {
   class: "figure-floors",
@@ -8799,17 +7363,10 @@ const Zy = { class: "cards-page" }, Xy = { class: "cards-bar" }, Qy = { class: "
   emits: ["new", "open"],
   setup(e, { emit: t }) {
     const n = t;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     return (s, a) => (c(), h("div", Zy, [
       p("div", Xy, [
         p("span", Qy, b(e.rows.length) + " " + b(e.rows.length === 1 ? e.noun : `${e.noun}s`), 1),
         D(ve, tt({
-========
-    return (s, a) => (c(), h("div", Jy, [
-      p("div", Zy, [
-        p("span", Xy, b(e.rows.length) + " " + b(e.rows.length === 1 ? e.noun : `${e.noun}s`), 1),
-        P(ke, tt({
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           small: "",
           bordered: ""
         }, { [`data-${e.noun}-new`]: "" }, {
@@ -8825,13 +7382,8 @@ const Zy = { class: "cards-page" }, Xy = { class: "cards-bar" }, Qy = { class: "
           _: 1
         }, 16)
       ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", ew, [
         e.loaded ? e.failure ? (c(), h("p", tw, b(e.failure), 1)) : e.rows.length ? C("", !0) : (c(), h("p", nw, "No " + b(e.noun) + "s yet", 1)) : (c(), V(Nt, {
-========
-      p("div", Qy, [
-        e.loaded ? e.failure ? (c(), h("p", ew, b(e.failure), 1)) : e.rows.length ? C("", !0) : (c(), h("p", tw, "No " + b(e.noun) + "s yet", 1)) : (c(), V(rn, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: 0,
           shape: "cards"
         })),
@@ -8842,13 +7394,8 @@ const Zy = { class: "cards-page" }, Xy = { class: "cards-bar" }, Qy = { class: "
           "data-row": o.id,
           onClick: (r) => n("open", o)
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", aw, [
             D(ye, {
-========
-          p("span", sw, [
-            P(ve, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               name: e.icon,
               class: "card-icon"
             }, null, 8, ["name"]),
@@ -8858,15 +7405,9 @@ const Zy = { class: "cards-page" }, Xy = { class: "cards-bar" }, Qy = { class: "
               at: o.created_at
             }, null, 8, ["at"])
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", ow, b(e.title(o)), 1),
           p("span", rw, b(e.foot(o)), 1)
         ], 8, sw))), 128))
-========
-          p("span", aw, b(e.title(o)), 1),
-          p("span", ow, b(e.foot(o)), 1)
-        ], 8, nw))), 128))
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ]),
       me(s.$slots, "default", {}, void 0, !0)
     ]));
@@ -8893,11 +7434,7 @@ const lw = {
     }
     return be(() => n.rowCount, async () => {
       await Lt(), !r.value && o.value && (o.value.scrollTop = l());
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     }, { immediate: !0, flush: "post" }), t({ pane: o }), (g, v) => (c(), h("div", lw, [
-========
-    }, { immediate: !0, flush: "post" }), t({ pane: o }), (v, y) => (c(), h("div", iw, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       p("div", {
         ref_key: "pane",
         ref: o,
@@ -8910,11 +7447,7 @@ const lw = {
         name: "auto-scroll-rise",
         persisted: ""
       }, {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         default: F(() => [
-========
-        default: H(() => [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           dt(p("button", {
             type: "button",
             class: "auto-scroll-newest",
@@ -8962,7 +7495,6 @@ const lw = {
       }), 128))
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Y4 = /* @__PURE__ */ K(fw, [["__scopeId", "data-v-cf3bb39f"]]), mw = {}, pw = { class: "menu-label" };
 function gw(e, t) {
   return c(), h("span", pw, [
@@ -8970,15 +7502,6 @@ function gw(e, t) {
   ]);
 }
 const aa = /* @__PURE__ */ K(mw, [["render", gw], ["__scopeId", "data-v-aa955b3e"]]), vw = {
-========
-}, P4 = /* @__PURE__ */ G(hw, [["__scopeId", "data-v-cf3bb39f"]]), fw = {}, mw = { class: "menu-label" };
-function pw(e, t) {
-  return c(), h("span", mw, [
-    he(e.$slots, "default", {}, void 0, !0)
-  ]);
-}
-const oa = /* @__PURE__ */ G(fw, [["render", pw], ["__scopeId", "data-v-aa955b3e"]]), gw = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   class: "search-bar",
   "data-search-bar": ""
 }, yw = { class: "search-bar-control" }, ww = ["value", "placeholder", "aria-label"], kw = ["aria-expanded"], bw = {
@@ -9006,15 +7529,9 @@ const oa = /* @__PURE__ */ G(fw, [["render", pw], ["__scopeId", "data-v-aa955b3e
       return (T = u.value) == null ? void 0 : T.focus();
     } }), (T, Y) => {
       var O;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       return c(), h("div", vw, [
         p("div", yw, [
           D(ye, {
-========
-      return c(), h("div", gw, [
-        p("div", vw, [
-          P(ve, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             class: "search-bar-icon",
             name: "search",
             size: 14
@@ -9351,7 +7868,6 @@ const Bw = ["title"], Lw = {
           title: `${e.path} · ${z(a)}-click to open it`,
           onClick: o
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", jw, b(u.value), 1),
           p("span", qw, b(d.value), 1),
           g.value ? (c(), h("span", {
@@ -9364,20 +7880,6 @@ const Bw = ["title"], Lw = {
         }, "+" + b(e.added), 3),
         p("span", {
           class: Z(["diff-card-count", "del", { zero: !e.removed }])
-========
-          p("span", Pw, b(u.value), 1),
-          p("span", jw, b(d.value), 1),
-          v.value ? (c(), h("span", {
-            key: 0,
-            class: J(["diff-card-badge", e.kind])
-          }, b(v.value), 3)) : C("", !0)
-        ], 8, Dw),
-        p("span", {
-          class: J(["diff-card-count", "add", { zero: !e.added }])
-        }, "+" + b(e.added), 3),
-        p("span", {
-          class: J(["diff-card-count", "del", { zero: !e.removed }])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, "−" + b(e.removed), 3),
         D(ss, {
           class: "diff-card-ago",
@@ -9387,25 +7889,15 @@ const Bw = ["title"], Lw = {
           key: 0,
           type: "button",
           class: "diff-card-side",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           title: I.value === "after" ? "Show the file before" : "Show the file after",
           onClick: k[0] || (k[0] = xe((m) => I.value = I.value === "after" ? "before" : "after", ["stop"]))
         }, b(I.value === "after" ? "After" : "Before"), 9, Fw)) : C("", !0),
-========
-          title: R.value === "after" ? "Show the file before" : "Show the file after",
-          onClick: k[0] || (k[0] = be((m) => R.value = R.value === "after" ? "before" : "after", ["stop"]))
-        }, b(R.value === "after" ? "After" : "Before"), 9, qw)) : C("", !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         f.value ? C("", !0) : (c(), h("button", {
           key: 1,
           type: "button",
           class: Z(["diff-card-whole", { on: e.whole }]),
           title: e.whole ? "Show only the changes" : "Show the whole file",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           onClick: k[1] || (k[1] = xe((m) => s("whole"), ["stop"]))
-========
-          onClick: k[1] || (k[1] = be((m) => s("whole"), ["stop"]))
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, [
           D(ye, {
             name: "file",
@@ -9438,7 +7930,6 @@ const Bw = ["title"], Lw = {
             ref: S,
             class: "diff-card-diff"
           }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             p("div", Vw, [
               (c(!0), h(G, null, se(Y.value, (m, N) => (c(), h("div", {
                 key: N,
@@ -9447,26 +7938,12 @@ const Bw = ["title"], Lw = {
                 p("span", Gw, b(y(m)), 1),
                 p("span", Kw, b(i[m.line_type]), 1),
                 p("span", Yw, b($(m)), 1)
-========
-            p("div", zw, [
-              (c(!0), h(K, null, se(Y.value, (m, N) => (c(), h("div", {
-                key: N,
-                class: J(["diff-row", m.line_type, { fresh: e.fresh && m.edit === e.fresh }])
-              }, [
-                p("span", Vw, b(g(m)), 1),
-                p("span", Gw, b(i[m.line_type]), 1),
-                p("span", Kw, b($(m)), 1)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               ], 2))), 128)),
               O.value > 0 ? (c(), h("button", {
                 key: 0,
                 type: "button",
                 class: "diff-card-more",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
                 onClick: k[3] || (k[3] = xe((m) => x.value = !0, ["stop"]))
-========
-                onClick: k[3] || (k[3] = be((m) => x.value = !0, ["stop"]))
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               }, b(O.value) + " more " + b(O.value === 1 ? "line" : "lines"), 1)) : C("", !0)
             ])
           ], 512)
@@ -9555,17 +8032,10 @@ const Bw = ["title"], Lw = {
         key: 0,
         class: Z(["foot", { inline: e.inline }])
       }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         r.value ? (c(), h("p", r2, b(r.value), 1)) : C("", !0),
         (M = i.value) != null && M.confirm ? (c(), h("div", i2, [
           p("span", l2, b(i.value.confirm), 1),
           D(ve, {
-========
-        r.value ? (c(), h("p", o2, b(r.value), 1)) : C("", !0),
-        (S = i.value) != null && S.confirm ? (c(), h("div", r2, [
-          p("span", i2, b(i.value.confirm), 1),
-          P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             small: "",
             kind: "primary",
             "data-resource-confirm-yes": "",
@@ -9593,11 +8063,7 @@ const Bw = ["title"], Lw = {
           onSubmit: xe(g, ["prevent"])
         }, [
           dt(p("input", {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             "onUpdate:modelValue": I[2] || (I[2] = (_) => l.value = _),
-========
-            "onUpdate:modelValue": R[2] || (R[2] = (M) => l.value = M),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             class: "ask-input",
             placeholder: i.value.ask,
             "aria-label": i.value.ask,
@@ -9709,21 +8175,12 @@ const Bw = ["title"], Lw = {
   planned: "Planned",
   asked: "Needs you",
   open: "Open"
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, A2 = { ...E2, done: "Completed" }, C2 = { class: "task-status-icon" }, O2 = ["width", "height", "aria-label"], T2 = {
   __name: "TaskStatusIcon",
   props: { status: { type: String, required: !0 }, size: { type: Number, default: 14 } },
   setup(e) {
     return (t, n) => (c(), h("span", C2, [
       D(Bt, {
-========
-}, m2 = { ...f2, done: "Completed" }, p2 = { class: "task-status-icon" }, g2 = ["width", "height", "aria-label"], v2 = {
-  __name: "TaskStatusIcon",
-  props: { status: { type: String, required: !0 }, size: { type: Number, default: 14 } },
-  setup(e) {
-    return (t, n) => (c(), h("span", p2, [
-      P(Bt, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         name: "turn",
         mode: "out-in"
       }, {
@@ -9735,17 +8192,10 @@ const Bw = ["title"], Lw = {
             height: e.size,
             viewBox: "0 0 16 16",
             role: "img",
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             "aria-label": z(A2)[e.status]
           }, [
             D(ln, { value: e.status }, {
               blocked: F(() => [...n[0] || (n[0] = [
-========
-            "aria-label": z(m2)[e.status]
-          }, [
-            P(zn, { value: e.status }, {
-              blocked: H(() => [...n[0] || (n[0] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "6.3",
                   cy: "8",
@@ -9767,11 +8217,7 @@ const Bw = ["title"], Lw = {
                   class: "fill"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               done: F(() => [...n[1] || (n[1] = [
-========
-              done: H(() => [...n[1] || (n[1] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9783,11 +8229,7 @@ const Bw = ["title"], Lw = {
                   class: "tick"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               started: F(() => [...n[2] || (n[2] = [
-========
-              started: H(() => [...n[2] || (n[2] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9799,11 +8241,7 @@ const Bw = ["title"], Lw = {
                   class: "fill"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               asked: F(() => [...n[3] || (n[3] = [
-========
-              asked: H(() => [...n[3] || (n[3] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9825,11 +8263,7 @@ const Bw = ["title"], Lw = {
                   class: "fill"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               paused: F(() => [...n[4] || (n[4] = [
-========
-              paused: H(() => [...n[4] || (n[4] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9853,11 +8287,7 @@ const Bw = ["title"], Lw = {
                   class: "fill"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               planned: F(() => [...n[5] || (n[5] = [
-========
-              planned: H(() => [...n[5] || (n[5] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9865,11 +8295,7 @@ const Bw = ["title"], Lw = {
                   class: "stroke dashed"
                 }, null, -1)
               ])]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               default: F(() => [...n[6] || (n[6] = [
-========
-              default: H(() => [...n[6] || (n[6] = [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 p("circle", {
                   cx: "8",
                   cy: "8",
@@ -9885,56 +8311,7 @@ const Bw = ["title"], Lw = {
       })
     ]));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Ri = /* @__PURE__ */ K(T2, [["__scopeId", "data-v-2ab7e404"]]), I2 = {
-========
-}, Oi = /* @__PURE__ */ G(v2, [["__scopeId", "data-v-2ab7e404"]]), y2 = /* @__PURE__ */ new Set(["completed", "cancelled"]), w2 = (e) => y2.has(e), Ti = (e) => w2(e) ? "done" : e, k2 = { class: "facts" }, b2 = { class: "fact wide" }, x2 = { class: "fact-value" }, $2 = {
-  key: 0,
-  class: "fact"
-}, M2 = { class: "fact-value" }, S2 = {
-  key: 1,
-  class: "fact"
-}, _2 = { class: "fact-value" }, E2 = { class: "fact wide" }, A2 = {
-  key: 0,
-  class: "refusal",
-  role: "alert",
-  "data-task-refusal": ""
-}, C2 = {
-  __name: "TaskFacts",
-  props: { task: { type: Object, required: !0 }, place: { type: Object, default: null }, refusal: { type: String, default: "" } },
-  emits: ["priority"],
-  setup(e, { emit: t }) {
-    const n = Nn.map(({ key: a, label: o }) => ({ key: String(a), label: o })), s = t;
-    return (a, o) => {
-      var r, i;
-      return c(), h("div", k2, [
-        p("div", b2, [
-          o[1] || (o[1] = p("span", { class: "fact-label" }, "Plan", -1)),
-          p("span", x2, b((r = e.place) != null && r.plan_id ? `Plan ${e.place.plan_id}: ${e.place.plan_title}` : "Not in a plan"), 1)
-        ]),
-        ((i = e.place) == null ? void 0 : i.phase_total) > 1 ? (c(), h("div", $2, [
-          o[2] || (o[2] = p("span", { class: "fact-label" }, "Phase", -1)),
-          p("span", M2, b(e.place.phase_number) + " of " + b(e.place.phase_total) + ": " + b(e.place.phase_title), 1)
-        ])) : C("", !0),
-        e.task.state === "started" && e.task.holder_id ? (c(), h("div", S2, [
-          o[3] || (o[3] = p("span", { class: "fact-label" }, "Holder", -1)),
-          p("span", _2, "Agent " + b(e.task.holder_id), 1)
-        ])) : C("", !0),
-        p("div", E2, [
-          o[4] || (o[4] = p("span", { class: "fact-label" }, "Priority", -1)),
-          P(j1, {
-            options: z(n),
-            value: String(z(Ir)(e.task.priority)),
-            "data-task-priority": "",
-            onPick: o[0] || (o[0] = (l) => s("priority", l))
-          }, null, 8, ["options", "value"]),
-          e.refusal ? (c(), h("p", A2, b(e.refusal), 1)) : C("", !0)
-        ])
-      ]);
-    };
-  }
-}, O2 = /* @__PURE__ */ G(C2, [["__scopeId", "data-v-2018762d"]]), T2 = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   key: 0,
   class: "part",
   "data-resource-waits": ""
@@ -9951,19 +8328,11 @@ const Bw = ["title"], Lw = {
   props: { task: { type: Object, required: !0 } },
   emits: ["select"],
   setup(e, { emit: t }) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
     const n = t, s = B(!1);
     return (a, o) => (c(), h(G, null, [
       e.task.waits.length ? (c(), h("section", I2, [
         o[1] || (o[1] = p("h4", null, "Waits on", -1)),
         (c(!0), h(G, null, se(e.task.waits, (r) => (c(), h("button", {
-========
-    const n = t, s = L(!1);
-    return (a, o) => (c(), h(K, null, [
-      e.task.waits.length ? (c(), h("section", T2, [
-        o[1] || (o[1] = p("h4", null, "Waits on", -1)),
-        (c(!0), h(K, null, se(e.task.waits, (r) => (c(), h("button", {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: r.id,
           type: "button",
           class: "wait",
@@ -9973,7 +8342,6 @@ const Bw = ["title"], Lw = {
             status: z(ra)(r.state),
             size: 12
           }, null, 8, ["status"]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", B2, b(r.id), 1),
           p("span", L2, b(r.title), 1)
         ], 8, R2))), 128))
@@ -9986,20 +8354,6 @@ const Bw = ["title"], Lw = {
         o[3] || (o[3] = p("h4", null, "The brief", -1)),
         p("p", {
           class: Z(["text", { clamped: !s.value }])
-========
-          p("span", R2, b(r.id), 1),
-          p("span", B2, b(r.title), 1)
-        ], 8, I2))), 128))
-      ])) : C("", !0),
-      e.task.state === "completed" && e.task.outcome ? (c(), h("section", L2, [
-        o[2] || (o[2] = p("h4", null, "How it was done", -1)),
-        p("p", N2, b(e.task.outcome), 1)
-      ])) : C("", !0),
-      e.task.brief ? (c(), h("section", D2, [
-        o[3] || (o[3] = p("h4", null, "The brief", -1)),
-        p("p", {
-          class: J(["text", { clamped: !s.value }])
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, b(e.task.brief), 3),
         e.task.brief.length > j2 && !s.value ? (c(), h("button", {
           key: 0,
@@ -10007,16 +8361,6 @@ const Bw = ["title"], Lw = {
           class: "more",
           onClick: o[0] || (o[0] = (r) => s.value = !0)
         }, "Show the whole brief")) : C("", !0)
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
-========
-      ])) : C("", !0),
-      e.task.logs.length ? (c(), h("section", P2, [
-        o[4] || (o[4] = p("h4", null, "Log", -1)),
-        (c(!0), h(K, null, se(e.task.logs, (r) => (c(), h("p", {
-          key: r.id,
-          class: "log"
-        }, b(r.line), 1))), 128))
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       ])) : C("", !0)
     ], 64));
   }
@@ -10208,15 +8552,9 @@ const Bw = ["title"], Lw = {
       "data-comment-side": "",
       "aria-label": "Comments"
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("header", rk, [
         n[1] || (n[1] = p("h3", null, "Comments", -1)),
         D(Yn, {
-========
-      p("header", W2, [
-        n[1] || (n[1] = p("h3", null, "Comments", -1)),
-        P(Jn, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           title: "Close the comments",
           onClick: n[0] || (n[0] = (s) => t.$emit("close"))
         })
@@ -10286,11 +8624,7 @@ const dk = ["placeholder"], hk = { class: "actions" }, fk = { class: "error" }, 
         onSubmit: xe(v, ["prevent"]),
         onKeydown: Kt(g, ["esc"])
       }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         me(I.$slots, "who", {}, void 0, !0),
-========
-        he(S.$slots, "who", {}, void 0, !0),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         dt(p("textarea", {
           ref_key: "box",
           ref: d,
@@ -10302,15 +8636,9 @@ const dk = ["placeholder"], hk = { class: "actions" }, fk = { class: "error" }, 
         }, null, 40, dk), [
           [Ds, o.value]
         ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("div", hk, [
           p("span", fk, b(r.value), 1),
           D(ve, {
-========
-        p("div", Z2, [
-          p("span", X2, b(r.value), 1),
-          P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             small: "",
             onClick: g
           }, {
@@ -10332,34 +8660,20 @@ const dk = ["placeholder"], hk = { class: "actions" }, fk = { class: "error" }, 
             _: 1
           }, 8, ["busy", "disabled"])
         ])
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       ], 32)) : (c(), h("div", mk, [
-========
-      ], 32)) : (c(), h("div", Q2, [
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         p("button", {
           type: "button",
           class: "comment-bar-open",
           onClick: f
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", pk, [
             D(ye, {
-========
-          p("span", ek, [
-            P(ve, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               name: l.value ? "check" : "chat",
               size: 14
             }, null, 8, ["name"])
           ]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", gk, b(l.value ? "Sent. Leave another" : "Leave a comment"), 1),
           o.value.trim() ? (c(), h("span", vk, "Draft kept")) : C("", !0)
-========
-          p("span", tk, b(l.value ? "Sent. Leave another" : "Leave a comment"), 1),
-          o.value.trim() ? (c(), h("span", nk, "Draft kept")) : C("", !0)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         ]),
         e.count ? (c(), h("button", {
           key: 0,
@@ -10367,13 +8681,8 @@ const dk = ["placeholder"], hk = { class: "actions" }, fk = { class: "error" }, 
           class: "count",
           onClick: M[2] || (M[2] = (_) => a("show"))
         }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           p("span", null, b(z(im)(e.count, "comment")), 1),
           D(ye, {
-========
-          p("span", null, b(z(rm)(e.count, "comment")), 1),
-          P(ve, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             name: "down",
             size: 12
           })
@@ -10421,29 +8730,10 @@ const bk = { class: "top" }, xk = {
 }, Sk = { class: "summary" }, _k = { class: "stamp" }, Ek = {
   class: "title",
   "data-resource-title": ""
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
 }, Ak = {
   class: "tabs",
   "data-task-tabs": ""
 }, Ck = { class: "panels" }, Ok = {
-========
-}, hk = { class: "since" }, fk = {
-  key: 0,
-  class: "reason",
-  "data-task-reason": ""
-}, mk = { class: "text" }, pk = {
-  key: 0,
-  class: "note",
-  "data-task-openers": ""
-}, gk = {
-  key: 1,
-  class: "note"
-}, vk = {
-  key: 1,
-  class: "reason",
-  "data-task-reason": ""
-}, yk = { class: "text" }, wk = {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   __name: "TaskInspector",
   props: {
     id: { type: Number, required: !0 },
@@ -10502,27 +8792,15 @@ const bk = { class: "top" }, xk = {
       class: Z(["task-inspector", { lone: e.lone }]),
       "data-task-inspector": ""
     }, [
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       p("div", bk, [
         e.backed ? (c(), V(Zw, {
-========
-      p("div", rk, [
-        e.backed ? (c(), V(Jw, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           key: 0,
           onBack: y[0] || (y[0] = ($) => a("back"))
         })) : C("", !0),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("span", xk, b(M.value), 1),
         y[9] || (y[9] = p("span", { class: "grow" }, null, -1)),
         e.stepped ? (c(), h(G, { key: 1 }, [
           D(ve, {
-========
-        p("span", ik, b(S.value), 1),
-        g[9] || (g[9] = p("span", { class: "grow" }, null, -1)),
-        e.stepped ? (c(), h(K, { key: 1 }, [
-          P(ke, {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             small: "",
             title: "Previous task (K)",
             "aria-label": "Previous task",
@@ -10576,7 +8854,6 @@ const bk = { class: "top" }, xk = {
           read: e.read,
           onDone: _
         }, null, 8, ["id", "row", "read"]),
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         p("header", Sk, [
           p("div", _k, [
             le(" Task " + b(o.value.id) + " · updated ", 1),
@@ -10627,78 +8904,6 @@ const bk = { class: "top" }, xk = {
           send: z(v).send,
           count: z(v).comments.value.length,
           onShow: y[7] || (y[7] = ($) => f.value = "comments")
-========
-        P(Y2, {
-          stacked: "",
-          open: z(f).open.value,
-          comments: z(f).comments.value,
-          words: z(f).words,
-          onClose: g[6] || (g[6] = ($) => z(f).open.value = !1)
-        }, {
-          default: H(() => {
-            var $;
-            return [
-              (c(), h("div", {
-                key: o.value.id,
-                class: "body"
-              }, [
-                p("div", uk, [
-                  ce("Task " + b(o.value.id) + " · updated ", 1),
-                  P(Wn, {
-                    at: z(Fs)(o.value)
-                  }, null, 8, ["at"])
-                ]),
-                p("h3", dk, b(o.value.title), 1),
-                p("div", {
-                  class: J(["state-line", z(y)(o.value.state)])
-                }, [
-                  p("button", {
-                    type: "button",
-                    class: "state",
-                    "data-task-state": "",
-                    title: "Change the status (S)",
-                    onClick: g[4] || (g[4] = (E) => Y(E.currentTarget))
-                  }, [
-                    P(Oi, {
-                      status: z(y)(o.value.state)
-                    }, null, 8, ["status"]),
-                    ce(" " + b(R(o.value.state)), 1)
-                  ]),
-                  p("span", hk, [
-                    g[10] || (g[10] = ce("since ", -1)),
-                    P(Wn, {
-                      at: z(Fs)(o.value)
-                    }, null, 8, ["at"])
-                  ])
-                ], 2),
-                o.value.state === "blocked" ? (c(), h("section", fk, [
-                  g[11] || (g[11] = p("span", { class: "label" }, "Blocked, waiting on", -1)),
-                  p("p", mk, b(o.value.reason || "Other tasks"), 1),
-                  ($ = o.value.openers) != null && $.length ? (c(), h("p", pk, "Opens by itself when " + b(o.value.openers.join(" or ")) + ".", 1)) : (c(), h("p", gk, "Nothing opens it by itself. Unblock it when that is done."))
-                ])) : o.value.state === "cancelled" && o.value.reason ? (c(), h("section", vk, [
-                  g[12] || (g[12] = p("span", { class: "label" }, "Why it was cancelled", -1)),
-                  p("p", yk, b(o.value.reason), 1)
-                ])) : C("", !0),
-                P(O2, {
-                  task: o.value,
-                  place: r.value,
-                  refusal: l.value,
-                  onPriority: x
-                }, null, 8, ["task", "place", "refusal"]),
-                P(F2, {
-                  task: o.value,
-                  onSelect: g[5] || (g[5] = (E) => a("select", E))
-                }, null, 8, ["task"])
-              ]))
-            ];
-          }),
-          _: 1
-        }, 8, ["open", "comments", "words"]),
-        P(ak, {
-          send: z(f).send,
-          count: z(f).comments.value.length,
-          onShow: g[7] || (g[7] = ($) => z(f).open.value = !z(f).open.value)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, null, 8, ["send", "count"])
       ], 64)) : (c(), h("div", Mk, [
         D(Nt)
@@ -10739,7 +8944,6 @@ var Rs = { exports: {} }, Bo;
 function Ik() {
   return Bo || (Bo = 1, (function(e, t) {
     var n = (function() {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       var s = function(y, $) {
         var E = 236, S = 17, w = y, A = o[$], k = null, m = 0, N = null, P = [], W = {}, re = function(j, q) {
           m = w * 4 + 17, k = (function(R) {
@@ -10755,23 +8959,6 @@ function Ik() {
             if (!(j + R <= -1 || m <= j + R))
               for (var H = -1; H <= 7; H += 1)
                 q + H <= -1 || m <= q + H || (0 <= R && R <= 6 && (H == 0 || H == 6) || 0 <= H && H <= 6 && (R == 0 || R == 6) || 2 <= R && R <= 4 && 2 <= H && H <= 4 ? k[j + R][q + H] = !0 : k[j + R][q + H] = !1);
-========
-      var s = function(g, $) {
-        var E = 236, _ = 17, w = g, A = o[$], k = null, m = 0, N = null, D = [], F = {}, re = function(j, q) {
-          m = w * 4 + 17, k = (function(I) {
-            for (var W = new Array(I), U = 0; U < I; U += 1) {
-              W[U] = new Array(I);
-              for (var X = 0; X < I; X += 1)
-                W[U][X] = null;
-            }
-            return W;
-          })(m), le(0, 0), le(m - 7, 0), le(0, m - 7), ee(), Q(), Ne(j, q), w >= 7 && Z(j), N == null && (N = Ii(w, A, D)), Ge(N, q);
-        }, le = function(j, q) {
-          for (var I = -1; I <= 7; I += 1)
-            if (!(j + I <= -1 || m <= j + I))
-              for (var W = -1; W <= 7; W += 1)
-                q + W <= -1 || m <= q + W || (0 <= I && I <= 6 && (W == 0 || W == 6) || 0 <= W && W <= 6 && (I == 0 || I == 6) || 2 <= I && I <= 4 && 2 <= W && W <= 4 ? k[j + I][q + W] = !0 : k[j + I][q + W] = !1);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, de = function() {
           for (var j = 0, q = 0, R = 0; R < 8; R += 1) {
             re(!0, R);
@@ -10793,7 +8980,6 @@ function Ik() {
                   for (var ae = -2; ae <= 2; ae += 1)
                     X == -2 || X == 2 || ae == -2 || ae == 2 || X == 0 && ae == 0 ? k[H + X][U + ae] = !0 : k[H + X][U + ae] = !1;
             }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, J = function(j) {
           for (var q = i.getBCHTypeNumber(w), R = 0; R < 18; R += 1) {
             var H = !j && (q >> R & 1) == 1;
@@ -10810,33 +8996,11 @@ function Ik() {
           }
           for (var U = 0; U < 15; U += 1) {
             var X = !j && (H >> U & 1) == 1;
-========
-        }, Z = function(j) {
-          for (var q = i.getBCHTypeNumber(w), I = 0; I < 18; I += 1) {
-            var W = !j && (q >> I & 1) == 1;
-            k[Math.floor(I / 3)][I % 3 + m - 8 - 3] = W;
-          }
-          for (var I = 0; I < 18; I += 1) {
-            var W = !j && (q >> I & 1) == 1;
-            k[I % 3 + m - 8 - 3][Math.floor(I / 3)] = W;
-          }
-        }, Ne = function(j, q) {
-          for (var I = A << 3 | q, W = i.getBCHTypeInfo(I), U = 0; U < 15; U += 1) {
-            var X = !j && (W >> U & 1) == 1;
-            U < 6 ? k[U][8] = X : U < 8 ? k[U + 1][8] = X : k[m - 15 + U][8] = X;
-          }
-          for (var U = 0; U < 15; U += 1) {
-            var X = !j && (W >> U & 1) == 1;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             U < 8 ? k[8][m - U - 1] = X : U < 9 ? k[8][15 - U - 1 + 1] = X : k[8][15 - U - 1] = X;
           }
           k[m - 8][8] = !j;
         }, Ge = function(j, q) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (var R = -1, H = m - 1, U = 7, X = 0, ae = i.getMaskFunction(q), ne = m - 1; ne > 0; ne -= 2)
-========
-          for (var I = -1, W = m - 1, U = 7, X = 0, ae = i.getMaskFunction(q), ne = m - 1; ne > 0; ne -= 2)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             for (ne == 6 && (ne -= 1); ; ) {
               for (var ke = 0; ke < 2; ke += 1)
                 if (k[H][ne - ke] == null) {
@@ -10845,13 +9009,8 @@ function Ik() {
                   var ie = ae(H, ne - ke);
                   ie && (Me = !Me), k[H][ne - ke] = Me, U -= 1, U == -1 && (X += 1, U = 7);
                 }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
               if (H += R, H < 0 || m <= H) {
                 H -= R, R = -R;
-========
-              if (W += I, W < 0 || m <= W) {
-                W -= I, I = -I;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
                 break;
               }
             }
@@ -10912,7 +9071,6 @@ function Ik() {
             default:
               throw "mode:" + q;
           }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           P.push(R), N = null;
         }, W.isDark = function(j, q) {
           if (j < 0 || m <= j || q < 0 || m <= q)
@@ -10921,16 +9079,6 @@ function Ik() {
         }, W.getModuleCount = function() {
           return m;
         }, W.make = function() {
-========
-          D.push(I), N = null;
-        }, F.isDark = function(j, q) {
-          if (j < 0 || m <= j || q < 0 || m <= q)
-            throw j + "," + q;
-          return k[j][q];
-        }, F.getModuleCount = function() {
-          return m;
-        }, F.make = function() {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           if (w < 1) {
             for (var j = 1; j < 40; j++) {
               for (var q = d.getRSBlocks(j, A), R = f(), H = 0; H < P.length; H++) {
@@ -11060,22 +9208,13 @@ function Ik() {
           }, k = 0, m = {}; ; ) {
             var N = w.read();
             if (N == -1) break;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             var P = A(), W = A(), re = A(), ce = String.fromCharCode(N << 8 | P), de = W << 8 | re;
             m[ce] = de, k += 1;
-========
-            var D = A(), F = A(), re = A(), le = String.fromCharCode(N << 8 | D), de = F << 8 | re;
-            m[le] = de, k += 1;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           }
           if (k != $)
             throw k + " != " + $;
           return m;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         })(), S = 63;
-========
-        })(), _ = 63;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         return function(w) {
           for (var A = [], k = 0; k < w.length; k += 1) {
             var m = w.charCodeAt(k);
@@ -11150,11 +9289,7 @@ function Ik() {
           [6, 32, 58, 84, 110, 136, 162],
           [6, 26, 54, 82, 110, 138, 166],
           [6, 30, 58, 86, 114, 142, 170]
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         ], $ = 1335, E = 7973, S = 21522, w = {}, A = function(k) {
-========
-        ], $ = 1335, E = 7973, _ = 21522, w = {}, A = function(k) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           for (var m = 0; k != 0; )
             m += 1, k >>>= 1;
           return m;
@@ -11162,11 +9297,7 @@ function Ik() {
         return w.getBCHTypeInfo = function(k) {
           for (var m = k << 10; A(m) - A($) >= 0; )
             m ^= $ << A(m) - A($);
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           return (k << 10 | m) ^ S;
-========
-          return (k << 10 | m) ^ _;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, w.getBCHTypeNumber = function(k) {
           for (var m = k << 12; A(m) - A(E) >= 0; )
             m ^= E << A(m) - A(E);
@@ -11257,7 +9388,6 @@ function Ik() {
           else
             throw "type:" + m;
         }, w.getLostPoint = function(k) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (var m = k.getModuleCount(), N = 0, P = 0; P < m; P += 1)
             for (var W = 0; W < m; W += 1) {
               for (var re = 0, ce = k.isDark(P, W), de = -1; de <= 1; de += 1)
@@ -11268,22 +9398,9 @@ function Ik() {
             }
           for (var P = 0; P < m - 1; P += 1)
             for (var W = 0; W < m - 1; W += 1) {
-========
-          for (var m = k.getModuleCount(), N = 0, D = 0; D < m; D += 1)
-            for (var F = 0; F < m; F += 1) {
-              for (var re = 0, le = k.isDark(D, F), de = -1; de <= 1; de += 1)
-                if (!(D + de < 0 || m <= D + de))
-                  for (var Q = -1; Q <= 1; Q += 1)
-                    F + Q < 0 || m <= F + Q || de == 0 && Q == 0 || le == k.isDark(D + de, F + Q) && (re += 1);
-              re > 5 && (N += 3 + re - 5);
-            }
-          for (var D = 0; D < m - 1; D += 1)
-            for (var F = 0; F < m - 1; F += 1) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
               var ee = 0;
               k.isDark(P, W) && (ee += 1), k.isDark(P + 1, W) && (ee += 1), k.isDark(P, W + 1) && (ee += 1), k.isDark(P + 1, W + 1) && (ee += 1), (ee == 0 || ee == 4) && (N += 3);
             }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (var P = 0; P < m; P += 1)
             for (var W = 0; W < m - 6; W += 1)
               k.isDark(P, W) && !k.isDark(P, W + 1) && k.isDark(P, W + 2) && k.isDark(P, W + 3) && k.isDark(P, W + 4) && !k.isDark(P, W + 5) && k.isDark(P, W + 6) && (N += 40);
@@ -11295,19 +9412,6 @@ function Ik() {
               k.isDark(P, W) && (J += 1);
           var Le = Math.abs(100 * J / m / m - 50) / 5;
           return N += Le * 10, N;
-========
-          for (var D = 0; D < m; D += 1)
-            for (var F = 0; F < m - 6; F += 1)
-              k.isDark(D, F) && !k.isDark(D, F + 1) && k.isDark(D, F + 2) && k.isDark(D, F + 3) && k.isDark(D, F + 4) && !k.isDark(D, F + 5) && k.isDark(D, F + 6) && (N += 40);
-          for (var F = 0; F < m; F += 1)
-            for (var D = 0; D < m - 6; D += 1)
-              k.isDark(D, F) && !k.isDark(D + 1, F) && k.isDark(D + 2, F) && k.isDark(D + 3, F) && k.isDark(D + 4, F) && !k.isDark(D + 5, F) && k.isDark(D + 6, F) && (N += 40);
-          for (var Z = 0, F = 0; F < m; F += 1)
-            for (var D = 0; D < m; D += 1)
-              k.isDark(D, F) && (Z += 1);
-          var Ne = Math.abs(100 * Z / m / m - 50) / 5;
-          return N += Ne * 10, N;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, w;
       })(), l = (function() {
         for (var y = new Array(256), $ = new Array(256), E = 0; E < 8; E += 1)
@@ -11343,7 +9447,6 @@ function Ik() {
           return E[w];
         }, S.getLength = function() {
           return E.length;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, S.multiply = function(w) {
           for (var A = new Array(S.getLength() + w.getLength() - 1), k = 0; k < S.getLength(); k += 1)
             for (var m = 0; m < w.getLength(); m += 1)
@@ -11354,18 +9457,6 @@ function Ik() {
             return S;
           for (var A = l.glog(S.getAt(0)) - l.glog(w.getAt(0)), k = new Array(S.getLength()), m = 0; m < S.getLength(); m += 1)
             k[m] = S.getAt(m);
-========
-        }, _.multiply = function(w) {
-          for (var A = new Array(_.getLength() + w.getLength() - 1), k = 0; k < _.getLength(); k += 1)
-            for (var m = 0; m < w.getLength(); m += 1)
-              A[k + m] ^= l.gexp(l.glog(_.getAt(k)) + l.glog(w.getAt(m)));
-          return u(A, 0);
-        }, _.mod = function(w) {
-          if (_.getLength() - w.getLength() < 0)
-            return _;
-          for (var A = l.glog(_.getAt(0)) - l.glog(w.getAt(0)), k = new Array(_.getLength()), m = 0; m < _.getLength(); m += 1)
-            k[m] = _.getAt(m);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           for (var m = 0; m < w.getLength(); m += 1)
             k[m] ^= l.gexp(l.glog(w.getAt(m)) + A);
           return u(k, 0).mod(w);
@@ -11598,15 +9689,9 @@ function Ik() {
           var k = S(w, A);
           if (typeof k > "u")
             throw "bad rs block @ typeNumber:" + w + "/errorCorrectionLevel:" + A;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (var m = k.length / 3, N = [], P = 0; P < m; P += 1)
             for (var W = k[P * 3 + 0], re = k[P * 3 + 1], ce = k[P * 3 + 2], de = 0; de < W; de += 1)
               N.push($(re, ce));
-========
-          for (var m = k.length / 3, N = [], D = 0; D < m; D += 1)
-            for (var F = k[D * 3 + 0], re = k[D * 3 + 1], le = k[D * 3 + 2], de = 0; de < F; de += 1)
-              N.push($(re, le));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           return N;
         }, E;
       })(), f = function() {
@@ -11631,11 +9716,7 @@ function Ik() {
           return $;
         }, S.getLength = function(k) {
           return E.length;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, S.write = function(k) {
-========
-        }, _.write = function(k) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           for (var m = E, N = 0; N + 2 < m.length; )
             k.put(w(m.substring(N, N + 3)), 10), N += 3;
           N < m.length && (m.length - N == 1 ? k.put(w(m.substring(N, N + 1)), 4) : m.length - N == 2 && k.put(w(m.substring(N, N + 2)), 7));
@@ -11656,11 +9737,7 @@ function Ik() {
           return $;
         }, S.getLength = function(A) {
           return E.length;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, S.write = function(A) {
-========
-        }, _.write = function(A) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           for (var k = E, m = 0; m + 1 < k.length; )
             A.put(
               w(k.charAt(m)) * 45 + w(k.charAt(m + 1)),
@@ -11722,11 +9799,7 @@ function Ik() {
         }, w.getLength = function(A) {
           return ~~(S.length / 2);
         }, w.write = function(A) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (var k = S, m = 0; m + 1 < k.length; ) {
-========
-          for (var k = _, m = 0; m + 1 < k.length; ) {
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             var N = (255 & k[m]) << 8 | 255 & k[m + 1];
             if (33088 <= N && N <= 40956)
               N -= 33088;
@@ -11762,13 +9835,8 @@ function Ik() {
           return E += "]", E;
         }, $;
       }, x = function() {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         var y = 0, $ = 0, E = 0, S = "", w = {}, A = function(m) {
           S += String.fromCharCode(k(m & 63));
-========
-        var g = 0, $ = 0, E = 0, _ = "", w = {}, A = function(m) {
-          _ += String.fromCharCode(k(m & 63));
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, k = function(m) {
           if (!(m < 0)) {
             if (m < 26)
@@ -11785,21 +9853,12 @@ function Ik() {
           throw "n:" + m;
         };
         return w.writeByte = function(m) {
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
           for (y = y << 8 | m & 255, $ += 8, E += 1; $ >= 6; )
             A(y >>> $ - 6), $ -= 6;
         }, w.flush = function() {
           if ($ > 0 && (A(y << 6 - $), y = 0, $ = 0), E % 3 != 0)
             for (var m = 3 - E % 3, N = 0; N < m; N += 1)
               S += "=";
-========
-          for (g = g << 8 | m & 255, $ += 8, E += 1; $ >= 6; )
-            A(g >>> $ - 6), $ -= 6;
-        }, w.flush = function() {
-          if ($ > 0 && (A(g << 6 - $), g = 0, $ = 0), E % 3 != 0)
-            for (var m = 3 - E % 3, N = 0; N < m; N += 1)
-              _ += "=";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         }, w.toString = function() {
           return S;
         }, w;
@@ -11817,11 +9876,7 @@ function Ik() {
               return w = 0, -1;
             if (m.match(/^\s$/))
               continue;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
             S = S << 6 | k(m.charCodeAt(0)), w += 6;
-========
-            _ = _ << 6 | k(m.charCodeAt(0)), w += 6;
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
           }
           var N = S >>> w - 8 & 255;
           return w -= 8, N;
@@ -11840,7 +9895,6 @@ function Ik() {
           throw "c:" + m;
         };
         return A;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       }, Y = function(y, $) {
         var E = y, S = $, w = new Array(y * $), A = {};
         A.setPixel = function(P, W, re) {
@@ -11852,19 +9906,6 @@ function Ik() {
           for (var ce = 0; re.length - ce > 255; )
             P.writeByte(255), P.writeBytes(re, ce, 255), ce += 255;
           P.writeByte(re.length - ce), P.writeBytes(re, ce, re.length - ce), P.writeByte(0), P.writeString(";");
-========
-      }, Y = function(g, $) {
-        var E = g, _ = $, w = new Array(g * $), A = {};
-        A.setPixel = function(D, F, re) {
-          w[F * E + D] = re;
-        }, A.write = function(D) {
-          D.writeString("GIF87a"), D.writeShort(E), D.writeShort(_), D.writeByte(128), D.writeByte(0), D.writeByte(0), D.writeByte(0), D.writeByte(0), D.writeByte(0), D.writeByte(255), D.writeByte(255), D.writeByte(255), D.writeString(","), D.writeShort(0), D.writeShort(0), D.writeShort(E), D.writeShort(_), D.writeByte(0);
-          var F = 2, re = m(F);
-          D.writeByte(F);
-          for (var le = 0; re.length - le > 255; )
-            D.writeByte(255), D.writeBytes(re, le, 255), le += 255;
-          D.writeByte(re.length - le), D.writeBytes(re, le, re.length - le), D.writeByte(0), D.writeString(";");
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         };
         var k = function(P) {
           var W = P, re = 0, ce = 0, de = {};
@@ -11877,13 +9918,8 @@ function Ik() {
           }, de.flush = function() {
             re > 0 && W.writeByte(ce);
           }, de;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
         }, m = function(P) {
           for (var W = 1 << P, re = (1 << P) + 1, ce = P + 1, de = N(), Q = 0; Q < W; Q += 1)
-========
-        }, m = function(D) {
-          for (var F = 1 << D, re = (1 << D) + 1, le = D + 1, de = N(), Q = 0; Q < F; Q += 1)
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
             de.add(String.fromCharCode(Q));
           de.add(String.fromCharCode(W)), de.add(String.fromCharCode(re));
           var ee = _(), J = k(ee);
@@ -11909,7 +9945,6 @@ function Ik() {
           }, re;
         };
         return A;
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       }, O = function(y, $, E) {
         for (var S = Y(y, $), w = 0; w < $; w += 1)
           for (var A = 0; A < y; A += 1)
@@ -11918,16 +9953,6 @@ function Ik() {
         S.write(k);
         for (var m = x(), N = k.toByteArray(), P = 0; P < N.length; P += 1)
           m.writeByte(N[P]);
-========
-      }, O = function(g, $, E) {
-        for (var _ = Y(g, $), w = 0; w < $; w += 1)
-          for (var A = 0; A < g; A += 1)
-            _.setPixel(A, w, E(A, w));
-        var k = M();
-        _.write(k);
-        for (var m = x(), N = k.toByteArray(), D = 0; D < N.length; D += 1)
-          m.writeByte(N[D]);
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
         return m.flush(), "data:image/gif;base64," + m;
       };
       return s;
@@ -11989,11 +10014,7 @@ const Bk = /* @__PURE__ */ Tk(Rk), Lk = ["width", "height", "viewBox"], Dk = ["w
         width: n.value.count,
         height: n.value.count,
         fill: "#fff"
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
       }, null, 8, Dk),
-========
-      }, null, 8, Sk),
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
       p("path", {
         d: n.value.path,
         fill: "#000"
@@ -12012,11 +10033,7 @@ const Bk = /* @__PURE__ */ Tk(Rk), Lk = ["width", "height", "viewBox"], Dk = ["w
       me(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
-}, rx = /* @__PURE__ */ K(jk, [["__scopeId", "data-v-47e67f04"]]), ix = Ki(() => import("./VoiceFigure-CaHCY_zy.js").then((e) => e.V)), lx = "1.0.0", cx = "3.5";
-========
-}, Y4 = /* @__PURE__ */ G(Ak, [["__scopeId", "data-v-47e67f04"]]), J4 = Vi(() => import("./VoiceFigure-CE4rxFKe.js").then((e) => e.V)), Z4 = "1.0.0", X4 = "3.5";
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
+}, rx = /* @__PURE__ */ K(jk, [["__scopeId", "data-v-47e67f04"]]), ix = Ki(() => import("./VoiceFigure-DXFtg_zY.js").then((e) => e.V)), lx = "1.0.0", cx = "3.5";
 export {
   Ol as $,
   Se as A,
@@ -12055,7 +10072,6 @@ export {
   t5 as a4,
   e5 as a5,
   bt as a6,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   zb as a7,
   f5 as a8,
   fb as a9,
@@ -12078,30 +10094,6 @@ export {
   B5 as aQ,
   T5 as aR,
   sn as aS,
-========
-  Bb as a7,
-  n5 as a8,
-  nb as a9,
-  P5 as aA,
-  b5 as aB,
-  Cv as aC,
-  r5 as aD,
-  i5 as aE,
-  c4 as aF,
-  hi as aG,
-  A5 as aH,
-  fn as aI,
-  lb as aJ,
-  ob as aK,
-  X5 as aL,
-  mn as aM,
-  n4 as aN,
-  Zb as aO,
-  x5 as aP,
-  $5 as aQ,
-  k5 as aR,
-  nn as aS,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   wt as aT,
   mb as aU,
   k0 as aV,
@@ -12109,7 +10101,6 @@ export {
   qb as aX,
   fi as aY,
   Rt as aZ,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   Pt as a_,
   a4 as aa,
   d4 as ab,
@@ -12148,51 +10139,10 @@ export {
   e4 as b6,
   u5 as b7,
   ns as b8,
-========
-  Dt as a_,
-  G5 as aa,
-  e4 as ab,
-  db as ac,
-  Mb as ad,
-  Sb as ae,
-  Fb as af,
-  Wb as ag,
-  zb as ah,
-  vb as ai,
-  Eo as aj,
-  Lb as ak,
-  t5 as al,
-  f4 as am,
-  m5 as an,
-  h5 as ao,
-  d5 as ap,
-  Vb as aq,
-  jb as ar,
-  Pb as as,
-  qb as at,
-  E5 as au,
-  e5 as av,
-  s5 as aw,
-  g4 as ax,
-  Ut as ay,
-  a5 as az,
-  Oy as b,
-  p4 as b$,
-  ny as b0,
-  t4 as b1,
-  I5 as b2,
-  T5 as b3,
-  H0 as b4,
-  Zr as b5,
-  H5 as b6,
-  Qb as b7,
-  ss as b8,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   it as b9,
   z5 as bA,
   Z5 as bB,
   ut as bC,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   F5 as bD,
   X5 as bE,
   g5 as bF,
@@ -12243,58 +10193,6 @@ export {
   Cb as bx,
   kb as by,
   E5 as bz,
-========
-  O5 as bD,
-  F5 as bE,
-  o5 as bF,
-  p5 as bG,
-  l5 as bH,
-  Ce as bI,
-  Jb as bJ,
-  W5 as bK,
-  M4 as bL,
-  S4 as bM,
-  eb as bN,
-  x0 as bO,
-  Kb as bP,
-  L5 as bQ,
-  mb as bR,
-  h4 as bS,
-  R5 as bT,
-  N5 as bU,
-  D5 as bV,
-  Gb as bW,
-  Ov as bX,
-  Yb as bY,
-  u5 as bZ,
-  d4 as b_,
-  j5 as ba,
-  bs as bb,
-  nr as bc,
-  y4 as bd,
-  b4 as be,
-  _5 as bf,
-  Z5 as bg,
-  tb as bh,
-  f5 as bi,
-  w4 as bj,
-  Nb as bk,
-  Db as bl,
-  wb as bm,
-  Ob as bn,
-  ib as bo,
-  Y5 as bp,
-  pb as bq,
-  gb as br,
-  kb as bs,
-  v5 as bt,
-  m0 as bu,
-  s4 as bv,
-  dy as bw,
-  yb as bx,
-  cb as by,
-  g5 as bz,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   Ve as c,
   ax as c$,
   vb as c0,
@@ -12343,7 +10241,6 @@ export {
   D5 as cg,
   Vt as ch,
   Tt as ci,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   zk as cj,
   K4 as ck,
   ve as cl,
@@ -12392,62 +10289,11 @@ export {
   Jk as dl,
   F4 as dm,
   H4 as dn,
-========
-  Bk as cj,
-  D4 as ck,
-  ke as cl,
-  Jn as cm,
-  Lk as cn,
-  Fh as co,
-  V4 as cp,
-  Qk as cq,
-  wm as cr,
-  Rn as cs,
-  _4 as ct,
-  Ok as cu,
-  Zt as cv,
-  qk as cw,
-  ve as cx,
-  P4 as cy,
-  Z4 as cz,
-  W0 as d,
-  Oi as d0,
-  Uk as d1,
-  lt as d2,
-  zk as d3,
-  Wn as d4,
-  J4 as d5,
-  Y4 as d6,
-  Tr as d7,
-  T4 as d8,
-  jf as d9,
-  Ur as dA,
-  R4 as dB,
-  Tm as dC,
-  B4 as dD,
-  Vn as dE,
-  F4 as dF,
-  qf as da,
-  H4 as db,
-  W4 as dc,
-  U4 as dd,
-  Xk as de,
-  Jk as df,
-  Kk as dg,
-  A4 as dh,
-  E4 as di,
-  ug as dj,
-  Rk as dk,
-  jk as dl,
-  O4 as dm,
-  I4 as dn,
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
   Xe as dp,
   Kk as dq,
   q4 as dr,
   ab as ds,
   kt as dt,
-<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-_TWMC7dz.js
   Jy as du,
   G4 as dv,
   Ky as dw,
@@ -12476,34 +10322,4 @@ export {
   t4 as x,
   n4 as y,
   vn as z
-========
-  Yy as du,
-  N4 as dv,
-  Gy as dw,
-  q4 as dx,
-  cm as dy,
-  Iw as dz,
-  We as e,
-  f0 as f,
-  Ab as g,
-  v4 as h,
-  sn as i,
-  o4 as j,
-  k4 as k,
-  K5 as l,
-  r4 as m,
-  Ly as n,
-  Q5 as o,
-  hb as p,
-  Ea as q,
-  Si as r,
-  _i as s,
-  qe as t,
-  i4 as u,
-  z0 as v,
-  m4 as w,
-  U5 as x,
-  z5 as y,
-  gn as z
->>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-DQKuLORv.js
 };
