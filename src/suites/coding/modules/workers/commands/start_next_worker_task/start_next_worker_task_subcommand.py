@@ -7,7 +7,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task import StartNextWorkerTask
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
+from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
 
 
 class StartNextWorkerTaskSubcommand(Subcommand[StartNextWorkerTask, Task]):
