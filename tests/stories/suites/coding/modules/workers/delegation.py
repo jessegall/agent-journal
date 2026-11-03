@@ -247,6 +247,13 @@ def test_releasing_a_worker_gives_its_delegated_tasks_back(new_story):
     assert "delegated_to" not in story.run("task show 2", actor=story.agent).output_text or "delegated_to: None" in story.run("task show 2", actor=story.agent).output_text
 
 
+def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_success('task cancel 2 --reason "not needed"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "not needed"', actor=story.agent)
+    story.expect_text("task show 2", "state: cancelled", actor=story.agent)
+
+
 def test_the_assigner_leaves_a_delegated_task_alone(new_story):
     story, _, _ = delegated_story(new_story)
     tasks = story.container.get(TaskQuery)
