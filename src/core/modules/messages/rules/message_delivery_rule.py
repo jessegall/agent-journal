@@ -3,6 +3,7 @@ from core.modules.messages.support.message_nudges import MESSAGE_FILE, NEW_MESSA
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.journal_home import JournalHome
@@ -31,7 +32,7 @@ class MessageDeliveryRule(DriverRule):
         self.queries, self.home = queries, home
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not hook.event.accepts_lines:
+        if not hook.event.accepts_lines or hook.event.event == HookEventName.TICK:
             return RuleAnswer.allowed()
         undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
         messages = undelivered.limited(LISTED_MESSAGES)
