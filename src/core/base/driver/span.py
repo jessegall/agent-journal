@@ -5,6 +5,9 @@ from core.base.timestamp import Timestamp
 
 
 class Span(Protocol):
-    """One thing an interval waits for, counted from the moment the interval last fired."""
+    """One thing an interval waits for, counted from the moment the interval last fired, in its unit."""
+
+    @property
+    def unit(self) -> str: ...
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool: ...
