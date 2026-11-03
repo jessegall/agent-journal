@@ -1,8 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.database.database import Database
-from core.base.database.statement import Statement
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -11,25 +9,21 @@ from core.modules.tasks.commands.wait_task.wait_task import WaitTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_wait import TaskWait
-
-TARGET_TABLES = {"task": "tasks", "question": "questions", "plan": "plans"}
-FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
+from core.modules.tasks.support.task_wait_targets import TARGET_HELP, TaskWaitTargets
 
 
 class WaitTaskHandler(Handler[WaitTask, Task]):
-    """Blocks a task on what it waits on: rows that open it once they resolve, a command that opens it once it
-    passes,
-    or a reason in words, which is opened by hand."""
+    """Blocks a task until its targets resolve, its command passes or someone unblocks it."""
 
     command = WaitTask
 
-    def __init__(self, bus: Bus, queries: Queries, repository: Repository, database: Database) -> None:
-        self.bus, self.queries, self.repository, self.database = bus, queries, repository, database
+    def __init__(self, bus: Bus, queries: Queries, repository: Repository, targets: TaskWaitTargets) -> None:
+        self.bus, self.queries, self.repository, self.targets = bus, queries, repository, targets
 
     def handle(self, command: WaitTask, context: Context) -> Task:
         targets = tuple(self.target(text, command.task_id) for text in command.targets)
         if not (command.reason.strip() or targets or command.wait_command):
-            raise Refusal("say what it waits on", "--on task:<n>, --on question:<n> or --on plan:<n>, --until '<command>', or --reason '<words>'")
+            raise Refusal("say what it waits on", f"{TARGET_HELP}, --until '<command>', or --reason '<words>'")
         reason = command.reason.strip() or command.wait_reason()
         task = self.bus.dispatch(BlockTask(command.task_id, reason), context)
         for target in targets:
@@ -53,16 +47,10 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
 
     def target(self, text: str, task_id: int) -> str:
         target_type, _, row_id = text.partition(":")
-        table = TARGET_TABLES.get(target_type)
-        if table is None or not row_id.isdigit():
-            raise Refusal(f"{text} gives nothing to wait on", "write --on task:<n>, --on question:<n> or --on plan:<n>")
+        if not row_id.isdigit():
+            raise Refusal(f"{text} gives nothing to wait on", TARGET_HELP)
         if target_type == "task" and int(row_id) == task_id:
             raise Refusal(f"task {task_id} cannot wait on itself", "name another task")
         if target_type == "task" and self.reaches_task(int(row_id), task_id):
             raise Refusal(f"task {row_id} waits on task {task_id} already, so this would be a loop", "end one of the two waits first")
-        rows = self.database.rows(Statement.row_state(table, int(row_id)))
-        if not rows:
-            raise Refusal(f"{target_type} {row_id} does not exist", "name a row that does")
-        if rows[0]["state"] in FINISHED_STATES:
-            raise Refusal(f"{target_type} {row_id} is {rows[0]['state']} already", "nothing waits on it; carry on with the task")
-        return f"{table}:{row_id}"
+        return self.targets.target(target_type, int(row_id))
