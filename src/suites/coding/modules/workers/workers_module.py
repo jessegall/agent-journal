@@ -67,6 +67,7 @@ from suites.coding.modules.workers.listeners.delegated_task_comment_listener imp
 from suites.coding.modules.workers.listeners.worker_count_raised_listener import WorkerCountRaisedListener
 from suites.coding.modules.workers.listeners.reassigned_task_listener import ReassignedTaskListener
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
+from suites.coding.modules.workers.listeners.removed_worktree_agent_listener import RemovedWorktreeAgentListener
 from suites.coding.modules.workers.listeners.worker_run_ended_listener import WorkerRunEndedListener
 from suites.coding.modules.workers.listeners.worker_job_resume_listener import WorkerJobResumeListener
 from suites.coding.modules.workers.listeners.released_stop_listener import ReleasedStopListener
@@ -104,7 +105,7 @@ from suites.coding.modules.workers.commands.worker_points.worker_points_subcomma
 from suites.coding.modules.workers.commands.worker_points.proof_points_subcommand import ProofPointsSubcommand
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.commands.short_proof.short_proof import ShortProof
+from suites.coding.modules.workers.commands.short_proof.short_proof_subcommand import ShortProofSubcommand
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -139,18 +140,18 @@ class WorkersModule(Module):
     dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage"]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
-              ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
+              ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove]
     handlers = [RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
-    subcommands = [WorkerProgressSubcommand, WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
+    subcommands = [ShortProofSubcommand, WorkerProgressSubcommand,WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
     bindings = [(AgentActivity, WorkerAgentActivity), (TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets), (QueueRunWorkers, WorkerQueueRunWorkers)]
-    listeners = [ReaderSampleReadyListener, WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    listeners = [RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),

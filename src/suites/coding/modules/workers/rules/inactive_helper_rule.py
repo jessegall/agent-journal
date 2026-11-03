@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
 from core.base.agent_role import AgentRole
@@ -66,5 +68,4 @@ class InactiveHelperRule(DriverRule):
         newest = self.calls.newest_agent_hook(helper.id)
         activity_at = newest.created_at if newest is not None else helper.created_at
         return activity_at is not None and activity_at.elapsed_seconds(hook.timestamp) >= span.count
-from collections.abc import Sequence
 

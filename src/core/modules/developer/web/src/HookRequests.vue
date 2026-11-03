@@ -21,6 +21,7 @@ usePoll(load, () => true);
                 <div class="columns">
                     <span data-hook-column>Event</span>
                     <span data-hook-column>Tool</span>
+                    <span class="parts" data-hook-column>Parts</span>
                     <span data-hook-column>Time</span>
                     <span data-hook-column>Duration</span>
                 </div>
@@ -38,6 +39,7 @@ usePoll(load, () => true);
                         <button type="button" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="row.outcome" @click="openedNumber = row.id">
                             <span class="event">{{ row.event }}</span>
                             <span class="tool">{{ row.tool || '—' }}</span>
+                            <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
                             <time :datetime="row.received_at">{{ row.time }}</time>
                             <span class="duration">{{ durationOf(row) }}</span>
                         </button>
@@ -92,7 +94,7 @@ usePoll(load, () => true);
 .columns,
 .row {
     display: grid;
-    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 96px 72px;
+    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 36px 96px 72px;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
@@ -106,8 +108,14 @@ usePoll(load, () => true);
 }
 
 .columns > :last-child,
-.duration {
+.duration,
+.parts {
     text-align: right;
+}
+
+.parts {
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
 }
 
 .day {
