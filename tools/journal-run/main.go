@@ -35,7 +35,7 @@ func main() {
 
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
-	return Options{Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
+	return Options{Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
 		HeartbeatEvery: HeartbeatInterval, Detach: Detach}
 }
 
