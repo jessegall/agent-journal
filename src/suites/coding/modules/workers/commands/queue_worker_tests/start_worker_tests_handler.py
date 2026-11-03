@@ -29,9 +29,10 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         for proof in proofs:
-            if proof.state is ProofState.QUEUED and proof.worktree_id not in running:
-                self.start(proof, worktrees[proof.worktree_id], context)
-                running.add(proof.worktree_id)
+            if proof.state is not ProofState.QUEUED or proof.worktree_id in running:
+                continue
+            self.start(proof, worktrees[proof.worktree_id], context)
+            running.add(proof.worktree_id)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
         process = self.bus.dispatch(StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True), context)

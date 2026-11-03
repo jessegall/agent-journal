@@ -17,9 +17,9 @@ STORY_GIT_CONFIG = ("-c", "user.name=Story", "-c", "user.email=story@example.com
 
 
 class GitRepository:
-    """A git repository made in a story's own folder, with main checked out and the environment's branch version-5
-    one commit ahead of it, and the checks a story makes of its branches, worktrees and folders. The sample is made
-    once per test process and copied for each story."""
+    """A git repository made in a story's own folder, with main checked out and the environment's branch
+    version-5 one commit ahead of it, and the checks a story makes of its branches, worktrees and
+    folders. The sample is made once per test process and copied for each story."""
 
     source_folder: ClassVar[Path | None] = None
 

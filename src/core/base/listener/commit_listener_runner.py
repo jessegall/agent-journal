@@ -22,12 +22,13 @@ COSTLY_LISTENER_POINTS = 500
 
 
 class CommitListenerRunner:
-    """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
-    run left undone is done by the next. Each round reads the events once and visits only the listeners that
-    hear one of them; the others move over them in one write. It claims each event it listens to before handling
-    it, so a second runner never handles the same one; an event that fails is given back to be tried again, and one that fails three times is skipped. Listeners a person waits
-    on run first and again after each other listener that handled events, and the server runs them on a thread
-    of their own; a costly one is noted with its points."""
+    """Runs the commit listeners on every logged event they have not handled yet, in order, so work a
+    stopped run left undone is done by the next. Each round reads the events once and visits only the
+    listeners that hear one of them; the others move over them in one write. It claims each event it
+    listens to before handling it, so a second runner never handles the same one; an event that fails is
+    given back to be tried again, and one that fails three times is skipped. Listeners a person waits on
+    run first and again after each other listener that handled events, and the server runs them on a
+    thread of their own; a costly one is noted with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  exceptions: ExceptionSink, scopes: Scopes) -> None:
@@ -78,11 +79,11 @@ class CommitListenerRunner:
         events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
-        heard = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
-        names = {entry.name for entry in heard}
-        moved = self.cursors.moved_over([entry.name for entry in entries if entry.name not in names], events[-1].id)
-        progress = [self.run_entry(entry, urgent_entries) for entry in heard]
-        return bool(moved) or any(progress)
+        due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
+        due_names = {entry.name for entry in due_entries}
+        moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
+        progress = [self.run_entry(entry, urgent_entries) for entry in due_entries]
+        return bool(moved_count) or any(progress)
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
         handled = self.run_listener(entry)

@@ -237,15 +237,15 @@ def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end
         folder.write_pid(process.id, ended_program.pid)
         folder.write_end(process.id, 0)
     story.advance(timedelta(seconds=11))
-    tick_work = RunEndRecovery()
-    original = tick_work.commands
+    handler = RunEndRecovery()
+    original = handler.commands
 
-    def commands_read_before_the_report(container, process):
+    def stale_commands(container, process):
         commands = original(container, process)
         if process.id == reported.id:
             story.container.get(Bus).run(EndProcess(process.id, 0, 0, 0), story.agent, environment_id=1)
         return commands
 
-    tick_work.commands = commands_read_before_the_report
-    assert tick_work(story.container) is True
+    handler.commands = stale_commands
+    assert handler(story.container) is True
     story.expect_success(f"process show {second.id}", "state: finished", actor=story.agent)

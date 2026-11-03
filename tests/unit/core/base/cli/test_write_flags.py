@@ -53,7 +53,7 @@ def registry() -> Registry:
     return Registry("abc", {}, handlers, {}, guards, listeners)
 
 
-def test_explain_lists_every_refusal_and_listener_and_is_read_only(tmp_path):
+def test_explain_lists_every_refusal_and_listener_and_is_readonly(tmp_path):
     container = sample_container(tmp_path, registry())
     explanation = container.get(Bus).explain(MakeItem(title="Dune"), AGENT)
     assert [refusal.guard for refusal in explanation.refusals] == ["items.no-dune", "items.closed-today"]

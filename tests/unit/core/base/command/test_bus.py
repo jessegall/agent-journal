@@ -119,7 +119,7 @@ def test_a_nested_refusal_a_listener_catches_leaves_the_outer_work(container):
     assert titles(container) == ["Dune"]
 
 
-def test_a_refusal_at_the_top_is_read_only(container):
+def test_a_refusal_at_the_top_is_readonly(container):
     with pytest.raises(Refusal):
         container.get(Bus).run(ItemPair(first="Dune", second="Dune"), AGENT)
     assert titles(container) == []

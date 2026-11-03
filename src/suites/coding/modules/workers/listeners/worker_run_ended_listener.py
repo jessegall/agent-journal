@@ -16,9 +16,9 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
 
 class WorkerRunEndedListener(SaveListener):
-    """A worker that has stopped while a run of its own went on in the background is told when the run ends, by a
-    job line, which starts it again on its session; one a person or another agent stopped, or that asked for help,
-    stays stopped."""
+    """A worker that has stopped while a run of its own went on in the background is told when the run
+    ends, by a job line, which starts it again on its session; one a person or another agent stopped, or
+    that asked for help, stays stopped."""
 
     name = "workers.run-ended"
     event = "process.*"

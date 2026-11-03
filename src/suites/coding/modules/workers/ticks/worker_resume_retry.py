@@ -28,5 +28,6 @@ class WorkerResumeRetry:
         ended_at = worker.ended_at
         if worker.role is not AgentRole.WORKER or ended_at is None:
             return False
-        line_after_end = any(line.creation_timestamp().value > ended_at.value for line in lines)
-        return line_after_end or not container.get(WorkerStop).was_stopped(worker)
+        if any(line.creation_timestamp().value > ended_at.value for line in lines):
+            return True
+        return not container.get(WorkerStop).was_stopped(worker)
