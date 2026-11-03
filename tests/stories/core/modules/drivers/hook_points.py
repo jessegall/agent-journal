@@ -19,6 +19,7 @@ SAMPLES = {
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(new_story):
     story = new_story(fixture=FilledHookJournal)
+    story.hook("s-1", HookSamples.prompt("Carry on"))
     database = story.container.get(Database)
     cost_failures = {}
     for name, sample in SAMPLES.items():
@@ -32,6 +33,7 @@ def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_
 
 def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(new_story):
     story = new_story(fixture=FilledHookJournal)
+    story.hook("s-1", HookSamples.prompt("Carry on"))
     database = story.container.get(Database)
     cost_failures = {}
     measured = 0
