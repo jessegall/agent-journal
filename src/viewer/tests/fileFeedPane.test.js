@@ -1,5 +1,6 @@
 import {createApp, defineComponent, h} from "vue";
-import {afterEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import {settled} from "./settled.js";
 import {perLine} from "./support/windowContext.js";
 import PaneStage from "../src/windows/PaneStage.vue";
@@ -38,6 +39,8 @@ const answers = (setting) => perLine(async (url, init) => {
 });
 
 let drawn = [];
+let checkObservers;
+beforeEach(() => { checkObservers = trackMutationObservers(); });
 
 // a stage over a layout that was saved as it is given, and the layout it saves
 async function stage({page = "home", saved = null, setting = null} = {}) {
@@ -66,6 +69,7 @@ async function stage({page = "home", saved = null, setting = null} = {}) {
 
 afterEach(() => {
     drawn.forEach(({app, element}) => (app.unmount(), element.remove()));
+    checkObservers();
     drawn = [];
     vi.unstubAllGlobals();
     vi.stubGlobal("ResizeObserver", class {

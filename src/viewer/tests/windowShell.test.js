@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from "vue";
-import {afterEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {settledByTimer} from "./settled.js";
@@ -9,8 +10,11 @@ const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", l
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
 
 const mounted = [];
+let checkObservers;
+beforeEach(() => { checkObservers = trackMutationObservers(); });
 afterEach(() => {
     mounted.splice(0).forEach((app) => app.unmount());
+    checkObservers();
     vi.unstubAllGlobals();
 });
 

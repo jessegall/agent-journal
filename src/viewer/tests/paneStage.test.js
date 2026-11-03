@@ -1,5 +1,6 @@
 import {createApp, h, shallowRef} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import {settled} from "./settled.js";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
@@ -80,7 +81,9 @@ async function dragTo(element, name, x, y, {drop = true} = {}) {
     }
 }
 
+let checkObservers;
 beforeEach(() => {
+    checkObservers = trackMutationObservers();
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
     vi.stubGlobal("requestAnimationFrame", (run) => setTimeout(run, 0));
     measured();
@@ -92,6 +95,7 @@ afterEach(() => {
         element.remove();
     });
     mounted = [];
+    checkObservers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
 });
