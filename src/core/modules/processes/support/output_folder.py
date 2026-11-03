@@ -12,6 +12,7 @@ PID_FILE = "pid"
 END_FILE = "end"
 FIRST_OUTPUT_FILE = "1.out"
 HEARTBEAT_FILE = "heartbeat"
+SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
 
@@ -40,6 +41,14 @@ class OutputFolder:
     def part_texts(self, process_id: int) -> list[str]:
         text = self.text(process_id, PARTS_FILE)
         return text.split("\n") if text else []
+
+    def write_slot(self, process_id: int) -> None:
+        folder = self.home.folder / FOLDER_NAME / str(process_id)
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / SLOT_FILE).touch()
+
+    def has_slot(self, process_id: int) -> bool:
+        return (self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE).exists()
 
     def write_pid(self, process_id: int, pid: int) -> None:
         self.write_number(process_id, PID_FILE, pid)

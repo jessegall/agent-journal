@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.modules.processes.support.process_nudges import RUNNER_MISSING
 from collections.abc import Mapping, Sequence
 
@@ -43,7 +45,8 @@ class RunnerRewriteRule(DriverRule):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
-        run = self.limits.decide(hook.environment_id, shell)
+        decided = self.limits.decide(hook.environment_id, shell)
+        run = replace(decided, queued=hook.role is AgentRole.WORKER and decided.seconds > 0)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def is_read_write(self, shell: ShellLine) -> bool:

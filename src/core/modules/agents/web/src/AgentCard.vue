@@ -18,7 +18,7 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
-const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? `${props.row.role} ${props.row.id}` : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
 const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {

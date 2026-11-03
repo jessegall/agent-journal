@@ -24,6 +24,7 @@ from core.modules.questions.models.question import Question
 from core.modules.usage.support.tool_facts import ToolFacts
 
 SHOWN_RUNS = 2
+QUEUE_LINE = "waiting for a spot in the queue"
 TURN_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.STOP, HookEventName.PROMPT, HookEventName.SESSION_START)
 
 
@@ -63,6 +64,8 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         runs = self.processes.agent(call.agent_id).running().newest().page(1, 1).rows
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
+        if runs[0].is_queued:
+            return QUEUE_LINE
         waiting = self.queries.query(ProcessPart).filter(process_id=runs[0].id, state=PartState.WAITING).ordered("position").page(1, 1).rows
         return waiting[0].text if waiting else ""
 
