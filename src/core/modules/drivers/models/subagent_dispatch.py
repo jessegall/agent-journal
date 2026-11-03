@@ -9,6 +9,7 @@ class SubagentDispatch(Model):
     """A subagent an agent sent out: its profile, model, job and instruction, and what it returned when it ended."""
 
     model_name = "subagent_dispatch"
+    shared_rows = True
     cli_name = "subagent-dispatch"
 
     environment_id: int

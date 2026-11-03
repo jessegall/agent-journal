@@ -2,6 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -20,6 +21,7 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
     """Sends a proof back short: the task goes back to its worker, who is told what is missing."""
 
     command = ShortProof
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

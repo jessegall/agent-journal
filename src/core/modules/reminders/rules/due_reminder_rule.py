@@ -1,4 +1,5 @@
 from core.base.agent_role import AgentRole
+from core.modules.reminders.support.non_helper_rows import NonHelperRows
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.driver_rule import DriverRule
@@ -31,7 +32,7 @@ class DueReminderRule(DriverRule):
         self.queries, self.conditions, self.hook_calls = queries, conditions, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        reminders = self.queries.query(Reminder).filter(environment_id=hook.environment_id).matching(IsNull("ended_at")).oldest().limited(OPEN_REMINDERS_READ)
+        reminders = self.queries.query(Reminder).filter(environment_id=hook.environment_id).matching(IsNull("ended_at")).matching(NonHelperRows()).oldest().limited(OPEN_REMINDERS_READ)
         tool_uses = self.tool_uses(reminders, hook)
         due = [reminder for reminder in reminders if self.should_fire(reminder, hook, tool_uses.get(reminder.id, 0))]
         if not due:

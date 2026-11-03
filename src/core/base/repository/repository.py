@@ -16,6 +16,7 @@ from core.base.model.table import Table
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.repository.stale_row_error import StaleRowError
+from core.base.scope.scopes import Scopes
 
 M = TypeVar("M", bound=Model)
 
@@ -28,9 +29,9 @@ class Repository:
     reading it a second time."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
-                 constraint_refusals: ConstraintRefusals) -> None:
+                 constraint_refusals: ConstraintRefusals, scopes: Scopes) -> None:
         self.database, self.tables, self.queries = database, tables, queries
-        self.guards, self.listeners, self.log, self.constraint_refusals = guards, listeners, log, constraint_refusals
+        self.guards, self.listeners, self.log, self.constraint_refusals, self.scopes = guards, listeners, log, constraint_refusals, scopes
 
     def save(self, model: M, context: Context) -> M:
         return self.save_change(self.stored(model), model, context)
@@ -39,6 +40,7 @@ class Repository:
         return self.save_change(stored, stored.changed(**values), context)
 
     def save_change(self, stored: M | None, model: M, context: Context) -> M:
+        model = self.scopes.applied(model)
         change = Change(stored, model, context)
         if change.is_empty and change.old_row is not None:
             return change.old_row

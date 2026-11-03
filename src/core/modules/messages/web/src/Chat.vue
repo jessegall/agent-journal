@@ -6,7 +6,7 @@ import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, Pi
 
 const {rows: messages, failure, loaded, load, older, act, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
-const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
+const {rows: docked} = useRows("dock-item main", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: pins, act: runOnPin} = useRows("pin list", ["pin.*"]);
 const openQuestion = ref(0);

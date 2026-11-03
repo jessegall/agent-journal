@@ -39,3 +39,6 @@ class ChatMark(Model):
 
     def end(self, timestamp: Timestamp, actor: Actor) -> "ChatMark":
         return self.moved(ChatMarkLifecycle.end, ended_at=timestamp)
+
+    def scoped(self, actor_id: int) -> "ChatMark":
+        return self if self.agent_id is not None else self.changed(agent_id=actor_id)

@@ -2,7 +2,7 @@
 import {ListTools, RowList, WindowRoom, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
-const {rows, failure, loaded} = useRows("process feed", ["process.*", "output.*"]);
+const {rows, failure, loaded} = useRows(context.agent == null ? "process feed" : `process feed --agent-id ${context.agent}`, ["process.*", "output.*"]);
 const tools = useListTools(rows, {title: (row) => row.line, isOpen: (row) => row.state === "running"});
 
 const isRunning = (row) => row.state === "running" || row.state === "background";

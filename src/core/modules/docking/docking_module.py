@@ -8,6 +8,7 @@ from core.modules.docking.commands.add_dock_item.add_dock_item_subcommand import
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_subcommand import KeepDockItemSubcommand
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand import RemoveDockItemSubcommand
 from core.modules.docking.commands.release_dock_item.release_dock_item_subcommand import ReleaseDockItemSubcommand
+from core.modules.docking.commands.main_dock_items.main_dock_items_subcommand import MainDockItemsSubcommand
 from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
 from core.modules.docking.guards.dock_capacity_guard import DockCapacityGuard
@@ -23,6 +24,7 @@ from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
 from core.modules.docking.migrations.m003_dock_item_labels import DockItemLabelsMigration
 from core.modules.docking.migrations.m004_dock_item_indexes import DockItemIndexesMigration
+from core.modules.docking.migrations.m005_dock_item_agents import DockItemAgentsMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
@@ -36,11 +38,11 @@ class DockingModule(Module):
     move_reason = "version 4 had no docked items, its dock was drawn from open rows"
     requires_core = ">=5,<6"
     settings = DOCKING_SETTINGS
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
-    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration]
+    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
-    subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand]
+    subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
     seeders = [DockingSeeder]

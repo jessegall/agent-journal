@@ -1,3 +1,4 @@
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
 from core.base.change.change import Change
@@ -15,6 +16,7 @@ class DumpArrivalListener(SaveListener):
 
     name = "dumps.arrival"
     event = "dump.create"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, nudger: Nudger) -> None:
         self.queries, self.nudger = queries, nudger

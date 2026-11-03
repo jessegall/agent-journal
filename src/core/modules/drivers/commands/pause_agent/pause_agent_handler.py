@@ -5,6 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
 from core.modules.drivers.listeners.typed_line_listener import PAUSE_SOURCE
@@ -17,6 +18,7 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
     committed; an agent that ended or is paused already is refused."""
 
     command = PauseAgent
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

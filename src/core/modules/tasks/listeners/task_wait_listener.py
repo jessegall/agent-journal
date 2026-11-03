@@ -7,6 +7,7 @@ from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
@@ -20,6 +21,7 @@ class TaskWaitListener(SaveListener):
 
     name = "tasks.task-waits"
     event = "*.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, tables: Tables, waits: TaskWaits) -> None:
         self.queries, self.repository, self.tables, self.waits = queries, repository, tables, waits

@@ -3,6 +3,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.models.dock import Dock
@@ -19,6 +20,7 @@ class OpenQuestionsDockListener(CommitListener):
 
     name = "questions.open-dock"
     event = "question.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, questions: QuestionQuery, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.questions, self.items = bus, actors, queries, questions, items

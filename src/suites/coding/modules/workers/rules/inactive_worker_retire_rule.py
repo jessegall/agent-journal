@@ -4,6 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -26,6 +27,7 @@ class InactiveWorkerRetireRule(DriverRule):
     hook = HookEventName.TICK
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
+    disabled_scopes = [ActorScope]
 
     def __init__(self, worktrees: WorkerWorktrees, queries: Queries, calls: HookCallQuery, settings: SettingValues) -> None:
         self.worktrees, self.queries, self.calls, self.settings = worktrees, queries, calls, settings

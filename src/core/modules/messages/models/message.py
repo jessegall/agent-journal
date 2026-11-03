@@ -12,6 +12,7 @@ class Message(Model):
     which a comment on it names it by, is the first line of its text."""
 
     model_name = "message"
+    shared_rows = True
     cli_name = "message"
     search_fields = ["text"]
 

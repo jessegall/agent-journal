@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
@@ -22,3 +22,6 @@ class AgentLine(Model):
     source: str = ""
     state: AgentLineState = AgentLineState.WAITING
     delivered_at: Timestamp | None = None
+
+    def scoped(self, actor_id: int) -> "AgentLine":
+        return self if self.is_saved or self.agent_id == actor_id else replace(self, state=AgentLineState.HIDDEN)

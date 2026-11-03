@@ -3,6 +3,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 from core.modules.drivers.support.nudger import Nudger
@@ -16,6 +17,7 @@ class NewDriverLinesListener(SaveListener):
 
     name = "drivers.new-driver-lines"
     event = "setting.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, nudger: Nudger, choice: SuiteChoice) -> None:
         self.queries, self.nudger, self.choice = queries, nudger, choice

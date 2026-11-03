@@ -8,6 +8,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
+from core.base.scope.scopes import Scopes
 from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.performance.performance_state import PerformanceState
@@ -26,8 +27,8 @@ class CommitListenerRunner:
     events, and the server runs them on a thread of their own; a costly one is noted with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
-                 exceptions: ExceptionSink) -> None:
-        self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions = registry, log, container, errors, cursors, exceptions
+                 exceptions: ExceptionSink, scopes: Scopes) -> None:
+        self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
 
     def run(self) -> None:
         try:
@@ -102,7 +103,8 @@ class CommitListenerRunner:
         tools = self.container.get(PerformanceCosts)
         start_points = tools.begin()
         try:
-            self.container.get(listener_class).handle(event)
+            with self.scopes.event_scope(listener_class.disabled_scopes, event):
+                self.container.get(listener_class).handle(event)
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")

@@ -3,6 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
@@ -22,6 +23,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     delivered worker's task goes back in hand."""
 
     command = SendWorker
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
         self.queries, self.worktrees, self.repository, self.git, self.nudger = queries, worktrees, repository, git, nudger

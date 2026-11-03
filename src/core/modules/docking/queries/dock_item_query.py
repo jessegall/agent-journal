@@ -7,6 +7,7 @@ from core.base.query.query import Query
 from core.base.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
+from core.modules.docking.support.same_chat import SameChat
 
 
 class DockItemQuery(Query[DockItem]):
@@ -17,6 +18,9 @@ class DockItemQuery(Query[DockItem]):
 
     def docked(self, dock_id: int) -> Self:
         return self.filter(dock_id=dock_id, state=DockItemState.DOCKED)
+
+    def same_chat(self, agent_id: int | None) -> Self:
+        return self.matching(SameChat(agent_id))
 
     def type_items(self, type: str) -> Self:
         return self.filter(type=type)

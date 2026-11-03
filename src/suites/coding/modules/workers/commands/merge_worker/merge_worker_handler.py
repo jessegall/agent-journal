@@ -3,6 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -26,6 +27,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     back to the worker."""
 
     command = MergeWorker
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
         self.queries, self.worktrees, self.checks, self.repository, self.git, self.nudger = queries, worktrees, checks, repository, git, nudger

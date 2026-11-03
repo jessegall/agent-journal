@@ -19,6 +19,7 @@ class Database:
         self.connection = connection
         self.nested: list[str] = []
         self.tally = PointTally()
+        self.read_actor_id: int | None = None
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":

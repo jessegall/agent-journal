@@ -10,6 +10,7 @@ class WorkerPoints(ViewModel):
     worker_points view."""
 
     cli_name = "worker-points"
+    shared_rows = True
     view = "worker_points"
     key = "worktree_id"
     select = WORKER_POINTS_SELECT

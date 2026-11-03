@@ -16,6 +16,12 @@ def test_every_model_is_allowed_until_one_is_listed(new_story):
     story.expect_text("worker models", "claude haiku: allowed", "claude sonnet: allowed", "claude opus: allowed")
 
 
+def test_each_program_lists_its_models_from_the_cheapest_to_the_one_for_rare_occasions(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_text("worker models", "claude haiku: allowed\nclaude sonnet: allowed\nclaude opus: allowed\nclaude fable: allowed",
+                      "codex gpt-6-luna: allowed\ncodex gpt-6.1-terra: allowed\ncodex gpt-6.1-sol: allowed\ncodex gpt-6-astra: allowed")
+
+
 def test_listing_models_allows_those_of_that_program_and_leaves_the_others_alone(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     allow_opus(story)

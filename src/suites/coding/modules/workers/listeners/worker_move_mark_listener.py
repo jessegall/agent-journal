@@ -1,5 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.query.conditions.among import Among
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -25,6 +26,7 @@ class WorkerMoveMarkListener(MarkListener):
 
     name = "workers.move-mark"
     event = "worker_worktree.*"
+    disabled_scopes = [ActorScope]
     module_name = "journal.suites.coding.workers"
 
     def handle(self, event: LoggedEvent) -> None:
