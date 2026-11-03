@@ -52,6 +52,8 @@ class ReaderJudge:
         return self.misses_with_lines(reader, category, self.output_text(output.process_id, output.reader_position), self.folder.reader_lines(output.process_id))
 
     def misses_with_lines(self, reader: Reader, category: CommandCategory, text: str, lines: Sequence[str]) -> tuple[str, ...]:
+        if not text.strip():
+            return ()
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)
         count = self.run.count(reader, text, 0)
