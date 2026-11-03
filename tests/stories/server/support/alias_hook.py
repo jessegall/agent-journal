@@ -16,7 +16,6 @@ class AliasHook:
         self.server, self.session = server, session
         home = server.story.home
         (home.folder.parent / ".journal").symlink_to(home.folder, target_is_directory=True)
-        (home.folder / "hooks-on-socket").touch()
         self.binary = GoBuild.built("journal-hook", home.folder.parent / "journal-hook")
 
     def answer(self, line: str) -> dict[str, object]:

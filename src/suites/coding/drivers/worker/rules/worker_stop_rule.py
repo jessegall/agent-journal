@@ -5,6 +5,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -13,15 +14,14 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOC
 
 
 class WorkerStopRule(DriverRule):
-    """A worker stops only once it holds no started task and has no task queued, or while its tests wait, as
-    its next task then reaches it; a stop before that names the way to deliver, and a stuck report is the way
-    out."""
+    """A worker may stop with no task, while proof tests wait, while a run continues, or while a reader is
+    needed. Its run or tests restart it; otherwise it must deliver or report that it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, requests: ReaderRequestQuery, clock: Clock) -> None:
-        self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock) -> None:
+        self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
         self.requests, self.clock = requests, clock
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -34,5 +34,7 @@ class WorkerStopRule(DriverRule):
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
         if not rows and worktree is not None and self.proofs.tests_waiting(worktree.id):
+            return RuleAnswer.allowed()
+        if self.processes.agent(hook.agent_id).running().exists():
             return RuleAnswer.allowed()
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))

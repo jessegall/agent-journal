@@ -10,6 +10,7 @@ from core.modules.drivers.support.nudger import Nudger
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
+from core.base.query.conditions.minimum import Minimum
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -21,7 +22,8 @@ RESUME_LIMIT_COUNT = 3
 
 class EndedWorkerListener(SaveListener):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
-    agent gets one quiet line; one that ended while its tests wait gets its next task from them. A worker a person or another agent stopped holds no delegated task or was ended by them; that one,
+    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
+    ended while a run of its own goes is started again when the run ends. A worker a person or another agent stopped holds no delegated task or was ended by them; that one,
     one that reported being stuck and one that keeps ending leave its main agent one line naming all its
     tasks."""
 
@@ -39,12 +41,13 @@ class EndedWorkerListener(SaveListener):
         if new.role != AgentRole.WORKER or new.parent_id is None:
             return
         unfinished = self.unfinished.rows(new.id)
-        if not unfinished:
+        if not unfinished or self.unfinished.has_running_process(new.id):
             return
         delegated = any(task.delegated_to == new.id for task in unfinished)
         tasks = self.unfinished.names(unfinished)
         help_requested = self.queries.query(Wait).filter(agent_id=new.id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()
-        resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).count()
+        task_start = max((task.started_at.text for task in unfinished if task.started_at), default="")
+        resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(Minimum("created_at", task_start)).count()
         if delegated and not help_requested and not self.stop.is_final(new, change.actor.id) and resume_count < RESUME_LIMIT_COUNT:
             self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, change.context)
             self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, change.context, worker=new.id, tasks=tasks)

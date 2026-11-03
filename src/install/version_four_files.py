@@ -5,12 +5,11 @@ from install.version_four_backup import BACKUP_FOLDER, DATABASE, VERSION_FILE
 
 SIDE_FILES = ("-wal", "-shm")
 CODE_FOLDER = VERSION_FILE.parent
+SHELL_ENTRY = CODE_FOLDER.parent / "journal.sh"
 
 
 class VersionFourFiles:
-    """The files version 4 left in a project's .journal folder: its database with its side files, and its
-    code. After a good upgrade they move into .journal/version-4/, where the backup is, so only version 5 is
-    live."""
+    """Moves the version 4 database, code and shell entry into its backup folder after an upgrade."""
 
     def __init__(self, journal: Path) -> None:
         self.journal = journal
@@ -33,4 +32,8 @@ class VersionFourFiles:
             (self.retired / CODE_FOLDER).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(self.journal / CODE_FOLDER, self.retired / CODE_FOLDER)
             moved.append(str(CODE_FOLDER))
+        if (self.journal / SHELL_ENTRY).is_file():
+            (self.retired / SHELL_ENTRY).parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(self.journal / SHELL_ENTRY, self.retired / SHELL_ENTRY)
+            moved.append(str(SHELL_ENTRY))
         return moved

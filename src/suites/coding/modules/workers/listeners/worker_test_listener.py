@@ -13,11 +13,11 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
-QUEUED_EVENT, RUN_EVENT, AGENT_CREATED_EVENT = "proof.queue", "proof.run", "agent.create"
+QUEUED_EVENT, RUN_EVENT = "proof.queue", "proof.run"
 
 
 class WorkerTestListener(CommitListener):
-    """Moves a worker's tests along: a queued test starts when there is room or a new agent can own it, a test moved
+    """Moves a worker's tests along: a queued test starts when there is room, a test moved
     to running is launched, and a test whose process ended is recorded, which makes room for the next."""
 
     name = "workers.tests"
@@ -31,8 +31,6 @@ class WorkerTestListener(CommitListener):
             self.start_next(self.queries.query(Worktree).find(self.queries.query(Proof).find(event.row_id).worktree_id).environment_id, event)
         elif event.event == RUN_EVENT:
             self.launched(self.queries.query(Proof).find(event.row_id))
-        elif event.event == AGENT_CREATED_EVENT:
-            self.start_next(self.queries.query(Agent).find(event.row_id).environment_id, event)
         elif event.row_table == "processes":
             self.ended(self.queries.query(Process).find(event.row_id), event)
 

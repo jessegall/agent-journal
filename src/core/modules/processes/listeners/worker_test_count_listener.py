@@ -15,10 +15,10 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.support.process_nudges import RUN_OVER_TEST_LIMIT, WORKER_TEST_LIMIT_SOURCE
+from core.modules.processes.support.process_nudges import TEST_LIMIT_STOP, WORKER_TEST_LIMIT_SOURCE
 
 
-class WorkerTestLimitListener(SaveListener):
+class WorkerTestCountListener(SaveListener):
     """Stops a worker's own test run when its reader counts more tests than allowed."""
 
     name = WORKER_TEST_LIMIT_SOURCE
@@ -46,5 +46,5 @@ class WorkerTestLimitListener(SaveListener):
             parts = parts.filter(position=output.reader_position)
         if not parts.exists():
             return
-        self.nudger.send(process.agent_id, RUN_OVER_TEST_LIMIT, self.name, change.context, output=process.id, count=output.test_count, limit=limit)
+        self.nudger.send(process.agent_id, TEST_LIMIT_STOP, self.name, change.context, output=process.id, count=output.test_count, limit=limit)
         self.bus.dispatch(StopProcess(process.id), change.context)

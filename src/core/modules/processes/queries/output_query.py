@@ -7,7 +7,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.output import Output
-from core.modules.processes.queries.conditions.output_for_part import OutputForPart
+from core.modules.processes.queries.conditions.part_output import PartOutput
 
 
 class OutputQuery(Query[Output]):
@@ -28,5 +28,5 @@ class OutputQuery(Query[Output]):
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id)
 
-    def for_part(self, environment_id: int, text: str) -> Self:
-        return self.matching(OutputForPart(environment_id, text))
+    def matching_part(self, environment_id: int, text: str) -> Self:
+        return self.matching(PartOutput(environment_id, text))

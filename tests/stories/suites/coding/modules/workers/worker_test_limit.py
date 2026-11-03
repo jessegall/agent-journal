@@ -2,8 +2,8 @@ import pytest
 from pathlib import Path
 
 from core.base.command.bus import Bus
+from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
-from core.base.module.module_actors import ModuleActors
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
@@ -71,11 +71,22 @@ def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, cou
 def test_the_tests_of_a_proof_are_not_limited(new_story):
     story = new_story(fixture=TestLimitSetup)
     worker = reader_worker(story)
-    actor = story.container.get(ModuleActors).actor("journal.suites.coding.workers")
+    actor = Actor.core()
     process = story.container.get(Bus).run(StartProcess.single_part(worker.id, "pytest tests/proof.py", "/work", CommandCategory.TEST_RUN, 30, is_queued=True), actor, environment_id=1)
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 100 items\n")
     OutputReading()(story.container)
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+
+
+def test_a_count_for_another_part_does_not_refuse_a_command(limited_run):
+    story, process = limited_run
+    worker = reader_worker(story)
+    task = story.new_row_id('task make "Check another command" --environment main')
+    story.run(f"task start {task}", actor=worker)
+    story.run(f"task brief {task}", actor=worker)
+    story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
+    OutputReading()(story.container)
+    story.expect_hook_allowed("s-reader", HookSamples.shell("pytest tests/other.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/other.py"])))
 
 
 def test_stopping_from_the_output_tick_keeps_the_count_and_ends_the_output(limited_run):

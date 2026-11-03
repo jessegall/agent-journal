@@ -4,7 +4,7 @@ from core.base.database.statement import Statement
 
 
 @dataclass(frozen=True)
-class OutputForPart:
+class PartOutput:
     """Matches output whose reader reads a particular command in an environment."""
 
     environment_id: int
