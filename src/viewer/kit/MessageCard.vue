@@ -16,7 +16,8 @@ import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
-// the text read as markdown (inline code, lists, bold), and the time under the card
+// the text read as markdown (inline code, lists, bold), and the time under the card; a worker's report is its card headed with the worker, which opens it,
+// folded to two lines with Show more when it is longer
 const props = defineProps({message: {type: Object, required: true}, quote: {type: String, default: ""}});
 const emit = defineEmits(["reply", "comment", "delete", "react"]);
 const copied = ref(false);
@@ -28,6 +29,11 @@ const commentedRow = computed(() => {
     const table = tableOfWord(model);
     return table ? {ref: `${table}:${id}`, label: `${meta(table).title.toLowerCase()} ${id}`} : null;
 });
+const worker = computed(() => props.message.worker_id ?? null);
+const REPORT_FOLD_CHARS = 140;
+const REPORT_FOLD_LINES = 2;
+const reportOpen = ref(false);
+const longReport = computed(() => worker.value !== null && ((props.message.text ?? "").length > REPORT_FOLD_CHARS || (props.message.text ?? "").split("\n").filter((line) => line.trim()).length > REPORT_FOLD_LINES));
 const deletable = computed(() => fromPerson.value && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
@@ -97,7 +103,13 @@ function pick(face) {
                     <template v-if="message.parent_id">
                         <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                     </template>
-                    <div v-html="html" />
+                    <template v-if="worker !== null">
+                        <button type="button" class="message-worker" data-message-worker :title="`Open worker ${worker}`" @click.stop="peekRef(`agents:${worker}`)">Worker {{ worker }}</button>
+                    </template>
+                    <div :class="{'message-folded': longReport && !reportOpen}" data-message-text v-html="html" />
+                    <template v-if="longReport">
+                        <button type="button" class="message-more" data-message-more @click.stop="reportOpen = !reportOpen">{{ reportOpen ? "Show less" : "Show more" }}</button>
+                    </template>
                     <template v-if="edges.length">
                         <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
                         <template v-if="chartOpen">
@@ -318,6 +330,39 @@ function pick(face) {
 .message-tool:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.message-worker,
+.message-more {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.message-worker {
+    margin-bottom: 3px;
+}
+
+.message-worker:hover,
+.message-more:hover {
+    color: var(--text);
+}
+
+.message-more {
+    margin-top: 3px;
+}
+
+.message-folded {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .message-card:has(.message-quote) {

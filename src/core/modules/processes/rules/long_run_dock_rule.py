@@ -1,34 +1,32 @@
 from core.base.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import RUN_NAME
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
-from core.modules.processes.listeners.process_end_mark_listener import MARK_CATEGORIES
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.shown_runs import ShownRuns
 
 DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """A test, build, check or package run of the main agent's that has gone on for more than 5 seconds docks
-    its output above the chat, once, and the agent is told if its card has only the raw command to show; any
-    other command never does, nor a run whose folder says it has ended already."""
+    """A run that ShownRuns says shows, of any agent, that has gone on for more than 5 seconds docks its output above
+    the chat, once, and the agent is told if its card has only the raw command to show; no other run does, nor
+    one whose folder says it has ended already."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
 
-    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder) -> None:
-        self.processes, self.items, self.outputs, self.folder = processes, items, outputs, folder
+    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, shown_runs: ShownRuns) -> None:
+        self.processes, self.items, self.outputs, self.folder, self.shown_runs = processes, items, outputs, folder, shown_runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         running = tuple(self.processes.agent(hook.agent_id).running().all_rows())
@@ -45,6 +43,6 @@ class LongRunDockRule(DriverRule):
         return bool(kept) and bool(kept[0].title)
 
     def needs_dock(self, process: Process, hook: AgentHook) -> bool:
-        if process.category not in MARK_CATEGORIES or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
+        if not self.shown_runs.shows(process) or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
             return False
         return not self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists()

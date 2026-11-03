@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
+from core.modules.processes.support.colour_codes import ColourCodes
 
 FOLDER_NAME = "processes"
 LINE_FILE = "line"
@@ -125,7 +126,7 @@ class OutputFolder:
 
     def last_lines(self, process_id: int, count: int) -> list[str]:
         total = sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
-        return self.bytes_after(process_id, max(0, total - TAIL_BYTES)).decode(errors="replace").splitlines()[-count:]
+        return ColourCodes.removed(self.bytes_after(process_id, max(0, total - TAIL_BYTES)).decode(errors="replace")).splitlines()[-count:]
 
     def reader_lines(self, process_id: int) -> list[str]:
         return self.text(process_id, READER_LINES_FILE).splitlines()
@@ -138,7 +139,7 @@ class OutputFolder:
         self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in lines))
 
     def all_output(self, process_id: int) -> str:
-        return "".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1))
+        return ColourCodes.removed("".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)))
 
     def sizes(self, process_id: int) -> tuple[int, int]:
         texts = [self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)]

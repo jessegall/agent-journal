@@ -22,7 +22,19 @@ const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
     {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
-const window = (facts = FACTS) => context({"agent list": page(AGENTS), "agent running": page(AGENTS.filter((row) => !row.ended_at)), "usage agents --closed": page(facts)});
+const TABS = [
+    {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
+    {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
+    {key: "file-feed", label: "File feed", read: "file-edit list", count_field: ""},
+];
+const EDIT = {id: 5, path: "src/cart.py", edit_type: "edit", added: 1, removed: 0, created_at: "2026-11-01T10:00:00Z", rows: JSON.stringify([{line_type: "add", line: 4, text: "total = 0"}])};
+const answers = {
+    "agent list": page(AGENTS),
+    "agent running": page(AGENTS.filter((row) => !row.ended_at)),
+    "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}]),
+    "file-edit list --agent 3": page([EDIT]),
+};
+const window = (facts = FACTS) => ({...context({...answers, "usage agents --closed": page(facts)}), tabs: TABS});
 const drawn = (facts) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
@@ -77,6 +89,30 @@ test("a click opens the card on its number, usage, Inspect and instruction, and 
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
 });
 
+test("an opened card has the tabs Tasks, Transcript and File feed, each read only when chosen", async () => {
+    const reads = [];
+    const held = window();
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
+    document.body.append(element);
+    const card = cardOf(element, 3);
+    card.click();
+    await settle();
+    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed"]);
+    expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
+    expect(reads).not.toContain("agent transcript 3");
+    card.querySelector("[data-tab=transcript]").click();
+    await settle();
+    expect(card.querySelector("[data-agent-tab-body]").textContent).toContain("Read the cart");
+    expect(card.querySelector("[data-agent-instruction]")).toBeNull();
+    card.querySelector("[data-tab=file-feed]").click();
+    await settle();
+    expect(reads.some((line) => line.startsWith("file-edit list --agent 3"))).toBe(true);
+    expect(card.querySelector("[data-agent-tab-body]").textContent).toContain("cart.py");
+    card.querySelector("[data-tab=tasks]").click();
+    await settle();
+    expect(card.querySelector("[data-agent-instruction]").textContent).toBe("Read the cart\nand report");
+});
+
 const TASKS = [
     {id: 11, title: "Fix the cart", state: "completed"},
     {id: 12, title: "Add the totals", state: "started"},
@@ -90,14 +126,29 @@ test("the card counts what is completed and lists its tasks when opened, under t
     expect(card.querySelector("[data-agent-delegated]")).toBeNull();
     card.click();
     await settle();
-    const labels = [...card.querySelectorAll("[data-agent-section]")].map((label) => label.textContent.trim());
+    const labels = [...card.querySelectorAll("[data-agent-section]")].map((section) => `${section.querySelector(".fold-label").textContent.trim()} ${section.querySelector(".fold-count").textContent.trim()}`);
     expect(labels).toEqual(["Started 1", "Open 1", "Completed 1"]);
-    const rows = [...card.querySelectorAll("[data-agent-delegated]")];
-    expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
+    let rows = [...card.querySelectorAll("[data-agent-delegated]")];
+    expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13"]);
     expect(rows[0].querySelector(".ring").classList.contains("started")).toBe(true);
     rows[0].click();
     await settle();
     expect(card.getAttribute("aria-expanded")).toBe("true");
+});
+
+test("the Completed section of the Tasks tab is folded until a click opens it", async () => {
+    const element = await drawn([{...FACTS[0], tasks: TASKS}]);
+    const card = cardOf(element, 2);
+    card.click();
+    await settle();
+    const completed = card.querySelector("[data-agent-section=completed]");
+    expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
+    completed.querySelector(".fold-head").click();
+    await settle();
+    expect([...card.querySelectorAll("[data-agent-delegated]")].map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
+    completed.querySelector(".fold-head").click();
+    await settle();
+    expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
 });
 
 test("a worker with a task in testing and none started says it waits for its tests", async () => {

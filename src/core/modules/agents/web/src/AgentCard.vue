@@ -1,9 +1,11 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, Btn, Icon, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, Btn, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import AgentFileEdits from "./AgentFileEdits.vue";
+import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
-// its number, usage, Inspect, its tasks under the state names of the tasks window, and its instruction
+// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
@@ -29,8 +31,13 @@ const completedCount = computed(() => tasks.value.filter((task) => task.state ==
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);
+const FOLDED_STATES = new Set(["completed"]);
+const folded = ref({});
+const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
+const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 // a running worker's card names the command it runs, as the foot of the chat does for the main agent
 const context = useWindow();
+const tab = ref(context.tabs[0]);
 const runningCommand = ref("");
 const showsCommand = computed(() => props.row.role === "worker" && !props.row.ended_at);
 async function readCommand() {
@@ -53,7 +60,7 @@ readCommand();
             <Icon :class="['agent-chevron', {opened}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity>{{ identity }}</span>
+            <span class="agent-identity" data-agent-identity>{{ identity }}<template v-if="waitingForTests"> · <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button></template></span>
             <template v-if="tasks.length">
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
@@ -67,20 +74,32 @@ readCommand();
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                     <Btn small bordered data-agent-inspect @click="peekRef(`agents:${row.id}`)">Inspect</Btn>
                 </span>
-                <template v-for="section in sections" :key="section.state">
-                    <p class="agent-label" :data-agent-section="section.state">{{ section.label }} <span class="agent-section-count">{{ section.tasks.length }}</span></p>
-                    <template v-for="task in section.tasks" :key="task.id">
-                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                            <TaskStatusIcon :status="task.state" />
-                            <span class="agent-task-number">{{ task.id }}</span>
-                            <span class="agent-task-title">{{ task.title }}</span>
-                        </button>
+                <InnerTabs :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
+                    <template v-if="tab?.key === 'tasks'">
+                        <template v-for="section in sections" :key="section.state">
+                            <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
+                                <template v-for="task in section.tasks" :key="task.id">
+                                    <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                                        <TaskStatusIcon :status="task.state" />
+                                        <span class="agent-task-number">{{ task.id }}</span>
+                                        <span class="agent-task-title">{{ task.title }}</span>
+                                    </button>
+                                </template>
+                            </FoldGroup>
+                        </template>
+                        <template v-if="facts?.instruction">
+                            <p class="agent-label">Instruction</p>
+                            <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                        </template>
                     </template>
-                </template>
-                <template v-if="facts?.instruction">
-                    <p class="agent-label">Instruction</p>
-                    <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
-                </template>
+                    <template v-else-if="tab?.key === 'transcript'">
+                        <TranscriptRows :line="`agent transcript ${row.id}`" />
+                    </template>
+                    <template v-else-if="tab?.key === 'file-feed'">
+                        <AgentFileEdits :agent="row.id" />
+                    </template>
+                </div>
             </div>
         </template>
     </div>
@@ -199,14 +218,24 @@ readCommand();
     text-overflow: ellipsis;
 }
 
+.agent-waiting {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline dotted;
+    cursor: pointer;
+}
+
+.agent-waiting:hover {
+    color: var(--text);
+}
+
 .agent-tasks {
     flex: none;
     color: var(--text-2);
     font-size: 12px;
-}
-
-.agent-section-count {
-    margin-left: 2px;
 }
 
 .agent-task {
@@ -250,6 +279,23 @@ readCommand();
     gap: 6px;
     padding: 6px 0 2px 15px;
     cursor: default;
+}
+
+.agent-tab-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.agent-tab-body:not([data-agent-tab-body="tasks"]) {
+    min-height: 96px;
+}
+
+.agent-tab-body :deep(.row-list-row) {
+    padding: 6px 8px;
 }
 
 .agent-usage-line {
