@@ -93,6 +93,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
+            <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
             <CommentedRow stacked :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
             <div :key="task.id" class="body">
                 <div class="stamp">Task {{ task.id }} · updated <TimeAgo :at="updatedAt(task)" /></div>
@@ -128,7 +129,6 @@ defineExpose({openStatus});
             </CommentedRow>
             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
         </template>
-        <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
         <template v-if="menu">
             <MenuPanel :anchor="menu" :min-width="220" :max-width="300" @close="menu = null">
                 <MenuLabel>Change the status of task {{ id }}</MenuLabel>

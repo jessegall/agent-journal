@@ -90,6 +90,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </div>
                             <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                         </header>
+                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                         <div class="body">
                             <template v-if="failure">
                                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -118,7 +119,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 </section>
                             </template>
                         </div>
-                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                         </template>
                     </SwitchCase>
                 </aside>

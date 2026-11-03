@@ -117,6 +117,14 @@ watch(() => `${props.table}:${props.id}`, () => {
             </div>
             <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
         </header>
+        <template v-if="row">
+            <div class="document-actions" data-document-actions>
+                <a class="document-share" data-resource-share :href="shareAddress(`${table}:${id}`)"><Icon name="share" :size="12" />Share</a>
+                <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
+                <span class="document-tabs-space" />
+                <RowMoves inline :kind="kind" :id="id" :row="row" :read="read" @done="load" />
+            </div>
+        </template>
         <nav class="document-tabs">
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
             <template v-if="narrow">
@@ -171,12 +179,6 @@ watch(() => `${props.table}:${props.id}`, () => {
         </div>
         <template v-if="row">
             <CommentComposer ref="composer" v-model:draft="draft" :selection="selection" :send="send" :narrow="narrow" @clear="selection = null" />
-            <footer class="document-foot" data-document-foot>
-                <a class="document-share" data-resource-share :href="shareAddress(`${table}:${id}`)"><Icon name="share" :size="12" />Share</a>
-                <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
-                <span class="document-tabs-space" />
-                <RowMoves inline :kind="kind" :id="id" :row="row" :read="read" @done="load" />
-            </footer>
         </template>
         <template v-if="editing">
             <DocumentEditDialog :kind="kind" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
@@ -324,13 +326,12 @@ h2 {
     color: var(--text-2);
 }
 
-.document-foot {
+.document-actions {
     display: flex;
     flex: none;
     gap: 6px;
     align-items: center;
-    padding: 9px 14px 10px 20px;
-    border-top: 1px solid var(--border);
+    padding: 0 14px 10px 24px;
     background: var(--bg);
 }
 
@@ -365,8 +366,8 @@ h2 {
         padding: 0 10px 0 12px;
     }
 
-    .document-foot {
-        padding: 8px 12px 9px;
+    .document-actions {
+        padding: 0 10px 8px 16px;
     }
 }
 </style>

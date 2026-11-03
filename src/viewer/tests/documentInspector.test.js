@@ -36,15 +36,16 @@ function drawn(comments = [onWords, whole], width = 980) {
     return {element, ran};
 }
 
-test("the foot holds the comment box and Share, Edit and Needs no action, with no Close", async () => {
+test("the top bar holds Share, Edit and Needs no action, and the comment box stays at the foot", async () => {
     const {element} = drawn();
     await settle();
-    const foot = element.querySelector("[data-document-foot]");
+    const actions = element.querySelector("[data-document-actions]");
     expect(element.querySelector("[data-comment-input]")).not.toBeNull();
-    expect(foot.textContent).toContain("Share");
-    expect(foot.textContent).toContain("Edit");
-    expect(foot.textContent).toContain("Needs no action");
-    expect(foot.textContent).not.toContain("Close");
+    expect(actions.textContent).toContain("Share");
+    expect(actions.textContent).toContain("Edit");
+    expect(actions.textContent).toContain("Needs no action");
+    expect(actions.textContent).not.toContain("Close");
+    expect(actions.compareDocumentPosition(element.querySelector("[data-document-tab]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(element.querySelector("[data-resource-close]")).not.toBeNull();
 });
 

@@ -69,13 +69,12 @@ defineExpose({moves, press});
 <style scoped>
 .foot {
     flex: none;
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
     background: var(--raised);
 }
 
 .foot.inline {
-    margin: 8px 0 16px;
     padding: 0;
     border: 0;
     background: none;
