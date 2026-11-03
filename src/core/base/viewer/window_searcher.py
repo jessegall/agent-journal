@@ -17,11 +17,10 @@ class WindowSearcher:
 
 
 class ModelSearcher(WindowSearcher):
-    """Finds the rows of one model that hold every word in any of the given columns, newest first; with no
-    words it finds them all."""
+    """Finds the rows of one model that hold every word in its search fields, newest first; with no words it
+    finds them all."""
 
     model: ClassVar[type[Model]]
-    columns: ClassVar[Sequence[str]]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -29,5 +28,5 @@ class ModelSearcher(WindowSearcher):
     def found(self, words: Sequence[str]) -> Page[Model]:
         query = self.queries.query(self.model)
         if words:
-            query = query.matching(ContainsEvery(self.columns, words))
+            query = query.matching(ContainsEvery(self.model.search_fields, words))
         return query.newest().page(1, FOUND_ROWS)

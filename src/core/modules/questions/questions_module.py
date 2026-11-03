@@ -20,6 +20,8 @@ from core.modules.questions.listeners.question_open_mark_listener import Questio
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_search import WindowSearch
+from core.modules.questions.support.question_searcher import QuestionSearcher
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -51,7 +53,8 @@ class QuestionsModule(Module):
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
-                                 reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
+                                 reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"],
+                                 search=WindowSearch(QuestionSearcher, "Search the questions")),
                WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
                                  reads=["question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
