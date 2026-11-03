@@ -1,9 +1,11 @@
 import sqlite3
 import traceback
+from time import perf_counter
 from collections.abc import Mapping
 
 from core.base.type_guards import is_mapping
 from core.base.database.database import Database
+from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
@@ -14,6 +16,7 @@ from core.base.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
+from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
@@ -40,24 +43,36 @@ class HookEndpoint:
         self.timing, self.context = timing, context
 
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
+        started_at = perf_counter()
         try:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
                 self.timing.stamp("hook_locked")
-                return self.routed_answer(data, program, headers, database)
+                return self.routed_answer(data, program, headers, database, started_at)
         except HookDatabaseBusyError as error:
             return self.unchecked(data, error)
         finally:
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
 
-    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database) -> HookReply:
+    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
         self.timing.stamp("hook_synced")
-        container.get(HookRequestLog).record(program, headers, data)
+        outcome = HookAnswer.REFUSED
+        try:
+            reply = self.prepared_answer(data, program, headers, database, container)
+            outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
+            return reply
+        finally:
+            try:
+                container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome)
+            except sqlite3.Error as error:
+                self.context.files.log_line(f"request recording failed: {error}")
+
+    def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
         tools = container.get(PerformanceTools)

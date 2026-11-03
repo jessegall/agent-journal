@@ -1,6 +1,17 @@
 {
   "note": "The sins this project has reported to code-commandments. A judge reads a sin listed here as reported rather than active, so deleting this file makes every one of them active again and invites a second report of each. The flagged line is kept as a hash, never as text: this file is committed and the issues it names are public.",
   "reports": {
+    "14a8881cc052ee975b88febe24fe3b2a71c43a03": {
+      "detector": "RawDecodedReturnDetector",
+      "sin": "python-raw-decoded-return",
+      "file": "src/core/modules/developer/models/hook_request.py",
+      "line": 39,
+      "reason": "The developer request inspector preserves arbitrary JSON bodies and header names exactly for display. These values have no fixed record keys and are never interpreted as domain records; the headers are a dynamic mapping and the body is opaque JSON.",
+      "repository": "jessegall/code-commandments",
+      "issue": 823,
+      "filed": "2026-11-03T18:58:18Z",
+      "seen": {}
+    },
     "2254f2c20725ec002a1f4f54a33696208c18d841": {
       "detector": "FeatureEnvyDetector",
       "sin": "feature-envy",
@@ -10,6 +21,17 @@
       "repository": "jessegall/code-commandments",
       "issue": 822,
       "filed": "2026-11-03T18:15:53Z",
+      "seen": {}
+    },
+    "46382dc418906f526fea125d413200d0e2b6a46c": {
+      "detector": "RawDecodedReturnDetector",
+      "sin": "python-raw-decoded-return",
+      "file": "src/core/modules/developer/models/hook_request.py",
+      "line": 43,
+      "reason": "The developer request inspector preserves arbitrary JSON bodies and header names exactly for display. These values have no fixed record keys and are never interpreted as domain records; the headers are a dynamic mapping and the body is opaque JSON.",
+      "repository": "jessegall/code-commandments",
+      "issue": 823,
+      "filed": "2026-11-03T18:58:18Z",
       "seen": {}
     },
     "4a637eb6a659f08bb94347350f2d19470fb39402": {
