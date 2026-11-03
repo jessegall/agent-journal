@@ -12,7 +12,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions
-from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL
+from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL, UNANSWERED_TOOL_USES
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 
 COUNTDOWN_CALL_COUNT = 3
@@ -38,7 +38,7 @@ class UnansweredMessageRule(DriverRule):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
         first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)
-        remaining_calls = UNANSWERED_COUNTDOWN.span.count - self.hook_calls.tool_call_count(hook.agent_id, first_read_at)
+        remaining_calls = UNANSWERED_TOOL_USES - self.hook_calls.tool_call_count(hook.agent_id, first_read_at)
         if remaining_calls <= 0:
             return RuleAnswer.blocked(hook, UNANSWERED_REFUSAL.nudge(messages=message_numbers, message=unanswered[0].id), MessagesAnswered([message.id for message in unanswered]))
         return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(remaining_calls, messages=message_numbers) if remaining_calls <= COUNTDOWN_CALL_COUNT else UNANSWERED.nudge(messages=message_numbers))

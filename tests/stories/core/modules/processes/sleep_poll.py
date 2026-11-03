@@ -13,7 +13,7 @@ BUSY_LOOP = HookSamples.shell("until pgrep -f build; do tail -n 1 build.log; sle
 def test_a_sleep_loop_is_refused_naming_the_process_the_agent_has_running_and_how_to_watch_it(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.hook("s-1", BUILD)
-    story.expect_hook_refusal("s-1", SLEEP_LOOP, "gives a run to a Monitor")
+    story.expect_hook_refusal("s-1", SLEEP_LOOP, "sets a Monitor")
 
 
 def test_a_plain_sleep_is_refused(new_story):

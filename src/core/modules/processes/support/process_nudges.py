@@ -9,7 +9,7 @@ MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, '
 REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} moved to the background: set a Monitor on journal output monitor {output} first')
 REQUIRED_MONITOR_COMMAND = NudgeDeclaration("processes.monitor_command_required", NudgeType.REFUSAL, 'output {output} moved to the background: run journal output monitor {output} first')
 MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: run journal output monitor {output}, which ends when the run does', required_command="")
-WORKER_RUN_WATCHED = NudgeDeclaration("processes.worker_run_watched", NudgeType.STEERING, 'do not ask again for output {output}: it is watched for you. Go on working or stop; you are told when it ends, and started again if you have stopped', required_command="")
+WORKER_RUN_WATCHED = NudgeDeclaration("processes.worker_run_watched", NudgeType.STEERING, 'output {output} is watched for you: go on working or stop; you are told when it ends, or started again if you stopped', required_command="")
 MONITOR_TOOL_REQUIRED = NudgeDeclaration("processes.monitor_command_outside", NudgeType.REFUSAL, 'journal output monitor runs only in a Monitor: give it to the Monitor tool and keep working')
 HAND_MADE_MONITOR = NudgeDeclaration("processes.hand_made_monitor", NudgeType.REFUSAL, 'do not write your own wait on an output: give the Monitor the command journal output monitor <n>')
 PROCESS_MISSING = NudgeDeclaration("processes.process_lost", NudgeType.STEERING, 'process {process} was lost: its shell is gone')
@@ -20,7 +20,7 @@ REDIRECTED_RUN = NudgeDeclaration("processes.redirected_run", NudgeType.STEERING
 RUNNER_MISSING = NudgeDeclaration("processes.runner_missing", NudgeType.STEERING, 'journal-run is not installed in {folder}: your shell lines run as written and are not kept')
 MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, 'do not move with cd: you are in {folder}; use paths, or a tool flag such as npm --prefix')
 OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.STEERING, 'output {output}: running')
-SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused, for every agent: go on working or stop, you are told when a run ends. A main agent gives a run to a Monitor, or journal wait on "<what>"')
+SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused: go on working or stop, you are told when a run ends; a main agent sets a Monitor or journal wait')
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: journal output title {process} "<what it does>"', required_command="journal output title {process}")
 
 PIPED_RUN = NudgeDeclaration("processes.piped_run", NudgeType.STEERING, "{programs} is cut by a pipe, so its reader sees only what is left: run it without the pipe", required_command="")

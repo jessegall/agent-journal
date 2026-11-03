@@ -10,7 +10,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
-from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL
+from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL, UNREAD_TOOL_USES
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.rules.message_delivery_rule import LISTED_MESSAGES
 
@@ -35,7 +35,7 @@ class UnreadMessageWriteRule(DriverRule):
         first_delivered_at = first[0].delivered_at if first else None
         if first_delivered_at is None:
             return RuleAnswer.allowed()
-        remaining_calls = UNREAD_COUNTDOWN.span.count - self.hook_calls.tool_call_count(hook.agent_id, first_delivered_at)
+        remaining_calls = UNREAD_TOOL_USES - self.hook_calls.tool_call_count(hook.agent_id, first_delivered_at)
         if remaining_calls <= 0:
             return RuleAnswer.blocked(hook, UNREAD_REFUSAL.nudge(count=delivered.count()), MessagesRead([message.id for message in delivered.all_rows()]))
         message_numbers = ", ".join(str(message.id) for message in delivered.page(1, LISTED_MESSAGES).rows)
