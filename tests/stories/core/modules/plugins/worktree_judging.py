@@ -1,0 +1,57 @@
+import pytest
+
+from core.testing.hook_samples import HookSamples
+from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_plugin_folder
+from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
+
+SIN = "def total(items=[]):\n    return len(items)\n"
+
+
+@pytest.fixture
+def worktree_story(new_story):
+    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story.expect_success(f"plugin install {worktree_plugin_folder(story.home.project_folder)} --yes", actor=story.user)
+    story.repository = repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    story.worker = dispatched_worker(story, f"{DISPATCH} 2")
+    story.worker_session = worker_session(story, story.worker)
+    story.worktree = story.repository.worktree_folder(story.worker.id)
+    story.run(FIRST_PROOF, actor=story.worker)
+    return story
+
+
+@pytest.mark.parametrize("absolute", [False, True])
+def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_worker(worktree_story, absolute):
+    story = worktree_story
+    story.repository.changed(story.worker.id, "cart.py", SIN)
+    path = str(story.worktree / "cart.py") if absolute else "cart.py"
+    story.hook(story.worker_session, HookSamples.edit(path).with_fields(event="post_tool_use").with_raw({"cwd": str(story.worktree)}))
+    story.run_listeners()
+    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "mutable default")
+    story.expect_hook_allowed(story.worker_session, LISTING_SAMPLE, f"{story.worktree / 'cart.py'}: mutable default")
+
+
+def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
+    story = worktree_story
+    story.repository.uncommitted("cart.py", SIN)
+    story.hook("s-1", HookSamples.edit("cart.py").with_fields(event="post_tool_use").with_raw({"cwd": str(story.repository.folder)}))
+    story.run_listeners()
+    story.expect_absent_hook_line(story.worker_session, LISTING_SAMPLE, "mutable default")
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, f"{story.repository.folder / 'cart.py'}: mutable default")
+
+
+@pytest.mark.parametrize("command", ["worker next", "worker deliver"])
+def test_both_worker_handoffs_judge_the_worker_files_from_its_base(worktree_story, command):
+    story = worktree_story
+    story.repository.changed(story.worker.id, "cart.py", SIN)
+    story.expect_refusal(command, f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
+
+
+def test_a_main_checkout_sin_does_not_hold_a_clean_workers_handoff(worktree_story):
+    story = worktree_story
+    story.repository.uncommitted("main_only.py", SIN)
+    story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
+    story.expect_success("worker next", actor=story.worker)
