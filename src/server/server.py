@@ -68,6 +68,7 @@ def main(argv: list[str]) -> int:
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
     TimingLog(home).rotate()
+    files.rotate_log()
     files.clear_leftover_socket()
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)

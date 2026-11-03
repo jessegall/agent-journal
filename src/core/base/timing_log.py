@@ -2,6 +2,7 @@ import json
 import os
 
 from core.base.journal_home import JournalHome
+from core.base.rotated_file import RotatedFile
 
 TIMING_LOG_LIMIT_BYTES = 10_000_000
 
@@ -23,5 +24,4 @@ class TimingLog:
             os.close(descriptor)
 
     def rotate(self) -> None:
-        if self.path.exists() and self.path.stat().st_size > self.limit_bytes:
-            self.path.replace(self.path.with_name(self.path.name + ".1"))
+        RotatedFile(self.path, self.limit_bytes).rotate()

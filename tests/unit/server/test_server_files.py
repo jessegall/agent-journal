@@ -104,3 +104,22 @@ def test_locked_releases_the_lock_when_its_block_ends_and_refuses_when_it_cannot
             with second_files.locked(0.2):
                 pytest.fail("the lock was taken twice")
     assert subprocess_lock_state(files.lock) == "taken"
+
+
+def test_rotating_the_log_points_the_output_the_starter_opened_at_the_new_file(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    files.log.parent.mkdir(parents=True)
+    files.log.write_text("x" * 20)
+    script = ("import sys; from pathlib import Path; from core.base.journal_home import JournalHome; from server.server_files import ServerFiles\n"
+              "ServerFiles(JournalHome(Path(sys.argv[1]))).rotate_log(10); sys.stderr.write('after\\n')")
+    with files.log.open("a") as output:
+        subprocess.run([sys.executable, "-c", script, str(tmp_path)], stderr=output, env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[3] / "src")}, timeout=TIMEOUT_SECONDS, check=True)
+    assert files.log.read_text() == "after\n" and files.log.with_name("server.log.1").read_text() == "x" * 20
+
+
+def test_a_log_within_its_limit_is_kept_where_it_is(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    files.log.parent.mkdir(parents=True)
+    files.log.write_text("short")
+    files.rotate_log(10)
+    assert files.log.read_text() == "short" and not files.log.with_name("server.log.1").exists()
