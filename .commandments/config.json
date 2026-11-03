@@ -194,18 +194,19 @@
         "architecture_views_ViewModelDeclaresSelectDetector",
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
-        "naming_NoTypeWordInsideNameDetector"
+        "naming_NoTypeWordInsideNameDetector",
+        "ArchitectureWorkersWorkerLaunchFunnelDetector"
     ],
     "parallel": 2,
     "configure": {
-        "naming_LongDocstringLineDetector": [
+        "naming_GoPoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "naming_GoPoeticMethodNameDetector": [
+        "naming_LongDocstringLineDetector": [
             {
                 "judges": [
                     "tests"

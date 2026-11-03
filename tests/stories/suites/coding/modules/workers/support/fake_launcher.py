@@ -22,10 +22,14 @@ class FakeLauncher:
         self.thread.start()
 
     def accepted(self) -> None:
-        for _ in range(self.request_count):
+        while len(self.requests) < self.request_count:
             connection, _ = self.server.accept()
             with connection, connection.makefile("r") as stream:
-                self.requests.append(json.loads(stream.readline()))
+                request = json.loads(stream.readline())
+                if "typed" in request:
+                    connection.sendall(b"typed")
+                    continue
+                self.requests.append(request)
                 connection.sendall(self.answers[min(len(self.requests), len(self.answers)) - 1] if self.answers else self.answer)
 
     def expect_worker(self, worker_id: int, session: str, folder: Path) -> None:

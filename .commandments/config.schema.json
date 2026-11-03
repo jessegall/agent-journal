@@ -22,10 +22,10 @@
     },
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "additionalProperties": false,
-    "description": "How `.journal/plugins/code-commandments/bin/commandments-release judge` reads this project. Every key is optional; `.journal/plugins/code-commandments/bin/commandments-release config` shows what runs.",
+    "description": "How `commandments judge` reads this project. Every key is optional; `commandments config` shows what runs.",
     "properties": {
         "$schema": {
-            "description": "The schema this file is checked against, written by `.journal/plugins/code-commandments/bin/commandments-release sync`.",
+            "description": "The schema this file is checked against, written by `commandments sync`.",
             "type": "string"
         },
         "agents": {
