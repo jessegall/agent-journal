@@ -38,7 +38,7 @@ SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, '
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: journal output title {process} "<what it does>"', required_command="journal output title {process}")
 
 PIPED_RUN = NudgeDeclaration("processes.piped_run", NudgeType.STEERING, "{programs} is cut by a pipe, so its reader sees only what is left: run it without the pipe")
-SILENT_RUN = NudgeDeclaration("processes.silent_run", NudgeType.STEERING, 'output {output} printed nothing for {seconds} seconds, so it may buffer: use stdbuf -oL or python3 -u')
+SILENT_RUN = NudgeDeclaration("processes.silent_run", NudgeType.STEERING, 'output {output} printed nothing for {seconds} seconds, so Python may buffer it: use python3 -u')
 READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.STEERING, 'reader {reader} picked none of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.STEERING, 'reader {reader} kept {kept} of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.STEERING, 'reader {reader} found no summary in output {output}: journal reader add {reader} --summary "<pattern>"', required_command="journal reader add {reader}")

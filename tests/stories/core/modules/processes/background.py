@@ -136,12 +136,19 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     assert any("prints a count with no bar" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
+def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
+    process = moved_run(story, "python3 tools/deploy.py staging", category=CommandCategory.BUILD)
     assert not any("may buffer" in line for line in lines_of(story, NOTHING))
     story.advance(timedelta(seconds=31))
-    assert any(f"output {process.id} printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
+    assert any(f"output {process.id} printed nothing for 30 seconds, so Python may buffer it: use python3 -u" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_run_of_another_program_that_prints_nothing_gets_no_line_about_python(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    moved_run(story, "go build ./...", category=CommandCategory.BUILD)
+    story.advance(timedelta(seconds=31))
+    assert not any("printed nothing" in line for line in lines_of(story, NOTHING))
 
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):
