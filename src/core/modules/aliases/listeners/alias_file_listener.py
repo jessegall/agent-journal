@@ -1,6 +1,6 @@
 import json
 
-from core.base.change.event_log import REGISTRY_SYNC_EVENT
+from core.base.change.event_log import FILE_PUBLISHING_EVENTS
 from core.base.change.logged_event import LoggedEvent
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
@@ -20,7 +20,7 @@ class AliasFileListener(CommitListener):
         self.aliases, self.home = aliases, home
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event != REGISTRY_SYNC_EVENT and not event.event.startswith(ALIAS_EVENT_PREFIX):
+        if event.event not in FILE_PUBLISHING_EVENTS and not event.event.startswith(ALIAS_EVENT_PREFIX):
             return
         lines = {alias.name: alias.line for alias in self.aliases.all_rows()}
         self.home.alias_file.write_text(json.dumps(lines))
