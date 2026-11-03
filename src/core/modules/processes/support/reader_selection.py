@@ -13,8 +13,8 @@ UNREAD_CATEGORIES = (CommandCategory.JOURNAL, *READ_CATEGORIES)
 class ReaderSelection:
     """The reader of a run, judged part by part, a test run, a build or a check first and then the parts in
     order: among the readers whose commands match the part the default, else the newest, so a reader of the
-    project comes before a shipped one; a journal command's own output, and that of a read or a search, is read
-    by none. A reader's commands are patterns of a command, separated by commas."""
+    project comes before a shipped one; a journal command's own output, and that of a read or a search, is
+    read by none. A reader's commands are patterns of a command, separated by commas."""
 
     @staticmethod
     def choose(readers: Sequence[Reader], parts: Sequence[ProcessPart]) -> PartReader | None:

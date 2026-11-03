@@ -13,8 +13,9 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class AssignTaskHandler(Handler[AssignTask, Task]):
-    """Moves a task to another agent. A queued task just moves; a started one goes back to open for that agent,
-    and a worker that held it goes on with its next task, so a worker's last task goes back with the worker."""
+    """Moves a task to another agent. A queued task just moves; a started one goes back to open for that
+    agent, and a worker that held it goes on with its next task, so a worker's last task goes back with the
+    worker."""
 
     command = AssignTask
 

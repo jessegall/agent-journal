@@ -47,6 +47,11 @@ export async function drawn(component, windowContext) {
     return (await mounted(component, windowContext)).textContent;
 }
 
+export async function pickButton(element, label, selector = "button") {
+    [...element.querySelectorAll(selector)].find((button) => button.textContent.trim() === label).click();
+    await settle();
+}
+
 export function typeInto(input, text) {
     input.value = text;
     input.dispatchEvent(new Event("input"));

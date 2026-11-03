@@ -17,5 +17,11 @@ class TaskBriefAssignedListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         task = change.row
-        if isinstance(task, Task) and change.move is not None and change.move.name == "start" and task.holder_id is not None and change.context.actor.type is ActorType.AGENT:
+        if not isinstance(task, Task) or task.holder_id is None:
+            return
+        if self.is_agent_start(change):
             self.blocks.block_unread(task.holder_id, task, change.context)
+
+    @staticmethod
+    def is_agent_start(change: Change[Model]) -> bool:
+        return change.move is not None and change.move.name == "start" and change.context.actor.type is ActorType.AGENT

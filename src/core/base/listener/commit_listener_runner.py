@@ -71,10 +71,10 @@ class CommitListenerRunner:
         if not issubclass(listener_class, CommitListener):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
         counter = self.container.get(Database).tally
-        points_at_start = counter.points()
+        start_points = counter.points()
         try:
             self.container.get(listener_class).handle(event)
-            cost = counter.points().minus(points_at_start)
+            cost = counter.points().minus(start_points)
             if cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
         except Exception as error:

@@ -13,6 +13,6 @@ class RowComments:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def on(self, row: Model) -> tuple[Message, ...]:
+    def comments(self, row: Model) -> tuple[Message, ...]:
         links = self.queries.query(Link).filter(target_model=row.model_name, target_id=row.id, link_type=LinkType.COMMENT, source_model=MESSAGE_MODEL).oldest()
         return tuple(self.queries.query(Message).find_many([link.source_id for link in links.all_rows()]))

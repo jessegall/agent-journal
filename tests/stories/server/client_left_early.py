@@ -13,7 +13,7 @@ def test_a_client_that_leaves_before_its_answer_writes_no_traceback(new_story, m
     arrived, released, answered = threading.Event(), threading.Event(), threading.Event()
     answer_get = RequestHandler.answer_get
 
-    def held_get(self: RequestHandler) -> None:
+    def stalled_get(self: RequestHandler) -> None:
         if self.path != "/held":
             answer_get(self)
             return
@@ -24,7 +24,7 @@ def test_a_client_that_leaves_before_its_answer_writes_no_traceback(new_story, m
         finally:
             answered.set()
 
-    monkeypatch.setattr(RequestHandler, "answer_get", held_get)
+    monkeypatch.setattr(RequestHandler, "answer_get", stalled_get)
     story = new_story(fixture=ThreeTasks)
     with running_server(story.home) as (_, socket_path, _):
         leaving = UnixConnection(str(socket_path))

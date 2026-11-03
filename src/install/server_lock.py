@@ -17,9 +17,9 @@ LOCK_LIMIT_SECONDS = 60
 
 class ServerLock:
     """Waits until no run is going, stops a journal's running server for a change of its code and keeps its
-    server.lock while the change is made, so no run is cut short, no server starts in the middle of it and
-    two changes at once run in turn. New runs wait on the run lock until the change is done. Its maintenance
-    mark is there from before the stop to after the release, so no client starts a server in between. Its restart
+    server.lock while the change is made, so no run is cut short, no server starts in the middle of it and two
+    changes at once run in turn. New runs wait on the run lock until the change is done. Its maintenance mark
+    is there from before the stop to after the release, so no client starts a server in between. Its restart
     mark makes hooks wait until the next server takes requests, which removes it."""
 
     def __init__(self, home: JournalHome, stop_limit_seconds: float = STOP_LIMIT_SECONDS, lock_limit_seconds: float = LOCK_LIMIT_SECONDS) -> None:

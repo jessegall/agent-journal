@@ -4,7 +4,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines
-from core.modules.voices.support.voice_nudges import VOICE_LINE, VOICE_AND_INTRODUCTION
+from core.modules.voices.support.voice_nudges import VOICE_LINE, VOICE_INTRODUCTION
 
 
 class VoiceStartListener(SaveListener):
@@ -20,4 +20,4 @@ class VoiceStartListener(SaveListener):
     def handle(self, change: Change[Model]) -> None:
         agent = change.new_row
         if isinstance(agent, Agent) and agent.role is AgentRole.MAIN:
-            self.lines.tell(agent.id, VOICE_LINE if agent.launch_agent_id is None else VOICE_AND_INTRODUCTION, change)
+            self.lines.deliver(agent.id, VOICE_LINE if agent.launch_agent_id is None else VOICE_INTRODUCTION, change)

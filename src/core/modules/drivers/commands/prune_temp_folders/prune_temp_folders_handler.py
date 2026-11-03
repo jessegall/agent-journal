@@ -14,8 +14,9 @@ UNKNOWN_SESSION_KEPT_SECONDS = 7 * 24 * 3600
 
 
 class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
-    """Removes a session's temp folder once every agent of that session has ended, never a running session's. A
-    folder of a session the journal has no row for stays a week, as it may belong to a session not yet known."""
+    """Removes a session's temp folder once every agent of that session has ended, never a running session's.
+    A folder of a session the journal has no row for stays a week, as it may belong to a session not yet
+    known."""
 
     command = PruneTempFolders
 

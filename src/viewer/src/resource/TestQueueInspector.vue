@@ -82,7 +82,9 @@ usePoll(load, () => true);
                         <div class="run" :data-queue-row="section.kind">
                             <div class="run-head">
                                 <span :class="['state', proof.state]" data-queue-state>{{ STATES[proof.state] ?? proof.state }}</span>
-                                <button v-if="workerOf(proof)" type="button" class="link" data-queue-worker @click="peek('agents', workerOf(proof))">Worker {{ workerOf(proof) }}</button>
+                                <template v-if="workerOf(proof)">
+                                    <button type="button" class="link" data-queue-worker @click="peek('agents', workerOf(proof))">Worker {{ workerOf(proof) }}</button>
+                                </template>
                                 <button type="button" class="link" data-queue-task @click="peek('tasks', proof.task_id)">Task {{ proof.task_id }}</button>
                                 <span class="grow" />
                                 <template v-if="proof.process_id">

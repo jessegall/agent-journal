@@ -4,7 +4,7 @@ from core.base.setting.setting_value import SettingValue
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 
 MODULE_KEY = "journal.core.voices"
-SPEAKS_KEY = f"{MODULE_KEY}.speaks"
+ENABLED_KEY = f"{MODULE_KEY}.speaks"
 PROFILE_KEY = f"{MODULE_KEY}.profile"
 TITLE_KEY = f"{MODULE_KEY}.title"
 NAME_KEY = f"{MODULE_KEY}.name"

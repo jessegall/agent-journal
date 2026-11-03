@@ -22,8 +22,9 @@ SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case"
 
 
 class EndedOutputText:
-    """The lines that tell an agent a run of its own ended: what the reader of the run makes of it, else how
-    it ended, and how to read it; and, for a run shown in the chat, how to read such a run better next time."""
+    """The lines that tell an agent a run of its own ended: what the reader of the run makes of it, else
+    how it ended, and how to read it; and, for a run shown in the chat, how to read such a run better next
+    time."""
 
     def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery, visibility: RunVisibility) -> None:
         self.outputs, self.readers, self.folder, self.parts, self.visibility = outputs, readers, folder, parts, visibility

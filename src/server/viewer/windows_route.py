@@ -7,7 +7,7 @@ from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
-from server.viewer.viewer_window import ViewerWindow
+from core.base.registry.window_listing import WindowListing
 
 
 class WindowsRoute:
@@ -17,7 +17,7 @@ class WindowsRoute:
     def __init__(self, home: JournalHome) -> None:
         self.home = home
 
-    def windows(self, environment: str) -> list[ViewerWindow]:
+    def windows(self, environment: str) -> list[WindowListing]:
         container = synced_container(self.home)
         try:
             registry = container.get(Registry)
@@ -29,4 +29,4 @@ class WindowsRoute:
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
         finally:
             container.get(Database).close()
-        return [ViewerWindow.listed(window, registry.module_fingerprints[window.module]) for window in windows]
+        return [window.listing(registry.module_fingerprints[window.module]) for window in windows]

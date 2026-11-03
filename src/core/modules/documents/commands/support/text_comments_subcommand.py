@@ -26,7 +26,7 @@ class TextCommentsSubcommand(ReadSubcommand[TextComments]):
 
     def read(self, arguments: Namespace, caller: Caller) -> TextComments:
         text_row = self.queries.query(self.model).find(arguments.id)
-        return TextComments(self.model.cli_name, arguments.id, self.comments.on(text_row))
+        return TextComments(self.model.cli_name, arguments.id, self.comments.comments(text_row))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextComments):

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from server.viewer.viewer_window import ViewerWindow
+from core.base.registry.window_listing import WindowListing
 
 
 @dataclass(frozen=True)
@@ -11,7 +11,7 @@ class ShareAnswer:
 
     row_model: str
     row_id: int
-    window: ViewerWindow
+    window: WindowListing
     environment: str
     ends_at: str | None
     comments: bool

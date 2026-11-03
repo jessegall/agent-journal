@@ -1,9 +1,8 @@
-import {createApp, h, nextTick} from "vue";
+import {nextTick} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
-import DockStack from "../src/chat/DockStack.vue";
 import {DOCK_ARRIVAL_MS} from "../src/kit/ChatDock.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
-import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
+import {stacked, unmountStacked} from "./support/stackedDock.js";
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -13,26 +12,16 @@ vi.stubGlobal("ResizeObserver", class {
 
 const LEAVE_SECONDS = 5;
 const DECLARATION = {type: "processes.output", icon: "terminal", title: "Output {row_id}", body_url: "", leaves_after_seconds: LEAVE_SECONDS, draws_head: true, buttons: [], reads: []};
-let app;
 
 beforeEach(() => {
     vi.useFakeTimers();
     loadDockDeclarations([DECLARATION]);
 });
 afterEach(() => {
-    app?.unmount();
+    unmountStacked();
     document.body.innerHTML = "";
     vi.useRealTimers();
 });
-
-function stacked(items) {
-    const host = document.createElement("div");
-    document.body.append(host);
-    app = createApp({render: () => h(DockStack, {items})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
-    app.mount(host);
-    return host;
-}
 
 const running = (id) => ({id, type: "processes.output", state: "docked", kept: false, leaves_at: null, target_model: "processes", target_id: id, text: ""});
 const finished = (id) => ({...running(id), leaves_at: Date.now() / 1000 + LEAVE_SECONDS});

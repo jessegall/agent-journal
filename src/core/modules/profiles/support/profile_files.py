@@ -15,8 +15,9 @@ FRONT_MATTER_START, FRONT_MATTER_END = "---\n", "\n---\n"
 
 
 class ProfileFiles:
-    """The profile files of the agent programs in the project: a markdown file for Claude Code always, a toml
-    file for Codex where it has a folder. Each start writes the journal's own again; a person's profile stays."""
+    """The profile files of the agent programs in the project: a markdown file for Claude Code always, a
+    toml file for Codex where it has a folder. Each start writes the journal's own again; a person's
+    profile stays."""
 
     def __init__(self, home: JournalHome, settings: SettingValues) -> None:
         self.home, self.settings = home, settings

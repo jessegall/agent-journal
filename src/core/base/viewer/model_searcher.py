@@ -7,7 +7,7 @@ from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
 from core.base.viewer.window_searcher import WindowSearcher
 
-ROW_LIMIT = 1000
+MAX_ROWS = 1000
 
 
 class ModelSearcher(WindowSearcher):
@@ -23,4 +23,4 @@ class ModelSearcher(WindowSearcher):
         query = self.queries.query(self.model)
         if terms:
             query = query.matching(ContainsEvery(self.model.search_fields, terms))
-        return query.newest().page(1, ROW_LIMIT)
+        return query.newest().page(1, MAX_ROWS)

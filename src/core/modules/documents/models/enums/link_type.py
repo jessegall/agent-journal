@@ -8,4 +8,4 @@ class LinkType(StrEnum):
     SUBJECT = "about"
     MENTION = "mentions"
     COMMENT = "comments_on"
-    SENT_TO = "sent_to"
+    RECIPIENT = "sent_to"

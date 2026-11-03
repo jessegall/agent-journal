@@ -4,7 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support.fixtures import AgentStarted
 
-NOBODY = "nobody can answer a question asked from here"
+UNANSWERABLE = "nobody can answer a question asked from here"
 
 
 def test_the_main_agent_asks(new_story):
@@ -16,9 +16,9 @@ def test_the_main_agent_asks(new_story):
 def test_a_helper_of_any_other_role_is_refused(new_story, role):
     story = new_story(fixture=AgentStarted)
     helper = Actor(story.new_row_id(f"agent start s-9 claude {role} --environment main"), ActorType.AGENT)
-    story.expect_refusal('question ask "Which database?" --environment main', NOBODY, actor=helper)
+    story.expect_refusal('question ask "Which database?" --environment main', UNANSWERABLE, actor=helper)
 
 
 def test_the_user_is_refused(new_story):
     story = new_story(fixture=AgentStarted)
-    story.expect_refusal('question ask "Which database?" --environment main', NOBODY, actor=story.user)
+    story.expect_refusal('question ask "Which database?" --environment main', UNANSWERABLE, actor=story.user)

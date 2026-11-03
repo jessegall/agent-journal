@@ -32,10 +32,11 @@ class WorkerReuseRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         for part in shell.parts if shell is not None else ():
-            if part.arguments[:2] == DISPATCH_ARGUMENTS and NEW_WORKER_FLAG not in part.arguments:
-                worker_id = self.worker_with_files(part, hook.environment_id)
-                if worker_id is not None:
-                    return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
+            if part.arguments[:2] != DISPATCH_ARGUMENTS or NEW_WORKER_FLAG in part.arguments:
+                continue
+            worker_id = self.worker_with_files(part, hook.environment_id)
+            if worker_id is not None:
+                return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
         return RuleAnswer.allowed()
 
     def worker_with_files(self, part: Part, environment_id: int) -> int | None:
@@ -45,6 +46,6 @@ class WorkerReuseRule(DriverRule):
             return None
         for worktree in self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows():
             is_ended = self.queries.query(Agent).find(worktree.agent_id).ended_at is not None
-            if is_ended and PathMentions.shared(paths, frozenset(self.git.changed_files(worktree))):
+            if is_ended and PathMentions.overlap(paths, frozenset(self.git.changed_files(worktree))):
                 return worktree.agent_id
         return None

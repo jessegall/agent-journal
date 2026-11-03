@@ -12,8 +12,8 @@ from core.modules.tasks.models.task import Task
 
 
 class CommentTextSubcommand(Subcommand[CommentText, Message]):
-    """`journal <doc, report, plan, task or message> comment <n> <text>`: a comment on it, sent to the chat and linked
-    to it."""
+    """`journal <doc, report, plan, task or message> comment <n> <text>`: a comment on it, sent to the chat and
+    linked to it."""
 
     model: ClassVar[type[TextRow] | type[Plan] | type[Task] | type[Message]]
     name = "comment"

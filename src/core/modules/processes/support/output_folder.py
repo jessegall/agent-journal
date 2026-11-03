@@ -17,7 +17,7 @@ HEARTBEAT_FILE = "heartbeat"
 SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
-CHUNK_BYTES = 64 * 1024
+BLOCK_BYTES = 64 * 1024
 
 COUNT_LINES = 20
 
@@ -153,13 +153,13 @@ class OutputFolder:
 
     def numbered_lines(self, process_id: int, first: int, last: int) -> list[tuple[int, str]]:
         """The lines numbered first to last, counted from 1; the parts are read in chunks up to the last line wanted."""
-        found: list[tuple[int, str]] = []
+        selected: list[tuple[int, str]] = []
         for number, line in enumerate(self.streamed_lines(process_id), 1):
             if number >= first:
-                found.append((number, line))
+                selected.append((number, line))
             if number >= last:
                 break
-        return found
+        return selected
 
     def streamed_lines(self, process_id: int) -> Iterator[str]:
         decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
@@ -168,8 +168,8 @@ class OutputFolder:
             if not path.exists():
                 continue
             with path.open("rb") as handle:
-                while chunk := handle.read(CHUNK_BYTES):
-                    complete, pending = self.split_complete(pending + decoder.decode(chunk))
+                while block := handle.read(BLOCK_BYTES):
+                    complete, pending = self.split_complete(pending + decoder.decode(block))
                     yield from (ColourCodes.removed(line) for line in complete)
         if pending:
             yield ColourCodes.removed(pending)
@@ -178,9 +178,9 @@ class OutputFolder:
     def split_complete(text: str) -> tuple[list[str], str]:
         """The lines of the text that end in a line break, and what follows the last one; a last piece that has no
         break, or ends in a carriage return that a line feed may follow, waits for more text."""
-        pieces = text.splitlines(keepends=True)
-        held = pieces.pop() if pieces and (pieces[-1].splitlines()[0] == pieces[-1] or pieces[-1].endswith("\r")) else ""
-        return [piece.splitlines()[0] for piece in pieces], held
+        segments = text.splitlines(keepends=True)
+        incomplete = segments.pop() if segments and (segments[-1].splitlines()[0] == segments[-1] or segments[-1].endswith("\r")) else ""
+        return [segment.splitlines()[0] for segment in segments], incomplete
 
     def reader_lines(self, process_id: int) -> list[str]:
         return self.text(process_id, READER_LINES_FILE).splitlines()
@@ -204,8 +204,8 @@ class OutputFolder:
                 continue
             last = b""
             with path.open("rb") as handle:
-                while chunk := handle.read(CHUNK_BYTES):
-                    size, lines, last = size + len(chunk), lines + chunk.count(b"\n"), chunk[-1:]
+                while block := handle.read(BLOCK_BYTES):
+                    size, lines, last = size + len(block), lines + block.count(b"\n"), block[-1:]
             lines += 1 if last and last != b"\n" else 0
         return size, lines
 

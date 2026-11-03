@@ -20,8 +20,9 @@ MOVE_TEXTS = {
 
 
 class WorkerMoveMarkListener(MarkListener):
-    """Each move of a worker shows as a mark in the chat naming the worker and the task, with the program, the model,
-    the tasks still queued and the task's title and brief shown on opening it, and a click that opens the worker."""
+    """Each move of a worker shows as a mark in the chat naming the worker and the task, with the program, the
+    model, the tasks still queued and the task's title and brief shown on opening it, and a click that opens
+    the worker."""
 
     name = "workers.move-mark"
     event = "worker_worktree.*"

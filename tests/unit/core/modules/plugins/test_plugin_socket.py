@@ -11,7 +11,7 @@ from core.modules.plugins.support.plugin_socket import PluginSocket
 LIMIT_MS = 500
 BYTE_PAUSE_SECONDS = 0.2
 ANSWER = b'{"v": 1, "answer": "allow"}'
-WHOLE_ANSWER_SECONDS = len(ANSWER) * BYTE_PAUSE_SECONDS
+FULL_ANSWER_SECONDS = len(ANSWER) * BYTE_PAUSE_SECONDS
 
 
 def slow_service(path: Path) -> None:
@@ -40,6 +40,6 @@ def test_an_answer_sent_a_byte_at_a_time_ends_at_the_window(tmp_path: Path) -> N
     try:
         with pytest.raises(PluginLateError):
             PluginSocket(path).ask('{"v": 1}', LIMIT_MS)
-        assert time.monotonic() - started < WHOLE_ANSWER_SECONDS
+        assert time.monotonic() - started < FULL_ANSWER_SECONDS
     finally:
         path.unlink(missing_ok=True)

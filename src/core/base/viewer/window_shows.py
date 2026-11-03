@@ -5,4 +5,4 @@ class WindowShows(StrEnum):
     """Whose work a window shows: the environment's, or one agent's, which the pane menu's Agent row picks."""
 
     ENVIRONMENT = "environment"
-    PICKED_AGENT = "one-agent"
+    SELECTED_AGENT = "one-agent"

@@ -11,7 +11,7 @@ class PathMentions:
         return frozenset(FILE_PATH.findall(text))
 
     @staticmethod
-    def shared(paths: frozenset[str], compared_paths: frozenset[str]) -> frozenset[str]:
+    def overlap(paths: frozenset[str], compared_paths: frozenset[str]) -> frozenset[str]:
         return frozenset(path for path in paths if any(PathMentions.same_file(path, compared) for compared in compared_paths))
 
     @staticmethod

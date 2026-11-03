@@ -32,12 +32,13 @@ THREAD_NAME = "ticker"
 
 
 class TickWork(RoundWork):
-    """The journal's clock, a tick each second: every running output that grew goes through its reader, which
-    writes its lines to their file and what it found on the output row, and wakes the listeners. Once a minute
-    each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
-    speak on their own, and the notices that wait on paired phones are pushed; once a day the old hook calls
-    are pruned and the temp folders of ended sessions removed. Reading the outputs too slowly goes to the slow
-    tick tool, at most once a minute; a fault in that reading is logged and does not stop the minute's work."""
+    """The journal's clock, a tick each second: every running output that grew goes through its reader,
+    which writes its lines to their file and what it found on the output row, and wakes the listeners. Once
+    a minute each open agent other than a subagent gets a tick hook through the hook route, so rules that
+    keep time speak on their own, and the notices that wait on paired phones are pushed; once a day the old
+    hook calls are pruned and the temp folders of ended sessions removed. Reading the outputs too slowly
+    goes to the slow tick tool, at most once a minute; a fault in that reading is logged and does not stop
+    the minute's work."""
 
     def __init__(self, wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic) -> None:
         self.wake_listeners, self.seconds = wake_listeners, seconds

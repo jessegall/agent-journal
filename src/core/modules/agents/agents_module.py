@@ -70,9 +70,9 @@ class AgentsModule(Module):
                                           ToggleOption("environment", "Environment agents", True), ToggleOption("worker", "Workers", True), ToggleOption("subagent", "Subagents", True),
                                           ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number"),
                                           ToggleOption("every", "Show every agent")]),
-               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.PICKED_AGENT, reads=CARD_READS,
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, reads=CARD_READS,
                                  events=CARD_EVENTS, tabs=CARD_TABS),
-               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.PICKED_AGENT,
+               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [MenuAnswerMarkListener]
     marks = AGENT_MARKS

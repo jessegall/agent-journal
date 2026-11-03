@@ -9,8 +9,9 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class WorkerStopRule(DriverRule):
-    """A worker stops only once it holds no started task and has no task queued, or while its tests wait, as its
-    next task then reaches it; a stop before that names the way to deliver, and a stuck report is the way out."""
+    """A worker stops only once it holds no started task and has no task queued, or while its tests wait, as
+    its next task then reaches it; a stop before that names the way to deliver, and a stuck report is the way
+    out."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP

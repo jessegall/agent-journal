@@ -32,4 +32,4 @@ class SmallBatchRule(DriverRule):
 
     @staticmethod
     def task_count(arguments: list[str]) -> int:
-        return sum(1 for before, argument in zip(["", *arguments], arguments) if argument.isdigit() and not before.startswith("--"))
+        return sum(1 for previous, argument in zip(["", *arguments], arguments) if argument.isdigit() and not previous.startswith("--"))

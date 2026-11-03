@@ -1,5 +1,5 @@
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE
-from suites.coding.modules.workers.support.worker_settings import QUIET_HELPER_MINUTES
+from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -29,11 +29,11 @@ class InactiveHelperRule(DriverRule):
         self.queries, self.calls, self.hook_history, self.settings = queries, calls, history, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        minutes = self.settings.number(QUIET_HELPER_MINUTES, hook.environment_id)
+        minutes = self.settings.number(INACTIVE_HELPER_MINUTES, hook.environment_id)
         if self.hook_history.has_recent_answer(self.name, hook, minutes * MINUTE_SECONDS):
             return RuleAnswer.allowed()
-        quiet = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, minutes)]
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=minutes) for helper in quiet))
+        inactive = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, minutes)]
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=minutes) for helper in inactive))
 
     def helpers(self, main_id: int) -> list[Agent]:
         return [helper for role in HELPER_ROLES for helper in self.queries.query(Agent).filter(parent_id=main_id, role=role).matching(IsNull("ended_at")).oldest().all_rows()]

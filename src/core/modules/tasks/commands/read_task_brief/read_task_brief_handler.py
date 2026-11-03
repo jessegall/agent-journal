@@ -8,6 +8,7 @@ from core.modules.tasks.commands.read_task_brief.read_task_brief import ReadTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_read import TaskRead
 from core.modules.tasks.support.task_brief import TaskBrief
+from core.modules.tasks.support.task_comment import TaskComment
 
 
 class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
@@ -23,4 +24,4 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
         agent_id = context.actor.id
         if context.actor.type is ActorType.AGENT and not self.queries.query(TaskRead).filter(task_id=task.id, agent_id=agent_id).exists():
             self.repository.save(TaskRead(task_id=task.id, agent_id=agent_id, creator_id=agent_id), context)
-        return TaskBrief(task, self.comments.on(task))
+        return TaskBrief(task, tuple(TaskComment(message.id, message.text) for message in self.comments.comments(task)))

@@ -170,8 +170,9 @@ class PlanTasksPlaced(StoryFixture):
 
 
 class PlanAcrossPhases(StoryFixture):
-    """A started plan 1 with phases Build (1) and Ship (2): task 1, Release, sits in Ship; tasks 2, Cart, and 3, Tax,
-    sit in Build in that order, so the order of phases and places differs from the order the tasks were made."""
+    """A started plan 1 with phases Build (1) and Ship (2): task 1, Release, sits in Ship; tasks 2, Cart, and
+    3, Tax, sit in Build in that order, so the order of phases and places differs from the order the tasks
+    were made."""
 
     parent = AgentStarted
 

@@ -15,8 +15,8 @@ from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_
 
 class WaitingMessageTypingListener(CommitListener):
     """Types the line that tells an idle main agent of a waiting message, unless the message was read or told
-    by a hook meanwhile, when the line is dropped. The message counts as delivered once the line was typed; a line
-    that could not be typed waits for the next hook and for the tick that makes a new one."""
+    by a hook meanwhile, when the line is dropped. The message counts as delivered once the line was typed; a
+    line that could not be typed waits for the next hook and for the tick that makes a new one."""
 
     name = "messages.waiting-message-typing"
     event = "agent_line.create"

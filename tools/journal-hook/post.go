@@ -115,7 +115,7 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	began := time.Now()
 	status, answer := posted(outgoing, transport)
-	for status != http.StatusOK && restartMarked(outgoing.root) {
+	for status != http.StatusOK && restartMarkRecent(outgoing.root) {
 		if time.Since(began) >= RestartWindow {
 			return restartTimedOut, nil
 		}
@@ -126,8 +126,8 @@ func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []
 	return status, answer
 }
 
-// restartMarked says whether a server left its restart mark, not older than RestartMarkLimit.
-func restartMarked(root string) bool {
+// restartMarkRecent says whether a server left its restart mark, not older than RestartMarkLimit.
+func restartMarkRecent(root string) bool {
 	info, err := os.Stat(filepath.Join(root, ".journal", restartMarkName))
 	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
 }
