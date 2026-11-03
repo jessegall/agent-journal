@@ -123,6 +123,38 @@ def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick
     assert [line for _, line in typing.typed] == ["[journal] new message 1"]
 
 
+def tool_failure(interrupted: bool):
+    return HookSamples.edit("cart.py").with_fields(event="post_tool_use_failure").with_raw({"is_interrupt": interrupted})
+
+
+def test_a_message_sent_right_after_the_user_interrupted_a_tool_is_typed_since_the_program_reports_the_interrupt_with_its_failed_tool(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.hook("s-1", tool_failure(interrupted=True))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+
+
+def test_a_message_sent_after_a_tool_failed_without_an_interrupt_is_not_typed(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.hook("s-1", tool_failure(interrupted=False))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    assert typing.typed == []
+
+
+def test_a_message_sent_after_the_agent_went_on_from_an_interrupt_is_not_typed(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.hook("s-1", tool_failure(interrupted=True))
+    story.hook("s-1", HookSamples.edit("cart.py"))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    assert typing.typed == []
+
+
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(new_story):
     story = delivery_story(new_story)
     typing = KeptTyping()
