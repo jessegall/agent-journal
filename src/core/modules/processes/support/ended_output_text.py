@@ -1,5 +1,4 @@
 import re
-from core.base.driver.command_category import CommandCategory
 from core.base.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
 from pathlib import PurePath
@@ -16,7 +15,6 @@ from core.modules.processes.support.shown_runs import ShownRuns
 WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
-READ_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
 FEW_LINES = 5
 SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time", "bash", "sh", "zsh"))
 
@@ -43,7 +41,7 @@ class EndedOutputText:
 
     def read_program(self, process: Process) -> str | None:
         parts = self.parts.process(process.id).oldest().all_rows()
-        return next((part.program for part in parts if part.category in READ_CATEGORIES), None)
+        return next((part.program for part in parts if part.category.has_result_output), None)
 
     def reader_nudges(self, process: Process) -> tuple[Nudge, ...]:
         kept = self.outputs.process(process.id).page(1, 1).rows

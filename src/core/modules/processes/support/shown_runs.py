@@ -1,9 +1,6 @@
-from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-
-SHOWN_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 
 
 class ShownRuns:
@@ -15,7 +12,7 @@ class ShownRuns:
 
     def part(self, process: Process) -> ProcessPart | None:
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows())
-        shown = next((part for part in parts if part.category in SHOWN_CATEGORIES), None)
+        shown = next((part for part in parts if part.category.is_long_running), None)
         return shown or (parts[0] if parts and process.creator_id != process.agent_id else None)
 
     def shows(self, process: Process) -> bool:

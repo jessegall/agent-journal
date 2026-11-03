@@ -9,8 +9,6 @@ from core.base.driver.part import Part
 from core.base.type_guards import is_list
 
 
-READ_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
-WATCHED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK)
 JOURNAL_PROGRAM = "journal"
 
 
@@ -52,11 +50,11 @@ class ShellLine:
 
     @property
     def is_reading(self) -> bool:
-        return bool(self.parts) and all(part.classification.category in READ_CATEGORIES for part in self.parts) and not self.has_writes
+        return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_writes
 
     @property
     def watched_category(self) -> CommandCategory:
-        watched_part = next((part for part in self.parts if part.classification.category in WATCHED_CATEGORIES), None)
+        watched_part = next((part for part in self.parts if part.classification.category.is_watched), None)
         program_part = next((part for part in self.parts if part.classification.category is not CommandCategory.JOURNAL), None)
         return (watched_part or program_part or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN
 

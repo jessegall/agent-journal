@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class CommandCategory(StrEnum):
-    """What a shell command is, as the command table names it."""
+    """What a shell command is, as the command table names it, and the groups of categories rules ask about."""
 
     SEARCH = "search"
     READ = "read"
@@ -16,3 +16,31 @@ class CommandCategory(StrEnum):
     PROCESS = "process"
     JOURNAL = "journal"
     UNKNOWN = "unknown"
+
+    @property
+    def reads_files(self) -> bool:
+        return self in (CommandCategory.READ, CommandCategory.SEARCH)
+
+    @property
+    def accesses_files(self) -> bool:
+        return self.reads_files or self is CommandCategory.EDIT
+
+    @property
+    def is_read_only(self) -> bool:
+        return self.reads_files or self is CommandCategory.JOURNAL
+
+    @property
+    def is_short(self) -> bool:
+        return self.accesses_files or self is CommandCategory.JOURNAL
+
+    @property
+    def is_long_running(self) -> bool:
+        return self in (CommandCategory.TEST_RUN, CommandCategory.BUILD)
+
+    @property
+    def is_watched(self) -> bool:
+        return self.is_long_running or self is CommandCategory.CHECK
+
+    @property
+    def has_result_output(self) -> bool:
+        return self.is_watched or self is CommandCategory.PACKAGE
