@@ -1,3 +1,7 @@
+from tests.stories.server.support.server_fixtures import task_server
+
+import pytest
+
 from server.server_files import SERVER_LOG_LIMIT_BYTES, ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
@@ -5,32 +9,26 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.server_process import ServerProcess
 
 
-def test_a_request_after_the_code_changed_gets_409_runs_nothing_and_the_server_releases_its_files(new_story, tmp_path):
-    code_file = tmp_path / "code" / "a.py"
-    code_file.parent.mkdir()
-    code_file.write_text("x = 1\n")
-    with server_story(new_story(fixture=ThreeTasks), SampleCodeFolders([code_file.parent])) as story:
-        code_file.write_text("x = 22\n")
-        story.expect_stale_answer_and_released_files('task make "Fourth" --environment main')
+def test_a_request_after_the_code_changed_gets_409_runs_nothing_and_the_server_releases_its_files(changing_code_server):
+    story, code_file, task_listing = changing_code_server
+    code_file.write_text("x = 22\n")
+    story.expect_stale_answer_and_released_files('task make "Fourth" --environment main', task_listing)
 
 
-def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_server_removes_it(new_story, tmp_path):
-    code_file = tmp_path / "code" / "a.py"
-    code_file.parent.mkdir()
-    code_file.write_text("x = 1\n")
-    with server_story(new_story(fixture=ThreeTasks), SampleCodeFolders([code_file.parent])) as story:
-        code_file.write_text("x = 22\n")
-        story.expect_stale_answer_and_released_files('task make "Fourth" --environment main')
-        restart_mark = ServerFiles(story.story.home).restart_mark
-        assert restart_mark.exists()
-        with ServerProcess(story.story.home) as server:
-            server.expect_health()
-            assert not restart_mark.exists()
+def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_server_removes_it(changing_code_server):
+    story, code_file, task_listing = changing_code_server
+    code_file.write_text("x = 22\n")
+    story.expect_stale_answer_and_released_files('task make "Fourth" --environment main', task_listing)
+    restart_mark = ServerFiles(story.story.home).restart_mark
+    assert restart_mark.exists()
+    with ServerProcess(story.story.home) as server:
+        server.expect_health()
+        assert not restart_mark.exists()
 
 
-def test_a_stop_request_is_answered_and_the_server_stops(new_story):
-    with server_story(new_story(fixture=ThreeTasks)) as story:
-        story.expect_stop()
+def test_a_stop_request_is_answered_and_the_server_stops(task_server):
+    story = task_server
+    story.expect_stop()
 
 
 def test_a_server_process_stopped_by_sigterm_removes_its_socket_and_pid_file_and_lets_the_lock_go(new_story):
@@ -63,3 +61,14 @@ def test_a_server_that_starts_past_the_log_limit_leaves_a_small_log_and_one_old_
             server.expect_health()
         assert old_log.stat().st_size == size and log.stat().st_size < SERVER_LOG_LIMIT_BYTES // 100
         assert "listening on" in log.read_text() and not log.with_name("server.log.2").exists()
+
+
+
+
+@pytest.fixture
+def changing_code_server(new_story, tmp_path):
+    code_file = tmp_path / "code" / "a.py"
+    code_file.parent.mkdir()
+    code_file.write_text("x = 1\n")
+    with server_story(new_story(fixture=ThreeTasks), SampleCodeFolders([code_file.parent])) as story:
+        yield story, code_file, story.story.run("task list --environment main")

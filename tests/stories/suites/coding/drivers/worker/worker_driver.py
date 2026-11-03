@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
@@ -32,29 +34,32 @@ def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_stor
 
 
 def test_a_worker_runs_no_git(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    worker_with_started_task(story)
+    story = new_story(fixture=WorkingAgent)
     story.expect_hook_refusal(WORKER_SESSION, GIT_STATUS, "a worker runs no git: the journal commits and merges your work")
 
 
 def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    worker_with_started_task(story)
+    story = new_story(fixture=WorkingAgent)
     story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""", "key: journal.suites.coding.worker-command-types")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
     story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "a worker here runs no edit command")
 
 
 def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    worker_with_started_task(story)
+    story = new_story(fixture=WorkingAgent)
     story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task:1 is not finished: journal worker next, journal worker deliver")
 
 
 def test_a_worker_is_refused_a_whole_chain_with_a_full_test_run_and_may_run_named_tests(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    worker_with_started_task(story)
+    story = new_story(fixture=WorkingAgent)
     suite_sample = HookSamples.shell("echo before && pytest tests", ShellPart("echo", "read", ["before"]), ShellPart("pytest", "test run", ["tests"], is_full_test_run=True))
     cart_sample = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", "test run", ["tests/cart.py"]))
     story.expect_hook_refusal(WORKER_SESSION, suite_sample, "never the whole suite")
     story.expect_hook_allowed(WORKER_SESSION, cart_sample)
+
+
+class WorkingAgent(StoryFixture):
+    parent = BuilderWithOpenTask
+
+    def steps(self, story):
+        worker_with_started_task(story)

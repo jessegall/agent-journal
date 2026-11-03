@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
@@ -6,12 +8,17 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 
 
+class ReactableMessage(StoryFixture):
+    parent = SampleSuiteChoice
+
+    def steps(self, story):
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        story.agent = hook_agent(story, story.hook('s-1', HookSamples.session_start()))
+        story.run('message send "Fix the cart" --environment main', actor=story.user)
+
+
 def reaction_story(new_story):
-    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
-    story.run('message send "Fix the cart" --environment main', actor=story.user)
-    return story
+    return new_story(SAMPLES, fixture=ReactableMessage)
 
 
 def test_a_face_goes_on_and_the_same_face_again_takes_it_off(new_story):

@@ -1,3 +1,7 @@
+import pytest
+
+from core.testing.story_fixture import StoryFixture
+
 import json
 import shlex
 
@@ -5,10 +9,15 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
 
+class ReleaseSequence(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.expect_success('sequence make "Release" --steps "Run the suite | Tag the release"', 'sequence 1: Release, 2 steps', actor=story.user)
+
+
 def sequence_story(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_success('sequence make "Release" --steps "Run the suite | Tag the release"', "sequence 1: Release, 2 steps", actor=story.user)
-    return story
+    return new_story(fixture=ReleaseSequence)
 
 
 def test_a_sequence_is_made_with_its_steps_and_shown_in_order(new_story):
@@ -30,21 +39,18 @@ def test_running_a_sequence_tells_the_agent_its_first_step_and_next_moves_it_on_
     story.expect_text("sequence next", "sequence 1 ran its last step", actor=story.agent)
 
 
-def test_next_before_the_step_is_taken_up_is_refused_with_the_follow_command(new_story):
-    story = sequence_story(new_story)
-    story.run("sequence run 1", actor=story.agent)
+def test_next_before_the_step_is_taken_up_is_refused_with_the_follow_command(running_release):
+    story = running_release
     story.expect_refusal("sequence next", "step 1 of sequence 1 was never taken up", actor=story.agent)
 
 
-def test_a_step_not_taken_up_holds_the_agents_edits(new_story):
-    story = sequence_story(new_story)
-    story.run("sequence run 1", actor=story.agent)
+def test_a_step_not_taken_up_holds_the_agents_edits(running_release):
+    story = running_release
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence:1 step 1 waits")
 
 
-def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(new_story):
-    story = sequence_story(new_story)
-    story.run("sequence run 1", actor=story.agent)
+def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(running_release):
+    story = running_release
     story.run("sequence follow", actor=story.agent)
     story.expect_refusal('sequence abandon --why "not today"', "leaves undone: Run the suite, Tag the release", actor=story.agent)
     story.expect_text('sequence abandon --why "not today" --sure', "sequence 1 abandoned", actor=story.agent)
@@ -167,3 +173,10 @@ def test_step_guards_that_do_not_read_are_refused_when_written(new_story):
     story.expect_refusal(f"{base} --step-guards {shlex.quote(json.dumps({'a': 1}))}", "are a list", actor=story.user)
     story.expect_refusal(f"{base} --step-guards {shlex.quote(json.dumps([{'file_edits_allowed': False, 'allowed_commands': ['(']}]))}", "does not read", actor=story.user)
 
+
+
+@pytest.fixture
+def running_release(new_story):
+    story = sequence_story(new_story)
+    story.run("sequence run 1", actor=story.agent)
+    return story

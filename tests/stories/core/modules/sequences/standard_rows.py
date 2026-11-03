@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from dataclasses import replace
 
 from core.base.database.database import Database
@@ -27,21 +29,18 @@ def plan_building(story):
 
 
 def test_a_fresh_journal_lists_what_comes_with_it_after_a_start(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    started(story)
+    story = new_story(fixture=StartedSequences)
     assert {row.title for row in STANDARD_SEQUENCES} <= titles(story, Sequence)
     assert {row.title for row in STANDARD_TEMPLATES} <= titles(story, Template)
 
 
 def test_a_person_cannot_change_a_sequence_that_comes_with_the_journal(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    started(story)
+    story = new_story(fixture=StartedSequences)
     story.expect_refusal(f"sequence delete {plan_building(story).id}", "comes with the journal", actor=story.user)
 
 
 def test_an_old_copy_takes_the_newest_words_at_the_next_start_and_no_row_is_added(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    started(story)
+    story = new_story(fixture=StartedSequences)
     stored = plan_building(story)
     count = len(titles(story, Sequence))
     database = story.container.get(Database)
@@ -56,3 +55,10 @@ def test_each_standard_sequence_has_one_guard_for_each_step():
     for sequence in STANDARD_SEQUENCES:
         assert sequence.step_guards.count("file_edits_allowed") == len(sequence.steps), sequence.title
     assert replace(STANDARD_SEQUENCES[0]).title == PLAN_BUILDING
+
+
+class StartedSequences(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        started(story)

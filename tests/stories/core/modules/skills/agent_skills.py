@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -30,15 +32,15 @@ def due_notes(story) -> None:
     story.expect_text(f"skill require {story.agent.id} journal-notes --json", '"state": "due"')
 
 
-def test_a_skill_made_due_for_an_agent_is_a_due_row(new_story):
-    story = started(new_story)
+def test_a_skill_made_due_for_an_agent_is_a_due_row(skill_files):
+    story = skill_files
     due_notes(story)
     story.expect_success("agent-skill list", f"3  {story.agent.id}  journal-notes  due")
     story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
 
 
-def test_a_tool_call_that_reads_the_skill_file_marks_it_loaded_with_the_files_digest(new_story):
-    story = started(new_story)
+def test_a_tool_call_that_reads_the_skill_file_marks_it_loaded_with_the_files_digest(skill_files):
+    story = skill_files
     due_notes(story)
     read_of(story, NOTES_FILE)
     story.expect_success("agent-skill show 3", "state: loaded")
@@ -46,23 +48,23 @@ def test_a_tool_call_that_reads_the_skill_file_marks_it_loaded_with_the_files_di
     story.expect_success("agent-skill show 3", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
 
 
-def test_a_second_read_changes_nothing(new_story):
-    story = started(new_story)
+def test_a_second_read_changes_nothing(skill_files):
+    story = skill_files
     due_notes(story)
     read_of(story, NOTES_FILE)
     read_of(story, NOTES_FILE)
     story.expect_success("agent-skill show 3", "version: 2", "state: loaded")
 
 
-def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(new_story):
-    story = started(new_story)
+def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(skill_files):
+    story = skill_files
     due_notes(story)
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "the-digest-of-an-older-text"), story.agent)
     story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
 
 
-def test_a_compaction_clears_the_agents_loaded_rows(new_story):
-    story = started(new_story)
+def test_a_compaction_clears_the_agents_loaded_rows(skill_files):
+    story = skill_files
     due_notes(story)
     read_of(story, NOTES_FILE)
     story.hook("s-1", HookSamples.sample("compact"))
@@ -71,18 +73,23 @@ def test_a_compaction_clears_the_agents_loaded_rows(new_story):
     story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
 
 
-def test_a_skill_gone_from_the_catalogue_is_dropped_from_due(new_story):
-    story = started(new_story)
+def test_a_skill_gone_from_the_catalogue_is_dropped_from_due(skill_files):
+    story = skill_files
     story.run(f"skill require {story.agent.id} journal-gone")
     due_notes(story)
     story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-gone")
 
 
-def test_each_agent_has_its_own_loaded_rows(new_story):
-    story = started(new_story)
+def test_each_agent_has_its_own_loaded_rows(skill_files):
+    story = skill_files
     helper = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     due_notes(story)
     story.run(f"skill require {helper.id} journal-notes")
     read_of(story, NOTES_FILE)
     story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
     story.expect_success("agent-skill unread " + str(helper.id), "journal-notes")
+
+
+@pytest.fixture
+def skill_files(new_story):
+    return started(new_story)

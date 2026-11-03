@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
@@ -45,23 +47,23 @@ def digest_of(story, skill: str) -> str:
     return next(entry.digest for entry in Registry.read(story.container.get(Database)).skills if entry.folder == skill)
 
 
-def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which_default_to_the_three(new_story):
-    story = environment(new_story)
-    start(story)
-    expect_due(story, *DEFAULTS)
-    expect_skills_absent(story, "journal-notes", "journal-chores")
+def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which_default_to_the_three(started_skill_environment):
+    story = started_skill_environment
+    skill_lines = due_lines(story)
+    assert all(f"  {folder}  due" in skill_lines for folder in DEFAULTS)
+    assert all(f"  {folder}  due" not in skill_lines for folder in ("journal-notes", "journal-chores"))
 
 
-def test_the_session_start_setting_names_the_skills_instead(new_story):
-    story = environment(new_story)
+def test_the_session_start_setting_names_the_skills_instead(skill_environment):
+    story = skill_environment
     story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start(story)
     expect_due(story, "journal-notes")
     expect_skills_absent(story, *DEFAULTS)
 
 
-def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(new_story):
-    story = environment(new_story)
+def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(skill_environment):
+    story = skill_environment
     story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]'")
     start(story)
     story.hook("s-1", HookSamples.sample("compact"))
@@ -70,17 +72,13 @@ def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction
     expect_due(story, "journal-chores")
 
 
-def test_a_prompt_of_the_user_holding_a_keyword_makes_the_skill_due(new_story):
-    story = environment(new_story)
-    start(story)
-    story.hook("s-1", HookSamples.prompt("please take a note of that"))
-    story.run_listeners()
+def test_a_prompt_of_the_user_holding_a_keyword_makes_the_skill_due(prompt_skill_due):
+    story = prompt_skill_due
     expect_due(story, "journal-notes")
 
 
-def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due(new_story):
-    story = environment(new_story)
-    start(story)
+def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due(started_skill_environment):
+    story = started_skill_environment
     for text in ("[journal] take a note of that", "[plugin:ledger] take a note of that"):
         story.hook("s-1", HookSamples.prompt(text))
     story.hook("s-1", HookSamples.prompt("take a note of that").with_fields(subagent="a-1"))
@@ -88,15 +86,13 @@ def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due
     expect_skills_absent(story, "journal-notes")
 
 
-def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_is_read(new_story):
-    story = environment(new_story)
-    start(story)
+def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_is_read(started_skill_environment):
+    story = started_skill_environment
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
 
 
-def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(new_story):
-    story = environment(new_story)
-    start(story)
+def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(started_skill_environment):
+    story = started_skill_environment
     for skill in DEFAULTS:
         story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
@@ -108,9 +104,8 @@ def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_nam
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(new_story):
-    story = environment(new_story)
-    start(story)
+def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(started_skill_environment):
+    story = started_skill_environment
     for skill in DEFAULTS:
         story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
@@ -120,30 +115,66 @@ def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_i
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environment(new_story):
-    story = environment(new_story)
-    start(story)
-    story.run(f'task make "Fix the cart" --environment main')
-    story.run("task start 1 --environment main", actor=story.agent)
-    story.run_listeners()
+def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environment(task_skill_due):
+    story = task_skill_due
     expect_due(story, "journal-chores")
 
 
-def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(new_story):
-    story = environment(new_story)
+def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(task_skill_loaded):
+    story = task_skill_loaded
+    expect_skills_absent(story, "journal-chores")
+
+
+def test_a_skill_already_loaded_at_the_same_digest_is_never_due(prompt_skill_loaded):
+    story = prompt_skill_loaded
+    skill_lines = due_lines(story)
+    assert "  journal-notes  due" not in skill_lines
+    assert f"journal-notes  {digest_of(story, 'journal-notes')}  loaded" in skill_lines
+
+
+@pytest.fixture
+def skill_environment(new_story):
+    return environment(new_story)
+
+
+@pytest.fixture
+def started_skill_environment(skill_environment):
+    story = skill_environment
     start(story)
+    return story
+
+
+@pytest.fixture
+def prompt_skill_due(started_skill_environment):
+    story = started_skill_environment
+    story.hook("s-1", HookSamples.prompt("please take a note of that"))
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def prompt_skill_loaded(started_skill_environment):
+    story = started_skill_environment
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", digest_of(story, "journal-notes")), story.agent)
+    story.hook("s-1", HookSamples.prompt("please take a note of that"))
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def task_skill_due(started_skill_environment):
+    story = started_skill_environment
+    story.run(f'task make "Fix the cart" --environment main')
+    story.run("task start 1 --environment main", actor=story.agent)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def task_skill_loaded(started_skill_environment):
+    story = started_skill_environment
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-chores", digest_of(story, "journal-chores")), story.agent)
     story.run('task make "Fix the cart" --environment main')
     story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()
-    expect_skills_absent(story, "journal-chores")
-
-
-def test_a_skill_already_loaded_at_the_same_digest_is_never_due(new_story):
-    story = environment(new_story)
-    start(story)
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", digest_of(story, "journal-notes")), story.agent)
-    story.hook("s-1", HookSamples.prompt("please take a note of that"))
-    story.run_listeners()
-    expect_skills_absent(story, "journal-notes")
-    assert f"journal-notes  {digest_of(story, 'journal-notes')}  loaded" in due_lines(story)
+    return story

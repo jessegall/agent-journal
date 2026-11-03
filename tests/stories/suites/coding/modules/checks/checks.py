@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 import json
 from datetime import timedelta
 
@@ -14,15 +16,13 @@ def test_a_check_is_made_run_by_hand_and_listed_with_its_verdict(new_story):
 
 
 def test_a_failing_check_prints_its_output_and_tells_the_agent_once(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
+    story = new_story(fixture=SuiteCheck)
     story.expect_text("check run 1", "check 1 failed: Lint", "two problems", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.stop(), "check:1 failed")
 
 
 def test_the_runs_of_a_check_are_listed_newest_first_with_what_each_printed(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
+    story = new_story(fixture=SuiteCheck)
     story.run("check run 1", actor=story.user)
     story.advance(timedelta(minutes=1))
     story.run('check edit 1 --command "echo clean"', actor=story.user)
@@ -72,3 +72,10 @@ def test_a_check_that_ended_has_no_percent_left_on_its_row(new_story):
     story.run('check make "Suite" --command "echo 1/4"', actor=story.user)
     story.run("check run 1", actor=story.user)
     assert json.loads(story.run("check show 1 --json", actor=story.user).output_text)["run_percent"] is None
+
+
+class SuiteCheck(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)

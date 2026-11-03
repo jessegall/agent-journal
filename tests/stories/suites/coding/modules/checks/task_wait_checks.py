@@ -1,3 +1,7 @@
+from core.testing.story_fixture import StoryFixture
+
+import pytest
+
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
@@ -10,8 +14,7 @@ VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).w
 
 
 def waiting_story(new_story, command):
-    story = new_story(fixture=BuilderStarted)
-    story.run('task make "Cart" --environment main')
+    story = new_story(fixture=CheckTask)
     story.expect_success(f"task block 1 --until '{command}' --every 2", "state: blocked")
     return story
 
@@ -27,9 +30,8 @@ def test_a_task_blocked_until_a_command_passes_opens_when_it_does_and_its_check_
     story.expect_absent("check list", "Task 1 waits")
 
 
-def test_a_failing_command_keeps_the_task_blocked_without_a_failed_check_line(new_story):
-    story = waiting_story(new_story, "false")
-    run_due(story)
+def test_a_failing_command_keeps_the_task_blocked_without_a_failed_check_line(due_false_check):
+    story = due_false_check
     story.expect_success("task show 1", "state: blocked")
     story.expect_absent_hook_line("s-1", VIEW_LINE, "fails")
 
@@ -51,8 +53,21 @@ def test_unblocking_by_hand_removes_the_check(new_story):
     story.expect_absent("check list", "Task 1 waits")
 
 
-def test_removing_a_tasks_check_opens_the_task(new_story):
-    story = waiting_story(new_story, "false")
-    run_due(story)
+def test_removing_a_tasks_check_opens_the_task(due_false_check):
+    story = due_false_check
     story.run("check remove 1")
     story.expect_success("task show 1", "state: open")
+
+
+@pytest.fixture
+def due_false_check(new_story):
+    story = waiting_story(new_story, "false")
+    run_due(story)
+    return story
+
+
+class CheckTask(StoryFixture):
+    parent = BuilderStarted
+
+    def steps(self, story):
+        story.run('task make "Cart" --environment main')

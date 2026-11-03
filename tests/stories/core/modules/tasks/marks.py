@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_appearance
@@ -14,9 +16,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
 
 def test_a_task_started_shows_a_mark_after_the_commit(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    story.expect_success(lines.TASK_START, actor=story.agent)
-    story.run_listeners()
+    story = new_story(fixture=StartedTaskMark)
     assert "Task 1 started" in marks_text(story), marks_text(story)
 
 
@@ -87,7 +87,13 @@ def test_a_task_edited_by_the_user_shows_no_edited_mark(new_story):
 
 
 def test_a_task_started_shows_a_started_mark_and_no_edited_mark(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
-    story.expect_success(lines.TASK_START, actor=story.agent)
-    story.run_listeners()
+    story = new_story(fixture=StartedTaskMark)
     assert "edited" not in marks_text(story), marks_text(story)
+
+
+class StartedTaskMark(StoryFixture):
+    parent = BuilderWithOpenTask
+
+    def steps(self, story):
+        story.expect_success(lines.TASK_START, actor=story.agent)
+        story.run_listeners()
