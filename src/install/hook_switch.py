@@ -8,7 +8,7 @@ from core.base.type_guards import is_list, is_mapping
 from install.hook_writer import HookWriter
 from install.version_four_backup import BACKUP_FOLDER
 
-SETTINGS_FILES = (Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
+SETTINGS_FILES = (Path(".claude") / "settings.json", Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
 SAVED_FOLDER = "hooks"
 BINARY = Path(".journal") / "bin" / "journal-hook"
 VERSION_FOUR_SWITCH = Path(".journal") / "hooks-on-version-4"
@@ -16,15 +16,7 @@ START_LIMIT_SECONDS = 10
 
 
 class HookSwitch:
-    """Moves the hooks of the agent programs from version 4 to version 5 when a project is
-    upgraded, and back when it is restored. The settings files that exist are kept as they
-    were in .journal/version-4/hooks and version 5's hooks are written in their place, calling
-    the hook binary when .journal/bin/journal-hook starts, else the fallback hook of the project;
-    the rest of each file stays. A restore takes version 5's hook entries out of the files as
-    they are now and puts version 4's back from the kept ones, so a setting added since stays.
-    A project with no such file is left without hooks. A restore also sets the file that tells the hook binary to
-    call version 4's port, and an upgrade takes it away. It runs inside the steps CodeReplacement
-    holds the server lock for."""
+    """Backs up project hook files and switches their journal entries during upgrades and restores."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -42,10 +34,7 @@ class HookSwitch:
                 shutil.copy2(self.root / name, kept)
         runner = self.runner()
         writer = HookWriter(self.root)
-        managed = writer.managed()
-        for program in writer.programs:
-            if program.path.relative_to(self.root) in present:
-                program.write(runner, self.root, managed)
+        writer.write(runner, is_upgrade=True)
         return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
