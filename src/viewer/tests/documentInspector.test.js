@@ -147,6 +147,26 @@ test("a code block and a table scroll by themselves in the document's styles", a
     expect(element.querySelector(".tok-keyword").textContent).toBe("def");
 });
 
+test("the text is not drawn again while a selection is being made, so the selection stays where it started", async () => {
+    Range.prototype.getBoundingClientRect = () => ({left: 0, top: 0});
+    const {element} = drawn([onWords]);
+    await settle();
+    const paragraph = element.querySelector("[data-resource-text] p");
+    const range = document.createRange();
+    range.setStart(paragraph.firstChild, 0);
+    range.setEnd(paragraph.firstChild, 3);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+    await settle();
+    expect(element.querySelector("[data-resource-text] p")).toBe(paragraph);
+    expect(element.querySelector("[data-comment-on]").textContent).toContain("The");
+    window.getSelection().removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+    await settle();
+    expect(element.querySelector("[data-resource-text] p")).not.toBe(paragraph);
+});
+
 function words(html) {
     const root = document.createElement("div");
     root.innerHTML = html;

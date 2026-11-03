@@ -18,11 +18,12 @@ const pill = ref(null);
 const selecting = ref(false);
 const inlineHost = ref(null);
 
+// drawing replaces the text, which would move a selection being made, so it waits until the selection has ended
 function draw() {
-    if (!text.value) return;
+    if (!text.value || selecting.value) return;
     text.value.innerHTML = props.html;
     const marks = props.comments.filter((comment) => comment.quote).map((comment) => ({...comment, hot: comment.id === props.hot}));
-    const lost = drawMarks(text.value, selecting.value || !props.pending ? marks : [...marks, {...props.pending, pending: true}]);
+    const lost = drawMarks(text.value, props.pending ? [...marks, {...props.pending, pending: true}] : marks);
     emit("lost", lost);
     const opened = props.inline && text.value.querySelector(`[data-comment="${props.inline}"]`);
     if (!opened) {

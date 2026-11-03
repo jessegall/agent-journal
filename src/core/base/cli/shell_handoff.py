@@ -18,7 +18,7 @@ class ShellHandoff:
     lines are printed, and a run past the limit goes on by itself and says where its output is."""
 
     def run(self, shell_run: ShellRun, stream: TextIO) -> int:
-        return self.streamed(shell_run, stream) if RUNNER_VARIABLE in os.environ else self.unwatched(shell_run, stream)
+        return self.streamed(shell_run, stream) if RUNNER_VARIABLE in shell_run.variables else self.unwatched(shell_run, stream)
 
     def streamed(self, shell_run: ShellRun, stream: TextIO) -> int:
         with subprocess.Popen(["sh", "-c", shell_run.line], cwd=shell_run.folder if shell_run.folder else None, env={**os.environ, **shell_run.variables},
@@ -38,6 +38,7 @@ class ShellHandoff:
             stream.write(f"moved to the background with no journal watching it: its output goes to {output.name}\n")
             return 0
         with open(output.name, encoding="utf-8", errors="replace") as output_lines:
-            stream.writelines(deque(output_lines, UNWATCHED_LINES_SHOWN))
+            for line in deque(output_lines, UNWATCHED_LINES_SHOWN):
+                stream.write(line)
         os.unlink(output.name)
         return code
