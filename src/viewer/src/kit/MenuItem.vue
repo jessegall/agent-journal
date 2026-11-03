@@ -5,7 +5,9 @@ defineProps({on: Boolean, danger: Boolean, checked: {type: Boolean, default: nul
 
 <template>
     <button type="button" :class="['menu-item', {on, danger, described: description}]">
-        <span v-if="checked !== null" class="menu-item-check" aria-hidden="true">{{ checked ? "✓" : "" }}</span>
+        <template v-if="checked !== null">
+            <span class="menu-item-check" aria-hidden="true">{{ checked ? "✓" : "" }}</span>
+        </template>
         <template v-if="description">
             <span class="menu-item-text">
                 <span><slot /></span>

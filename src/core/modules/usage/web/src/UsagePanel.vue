@@ -1,24 +1,14 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {usePoll, useReadLine} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again
 const REFRESH_MILLISECONDS = 30000;
-const context = useWindow();
-const usage = ref(null);
-const failure = ref("");
+const {value: usage, failure, load} = useReadLine(() => "usage show");
 const windows = computed(() => usage.value?.windows ?? []);
 
-async function load() {
-    const result = await context.read("usage show");
-    usage.value = result.ok ? result.value : null;
-    failure.value = result.ok ? "" : result.error;
-}
-
 const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleString()}`;
-const timer = setInterval(load, REFRESH_MILLISECONDS);
-onUnmounted(() => clearInterval(timer));
-load();
+usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>

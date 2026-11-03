@@ -3,6 +3,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_advance import ReaderAdvance
 from core.modules.processes.support.reader_run import ReaderRun
@@ -28,7 +29,7 @@ class ReaderStep:
         ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
         if not ready_bytes:
             return None
-        text = ready_bytes.decode(errors="replace")
+        text = ColourCodes.removed(ready_bytes.decode(errors="replace"))
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
         steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
         return ReaderAdvance(self.run.lines(reader, text, process.state.value, output.read_lines + 1), output.read_offset + len(ready_bytes), output.read_lines + counted,

@@ -75,29 +75,29 @@ def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, t
 
 def test_stop_leaves_alone_a_pid_that_now_runs_something_else_and_still_ends_the_session(new_story):
     story = new_story(fixture=UserJoined)
-    bystander = subprocess.Popen(["sleep", str(SLEEP_SECONDS)])
+    unrelated_process = subprocess.Popen(["sleep", str(SLEEP_SECONDS)])
     try:
-        agent_id = story.new_row_id(f"agent start s-bystander claude worker --pid {bystander.pid} --environment main")
+        agent_id = story.new_row_id(f"agent start s-unrelated claude worker --pid {unrelated_process.pid} --environment main")
         story.expect_success(f"agent stop {agent_id}", actor=story.user)
-        story.expect_rows(bystander.poll() is None)
+        story.expect_rows(unrelated_process.poll() is None)
     finally:
-        bystander.kill()
-        bystander.wait()
+        unrelated_process.kill()
+        unrelated_process.wait()
 
 
 def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(new_story, monkeypatch):
     story = new_story(fixture=UserJoined)
     database = story.container.get(Database)
-    withheld: list[bool] = []
+    transaction_flags: list[bool] = []
     agent_id = story.new_row_id("agent start s-stopped claude worker --pid 4242 --environment main")
 
     def stopped(pid: int, program: str) -> None:
-        withheld.append(database.has_transaction)
+        transaction_flags.append(database.has_transaction)
         story.expect_success(f"agent end {agent_id}", actor=story.user)
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
     story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
-    story.expect_rows(withheld == [False])
+    story.expect_rows(transaction_flags == [False])
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 

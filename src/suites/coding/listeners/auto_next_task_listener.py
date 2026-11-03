@@ -21,8 +21,8 @@ RELEASE_EVENT = "task.release"
 
 class AutoNextTaskListener(CommitListener):
     """While auto mode is on, a task that leaves the main agent's hands, closed, cancelled, blocked
-    or released, is followed at once by the next task, started for that agent; with other tasks still in its hands,
-    only a task above high is started."""
+    or released, is followed at once by the next task, started for that agent; with other tasks
+    still in its hands, only a task above high is started."""
 
     name = "coding.auto-next-task"
     event = "task.*"
@@ -43,7 +43,7 @@ class AutoNextTaskListener(CommitListener):
         if holder.role is not AgentRole.MAIN or holder.ended_at is not None:
             return
         excluded_id = closed_task.id if event.event == RELEASE_EVENT else None
-        pick_next = self.next_task.urgent if self.tasks.holder(holder_id).started().exists() else self.next_task.following
-        next_row = pick_next(closed_task.environment_id, excluded_id)
+        select_next = self.next_task.urgent if self.tasks.holder(holder_id).started().exists() else self.next_task.following
+        next_row = select_next(closed_task.environment_id, excluded_id)
         if next_row is not None:
             self.bus.run(StartTask(next_row.id), Actor(holder_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)

@@ -9,7 +9,7 @@ from install.server_lock import ServerLock, ServerWontStopError
 from server.server_files import ServerFiles
 from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
-STUBBORN_SERVER = """
+LOCK_KEEPING_SERVER = """
 import fcntl, socket, sys
 folder, path = sys.argv[1], sys.argv[2]
 lock = open(folder + "/server.lock", "a")
@@ -65,13 +65,13 @@ def test_a_server_cannot_start_on_its_own_while_the_lock_is_held(journal):
 
 
 def test_a_server_that_will_not_stop_in_the_limit_makes_the_helper_refuse_and_change_nothing(journal):
-    stubborn = subprocess.Popen([sys.executable, "-c", STUBBORN_SERVER, str(journal.home.folder), str(journal.home.socket("server"))])
-    journal.processes.append(stubborn)
+    lock_keeper = subprocess.Popen([sys.executable, "-c", LOCK_KEEPING_SERVER, str(journal.home.folder), str(journal.home.socket("server"))])
+    journal.processes.append(lock_keeper)
     journal.wait_healthy()
     with pytest.raises(ServerWontStopError, match="did not stop in 1 seconds"):
         with ServerLock(journal.home, stop_limit_seconds=1):
             pytest.fail("the lock was taken from a server that did not stop")
-    assert stubborn.poll() is None and not journal.lock_is_free()
+    assert lock_keeper.poll() is None and not journal.lock_is_free()
 
 
 def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journal):

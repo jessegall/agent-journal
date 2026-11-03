@@ -4735,6 +4735,7 @@ function yo(e, t) {
   };
   return { load: s, read: a, fetchAll: async () => s(await a()), find: (o) => n.value.get(o) || null };
 }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-Da2iYFj-.js
 const wo = yo("/api/marks", "marks"), Xv = wo.fetchAll, k1 = wo.find, b1 = 2e3;
 function ko(e, t) {
   let n = null;
@@ -4742,10 +4743,19 @@ function ko(e, t) {
     n = setTimeout(async () => {
       t() && await e(), s();
     }, b1);
+========
+const wo = yo("/api/marks", "marks"), Yv = wo.fetchAll, v1 = wo.find, y1 = 2e3;
+function ko(e, t, n = y1) {
+  let s = null;
+  const a = () => {
+    s = setTimeout(async () => {
+      t() && await e(), a();
+    }, n);
+>>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-U4Gxmw3W.js
   };
   De(async () => {
-    await e(), s();
-  }), yt(() => clearTimeout(n));
+    await e(), a();
+  }), yt(() => clearTimeout(s));
 }
 const $1 = ["data-ref"], x1 = ["data-ref"], M1 = { class: "mark-row" }, _1 = "dock add", S1 = {
   __name: "MarkHost",
@@ -6120,9 +6130,15 @@ const dg = {
       ])) : we(t.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-Da2iYFj-.js
 }, ds = /* @__PURE__ */ Y(wg, [["__scopeId", "data-v-c91b190e"]]), kg = {}, bg = { class: "menu-label" };
 function $g(e, t) {
   return l(), d("span", bg, [
+========
+}, ds = /* @__PURE__ */ Z(gg, [["__scopeId", "data-v-fec99974"]]), vg = {}, yg = { class: "menu-label" };
+function wg(e, t) {
+  return l(), d("span", yg, [
+>>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-U4Gxmw3W.js
     we(e.$slots, "default", {}, void 0, !0)
   ]);
 }
@@ -8538,7 +8554,11 @@ const Rv = /* @__PURE__ */ Tv(Iv), Lv = ["width", "height", "viewBox"], Dv = ["w
       }, null, 8, Nv)
     ], 8, Lv));
   }
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/index-Da2iYFj-.js
 }, Zy = /* @__PURE__ */ Y(jv, [["__scopeId", "data-v-489f0852"]]), Xy = rr(() => import("./VoiceFigure-N-UIRWVp.js").then((e) => e.V)), Qy = "1.0.0", ew = "3.5";
+========
+}, Ky = /* @__PURE__ */ Z(Lv, [["__scopeId", "data-v-489f0852"]]), Yy = rr(() => import("./VoiceFigure-C5kO1QjY.js").then((e) => e.V)), Jy = "1.0.0", Zy = "3.5";
+>>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/index-U4Gxmw3W.js
 export {
   Uv as $,
   py as A,

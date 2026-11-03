@@ -1,6 +1,11 @@
 /* @code-commandments-generated */
+<<<<<<<< HEAD:src/core/modules/viewer/web/dist/kit/player-ezv3563K.js
 import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-N-UIRWVp.js";
 import { Z as Q, P as V, C as R } from "./index-Da2iYFj-.js";
+========
+import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-C5kO1QjY.js";
+import { Z as Q, P as V, C as R } from "./index-U4Gxmw3W.js";
+>>>>>>>> version-5:src/core/modules/viewer/web/dist/kit/player-CR8fj_Dv.js
 const X = 4, Y = (u) => u * u * (3 - 2 * u);
 class W {
   constructor(t, s) {

@@ -25,6 +25,25 @@ def test_a_card_with_the_same_key_is_updated_in_place(new_story):
     story.expect_absent("chat-mark list --environment 1", "sample: Branch is clean", actor=story.user)
 
 
+def test_a_clean_card_after_a_warning_card_of_the_same_key_takes_the_clean_tone(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", DIFF_SAMPLE)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --columns variant,text", "warn  sample: Branch has changes", actor=story.user)
+    story.hook("s-1", STATUS_SAMPLE)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --columns variant,text", "note  sample: Branch is clean", actor=story.user)
+    story.expect_absent("chat-mark list --environment 1 --columns variant,text", "warn", actor=story.user)
+
+
+def test_a_plugins_mark_never_ends_so_a_later_card_of_its_key_always_updates_it(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", DIFF_SAMPLE)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --state shown", "sample: Branch has changes", actor=story.user)
+    story.expect_absent("chat-mark list --environment 1 --state ended", "sample:", actor=story.user)
+
+
 def test_the_commands_in_a_plugins_answer_run_after_the_reply_as_the_plugins_module(new_story):
     story = installed_story(new_story)
     story.hook("s-1", LOG_SAMPLE)

@@ -1,6 +1,7 @@
 <script setup>
 import {nextTick, ref, watch} from "vue";
 import {useFollowing} from "../composables/following.js";
+import {withoutColourCodes} from "../format/colourCodes.js";
 
 // an output's terminal lines, opened to read: following, the newest line stays in view as lines arrive; a scroll up by hand
 // stops the following, and the follow button starts it again and goes to the end
@@ -23,7 +24,7 @@ function onScroll(event) {
 
 <template>
     <pre ref="box" class="output-lines" @scroll="onScroll"
-        >{{ lines.join("\n") || empty
+        >{{ withoutColourCodes(lines.join("\n")) || empty
         }}<template v-if="away"
             ><button type="button" class="output-follow" title="Follow the output: keep its newest line in view as lines arrive" @click="toBottom(true)">Follow</button></template
         ></pre>

@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {age, Btn, FoldGroup, Icon, InnerTabs, peekRef, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {computed, onUnmounted, ref} from "vue";
+import {age, Btn, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -11,7 +11,6 @@ const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const now = useNow();
-const tab = ref(useWindow().tabs[0]);
 const title = computed(() => {
     const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
     return name.slice(0, 1).toUpperCase() + name.slice(1);
@@ -36,6 +35,19 @@ const FOLDED_STATES = new Set(["completed"]);
 const folded = ref({});
 const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
+// a running worker's card names the command it runs, as the foot of the chat does for the main agent
+const context = useWindow();
+const tab = ref(context.tabs[0]);
+const runningCommand = ref("");
+const showsCommand = computed(() => props.row.role === "worker" && !props.row.ended_at);
+async function readCommand() {
+    if (!showsCommand.value) return;
+    const answer = await context.read(`usage tool --agent ${props.row.id}`);
+    runningCommand.value = answer.ok ? answer.value.tool : "";
+}
+const stopFollowing = context.follow(["hook_call.*"], readCommand);
+onUnmounted(() => stopFollowing?.());
+readCommand();
 </script>
 
 <template>
@@ -53,6 +65,9 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="showsCommand">
+            <span class="agent-command" data-agent-command><RunningCommand :text="runningCommand" /></span>
+        </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>
                 <span class="agent-usage-line">
@@ -186,6 +201,12 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 }
 
 .agent-line {
+    padding-left: 15px;
+}
+
+.agent-command {
+    display: flex;
+    min-width: 0;
     padding-left: 15px;
 }
 

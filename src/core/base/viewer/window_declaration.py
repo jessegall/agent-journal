@@ -18,12 +18,13 @@ DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 
 @dataclass(frozen=True)
 class WindowDeclaration:
-    """A window a module adds to the viewer: its name and title, the file the viewer loads from the module's
-    web folder and how, where it belongs and for which agent roles, the window kit versions it was built for,
-    the read lines and commands it may run, the events it follows, its icon, the size it floats at, the
-    options of its pane menu, the end it follows as rows arrive, the tabs inside it, the read line its tab counts with and the read lines a share link may use, each
-    written as the line and, after a space, the argument that names an id of the shared row or of a row
-    it includes."""
+    """A window a module adds to the viewer: its name and title, the file the viewer loads from the
+    module's web folder and how, where it belongs and for which agent roles, the window kit versions
+    it was built for, the read lines and commands it may run, the events it follows, its icon, the
+    size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs
+    inside it, the read line its tab counts with and the read lines a share link may use, each
+    written as the line and, after a space, the argument that names an id of the shared row or of a
+    row it includes."""
 
     name: str
     title: str

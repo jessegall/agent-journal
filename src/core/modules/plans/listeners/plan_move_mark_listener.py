@@ -5,7 +5,7 @@ from core.modules.plans.models.enums.plan_mark_variant import PlanMarkVariant
 from core.modules.plans.models.plan import Plan
 
 PLANS_MODULE = "journal.core.plans"
-SHOWN_WORDS = {PlanMarkVariant.MADE: "created"}
+VARIANT_LABELS = {PlanMarkVariant.MADE: "created"}
 MOVE_VARIANTS = {"create": PlanMarkVariant.MADE, "start": PlanMarkVariant.STARTED, "close": PlanMarkVariant.CLOSED, "block": PlanMarkVariant.BLOCKED, "cancel": PlanMarkVariant.CANCELLED}
 
 
@@ -21,4 +21,4 @@ class PlanMoveMarkListener(MarkListener):
         variant = MOVE_VARIANTS.get(event.event.split(".")[1])
         if variant is not None:
             plan = self.queries.query(Plan).find(event.row_id)
-            self.show(event, PlanMarkType.PLAN, variant, f"Plan {plan.id} {SHOWN_WORDS.get(variant, variant.value)}: {plan.title}", plan.environment_id, None, "plan", plan.id)
+            self.show(event, PlanMarkType.PLAN, variant, f"Plan {plan.id} {VARIANT_LABELS.get(variant, variant.value)}: {plan.title}", plan.environment_id, None, "plan", plan.id)

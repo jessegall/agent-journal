@@ -16,7 +16,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.worker_runs import WorkerRuns
+from core.modules.processes.support.shown_runs import ShownRuns
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
@@ -29,21 +29,22 @@ MARK_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCateg
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A command that is a test run, a build, a check or a package, or a line a reader reads, shows one mark
-    naming that command alone, whatever else its line runs; the mark is kept up to date in place by the key process:<id>: running, with
-    the reader's progress as its figure, moved to the background, then ended with its outcome. A line with
-    no such command and no reader shows none, also when it moved to the background. A mark once shown always
-    ends, also when the run's output is gone by then. A worker's own command shows none, only its test runs."""
+    """A command that is a test run, a build, a check or a package, or a line a reader reads, shows
+    one mark naming that command alone, whatever else its line runs; the mark is kept up to date in
+    place by the key process:<id>: running, with the reader's progress as its figure, moved to the
+    background, then ended with its outcome. A line with no such command and no reader shows none,
+    also when it moved to the background. A mark once shown always ends, also when the run's output
+    is gone by then. A command that only reads or writes files shows none, nor does a worker's own command but its test runs."""
 
     name = "processes.process-mark"
     event = "process.*"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, worker_runs: WorkerRuns) -> None:
-        self.bus, self.actors, self.queries, self.folder, self.worker_runs = bus, actors, queries, folder, worker_runs
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, shown_runs: ShownRuns) -> None:
+        self.bus, self.actors, self.queries, self.folder, self.shown_runs = bus, actors, queries, folder, shown_runs
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(event.row_id)
-        if self.worker_runs.hides(process):
+        if self.shown_runs.hides(process):
             return
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)

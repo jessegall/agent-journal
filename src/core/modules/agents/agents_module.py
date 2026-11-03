@@ -12,6 +12,7 @@ from core.modules.agents.commands.stop_agent.stop_agent_subcommand import StopAg
 from core.modules.agents.commands.type_terminal_line.type_terminal_line_subcommand import TypeTerminalLineSubcommand
 from core.modules.agents.commands.choose_agent_control.choose_agent_control_handler import ChooseAgentControlHandler
 from core.modules.agents.commands.launch_agent.launch_agent_handler import LaunchAgentHandler
+from core.modules.agents.commands.active_agent_list.active_agent_list_subcommand import ActiveAgentListSubcommand
 from core.modules.agents.commands.stop_agent.stop_agent_handler import StopAgentHandler
 from core.modules.agents.commands.type_terminal_line.type_terminal_line_handler import TypeTerminalLineHandler
 from core.modules.agents.commands.agent_transcript.agent_transcript_subcommand import AgentTranscriptSubcommand
@@ -43,8 +44,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 
 
-CARD_READS = ["agent list", "usage agents", "agent transcript", "hook-call feed", "file-edit list"]
-CARD_EVENTS = ["agent.*", "hook_call.create", "file_edit.create"]
+CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "file-edit list"]
+CARD_EVENTS = ["agent.*", "hook_call.*", "file_edit.create"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 
@@ -58,7 +59,7 @@ class AgentsModule(Module):
     moves = [AgentsMove]
     migrations = [AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
-    subcommands = [AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
+    subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=CARD_READS,

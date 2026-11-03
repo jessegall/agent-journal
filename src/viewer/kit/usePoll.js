@@ -2,14 +2,14 @@ import {onBeforeUnmount, onMounted} from "vue";
 
 const POLL_MILLISECONDS = 2000;
 
-// reads again every two seconds while the run is going, once at the start too; the reading ends with the window
-export function usePoll(load, running) {
+// reads again every two seconds, or every `milliseconds`, while the run is going, once at the start too; the reading ends with the window
+export function usePoll(load, running, milliseconds = POLL_MILLISECONDS) {
     let timer = null;
     const poll = () => {
         timer = setTimeout(async () => {
             if (running()) await load();
             poll();
-        }, POLL_MILLISECONDS);
+        }, milliseconds);
     };
     onMounted(async () => {
         await load();

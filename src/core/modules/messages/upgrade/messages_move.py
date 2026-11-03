@@ -4,7 +4,6 @@ import sqlite3
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.database.statement import Statement
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -50,10 +49,10 @@ class MessagesMove(VersionFourMove):
                 report.skip(TABLE, row["id"], f"author {row['author']} is none of {', '.join(TYPES)}")
             else:
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators, sessions, self.parent_id(row, message_ids, map), context)))
-        self.move_reactions(source, target, map, creators)
+        self.move_reactions(source, rows, map, creators)
         return report
 
-    def move_reactions(self, source: VersionFourSource, target: Database, map: MoveMap, creators: CreatorResolver) -> None:
+    def move_reactions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, creators: CreatorResolver) -> None:
         """A version 4 reaction is its own row, tied to its message by a link."""
         reactions = {row["id"]: row for row in source.rows(REACTIONS)}
         faces: dict[int, list[dict[str, object]]] = {}
@@ -63,8 +62,8 @@ class MessagesMove(VersionFourMove):
             message_id = map.new_id(TABLE, int(link["target"].removeprefix(MESSAGE_PREFIX))) if is_reaction else None
             if reaction is not None and message_id is not None:
                 faces.setdefault(message_id, []).append({"emoji": reaction["emoji"], "actor_id": creators.actor_id(reaction["creator"]), "actor_type": reaction["author"]})
-        for message_id, rows in faces.items():
-            target.update(Statement(f"UPDATE {TABLE} SET reactions = ? WHERE id = ?", [json.dumps(rows), message_id]))
+        for message_id, message_reactions in faces.items():
+            rows.set_value(TABLE, message_id, "reactions", json.dumps(message_reactions))
 
     def card_type(self, data: str | None) -> str:
         if not data:

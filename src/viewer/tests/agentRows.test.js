@@ -30,6 +30,7 @@ const TABS = [
 const EDIT = {id: 5, path: "src/cart.py", edit_type: "edit", added: 1, removed: 0, created_at: "2026-11-01T10:00:00Z", rows: JSON.stringify([{line_type: "add", line: 4, text: "total = 0"}])};
 const answers = {
     "agent list": page(AGENTS),
+    "agent running": page(AGENTS.filter((row) => !row.ended_at)),
     "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}]),
     "file-edit list --agent 3": page([EDIT]),
 };
@@ -164,6 +165,18 @@ test("a worker with a started task does not say it waits for its tests", async (
 test("a profile's name shows with a capital letter", async () => {
     const element = await drawn([{...FACTS[0], profile: "auditor"}]);
     expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Auditor");
+});
+
+test("a running worker's card names the command it runs", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
+});
+
+test("the running list has no show more button", async () => {
+    const element = await drawn();
+    expect(element.querySelector("[data-row-list-more]")).toBeNull();
 });
 
 test("an agent with no tasks has no tasks control", async () => {
