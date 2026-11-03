@@ -53,7 +53,7 @@ test("the waiting status of an agent opens the test queue", async () => {
 
 test("the test queue lists what waits and what ran lately, each with its worker, task, state and output", async () => {
     await panel(async (line) => answers[line.join(" ")] ?? {ok: true, value: {rows: []}});
-    const rows = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)].map((row) => row.textContent.replace(/\s+/g, " ").trim());
+    const rows = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)].map((row) => [...row.children].map((part) => part.textContent.trim()).join(" "));
     expect(rows("queued")).toEqual(["Worker 21 Task 11 running Output 70 pytest tests/cart", "Worker 22 Task 12 queued pytest tests/tax"]);
     expect(rows("recent")).toEqual(["Worker 21 Task 9 checked Output 66 pytest tests/old", "Worker 22 Task 8 short Output 60 pytest tests/older"]);
 });
