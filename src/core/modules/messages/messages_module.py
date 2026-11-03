@@ -36,6 +36,8 @@ from core.modules.messages.commands.record_waiting_message_line.record_waiting_m
 from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
+from core.modules.environments.support.environment_activity import EnvironmentActivity
+from core.modules.messages.bindings.message_environment_activity import MessageEnvironmentActivity
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
 from core.modules.messages.migrations.m003_message_delivery import MessageDeliveryMigration
@@ -79,6 +81,7 @@ class MessagesModule(Module):
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
+    bindings = [(EnvironmentActivity, MessageEnvironmentActivity)]
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration]
