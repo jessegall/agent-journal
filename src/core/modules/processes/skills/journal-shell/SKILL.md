@@ -15,7 +15,8 @@ Every shell command you run goes through the journal's runner.
 - Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
-- Wait on a run with a Monitor on `journal output monitor N`; never ask for its status again and again.
+- Wait on a run with a Monitor on `journal output monitor N`; never ask for its status again and again. A worker needs no Monitor: its run is watched for it. It goes on working and is told on its next tool call, or it stops and is started again when the run ends. `journal output monitor N` is there if it wants to wait; an empty answer means the run still goes, so run it again.
+- Read an output by the flag that fits: `--summary` first, `--tail K` or `--lines A-B` for a part, `--all` only for a short output.
 - Name a run for the user with `journal output title N "<what it does>"`: a whole phrase such as Running tests.
 
 ## Readers

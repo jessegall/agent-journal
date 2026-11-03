@@ -1,5 +1,6 @@
 from dataclasses import replace
 
+from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
@@ -17,9 +18,10 @@ from core.modules.processes.support.process_nudges import REQUIRED_MONITOR, REQU
 
 
 class BackgroundRunWatchListener(SaveListener):
-    """A run moved to the background is watched by the agent that started it, so it hears how the run goes. An
-    agent whose program has a way to watch a run is held until it watches a run it started itself: it sets a
-    Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool."""
+    """A run moved to the background is watched by the agent that started it, so it hears how the run goes. A
+    main agent whose program has a way to watch a run is held until it watches a run it started itself: it sets a
+    Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool. A worker is
+    never held: it hears of the end on its next hook, or is started again if it has stopped."""
 
     name = "processes.background-run-watch"
     event = "process.*"
@@ -38,6 +40,7 @@ class BackgroundRunWatchListener(SaveListener):
                 self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id)), change.context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
-        if process.creator_id != process.agent_id:
+        agent = self.queries.query(Agent).find(process.agent_id)
+        if process.creator_id != process.agent_id or agent.role is AgentRole.WORKER:
             return None
-        return self.providers.provider(self.queries.query(Agent).find(process.agent_id).program).monitor_tool
+        return self.providers.provider(agent.program).monitor_tool
