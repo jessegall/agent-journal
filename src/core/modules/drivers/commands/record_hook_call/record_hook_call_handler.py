@@ -31,6 +31,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -46,9 +47,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog) -> None:
+                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog, nudger: Nudger) -> None:
         self.required_commands = required_commands
-        self.nudges = nudges
+        self.nudges, self.nudger = nudges, nudger
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
 
@@ -94,7 +95,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:
-            self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=rule), context)
+            self.nudger.say_text(agent_id, text, rule, context)
         return HookReply("", [], call_id)
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:

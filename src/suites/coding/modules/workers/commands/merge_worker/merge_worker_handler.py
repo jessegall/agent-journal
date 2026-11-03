@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -26,8 +26,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     command = MergeWorker
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit) -> None:
-        self.queries, self.worktrees, self.checks, self.repository, self.git = queries, worktrees, checks, repository, git
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
+        self.queries, self.worktrees, self.checks, self.repository, self.git, self.nudger = queries, worktrees, checks, repository, git, nudger
 
     def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -72,5 +72,5 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             self.repository.save(task.moved(TaskLifecycle.retest), context)
         line = (f"{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers in those files,"
                 f" then deliver again with journal worker deliver")
-        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=MERGE_CONFLICT_SOURCE), context)
+        self.nudger.say_text(worktree.agent_id, line, MERGE_CONFLICT_SOURCE, context)
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

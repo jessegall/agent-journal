@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 
 
 
@@ -20,8 +20,8 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
 
     command = ResumeAgent
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: ResumeAgent, context: Context) -> Agent:
         PersonCheck.require(context, "only a person resumes an agent")
@@ -29,5 +29,5 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")
         resumed = self.repository.save(replace(agent, paused_at=None), context)
-        self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=AGENT_RESUMED.nudge().text, source=RESUME_SOURCE), context)
+        self.nudger.say(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed

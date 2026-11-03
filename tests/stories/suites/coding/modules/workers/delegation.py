@@ -53,6 +53,14 @@ def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_al
     story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
 
 
+def test_a_long_comment_reaches_the_worker_whole(new_story):
+    story, _, worker = delegated_story(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    comment = "use the new cart and " * 10 + "the end of the comment"
+    story.expect_success(f'task comment 1 "{comment}" --environment main', actor=user)
+    story.expect_text(f"agent-line list --agent {worker.id} --limit 5", "the end of the comment")
+
+
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

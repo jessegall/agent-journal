@@ -9,6 +9,7 @@ import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 // one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, a line of its progress,
 // and, once it ended, the countdown to its leaving along its top edge as its card has
 const OUTPUT_WINDOW = "processes.output";
+const CHIP_READ_MILLISECONDS = 5000;
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--tone-bad)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
@@ -23,7 +24,7 @@ async function load() {
     if (answer.ok) card.value = answer.value;
 }
 
-usePoll(load, () => running.value);
+usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
 </script>
 
 <template>

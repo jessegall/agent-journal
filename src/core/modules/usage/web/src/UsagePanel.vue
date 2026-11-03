@@ -1,10 +1,10 @@
 <script setup>
 import {computed} from "vue";
-import {usePoll, useReadLine} from "@journal/window-kit";
+import {usePoll, useUsage} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again
 const REFRESH_MILLISECONDS = 30000;
-const {value: usage, failure, load} = useReadLine(() => "usage show");
+const {value: usage, failure, load} = useUsage();
 const windows = computed(() => usage.value?.windows ?? []);
 
 const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleString()}`;

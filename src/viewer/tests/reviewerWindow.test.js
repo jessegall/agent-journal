@@ -22,7 +22,7 @@ test("the steps of the latest review are drawn in order, a dot for each outcome 
     const items = [...element.querySelectorAll(".step")];
     expect(items.map((item) => item.querySelector(".text").textContent)).toEqual(["Started reviewing task 1", "1 passed", "2 short: wrong total"]);
     expect(items.map((item) => item.querySelector(".dot").dataset.outcome)).toEqual(["none", "passed", "failed"]);
-    expect(items[0].querySelector("time").textContent).toBe("5 min ago");
+    expect(items[0].querySelector("time").textContent).toBe("5m ago");
     expect(windowContext.reads).toEqual(["review board"]);
 });
 

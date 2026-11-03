@@ -15,11 +15,11 @@ const RunLockMark = "run-lock"
 const RunLockLimitSeconds = 600
 
 // LockWait is the start of a run's script: it names the run, so a change of the code started by this run does not wait
-// on itself, and waits while the mark is there before the first part starts. A line of journal commands does not
-// wait: the agent needs them to go on working, and they end at once.
-func LockWait(home string, process int, parts []Part, aliases []string) string {
+// on itself, and waits while the mark is there before the first part starts. A line of journal commands, or one that
+// only reads, does not wait: the agent needs them to go on working, and they touch none of the code being changed.
+func LockWait(home string, process int, parts []Part, aliases []string, onlyReads bool) string {
 	named := fmt.Sprintf("export JOURNAL_PROCESS=%d\n", process)
-	if isJournalLine(parts, aliases) {
+	if onlyReads || isJournalLine(parts, aliases) {
 		return named
 	}
 	mark := quoted(filepath.Join(home, RunLockMark))

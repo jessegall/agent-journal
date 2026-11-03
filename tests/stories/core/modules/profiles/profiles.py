@@ -42,6 +42,7 @@ def test_the_journals_start_writes_its_own_profiles(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run_listeners()
     BootingWork().run(story.container)
+    story.run_listeners()
     assert (agents_folder(story) / "journal-senior.md").is_file()
 
 

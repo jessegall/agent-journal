@@ -45,6 +45,23 @@ test("a new link names its options and gives the full address through the tunnel
     expect(element.querySelector("[data-share-inside]")).toBeNull();
 });
 
+test("the links are read again when a link or comment changes, never on a timer", async () => {
+    const timer = vi.spyOn(globalThis, "setInterval");
+    const held = window();
+    const follows = [];
+    held.follow = (patterns, heard) => follows.push({patterns, heard});
+    const reads = [];
+    const read = held.read;
+    held.read = (line) => (reads.push(line), read(line));
+    await mounted(ShareRows, held);
+    expect(follows[0].patterns).toEqual(["share_link.*", "share_comment.*"]);
+    expect(timer).not.toHaveBeenCalled();
+    const before = reads.filter((line) => line === "share list").length;
+    await follows[0].heard({event: "share_link.update"});
+    expect(reads.filter((line) => line === "share list").length).toBe(before + 1);
+    timer.mockRestore();
+});
+
 test("with no tunnel the address says it works only here", async () => {
     const held = window([WAITING], "");
     const element = await mounted(ShareRows, held);

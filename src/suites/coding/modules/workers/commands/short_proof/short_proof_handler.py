@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.short_proof.short_proof import ShortProof
@@ -20,8 +20,8 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
 
     command = ShortProof
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: ShortProof, context: Context) -> Proof:
         proof = self.repository.save(self.queries.query(Proof).find(command.row_id).moved(ProofLifecycle.short, shortfall=command.shortfall), context)
@@ -31,5 +31,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
             self.repository.save(self.queries.query(Task).find(proof.task_id).moved(TaskLifecycle.retest), context)
         line = (f"point {proof.point} of task {proof.task_id} is short: {command.shortfall}. Fix it, show it again with journal proof make {proof.point}"
                 f" \"<text>\" and deliver again with journal worker deliver")
-        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=SOURCE), context)
+        self.nudger.say_text(worktree.agent_id, line, SOURCE, context)
         return proof

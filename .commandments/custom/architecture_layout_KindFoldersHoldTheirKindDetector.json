@@ -78,6 +78,9 @@
                                             "extendsAny": "Command"
                                         },
                                         {
+                                            "extendsAny": "MoveCommand"
+                                        },
+                                        {
                                             "extendsAny": "Handler"
                                         },
                                         {

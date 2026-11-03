@@ -16,6 +16,7 @@ type Flags struct {
 	Limit      int
 	Background bool
 	Queue      bool
+	OnlyReads  bool
 	Line       string
 	Follow     bool
 	Folder     string
@@ -75,6 +76,8 @@ func ParseFlags(arguments []string) (Flags, error) {
 			flags.Background = true
 		case "--queue":
 			flags.Queue = true
+		case "--only-reads":
+			flags.OnlyReads = true
 		case "--follow":
 			flags.Follow = true
 		case "--aliases":

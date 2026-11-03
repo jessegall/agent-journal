@@ -135,5 +135,6 @@ def test_a_start_of_the_journal_sweeps_the_worktrees_no_worker_holds(new_story):
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     BootingWork().run(story.container)
+    story.run_listeners()
     repository.expect_no_folder(9)
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
