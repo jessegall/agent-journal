@@ -23,7 +23,6 @@ class SettingValue:
     default: SettingDefault = None
     secret: bool = False
     scope: SettingScope = SettingScope.LAYERED
-    agent_writable: bool = False
     choices: Sequence[str] = ()
 
     def accepts(self, value: object) -> bool:
@@ -46,7 +45,7 @@ class SettingValue:
 
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
-                                  self.agent_writable, tuple(self.choices), False, True)
+                                  tuple(self.choices), False, True)
 
     def members(self) -> Sequence[SettingNode]:
         return ()

@@ -18,7 +18,7 @@ class SettingReference:
         return self.group.rsplit(".", 1)[-1]
 
     def declaration(self) -> SettingDeclaration:
-        return SettingDeclaration(self.key, self.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, False, (), False, True, self.group)
+        return SettingDeclaration(self.key, self.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, (), False, True, self.group)
 
     def members(self) -> Sequence[SettingNode]:
         return ()

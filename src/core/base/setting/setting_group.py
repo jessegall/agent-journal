@@ -25,7 +25,7 @@ class SettingGroup:
     any_key: SettingValue | None = None
 
     def declaration(self) -> SettingDeclaration:
-        return SettingDeclaration(self.title, self.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, False, (), self.toggleable, self.enabled)
+        return SettingDeclaration(self.title, self.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, (), self.toggleable, self.enabled)
 
     def members(self) -> Sequence[SettingNode]:
         any_key = [] if self.any_key is None else [replace(self.any_key, key=ANY_KEY)]

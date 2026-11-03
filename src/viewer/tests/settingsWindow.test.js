@@ -4,7 +4,7 @@ import {settled} from "./settled.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
-const row = (fields) => ({module: "good", parent: null, description: "", secret: false, scope: "both", agent_writable: false, choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
+const row = (fields) => ({module: "good", parent: null, description: "", secret: false, scope: "both", choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
 const TREE = [
     row({key: "good.limit", title: "Limit", description: "How many rows a list shows.", type: "number", value: 50, shown: "50"}),
     row({key: "good.sharing", title: "Sharing", description: "Links that show one row.", type: "group", shown: "on"}),

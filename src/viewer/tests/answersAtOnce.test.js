@@ -5,7 +5,7 @@ import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const row = (key, fields) => ({key, module: "shop", parent: null, title: key, description: "", type: "number", value: 5, shown: "5", source: "default", secret: false, scope: "environment", agent_writable: false, choices: [], toggleable: false, default: 5, ...fields});
+const row = (key, fields) => ({key, module: "shop", parent: null, title: key, description: "", type: "number", value: 5, shown: "5", source: "default", secret: false, scope: "environment", choices: [], toggleable: false, default: 5, ...fields});
 const ROWS = [row("shop.size"), row("shop.fast", {type: "flag", value: false, shown: "off", default: true, source: "environment"}), row("shop.names", {type: "list", value: '["a","b"]', shown: "a, b"})];
 
 // a window whose server answers a run only when the test says so, and lists what the server holds

@@ -4,7 +4,7 @@ import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const row = (key, fields) => ({key, module: "shop", parent: null, title: key, description: "", type: "number", value: 5, shown: "5", source: "default", secret: false, scope: "environment", agent_writable: false, choices: [], toggleable: false, default: 5, ...fields});
+const row = (key, fields) => ({key, module: "shop", parent: null, title: key, description: "", type: "number", value: 5, shown: "5", source: "default", secret: false, scope: "environment", choices: [], toggleable: false, default: 5, ...fields});
 const ROWS = [row("shop.limit", {value: 9, shown: "9", source: "environment"}), row("shop.size"), row("shop.fast", {type: "flag", value: false, shown: "off", default: true, source: "environment"})];
 
 async function drawn() {

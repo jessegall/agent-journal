@@ -16,7 +16,6 @@ class MemoryType(Model):
     name: str
     module: str
     description: str
-    agent_writable: bool
     fades: bool
     starting_weight: int = 5
     start_delivery: bool = True

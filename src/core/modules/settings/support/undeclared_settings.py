@@ -58,6 +58,6 @@ class UndeclaredSettings:
         matching = next((report for report in reports if report.environment_id == environment_id), None) or next((report for report in reports if report.environment_id is None), None)
         if matching is None:
             return None
-        entry = SettingEntry(key, matching.module, None, key, f"the setting {matching.reason}", UNDECLARED_TYPE, None, matching.is_secret, "both", False, (), False, True)
+        entry = SettingEntry(key, matching.module, None, key, f"the setting {matching.reason}", UNDECLARED_TYPE, None, matching.is_secret, "both", (), False, True)
         stored = "set" if matching.is_secret else json.loads(matching.value)
         return CurrentSetting(entry, stored, "environment" if matching.environment_id is not None else "project")

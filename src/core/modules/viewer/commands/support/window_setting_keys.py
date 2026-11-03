@@ -9,7 +9,7 @@ MODULE_KEY = "journal.core.viewer"
 WINDOW_SETTINGS = f"{MODULE_KEY}.window."
 VIEWER_SETTINGS = [SettingGroup("window", "Window settings", "What each window keeps of its own, such as its zoom or sort order.",
                                 any_key=SettingValue("*", "Window setting", "One setting a window keeps of its own.", SettingType.ANY,
-                                                     scope=SettingScope.ENVIRONMENT, agent_writable=True))]
+                                                     scope=SettingScope.ENVIRONMENT))]
 
 
 class WindowSettingKeys:

@@ -15,7 +15,7 @@ TUNNEL = SettingGroup("tunnel", "Tunnel", "How a phone reaches this computer fro
 class GoodModule(Module):
     name = "good"
     requires_core = ">=5,<6"
-    settings = [SettingValue("limit", "Limit", "How many rows a list shows at once.", SettingType.NUMBER, default=50, agent_writable=True),
+    settings = [SettingValue("limit", "Limit", "How many rows a list shows at once.", SettingType.NUMBER, default=50),
                 SettingGroup("sharing", "Sharing", "Links that show one row to someone outside.", children=[TUNNEL])]
 
 

@@ -20,7 +20,6 @@ class SettingDeclaration:
     default: SettingDefault
     secret: bool
     scope: str
-    agent_writable: bool
     choices: Sequence[str]
     toggleable: bool
     enabled: bool

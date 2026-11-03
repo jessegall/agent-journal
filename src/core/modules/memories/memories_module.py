@@ -50,6 +50,7 @@ from core.modules.memories.models.memory_type import MemoryType
 from core.modules.memories.models.memory_type_switch import MemoryTypeSwitch
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTablesMigration
+from core.modules.memories.migrations.m002_memory_types_drop_agent_writable import MemoryTypesDropAgentWritableMigration
 from core.modules.memories.models.active_memory import ActiveMemory
 from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARKS
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
@@ -72,7 +73,7 @@ class MemoriesModule(Module):
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
-    migrations = [MemoriesTablesMigration]
+    migrations = [MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration]
     moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
     guards = [TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]

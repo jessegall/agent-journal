@@ -23,7 +23,6 @@ class SettingEntry:
     default: SettingDefault
     secret: bool
     scope: str
-    agent_writable: bool
     choices: Sequence[str]
     toggleable: bool
     enabled: bool
@@ -32,7 +31,7 @@ class SettingEntry:
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
-                   stored["secret"], stored["scope"], stored["agent_writable"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""))
+                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""))
 
     def accepts(self, value: object) -> bool:
         if self.type == GROUP_TYPE:
