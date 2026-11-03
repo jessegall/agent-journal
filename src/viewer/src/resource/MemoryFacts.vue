@@ -9,7 +9,7 @@ const word = ref("");
 const refusal = ref("");
 
 async function load() {
-    const answer = await props.read(["memory-keyword", "list", "--memory-id", String(props.id)]);
+    const answer = await props.read(["memory-keyword", "list", "--memory", String(props.id)]);
     rows.value = answer.ok ? answer.value.rows : [];
 }
 
