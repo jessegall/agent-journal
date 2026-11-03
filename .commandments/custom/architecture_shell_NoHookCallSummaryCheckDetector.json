@@ -8,12 +8,11 @@
                 "name": "summary"
             },
             {
-                "descendant": {
-                    "name": "call"
-                }
+                "of": "receiver",
+                "typeLike": "*HookCall"
             },
             {
-                "fileMatches": "(^|/)src/(core|suites)/.*/(rules|listeners|guards|block_conditions)/"
+                "fileMatches": "(^|/)src/(core|suites)/"
             }
         ],
         "reject": [
@@ -22,13 +21,16 @@
             },
             {
                 "fileMatches": "(^|/)src/core/modules/skills/listeners/(keyword_skills_listener|skill_read_listener)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/(messages/rules/agent_text_rule|usage/commands/usage_tool/usage_tool_subcommand)\\.py$"
             }
         ]
     },
     "sin": {
         "name": "hook-call-summary-read-as-command",
         "description": "A rule or a listener decides something from a hook call's summary, which for a shell tool is the whole line, cut short, so a command is judged by where it stands in a chain.",
-        "rule": "A rule reads the parts on hook.event.tool.shell; a listener listens to process_part.create and reads that part. A prompt's or a file tool's summary is no shell line: only the listeners that read those are exempt.",
+        "rule": "A rule reads the parts on hook.event.tool.shell; a listener listens to process_part.create and reads that part. Only code that reads a prompt, a file tool or shows the summary is exempt.",
         "skill": "plain-code-words"
     }
 }
