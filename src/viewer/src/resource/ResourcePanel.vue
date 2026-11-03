@@ -60,60 +60,102 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear>
             <div v-if="opened" class="veil" @click.self="close">
-                <aside :class="['panel', {wide, task: kind === 'task', document: isDocument}]" role="dialog" :aria-label="title" data-resource-panel>
+                <aside
+                    :class="['panel', {wide, task: kind === 'task', document: isDocument, queue: kind === 'test-queue'}]"
+                    role="dialog"
+                    :aria-label="title"
+                    data-resource-panel
+                >
                     <SwitchCase :value="kind">
                         <template #task>
-                            <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                            <TaskInspector
+                                lone
+                                :backed="route.stack.length > 1"
+                                :id="opened.id"
+                                :read="read"
+                                @close="close"
+                                @back="unpeek"
+                                @select="(id) => peek('tasks', id)"
+                            />
                         </template>
                         <template #plan>
-                            <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                            <PlanInspector
+                                :backed="route.stack.length > 1"
+                                :id="opened.id"
+                                :read="read"
+                                @close="close"
+                                @back="unpeek"
+                                @select="(id) => peek('tasks', id)"
+                            />
                         </template>
                         <template #test-queue>
                             <TestQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
                         </template>
                         <template #doc>
-                            <DocumentInspector :table="opened.table" :id="opened.id" :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
+                            <DocumentInspector
+                                :table="opened.table"
+                                :id="opened.id"
+                                :backed="route.stack.length > 1"
+                                :read="read"
+                                @close="close"
+                                @back="unpeek"
+                            />
                         </template>
                         <template #report>
-                            <DocumentInspector :table="opened.table" :id="opened.id" :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
+                            <DocumentInspector
+                                :table="opened.table"
+                                :id="opened.id"
+                                :backed="route.stack.length > 1"
+                                :read="read"
+                                @close="close"
+                                @back="unpeek"
+                            />
                         </template>
                         <template #default>
-                        <header class="head">
-                            <template v-if="route.stack.length > 1">
-                                <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
-                            </template>
-                            <ResourceHeading :label="`${kind} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`" :title="title" :abstract="row?.abstract" />
-                            <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
-                        </header>
-                        <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
-                        <div class="body">
-                            <template v-if="failure">
-                                <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
-                            </template>
-                            <template v-else-if="!row">
-                                <Skeleton />
-                            </template>
-                            <template v-else>
-                                <template v-if="html">
-                                    <div class="md text" data-resource-text v-html="html" />
+                            <header class="head">
+                                <template v-if="route.stack.length > 1">
+                                    <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">
+                                        ←
+                                    </button>
                                 </template>
-                                <template v-if="kind === 'agent'">
-                                    <AgentFacts :id="opened.id" :read="read" />
-                                    <template v-if="row.role === 'worker'">
-                                        <WorkerFacts :id="opened.id" :read="read" />
+                                <ResourceHeading
+                                    :label="`${kind} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`"
+                                    :title="title"
+                                    :abstract="row?.abstract"
+                                />
+                                <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">
+                                    ×
+                                </button>
+                            </header>
+                            <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
+                            <div class="body">
+                                <template v-if="failure">
+                                    <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
+                                </template>
+                                <template v-else-if="!row">
+                                    <Skeleton />
+                                </template>
+                                <template v-else>
+                                    <template v-if="html">
+                                        <div class="md text" data-resource-text v-html="html" />
                                     </template>
-                                </template>
-                                <template v-if="kind === 'memory'">
-                                    <MemoryFacts :id="opened.id" :read="read" />
-                                </template>
-                                <section class="section" data-resource-fields>
-                                    <template v-for="[name, value] in fields" :key="name">
-                                        <p class="field-name">{{ name }}</p>
-                                        <p class="field-value">{{ value }}</p>
+                                    <template v-if="kind === 'agent'">
+                                        <AgentFacts :id="opened.id" :read="read" />
+                                        <template v-if="row.role === 'worker'">
+                                            <WorkerFacts :id="opened.id" :read="read" />
+                                        </template>
                                     </template>
-                                </section>
-                            </template>
-                        </div>
+                                    <template v-if="kind === 'memory'">
+                                        <MemoryFacts :id="opened.id" :read="read" />
+                                    </template>
+                                    <section class="section" data-resource-fields>
+                                        <template v-for="[name, value] in fields" :key="name">
+                                            <p class="field-name">{{ name }}</p>
+                                            <p class="field-value">{{ value }}</p>
+                                        </template>
+                                    </section>
+                                </template>
+                            </div>
                         </template>
                     </SwitchCase>
                 </aside>
@@ -142,6 +184,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     border-left: 1px solid var(--border);
     background: var(--bg);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+}
+
+.panel.queue {
+    width: min(660px, 100vw);
 }
 
 .panel.task {
