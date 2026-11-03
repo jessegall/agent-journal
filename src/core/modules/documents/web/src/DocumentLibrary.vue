@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {age, Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
+import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, useWindow} from "@journal/window-kit";
 import {grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -145,7 +145,7 @@ load();
                                 <span class="library-abstract">{{ row.abstract }}</span>
                                 <span class="library-ref">{{ label }} {{ row.id }}</span>
                             </span>
-                            <span class="library-age">{{ age(row.updated_at) }}</span>
+                            <TimeAgo class="library-age" :at="row.updated_at" />
                         </button>
                     </template>
                 </template>

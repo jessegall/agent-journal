@@ -22,14 +22,13 @@ BACKGROUND_FLAG = "run_in_background"
 
 
 class RunnerRewriteRule(DriverRule):
-    """A shell line of a main agent or a worker runs through the journal's runner: the run is made a process,
-    and the agent's command is rewritten to hand the runner its process, its limit and its line. The line
-    stays as written, a read's pipes too; only a test run or a build shows a mark or a card."""
+    """A shell line of any agent runs through the journal's runner: the run is made a process, split into its
+    parts, and the agent's command is rewritten to hand the runner its process, its limit and its line. The
+    line stays as written, a read's pipes too; only a test run or a build shows a mark or a card."""
 
     name = "processes.runner-rewrite"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
     history = True
     overlay_proof = True
 

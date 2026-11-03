@@ -43,6 +43,7 @@ export {age, ago} from "../src/format/time.js";
 export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {useNow} from "./useNow.js";
+export {default as TimeAgo} from "./TimeAgo.vue";
 export {useRows} from "./useRows.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";
 export {useReadLine} from "./useReadLine.js";

@@ -1,11 +1,9 @@
 from collections import Counter
 from collections.abc import Sequence
 from core.base.database.points import Points
-import math
 import re
 import sqlite3
 
-KILOBYTE_BYTES = 1024
 STATEMENT_CHARACTERS = 300
 TABLE_PATTERN = re.compile(r"\bFROM\s+(\w+)", re.IGNORECASE)
 EVENT_LOG_PATTERN = re.compile(r"\s*INSERT\s+INTO\s+events\b", re.IGNORECASE)
@@ -39,4 +37,4 @@ class PointTally:
         self.update_statements[sql[:STATEMENT_CHARACTERS]] += 1
 
     def points(self) -> Points:
-        return Points(self.rows, self.writes, math.ceil(self.bytes / KILOBYTE_BYTES), Counter(self.tables), Counter(self.statements), Counter(self.update_statements))
+        return Points(self.rows, self.writes, self.bytes, Counter(self.tables), Counter(self.statements), Counter(self.update_statements))

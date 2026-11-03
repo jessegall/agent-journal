@@ -1,5 +1,5 @@
 <script setup>
-import {Icon, ago, Skeleton, useOpenRow, useRows, ListTools, useListTools} from "@journal/window-kit";
+import {Icon, Skeleton, TimeAgo, useOpenRow, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("template list", ["template.*"]);
 const tools = useListTools(rows, {title: (row) => row.title});
@@ -20,7 +20,7 @@ const {opened, toggle} = useOpenRow();
         <ListTools :tools="tools" />
         <template v-for="row in tools.shown.value" :key="row.id">
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
-                <span class="card-head"><Icon name="board" class="card-icon" /> Template {{ row.id }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
+                <span class="card-head"><Icon name="board" class="card-icon" /> Template {{ row.id }}<TimeAgo class="card-age" :at="row.created_at" /></span>
                 <span class="card-title">{{ row.title }}</span>
                 <span class="card-brief">{{ row.brief }}</span>
                 <template v-if="opened === row.id">

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, Segmented, ago, useReadLine, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, Segmented, TimeAgo, useReadLine, useWindow} from "@journal/window-kit";
 import CheckRunBar from "./CheckRunBar.vue";
 
 // one check opened: its latest output and its runs, picked at the top, and the button that runs it
@@ -58,7 +58,7 @@ readRuns();
                             <button type="button" class="check-run-row" @click="showRun(run)">
                                 <span :class="['check-verdict', {failing: !run.passed}]">{{ run.passed ? "Passed" : "Failed" }}</span>
                                 <span class="check-space" />
-                                <time :title="run.run_at">{{ ago(Date.parse(run.run_at) / 1000) }}</time>
+                                <TimeAgo :at="run.run_at" />
                             </button>
                         </li>
                     </template>

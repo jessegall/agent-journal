@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {EmptyState, ListTools, WindowRoom, ago, useListTools, useWindow} from "@journal/window-kit";
+import {EmptyState, ListTools, TimeAgo, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const reviews = ref([]);
@@ -32,7 +32,7 @@ load();
                             <li class="step">
                                 <span class="dot" :data-outcome="step.outcome"></span>
                                 <span class="text">{{ step.text }}</span>
-                                <time>{{ ago(step.created_at) }}</time>
+                                <TimeAgo :at="step.created_at" />
                             </li>
                         </template>
                     </ol>

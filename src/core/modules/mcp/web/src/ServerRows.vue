@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {Btn, ListTools, RowList, WindowRoom, added as addedRow, ago, removed, useListTools, useRows} from "@journal/window-kit";
+import {Btn, ListTools, RowList, WindowRoom, TimeAgo, added as addedRow, removed, useListTools, useRows} from "@journal/window-kit";
 
 const installed = useRows("mcp list", []);
 const suggested = useRows("mcp suggested", []);
@@ -66,7 +66,7 @@ async function giveKey(row) {
         <div class="top">
             <h3 class="heading">Installed</h3>
             <template v-if="checkedAt">
-                <span class="subject" data-mcp-checked>Checked {{ ago(checkedAt) }}</span>
+                <span class="subject" data-mcp-checked>Checked <TimeAgo :at="checkedAt" /></span>
             </template>
             <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
         </div>

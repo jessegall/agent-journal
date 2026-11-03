@@ -32,7 +32,14 @@ class Repository:
         self.guards, self.listeners, self.log, self.constraint_refusals = guards, listeners, log, constraint_refusals
 
     def save(self, model: M, context: Context) -> M:
-        change = Change(self.stored(model), model, context)
+        return self.save_change(self.stored(model), model, context)
+
+    def update(self, stored: M, context: Context, **values: object) -> M:
+        """Saves new values on a row just read in this command, without reading it a second time."""
+        return self.save_change(stored, stored.changed(**values), context)
+
+    def save_change(self, stored: M | None, model: M, context: Context) -> M:
+        change = Change(stored, model, context)
         if change.is_empty and change.old_row is not None:
             return change.old_row
         skipped = self.guards.ask(change)

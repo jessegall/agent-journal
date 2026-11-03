@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
+import TimeAgo from "../../kit/TimeAgo.vue";
 import Icon from "./Icon.vue";
 
 const props = defineProps({
@@ -7,7 +8,7 @@ const props = defineProps({
     kind: {type: String, required: true},
     added: {type: Number, required: true},
     removed: {type: Number, required: true},
-    ago: {type: String, required: true},
+    at: {type: [String, Number], required: true},
     rows: {type: Array, required: true},
     flush: Boolean,
     half: Boolean,
@@ -93,7 +94,7 @@ onUnmounted(() => sized && sized.disconnect());
             </span>
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
             <span :class="['diff-card-count', 'del', {zero: !removed}]">−{{ removed }}</span>
-            <span class="diff-card-ago">{{ ago }}</span>
+            <TimeAgo class="diff-card-ago" :at="at" />
             <template v-if="whole && whole.old !== undefined">
                 <button
                     type="button"

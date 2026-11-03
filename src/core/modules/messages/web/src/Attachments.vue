@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {ago, Btn, EmptyState, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, useWindow} from "@journal/window-kit";
 
 // the files sent with messages, as version 4's Attachments page listed them: find a file, images or other files, images as tiles and the rest as rows
 const SEARCH_WAIT_MILLISECONDS = 250;
@@ -73,7 +73,7 @@ read(0);
                 <div class="row" data-attachment-file>
                     <a class="name" :href="addressOf(row)" target="_blank" rel="noopener">{{ row.name }}</a>
                     <button type="button" class="source" @click="peekRef(`messages:${row.message_id}`)">Message {{ row.message_id }}</button>
-                    <span class="when">{{ ago(row.created_at) }}</span>
+                    <TimeAgo class="when" :at="row.created_at" />
                 </div>
             </template>
             <template v-if="more">

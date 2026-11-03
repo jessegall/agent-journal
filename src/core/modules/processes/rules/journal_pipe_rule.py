@@ -1,5 +1,4 @@
 from core.modules.processes.support.process_nudges import CUT_JOURNAL_COMMAND
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -15,7 +14,6 @@ class JournalPipeRule(DriverRule):
     name = "processes.journal-pipe"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

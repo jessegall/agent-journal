@@ -9,7 +9,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import RowMoves from "../resource/RowMoves.vue";
 import {updatedAt} from "../domain/row.js";
-import {ago} from "../format/time.js";
+import TimeAgo from "../../kit/TimeAgo.vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 import {statusIcon} from "../domain/taskStatus.js";
 import TaskFacts from "./TaskFacts.vue";
@@ -95,14 +95,14 @@ defineExpose({openStatus});
         <template v-else>
             <CommentedRow stacked :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
             <div :key="task.id" class="body">
-                <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
+                <div class="stamp">Task {{ task.id }} · updated <TimeAgo :at="updatedAt(task)" /></div>
                 <h3 class="title" data-resource-title>{{ task.title }}</h3>
                 <div :class="['state-line', iconOf(task.state)]">
                     <button type="button" class="state" data-task-state title="Change the status (S)" @click="openStatus($event.currentTarget)">
                         <TaskStatusIcon :status="iconOf(task.state)" />
                         {{ label(task.state) }}
                     </button>
-                    <span class="since">since {{ ago(updatedAt(task)) || "just now" }}</span>
+                    <span class="since">since <TimeAgo :at="updatedAt(task)" /></span>
                 </div>
                 <template v-if="task.state === 'blocked'">
                     <section class="reason" data-task-reason>

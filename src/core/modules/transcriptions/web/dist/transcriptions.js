@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-18576a551808")) { const style = document.createElement("style"); style.id = "window-styles-18576a551808"; style.textContent = ".transcriptions[data-v-6a2f10e5],.form[data-v-6a2f10e5],.opened[data-v-6a2f10e5]{display:flex;flex-direction:column;gap:8px}.bar[data-v-6a2f10e5]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-6a2f10e5]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-6a2f10e5]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-6a2f10e5]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-6a2f10e5]{margin:0;font-size:inherit;font-weight:600}input[data-v-6a2f10e5],textarea[data-v-6a2f10e5]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
-import { ref as p, computed as P, openBlock as o, createBlock as B, unref as a, withCtx as c, createElementVNode as s, createVNode as v, createTextVNode as f, createElementBlock as u, Fragment as F, renderList as L, toDisplayString as i, createCommentVNode as m, withModifiers as j, withDirectives as N, vModelText as V } from "vue";
-import { useWindow as q, useRows as M, useListTools as z, WindowRoom as G, Btn as _, ListTools as H, RowList as J, ago as K, peekRef as Q } from "@journal/window-kit";
+if (!document.getElementById("window-styles-9948b75cba0f")) { const style = document.createElement("style"); style.id = "window-styles-9948b75cba0f"; style.textContent = ".transcriptions[data-v-03a640d5],.form[data-v-03a640d5],.opened[data-v-03a640d5]{display:flex;flex-direction:column;gap:8px}.bar[data-v-03a640d5]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-03a640d5]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-03a640d5]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-03a640d5]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-03a640d5]{margin:0;font-size:inherit;font-weight:600}input[data-v-03a640d5],textarea[data-v-03a640d5]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
+import { ref as v, computed as P, openBlock as o, createBlock as B, unref as a, withCtx as c, createElementVNode as s, createVNode as d, createTextVNode as m, createElementBlock as u, Fragment as F, renderList as L, toDisplayString as l, createCommentVNode as f, withModifiers as j, withDirectives as N, vModelText as V } from "vue";
+import { useWindow as q, useRows as M, useListTools as z, WindowRoom as G, Btn as _, ListTools as H, RowList as J, TimeAgo as K, peekRef as Q } from "@journal/window-kit";
 const X = (w, y) => {
   const k = w.__vccOpts || w;
   for (const [h, g] of y)
@@ -27,17 +27,17 @@ const X = (w, y) => {
 }, ct = ["onClick"], dt = {
   __name: "TranscriptionRows",
   setup(w) {
-    const y = q(), { rows: k, failure: h, loaded: g, act: b, actionFailure: R } = M("transcription list", ["transcription.*"]), U = M("transcription sources", []), C = z(k, { title: (n) => `${n.title} ${n.text}` }), x = p(!1), l = p({ title: "", text: "" }), r = p(null), d = p(""), T = p([]), $ = p(""), D = P(() => l.value.title.trim() && l.value.text.trim()), E = (n) => n.text.trim().slice(0, 140);
-    async function W() {
-      (await b(["transcription", "make", l.value.title.trim(), "--text", l.value.text])).ok && (l.value = { title: "", text: "" }, x.value = !1);
+    const y = q(), { rows: k, failure: h, loaded: g, act: b, actionFailure: R } = M("transcription list", ["transcription.*"]), U = M("transcription sources", []), T = z(k, { title: (n) => `${n.title} ${n.text}` }), x = v(!1), i = v({ title: "", text: "" }), r = v(null), p = v(""), C = v([]), $ = v(""), A = P(() => i.value.title.trim() && i.value.text.trim()), D = (n) => n.text.trim().slice(0, 140);
+    async function E() {
+      (await b(["transcription", "make", i.value.title.trim(), "--text", i.value.text])).ok && (i.value = { title: "", text: "" }, x.value = !1);
     }
-    async function A(n) {
-      r.value = n, d.value = n.text;
+    async function W(n) {
+      r.value = n, p.value = n.text;
       const e = await y.read(["link", "list", "--source", `transcription:${n.id}`]);
-      T.value = e.ok ? e.value.rows ?? [] : [];
+      C.value = e.ok ? e.value.rows ?? [] : [];
     }
     async function I() {
-      (await b(["transcription", "edit", String(r.value.id), "--text", d.value])).ok && (r.value = { ...r.value, text: d.value });
+      (await b(["transcription", "edit", String(r.value.id), "--text", p.value])).ok && (r.value = { ...r.value, text: p.value });
     }
     async function O(n) {
       (await b(["transcription", "fetch", n.name])).ok && ($.value = `The agent was asked to fetch transcriptions from ${n.title}.`);
@@ -46,13 +46,13 @@ const X = (w, y) => {
       default: c(() => [
         s("div", Y, [
           s("div", Z, [
-            v(a(_), {
+            d(a(_), {
               small: "",
               "data-transcription-new": "",
               onClick: e[0] || (e[0] = (t) => x.value = !x.value)
             }, {
               default: c(() => [...e[5] || (e[5] = [
-                f("New transcription", -1)
+                m("New transcription", -1)
               ])]),
               _: 1
             }),
@@ -63,117 +63,122 @@ const X = (w, y) => {
               onClick: (S) => O(t)
             }, {
               default: c(() => [
-                f("Fetch transcriptions from " + i(t.title), 1)
+                m("Fetch transcriptions from " + l(t.title), 1)
               ]),
               _: 2
             }, 1032, ["data-transcription-fetch", "onClick"]))), 128)),
-            $.value ? (o(), u("span", tt, i($.value), 1)) : m("", !0)
+            $.value ? (o(), u("span", tt, l($.value), 1)) : f("", !0)
           ]),
-          a(R) ? (o(), u("p", et, i(a(R)), 1)) : m("", !0),
+          a(R) ? (o(), u("p", et, l(a(R)), 1)) : f("", !0),
           x.value ? (o(), u("form", {
             key: 1,
             class: "form",
             "data-transcription-form": "",
-            onSubmit: j(W, ["prevent"])
+            onSubmit: j(E, ["prevent"])
           }, [
             N(s("input", {
-              "onUpdate:modelValue": e[1] || (e[1] = (t) => l.value.title = t),
+              "onUpdate:modelValue": e[1] || (e[1] = (t) => i.value.title = t),
               placeholder: "Title",
               "aria-label": "Title"
             }, null, 512), [
-              [V, l.value.title]
+              [V, i.value.title]
             ]),
             N(s("textarea", {
-              "onUpdate:modelValue": e[2] || (e[2] = (t) => l.value.text = t),
+              "onUpdate:modelValue": e[2] || (e[2] = (t) => i.value.text = t),
               rows: "10",
               placeholder: "Paste the transcript",
               "aria-label": "Transcript"
             }, null, 512), [
-              [V, l.value.text]
+              [V, i.value.text]
             ]),
-            v(a(_), {
+            d(a(_), {
               small: "",
               kind: "primary",
               type: "submit",
-              disabled: !D.value
+              disabled: !A.value
             }, {
               default: c(() => [...e[6] || (e[6] = [
-                f("Save", -1)
+                m("Save", -1)
               ])]),
               _: 1
             }, 8, ["disabled"])
-          ], 32)) : m("", !0),
-          v(a(H), { tools: a(C) }, null, 8, ["tools"]),
-          v(a(J), {
-            rows: a(C).shown.value,
+          ], 32)) : f("", !0),
+          d(a(H), { tools: a(T) }, null, 8, ["tools"]),
+          d(a(J), {
+            rows: a(T).shown.value,
             failure: a(h),
             loaded: a(g),
             empty: "No transcriptions yet",
             hint: "A recording you have transcribed shows here with its text.",
-            searching: a(C).filtering.value
+            searching: a(T).filtering.value
           }, {
             default: c(({ row: t }) => [
               s("button", {
                 type: "button",
                 class: "row",
                 "data-transcription": t.id,
-                onClick: (S) => A(t)
+                onClick: (S) => W(t)
               }, [
-                s("span", nt, i(t.title), 1),
-                s("span", st, i(t.source || "pasted") + " · " + i(a(K)(t.created_at)), 1),
-                s("span", ot, i(E(t)), 1)
+                s("span", nt, l(t.title), 1),
+                s("span", st, [
+                  m(l(t.source || "pasted") + " · ", 1),
+                  d(a(K), {
+                    at: t.created_at
+                  }, null, 8, ["at"])
+                ]),
+                s("span", ot, l(D(t)), 1)
               ], 8, at)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded", "searching"]),
           r.value ? (o(), u("section", it, [
-            s("h3", lt, i(r.value.title), 1),
+            s("h3", lt, l(r.value.title), 1),
             N(s("textarea", {
-              "onUpdate:modelValue": e[3] || (e[3] = (t) => d.value = t),
+              "onUpdate:modelValue": e[3] || (e[3] = (t) => p.value = t),
               rows: "14",
               "aria-label": "Transcript"
             }, null, 512), [
-              [V, d.value]
+              [V, p.value]
             ]),
             s("div", rt, [
-              v(a(_), {
+              d(a(_), {
                 small: "",
                 kind: "primary",
                 "data-transcription-save": "",
-                disabled: d.value === r.value.text,
+                disabled: p.value === r.value.text,
                 onClick: I
               }, {
                 default: c(() => [...e[7] || (e[7] = [
-                  f("Save", -1)
+                  m("Save", -1)
                 ])]),
                 _: 1
               }, 8, ["disabled"]),
-              v(a(_), {
+              d(a(_), {
                 small: "",
                 onClick: e[4] || (e[4] = (t) => r.value = null)
               }, {
                 default: c(() => [...e[8] || (e[8] = [
-                  f("Close", -1)
+                  m("Close", -1)
                 ])]),
                 _: 1
               })
             ]),
             e[9] || (e[9] = s("h3", { class: "note" }, "Made from it", -1)),
-            T.value.length ? m("", !0) : (o(), u("p", ut, "Nothing yet")),
-            (o(!0), u(F, null, L(T.value, (t) => (o(), u("button", {
+            C.value.length ? f("", !0) : (o(), u("p", ut, "Nothing yet")),
+            (o(!0), u(F, null, L(C.value, (t) => (o(), u("button", {
               key: t.id,
               type: "button",
               class: "row",
               "data-transcription-link": "",
               onClick: (S) => a(Q)(`${t.target_model}:${t.target_id}`)
-            }, i(t.target_model) + " " + i(t.target_id), 9, ct))), 128))
-          ])) : m("", !0)
+            }, l(t.target_model) + " " + l(t.target_id), 9, ct))), 128))
+          ])) : f("", !0)
         ])
       ]),
       _: 1
     }));
   }
-}, ft = /* @__PURE__ */ X(dt, [["__scopeId", "data-v-6a2f10e5"]]);
+}, mt = /* @__PURE__ */ X(dt, [["__scopeId", "data-v-03a640d5"]]);
 export {
-  ft as default
+  mt as default
 };

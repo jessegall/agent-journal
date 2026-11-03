@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
@@ -17,7 +16,6 @@ class SilentRunRule(DriverRule):
     name = "processes.silent-run"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, processes: ProcessQuery, folder: OutputFolder) -> None:
         self.processes, self.folder = processes, folder

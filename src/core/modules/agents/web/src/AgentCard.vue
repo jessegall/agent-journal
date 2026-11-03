@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -22,7 +22,7 @@ const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
 const identity = computed(() => [props.row.program, props.facts?.model, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
-const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
+const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [];
@@ -67,7 +67,12 @@ readCommand();
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
             <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
-            <span class="agent-time">{{ runTime }}</span>
+            <template v-if="row.ended_at">
+                <TimeAgo class="agent-time" :at="row.ended_at" />
+            </template>
+            <template v-else>
+                <span class="agent-time">{{ runTime }}</span>
+            </template>
             <Icon :class="['agent-chevron', {opened: open}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
@@ -316,6 +321,12 @@ readCommand();
 .agent-card.open .agent-tab-body {
     flex: 1;
     max-height: none;
+    min-height: 0;
+}
+
+/* what a tab holds, a transcript or a file feed, takes the whole body */
+.agent-card.open .agent-tab-body > :deep(*) {
+    flex: 1;
     min-height: 0;
 }
 

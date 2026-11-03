@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
-import {ago, AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
 import FeedBar from "./FeedBar.vue";
 import {cardsOf} from "./fileCards.js";
 
@@ -87,7 +87,7 @@ onMounted(async () => {
                         :kind="card.edit_type"
                         :added="card.added"
                         :removed="card.removed"
-                        :ago="ago(card.created_at)"
+                        :at="card.created_at"
                         :rows="card.rows"
                         :half="view.columns || card.half"
                         @fold="fold(card)"

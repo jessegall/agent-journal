@@ -1,4 +1,6 @@
+import html
 import json
+import re
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -29,6 +31,7 @@ from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
 CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>")
+HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
 
 
 class CodexProvider(Provider):
@@ -56,7 +59,7 @@ class CodexProvider(Provider):
     session_variable = "CODEX_THREAD_ID"
     markers = ["CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION",
                "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS"]
-    models = [ProgramModel("gpt-5.6-luna", ModelTier.FAST), ProgramModel("gpt-5.6-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST)]
+    models = [ProgramModel("gpt-6-luna", ModelTier.FAST), ProgramModel("gpt-6.1-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST)]
 
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
@@ -113,7 +116,10 @@ class CodexProvider(Provider):
         text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
         if text.startswith(CODEX_CONTEXT_OPENINGS):
             return None
-        return TranscriptAuthor.row(position, role, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
+        shown = html.unescape(HOOK_PROMPT_TAG.sub("", text))
+        if not shown.strip():
+            return None
+        return TranscriptAuthor.row(position, role, shown, fields.get("timestamp") if is_mapping(fields) else "")
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)

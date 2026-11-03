@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {ago, Btn, EmptyState, Skeleton, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, Skeleton, TimeAgo, useWindow} from "@journal/window-kit";
 import {checksLine, distanceLine, reviewLine, shortSha} from "./gitWords.js";
 
 // the project's repository as version 4's Git page showed it: its branches, the recent commits and the open pull requests
@@ -23,7 +23,6 @@ const branches = pagedList("git-overview branches");
 const commits = pagedList("git-overview commits");
 const pulls = ref(null);
 const pullsFailure = ref("");
-const when = (seconds) => ago(new Date(seconds * 1000).toISOString());
 
 onMounted(async () => {
     branches.load();
@@ -52,7 +51,7 @@ onMounted(async () => {
                     <span class="name">{{ branch.name }}</span>
                     <span class="fact">{{ distanceLine(branch) }}</span>
                     <span class="subject">{{ branch.subject }}</span>
-                    <span class="fact">{{ branch.author }}, {{ when(branch.time) }}</span>
+                    <span class="fact">{{ branch.author }}, <TimeAgo :at="branch.time" /></span>
                 </div>
             </template>
             <template v-if="branches.more.value">
@@ -74,7 +73,7 @@ onMounted(async () => {
                 <div class="row" data-git-commit>
                     <span class="sha">{{ shortSha(commit.sha) }}</span>
                     <span class="subject">{{ commit.subject }}</span>
-                    <span class="fact">{{ commit.author }}, {{ when(commit.time) }}</span>
+                    <span class="fact">{{ commit.author }}, <TimeAgo :at="commit.time" /></span>
                 </div>
             </template>
             <template v-if="commits.more.value">

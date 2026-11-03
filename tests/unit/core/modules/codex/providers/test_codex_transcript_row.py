@@ -14,6 +14,11 @@ def test_what_codex_gives_itself_as_context_is_no_row_of_the_transcript(text):
     assert CodexProvider.transcript_row(object.__new__(CodexProvider), rollout_line("user", text), 1) is None
 
 
+def test_a_hook_prompt_shows_as_its_plain_words():
+    line = rollout_line("user", '<hook_prompt hook_run_id="stop:8">say why with &lt;why&gt;</hook_prompt>')
+    assert object.__new__(CodexProvider).transcript_row(line, 1).text == "say why with <why>"
+
+
 def test_the_brief_and_the_answer_are_rows_of_the_transcript():
     provider = object.__new__(CodexProvider)
     assert provider.transcript_row(rollout_line("user", "You are worker 446"), 1) is not None

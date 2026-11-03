@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -14,7 +13,6 @@ class LeftoverRunRule(DriverRule):
     name = "processes.leftover-runs"
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, processes: ProcessQuery) -> None:
         self.processes = processes

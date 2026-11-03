@@ -1,5 +1,4 @@
 from core.modules.processes.support.process_nudges import PROCESS_MISSING
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -29,7 +28,6 @@ class OrphanProcessRule(DriverRule):
     name = "processes.orphan-process"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, processes: ProcessQuery, parts: ProcessPartQuery, folder: OutputFolder, settings: ProcessSettings) -> None:
         self.processes, self.parts, self.folder, self.settings = processes, parts, folder, settings

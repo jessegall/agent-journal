@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {ago, AutoScrollPane, DiffCard, RowList, useRows} from "@journal/window-kit";
+import {AutoScrollPane, DiffCard, RowList, useRows} from "@journal/window-kit";
 
 // the files one agent changed, oldest first with the newest edit at the foot, where the pane opens and stays as edits arrive; scrolling up stops
 // that and shows Newest; each edit is a diff card of its first lines, and older edits are read from the button above
@@ -19,7 +19,7 @@ const newest = computed(() => rows.value[0]?.id ?? 0);
         <AutoScrollPane :row-count="newest">
             <RowList :rows="edits" :failure="failure" :loaded="loaded" empty="No edits by this agent yet" hint="The files it changes show here as it works.">
                 <template #default="{row}">
-                    <DiffCard flush :lines="CARD_LINES" :path="row.path" :kind="row.edit_type" :added="row.added" :removed="row.removed" :ago="ago(row.created_at)" :rows="row.lines" />
+                    <DiffCard flush :lines="CARD_LINES" :path="row.path" :kind="row.edit_type" :added="row.added" :removed="row.removed" :at="row.created_at" :rows="row.lines" />
                 </template>
             </RowList>
         </AutoScrollPane>

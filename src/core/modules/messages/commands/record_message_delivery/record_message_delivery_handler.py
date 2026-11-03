@@ -16,4 +16,4 @@ class RecordMessageDeliveryHandler(Handler[RecordMessageDelivery, Message]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordMessageDelivery, context: Context) -> Message:
-        return self.repository.save(self.queries.query(Message).find(command.message_id).changed(delivered_at=context.timestamp), context)
+        return self.repository.update(self.queries.query(Message).find(command.message_id), context, delivered_at=context.timestamp)

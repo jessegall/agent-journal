@@ -56,11 +56,11 @@ def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_st
     assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 1, "node serve.js", limit=10)}
 
 
-def test_a_subagent_s_line_is_not_rewritten_and_makes_no_process(new_story):
+def test_a_subagent_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story):
     story = install_runner(new_story(fixture=SubagentStarted))
     story.hook("s-1", SERVER)
-    assert dict(story.hook("s-1", SERVER.with_fields(subagent="sub-1")).updated_input) == {}
-    story.expect_refusal("process show 2", "no process 2")
+    assert dict(story.hook("s-1", SERVER.with_fields(subagent="sub-1")).updated_input) == {"command": runner_line(story, 2, "node serve.js")}
+    story.expect_success("process show 2", "line: node serve.js", "state: running")
 
 
 def test_a_line_with_a_parse_error_is_let_through(new_story):

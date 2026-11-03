@@ -3,7 +3,7 @@ import {computed} from "vue";
 import {AutoScrollPane, RowList, WindowRoom, useRows} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
-// shows Newest; each row says who wrote it and when
+// shows Newest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
 const props = defineProps({line: {type: String, required: true}});
 const {rows, failure, loaded} = useRows(props.line, ["hook_call.create"]);
 const newest = computed(() => rows.value.at(-1)?.id ?? 0);
@@ -11,14 +11,14 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
 </script>
 
 <template>
-    <WindowRoom>
+    <WindowRoom padding="8px 22px 8px 27px">
         <div class="transcript">
             <AutoScrollPane :row-count="newest">
                 <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">
                     <template #default="{row}">
                         <span class="author" :data-author="row.author">{{ row.author }}</span>
-                        <time class="time" data-row-time :datetime="row.time">{{ timeOf(row) }}</time>
                         <span class="text">{{ row.text }}</span>
+                        <time class="time" data-row-time :datetime="row.time">{{ timeOf(row) }}</time>
                     </template>
                 </RowList>
             </AutoScrollPane>
@@ -30,7 +30,8 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
 .transcript {
     display: flex;
     flex-direction: column;
-    height: 320px;
+    height: 100%;
+    min-height: 0;
 }
 
 .author {

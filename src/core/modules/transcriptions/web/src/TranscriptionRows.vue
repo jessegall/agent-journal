@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, WindowRoom, ago, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {Btn, ListTools, RowList, TimeAgo, WindowRoom, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const {rows, failure, loaded, act, actionFailure} = useRows("transcription list", ["transcription.*"]);
@@ -68,7 +68,7 @@ async function fetchFrom(server) {
                 <template #default="{row}">
                     <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
                         <span class="title">{{ row.title }}</span>
-                        <span class="note">{{ row.source || "pasted" }} · {{ ago(row.created_at) }}</span>
+                        <span class="note">{{ row.source || "pasted" }} · <TimeAgo :at="row.created_at" /></span>
                         <span class="note">{{ preview(row) }}</span>
                     </button>
                 </template>

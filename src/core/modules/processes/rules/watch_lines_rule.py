@@ -1,5 +1,4 @@
 from core.modules.processes.support.process_nudges import OUTPUT_PROGRESS, OUTPUT_RUNNING
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -20,7 +19,6 @@ class WatchLinesRule(DriverRule):
     name = "processes.watch-lines"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, watches: WatchQuery, processes: ProcessQuery) -> None:
         self.watches, self.processes = watches, processes

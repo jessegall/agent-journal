@@ -3,7 +3,10 @@ import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
 import {h} from "vue";
+import {TimeAgo} from "@journal/window-kit";
+import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
 vi.stubGlobal("ResizeObserver", class {
@@ -182,6 +185,27 @@ test("a running subagent's card names the command it runs", async () => {
     const lines = {"agent list": page([subagent]), "agent running": page([subagent]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Read src/cart.py"));
+});
+
+test("an agent that has just ended reads just now, never now ago", async () => {
+    const ended = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: new Date().toISOString()};
+    const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
+    expect(element.querySelector(".agent-time").textContent).toBe("just now");
+});
+
+test("a transcript row reads author, words, then its time at the end", async () => {
+    const lines = {"agent transcript 6": page([{id: 1, author: "worker", text: "I read the guidance", time: "2026-11-03T13:19:21Z"}])};
+    const element = await mounted({render: () => h(TranscriptRows, {line: "agent transcript 6"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-row-time]")).not.toBeNull());
+    expect(element.querySelector(".text").nextElementSibling).toBe(element.querySelector("[data-row-time]"));
+    expect(element.querySelector("[data-row-time]").nextElementSibling).toBeNull();
+    expect(element.querySelector(".author").nextElementSibling).toBe(element.querySelector(".text"));
+});
+
+test("how long ago something happened reads the same from a row's time and from epoch seconds", async () => {
+    const fourMinutes = Date.now() / 1000 - 240;
+    const element = await mounted({render: () => [h(TimeAgo, {at: fourMinutes}), h(TimeAgo, {at: new Date(fourMinutes * 1000).toISOString()})]}, context({}));
+    expect([...element.querySelectorAll("[data-time-ago]")].map((time) => time.textContent)).toEqual(["4m ago", "4m ago"]);
 });
 
 test("a running subagent that ran no command says so plainly", async () => {

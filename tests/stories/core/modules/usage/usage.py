@@ -9,7 +9,7 @@ from core.modules.processes.commands.start_process_part.start_process_part impor
 from core.modules.usage.support.status_files import StatusFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import start_process
+from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, SubagentStarted
@@ -212,6 +212,14 @@ def test_the_tool_of_a_subagent_is_read_by_its_agent_number(new_story):
     story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1).with_fields(subagent="sub-1"))
     story.expect_text(f"usage tool --agent {story.subagent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
     story.expect_absent(f"usage tool --agent {story.agent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
+
+
+def test_a_subagent_s_chained_command_is_named_by_the_part_it_runs(new_story):
+    story = install_runner(new_story(fixture=SubagentStarted))
+    chained = HookSamples.shell("ls src && cat notes.md", ShellPart("ls", CommandCategory.PROCESS, ["src"]), ShellPart("cat", CommandCategory.PROCESS, ["notes.md"]))
+    story.hook("s-1", chained.with_fields(subagent="sub-1"))
+    story.expect_text(f"usage tool --agent {story.subagent.id}", "ls src", actor=story.agent)
+    story.expect_absent(f"usage tool --agent {story.subagent.id}", "cat notes.md", actor=story.agent)
 
 
 def test_a_subagent_that_ran_no_command_says_so_plainly(new_story):

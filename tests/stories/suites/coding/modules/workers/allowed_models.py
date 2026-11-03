@@ -19,7 +19,7 @@ def test_every_model_is_allowed_until_one_is_listed(new_story):
 def test_listing_models_allows_those_of_that_program_and_leaves_the_others_alone(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     allow_opus(story)
-    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-5.6-terra: allowed")
+    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.1-terra: allowed")
 
 
 def test_a_worker_runs_on_the_general_model_when_it_is_allowed(new_story):

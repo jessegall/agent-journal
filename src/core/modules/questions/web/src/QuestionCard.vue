@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, TextInput, ago, peekRef, useWindow} from "@journal/window-kit";
+import {Btn, TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 
 // one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
 // an answer shows the moment it is given and goes back if the server refuses it
@@ -43,7 +43,7 @@ async function elaborate() {
     <section class="question" :data-state="shown().state" data-question-card>
         <header class="question-head">
             <p class="question-label">Question {{ row.id }}</p>
-            <time class="question-time" :datetime="row.created_at" :title="new Date(row.created_at).toLocaleString()" data-question-time>{{ ago(row.created_at) }}</time>
+            <TimeAgo class="question-time" :at="row.created_at" data-question-time />
         </header>
         <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
         <template v-if="shown().state !== 'open'">

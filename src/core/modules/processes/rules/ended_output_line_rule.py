@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_history import HookHistory
@@ -16,7 +15,6 @@ class EndedOutputLineRule(DriverRule):
     name = "processes.ended-output-line"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
     history = True
 
     def __init__(self, processes: ProcessQuery, text: EndedOutputText, hook_history: HookHistory) -> None:

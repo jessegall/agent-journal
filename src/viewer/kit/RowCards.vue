@@ -2,7 +2,7 @@
 import Btn from "../src/kit/Btn.vue";
 import Icon from "../src/kit/Icon.vue";
 import Skeleton from "../src/kit/Skeleton.vue";
-import {ago} from "../src/format/time.js";
+import TimeAgo from "./TimeAgo.vue";
 
 // a page of rows as cards under a count and a button that makes a new one; a card's words come from the page, and what a card opens sits in the slot
 defineProps({
@@ -36,7 +36,7 @@ const emit = defineEmits(["new", "open"]);
             </template>
             <template v-for="row in rows" :key="row.id">
                 <button type="button" class="card" :data-row="row.id" @click="emit('open', row)">
-                    <span class="card-head"><Icon :name="icon" class="card-icon" /> {{ head(row) }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
+                    <span class="card-head"><Icon :name="icon" class="card-icon" /> {{ head(row) }}<TimeAgo class="card-age" :at="row.created_at" /></span>
                     <span class="card-title">{{ title(row) }}</span>
                     <span class="card-foot">{{ foot(row) }}</span>
                 </button>

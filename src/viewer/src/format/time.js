@@ -9,8 +9,8 @@ export function age(at, nowMilliseconds = Date.now()) {
     return `${Math.floor(s / 86400)}d`;
 }
 
-export function ago(at) {
-    const elapsed = age(at);
+export function ago(at, nowMilliseconds = Date.now()) {
+    const elapsed = age(at, nowMilliseconds);
     return elapsed === "now" ? "just now" : elapsed && `${elapsed} ago`;
 }
 

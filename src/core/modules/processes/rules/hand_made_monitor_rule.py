@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -19,7 +18,6 @@ class HandMadeMonitorRule(DriverRule):
     name = "processes.hand-made-monitor"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, providers: Providers) -> None:
         self.providers = providers

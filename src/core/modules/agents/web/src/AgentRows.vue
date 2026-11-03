@@ -141,6 +141,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
 .agent-row {
     position: relative;
     flex: 1;
+    min-width: 0;
 }
 
 .agents-held {

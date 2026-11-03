@@ -1,7 +1,6 @@
 import re
 
 from core.modules.processes.support.process_nudges import PIPED_RUN, REDIRECTED_RUN
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -19,7 +18,6 @@ class RedirectedRunRule(DriverRule):
     name = "processes.redirected-run"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
