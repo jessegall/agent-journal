@@ -3,15 +3,13 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.processes.commands.end_process.end_process import EndProcess
-from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
+from core.modules.processes.support.run_folder_ends import RunFolderEnds
 
 
 TICK_INTERVAL_SECONDS = 150
@@ -29,8 +27,8 @@ class OrphanProcessRule(DriverRule):
     hook = HookEventName.TICK
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, parts: ProcessPartQuery, folder: OutputFolder, settings: ProcessSettings) -> None:
-        self.processes, self.parts, self.folder, self.settings = processes, parts, folder, settings
+    def __init__(self, processes: ProcessQuery, ends: RunFolderEnds, folder: OutputFolder, settings: ProcessSettings) -> None:
+        self.processes, self.ends, self.folder, self.settings = processes, ends, folder, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
@@ -40,24 +38,12 @@ class OrphanProcessRule(DriverRule):
         return answer
 
     def checked(self, answer: RuleAnswer, hook: AgentHook, process: Process, restarted: bool) -> RuleAnswer:
-        code = self.folder.end(process.id)
-        if code is not None:
-            return answer.running(*self.parts_ended(process), self.ended(process, code))
+        ended = self.ends.commands(process)
+        if ended:
+            return answer.running(*ended)
         last_sign = self.folder.heartbeat(process.id) or process.created_at
         pid_missing = self.folder.pid(process.id) is not None and not self.folder.is_running(process.id)
         limit_seconds = PID_MISSING_SECONDS if pid_missing else self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id)
         if restarted or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= limit_seconds:
             return answer
         return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_MISSING.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
-
-    def parts_ended(self, process: Process) -> list[EndProcessPart]:
-        ended: list[EndProcessPart] = []
-        for part in self.parts.process(process.id).all_rows():
-            status = self.folder.status(process.id, part.position)
-            if part.ended_at is None and status is not None:
-                ended.append(EndProcessPart(process.id, part.position, status))
-        return ended
-
-    def ended(self, process: Process, code: int) -> EndProcess:
-        byte_count, line_count = self.folder.sizes(process.id)
-        return EndProcess(process.id, code, byte_count, line_count)
