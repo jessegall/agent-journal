@@ -21,8 +21,8 @@ DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 @dataclass(frozen=True)
 class WindowDeclaration:
     """A window a module adds to the viewer: its name and title, the file the viewer loads from the
-    module's web folder and how, where it is drawn, whose work it shows and for which agent roles, the window kit versions
-    it was built for, the read lines and commands it may run, the events it follows, its icon, the
+    module's web folder and how, where it is drawn, whose work it shows and for which agent roles, the window
+    kit versions it was built for, the read lines and commands it may run, the events it follows, its icon, the
     size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs
     inside it, the read line its tab counts with and the read lines a share link may use, each
     written as the line and, after a space, the argument that names an id of the shared row or of a
@@ -58,7 +58,7 @@ class WindowDeclaration:
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
         keys = [option.key for option in self.options]
         problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
-        if self.shows is WindowShows.ONE_AGENT and self.place is not WindowPlace.PANE:
+        if self.shows is WindowShows.PICKED_AGENT and self.place is not WindowPlace.PANE:
             problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}, and only a pane has an agent to pick")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)
         problems += [f"{self.name} starts its option {option.key} at {option.default}, which is none of its choices" for option in self.options

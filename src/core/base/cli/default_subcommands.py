@@ -5,7 +5,7 @@ from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.table import Table
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.environment_names import EnvironmentNames

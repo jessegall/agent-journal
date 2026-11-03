@@ -11,9 +11,9 @@ class PathMentions:
         return frozenset(FILE_PATH.findall(text))
 
     @staticmethod
-    def shared(paths: frozenset[str], other_paths: frozenset[str]) -> frozenset[str]:
-        return frozenset(path for path in paths if any(PathMentions.same_file(path, other_path) for other_path in other_paths))
+    def shared(paths: frozenset[str], compared_paths: frozenset[str]) -> frozenset[str]:
+        return frozenset(path for path in paths if any(PathMentions.same_file(path, compared) for compared in compared_paths))
 
     @staticmethod
-    def same_file(path: str, other_path: str) -> bool:
-        return path == other_path or path.endswith(f"/{other_path}") or other_path.endswith(f"/{path}")
+    def same_file(path: str, compared_path: str) -> bool:
+        return path == compared_path or path.endswith(f"/{compared_path}") or compared_path.endswith(f"/{path}")

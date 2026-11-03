@@ -10,7 +10,7 @@ class MenuItem:
     title: str
     subtext: str = ""
     next: Sequence["MenuItem"] = ()
-    click: str = ""
+    click: str | None = None
 
     def listed(self) -> Mapping[str, object]:
         return {"title": self.title, "subtext": self.subtext, "next": [item.listed() for item in self.next], "click": self.click}

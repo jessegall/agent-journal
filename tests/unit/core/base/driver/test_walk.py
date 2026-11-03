@@ -20,8 +20,8 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.error_log import ErrorLog
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.journal_home import JournalHome
-from core.base.registry.dotted_path import DottedPath
-from core.base.registry.wrong_base_error import WrongBaseError
+from core.base.dotted_path.dotted_path import DottedPath
+from core.base.dotted_path.wrong_base_error import WrongBaseError
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.timestamp import Timestamp

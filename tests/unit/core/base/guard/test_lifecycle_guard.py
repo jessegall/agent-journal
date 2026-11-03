@@ -15,7 +15,7 @@ from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
 from core.base.model.model import Model
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from core.base.timestamp import Timestamp

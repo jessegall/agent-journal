@@ -1,4 +1,4 @@
-from core.base.viewer.window_searcher import ModelSearcher
+from core.base.viewer.model_searcher import ModelSearcher
 from core.modules.templates.models.template import Template
 
 

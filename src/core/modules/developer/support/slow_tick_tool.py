@@ -23,7 +23,7 @@ class SlowTickTool(PerformanceTool):
         tick_seconds = float(str(values[0]))
         if tick_seconds <= SLOW_TICK_SECONDS:
             return False
-        environments = {agent.environment_id for agent in MainAgentFinder.in_every_environment(self.queries) if self.settings.flag(SLOW_TICKS_SETTING, agent.environment_id)}
+        environments = {agent.environment_id for agent in MainAgentFinder.all_running(self.queries) if self.settings.flag(SLOW_TICKS_SETTING, agent.environment_id)}
         for environment_id in environments:
             self.bus.run(SendMessage(f"A tick of the journal's clock took {round(tick_seconds * 1000)} ms, over its limit of {round(SLOW_TICK_SECONDS * 1000)} ms."), Actor.core(), environment_id=environment_id)
         return bool(environments)

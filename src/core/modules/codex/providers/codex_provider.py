@@ -87,14 +87,14 @@ class CodexProvider(Provider):
         return HelperOutcome(replies[-1].strip() if replies else errors.strip(), session, failures[-1] if failures else None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        known = self.rollouts.get(session)
-        if known is not None and known.is_file():
-            return known
+        cached = self.rollouts.get(session)
+        if cached is not None and cached.is_file():
+            return cached
         sessions = self.folders.folder(HOME_VARIABLE, ".codex") / "sessions"
-        found = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
-        if found is not None:
-            self.rollouts[session] = found
-        return found
+        located = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+        if located is not None:
+            self.rollouts[session] = located
+        return located
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         path = self.transcript(home.folder.parent, session)

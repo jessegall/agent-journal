@@ -4,8 +4,8 @@ from importlib.util import find_spec
 from pathlib import Path
 from typing import TypeVar
 
-from core.base.registry.dotted_path_error import DottedPathError
-from core.base.registry.wrong_base_error import WrongBaseError
+from core.base.dotted_path.dotted_path_error import DottedPathError
+from core.base.dotted_path.wrong_base_error import WrongBaseError
 
 T = TypeVar("T")
 

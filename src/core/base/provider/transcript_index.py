@@ -9,9 +9,9 @@ from core.base.provider.transcript_row import TranscriptRow
 
 class TranscriptIndex:
     """Reads one page of a session's transcript without reading the session again. Per file it keeps, in the
-    server's memory, the byte offset and length of each row's line; a read parses only the lines the file grew by
-    since the last read, then seeks to the lines of the asked page. A line without its newline yet is still being
-    written and waits for the next read. A file that shrank is indexed anew."""
+    server's memory, the byte offset and length of each row's line; a read parses only the lines the file grew
+    by since the last read, then seeks to the lines of the asked page. A line without its newline yet is still
+    being written and waits for the next read. A file that shrank is indexed anew."""
 
     def __init__(self) -> None:
         self.files: dict[Path, IndexedTranscript] = {}
@@ -27,19 +27,19 @@ class TranscriptIndex:
     def indexed(self, provider: Provider, path: Path) -> IndexedTranscript:
         size = path.stat().st_size
         indexed = self.files.get(path)
-        if indexed is None or size < indexed.read_to:
+        if indexed is None or size < indexed.end_offset:
             indexed = self.files[path] = IndexedTranscript()
         with path.open("rb") as transcript:
-            transcript.seek(indexed.read_to)
-            grown = transcript.read(size - indexed.read_to)
-        offset = indexed.read_to
+            transcript.seek(indexed.end_offset)
+            grown = transcript.read(size - indexed.end_offset)
+        offset = indexed.end_offset
         for line in grown.splitlines(keepends=True):
             if not line.endswith(b"\n"):
                 break
             if provider.transcript_row(line.decode(), len(indexed.lines) + 1) is not None:
                 indexed.lines.append((offset, len(line)))
             offset += len(line)
-        indexed.read_to = offset
+        indexed.end_offset = offset
         return indexed
 
     @staticmethod

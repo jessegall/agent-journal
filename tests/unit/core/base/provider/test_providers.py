@@ -4,7 +4,7 @@ import pytest
 
 from core.base.provider.providers import Providers
 from core.base.provider.unknown_program_error import UnknownProgramError
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.provider_entry import ProviderEntry
 from tests.unit.core.base.sample_container import empty_registry, sample_container
 from tests.unit.core.base.samples.program_sample import SampleProgram

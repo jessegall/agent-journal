@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_pattern import EventPattern
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_timing import ListenerTiming
 
 

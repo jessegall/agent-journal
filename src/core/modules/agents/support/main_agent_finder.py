@@ -12,7 +12,7 @@ class MainAgentFinder:
         return tuple(queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().limited(1))
 
     @staticmethod
-    def in_every_environment(queries: Queries) -> tuple[Agent, ...]:
+    def all_running(queries: Queries) -> tuple[Agent, ...]:
         return tuple(queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows())
 
     @staticmethod

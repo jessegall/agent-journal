@@ -8,7 +8,7 @@ from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.error_log import ErrorLog
-from core.base.performance.performance_tools import PerformanceTools
+from core.base.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
