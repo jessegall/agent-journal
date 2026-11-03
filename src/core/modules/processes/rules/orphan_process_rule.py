@@ -42,7 +42,7 @@ class OrphanProcessRule(DriverRule):
         if ended:
             return answer.running(*ended)
         last_sign = self.folder.heartbeat(process.id) or process.created_at
-        pid_missing = self.folder.pid(process.id) is not None and not self.folder.is_running(process.id)
+        pid_missing = self.folder.pid(process.id) is not None and not self.folder.has_runner_process(process.id)
         limit_seconds = PID_MISSING_SECONDS if pid_missing else self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id)
         if restarted or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= limit_seconds:
             return answer

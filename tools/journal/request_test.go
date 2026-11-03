@@ -28,3 +28,16 @@ func TestAnEmptyCommandLineIsSentAsAnEmptyList(t *testing.T) {
 		t.Fatalf("body %s", body)
 	}
 }
+
+func TestTheRequestCarriesTheVariableThatSaysARunnerIsAround(t *testing.T) {
+	lookup := func(name string) (string, bool) {
+		if name == "JOURNAL_RUNNER_PROCESS" {
+			return "7", true
+		}
+		return "", false
+	}
+	request := NewCliRequest([]string{"sins"}, lookup, "/work")
+	if request.Variables["JOURNAL_RUNNER_PROCESS"] != "7" {
+		t.Fatalf("the runner variable is not in the request: %v", request.Variables)
+	}
+}

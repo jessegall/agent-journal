@@ -9,13 +9,14 @@ from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
 
 
 class SequenceRowTriggerListener(CommitListener):
-    """An event a sequence names as its trigger starts that sequence for the environment's main agent, unless
-    one is running."""
+    """An event a sequence names as its trigger starts that sequence for the agent that caused it, subagent or
+    worker too, or for the environment's main agent when no agent did, unless one is running."""
 
     name = "sequences.row-trigger"
     event = "*.*"
@@ -29,9 +30,15 @@ class SequenceRowTriggerListener(CommitListener):
         sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, event)), None)
         if sequence is None:
             return
-        agents = MainAgentFinder.rows(self.queries, event.environment_id)
-        if agents and self.runs.current(agents[0].id) is None:
-            self.bus.run(MoveSequenceRun(START, sequence.id), Actor(agents[0].id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
+        agent_id = self.acting_agent_id(event, event.environment_id)
+        if agent_id is not None and self.runs.current(agent_id) is None:
+            self.bus.run(MoveSequenceRun(START, sequence.id), Actor(agent_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
+
+    def acting_agent_id(self, event: LoggedEvent, environment_id: int) -> int | None:
+        if self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT:
+            return event.actor_id
+        agents = MainAgentFinder.rows(self.queries, environment_id)
+        return agents[0].id if agents else None
 
     @staticmethod
     def is_triggered(sequence: Sequence, event: LoggedEvent) -> bool:
