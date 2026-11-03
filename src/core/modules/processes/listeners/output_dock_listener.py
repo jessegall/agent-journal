@@ -15,7 +15,7 @@ from core.modules.processes.support.shown_runs import ShownRuns
 
 class OutputDockListener(CommitListener):
     """A watch of a running output docks it above the chat, once; the dock lets it leave after its run ends. A
-    command that only reads or writes files is never docked, nor is a worker's own command but its test runs."""
+    run that ShownRuns says shows no card is never docked."""
 
     name = "processes.output-dock"
     event = "watch.create"
@@ -25,7 +25,7 @@ class OutputDockListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(self.queries.query(Watch).find(event.row_id).process_id)
-        if process.state not in RUNNING_STATES or self.shown_runs.hides(process) or self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists():
+        if process.state not in RUNNING_STATES or not self.shown_runs.shows(process) or self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists():
             return
         self.bus.run(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id), self.actors.actor(MODULE_NAME), cause_id=event.id,
                      environment_id=process.environment_id)

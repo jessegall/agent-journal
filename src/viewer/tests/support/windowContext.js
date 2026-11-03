@@ -10,6 +10,7 @@ export function context(answers, agent = null) {
         window: "test.window",
         environment: "main",
         agent,
+        tabs: [],
         visible: {value: true},
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
         read: async (line) => {
