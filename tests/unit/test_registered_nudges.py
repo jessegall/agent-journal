@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 import pytest
+from tests.unit.source_tree import source_text, source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
@@ -28,7 +29,7 @@ TYPES: dict[str, str] = {}
 def declarations() -> list[tuple[str, str, Path]]:
     rows = []
     for path in source_files():
-        tree = ast.parse(path.read_text())
+        tree = source_tree(path)
         for node in ast.walk(tree):
             is_declaration = isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and getattr(node.value.func, "id", "") == "NudgeDeclaration"
             if is_declaration and isinstance(node.value.args[2], ast.Constant):
@@ -67,11 +68,11 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_every_line_is_in_a_register_of_its_module(name, text, path):
-    module_sources = [source.read_text() for source in path.parent.glob("*.py")] + [source.read_text() for source in path.parents[1].glob("*_module.py")]
+    module_sources = [source_text(source) for source in path.parent.glob("*.py")] + [source_text(source) for source in path.parents[1].glob("*_module.py")]
     registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", text_of_file) for text_of_file in module_sources)
     assert registered or path.name == "rule_outcome.py", f"{name} of {path} is in no register"
 
 
 def test_no_line_to_an_agent_is_written_on_the_fly():
-    file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', path.read_text())]
+    file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', source_text(path))]
     assert not file_names, f"these write a line to an agent with no registered template: {file_names}"

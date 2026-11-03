@@ -11,7 +11,7 @@ from core.modules.messages.models.message import Message
 
 JOURNAL_LINE = "[journal] "
 USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
-MANY_MESSAGES_TEXT = " new messages"
+MESSAGE_COUNT_TEXT = " new messages"
 SHORT_CHARACTERS = 240
 
 
@@ -49,4 +49,4 @@ class AgentTextRule(DriverRule):
         return not calls or calls[0].id < prompt.id
 
     def is_user_act(self, prompt_text: str) -> bool:
-        return prompt_text.startswith(USER_ACTION_PREFIXES) or MANY_MESSAGES_TEXT in prompt_text
+        return prompt_text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in prompt_text
