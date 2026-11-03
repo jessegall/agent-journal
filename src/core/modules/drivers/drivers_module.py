@@ -23,7 +23,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
 from core.modules.drivers.commands.pause_agent.pause_agent_subcommand import PauseAgentSubcommand
 from core.modules.drivers.commands.pause_agent.pause_agent_handler import PauseAgentHandler
@@ -127,6 +127,6 @@ class DriversModule(Module):
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
-               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,
+               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, shows=WindowShows.ONE_AGENT,
                                  reads=["hook-call feed", "hook-call show"], events=["hook_call.create"])]
     seeders = [DriversSeeder]

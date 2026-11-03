@@ -7,7 +7,7 @@ import AgentPage from "../src/pages/AgentPage.vue";
 import ViewWindow from "../src/layout/ViewWindow.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
-const entry = (name, extra = {}) => ({name, module: name.split(".")[0], title: name, icon: "window", options: [], line: "task list", loading: "document", place: "environment", roles: [], reads: [], runs: [], events: [], unavailable_reason: "", allowed: true, ...extra});
+const entry = (name, extra = {}) => ({name, module: name.split(".")[0], title: name, icon: "window", options: [], line: "task list", loading: "document", place: "pane", shows: "environment", roles: [], reads: [], runs: [], events: [], unavailable_reason: "", allowed: true, ...extra});
 const SHAPES = {
     "coding:home:coding.builder": {windows: ["messages.chat"], active: "messages.chat"},
     "coding:agent:coding.worker": {windows: ["agents.terminal", "agents.notes"], active: "agents.terminal"},
@@ -16,9 +16,9 @@ const SHAPES = {
 const WINDOWS = [
     entry("messages.chat"),
     entry("tasks.tasks"),
-    entry("agents.terminal", {place: "agent", roles: ["worker"]}),
-    entry("agents.notes", {place: "agent", roles: ["worker"]}),
-    entry("agents.briefing", {place: "agent", roles: ["main"]}),
+    entry("agents.terminal", {shows: "one-agent", roles: ["worker"]}),
+    entry("agents.notes", {shows: "one-agent", roles: ["worker"]}),
+    entry("agents.briefing", {shows: "one-agent", roles: ["main"]}),
     entry("docs.library", {place: "page"}),
 ];
 

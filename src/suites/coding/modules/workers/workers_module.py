@@ -14,6 +14,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list_handler import RecordTodoListHandler
 from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
 from suites.coding.modules.workers.models.todo_item import TodoItem
@@ -101,9 +102,9 @@ class WorkersModule(Module):
     driver_rules = [WorkerTestTurnRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule]
     marks = WORKER_MARKS
     listeners = [DelegatedTaskCommentListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
-    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
+    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.ONE_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
-               WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
+               WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, shows=WindowShows.ONE_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),
                WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],

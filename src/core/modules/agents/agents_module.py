@@ -39,7 +39,7 @@ from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
@@ -62,9 +62,9 @@ class AgentsModule(Module):
                                           ToggleOption("environment", "Environment agents", True), ToggleOption("worker", "Workers", True), ToggleOption("subagent", "Subagents", True),
                                           ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number"),
                                           ToggleOption("every", "Show every agent")]),
-               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list", "usage agents"],
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.ONE_AGENT, reads=["agent list", "usage agents"],
                                  events=["agent.*"]),
-               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
+               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.ONE_AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [MenuAnswerMarkListener]
     marks = AGENT_MARKS

@@ -8,7 +8,7 @@ from core.base.viewer.window_loading import WindowLoading
 @dataclass(frozen=True)
 class ViewerWindow:
     """A window as GET /api/windows lists it for the viewer: its name, module and title, its entry file's URL
-    with its module's fingerprint or, for a document, the line the viewer reads, how and where it loads, the
+    with its module's fingerprint or, for a document, the line the viewer reads, how and where it is drawn, whose work it shows, the
     agent roles it is for, the lines and events it declares, why it is unavailable, whether the journal
     ships it, and its icon, float size, pane menu options and count line."""
 
@@ -33,6 +33,7 @@ class ViewerWindow:
     group: str = ""
     auto_scroll: str = ""
     tabs: Sequence[Mapping[str, str]] = ()
+    shows: str = "environment"
 
     @classmethod
     def listed(cls, window: WindowEntry, fingerprint: str) -> "ViewerWindow":
@@ -40,4 +41,4 @@ class ViewerWindow:
         entry_url = "" if document else f"/modules/{window.module}/{window.entry}?v={fingerprint}"
         return cls(window.name, window.module, window.title, entry_url, window.entry if document else "", window.loading, window.place, window.roles,
                    window.reads, window.runs, window.events, window.unavailable_reason, window.shipped, window.icon,
-                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll, window.tabs)
+                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll, window.tabs, window.shows)
