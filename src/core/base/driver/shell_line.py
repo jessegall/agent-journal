@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 import re
 from dataclasses import dataclass
 
@@ -68,6 +68,11 @@ class ShellLine:
         return self.has_file_redirect or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
+    def has_non_journal_file_writes(self) -> bool:
+        return self.has_file_redirect or any(CommandEffect.WRITES_FILES in part.classification.effects
+                                             for part in self.parts if part.classification.category is not CommandCategory.JOURNAL)
+
+    @property
     def is_readonly(self) -> bool:
         return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_part_writing_files
 
@@ -83,6 +88,13 @@ class ShellLine:
 
     def has_category_part(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)
+
+    def disallowed_part(self, categories: Sequence[str]) -> Part | None:
+        return next((part for part in self.parts if part.classification.category is not CommandCategory.JOURNAL
+                     and part.classification.category.value not in categories), None)
+
+    def denied_program_part(self, programs: Sequence[str]) -> Part | None:
+        return next((part for part in self.parts if part.program in programs), None)
 
     def all_alias_names(self, is_alias: Callable[[str], bool]) -> tuple[str, ...]:
         commands = tuple(part.arguments[0] for part in self.parts_running_journal_command() if part.arguments and is_alias(part.arguments[0]))
