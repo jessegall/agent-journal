@@ -16,7 +16,7 @@ export {default as Skeleton} from "../src/kit/Skeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as PriorityIcon} from "../src/kit/PriorityIcon.vue";
 export {priorityLabel} from "../src/domain/taskPriority.js";
-export {hiddenBy, hiddenSummary, ordered} from "../src/domain/orchestra.js";
+export {ordered} from "../src/domain/orchestra.js";
 export {default as FoldSign} from "../src/kit/FoldSign.vue";
 export {default as Segmented} from "../src/kit/Segmented.vue";
 export {default as FormField} from "../src/kit/FormField.vue";

@@ -22,8 +22,8 @@ const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
     {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
-// the pane menu's options as the window declares them: every state and kind shown, by number, `every` off
-const DEFAULT_OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, subagent: true, order: "number", every: false};
+// the pane menu's option as the window declares it
+const DEFAULT_OPTIONS = {order: "number"};
 const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
@@ -262,38 +262,11 @@ test("an age reads a row's ISO time as well as epoch seconds", () => {
 
 const listed = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
 
-test("switching off a state hides the agents in it and the window says how many it hides", async () => {
-    const element = await drawn(FACTS, {waiting: false});
-    expect(listed(element)).toEqual([2]);
-    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 blocked");
-});
-
-test("switching off the working state hides the working agent", async () => {
-    const element = await drawn(FACTS, {working: false});
-    expect(listed(element)).toEqual([3]);
-    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 working");
-});
-
-test("switching off the not running state hides an ended agent under All", async () => {
-    const element = await drawn(FACTS, {stopped: false});
-    await pickButton(element, "All");
+// message 101362: nothing is ever hidden, even for a pane that saved a switch off in an older version
+test("a switch saved off hides no agent, and no line speaks of hidden agents", async () => {
+    const element = await drawn(FACTS, {subagent: false, waiting: false, working: false});
     expect(listed(element)).toEqual([2, 3]);
-    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 not running");
-});
-
-test("switching off a kind hides the agents of it", async () => {
-    const element = await drawn(FACTS, {subagent: false});
-    expect(listed(element)).toEqual([2]);
-    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 helper");
-    const environments = await drawn(FACTS, {environment: false});
-    expect(listed(environments)).toEqual([3]);
-    expect(environments.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 environment agent");
-});
-
-test("show every agent overrides the switches that are off", async () => {
-    const element = await drawn(FACTS, {working: false, subagent: false, every: true});
-    expect(listed(element)).toEqual([2, 3]);
-    expect(element.querySelector("[data-agents-hidden]")).toBeNull();
+    expect(element.textContent).not.toContain("Hidden");
 });
 
 test("agents are ordered by number, by state and by last active", async () => {
