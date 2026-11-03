@@ -17,6 +17,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 
 - **`shell-input-rewritten-outside-the-runner-rule`** - a rule other than `RunnerRewriteRule` calls `RuleAnswer.rewritten`.
   Only that rule gives a shell line a new input; the others answer with lines or a refusal.
+  `ForeignHooksRule` may forward a managed hook's native `updatedInput` in `RuleAnswer`; it does not build a
+  shell command. The rewrite-conflict check refuses a managed rewrite competing with the runner.
 - **`process-folder-layout-outside-output-folder`** - Python names `heartbeat`, `run.sh`, `<n>.out` or `<n>.status`
   outside `support/output_folder.py`. Read and write a run's files through `OutputFolder`.
 - **`runner-reaches-the-database`** - a file of `tools/journal-run` imports `database/sql` or a SQLite driver. The

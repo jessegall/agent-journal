@@ -25,5 +25,5 @@ def test_agent_rows_filter_search_and_page_before_answering(new_story):
         story.advance(timedelta(seconds=1))
     rows = json.loads(story.run("agent cards --environment main --helpers --show all --limit 1 --page 2 --json", actor=story.user).output_text)["rows"]
     assert [row["session"] for row in rows] == ["second"]
-    matches = json.loads(story.run("agent cards --environment main --helpers --search third --json", actor=story.user).output_text)["rows"]
-    assert [row["session"] for row in matches] == ["third"]
+    matching_rows = json.loads(story.run("agent cards --environment main --helpers --search third --json", actor=story.user).output_text)["rows"]
+    assert [row["session"] for row in matching_rows] == ["third"]

@@ -21,7 +21,8 @@ class RuleAnswers:
 
     @property
     def refusal(self) -> str:
-        refusal = next((rule.answer.refusal for rule in self.answered if rule.answer is not None and rule.answer.refusal), "")
+        refused = [rule.answer for rule in self.answered if rule.answer is not None and rule.answer.refusal]
+        refusal = max(refused, key=lambda answer: answer.refusal_priority).refusal if refused else ""
         return refusal or self.double_rewrite
 
     @property
@@ -30,7 +31,7 @@ class RuleAnswers:
 
     @property
     def double_rewrite(self) -> str:
-        names = [rule.name for rule in self.rewriters]
+        names = [rule.answer.source_name or rule.name for rule in self.rewriters if rule.answer is not None]
         if len(names) < 2:
             return ""
         return f"{', '.join(names[:-1])} and {names[-1]} each rewrite the input of this tool, and only one rule may"
@@ -87,5 +88,9 @@ class RuleAnswers:
     def commands(self) -> list[tuple[str, Command[object]]]:
         return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in rule.answer.commands]
 
+    @property
+    def terminal(self) -> str:
+        return "\n".join(rule.answer.terminal for rule in self.answered if rule.answer is not None and rule.answer.terminal)
+
     def metadata(self) -> dict[str, object]:
-        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules]}
+        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal}

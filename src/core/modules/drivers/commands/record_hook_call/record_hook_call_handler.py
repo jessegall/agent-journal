@@ -1,6 +1,6 @@
 import json
 from collections.abc import Mapping
-from dataclasses import replace
+from dataclasses import asdict, replace
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -77,7 +77,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "resumed": command.event.is_resume, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "resumed": command.event.is_resume, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
@@ -91,7 +91,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
-        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, labelled_lines=[*answers.labelled_lines, *(f"journal: {line}" for line in (*handed_lines.texts, *(line for _, line in refused)))])
+        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal, labelled_lines=[*answers.labelled_lines, *(f"journal: {line}" for line in (*handed_lines.texts, *(line for _, line in refused)))])
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:

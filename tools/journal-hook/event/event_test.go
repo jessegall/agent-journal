@@ -24,11 +24,25 @@ func TestEachTypeWritesItsEmptyListsAsListsAndFitsTheSchema(t *testing.T) {
 	prepared := emptyEvent()
 	schemacheck.Fits(t, prepared)
 	encoded, _ := json.Marshal(prepared)
-	for _, field := range []string{`"files":[]`, `"parts":[{`, `"redirects":[]`, `"arguments":[]`, `"effects":[]`} {
+	for _, field := range []string{`"files":[]`, `"parts":[{`, `"redirects":[]`, `"arguments":[]`, `"effects":[]`, `"foreign":[]`} {
 		if strings.Contains(string(encoded), field) {
 			continue
 		}
 		t.Errorf("%s is missing from %s", field, encoded)
+	}
+}
+
+func TestForeignHookResultsFitTheSchemaAndRoundTrip(t *testing.T) {
+	prepared := emptyEvent()
+	prepared.Foreign = []event.ForeignRun{{ID: "check", ExitCode: 2, Stdout: "blocked", Stderr: "details", Milliseconds: 17, TimedOut: true}}
+	schemacheck.Fits(t, prepared)
+	encoded, err := json.Marshal(prepared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded event.HookEvent
+	if err := json.Unmarshal(encoded, &decoded); err != nil || len(decoded.Foreign) != 1 || decoded.Foreign[0] != prepared.Foreign[0] {
+		t.Fatalf("foreign results did not round trip: %+v, %v", decoded.Foreign, err)
 	}
 }
 

@@ -19,7 +19,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_author import AGENT_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow
@@ -36,6 +36,7 @@ class Provider(ABC):
     title: ClassVar[str]
     executable: ClassVar[str]
     hook_events: ClassVar[Mapping[str, HookEventName]]
+    matchers: ClassVar[Mapping[str, str]] = {}
     subagent_events: ClassVar[Sequence[str]]
     line_events: ClassVar[Sequence[HookEventName]]
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
@@ -46,6 +47,7 @@ class Provider(ABC):
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
     skills_folder: ClassVar[str] = ".agents/skills"
     hook_file: ClassVar[HookFile]
+    hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
@@ -98,6 +100,13 @@ class Provider(ABC):
 
     @abstractmethod
     def hook_trust(self, project: Path) -> HookTrust: ...
+
+    @classmethod
+    def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
+        pass
+
+    def user_hook_files(self) -> tuple[Path, ...]:
+        return ()
 
     def transcript_path(self, event: HookEvent) -> Path | None:
         path = event.raw.get("transcript_path")

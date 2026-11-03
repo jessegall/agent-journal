@@ -15,3 +15,6 @@ class HookCallLike(Protocol):
 
     @property
     def updated_input(self) -> str: ...
+
+    @property
+    def terminal(self) -> str: ...

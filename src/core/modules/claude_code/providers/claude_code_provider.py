@@ -22,7 +22,7 @@ from core.base.provider.program_model import ProgramModel
 from core.base.provider.control_choice import ControlChoice
 from core.base.provider.control_group import ControlGroup
 from core.base.provider.provider import Provider
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.transcript_row import TranscriptRow
@@ -68,7 +68,10 @@ class ClaudeCodeProvider(Provider):
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Grep": ToolType.SEARCH,
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
+    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
+                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "SubagentStop": "agent_type"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
+    hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
@@ -144,6 +147,9 @@ class ClaudeCodeProvider(Provider):
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)
         ClaudeTrust(self.state_file()).trusted(folder)
+
+    def user_hook_files(self) -> tuple[Path, ...]:
+        return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])
 
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "program": "claude",
   "event": "pre_tool_use",
   "session": "s-1",
@@ -23,5 +23,6 @@
     }
   },
   "accepts_lines": true,
-  "launch": ""
+  "launch": "",
+  "foreign": []
 }

@@ -31,5 +31,5 @@ def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
     story.advance(timedelta(hours=1))
     story.expect_success('worker report "The proof is ready"', actor=worker)
     story.expect_success(f'worker send {worker.id} "Correct the total"', actor=story.agent)
-    updated_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    assert json.loads(updated_progress) == json.loads(initial_progress)
+    current_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
+    assert json.loads(current_progress) == json.loads(initial_progress)

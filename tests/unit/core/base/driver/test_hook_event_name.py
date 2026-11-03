@@ -3,13 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_event import HOOK_EVENT_VERSION, HookEvent
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
 
 SCHEMA = Path(__file__).parents[5] / "tools" / "journal-hook" / "event" / "hook_event.schema.json"
-STOP_BODY = {"version": 2, "program": "claude", "event": "stop", "session": "s-1", "firing": "f-1", "fired_at_ms": 1, "actor": "agent", "environment": "main",
-             "subagent": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": ""}
+STOP_BODY = {"version": HOOK_EVENT_VERSION, "program": "claude", "event": "stop", "session": "s-1", "firing": "f-1", "fired_at_ms": 1, "actor": "agent", "environment": "main",
+             "subagent": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []}
 EVENT_NAMES = ["pre_tool_use", "post_tool_use", "post_tool_use_failure", "prompt", "stop", "stop_failure", "session_start", "session_end", "compact",
                "message_display", "tick"]
 

@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.provider.hook_manager import HookManager
+from core.base.provider.managed_hooks import ManagedHooks
 from install.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.upgrade_outcome import UpgradeOutcome
@@ -53,5 +55,6 @@ class RestoreVersionFour:
         entry = VersionFourFiles(self.home.folder).retired / SHELL_ENTRY
         if entry.is_file():
             shutil.copy2(entry, self.home.folder / SHELL_ENTRY)
+        HookManager(self.home.project_folder, ManagedHooks(self.home)).restore()
         lines.extend([f"version 5's database moved aside as version-5.{stamp}.db", f"version 4's journal.db restored from {backup}",
                       *HookSwitch(self.home.folder.parent).restore()])

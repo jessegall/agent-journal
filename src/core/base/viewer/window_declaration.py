@@ -87,4 +87,5 @@ class WindowDeclaration:
 
     @staticmethod
     def reads_model(model: str, read_models: set[str]) -> bool:
-        return any(model == read or model.startswith(f"{read}_") for read in read_models)
+        model_name = model.replace("-", "_")
+        return any(model_name == read or model_name.startswith(f"{read}_") for read in read_models)

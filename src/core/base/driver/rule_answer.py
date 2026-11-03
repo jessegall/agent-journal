@@ -20,6 +20,10 @@ class RuleAnswer:
     ends_layer: bool = False
     updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
     input_after_commands: Callable[[Sequence[object]], Mapping[str, object]] | None = None
+    source_name: str = ""
+    refusal_priority: int = 0
+    dropped_lines: int = 0
+    terminal: str = ""
 
     @classmethod
     def allowed(cls) -> "RuleAnswer":

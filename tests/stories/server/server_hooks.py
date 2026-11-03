@@ -7,6 +7,7 @@ import os
 import sqlite3
 from pathlib import Path
 
+from core.base.driver.hook_event import HOOK_EVENT_VERSION
 from core.base.timing import TIMING_HEADER
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.testing.hook_samples import HookSamples
@@ -49,7 +50,7 @@ def test_a_raw_body_with_no_version_is_read_the_old_way(task_server):
 
 def test_a_hook_object_of_another_version_is_refused_naming_both_versions(task_server):
     story = task_server
-    story.expect_hook_answer("/hook", {**example("stop"), "version": 1}, 400, "version 1 of the prepared object, and this server reads version 2")
+    story.expect_hook_answer("/hook", {**example("stop"), "version": 1}, 400, f"version 1 of the prepared object, and this server reads version {HOOK_EVENT_VERSION}")
 
 
 def test_a_hook_body_the_server_cannot_read_is_refused_with_its_reason(task_server):

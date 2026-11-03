@@ -16,6 +16,7 @@ var shippedTable []byte
 // the fields its rewritten tool input must carry, and the decoder that reads its body.
 type Program struct {
 	Events         map[string]string         `json:"events"`
+	Matchers       map[string]string         `json:"matchers"`
 	SubagentEvents []string                  `json:"subagent_events"`
 	LineEvents     []string                  `json:"line_events"`
 	Refusals       map[string]string         `json:"refusals"`

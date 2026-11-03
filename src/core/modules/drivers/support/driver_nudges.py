@@ -8,6 +8,8 @@ from core.base.driver.rule_outcome import RULE_FAILED
 
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create')
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
+MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, '{text}', turn_limited=False)
+MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, '{text}', turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
@@ -23,4 +25,4 @@ REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", ToolUseSpan(REQUIRED_COMMAND_TOOL_USES))
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or journal agent-block skip {block} --reason "<why>"')
 SUBAGENT_REUSE = NudgeDeclaration("drivers.subagent_reuse", NudgeType.REFUSAL, 'an ended subagent knows these files: send it the job, SendMessage to {agent}, and start no new one', turn_limited=False)
-DRIVER_NUDGES = [SUBAGENT_REUSE, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]
+DRIVER_NUDGES = [MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, SUBAGENT_REUSE, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

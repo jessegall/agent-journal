@@ -19,6 +19,19 @@ type Reply struct {
 	Terminal     string         `json:"terminal"`
 }
 
+func nativeRefusal(stdout string) bool {
+	var answer struct {
+		Decision           string `json:"decision"`
+		HookSpecificOutput struct {
+			PermissionDecision string `json:"permissionDecision"`
+		} `json:"hookSpecificOutput"`
+	}
+	if json.Unmarshal([]byte(stdout), &answer) != nil {
+		return false
+	}
+	return answer.Decision == "block" || answer.HookSpecificOutput.PermissionDecision == "deny"
+}
+
 // Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
 // answer goes through, and the agent is lineAnswer so on an event whose answer takes lines.
 func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration) int {

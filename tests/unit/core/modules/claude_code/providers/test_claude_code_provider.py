@@ -15,6 +15,10 @@ from core.base.private.private_folder import PrivateFolder
 from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 
+
+def test_project_hook_files_include_shared_and_local_settings():
+    assert ClaudeCodeProvider.hook_files == (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
+
 HOOK_FOLDER = Path(__file__).resolve().parents[6] / "tools" / "journal-hook"
 RECORDED = HOOK_FOLDER / "testdata" / "recorded" / "claude"
 PREPARED = HOOK_FOLDER / "programs" / "testdata" / "prepared" / "claude"

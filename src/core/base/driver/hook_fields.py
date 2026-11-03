@@ -18,6 +18,13 @@ def number(data: Mapping[object, object], key: str) -> int:
     return value
 
 
+def boolean(data: Mapping[object, object], key: str) -> bool:
+    value = data.get(key)
+    if not isinstance(value, bool):
+        raise HookEventError(f"{key} is true or false, not {value!r}")
+    return value
+
+
 def texts(data: Mapping[object, object], key: str) -> tuple[str, ...]:
     value = data.get(key, [])
     if not is_list(value) or not all(isinstance(item, str) for item in value):

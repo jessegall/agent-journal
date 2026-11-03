@@ -44,7 +44,8 @@ class AgentHookRoute(HookRoute):
         if agent is None:
             return HookReply.allowed()
         reply = self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
-        return replace(reply, terminal=self.durations.measured(event, agent.environment_id, reply.labelled_lines or [*reply.lines, reply.refusal]))
+        measured = self.durations.measured(event, agent.environment_id, reply.labelled_lines or [*reply.lines, reply.refusal])
+        return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)

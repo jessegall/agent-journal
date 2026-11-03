@@ -9,8 +9,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/event"
 	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 )
@@ -44,7 +46,7 @@ func main() {
 		os.Exit(0)
 	}
 	requestTiming.Stamp("go_stdin")
-	prepared, skip, err := programs.Prepared(program, body, context)
+	prepared, skip, err := preparedHook(program, root, body, context)
 	if skip || err != nil {
 		os.Exit(0)
 	}
@@ -68,11 +70,23 @@ func main() {
 		limit:       limit,
 		timing:      requestTiming,
 	}, nil, time.Now(), StopWindow, RetryPause)
-	if status != http.StatusOK && holdsStop(prepared.Event) {
-		fmt.Fprint(os.Stdout, heldStop())
-		os.Exit(0)
+	if status != http.StatusOK {
+		if code, handled := answerWithoutServer(os.Stdout, os.Stderr, prepared.Event, prepared.Foreign); handled {
+			os.Exit(code)
+		}
 	}
 	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))
+}
+
+func preparedHook(program, root string, body []byte, context programs.Context) (event.HookEvent, bool, error) {
+	runs := make(chan []ForeignRun, 1)
+	go func() {
+		hooks := LoadManaged(filepath.Join(root, ".journal", "hooks", "managed.json"))
+		runs <- runManaged(Matching(hooks, program, hookName(body), body, context.Programs), body)
+	}()
+	prepared, skip, err := programs.Prepared(program, body, context)
+	prepared.Foreign = <-runs
+	return prepared, skip, err
 }
 
 // hookName is the name the program gave the hook, which its answer repeats.

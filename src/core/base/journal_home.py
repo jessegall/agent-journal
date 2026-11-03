@@ -87,6 +87,10 @@ class JournalHome:
     def program_table(self) -> Path:
         return self.folder / "programs.json"
 
+    @property
+    def managed_hooks_file(self) -> Path:
+        return self.folder / "hooks" / "managed.json"
+
     def terminal_file(self, agent_id: int) -> Path:
         return self.folder / "runtime" / "terminals" / f"{agent_id}.log"
 

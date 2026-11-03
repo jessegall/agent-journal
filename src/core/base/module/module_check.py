@@ -33,7 +33,7 @@ class ModuleCheck:
         self.settings, self.skills, self.moves = settings, skills, moves
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        events: list[str] = []
+        events: list[str] = [event for module in modules for event in module.file_events]
         for model in self.models(modules):
             moves = tuple(move.name for move in model.lifecycle.moves()) if model.lifecycle else ()
             events.extend(f"{model.model_name}.{change}" for change in STANDARD_CHANGES + moves)

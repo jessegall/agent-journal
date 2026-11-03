@@ -1,11 +1,34 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestPreparedHookKeepsTimedOutManagedRuns(t *testing.T) {
+	t.Setenv("AGENT_JOURNAL_ACTIVE", "1")
+	t.Setenv("JOURNAL_ENV", "scratch")
+	root := project(t, "")
+	stored, err := json.Marshal(map[string]any{"version": 1, "hooks": []ManagedHook{
+		{ID: "expired", Program: "claude", Event: "PreToolUse", Matcher: "Bash", Command: "printf late", Timeout: 0, State: "on"},
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(root, ".journal", "hooks", "managed.json"), string(stored))
+	context, skip := hookContext(os.Getenv, root, root, os.Getpid(), time.Now())
+	if skip {
+		t.Fatal("the journal actor was skipped")
+	}
+	body := []byte(`{"hook_event_name":"PreToolUse","session_id":"s-1","tool_name":"Bash","tool_input":{"command":"true"}}`)
+	prepared, skip, err := preparedHook("claude", root, body, context)
+	if err != nil || skip || len(prepared.Foreign) != 1 || !prepared.Foreign[0].TimedOut || prepared.Foreign[0].Stdout != "" {
+		t.Fatalf("prepared event = %+v, skip = %t, error = %v", prepared, skip, err)
+	}
+}
 
 func TestTheHookIsSkippedOrPreparedAsHookShDecides(t *testing.T) {
 	started := time.UnixMilli(1793395000123)

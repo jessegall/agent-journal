@@ -1,10 +1,12 @@
 import json
+from pathlib import Path
 from dataclasses import fields
 
 from core.base.change.change import BOOKKEEPING_FIELDS, Change
 from core.base.change.logged_event import LoggedEvent
 from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
+from core.base.command.context import Context
 from core.base.page import Page
 from core.base.model.table import stored
 from core.base.model.model import Model
@@ -47,6 +49,13 @@ class EventLog:
         return self.table.insert({
             "actor_id": actor_id, "environment_id": None, "row_id": REGISTRY_ROW_ID, "name": REGISTRY_SYNC_EVENT, "row_table": REGISTRY_TABLE,
             "command": SYNC_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"fingerprint": [None, fingerprint]}), "created_at": timestamp,
+        })
+
+    def write_file_change(self, name: str, path: Path, context: Context) -> int:
+        return self.table.insert({
+            "actor_id": context.actor.id, "environment_id": context.environment_id, "row_id": 0, "name": name, "row_table": "files",
+            "command": context.command.label(), "cause_id": context.cause_id, "skipped_guards": json.dumps(sorted(context.skipped_guards)),
+            "data": json.dumps({"path": [None, str(path)]}), "created_at": context.timestamp.text,
         })
 
     def write_journal_booting(self, actor_id: int, timestamp: str) -> int:

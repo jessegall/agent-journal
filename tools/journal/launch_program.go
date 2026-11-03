@@ -36,11 +36,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	_ = launch.SaveAnswers(home, choice.Answers)
-	if trust, err := journal.Run("program", "trust", request.Program, choice.Folder); err == nil {
-		if line := launch.HookTrustLine(strings.TrimSpace(trust)); line != "" {
-			fmt.Fprintln(stderr, line)
-		}
-	}
+	prepareProgramHooks(journal, request.Program, choice.Folder, stderr)
 	inputs := launch.NewTerminalInputs()
 	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, Told: journal.TellMenuAnswer}, inputs); err == nil {
 		defer listener.Close()
@@ -94,6 +90,15 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	return SuccessCode
+}
+
+func prepareProgramHooks(journal launch.CommandJournal, program, folder string, stderr io.Writer) {
+	_, _ = journal.Run("program", "manage", program, folder)
+	if trust, err := journal.Run("program", "trust", program, folder); err == nil {
+		if line := launch.HookTrustLine(strings.TrimSpace(trust)); line != "" {
+			fmt.Fprintln(stderr, line)
+		}
+	}
 }
 
 func launchRequest(argv []string) (launch.Request, error) {

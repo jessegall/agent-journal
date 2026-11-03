@@ -19,7 +19,7 @@ from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
@@ -57,6 +57,9 @@ class CodexProvider(Provider):
                        "request_user_input": ToolType.QUESTION}
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
+    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",
+                "SubagentStart": "agent_type", "SubagentStop": "agent_type"}
+    hook_files = tuple([Path(".codex/hooks.json")])
     hook_file = HookFile(Path(".codex/hooks.json"), {}, {
         "SessionStart": {"additionalContextLimit": 0},
         "UserPromptSubmit": {"additionalContextLimit": 0},
@@ -148,3 +151,12 @@ class CodexProvider(Provider):
 
     def trust_record(self) -> CodexTrust:
         return CodexTrust(self.folders.folder(HOME_VARIABLE, ".codex") / "config.toml")
+
+    def user_hook_files(self) -> tuple[Path, ...]:
+        folder = self.folders.folder(HOME_VARIABLE, ".codex")
+        return (folder / "hooks.json", folder / "config.toml")
+
+    @classmethod
+    def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
+        config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"
+        CodexTrust(config).remapped(path.resolve(), original_hooks, updated_hooks)

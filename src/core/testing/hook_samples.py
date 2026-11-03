@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.base.driver.hook_event import HOOK_EVENT_VERSION
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_sample import HookSample
 from core.testing.shell_part import ShellPart
@@ -14,8 +15,8 @@ class HookSamples:
 
     @staticmethod
     def sample(event: str, tool: dict[str, object] | None = None, prompt: str | None = None) -> HookSample:
-        return HookSample({"version": 2, "program": SAMPLE_PROGRAM, "event": event, "session": "s-1", "firing": SAMPLE_FIRING, "fired_at_ms": 1, "actor": "agent",
-                "environment": "main", "subagent": "", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": ""})
+        return HookSample({"version": HOOK_EVENT_VERSION, "program": SAMPLE_PROGRAM, "event": event, "session": "s-1", "firing": SAMPLE_FIRING, "fired_at_ms": 1, "actor": "agent",
+                "environment": "main", "subagent": "", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []})
 
     @staticmethod
     def tool_use(name: str, category: ToolType, files: list[str], diff: object, **fields: object) -> HookSample:

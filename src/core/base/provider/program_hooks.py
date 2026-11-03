@@ -3,12 +3,17 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from core.base.provider.hook_partition import HookPartition
+from core.base.provider.hook_block_partition import HookBlockPartition
+from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.provider import Provider
 from core.base.type_guards import is_list, is_mapping
 
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 # Longer than the hook program's wait for a restarting server and its last ask, so the program never kills that wait.
 HOOK_TIMEOUT_SECONDS = 90
+TIMEOUT_PADDING_SECONDS = 5
+JOURNAL_WAIT_CEILING_SECONDS = HOOK_TIMEOUT_SECONDS - TIMEOUT_PADDING_SECONDS
 
 
 @dataclass(frozen=True)
@@ -23,21 +28,27 @@ class ProgramHooks:
     timeout_seconds: int
     entry_fields: Mapping[str, object] = field(default_factory=lambda: {})
     provider: type[Provider] | None = None
-    event_fields: Mapping[str, Mapping[str, object]] = field(default_factory=dict)
+    event_fields: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: {})
 
     @classmethod
     def hooks(cls, provider: type[Provider], folder: Path) -> "ProgramHooks":
         return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider,
                    event_fields=provider.hook_file.event_values)
 
-    def write(self, runner: str, root: Path) -> None:
+    def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()
-        hooks = self.without_journals(settings.get("hooks"))
+        hooks = self.partitioned(settings.get("hooks")).native
         for event in self.events:
-            hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.timeout_seconds,
+            hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
                                                                      **self.entry_fields, **self.event_fields.get(event, {})}]})
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps({**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
+        provider_settings: Mapping[str, object] = self.provider.hook_settings(runner, root) if self.provider else {}
+        self.store(self.path, {**settings, **provider_settings, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
+
+    def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
+        longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
+        if not longest:
+            return self.timeout_seconds
+        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS)
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")
@@ -45,14 +56,62 @@ class ProgramHooks:
                                                 for event in self.events)
 
     def settings(self) -> dict[object, object]:
-        loaded: object = json.loads(self.path.read_text() or "{}") if self.path.is_file() else {}
+        return self.read(self.path)
+
+    @property
+    def uses_shell_runner(self) -> bool:
+        return JOURNAL_MARKS[1] in json.dumps(self.settings().get("hooks"))
+
+    @staticmethod
+    def read(path: Path) -> dict[object, object]:
+        loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
         return dict(loaded) if is_mapping(loaded) else {}
 
     @staticmethod
-    def without_journals(stored_hooks: object) -> dict[str, list[object]]:
-        """The hooks a settings file stores under hooks, event by event, without the blocks that are the journal's."""
-        return {str(event): [block for block in blocks if not ProgramHooks.is_journals(block)] for event, blocks in stored_hooks.items()
-                if is_list(blocks)} if is_mapping(stored_hooks) else {}
+    def store(path: Path, settings: Mapping[object, object]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(dict(settings), indent=2) + "\n")
+
+    @staticmethod
+    def partitioned(stored_hooks: object) -> HookPartition:
+        kept: dict[str, list[object]] = {}
+        native: dict[str, list[object]] = {}
+        journal: dict[str, list[object]] = {}
+        commands: list[tuple[str, str, Mapping[str, object]]] = []
+        if not is_mapping(stored_hooks):
+            return HookPartition(kept, native, journal, commands)
+        events = {str(event): blocks for event, blocks in stored_hooks.items()}
+        for event, blocks in events.items():
+            if not is_list(blocks):
+                continue
+            for block in blocks:
+                parts = ProgramHooks._partitioned_block(event, block)
+                ProgramHooks._append_blocks(kept, event, parts.kept)
+                ProgramHooks._append_blocks(native, event, parts.native)
+                ProgramHooks._append_blocks(journal, event, parts.journal)
+                commands.extend(parts.commands)
+        return HookPartition(kept, native, journal, commands)
+
+    @staticmethod
+    def _partitioned_block(event: str, block: object) -> HookBlockPartition:
+        if not is_mapping(block) or not is_list(entries := block.get("hooks")):
+            return HookBlockPartition([block], [block], [], [])
+        journal = [entry for entry in entries if ProgramHooks.is_journals(entry)]
+        native = [entry for entry in entries if not ProgramHooks.is_journals(entry)]
+        commands = [{str(key): value for key, value in entry.items()} for entry in native if is_mapping(entry) and entry.get("type") == "command"]
+        kept = [entry for entry in entries if entry not in commands]
+        return HookBlockPartition(
+            [{**block, "hooks": kept}] if kept else [],
+            [{**block, "hooks": native}] if native else [],
+            [{**block, "hooks": journal}] if journal else [],
+            [(event, str(block.get("matcher", "")), entry) for entry in commands],
+        )
+
+    @staticmethod
+    def _append_blocks(target: dict[str, list[object]], event: str, blocks: Sequence[object]) -> None:
+        if not blocks:
+            return
+        target.setdefault(event, []).extend(blocks)
 
     @staticmethod
     def is_journals(block: object) -> bool:

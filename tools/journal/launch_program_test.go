@@ -1,9 +1,32 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/jessegall/agent-journal/tools/journal/launch"
 )
+
+func TestLaunchManagesProjectHooksBeforeTrustAndContinuesAfterFailure(t *testing.T) {
+	for _, manageError := range []error{nil, errors.New("cannot save hooks")} {
+		var calls [][]string
+		journal := launch.CommandJournal{Run: func(arguments ...string) (string, error) {
+			calls = append(calls, arguments)
+			if arguments[1] == "manage" {
+				return "", manageError
+			}
+			return "trusted", nil
+		}}
+		var stderr bytes.Buffer
+		prepareProgramHooks(journal, "claude", "/project with spaces", &stderr)
+		want := [][]string{{"program", "manage", "claude", "/project with spaces"}, {"program", "trust", "claude", "/project with spaces"}}
+		if !reflect.DeepEqual(calls, want) {
+			t.Fatalf("calls = %v, want %v", calls, want)
+		}
+	}
+}
 
 func TestALaunchTakesTheWorktreeFlagAndKeepsEveryOtherArgumentForTheProgram(t *testing.T) {
 	request, err := launchRequest([]string{"claude", "--model", "sonnet", "--worktree", "calm-river", "--effort", "low"})

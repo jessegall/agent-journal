@@ -15,6 +15,10 @@ from core.base.private.private_folder import PrivateFolder
 from core.base.private.server_keys import ServerKeys
 from core.modules.codex.providers.codex_provider import CodexProvider
 
+
+def test_project_hook_files_include_codex_hooks():
+    assert CodexProvider.hook_files == tuple([Path(".codex/hooks.json")])
+
 HOOK_FOLDER = Path(__file__).resolve().parents[6] / "tools" / "journal-hook"
 RECORDED = HOOK_FOLDER / "testdata" / "recorded" / "codex"
 PREPARED = HOOK_FOLDER / "programs" / "testdata" / "prepared" / "codex"

@@ -23,7 +23,7 @@ class HookReply:
 
     @classmethod
     def stored(cls, call: HookCallLike) -> "HookReply":
-        return cls(call.refusal, call.lines.splitlines(), call.id, json.loads(call.updated_input))
+        return cls(call.refusal, call.lines.splitlines(), call.id, json.loads(call.updated_input), terminal=call.terminal)
 
     def json(self) -> dict[str, object]:
         return {"refusal": self.refusal, "lines": list(self.lines), "hook_call_id": self.hook_call_id, "updated_input": dict(self.updated_input), "terminal": self.terminal}
