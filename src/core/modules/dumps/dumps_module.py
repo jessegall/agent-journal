@@ -1,6 +1,8 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.dumps.support.dump_searcher import DumpSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -48,6 +50,6 @@ class DumpsModule(Module):
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
-    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
+    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  events=["dump.*", "dump_item.*"])]
     seeders = [DumpsSeeder]

@@ -132,7 +132,7 @@ async function toggleComments(row) {
                 </template>
             </section>
         </template>
-        <ListTools :tools="tools" placeholder="Search the links" />
+        <ListTools :tools="tools" />
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No link is open">
             <template #default="{row}">
                 <div class="shares-open" :data-share-row="row.id">

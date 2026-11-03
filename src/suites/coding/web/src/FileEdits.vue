@@ -11,7 +11,7 @@ const shown = computed(() => {
 </script>
 
 <template>
-    <SearchBar v-model="filter" class="filter" placeholder="Filter files" data-edits-filter />
+    <SearchBar v-model="filter" class="filter" data-edits-filter />
     <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" :empty="filter ? 'No file matches' : 'No edits yet'">
         <template #default="{row}">
             <span class="main">{{ row.path }}</span>

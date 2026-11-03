@@ -11,6 +11,7 @@ class Suggestion(Model):
 
     model_name = "suggestion"
     cli_name = "suggestion"
+    search_fields = ["title"]
 
     environment_id: int
     creator_id: int

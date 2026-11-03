@@ -11,7 +11,7 @@ const watch = (row) => context.run(`output watch ${row.id}`);
 </script>
 
 <template>
-    <ListTools :tools="tools" placeholder="Search the commands" />
+    <ListTools :tools="tools" />
     <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet">
         <template #default="{row}">
             <div class="run">

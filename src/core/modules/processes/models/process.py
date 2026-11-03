@@ -15,6 +15,7 @@ class Process(Model):
 
     model_name = "process"
     cli_name = "process"
+    search_fields = ["line"]
     lifecycle = ProcessLifecycle
 
     environment_id: int

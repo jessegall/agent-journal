@@ -19,6 +19,7 @@ const props = defineProps({
     declared: {type: Array, default: () => []},
     autoScroll: {type: String, default: ""},
     tabs: {type: Array, default: () => []},
+    search: {type: Object, default: () => ({})},
     readOnly: Boolean,
     shared: {type: Object, default: null},
 });
@@ -46,6 +47,7 @@ const context = windowContext({
     setOption: (key, value) => emit("option", key, value),
     autoScroll: props.autoScroll,
     tabs: props.tabs,
+    search: props.search,
     readOnly: props.readOnly,
     shared: props.shared,
     open: (window, agent) => {

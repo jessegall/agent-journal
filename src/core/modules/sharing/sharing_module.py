@@ -1,5 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.sharing.support.share_searcher import ShareSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -42,5 +44,5 @@ class SharingModule(Module):
     handlers = [MakeShareLinkHandler, AcceptShareLinkHandler, CountShareViewHandler, LeaveShareCommentHandler]
     moves = [ShareMove]
     seeders = [SharingSeeder]
-    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.SHARE,
+    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
                                  reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"])]

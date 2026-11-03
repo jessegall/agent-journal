@@ -57,6 +57,7 @@ watch(
             :declared="entry.options"
             :auto-scroll="entry.auto_scroll"
             :tabs="entry.tabs"
+            :search="entry.search"
             :events="entry.events"
             :unavailable-reason="entry.unavailable_reason || loadFailure"
             @option="(key, value) => emit('option', key, value)"

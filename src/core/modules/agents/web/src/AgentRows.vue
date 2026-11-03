@@ -44,7 +44,7 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
 <template>
     <div class="agents" data-window-flush>
         <div class="agents-bar">
-            <SearchBar v-model="words" class="agents-search" placeholder="Search the agents" data-agents-search>
+            <SearchBar v-model="words" class="agents-search" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
             </SearchBar>
         </div>

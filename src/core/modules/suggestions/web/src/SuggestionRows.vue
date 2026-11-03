@@ -8,7 +8,7 @@ const answerText = (row) => (row.answer ? `Answer: ${row.answer}` : "Answer: non
 </script>
 
 <template>
-    <ListTools :tools="tools" placeholder="Search the suggestions" />
+    <ListTools :tools="tools" />
     <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No suggestions yet">
         <template #default="{row}">
             <div class="suggestion" :data-row="row.id">

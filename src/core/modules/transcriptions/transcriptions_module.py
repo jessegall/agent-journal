@@ -1,5 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.transcriptions.support.transcription_searcher import TranscriptionSearcher
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -36,5 +38,5 @@ class TranscriptionsModule(Module):
     nudges = TRANSCRIPTION_NUDGES
     listeners = [TranscriptionTaskListener, TranscriptSequenceListener]
     seeders = [TranscriptionsSeeder]
-    windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
                                  reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"])]

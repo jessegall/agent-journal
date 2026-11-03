@@ -5,6 +5,7 @@ import SearchBar from "./SearchBar.vue";
 
 // the search of a list, with its order and its open or closed choice in the bar's menu
 defineProps({tools: {type: Object, required: true}, placeholder: {type: String, default: "Search"}});
+const emit = defineEmits(["pick"]);
 const ORDERS = [
     {key: "newest", label: "Newest"},
     {key: "title", label: "A to Z"},
@@ -18,7 +19,7 @@ const STATES = [
 
 <template>
     <div class="list-tools" data-list-tools>
-        <SearchBar v-model="tools.words.value" class="list-tools-search" :placeholder="placeholder" data-list-search>
+        <SearchBar v-model="tools.words.value" class="list-tools-search" :placeholder="placeholder" data-list-search @pick="emit('pick', $event)">
             <template #menu>
                 <MenuLabel>Order</MenuLabel>
                 <template v-for="order in ORDERS" :key="order.key">

@@ -1,5 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.reviews.support.review_step_searcher import ReviewStepSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -61,7 +63,7 @@ class ReviewsModule(Module):
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
     marks = REVIEW_MARKS
-    windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW,
+    windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
                                  reads=["review board", "review-step board", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"]),
                WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"])]
     seeders = [ReviewsSeeder]

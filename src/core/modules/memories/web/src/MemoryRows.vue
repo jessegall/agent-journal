@@ -45,7 +45,7 @@ async function make() {
         <template v-if="refusal">
             <p class="memories-refusal" role="alert" data-memory-refusal>{{ refusal }}</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the memories" />
+        <ListTools :tools="tools" />
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No memories yet">
             <template #default="{row}">
                 <button type="button" class="memory" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">

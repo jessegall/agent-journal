@@ -11,6 +11,7 @@ class ReviewStep(Model):
 
     model_name = "review_step"
     cli_name = "review-step"
+    search_fields = ["text"]
 
     review_id: int
     creator_id: int

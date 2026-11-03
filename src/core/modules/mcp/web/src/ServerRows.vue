@@ -68,7 +68,7 @@ async function giveKey(row) {
         </template>
         <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
     </div>
-    <ListTools :tools="tools" placeholder="Search the servers" />
+    <ListTools :tools="tools" />
     <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
         <template #default="{row}">
             <div class="server" :data-row="row.id">

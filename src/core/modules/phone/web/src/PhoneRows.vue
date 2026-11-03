@@ -40,7 +40,7 @@ readTunnel();
                 </template>
             </ul>
         </div>
-        <ListTools :tools="tools" placeholder="Search the phones" />
+        <ListTools :tools="tools" />
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired">
             <template #default="{row}">
                 <span class="phones-name">{{ row.name }}</span>

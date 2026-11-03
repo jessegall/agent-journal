@@ -8,7 +8,7 @@ const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row
 
 <template>
     <div class="questions">
-        <ListTools :tools="tools" placeholder="Search the questions" />
+        <ListTools :tools="tools" />
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
                 <QuestionCard :row="row" @changed="load" />

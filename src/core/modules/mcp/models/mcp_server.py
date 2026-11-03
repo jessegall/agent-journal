@@ -13,6 +13,7 @@ class McpServer(Model):
 
     model_name = "mcp_server"
     cli_name = "mcp"
+    search_fields = ["name", "title"]
 
     creator_id: int
     name: str

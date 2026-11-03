@@ -27,7 +27,7 @@ const sized = (by) => set({size: Math.max(SIZES[0], Math.min(SIZES[SIZES.length 
 
 <template>
     <div class="feed-bar" data-feed-bar>
-        <SearchBar :model-value="filter" class="feed-bar-filter" placeholder="Filter files" data-feed-filter @update:model-value="emit('filter', $event)">
+        <SearchBar :model-value="filter" class="feed-bar-filter" data-feed-filter @update:model-value="emit('filter', $event)">
             <template #menu>
                 <template v-for="toggle in TOGGLES" :key="toggle.key">
                     <MenuItem :data-feed-toggle="toggle.key" :checked="Boolean(options[toggle.key]) && !limited(toggle.key)" :aria-pressed="Boolean(options[toggle.key]) && !limited(toggle.key)" :disabled="limited(toggle.key)" @click="set({[toggle.key]: !options[toggle.key]})">{{ toggle.label }}</MenuItem>
