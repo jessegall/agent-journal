@@ -4,12 +4,12 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.timestamp import MINUTE_SECONDS
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
 
 LOG_DUE_MINUTES = 30
-MINUTE_SECONDS = 60
 
 
 class WorkerLogDueRule(DriverRule):

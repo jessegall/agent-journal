@@ -12,14 +12,11 @@ NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
 ALLOWED_PLACEHOLDERS = frozenset({
     "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
-    "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "programs", "proofs", "question",
+    "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "programs", "proof", "proofs", "question",
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "items",
 })
 # whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
 FOREIGN_TEMPLATES = frozenset({"REMINDER_LINE", "REMINDER_BLOCK", "PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
-# a worker's job and the words a person or an agent sends it, passed on as file_names
-PASSED_ON_LINES = ("send_worker_handler.py", "short_proof_handler.py", "ended_worker_listener.py", "worker_resume.py", "merge_worker_handler.py",
-                   "record_bypass_line_handler.py", "record_hook_call_handler.py", "new_driver_lines_listener.py")
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
@@ -76,5 +73,5 @@ def test_every_line_is_in_a_register_of_its_module(name, text, path):
 
 
 def test_no_line_to_an_agent_is_written_on_the_fly():
-    file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', path.read_text()) and path.name not in PASSED_ON_LINES]
+    file_names = [path.name for path in source_files() if re.search(r'AgentLine\([^)]*text=f"', path.read_text())]
     assert not file_names, f"these write a line to an agent with no registered template: {file_names}"

@@ -34,7 +34,8 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented: On task 1", "use the new cart")
+    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented on task:1: journal task brief 1")
+    story.expect_absent(f"agent-line list --agent {worker.id}", "use the new cart")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
 

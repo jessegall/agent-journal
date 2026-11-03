@@ -12,7 +12,7 @@ SOURCE = "workers.report"
 
 class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
     """Saves the worker's report as an agent message of the worker, which the chat draws as the worker's, and
-    gives the same text to its main agent as a line."""
+    tells its main agent the message's number as a line."""
 
     command = RecordWorkerReport
 
@@ -21,5 +21,5 @@ class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
 
     def handle(self, command: RecordWorkerReport, context: Context) -> Message:
         message = self.repository.save(Message(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=MessageType.AGENT, text=command.text), context)
-        self.repository.save(AgentLine(agent_id=command.main_agent_id, creator_id=context.actor.id, text=WORKER_REPORT.nudge(worker=command.agent_id, job=command.text).text, source=SOURCE), context)
+        self.repository.save(AgentLine(agent_id=command.main_agent_id, creator_id=context.actor.id, text=WORKER_REPORT.nudge(worker=command.agent_id, message=message.id).text, source=SOURCE), context)
         return message

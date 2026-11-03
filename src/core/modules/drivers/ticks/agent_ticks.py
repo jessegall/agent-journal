@@ -5,11 +5,10 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from core.base.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
 
-MINUTE_SECONDS = 60
 MAIN_ACTOR = "agent"
 
 

@@ -71,7 +71,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             return
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
         self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        line = WORKER_NEXT_TASK.nudge(task=following.id, job=f"{following.title}\n{following.brief}").text
+        line = WORKER_NEXT_TASK.nudge(task=following.id).text
         self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=WORKER_JOB_SOURCE), context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:

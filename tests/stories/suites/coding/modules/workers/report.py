@@ -17,7 +17,8 @@ def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_
     worker = delivered_worker(story, repository)
     story.expect_hook_allowed(worker_session(story, worker), stop_saying(REPORT))
     story.expect_text("message feed --json", REPORT, f'"worker_id": {worker.id}')
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} reports: {REPORT}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} reported in message:")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", REPORT)
 
 
 def test_a_worker_that_stops_with_no_words_leaves_no_report(new_story):

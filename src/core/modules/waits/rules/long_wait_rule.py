@@ -5,12 +5,12 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.timestamp import MINUTE_SECONDS
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.support.wait_nudges import WAIT_CHECK
 
 LONG_WAIT_MINUTES = 10
-MINUTE_SECONDS = 60
 
 
 class LongWaitRule(DriverRule):

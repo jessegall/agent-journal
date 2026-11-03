@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+MINUTE_SECONDS = 60
+
 
 @dataclass(frozen=True, order=True)
 class Timestamp:

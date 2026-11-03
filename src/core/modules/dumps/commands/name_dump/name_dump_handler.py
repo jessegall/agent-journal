@@ -5,10 +5,9 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.title_limit import TITLE_LIMIT_CHARACTERS
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
 from core.modules.dumps.models.dump import Dump
-
-TITLE_LIMIT_CHARACTERS = 80
 
 
 class NameDumpHandler(Handler[NameDump, Dump]):

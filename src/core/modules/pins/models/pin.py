@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
+from core.base.title_limit import TITLE_LIMIT_CHARACTERS
 
-TITLE_LIMIT_CHARACTERS = 80
 ADDRESS = re.compile(r"^https?://\S+$")
 ROW = re.compile(r"^[a-z_]+:\d+$")
 COMMAND = re.compile(r"^!\s*\S")

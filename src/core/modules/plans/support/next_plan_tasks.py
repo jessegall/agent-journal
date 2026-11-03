@@ -6,10 +6,9 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.listeners.support.checkpoint_limit import CheckpointLimit
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
-UNFINISHED_STATES = tuple(state for state in TaskState if state not in (TaskState.COMPLETED, TaskState.CANCELLED))
 
 
 class NextPlanTasks:

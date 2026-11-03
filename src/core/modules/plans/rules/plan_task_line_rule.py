@@ -12,10 +12,9 @@ from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED, PHASE_FINISHED, PLAN_FINISHED, PLAN_STALLED
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 
-UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
 BLOCKED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
 

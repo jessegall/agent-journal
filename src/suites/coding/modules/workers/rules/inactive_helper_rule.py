@@ -8,11 +8,11 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.timestamp import MINUTE_SECONDS
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
-MINUTE_SECONDS = 60
 HELPER_ROLES = (AgentRole.WORKER, AgentRole.SUBAGENT)
 
 
