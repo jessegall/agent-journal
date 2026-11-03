@@ -85,7 +85,7 @@ test("a list shows the skeleton in the shape it was given until its first read a
 });
 
 test("a window drawn as a page of its own keeps a gutter around its content", () => {
-    expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 16px 20px;/);
+    expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 8px 12px;/);
 });
 
 // task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the pins

@@ -33,7 +33,7 @@ export function windowBuild({entries, outDir = "web/dist", frame = false}) {
         publicDir: false,
         build: {
             outDir,
-            emptyOutDir: false,
+            emptyOutDir: true,
             lib: {entry: entries, formats: ["es"], fileName: (_, name) => `${name}.js`, cssFileName: "windows"},
             rollupOptions: {external: frame ? [/^\/viewer\/kit\//] : ["vue", "@journal/window-kit"]},
         },
