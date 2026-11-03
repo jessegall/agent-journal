@@ -4716,16 +4716,16 @@ function yo(e, t) {
   return { load: s, read: a, fetchAll: async () => s(await a()), find: (o) => n.value.get(o) || null };
 }
 const wo = yo("/api/marks", "marks"), Yv = wo.fetchAll, v1 = wo.find, y1 = 2e3;
-function ko(e, t) {
-  let n = null;
-  const s = () => {
-    n = setTimeout(async () => {
-      t() && await e(), s();
-    }, y1);
+function ko(e, t, n = y1) {
+  let s = null;
+  const a = () => {
+    s = setTimeout(async () => {
+      t() && await e(), a();
+    }, n);
   };
   De(async () => {
-    await e(), s();
-  }), yt(() => clearTimeout(n));
+    await e(), a();
+  }), yt(() => clearTimeout(s));
 }
 const w1 = ["data-ref"], k1 = ["data-ref"], b1 = { class: "mark-row" }, $1 = "dock add", x1 = {
   __name: "MarkHost",
@@ -6100,7 +6100,7 @@ const lg = {
       ])) : we(t.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, ds = /* @__PURE__ */ Z(gg, [["__scopeId", "data-v-c91b190e"]]), vg = {}, yg = { class: "menu-label" };
+}, ds = /* @__PURE__ */ Z(gg, [["__scopeId", "data-v-fec99974"]]), vg = {}, yg = { class: "menu-label" };
 function wg(e, t) {
   return l(), d("span", yg, [
     we(e.$slots, "default", {}, void 0, !0)
@@ -8518,7 +8518,7 @@ const Tv = /* @__PURE__ */ Cv(Ov), Bv = ["width", "height", "viewBox"], Iv = ["w
       }, null, 8, Rv)
     ], 8, Bv));
   }
-}, Ky = /* @__PURE__ */ Z(Lv, [["__scopeId", "data-v-489f0852"]]), Yy = rr(() => import("./VoiceFigure-DD2rtFII.js").then((e) => e.V)), Jy = "1.0.0", Zy = "3.5";
+}, Ky = /* @__PURE__ */ Z(Lv, [["__scopeId", "data-v-489f0852"]]), Yy = rr(() => import("./VoiceFigure-C5kO1QjY.js").then((e) => e.V)), Jy = "1.0.0", Zy = "3.5";
 export {
   Wv as $,
   dy as A,
