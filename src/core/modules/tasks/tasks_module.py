@@ -52,6 +52,7 @@ from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskReminderRule
 from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
 from core.modules.tasks.rules.task_filed_rule import TaskFiledRule
+from core.modules.tasks.rules.task_start_rule import TaskStartRule
 from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -107,7 +108,7 @@ class TasksModule(Module):
     listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
