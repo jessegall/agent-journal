@@ -12,6 +12,7 @@ from core.base.timing_log import TimingLog
 from core.base.caller.caller_request import CallerRequest
 from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
+from server.client_left import client_left
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.chunk_stream import ChunkStream
@@ -90,6 +91,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             answer()
         except Exception as error:
+            if client_left(error):
+                self.close_connection = True
+                return
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.answer_json(500, {"error": f"{type(error).__name__}: {error}"})
 
