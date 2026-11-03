@@ -24,7 +24,7 @@ def filled(story) -> None:
     for number in range(ROW_COUNT):
         story.run(f'task make "Task {number}" --brief "A job to do" --environment main', actor=story.user)
         story.run(f'message send "Message {number}" --environment main', actor=story.user)
-        story.run(f'memory make fact "Fact {number}" --project', actor=story.user)
+        story.expect_success(f'memory make "Fact {number}" --type fact --project', actor=story.user)
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):

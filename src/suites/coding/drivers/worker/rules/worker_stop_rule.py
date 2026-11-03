@@ -27,7 +27,7 @@ class WorkerStopRule(DriverRule):
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
-            return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id, reason=row.reason) for row in blocked))
+            return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
         if not rows and worktree is not None and self.proofs.tests_waiting(worktree.id):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
