@@ -1,0 +1,50 @@
+from core.base.agent_role import AgentRole
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.path_mentions import PathMentions
+from core.base.driver.part import Part
+from core.base.driver.rule_answer import RuleAnswer
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+
+DISPATCH_ARGUMENTS = ("worker", "dispatch")
+NEW_WORKER_FLAG = "--fresh"
+
+
+class WorkerReuseRule(DriverRule):
+    """A dispatch whose tasks' briefs name a file an ended worker changed in the worktree it still has is refused,
+    naming the line that sends it the job; --fresh passes when the job needs a new worker."""
+
+    name = "workers.worker-reuse"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    roles = [AgentRole.MAIN]
+
+    def __init__(self, queries: Queries, git: WorktreeGit) -> None:
+        self.queries, self.git = queries, git
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        for part in shell.parts if shell is not None else ():
+            if part.arguments[:2] == DISPATCH_ARGUMENTS and NEW_WORKER_FLAG not in part.arguments:
+                worker_id = self.worker_with_files(part, hook.environment_id)
+                if worker_id is not None:
+                    return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
+        return RuleAnswer.allowed()
+
+    def worker_with_files(self, part: Part, environment_id: int) -> int | None:
+        task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
+        paths = PathMentions.found(" ".join(self.queries.query(Task).find(task_id).brief for task_id in task_ids))
+        if not paths:
+            return None
+        for worktree in self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows():
+            is_ended = self.queries.query(Agent).find(worktree.agent_id).ended_at is not None
+            if is_ended and PathMentions.shared(paths, frozenset(self.git.changed_files(worktree))):
+                return worktree.agent_id
+        return None

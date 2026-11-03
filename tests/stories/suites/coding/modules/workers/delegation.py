@@ -4,7 +4,10 @@ from core.base.query.conditions.is_null import IsNull
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -59,6 +62,32 @@ def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(
     story.run_listeners()
     assert "handed in" not in marks_text(story), marks_text(story)
     story.expect_refusal("worker next", "task 2 is your last", actor=worker)
+
+
+def dispatch_sample(*arguments: str):
+    return HookSamples.shell("journal worker dispatch", ShellPart("journal", "journal", ["worker", "dispatch", *arguments]))
+
+
+def ended_worker_story(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.run(f"agent end {worker.id}")
+    story.run('task make "Tax" --brief "Add the tax in cart.py" --environment main', actor=story.agent)
+    story.run('task make "Till" --brief "Print the till in till.py" --environment main', actor=story.agent)
+    return story, worker
+
+
+def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_story):
+    story, worker = ended_worker_story(new_story)
+    story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"journal worker send {worker.id}")
+
+
+def test_fresh_passes_and_a_dispatch_on_other_files_goes_out(new_story):
+    story, _ = ended_worker_story(new_story)
+    story.expect_hook_allowed("s-1", dispatch_sample("2", "--model", "sonnet", "--fresh"))
+    story.expect_hook_allowed("s-1", dispatch_sample("3", "--model", "sonnet"))
 
 
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):

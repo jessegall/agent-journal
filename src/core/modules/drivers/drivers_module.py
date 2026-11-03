@@ -31,6 +31,7 @@ from core.modules.drivers.commands.resume_agent.resume_agent_subcommand import R
 from core.modules.drivers.commands.resume_agent.resume_agent_handler import ResumeAgentHandler
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.rules.dispatch_law_rule import DispatchLawRule
+from core.modules.drivers.rules.subagent_reuse_rule import SubagentReuseRule
 from core.modules.drivers.rules.long_output_rule import LongOutputRule
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener
@@ -123,7 +124,7 @@ class DriversModule(Module):
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed, RequiredCommandClosed]
-    driver_rules = [DispatchMarkRule, RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
+    driver_rules = [DispatchMarkRule, RequiredCommandRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

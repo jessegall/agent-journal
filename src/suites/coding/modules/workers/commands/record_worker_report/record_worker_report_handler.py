@@ -5,6 +5,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report import RecordWorkerReport
+from suites.coding.modules.workers.support.worker_nudges import WORKER_REPORT
 
 SOURCE = "workers.report"
 
@@ -20,5 +21,5 @@ class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
 
     def handle(self, command: RecordWorkerReport, context: Context) -> Message:
         message = self.repository.save(Message(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=MessageType.AGENT, text=command.text), context)
-        self.repository.save(AgentLine(agent_id=command.main_agent_id, creator_id=context.actor.id, text=f"worker {command.agent_id} reports: {command.text}", source=SOURCE), context)
+        self.repository.save(AgentLine(agent_id=command.main_agent_id, creator_id=context.actor.id, text=WORKER_REPORT.nudge(worker=command.agent_id, job=command.text).text, source=SOURCE), context)
         return message
