@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -22,31 +24,31 @@ def skill_path(story, skill: str) -> str:
     return f".claude/skills/{skill}/SKILL.md"
 
 
-def test_with_a_skill_due_every_tool_but_a_read_of_it_is_refused_with_its_path(new_story):
-    story = notes_due(new_story)
+def test_with_a_skill_due_every_tool_but_a_read_of_it_is_refused_with_its_path(due_notes):
+    story = due_notes
     story.expect_hook_refusal("s-1", EDIT, f"read this first: {skill_path(story, 'journal-notes')}")
 
 
-def test_a_journal_command_passes_while_a_skill_is_due(new_story):
-    story = notes_due(new_story)
+def test_a_journal_command_passes_while_a_skill_is_due(due_notes):
+    story = due_notes
     story.expect_hook_allowed("s-1", JOURNAL_AGENT_LIST)
 
 
-def test_a_read_of_the_due_skill_passes_and_the_next_tool_is_not_refused(new_story):
-    story = notes_due(new_story)
+def test_a_read_of_the_due_skill_passes_and_the_next_tool_is_not_refused(due_notes):
+    story = due_notes
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
     story.expect_hook_allowed("s-1", EDIT)
 
 
-def test_a_read_of_the_due_skill_counts_at_once_with_no_listener_run_after_it(new_story):
-    story = notes_due(new_story)
+def test_a_read_of_the_due_skill_counts_at_once_with_no_listener_run_after_it(due_notes):
+    story = due_notes
     path = str(story.home.project_folder / ".claude/skills/journal-notes/SKILL.md")
     story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": [path]}))
     story.expect_hook_allowed("s-1", EDIT)
 
 
-def test_each_part_of_a_shell_line_that_reads_a_skill_loads_that_skill_at_once(new_story):
-    story = install_runner(notes_due(new_story))
+def test_each_part_of_a_shell_line_that_reads_a_skill_loads_that_skill_at_once(due_notes):
+    story = install_runner(due_notes)
     story.run("setting make journal.core.skills.session-start '[\"journal-notes\", \"journal-tasks\"]'")
     line = "sed -n 1,240p .claude/skills/journal-notes/SKILL.md && sed -n 1,240p .claude/skills/journal-tasks/SKILL.md && ls src"
     parts = (ShellPart("sed", CommandCategory.READ, ["-n", "1,240p", ".claude/skills/journal-notes/SKILL.md"]), ShellPart("sed", CommandCategory.READ, ["-n", "1,240p", ".claude/skills/journal-tasks/SKILL.md"]), ShellPart("ls", CommandCategory.READ, ["src"]))
@@ -55,26 +57,26 @@ def test_each_part_of_a_shell_line_that_reads_a_skill_loads_that_skill_at_once(n
     story.expect_hook_allowed("s-1", JOURNAL_TASK_LIST)
 
 
-def test_journal_skill_show_loads_the_skill_it_shows(new_story):
-    story = install_runner(notes_due(new_story))
+def test_journal_skill_show_loads_the_skill_it_shows(due_notes):
+    story = install_runner(due_notes)
     story.hook("s-1", HookSamples.shell("journal skill show journal-notes", ShellPart("journal", CommandCategory.JOURNAL, ["skill", "show", "journal-notes"], subcommand="skill")))
     story.expect_hook_allowed("s-1", EDIT)
 
 
-def test_a_block_names_the_next_due_skill_once_the_first_is_read(new_story):
-    story = notes_due(new_story)
+def test_a_block_names_the_next_due_skill_once_the_first_is_read(due_notes):
+    story = due_notes
     story.expect_hook_refusal("s-1", EDIT, "read this first: .claude/skills/journal-notes")
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
     story.expect_hook_allowed("s-1", EDIT)
 
 
-def test_a_stop_is_refused_naming_the_unread_skills(new_story):
-    story = notes_due(new_story)
+def test_a_stop_is_refused_naming_the_unread_skills(due_notes):
+    story = due_notes
     story.expect_hook_refusal("s-1", HookSamples.stop(), "unread skills: journal-notes")
 
 
-def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(new_story):
-    story = notes_due(new_story)
+def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(due_notes):
+    story = due_notes
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, f"read this first: {skill_path(story, 'journal-tasks')}")
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
@@ -95,3 +97,8 @@ def test_a_silenced_rule_refuses_nothing_while_the_agent_waits(new_story):
     story.run("task make \"The review\" --environment main")
     story.run("wait on 'the review' --target tasks:1", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+@pytest.fixture
+def due_notes(new_story):
+    return notes_due(new_story)

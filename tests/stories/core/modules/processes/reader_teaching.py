@@ -99,4 +99,3 @@ def test_a_title_is_a_whole_phrase_that_opens_on_what_the_run_does(new_story):
     story.expect_refusal(f'output title {process.id} "The cart tests"', "open it on what it does", actor=story.agent)
     story.expect_refusal(f'output title {process.id} "Running the tests of"', "which stops on 'of'", actor=story.agent)
     story.expect_success(f'output title {process.id} "Running the cart tests"', actor=story.agent)
-

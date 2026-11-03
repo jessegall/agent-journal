@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -45,16 +47,15 @@ def spend(story, count):
     return hooks
 
 
-def test_a_line_that_names_its_command_opens_one_block_however_often_it_is_said(new_story):
-    story, process = story_with_required_command(new_story)
+def test_a_line_that_names_its_command_opens_one_block_however_often_it_is_said(required_command):
+    story, process = required_command
     story.hook("s-1", HookSamples.stop())
     story.expect_text(f"agent-block show {TITLE_BLOCK}", TITLE_LINE.format(process=process.id), actor=story.agent)
     story.expect_refusal(f"agent-block show {TITLE_BLOCK + 1}", f"no agent-block {TITLE_BLOCK + 1}", actor=story.agent)
 
 
-def test_the_tool_uses_count_down_and_the_last_three_say_so(new_story):
-    story, _ = story_with_required_command(new_story)
-    hooks = spend(story, 5)
+def test_the_tool_uses_count_down_and_the_last_three_say_so(counted_required_command):
+    story, _, hooks = counted_required_command
     countdown_lines = [[line for line in hook.lines if "due:" in line] for hook in hooks]
     assert [bool(lines) for lines in countdown_lines] == [False, False, True, True, True]
     assert "title output 1 due: 2 tool uses" in countdown_lines[2][0]
@@ -62,33 +63,29 @@ def test_the_tool_uses_count_down_and_the_last_three_say_so(new_story):
     assert not any(hook.refusal for hook in hooks)
 
 
-def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(new_story):
-    story, process = story_with_required_command(new_story)
-    spend(story, 5)
+def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(counted_required_command):
+    story, process, _ = counted_required_command
     refusal = story.hook("s-1", EDIT_HOOK).refusal
     assert f"title output {process.id} is due" in refusal
     assert f"journal agent-block skip {TITLE_BLOCK} --reason" in refusal
 
 
-def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(new_story):
-    story, _ = story_with_required_command(new_story)
-    spend(story, 6)
+def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(required_command_limit):
+    story, _ = required_command_limit
     assert not story.hook("s-1", READ).refusal
     assert not story.hook("s-1", journal_line("journal task list")).refusal
     assert not story.hook("s-1", journal_line("journal agent-block list")).refusal
 
 
-def test_running_the_command_settles_it_and_writes_run_again(new_story):
-    story, process = story_with_required_command(new_story)
-    spend(story, 6)
+def test_running_the_command_settles_it_and_writes_run_again(required_command_limit):
+    story, process = required_command_limit
     assert not story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')).refusal
     assert not story.hook("s-1", EDIT_HOOK).refusal
     story.expect_text(f"agent-block show {TITLE_BLOCK}", "closed_at:", actor=story.agent)
 
 
-def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(new_story):
-    story, _ = story_with_required_command(new_story)
-    spend(story, 6)
+def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(required_command_limit):
+    story, _ = required_command_limit
     story.expect_usage_error(f"agent-block skip {TITLE_BLOCK}", actor=story.agent)
     story.expect_refusal(f'agent-block skip {TITLE_BLOCK} --reason "  "', "say why", actor=story.agent)
     story.expect_success(f'agent-block skip {TITLE_BLOCK} --reason "a one-off command"', actor=story.agent)
@@ -109,11 +106,35 @@ def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
     story.expect_refusal('agent-block skip 1 --reason "no grace"', "cannot be skipped", actor=story.agent)
 
 
-def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(new_story):
+def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(grace_countdown):
+    story, refusal, countdown, first, second, third = grace_countdown
+    assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines
+    assert third.refusal == "pay the 1 fee: journal agent-block skip 1 --reason '<why>'"
+
+
+@pytest.fixture
+def required_command(new_story):
+    return story_with_required_command(new_story)
+
+
+@pytest.fixture
+def counted_required_command(required_command):
+    story, process = required_command
+    return story, process, spend(story, 5)
+
+
+@pytest.fixture
+def required_command_limit(counted_required_command):
+    story, process, _ = counted_required_command
+    spend(story, 1)
+    return story, process
+
+
+@pytest.fixture
+def grace_countdown(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     refusal = Nudge("samples.pay", NudgeType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
     countdown = Nudge("samples.pay_countdown", NudgeType.STEERING, "fee due: {left} tool uses")
     story.container.get(Bus).run(BlockUntil(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
     first, second, third = spend(story, 3)
-    assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines
-    assert third.refusal == "pay the 1 fee: journal agent-block skip 1 --reason '<why>'"
+    return story, refusal, countdown, first, second, third

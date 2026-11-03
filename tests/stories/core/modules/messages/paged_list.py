@@ -1,11 +1,18 @@
+from core.testing.story_fixture import StoryFixture
+
 from tests.stories.core.support.fixtures import UserJoined
 
 
+class ThreeMessages(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        for text in ('first', 'second', 'third'):
+            story.run(f'message send "{text}" --environment main', actor=story.user)
+
+
 def three_messages(new_story):
-    story = new_story(fixture=UserJoined)
-    for text in ("first", "second", "third"):
-        story.run(f'message send "{text}" --environment main', actor=story.user)
-    return story
+    return new_story(fixture=ThreeMessages)
 
 
 def test_a_list_after_an_id_holds_only_the_rows_newer_than_it(new_story):

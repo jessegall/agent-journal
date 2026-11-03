@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.leftover_process import LeftoverProcess
 import subprocess
 import time
@@ -59,23 +61,12 @@ def test_a_run_whose_runner_pid_is_gone_is_lost_at_the_next_tick_after_ten_secon
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
-def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make build")
-    group = subprocess.Popen(["sh", "-c", "sleep 60; true", "journal-run", f"processes/{process.id}/run.sh"], start_new_session=True)
-    try:
-        folder = story.container.get(OutputFolder)
-        folder.write_pid(process.id, group.pid)
-        folder.beat(process.id, story.clock.timestamp())
-        story.advance(timedelta(seconds=100))
-        story.tick("s-1")
-        deadline = time.monotonic() + 5
-        while group.poll() is None and time.monotonic() < deadline:
-            time.sleep(0.05)
-        assert group.poll() is not None, "the group of the lost run is still alive"
-    finally:
-        group.kill()
-        group.wait()
+def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(orphaned_process_group):
+    group = orphaned_process_group
+    deadline = time.monotonic() + 5
+    while group.poll() is None and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert group.poll() is not None, 'the group of the lost run is still alive'
 
 
 def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder(new_story):
@@ -88,6 +79,13 @@ def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder
     story.tick("s-1")
     story.expect_success("process show 1", "state: failed", "exit_code: 3", actor=story.agent)
     story.expect_text("process-part list --process 1", "failed")
+
+
+def test_a_pid_gone_to_another_program_is_not_killed(reused_process_pid):
+    story, second = reused_process_pid
+    story.expect_success('process show 1', 'state: orphaned', actor=story.agent)
+    time.sleep(0.2)
+    assert second.poll() is None, 'another program with the pid was killed'
 
 
 def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_story):
@@ -135,22 +133,6 @@ def test_a_run_whose_runner_died_with_no_end_is_lost_with_no_tick_of_its_agent(n
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
-def test_a_pid_gone_to_another_program_is_not_killed(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make build")
-    second = subprocess.Popen(["sleep", "60"], start_new_session=True)
-    try:
-        folder = story.container.get(OutputFolder)
-        folder.write_pid(process.id, second.pid)
-        folder.beat(process.id, story.clock.timestamp())
-        story.advance(timedelta(seconds=100))
-        story.tick("s-1")
-        story.expect_success("process show 1", "state: orphaned", actor=story.agent)
-        time.sleep(0.2)
-        assert second.poll() is None, "another program with the pid was killed"
-    finally:
-        second.kill()
-        second.wait()
 
 
 def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
@@ -167,10 +149,57 @@ def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
-def test_a_lost_run_whose_leader_died_still_has_its_children_killed(new_story):
+def test_a_lost_run_whose_leader_died_still_has_its_children_killed(orphaned_process_child):
+    child_pid = orphaned_process_child
+    deadline = time.monotonic() + 5
+    while LeftoverProcess.command_line(child_pid) and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert not LeftoverProcess.command_line(child_pid), 'the child of the dead leader is still alive'
+
+
+@pytest.fixture
+def background_build(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")
-    leader = subprocess.Popen(["sh", "-c", "sleep 60 & echo $!; exit 0"], stdout=subprocess.PIPE, text=True, start_new_session=True)
+    return story, process
+
+
+@pytest.fixture
+def orphaned_process_group(background_build):
+    story, process = background_build
+    group = subprocess.Popen(['sh', '-c', 'sleep 60; true', 'journal-run', f'processes/{process.id}/run.sh'], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, group.pid)
+        folder.beat(process.id, story.clock.timestamp())
+        story.advance(timedelta(seconds=100))
+        story.tick('s-1')
+        yield group
+    finally:
+        group.kill()
+        group.wait()
+
+
+@pytest.fixture
+def reused_process_pid(background_build):
+    story, process = background_build
+    second = subprocess.Popen(['sleep', '60'], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, second.pid)
+        folder.beat(process.id, story.clock.timestamp())
+        story.advance(timedelta(seconds=100))
+        story.tick('s-1')
+        yield story, second
+    finally:
+        second.kill()
+        second.wait()
+
+
+@pytest.fixture
+def orphaned_process_child(background_build):
+    story, process = background_build
+    leader = subprocess.Popen(['sh', '-c', 'sleep 60 & echo $!; exit 0'], stdout=subprocess.PIPE, text=True, start_new_session=True)
     child_pid = int(leader.stdout.readline())
     leader.wait()
     leader.stdout.close()
@@ -179,10 +208,7 @@ def test_a_lost_run_whose_leader_died_still_has_its_children_killed(new_story):
         folder.write_pid(process.id, leader.pid)
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
-        story.tick("s-1")
-        deadline = time.monotonic() + 5
-        while LeftoverProcess.command_line(child_pid) and time.monotonic() < deadline:
-            time.sleep(0.05)
-        assert not LeftoverProcess.command_line(child_pid), "the child of the dead leader is still alive"
+        story.tick('s-1')
+        yield child_pid
     finally:
-        subprocess.run(["kill", "-9", str(child_pid)], capture_output=True, check=False)
+        subprocess.run(['kill', '-9', str(child_pid)], capture_output=True, check=False)

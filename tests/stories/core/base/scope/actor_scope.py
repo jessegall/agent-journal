@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from datetime import timedelta
 
 import pytest
@@ -46,9 +48,7 @@ def test_a_main_agents_task_move_still_shows_in_the_main_chat(new_story):
 
 
 def test_a_task_move_of_the_journal_itself_has_no_scope_and_shows(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.run(TASK_LINE)
-    story.run_listeners()
+    story = new_story(fixture=GlobalTaskMark)
     story.expect_text(MAIN_CHAT, MADE)
 
 
@@ -139,9 +139,7 @@ def test_a_main_agents_question_still_reaches_the_chat(new_story):
 
 
 def test_an_edit_of_a_shown_mark_under_an_agent_leaves_it_in_the_main_chat(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.run(TASK_LINE)
-    story.run_listeners()
+    story = new_story(fixture=GlobalTaskMark)
     mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
     assert mark.agent_id is None and mark.changed(text="new").scoped(story.subagent.id).agent_id is None
 
@@ -151,3 +149,11 @@ def test_a_helpers_reaction_still_reaches_the_main_agent(new_story):
     story.run('message send "The cart is done" --environment main', actor=story.agent)
     story.run('message react 1 "👍"', actor=story.subagent)
     story.expect_absent("agent-line list --state hidden", "message 1")
+
+
+class GlobalTaskMark(StoryFixture):
+    parent = SubagentStarted
+
+    def steps(self, story):
+        story.run(TASK_LINE)
+        story.run_listeners()

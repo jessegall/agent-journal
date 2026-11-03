@@ -1,3 +1,5 @@
+import pytest
+
 import json
 from datetime import timedelta
 
@@ -32,21 +34,15 @@ def test_with_nothing_waiting_an_agent_scores_full_marks(new_story):
     story.expect_rows(answer["is_measured"] is True, answer["score"] == 100, answer["workload"] == 0)
 
 
-def test_a_message_left_waiting_lowers_the_score(new_story):
-    story = new_story(fixture=UserJoined)
-    story.advance(HALF_HOUR)
-    story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
-    story.advance(timedelta(minutes=15))
+def test_a_message_left_waiting_lowers_the_score(half_hour_session):
+    story = half_hour_session
     answer = fitness(story)
     waited = measure(answer, "message_wait")
     story.expect_rows(waited["value"] == 15, waited["pass_share"] == 0.6, answer["score"] == 80)
 
 
-def test_a_message_read_no_longer_counts(new_story):
-    story = new_story(fixture=UserJoined)
-    story.advance(HALF_HOUR)
-    story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
-    story.advance(timedelta(minutes=15))
+def test_a_message_read_no_longer_counts(half_hour_session):
+    story = half_hour_session
     story.hook("s-1", READ_LINE)
     story.expect_rows(measure(fitness(story), "message_wait")["value"] == 0)
 
@@ -68,3 +64,12 @@ def test_tasks_closed_in_the_last_two_hours_count_and_older_ones_do_not(new_stor
     story.advance(timedelta(hours=3))
     story.expect_rows(measure(fitness(story), "completion_rate")["value"] == 0)
 
+
+
+@pytest.fixture
+def half_hour_session(new_story):
+    story = new_story(fixture=UserJoined)
+    story.advance(HALF_HOUR)
+    story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
+    story.advance(timedelta(minutes=15))
+    return story

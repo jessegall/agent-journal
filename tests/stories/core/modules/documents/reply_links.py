@@ -1,18 +1,26 @@
+import pytest
+
+from core.testing.story_fixture import StoryFixture
+
 from datetime import timedelta
 
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
 
 
+class RepliedCartMessage(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        story.run('message send "Fix the cart" --environment main', actor=story.user)
+        story.run('message reply 1 "On it"', actor=story.agent)
+
+
 def replied_story(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('message send "Fix the cart" --environment main', actor=story.user)
-    story.run('message reply 1 "On it"', actor=story.agent)
-    return story
+    return new_story(fixture=RepliedCartMessage)
 
 
-def test_a_task_the_agent_makes_right_after_replying_links_to_the_message_it_answered(new_story):
-    story = replied_story(new_story)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+def test_a_task_the_agent_makes_right_after_replying_links_to_the_message_it_answered(replied_task):
+    story = replied_task
     story.run_listeners()
     story.expect_text("message read 1", "links: task:1", actor=story.user)
 
@@ -51,10 +59,8 @@ def test_a_task_the_person_makes_is_not_linked(new_story):
     assert "links:" not in story.run("message read 1", actor=story.user).output_text
 
 
-def test_an_edit_of_a_tasks_text_right_after_a_reply_links_it(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
-    story.advance(timedelta(seconds=300))
+def test_an_edit_of_a_tasks_text_right_after_a_reply_links_it(old_task):
+    story = old_task
     story.run('message send "Round it too" --environment main', actor=story.user)
     story.run('message reply 1 "Adding that"', actor=story.agent)
     story.run('task edit 1 --brief "Also round it"', actor=story.agent)
@@ -62,10 +68,8 @@ def test_an_edit_of_a_tasks_text_right_after_a_reply_links_it(new_story):
     story.expect_text("message read 1", "links: task:1", actor=story.user)
 
 
-def test_a_change_of_a_task_that_is_not_its_text_does_not_link_it(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
-    story.advance(timedelta(seconds=300))
+def test_a_change_of_a_task_that_is_not_its_text_does_not_link_it(old_task):
+    story = old_task
     story.run('message send "Carry on" --environment main', actor=story.user)
     story.run('message reply 1 "Starting"', actor=story.agent)
     story.run("task start 1", actor=story.agent)
@@ -73,10 +77,8 @@ def test_a_change_of_a_task_that_is_not_its_text_does_not_link_it(new_story):
     assert "links:" not in story.run("message read 1", actor=story.user).output_text
 
 
-def test_a_task_a_reply_names_links_to_the_message_it_answers(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
-    story.advance(timedelta(seconds=300))
+def test_a_task_a_reply_names_links_to_the_message_it_answers(old_task):
+    story = old_task
     story.run('message send "Is it filed" --environment main', actor=story.user)
     story.run('message reply 1 "Yes, it is task 1"', actor=story.agent)
     story.run_listeners()
@@ -91,9 +93,23 @@ def test_a_reply_naming_a_task_that_does_not_exist_links_nothing(new_story):
     assert "links:" not in story.run("message read 1", actor=story.user).output_text
 
 
-def test_a_row_is_linked_once_however_often_it_is_edited(new_story):
-    story = replied_story(new_story)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+def test_a_row_is_linked_once_however_often_it_is_edited(replied_task):
+    story = replied_task
     story.run('task edit 1 --brief "Also round it"', actor=story.agent)
     story.run_listeners()
     assert story.run("message read 1", actor=story.user).output_text.count("task:1") == 1
+
+
+@pytest.fixture
+def old_task(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+    story.advance(timedelta(seconds=300))
+    return story
+
+
+@pytest.fixture
+def replied_task(new_story):
+    story = replied_story(new_story)
+    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+    return story

@@ -1,3 +1,5 @@
+import pytest
+
 import json
 from datetime import timedelta
 
@@ -131,9 +133,7 @@ def test_the_graph_names_what_waits_on_what_by_a_dependency_or_a_block(new_story
 
 
 def test_a_finished_task_leaves_the_graph(new_story):
-    story = new_story(fixture=TwoTasks)
-    story.run("task block 1 --on task:2")
-    story.run('task cancel 2 --reason "no"')
+    story = new_story(fixture=ReopenedTask)
     story.expect_text("task graph --environment main", "no task waits on another", actor=story.agent)
 
 
@@ -164,11 +164,8 @@ def kept_typing(story) -> list[tuple[int, str]]:
     return entered
 
 
-def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(new_story):
-    story = new_story(fixture=TwoTasks)
-    entered = kept_typing(story)
-    story.run("task block 1 --on task:2")
-    story.hook("s-1", HookSamples.edit("src/cart.py"))
+def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(waiting_task_hook):
+    story, entered = waiting_task_hook
     story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
@@ -176,24 +173,14 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 
-def test_an_agent_at_work_is_not_typed_that_its_task_opened_and_hears_it_by_its_next_hook(new_story):
-    story = new_story(fixture=TwoTasks)
-    entered = kept_typing(story)
-    story.run("task block 1 --on task:2")
-    story.hook("s-1", HookSamples.edit("src/cart.py"))
-    story.run('task cancel 2 --reason "no"')
-    story.run_listeners()
+def test_an_agent_at_work_is_not_typed_that_its_task_opened_and_hears_it_by_its_next_hook(reopened_waiting_task):
+    story, entered = reopened_waiting_task
     story.expect_rows(entered == [])
     assert any("task:1 is open again" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
 
 
-def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(new_story):
-    story = new_story(fixture=TwoTasks)
-    entered = kept_typing(story)
-    story.run("task block 1 --on task:2")
-    story.hook("s-1", HookSamples.edit("src/cart.py"))
-    story.run('task cancel 2 --reason "no"')
-    story.run_listeners()
+def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(reopened_waiting_task):
+    story, entered = reopened_waiting_task
     story.expect_rows(entered == [])
     story.run('task cancel 1 --reason "no"')
     stop = HookSamples.stop().with_fields(accepts_lines=False)
@@ -206,9 +193,7 @@ def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(new_story)
 
 
 def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):
-    story = new_story(fixture=TwoTasks)
-    story.run("task block 1 --on task:2")
-    story.run('task cancel 2 --reason "no"')
+    story = new_story(fixture=ReopenedTask)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1 is open again")
 
 
@@ -232,3 +217,28 @@ def test_the_inspector_says_what_opens_a_blocked_task_and_nothing_when_nothing_d
     openers = lambda task: json.loads(story.run(f"task inspect {task} --json", actor=story.user).output_text)["openers"]
     assert openers(1) == ["task 2 is settled"]
     assert openers(2) == []
+
+
+@pytest.fixture
+def waiting_task_hook(new_story):
+    story = new_story(fixture=TwoTasks)
+    entered = kept_typing(story)
+    story.run("task block 1 --on task:2")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    return story, entered
+
+
+class ReopenedTask(StoryFixture):
+    parent = TwoTasks
+
+    def steps(self, story):
+        story.run('task block 1 --on task:2')
+        story.run('task cancel 2 --reason "no"')
+
+
+@pytest.fixture
+def reopened_waiting_task(waiting_task_hook):
+    story, entered = waiting_task_hook
+    story.run('task cancel 2 --reason "no"')
+    story.run_listeners()
+    return story, entered

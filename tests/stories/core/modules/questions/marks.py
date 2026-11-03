@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text
@@ -12,15 +14,13 @@ def with_question(story) -> None:
 
 
 def test_asking_shows_a_process_mark_with_the_question(new_story):
-    story = new_story(fixture=BuilderStarted)
-    with_question(story)
+    story = new_story(fixture=AgentQuestion)
     assert mark_count(story) == 1, marks_text(story)
     story.expect_success("chat-mark show 1", "text: Question 1: Which database?", "state: shown", f"agent_id: {story.agent.id}")
 
 
 def test_the_process_mark_is_updated_in_place_while_the_question_waits(new_story):
-    story = new_story(fixture=BuilderStarted)
-    with_question(story)
+    story = new_story(fixture=AgentQuestion)
     story.expect_success('question edit 1 --text "Which database engine?"', actor=story.agent)
     story.run_listeners()
     assert mark_count(story) == 1, marks_text(story)
@@ -28,8 +28,7 @@ def test_the_process_mark_is_updated_in_place_while_the_question_waits(new_story
 
 
 def test_an_answer_ends_the_card_mark_in_place_and_adds_a_mark_on_the_side_of_the_user_who_answered(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    with_question(story)
+    story = new_story(fixture=PersonQuestion)
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.run_listeners()
     story.expect_text("chat-mark show 1", "type: questions.question", "variant: user", "state: ended")
@@ -38,8 +37,7 @@ def test_an_answer_ends_the_card_mark_in_place_and_adds_a_mark_on_the_side_of_th
 
 
 def test_an_answer_by_the_agent_adds_a_mark_on_the_agents_side(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    with_question(story)
+    story = new_story(fixture=PersonQuestion)
     story.run("question answer 1 --answer sqlite", actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark show 1", "variant: agent")
@@ -47,8 +45,7 @@ def test_an_answer_by_the_agent_adds_a_mark_on_the_agents_side(new_story):
 
 
 def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
-    story = new_story(fixture=BuilderStarted)
-    with_question(story)
+    story = new_story(fixture=AgentQuestion)
     story.expect_success("question close 1")
     story.run_listeners()
     story.expect_success("chat-mark show 1", "state: ended")
@@ -66,3 +63,17 @@ def test_the_question_mark_is_declared_as_a_process_in_its_family(new_story):
     story = new_story(fixture=BuilderStarted)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "questions.question")
     assert mark.family == "questions.questions" and mark.process
+
+
+class AgentQuestion(StoryFixture):
+    parent = BuilderStarted
+
+    def steps(self, story):
+        with_question(story)
+
+
+class PersonQuestion(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        with_question(story)
