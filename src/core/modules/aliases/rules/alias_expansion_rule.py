@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_workers import AliasWorkers
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_WORKER_REFUSED, ALIAS_UNEXPANDED
+from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_WORKERS_REFUSED, ALIAS_UNEXPANDED
 
 
 class AliasExpansionRule(DriverRule):
@@ -33,5 +33,5 @@ class AliasExpansionRule(DriverRule):
             if not rows:
                 return RuleAnswer.refused(ALIAS_MISSING.nudge())
             if self.workers.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
-                return RuleAnswer.refused(ALIAS_WORKER_REFUSED.nudge())
+                return RuleAnswer.refused(ALIAS_WORKERS_REFUSED.nudge())
         return RuleAnswer.allowed()

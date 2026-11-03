@@ -70,7 +70,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return
-        self.advance.after_passed_tests(worktree, following, context)
+        self.advance.next_task(worktree, following, context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):

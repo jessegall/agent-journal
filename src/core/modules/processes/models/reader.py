@@ -28,5 +28,8 @@ class Reader(Model):
     title: str = ""
     subject: str = ""
     step_pattern: str = ""
+    count_pattern: str = ""
+    count_command: str = ""
+    proved_on: int | None = None
     is_default: bool = False
     plugin_name: str = ""

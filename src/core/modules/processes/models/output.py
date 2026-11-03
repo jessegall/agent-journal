@@ -31,6 +31,7 @@ class Output(Model):
     steps_passed: int = 0
     steps_failed: int = 0
     progress: int = 0
+    test_count: int = 0
     state: OutputState = OutputState.KEPT
     ended_at: Timestamp | None = None
     read_at: Timestamp | None = None
