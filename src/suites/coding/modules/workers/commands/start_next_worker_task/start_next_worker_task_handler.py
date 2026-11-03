@@ -31,11 +31,15 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if worktree is None or worktree.state is not WorktreeState.CUT:
             raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
         task = self.queries.query(Task).find(worktree.task_id)
-        if task.state is not TaskState.STARTED:
+        if task.state is TaskState.TESTING:
             raise Refusal(f"the tests of task {task.id} are running: your next task comes when they pass")
         following = self.tasks.next_delegated(context.actor.id)
         if following is None:
             raise Refusal(f"task {task.id} is your last", "journal worker deliver hands in all your tasks")
+        if task.state is not TaskState.STARTED:
+            self.bus.dispatch(StartTask(following.id), context)
+            self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+            return self.queries.query(Task).find(following.id)
         self.task_commit.commit(worktree, task)
         tested = self.repository.save(task.moved(TaskLifecycle.test), context)
         if self.proof_queue.queue(worktree, context):

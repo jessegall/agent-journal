@@ -16,7 +16,8 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
-        open_blocks = self.queries.query(AgentBlock).filter(agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at")).page(1, 1).rows
+        same_line = self.queries.query(AgentBlock).filter(agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
+        open_blocks = (same_line.filter(condition_text=command.condition.text) if command.condition.is_per_subject else same_line).page(1, 1).rows
         if open_blocks:
             return self.repository.save(open_blocks[0].changed(nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text), context)
         return self.repository.save(AgentBlock(agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
