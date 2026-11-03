@@ -5,7 +5,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.timestamp import SECONDS_PER_MINUTE, Timestamp
+from core.base.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
 
@@ -26,4 +26,4 @@ class AgentTicks:
     def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:
         seconds = clock_time.value.timestamp()
         actor = MAIN_ACTOR if agent.role == AgentRole.MAIN else f"{agent.role}:{agent.id}"
-        return HookEvent.tick(agent.program, agent.session, f"tick-{agent.id}-{int(seconds // SECONDS_PER_MINUTE)}", int(seconds * 1000), actor, environment)
+        return HookEvent.tick(agent.program, agent.session, f"tick-{agent.id}-{int(seconds // MINUTE_SECONDS)}", int(seconds * 1000), actor, environment)

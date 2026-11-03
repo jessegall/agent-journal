@@ -77,7 +77,7 @@ def main(argv: list[str]) -> int:
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork())
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork())
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, woken_too=urgent_thread)
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, urgent_thread=urgent_thread)
     ticker = Ticker(home, Ticker.declared_by(finder), listener_thread.wake)
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)

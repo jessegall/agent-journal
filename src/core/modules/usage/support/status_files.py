@@ -10,8 +10,8 @@ PLAN_FILE = "plan.json"
 
 class StatusFiles:
     """The status files the hook program keeps of each session's status line, read for usage: one session's
-    report, and the plan's windows, which belong to the account, from the newest file of an open session that
-    names them, else from plan.json, where a session that ended left the windows it named."""
+    report, and the plan's windows. The windows belong to the account: they come from the newest file of an
+    open session that names them, else from plan.json, where a session that ended left what it named."""
 
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.status_folder
@@ -28,9 +28,14 @@ class StatusFiles:
         path = self.folder / f"{session}.json"
         if not path.is_file():
             return
-        if self.reported(path).windows and (not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime):
+        if self.holds_newest_windows(path):
             path.replace(self.plan_file)
         path.unlink(missing_ok=True)
+
+    def holds_newest_windows(self, path: Path) -> bool:
+        if not self.reported(path).windows:
+            return False
+        return not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime
 
     @staticmethod
     def reported(path: Path) -> SessionStatus:
