@@ -28,7 +28,7 @@ class ReaderSampleReadyListener(SaveListener):
         request = change.new_row
         if not isinstance(request, ReaderRequest) or request.reader_id is None or request.sample_process_id is None:
             return
-        if isinstance(change.old_row, ReaderRequest) and change.old_row.settled_at is not None:
+        if isinstance(change.old_row, ReaderRequest) and change.old_row.completed_at is not None:
             return
         sample = self.queries.query(Process).find(request.sample_process_id)
         if sample.ended_at is None:

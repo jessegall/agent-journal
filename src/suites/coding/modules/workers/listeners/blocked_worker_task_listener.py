@@ -21,5 +21,5 @@ class BlockedWorkerTaskListener(SaveListener):
         task = change.new_row
         if not isinstance(task, Task) or task.delegated_to is None or task.delegated_to != change.actor.id:
             return
-        notice = WORKER_TASK_BLOCKED.nudge(worker=task.delegated_to, task=task.id, reason=task.reason)
+        notice = WORKER_TASK_BLOCKED.nudge(worker=task.delegated_to, task=task.id)
         self.main_agent_line.send(task.environment_id, notice.text, self.name, change.context)

@@ -6,7 +6,7 @@ from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from tests.stories.core.modules.processes.support.reader_hold_fixtures import ForcedReaders, reader_worker
+from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery

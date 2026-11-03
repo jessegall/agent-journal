@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
-from tests.stories.core.modules.processes.support.reader_hold_fixtures import ForcedReaders, reader_worker, worker_run
+from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -76,7 +76,7 @@ def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
     worker_run(story)
     worker = reader_worker(story)
     requests = story.container.get(ReaderRequestQuery)
-    story.expect_rows(requests.holds(worker.id, story.clock.timestamp()))
+    story.expect_rows(requests.has_active_requests(worker.id, story.clock.timestamp()))
     blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id).all_rows())
     story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
     story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "cannot", actor=worker)
@@ -109,7 +109,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story = kept_reader_sample
     process = worker_run(story)
     reader = story.new_row_id('reader add proper --commands "custom-build*" --title Building --lines "done" --summary "done"', actor=story.agent)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).holds(reader_worker(story).id, story.clock.timestamp()))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
     story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper", "workers.worker-job")
@@ -128,7 +128,7 @@ def test_the_hold_runs_out_and_the_run_starts_with_no_reader(kept_reader_sample)
     story.advance(timedelta(minutes=26))
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_rows(not story.container.get(ReaderRequestQuery).holds(reader_worker(story).id, story.clock.timestamp()))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
 def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
@@ -144,7 +144,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
     story.run(f"agent end {story.agent.id}", actor=story.agent)
     process = worker_run(story, "alone-build run")
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
-    story.expect_rows(request.hold_until == story.clock.timestamp(), story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(request.expires_at == story.clock.timestamp(), story.container.get(OutputFolder).has_slot(process.id))
     story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())
 
 
@@ -167,4 +167,4 @@ def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
     process = worker_run(story, "running-build run")
     reader = story.new_row_id('reader add running --commands "running-build*" --title Building --lines done --summary done', actor=story.agent)
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
-    story.expect_rows(output.reader_id == reader, output.read_offset == 0)
+    story.expect_rows(output.reader_id == reader, output.read_offset == 0, output.title == "Building")

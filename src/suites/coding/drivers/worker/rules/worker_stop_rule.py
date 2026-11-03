@@ -28,7 +28,7 @@ class WorkerStopRule(DriverRule):
         rows = self.tasks.holder(hook.agent_id).started().page(1, 1).rows
         task = rows[0] if rows else self.tasks.next_delegated(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if self.requests.holds(hook.agent_id, self.clock.timestamp()):
+        if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):
             return RuleAnswer.allowed()
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()

@@ -13,7 +13,7 @@ class ProcessSetting(Enum):
 
     FOREGROUND_SECONDS = SettingValue("foreground-seconds", "Seconds in the foreground", "How long a command runs in front before it moves to the background.",
                                       SettingType.NUMBER, default=15)
-    READER_HOLD_MINUTES = SettingValue("reader-hold-minutes", "Minutes to wait for a reader", "How long a worker waits for a proper reader. Runs start after at most 30 minutes even with a longer hold.", SettingType.NUMBER, default=25)
+    READER_BLOCK_MINUTES = SettingValue("reader-block-minutes", "Minutes to wait for a reader", "How long a worker waits for a proper reader. Runs start after at most 30 minutes even with a longer block.", SettingType.NUMBER, default=25)
     READERS_FORCED = SettingValue("readers-forced", "Require readers for workers", "Hold workers whose tests, builds or background checks need a proper reader.", SettingType.FLAG, default=False)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)

@@ -11,7 +11,7 @@ class RunAdmission:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def may_start(self, process: Process, now: Timestamp) -> bool:
+    def may_start(self, process: Process, current_time: Timestamp) -> bool:
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).all_rows())
         if not parts:
             return False
@@ -19,6 +19,6 @@ class RunAdmission:
             if part.reader_request_id is None:
                 continue
             request = self.queries.query(ReaderRequest).find(part.reader_request_id)
-            if request.settled_at is None and request.hold_until > now and request.sample_process_id != process.id:
+            if request.completed_at is None and request.expires_at > current_time and request.sample_process_id != process.id:
                 return False
         return True

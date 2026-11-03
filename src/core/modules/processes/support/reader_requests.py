@@ -47,10 +47,10 @@ class ReaderRequests:
             return existing[0].id
         command = spec.command or spec.text
         sample = next((part for part in self.parts.with_kept_output().newest().all_rows() if fnmatchcase(part.command or part.text, f"{key}*")), None)
-        now = self.clock.timestamp()
-        minutes = self.settings.integer(ProcessSetting.READER_HOLD_MINUTES, process.environment_id)
-        hold_until = Timestamp(now.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries, process.environment_id) else now
+        current_time = self.clock.timestamp()
+        minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)
+        expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries, process.environment_id) else current_time
         request = self.repository.save(ReaderRequest(environment_id=process.environment_id, creator_id=process.agent_id, command_key=key,
-                                                     command=command, category=spec.category, reason=reason, hold_until=hold_until,
+                                                     command=command, category=spec.category, reason=reason, expires_at=expires_at,
                                                      sample_process_id=sample.process_id if sample else process.id), context)
         return request.id

@@ -17,9 +17,9 @@ class ReaderRequestQuery(Query[ReaderRequest]):
         super().__init__(database, tables, ReaderRequest)
 
     def open(self) -> Self:
-        return self.filter(settled_at=None)
+        return self.filter(completed_at=None)
 
-    def holds(self, agent_id: int, now: Timestamp) -> bool:
+    def has_active_requests(self, agent_id: int, current_time: Timestamp) -> bool:
         processes = Select("processes").matching(Equal("agent_id", agent_id))
         parts = Select("process_parts").matching(SubqueryMatch("process_id", processes.column("id")))
-        return any(request.hold_until > now for request in self.open().matching(SubqueryMatch("id", parts.column("reader_request_id"))).all_rows())
+        return any(request.expires_at > current_time for request in self.open().matching(SubqueryMatch("id", parts.column("reader_request_id"))).all_rows())

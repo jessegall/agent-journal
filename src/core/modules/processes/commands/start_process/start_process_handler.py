@@ -39,10 +39,10 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         for position, spec in enumerate(command.parts, 1):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
             selected = ReaderSelection.choose(self.all_readers(), [part])
-            named_reader = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
+            explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None
-            if named_reader is not None:
-                reader = self.readers.find(named_reader)
+            if explicit_reader_id is not None:
+                reader = self.readers.find(explicit_reader_id)
             request_id = self.requests.request(process, spec, reader, context) if self.requests.needed(process, agent) else None
             parts.append(self.repository.save(part.changed(reader_request_id=request_id), context))
         if command.reader_id is not None and not any(part.reader_request_id is not None for part in parts):

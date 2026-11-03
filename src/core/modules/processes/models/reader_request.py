@@ -18,8 +18,8 @@ class ReaderRequest(Model):
     command: str
     category: CommandCategory
     reason: str
-    hold_until: Timestamp
+    expires_at: Timestamp
     sample_process_id: int | None = None
     reader_id: int | None = None
-    waive_reason: str = ""
-    settled_at: Timestamp | None = None
+    skip_reason: str = ""
+    completed_at: Timestamp | None = None

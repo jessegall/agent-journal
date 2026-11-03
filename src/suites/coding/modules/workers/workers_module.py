@@ -1,7 +1,6 @@
 from suites.coding.modules.workers.listeners.reader_sample_ready_listener import ReaderSampleReadyListener
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_subcommand import RecordWorkerReportSubcommand
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
-from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import WORKER_START_FAILED
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.migrations.m006_worker_refusals import WorkerRefusalsMigration
 from suites.coding.modules.workers.listeners.worker_stop_result_listener import WorkerStopResultListener
@@ -9,7 +8,10 @@ from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals_handler import ClearWorkerRefusalsHandler
 from suites.coding.modules.workers.listeners.main_agent_workers_listener import MainAgentWorkersListener
 from suites.coding.modules.workers.listeners.blocked_worker_task_listener import BlockedWorkerTaskListener
+from suites.coding.modules.workers.listeners.worker_help_request_listener import WorkerHelpRequestListener
 from suites.coding.modules.workers.listeners.worker_move_mark_listener import WorkerMoveMarkListener
+from suites.coding.modules.workers.listeners.worker_stopped_mark_listener import WorkerStoppedMarkListener
+from suites.coding.modules.workers.listeners.worker_help_request_mark_listener import WorkerHelpRequestMarkListener
 from suites.coding.modules.workers.listeners.worker_test_mark_listener import WorkerTestMarkListener
 from suites.coding.modules.workers.support.worker_marks import WORKER_MARKS
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
@@ -121,7 +123,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    nudges = [*WORKER_NUDGES, WORKER_START_FAILED]
+    nudges = WORKER_NUDGES
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
@@ -139,7 +141,7 @@ class WorkersModule(Module):
     driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
     bindings = [(TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets), (QueueRunWorkers, WorkerQueueRunWorkers)]
-    listeners = [ReaderSampleReadyListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerLimitListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    listeners = [ReaderSampleReadyListener, WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerLimitListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),

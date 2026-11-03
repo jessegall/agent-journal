@@ -14,12 +14,13 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_slots import RunSlots
+from core.modules.processes.support.run_title import RunTitle
 
 
-class ReaderRequestSettleListener(SaveListener):
-    """Settles requests read by a newly saved proper reader."""
+class ReaderRequestCompleteListener(SaveListener):
+    """Completes requests read by a newly saved proper reader."""
 
-    name = "processes.reader-request-settle"
+    name = "processes.reader-request-complete"
     event = "reader.*"
     disabled_scopes = [ActorScope]
 
@@ -33,8 +34,9 @@ class ReaderRequestSettleListener(SaveListener):
         for request in tuple(self.requests.open().all_rows()):
             if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged(reader, request.category).is_proper:
                 continue
-            self.repository.save(replace(request, reader_id=reader.id, settled_at=self.clock.timestamp()), change.context)
+            self.repository.save(replace(request, reader_id=reader.id, completed_at=self.clock.timestamp()), change.context)
             for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows():
                 for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).all_rows():
-                    self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0), change.context)
+                    self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0,
+                                                 title=RunTitle.title(reader, waiting.command or waiting.text)), change.context)
             self.slots.grant(request.environment_id, change.context)

@@ -12,14 +12,14 @@ from core.modules.drivers.support.block_conditions.any_condition import AnyCondi
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
-from core.modules.processes.support.block_conditions.reader_request_settled import ReaderRequestSettled
-from core.modules.processes.support.process_nudges import READER_HOLD
+from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
+from core.modules.processes.support.process_nudges import READER_BLOCK
 
 
-class ReaderHoldListener(SaveListener):
-    """Holds a worker until its requested reader is saved or the hold expires."""
+class ReaderBlockListener(SaveListener):
+    """Blocks a worker until its requested reader is saved or the block expires."""
 
-    name = "processes.reader-hold"
+    name = "processes.reader-block"
     event = "process_part.create"
 
     def __init__(self, queries: Queries, bus: Bus, clock: Clock) -> None:
@@ -30,9 +30,9 @@ class ReaderHoldListener(SaveListener):
         if not isinstance(part, ProcessPart) or part.reader_request_id is None:
             return
         request = self.queries.query(ReaderRequest).find(part.reader_request_id)
-        if request.settled_at is not None or request.hold_until <= self.clock.timestamp():
+        if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
         process = self.queries.query(Process).find(part.process_id)
-        nudge = READER_HOLD.nudge(command=request.command)
-        ends = AnyCondition(ReaderRequestSettled(request.id), TimeReached(request.hold_until.text))
+        nudge = READER_BLOCK.nudge(command=request.command)
+        ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
         self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{request.id}"), ends), change.context)

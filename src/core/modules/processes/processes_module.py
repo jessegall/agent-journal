@@ -1,9 +1,9 @@
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.migrations.m022_reader_requests import ReaderRequestsMigration
-from core.modules.processes.support.block_conditions.reader_request_settled import ReaderRequestSettled
-from core.modules.processes.listeners.reader_hold_listener import ReaderHoldListener
-from core.modules.processes.listeners.reader_request_settle_listener import ReaderRequestSettleListener
+from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
+from core.modules.processes.listeners.reader_block_listener import ReaderBlockListener
+from core.modules.processes.listeners.reader_request_complete_listener import ReaderRequestCompleteListener
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
@@ -149,7 +149,7 @@ class ProcessesModule(Module):
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
-    block_conditions = [ReaderRequestSettled, OutputEnded, OutputRead, OutputMonitored]
+    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputMonitored]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
@@ -160,7 +160,7 @@ class ProcessesModule(Module):
     subcommands = [ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [ReaderHoldListener, ReaderRequestSettleListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
+    listeners = [ReaderBlockListener, ReaderRequestCompleteListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS
