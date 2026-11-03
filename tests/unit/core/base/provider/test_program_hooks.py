@@ -29,6 +29,16 @@ def test_a_programs_own_entry_fields_ride_on_each_hook_so_codex_reads_whole_line
     assert json.loads(settings.read_text())["hooks"]["Stop"][0]["hooks"][0]["additionalContextLimit"] == 0
 
 
+def test_an_event_can_override_hook_fields_without_changing_other_events(tmp_path):
+    settings = tmp_path / "hooks.json"
+    ProgramHooks("sample", settings, ["Start", "End"], 90, {"customField": True},
+                 event_fields={"End": {"timeout": 3}}).write("journal-hook", tmp_path)
+    hooks = json.loads(settings.read_text())["hooks"]
+    assert hooks["Start"][0]["hooks"][0]["timeout"] == 90
+    assert hooks["End"][0]["hooks"][0]["timeout"] == 3
+    assert all(blocks[0]["hooks"][0]["customField"] for blocks in hooks.values())
+
+
 def test_a_providers_hooks_are_written_where_its_hook_file_says_for_every_hook_it_sends(tmp_path):
     hooks = ProgramHooks.hooks(SampleProgram, tmp_path)
     assert (hooks.path, list(hooks.events)) == (tmp_path / HOOK_FILE, ["Start", "BeforeTool", "End"])

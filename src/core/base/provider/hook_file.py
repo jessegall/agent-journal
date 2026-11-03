@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -10,3 +10,4 @@ class HookFile:
 
     path: Path
     entry_values: Mapping[str, object]
+    event_values: Mapping[str, Mapping[str, object]] = field(default_factory=dict)
