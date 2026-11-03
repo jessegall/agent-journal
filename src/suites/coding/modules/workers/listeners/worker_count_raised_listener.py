@@ -18,7 +18,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAI
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_LIMIT
 
 
-class WorkerLimitListener(SaveListener):
+class WorkerCountRaisedListener(SaveListener):
     """When the worker limit goes up, the main agent of each environment it holds for gets a line naming the new
     limit, how many workers run and how many open tasks are not delegated, so it hands out more."""
 

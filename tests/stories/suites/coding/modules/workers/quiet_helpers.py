@@ -23,7 +23,7 @@ def line_count(story, line: str) -> int:
     return story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line)
 
 
-def quiet_worker(new_story):
+def idle_worker(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -31,14 +31,14 @@ def quiet_worker(new_story):
 
 
 def test_the_inactive_line_names_the_commands_that_answer_it(new_story):
-    story, worker = quiet_worker(new_story)
+    story, worker = idle_worker(new_story)
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker send {worker.id}", f"journal worker release {worker.id}")
 
 
 def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
-    story, worker = quiet_worker(new_story)
+    story, worker = idle_worker(new_story)
     main = story.agent
     start_process(story, "make first", is_queued=True)
     start_process(story, "make second", is_queued=True)

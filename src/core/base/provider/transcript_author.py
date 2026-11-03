@@ -16,7 +16,7 @@ class TranscriptAuthor:
 
     @staticmethod
     def row(position: int, row_type: object, text: str, time: object = "") -> TranscriptRow:
-        return TranscriptRow(position, TranscriptAuthor.author(str(row_type), text), str(row_type), text, str(time or ""))
+        return TranscriptRow(position, TranscriptAuthor.author(str(row_type), text), str(row_type), text, str(time) if time else "")
 
     @staticmethod
     def author(row_type: str, text: str) -> str:

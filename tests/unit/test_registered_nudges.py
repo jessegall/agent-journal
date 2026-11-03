@@ -6,7 +6,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
-LONGEST_INFO_CHARACTERS = 800
+LONGEST_NOTICE_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
@@ -46,14 +46,14 @@ def test_the_scan_finds_the_declared_lines():
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_a_steering_line_and_a_refusal_are_at_most_120_characters_and_only_info_may_be_longer(name, text, path):
-    if TYPES[name] == "INFO":
-        assert len(text) <= LONGEST_INFO_CHARACTERS, f"{name} is {len(text)} characters: {text}"
+    if TYPES[name] == "NOTICE":
+        assert len(text) <= LONGEST_NOTICE_CHARACTERS, f"{name} is {len(text)} characters: {text}"
         return
     assert len(text) <= LONGEST_LINE_CHARACTERS, f"{name} is {len(text)} characters and is no info: {text}"
 
 
 def test_every_declared_line_is_info_steering_or_a_refusal():
-    assert set(TYPES.values()) <= {"INFO", "STEERING", "REFUSAL"}
+    assert set(TYPES.values()) <= {"NOTICE", "STEERING", "REFUSAL"}
 
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])

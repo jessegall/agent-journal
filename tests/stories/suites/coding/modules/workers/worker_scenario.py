@@ -1,4 +1,5 @@
 import subprocess
+from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -64,6 +65,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
     folder = story.container.get(OutputFolder)
     folder.write_pid(started[0], ended_program.pid)
     folder.write_end(started[0], 0)
+    story.advance(timedelta(seconds=11))
     RunEndRecovery()(story.container)
     story.run_listeners()
     expect_states(story, task1="completed")
