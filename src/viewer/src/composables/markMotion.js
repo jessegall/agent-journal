@@ -35,6 +35,29 @@ export function useMarkMotion(root, wanted, later = (ms) => new Promise((done) =
     const lock = (el, size) => Object.assign(el.style, {width: `${size.width}px`, height: `${size.height}px`});
     const release = (el) => Object.assign(el.style, {width: "", height: "", transition: ""});
 
+    function resizeFrom(el, from) {
+        release(el);
+        const to = finalSize(el);
+        lock(el, from);
+        void el.offsetWidth;
+        el.style.transition = `width ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1), height ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1)`;
+        lock(el, to);
+    }
+
+    // contents that arrive while the mark resizes, such as a run's output, change where it is going: it turns towards the new size from where it is
+    function followContents(el) {
+        const contents = el.querySelector(":scope > :not(.top)");
+        if (!contents || typeof ResizeObserver === "undefined") return null;
+        let height = contents.offsetHeight;
+        const watcher = new ResizeObserver(() => {
+            if (contents.offsetHeight === height) return;
+            height = contents.offsetHeight;
+            resizeFrom(el, measured(el));
+        });
+        watcher.observe(contents);
+        return watcher;
+    }
+
     async function change(next) {
         const el = root.value;
         const token = ++run;
@@ -50,13 +73,10 @@ export function useMarkMotion(root, wanted, later = (ms) => new Promise((done) =
         folded.value = next;
         phase.value = "resizing";
         await nextTick();
-        release(el);
-        const to = finalSize(el);
-        lock(el, from);
-        void el.offsetWidth;
-        el.style.transition = `width ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1), height ${RESIZE_MS}ms cubic-bezier(0.2, 0.9, 0.25, 1)`;
-        lock(el, to);
+        resizeFrom(el, from);
+        const watcher = followContents(el);
         await later(RESIZE_MS);
+        watcher?.disconnect();
         if (token !== run) return;
         release(el);
         phase.value = "entering";
