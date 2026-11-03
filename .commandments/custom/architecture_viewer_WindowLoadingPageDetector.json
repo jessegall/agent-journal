@@ -5,7 +5,11 @@
         "select": "kind:Attribute",
         "where": [
             {
-                "textMatches": "^WindowLoading\\.PAGE$"
+                "name": "PAGE"
+            },
+            {
+                "of": "child:value",
+                "name": "WindowLoading"
             }
         ],
         "reject": [

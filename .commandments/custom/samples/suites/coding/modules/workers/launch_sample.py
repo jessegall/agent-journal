@@ -34,7 +34,7 @@ class WorkerCommand:
         return HelperLaunch(Path("/work"), Path("/work"), "model", "", SessionStart("session"), {}, brief="Fix the cart")
 
 
-class OtherProgram:
+class SecondProgram:
     def helper_command(self, launch: str) -> str:
         return launch
 
