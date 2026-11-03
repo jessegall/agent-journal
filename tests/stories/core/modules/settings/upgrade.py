@@ -11,6 +11,14 @@ def test_version_4s_profile_model_setting_moves_under_its_new_name(new_story):
     assert 'journal.core.profiles.model-claude  "haiku"' in story.run("setting list").output_text
 
 
+def test_version_4s_voice_settings_move_under_the_voices_module_names(new_story):
+    story = upgraded_story(new_story)
+    shown = story.run("setting list").output_text
+    assert 'journal.core.voices.profile  "coach"' in shown
+    assert 'journal.core.voices.avatar-shown  "working"' in shown
+    story.expect_text("voice list", "* coach")
+
+
 def test_a_setting_no_module_declares_is_skipped_with_its_number_and_reason(new_story):
     story = upgraded_story(new_story)
     assert "skipped settings 2: no module declares the key no.such.key" in story.upgrade_text
@@ -32,9 +40,9 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
-    assert "skipped settings 10: the key moveprefs.limit is already moved for that scope" in outcome.text
+    assert "skipped settings 12: the key moveprefs.limit is already moved for that scope" in outcome.text
     listing = story.run("setting list").output_text
-    assert "moveprefs.limit" in listing and "7" in listing and "9" in listing and "8" not in listing.replace("moveprefs", "")
+    assert "moveprefs.limit  7" in listing and "moveprefs.limit  9" in listing and "moveprefs.limit  8" not in listing
 
 
 def test_a_version_4_key_with_a_version_5_counterpart_moves_under_the_full_key(new_story):

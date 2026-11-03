@@ -27,8 +27,23 @@ const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.va
 const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
+// the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
+const VOICE_SETTINGS = ["profile", "avatar", "avatar-shown"];
+const voice = ref(null);
+async function readVoice() {
+    const answers = await Promise.all(VOICE_SETTINGS.map((key) => context.read(`setting show journal.core.voices.${key}`)));
+    const [profile, avatar, shown] = answers.map((answer) => (answer.ok ? answer.value.value : null));
+    voice.value = answers.every((answer) => answer.ok) ? {profile, avatar, avatar_shown: shown} : null;
+}
+context.follow(["setting.*"], readVoice);
+readVoice();
+const voiceFigure = () => {
+    if (!voice.value?.avatar || voice.value.avatar_shown === "never") return "";
+    return voice.value.avatar_shown === "working" && !runningTool.value ? "" : voice.value.profile;
+};
 const figureVoice = computed(() => {
     const chosen = context.option("figure").value;
+    if (chosen === "voice") return voiceFigure();
     return chosen && chosen !== "none" ? chosen : "";
 });
 const runningTool = ref("");
