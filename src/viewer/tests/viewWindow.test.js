@@ -44,6 +44,84 @@ test("a window on a page of its own opens a row in the panel, as Home does", asy
     vi.unstubAllGlobals();
 });
 
+const library = {...board, name: "docs.library", title: "Library", place: "page"};
+const notes = {...board, name: "docs.notes", title: "Notes", place: "page"};
+
+async function pageShell(events) {
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
+    const fetchCatalogue = vi.fn(async () => ({windows: [library, notes]}));
+    const element = document.createElement("div");
+    document.body.append(element);
+    const app = createApp(() => h(ViewWindow, {environment: "main", view: "docs.library", float: 0, standalone: true, catalogue: new WindowCatalogue(fetchCatalogue), events}));
+    app.mount(element);
+    for (let round = 0; round < 8; round++) await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+    return {element, app, fetchCatalogue};
+}
+
+const settled = async () => {
+    for (let round = 0; round < 8; round++) await new Promise((resolve) => setTimeout(resolve));
+};
+
+test("moving to another page keeps the shell mounted and draws only the window of the new page", async () => {
+    const unsubscribe = vi.fn();
+    const stream = vi.fn(() => unsubscribe);
+    const {element, app, fetchCatalogue} = await pageShell(stream);
+    const shell = {sidebar: element.querySelector("[data-sidebar]"), breadcrumb: element.querySelector("[data-breadcrumb]"), main: element.querySelector(".view-window-main"), root: element.querySelector(".view-window")};
+    const firstWindow = element.querySelector(`section.window[data-window="docs.library"]`);
+    expect(firstWindow).not.toBeNull();
+    const click = new MouseEvent("click", {bubbles: true, cancelable: true, button: 0});
+    element.querySelector(`[data-sidebar-window="docs.notes"]`).dispatchEvent(click);
+    await settled();
+    expect(click.defaultPrevented).toBe(true);
+    expect(element.querySelector("[data-sidebar]")).toBe(shell.sidebar);
+    expect(element.querySelector("[data-breadcrumb]")).toBe(shell.breadcrumb);
+    expect(element.querySelector(".view-window-main")).toBe(shell.main);
+    expect(element.querySelector(".view-window")).toBe(shell.root);
+    expect(element.querySelector(`section.window[data-window="docs.library"]`)).toBeNull();
+    expect(element.querySelector(`section.window[data-window="docs.notes"]`)).not.toBeNull();
+    expect(element.querySelector(".view-window").dataset.page).toBe("docs.notes");
+    expect(element.querySelector("[data-breadcrumb]").textContent).toContain("Notes");
+    expect(element.querySelector(`[data-sidebar-window="docs.notes"]`).classList.contains("active")).toBe(true);
+    expect(location.search).toBe("?environment=main&page=docs.notes");
+    expect(document.title).toBe("Notes · main");
+    expect(stream).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).not.toHaveBeenCalled();
+    expect(fetchCatalogue).toHaveBeenCalledTimes(1);
+    app.unmount();
+    element.remove();
+    history.replaceState(null, "", "/");
+    vi.unstubAllGlobals();
+});
+
+test("the back button returns to the earlier page without a reload", async () => {
+    const {element, app} = await pageShell(() => () => {});
+    const sidebar = element.querySelector("[data-sidebar]");
+    element.querySelector(`[data-sidebar-window="docs.notes"]`).click();
+    await settled();
+    history.replaceState(null, "", "?environment=main&page=docs.library");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await settled();
+    expect(element.querySelector(".view-window").dataset.page).toBe("docs.library");
+    expect(element.querySelector(`section.window[data-window="docs.library"]`)).not.toBeNull();
+    expect(element.querySelector("[data-sidebar]")).toBe(sidebar);
+    app.unmount();
+    element.remove();
+    history.replaceState(null, "", "/");
+    vi.unstubAllGlobals();
+});
+
+test("a click with a modifier key still follows the address, to open the page in a tab of its own", async () => {
+    const {element, app} = await pageShell(() => () => {});
+    const click = new MouseEvent("click", {bubbles: true, cancelable: true, button: 0, ctrlKey: true});
+    element.querySelector(`[data-sidebar-window="docs.notes"]`).dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+    expect(element.querySelector(".view-window").dataset.page).toBe("docs.library");
+    app.unmount();
+    element.remove();
+    vi.unstubAllGlobals();
+});
+
 const terminal = {...board, name: "coding.terminal", title: "Terminal", shows: "one-agent", line: "agent terminal"};
 
 async function pageOf(answer) {
