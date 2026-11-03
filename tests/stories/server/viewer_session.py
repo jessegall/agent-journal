@@ -1,3 +1,7 @@
+from tests.stories.server.support.server_fixtures import person_server
+
+import pytest
+
 import os
 import time
 
@@ -10,38 +14,40 @@ from tests.stories.server.support.server_client import server_story
 DEAD_PID = 999999
 
 
-def test_the_session_route_answers_a_person_cookie_with_its_kind_and_person(new_story):
-    with server_story(new_story(fixture=UserJoined)) as story:
-        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-        story.expect_viewer_status("/api/session", 200, cookie, text='"type": "person"')
+def test_the_session_route_answers_a_person_cookie_with_its_kind_and_person(person_server):
+    story = person_server
+    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+    story.expect_viewer_status("/api/session", 200, cookie, text='"type": "person"')
 
 
-def test_the_session_route_answers_no_cookie_with_401(new_story):
-    with server_story(new_story(fixture=UserJoined)) as story:
-        story.expect_viewer_status("/api/session", 401)
+def test_the_session_route_answers_no_cookie_with_401(person_server):
+    story = person_server
+    story.expect_viewer_status("/api/session", 401)
 
 
-def test_the_server_state_route_answers_without_a_cookie_that_nothing_is_marked(new_story):
-    with server_story(new_story(fixture=UserJoined)) as story:
-        story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
+def test_the_server_state_route_answers_without_a_cookie_that_nothing_is_marked(person_server):
+    story = person_server
+    story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
 
 
-def test_a_restart_file_and_a_running_installers_file_hold_the_cover(new_story):
-    with server_story(new_story(fixture=UserJoined)) as story:
-        files = ServerFiles(story.story.home)
-        files.mark_restart()
-        files.mark_maintenance()
-        story.expect_viewer_status("/api/server-state", 200, text='"restarting": true')
-        story.expect_viewer_status("/api/server-state", 200, text='"updating": true')
+def test_a_restart_file_and_a_running_installers_file_hold_the_cover(person_server):
+    story = person_server
+    files = ServerFiles(story.story.home)
+    files.mark_restart()
+    files.mark_maintenance()
+    story.expect_viewer_status("/api/server-state", 200, text='"restarting": true')
+    story.expect_viewer_status("/api/server-state", 200, text='"updating": true')
 
 
-def test_a_dead_installers_file_and_an_old_restart_file_end_the_cover(new_story):
-    with server_story(new_story(fixture=UserJoined)) as story:
-        files = ServerFiles(story.story.home)
-        files.maintenance.write_text(str(DEAD_PID))
-        files.mark_restart()
-        old = time.time() - RESTART_LIMIT_SECONDS - 1
-        os.utime(files.restart_mark, (old, old))
-        story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
-        story.expect_viewer_status("/api/server-state", 200, text='"updating": false')
-        assert not RunQueueHalt(story.story.home).is_halted
+def test_a_dead_installers_file_and_an_old_restart_file_end_the_cover(person_server):
+    story = person_server
+    files = ServerFiles(story.story.home)
+    files.maintenance.write_text(str(DEAD_PID))
+    files.mark_restart()
+    old = time.time() - RESTART_LIMIT_SECONDS - 1
+    os.utime(files.restart_mark, (old, old))
+    story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
+    story.expect_viewer_status("/api/server-state", 200, text='"updating": false')
+    assert not RunQueueHalt(story.story.home).is_halted
+
+

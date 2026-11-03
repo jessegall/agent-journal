@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.database.database import Database
@@ -26,27 +28,21 @@ def test_a_memory_made_shows_its_mark_after_the_commit(new_story):
     shown_after_commit(story, FACT, "Memory 1 created")
 
 
-def test_a_memory_weighed_to_a_new_weight_shows_the_new_weight(new_story):
-    story = new_story(fixture=BuilderStarted)
-    memory_id = story.new_row_id(FACT, actor=story.agent)
-    story.run_listeners()
+def test_a_memory_weighed_to_a_new_weight_shows_the_new_weight(fact_memory):
+    story, memory_id = fact_memory
     shown_after_commit(story, f"memory weigh {memory_id} 8", f"Memory {memory_id}: weight set to 8")
 
 
-def test_a_memory_edited_without_a_new_weight_shows_no_weighed_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    memory_id = story.new_row_id(FACT, actor=story.agent)
-    story.run_listeners()
+def test_a_memory_edited_without_a_new_weight_shows_no_weighed_mark(fact_memory):
+    story, memory_id = fact_memory
     starting_count = mark_count(story)
     story.expect_success(f'memory edit {memory_id} --text "The cart total is in euro cents"', actor=story.agent)
     story.run_listeners()
     assert mark_count(story) == starting_count
 
 
-def test_a_memory_removed_shows_its_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    memory_id = story.new_row_id(FACT, actor=story.agent)
-    story.run_listeners()
+def test_a_memory_removed_shows_its_mark(fact_memory):
+    story, memory_id = fact_memory
     shown_after_commit(story, f'memory remove {memory_id} --reason "no longer true"', f"Memory {memory_id} removed")
 
 
@@ -77,10 +73,8 @@ def test_a_compaction_shows_a_compacted_mark(new_story):
     assert "Conversation compacted" in marks_text(story), marks_text(story)
 
 
-def test_a_failed_command_shows_no_memory_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    memory_id = story.new_row_id(FACT, actor=story.agent)
-    story.run_listeners()
+def test_a_failed_command_shows_no_memory_mark(fact_memory):
+    story, memory_id = fact_memory
     starting_count = mark_count(story)
     story.expect_refusal(f"memory weigh {memory_id},{memory_id} 4,5,6", "2 memories and 3 weights", actor=story.agent)
     story.run_listeners()
@@ -118,3 +112,11 @@ def test_a_rule_given_back_shows_a_reminded_mark_of_the_reminders_family(new_sto
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.reminder")
     assert "Reminded the agent: Always run the tests before a commit" in marks_text(story) and mark.family == "memories.reminders", marks_text(story)
+
+
+@pytest.fixture
+def fact_memory(new_story):
+    story = new_story(fixture=BuilderStarted)
+    memory_id = story.new_row_id(FACT, actor=story.agent)
+    story.run_listeners()
+    return story, memory_id

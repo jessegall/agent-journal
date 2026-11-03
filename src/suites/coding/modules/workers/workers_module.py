@@ -8,6 +8,7 @@ from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals_handler import ClearWorkerRefusalsHandler
 from suites.coding.modules.workers.listeners.main_agent_workers_listener import MainAgentWorkersListener
 from suites.coding.modules.workers.listeners.blocked_worker_task_listener import BlockedWorkerTaskListener
+from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import LAUNCH_FAILURE_NUDGES
 from suites.coding.modules.workers.listeners.worker_help_request_listener import WorkerHelpRequestListener
 from suites.coding.modules.workers.listeners.worker_move_mark_listener import WorkerMoveMarkListener
 from suites.coding.modules.workers.listeners.worker_stopped_mark_listener import WorkerStoppedMarkListener
@@ -123,7 +124,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    nudges = WORKER_NUDGES
+    nudges = [*WORKER_NUDGES, *LAUNCH_FAILURE_NUDGES]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

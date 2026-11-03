@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
@@ -20,14 +22,14 @@ def ended(new_story, line: str, text: str, category: CommandCategory):
     return story, list(story.hook("s-1", NOTHING).lines)
 
 
-def test_a_vitest_run_with_colour_codes_gives_its_counts_as_the_summary_with_no_escape(new_story):
-    story, lines = ended(new_story, VITEST_RUN, VITEST_OUTPUT, CommandCategory.TEST_RUN)
+def test_a_vitest_run_with_colour_codes_gives_its_counts_as_the_summary_with_no_escape(ended_vitest):
+    story, lines = ended_vitest
     assert "output 1 ended: 12 passed" in lines
     assert not any("\x1b" in line for line in lines)
 
 
-def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(new_story):
-    story, _ = ended(new_story, VITEST_RUN, VITEST_OUTPUT, CommandCategory.TEST_RUN)
+def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(ended_vitest):
+    story, _ = ended_vitest
     story.run_listeners()
     story.expect_text(MARKS, "12 passed")
     story.expect_absent(MARKS, "\x1b")
@@ -35,7 +37,17 @@ def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(
     story.expect_absent("output read 1 --all", "\x1b", actor=story.agent)
 
 
-def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(new_story):
-    story, lines = ended(new_story, "./check-cart.sh", "\x1b[32mall \x1b[1mdone\x1b[0m\n", CommandCategory.TEST_RUN)
+def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(ended_custom_tests):
+    story, lines = ended_custom_tests
     assert any("no reader reads check-cart.sh yet: journal reader add check-cart.sh" in line for line in lines)
     assert not any("no reader reads" in line for line in story.hook("s-1", NOTHING).lines)
+
+
+@pytest.fixture
+def ended_vitest(new_story):
+    return ended(new_story, VITEST_RUN, VITEST_OUTPUT, CommandCategory.TEST_RUN)
+
+
+@pytest.fixture
+def ended_custom_tests(new_story):
+    return ended(new_story, './check-cart.sh', '\x1b[32mall \x1b[1mdone\x1b[0m\n', CommandCategory.TEST_RUN)

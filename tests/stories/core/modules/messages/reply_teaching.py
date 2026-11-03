@@ -1,10 +1,13 @@
 from datetime import timedelta
 
+import pytest
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
@@ -20,11 +23,16 @@ VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 CHAINED_LINE = HookSamples.shell("ls && ls && ls", ShellPart("ls", CommandCategory.READ, []), ShellPart("ls", CommandCategory.READ, []), ShellPart("ls", CommandCategory.READ, []))
 
 
+class ReplySession(StoryFixture):
+    parent = SampleSuiteChoice
+
+    def steps(self, story):
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+
+
 def reply_story(new_story):
-    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
-    return story
+    return new_story(SAMPLES, fixture=ReplySession)
 
 
 def read_story(new_story):
@@ -32,6 +40,11 @@ def read_story(new_story):
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.stop())
     return story, story.hook("s-1", READ_MESSAGE)
+
+
+@pytest.fixture
+def read_message(new_story):
+    return read_story(new_story)
 
 
 def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out_of_the_chat(new_story):
@@ -42,64 +55,56 @@ def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out
     assert any("never the journal's lines" in line for line in reply.lines)
 
 
-def test_reading_a_message_says_how_a_reply_goes_out(new_story):
-    _, reply = read_story(new_story)
+def test_reading_a_message_says_how_a_reply_goes_out(read_message):
+    _, reply = read_message
     assert any("journal message reply <n>" in line for line in reply.lines)
 
 
-def test_a_read_message_is_named_until_it_is_answered_in_text(new_story):
-    story, _ = read_story(new_story)
+def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):
+    story, _ = read_message
     assert "answer message 1 before you go on" in story.hook("s-1", VIEW_LINE).lines
     story.hook("s-1", HookSamples.message_display("Fixing the cart now"))
     story.advance(timedelta(seconds=301))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
-def test_filing_the_task_a_message_asks_for_is_not_told_to_answer_it(new_story):
-    story, _ = read_story(new_story)
+def test_filing_the_task_a_message_asks_for_is_not_told_to_answer_it(read_message):
+    story, _ = read_message
     task_part = ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Fix the cart"], subcommand="task")
     reply = ShellPart("journal", CommandCategory.JOURNAL, ["message", "reply", "1", "on it"], subcommand="message")
     story.expect_absent_hook_line("s-1", HookSamples.shell('journal task make "Fix the cart"', task_part), "answer message 1")
     story.expect_absent_hook_line("s-1", HookSamples.shell("journal message reply 1 'on it'", reply), "answer message 1")
 
 
-def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(new_story):
-    story, _ = read_story(new_story)
-    for _ in range(10):
-        story.hook("s-1", VIEW_LINE)
+def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(reply_required):
+    story = reply_required
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "answer message 1 first")
     story.expect_absent_hook_line("s-1", REPLY_LINE, "answer message 1 first")
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
-def test_a_countdown_comes_before_tool_calls_wait(new_story):
-    story, _ = read_story(new_story)
-    for _ in range(7):
-        story.hook("s-1", VIEW_LINE)
+def test_a_countdown_comes_before_tool_calls_wait(reply_countdown):
+    story = reply_countdown
     assert any("reply to message 1 due:" in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
-def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(new_story):
-    story, _ = read_story(new_story)
-    for _ in range(7):
-        story.hook("s-1", CHAINED_LINE)
+def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(chained_reply_countdown):
+    story = chained_reply_countdown
     assert "reply to message 1 due: 3 tool uses" in story.hook("s-1", CHAINED_LINE).lines
     assert "reply to message 1 due: 2 tool uses" in story.hook("s-1", VIEW_LINE).lines
 
 
-def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(new_story):
-    story, _ = read_story(new_story)
-    for _ in range(9):
+def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chained_reply_countdown):
+    story = chained_reply_countdown
+    for _ in range(2):
         story.hook("s-1", CHAINED_LINE)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "answer message 1 first")
 
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):
-    story = reply_story(new_story)
-    story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.stop())
+    story = new_story(SAMPLES, fixture=AnnouncedCartMessage)
     for _ in range(20):
         story.hook("s-1", VIEW_LINE)
     story.expect_hook_refusal("s-1", HookSamples.edit("a.txt"), "1 unread messages: run journal message unread")
@@ -127,23 +132,51 @@ def test_an_edit_of_a_code_file_reminds_of_plain_words_and_a_text_file_does_not(
     assert any("plain words" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
 
 
-def test_an_agents_face_on_a_message_answers_it(new_story):
-    story, _ = read_story(new_story)
+def test_an_agents_face_on_a_message_answers_it(read_message):
+    story, _ = read_message
     story.expect_text('message react 1 "👍"', "message 1: 👍", actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
 def test_a_reply_written_before_its_message_is_marked_read_answers_it(new_story):
-    story = reply_story(new_story)
-    story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.stop())
+    story = new_story(SAMPLES, fixture=AnnouncedCartMessage)
     story.expect_success('message reply 1 "On it" --environment main', "parent_id: 1", actor=story.agent)
     story.hook("s-1", READ_MESSAGE)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
-def test_a_reply_line_by_any_path_goes_through_the_hold(new_story):
-    story, _ = read_story(new_story)
-    for _ in range(10):
-        story.hook("s-1", VIEW_LINE)
+def test_a_reply_line_by_any_path_goes_through_the_hold(reply_required):
+    story = reply_required
     story.expect_absent_hook_line("s-1", journal_line(".journal/bin/journal message reply 1 done"), "answer message 1 first")
+
+
+@pytest.fixture
+def chained_reply_countdown(read_message):
+    story, _ = read_message
+    for _ in range(7):
+        story.hook("s-1", CHAINED_LINE)
+    return story
+
+
+@pytest.fixture
+def reply_countdown(read_message):
+    story, _ = read_message
+    for _ in range(7):
+        story.hook("s-1", VIEW_LINE)
+    return story
+
+
+@pytest.fixture
+def reply_required(reply_countdown):
+    story = reply_countdown
+    for _ in range(3):
+        story.hook("s-1", VIEW_LINE)
+    return story
+
+
+class AnnouncedCartMessage(StoryFixture):
+    parent = ReplySession
+
+    def steps(self, story):
+        story.run('message send "Fix the cart first" --environment main', actor=story.user)
+        story.hook('s-1', HookSamples.stop())

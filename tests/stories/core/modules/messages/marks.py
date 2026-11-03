@@ -1,4 +1,3 @@
-from core.base.command.bus import Bus
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.chat.support.v4_looks import FILED, SUMMARY, expect_declared_appearance
 from core.base.command.bus import Bus
@@ -21,10 +20,8 @@ def test_an_agents_message_is_one_bubble_and_makes_no_mark_of_its_words(new_stor
     assert "On it, fixing the cart" not in marks_text(story), marks_text(story)
 
 
-def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_show_it(new_story):
-    story = new_story(fixture=UnansweredMessage)
-    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
-    story.run_listeners()
+def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_show_it(read_message_marks):
+    story = read_message_marks
     assert "Filed from your message" not in marks_text(story), marks_text(story)
 
 
@@ -65,7 +62,21 @@ def test_a_message_edited_by_the_user_shows_no_edited_mark(new_story):
     assert "edited" not in marks_text(story), marks_text(story)
 
 
-def test_a_message_sent_shows_no_edited_mark(new_story):
+def test_a_message_sent_shows_no_edited_mark(initial_message_marks):
+    story = initial_message_marks
+    assert "edited" not in marks_text(story), marks_text(story)
+
+
+@pytest.fixture
+def read_message_marks(new_story):
+    story = new_story(fixture=UnansweredMessage)
+    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def initial_message_marks(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.run_listeners()
-    assert "edited" not in marks_text(story), marks_text(story)
+    return story

@@ -19,6 +19,7 @@ from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.testing.story import Story
+from core.testing.line_outcome import LineOutcome
 from core.base.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.base.module.code_fingerprint import CodeFingerprint
@@ -197,11 +198,10 @@ class ServerStory:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
         assert CliEndpoint(self.story.home, ListenerWake(idle_thread)).line_run.busy_timeout_seconds == seconds
 
-    def expect_stale_answer_and_released_files(self, line: str) -> None:
-        first_task_list = self.story.run("task list --environment main").output_text
+    def expect_stale_answer_and_released_files(self, line: str, task_listing: LineOutcome) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
         assert answer.status == 409 and "newer code" in answer.text, answer
-        assert self.story.run("task list --environment main").output_text == first_task_list
+        assert self.story.run("task list --environment main").output_text == task_listing.output_text
         files = ServerFiles(self.story.home)
         assert not self.socket_path.exists() and not files.pid_file.exists() and files.acquire_lock(), "the stale server still holds its files"
         files.release_lock()

@@ -15,6 +15,7 @@ from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
+from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -152,7 +153,8 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
-    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots")]
+    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots"),
+                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
