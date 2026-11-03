@@ -1,3 +1,6 @@
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 LIBRARY_FILE = "index.js"
@@ -23,6 +26,15 @@ def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_s
     worker = dispatched_worker(story)
     assert (repository.worktree_folder(worker.id) / ".codex" / "hooks.json").read_text() == '{"hooks": {}}'
     repository.expect_excluded(worker.id, ".codex/hooks.json")
+
+
+def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_first_hook(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    launch_name = story.container.get(Queries).query(Agent).find(worker.id).session
+    story.hook("real-codex-session", HookSamples.sample("session_start").with_fields(launch=launch_name))
+    assert story.container.get(Queries).query(Agent).find(worker.id).session == "real-codex-session"
 
 
 def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
