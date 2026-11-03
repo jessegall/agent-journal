@@ -8,11 +8,16 @@ PLAIN_EVENTS = {HookEventName.STOP: "idle", HookEventName.PROMPT: "prompt_submit
 
 
 class PluginEventNames:
-    """Turns a version 5 hook into the version 4 events a plugin hears: a tool's start, each command of its
-    shell line, each file a finished tool wrote with the lines it changed, and the plain events by their
-    version 4 names."""
+    """Converts agent hooks into plugin events, including the agent's working folder."""
 
     def events(self, hook: AgentHook) -> list[PluginEvent]:
+        events = self.hook_events(hook)
+        folder = hook.event.raw.get("cwd")
+        if not isinstance(folder, str):
+            return events
+        return [PluginEvent(event.name, {**event.data, "cwd": folder}) for event in events]
+
+    def hook_events(self, hook: AgentHook) -> list[PluginEvent]:
         event, tool = hook.event.event, hook.event.tool
         if event in PLAIN_EVENTS:
             return [PluginEvent(PLAIN_EVENTS[event], {"prompt": hook.event.prompt} if hook.event.prompt else {})]

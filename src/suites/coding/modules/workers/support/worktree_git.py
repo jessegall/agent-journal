@@ -5,6 +5,7 @@ from pathlib import Path
 from core.base.conflict_files import ConflictFiles
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
@@ -176,7 +177,14 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
-        tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_commit).stdout.splitlines()
+        return self.changed_paths(worktree, worktree.base_commit)
+
+    def comparison(self, worktree: Worktree) -> WorktreeChanges:
+        base = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", worktree.base_branch, worktree.branch).stdout.strip()
+        return WorktreeChanges(base, self.changed_paths(worktree, base))
+
+    def changed_paths(self, worktree: Worktree, base: str) -> tuple[str, ...]:
+        tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", base).stdout.splitlines()
         untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
         return tuple(dict.fromkeys(path for path in (*tracked, *untracked) if path))
 

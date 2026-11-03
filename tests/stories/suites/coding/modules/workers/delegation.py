@@ -85,6 +85,14 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
 
 
+def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(new_story):
+    story, _, worker = delegated_story(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('message send "Fix the cart first" --environment main', actor=user)
+    story.expect_absent("message unread --environment main", "Fix the cart first", actor=worker)
+    story.expect_text("message unread --environment main", "Fix the cart first", actor=story.agent)
+
+
 def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_also_sent_to(new_story):
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

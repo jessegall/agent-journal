@@ -401,7 +401,7 @@ function pick(face) {
 
 .message-card :deep(p),
 .message-card :deep(li) {
-    text-wrap: balance;
+    text-wrap: pretty;
 }
 
 .message-card {
