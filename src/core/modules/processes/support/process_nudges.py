@@ -3,7 +3,7 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.count_down import CountDown
-from core.modules.drivers.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 WORKER_TEST_LIMIT_SOURCE = "processes.worker-test-limit"
 TEST_LIMIT_STOP = NudgeDeclaration("processes.run_over_test_limit", NudgeType.STEERING, "output {output} stopped: {count} tests, worker limit {limit}; run only tests for this task", longest_characters=240, wakes_agent=True)

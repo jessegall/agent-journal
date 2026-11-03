@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
@@ -21,9 +23,9 @@ COSTLY_LISTENER_POINTS = 500
 
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
-    run left undone is done by the next. It claims each event it listens to before handling it, so a second
-    runner never handles the same one, and moves over the events it does not hear in one write; an event that
-    fails is given back to be tried again, and one that fails three times is skipped. Listeners a person waits
+    run left undone is done by the next. Each round reads the events once and visits only the listeners that
+    hear one of them; the others move over them in one write. It claims each event it listens to before handling
+    it, so a second runner never handles the same one; an event that fails is given back to be tried again, and one that fails three times is skipped. Listeners a person waits
     on run first and again after each other listener that handled events, and the server runs them on a thread
     of their own; a costly one is noted with its points."""
 
@@ -51,6 +53,10 @@ class CommitListenerRunner:
         self.run_rounds([entry for entry in self.commit_entries() if not self.is_urgent(entry)], [])
 
     def commit_entries(self) -> list[ListenerEntry]:
+        return self.sorted_entries
+
+    @cached_property
+    def sorted_entries(self) -> list[ListenerEntry]:
         return sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order)
 
     def is_urgent(self, entry: ListenerEntry) -> bool:
@@ -64,9 +70,19 @@ class CommitListenerRunner:
                 state.finish_start()
             if not self.cursors.has_unhandled_events():
                 return
-            progress = [self.run_entry(entry, urgent_entries) for entry in entries]
-            if not any(progress):
+            if not self.run_round(entries, urgent_entries):
                 return
+
+    def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
+        positions = self.cursors.positions()
+        events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
+        if not events:
+            return False
+        heard = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
+        names = {entry.name for entry in heard}
+        moved = self.cursors.moved_over([entry.name for entry in entries if entry.name not in names], events[-1].id)
+        progress = [self.run_entry(entry, urgent_entries) for entry in heard]
+        return bool(moved) or any(progress)
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
         handled = self.run_listener(entry)

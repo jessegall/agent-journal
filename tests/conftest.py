@@ -9,6 +9,7 @@ STORY_SUPPORT_FOLDER = "support"
 REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
 REAL_PROGRAMS = ("claude", "codex")
+TYPE_CHECK_MARK = "type_check"
 os.environ.pop("JOURNAL_AGENT_SESSION", None)
 
 
@@ -22,11 +23,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", f"{REAL_PROGRAM_MARK}: the story starts a real agent program and runs only with {REAL_PROGRAM_FLAG}")
+    config.addinivalue_line("markers", f"{TYPE_CHECK_MARK}: the strict type check, a gate of its own: python3 -m pytest -m {TYPE_CHECK_MARK}")
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     wanted = config.getoption(REAL_PROGRAM_FLAG)
-    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted]
+    type_check_wanted = config.getoption("markexpr") == TYPE_CHECK_MARK
+    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and (type_check_wanted or item.get_closest_marker(TYPE_CHECK_MARK) is None)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
     items[:] = kept
 

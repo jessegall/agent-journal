@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import re
 from dataclasses import dataclass
 
@@ -67,7 +68,7 @@ class ShellLine:
         return self.has_file_redirect or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
-    def writes_nothing(self) -> bool:
+    def is_read_only(self) -> bool:
         return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_part_writing_files
 
     @property
@@ -82,6 +83,10 @@ class ShellLine:
 
     def has_category_part(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)
+
+    def all_alias_names(self, is_alias: Callable[[str], bool]) -> tuple[str, ...]:
+        commands = tuple(part.arguments[0] for part in self.parts_running_journal_command() if part.arguments and is_alias(part.arguments[0]))
+        return tuple(dict.fromkeys((*self.alias_names, *commands)))
 
     def parts_running_journal_command(self, *commands: str) -> tuple[Part, ...]:
         command_terms = tuple(tuple(command.split()) for command in commands)

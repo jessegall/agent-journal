@@ -1,18 +1,14 @@
 from core.base.actor import Actor
 from core.base.agent_role import AgentRole
-from core.base.change.event_log import EventLog
 from core.base.container import Container
-from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import ENDED_FIELD, Agent
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-
-AGENT_UPDATE_EVENT = "agent.update"
 
 
 class WorkerResumeRetry:
@@ -33,10 +29,4 @@ class WorkerResumeRetry:
         if worker.role is not AgentRole.WORKER or ended_at is None:
             return False
         line_after_end = any(line.creation_timestamp().value > ended_at.value for line in lines)
-        return line_after_end or not self.is_stopped(container, worker)
-
-    @staticmethod
-    def is_stopped(container: Container, worker: Agent) -> bool:
-        events = container.get(EventLog).row_events(container.get(Tables).table(Agent).name, worker.id)
-        endings = [event for event in events if event.event == AGENT_UPDATE_EVENT and event.data.get(ENDED_FIELD, (None, None))[1]]
-        return bool(endings) and container.get(WorkerStop).is_final(worker, endings[-1].actor_id)
+        return line_after_end or not container.get(WorkerStop).was_stopped(worker)
