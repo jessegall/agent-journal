@@ -11,7 +11,9 @@ WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.STEERING, 
 
 WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: journal worker merge {worker}, or journal worker release {worker}', interval=Interval(Seconds(600)), turn_limited=False)
 
-SMALL_BATCH = NudgeDeclaration("workers.small_batch", NudgeType.STEERING, 'batch of {count}: queue more tasks on a worker, a long batch runs on and bothers you less', turn_limited=False)
+WORKER_LIMIT_RAISED = NudgeDeclaration("workers.limit_raised", NudgeType.STEERING, 'worker limit is now {limit}: {workers} workers out, {count} open tasks not delegated; hand out more', turn_limited=False)
+
+SMALL_BATCH =NudgeDeclaration("workers.small_batch", NudgeType.STEERING, 'batch of {count}: queue more tasks on a worker, a long batch runs on and bothers you less', turn_limited=False)
 
 WORKER_RETIRED = NudgeDeclaration("workers.worker_retired", NudgeType.STEERING, 'worker:{worker} was idle too long: released, task:{task} is open again', turn_limited=False)
 
@@ -27,4 +29,4 @@ WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INFO, 'your t
 WORKER_REPORT = NudgeDeclaration("workers.report", NudgeType.INFO, 'worker:{worker} reports: {job}', turn_limited=False)
 WORKER_REUSE = NudgeDeclaration("workers.reuse", NudgeType.REFUSAL, 'worker:{worker} changed these files: journal worker send {worker} "<job>", or add --fresh if it needs a new one', turn_limited=False)
 WORKER_ENDED_WITH_TASKS = NudgeDeclaration("workers.ended_with_tasks", NudgeType.STEERING, 'worker:{worker} ended with {tasks} left: journal worker send {worker} "<job>", or journal worker release {worker}', turn_limited=False)
-WORKER_NUDGES = [WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_REPORT, WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_NUDGES = [WORKER_LIMIT_RAISED, WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_REPORT, WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
