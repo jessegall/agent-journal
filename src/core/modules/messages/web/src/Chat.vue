@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
@@ -106,6 +106,9 @@ const vComposerText = {
 function typed(event) {
     shownInBox = text.value = event.target.value;
 }
+// words put in with no input event are read from the box at each moment they could be lost or needed: when the box gets focus or a key comes up in
+// it, when a press lands on the row of buttons (which decides whether there is anything to send), when the window is come back to, before the
+// box is taken off the page, and before a send
 // dictation pastes into the focused field only, and coming back to the window leaves nothing focused: the box takes the focus back when
 // nothing else holds it, so the next words land in it
 function returned() {
@@ -116,7 +119,9 @@ onMounted(() => {
     window.addEventListener("focus", returned);
     document.addEventListener("visibilitychange", returned);
 });
-onUnmounted(() => {
+onBeforeUnmount(() => {
+    takeFromBox();
+    if (!editing.value) keepDraft(text.value);
     window.removeEventListener("focus", returned);
     document.removeEventListener("visibilitychange", returned);
 });
@@ -421,8 +426,8 @@ async function runCommand(pin) {
                     </template>
                 </ul>
             </template>
-            <textarea ref="composerInput" v-composer-text="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @input="typed" @paste="pasted" />
-            <div class="composer-row">
+            <textarea ref="composerInput" v-composer-text="text" class="composer-input" rows="3" placeholder="Message the agent" @focus="takeFromBox" @keyup="takeFromBox" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @input="typed" @paste="pasted" />
+            <div class="composer-row" @pointerdown="takeFromBox">
                 <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
                 <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">
                     <Icon name="clip" :size="16" />
