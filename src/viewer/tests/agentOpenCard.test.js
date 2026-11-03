@@ -119,6 +119,6 @@ test("the window holds the open card, and the card's tab body scrolls within the
     expect(rows).toContain("const openId = ref(null)");
     expect(card).not.toMatch(/const opened = ref/);
     expect(rows).toMatch(/\.agents\.focused :deep\(\.row-list\) \{[^}]*flex: 1;[^}]*min-height: 0;/);
-    expect(card).toMatch(/\.agent-card\.open \.agent-tab-body \{[^}]*flex: 1;[^}]*max-height: none;[^}]*min-height: 0;/);
+    expect(card).toMatch(/\.agent-card\.open \.agent-tab-body \{[^}]*flex: 1;[^}]*min-height: 0;/);
     expect(card).toMatch(/\.agent-tab-body \{[^}]*overflow-y: auto;/);
 });

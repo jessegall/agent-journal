@@ -29,8 +29,9 @@ const newest = computed(() => rows.value[0]?.id ?? 0);
 <style scoped>
 .file-feed {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    height: 320px;
+    min-height: 0;
 }
 
 .file-feed-older {

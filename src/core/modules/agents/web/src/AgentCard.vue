@@ -347,7 +347,6 @@ readCommand();
 
 .agent-card.open .agent-tab-body {
     flex: 1;
-    max-height: none;
     min-height: 0;
 }
 
@@ -385,7 +384,6 @@ readCommand();
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: 320px;
     margin: 0 -22px -11px -27px;
     overflow-y: auto;
 }

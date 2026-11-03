@@ -46,7 +46,7 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       }, 8, ["row-count"])
     ]));
   }
-}, Fe = /* @__PURE__ */ ce(Be, [["__scopeId", "data-v-69712d4d"]]), Ue = ["data-agent-open", "aria-expanded", "title"], Ve = { class: "agent-head" }, He = ["data-state"], je = {
+}, Fe = /* @__PURE__ */ ce(Be, [["__scopeId", "data-v-ddb88f22"]]), Ue = ["data-agent-open", "aria-expanded", "title"], Ve = { class: "agent-head" }, He = ["data-state"], je = {
   class: "agent-title",
   "data-agent-title": ""
 }, ze = {
@@ -262,7 +262,7 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       ], 10, Ue);
     };
   }
-}, rt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-2c6b711d"]]), ct = { class: "agents-bar" }, gt = {
+}, rt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-9d301130"]]), ct = { class: "agents-bar" }, gt = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, vt = ["data-agent-row", "onMouseenter", "onMouseleave"], pt = {
