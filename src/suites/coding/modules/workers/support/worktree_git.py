@@ -1,14 +1,16 @@
 import subprocess
+import shutil
 from pathlib import Path
 
+from core.base.conflict_files import ConflictFiles
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
+BUILD_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
 BUILT_FOLDER = "/web/dist/"
-CONFLICT_MARKER = "<<<<<<< "
 
 
 class WorktreeGit:
@@ -25,19 +27,17 @@ class WorktreeGit:
         self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
-        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
-            return False
         conflicts = self.conflict_files(worktree)
         if conflicts:
             raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", "settle them in the worktree, then try again")
+        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
+            return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
     def conflict_files(self, worktree: Worktree) -> tuple[str, ...]:
-        unmerged = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
-        files = ((path, Path(worktree.folder, path)) for path in unmerged)
-        return tuple(path for path, file in files if file.exists() and CONFLICT_MARKER in file.read_text(errors="replace"))
+        return ConflictFiles(Path(worktree.folder)).paths()
 
     def head(self, folder: str) -> str:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
@@ -46,12 +46,47 @@ class WorktreeGit:
         if self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-edit", worktree.base_branch).returncode == 0:
             return ()
         conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
-        for path in (path for path in conflicts if BUILT_FOLDER in path):
-            self.use_branch_file(worktree, path)
+        folders = self.built_folders(conflicts)
+        if folders:
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
         source_conflicts = tuple(path for path in conflicts if BUILT_FOLDER not in path)
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
+
+    def built_folders(self, files: list[str]) -> tuple[str, ...]:
+        return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
+
+    def rebuild(self, worktree: Worktree, base_folder: str) -> None:
+        changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
+        folders = self.built_folders(changed)
+        if not folders:
+            return
+        viewer = Path(worktree.folder, "src/viewer")
+        if not (viewer / "package.json").is_file():
+            raise Refusal("the web build needs src/viewer/package.json", "add the build command before merging generated web files")
+        for folder in folders:
+            path = Path(worktree.folder, folder)
+            if path.exists():
+                shutil.rmtree(path)
+        modules = viewer / "node_modules"
+        base_modules = Path(base_folder, "src/viewer/node_modules")
+        linked = not modules.exists() and base_modules.is_dir()
+        if linked:
+            modules.symlink_to(base_modules.resolve(), target_is_directory=True)
+        try:
+            finished = subprocess.run(["npm", "run", "build"], cwd=viewer, capture_output=True, text=True, timeout=BUILD_LIMIT_SECONDS, check=False)
+            if finished.returncode != 0:
+                raise Refusal("the web build failed", (finished.stderr or finished.stdout).strip())
+        except subprocess.TimeoutExpired as timeout:
+            raise Refusal("the web build exceeded its time limit", "fix the build in the worker's worktree, then merge again") from timeout
+        finally:
+            if linked:
+                modules.unlink()
+        missing = [folder for folder in folders if not any(path.is_file() for path in Path(worktree.folder, folder).rglob("*"))]
+        if missing:
+            raise Refusal(f"the web build produced no files in {', '.join(missing)}", "fix the web build before merging")
+        self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.agent_id}")
 
     def rebase(self, worktree: Worktree) -> bool:
         """Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
@@ -81,12 +116,6 @@ class WorktreeGit:
         for entry in (line.split() for line in entries):
             if entry[0] == stash:
                 self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
-
-    def use_branch_file(self, worktree: Worktree, path: str) -> None:
-        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--theirs", "--", path).returncode == 0:
-            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)
-        else:
-            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-f", "--", path)
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())
