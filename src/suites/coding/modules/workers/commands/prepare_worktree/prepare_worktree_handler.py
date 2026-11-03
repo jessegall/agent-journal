@@ -5,6 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.skills.support.skill_files import SkillFiles
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
@@ -22,8 +23,9 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
 
     command = PrepareWorktree
 
-    def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands) -> None:
+    def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands, skills: SkillFiles) -> None:
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
+        self.skills = skills
 
     def place_codex_hooks(self, command: PrepareWorktree) -> None:
         hooks = Path(command.source) / CODEX_HOOKS_FILE
@@ -40,4 +42,5 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
         self.place_codex_hooks(command)
+        self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))
         self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS, environment_id), (*links, *copies))

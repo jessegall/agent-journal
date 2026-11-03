@@ -18,3 +18,6 @@ class Providers:
 
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
+
+    def skill_folders(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(provider.skills_folder for provider in self.all()))

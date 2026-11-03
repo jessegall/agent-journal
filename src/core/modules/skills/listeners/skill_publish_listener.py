@@ -1,4 +1,4 @@
-from core.base.change.event_log import FILE_PUBLISHING_EVENTS
+from core.base.change.event_log import FILE_PUBLISHING_EVENTS, UPGRADE_FINISHED_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.registry.registry import Registry
@@ -11,12 +11,11 @@ class SkillPublishListener(CommitListener):
     and writes each declared skill again, so the latest text is always there; a person's own skill stays."""
 
     name = "skills.publish"
-    event = FILE_PUBLISHING_EVENTS
+    event = f"{FILE_PUBLISHING_EVENTS}|{UPGRADE_FINISHED_EVENT}"
 
     def __init__(self, registry: Registry, files: SkillFiles) -> None:
         self.registry, self.files = registry, files
 
     def handle(self, event: LoggedEvent) -> None:
         self.files.remove_all()
-        for skill in self.registry.skills:
-            self.files.write(skill)
+        self.files.write_all(self.registry.skills)

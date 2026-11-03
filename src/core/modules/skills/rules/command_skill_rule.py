@@ -31,5 +31,5 @@ class CommandSkillRule(DriverRule):
         missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        path = self.files.readable(missing[0].folder) if hook.role is AgentRole.WORKER else self.files.relative(missing[0].folder)
+        path = self.files.for_agent(missing[0].folder, hook)
         return RuleAnswer.refused_with_block(hook, READ_COMMAND_SKILL_FIRST.nudge(path=path), SkillLoaded(missing[0].folder))

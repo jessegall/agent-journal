@@ -11,8 +11,8 @@ from suites.coding.support.shell_read_budget import ShellReadBudget
 
 READ_LIMIT_BYTES = 64 * 1024
 READ_LIMIT_LINES = 2048
-FILE_LIMIT = 32
-PENDING_LIMIT = 64
+FILE_LIMIT_FILES = 32
+PENDING_LIMIT_COMMANDS = 64
 ROW_LIMIT_ROWS = 600
 
 
@@ -28,42 +28,42 @@ class ShellFileChanges:
         self.pending.pop(key, None)
         states: dict[str, ShellFileState] = {}
         budget = ShellReadBudget(READ_LIMIT_BYTES, READ_LIMIT_LINES)
-        for path in paths[:FILE_LIMIT]:
+        for path in paths[:FILE_LIMIT_FILES]:
             state = ShellFileState.read(Path(folder) / path, budget)
             if state is None:
                 continue
             states[path] = state
         self.pending[key] = states
-        if len(self.pending) > PENDING_LIMIT:
+        if len(self.pending) > PENDING_LIMIT_COMMANDS:
             self.pending.popitem(last=False)
 
     def changes(self, key: tuple[int, str], folder: str) -> list[ShellFileChange]:
         states = self.pending.pop(key, {})
         changes: list[ShellFileChange] = []
         budget = ShellReadBudget(READ_LIMIT_BYTES, READ_LIMIT_LINES)
-        for path, before in states.items():
-            after = ShellFileState.read(Path(folder) / path, budget)
-            if after is None:
+        for path, original_state in states.items():
+            current_state = ShellFileState.read(Path(folder) / path, budget)
+            if current_state is None:
                 continue
-            rows = self.changed_rows(before.lines, after.lines)
+            rows = self.changed_rows(original_state.lines, current_state.lines)
             if not rows:
                 continue
-            changes.append(ShellFileChange(DiffCount(path, before.existed, self.counted(rows, "add"), self.counted(rows, "del")), self.limited(rows)))
+            changes.append(ShellFileChange(DiffCount(path, original_state.existed, self.counted(rows, "add"), self.counted(rows, "del")), self.limited(rows)))
         return changes
 
     def discard(self, key: tuple[int, str]) -> None:
         self.pending.pop(key, None)
 
     @staticmethod
-    def changed_rows(before: Sequence[str], after: Sequence[str]) -> list[PatchRow]:
+    def changed_rows(original_lines: Sequence[str], current_lines: Sequence[str]) -> list[PatchRow]:
         rows: list[PatchRow] = []
-        for group in SequenceMatcher(a=before, b=after).get_grouped_opcodes():
-            for tag, old_start, old_end, new_start, new_end in group:
-                if tag in ("delete", "replace"):
-                    rows.extend(PatchRow("del", index + 1, before[index].rstrip("\r\n")) for index in range(old_start, old_end))
-                if tag in ("insert", "replace", "equal"):
-                    kind = "ctx" if tag == "equal" else "add"
-                    rows.extend(PatchRow(kind, index + 1, after[index].rstrip("\r\n")) for index in range(new_start, new_end))
+        for group in SequenceMatcher(a=original_lines, b=current_lines).get_grouped_opcodes():
+            for operation, old_start, old_end, new_start, new_end in group:
+                if operation in ("delete", "replace"):
+                    rows.extend(PatchRow("del", index + 1, original_lines[index].rstrip("\r\n")) for index in range(old_start, old_end))
+                if operation in ("insert", "replace", "equal"):
+                    line_type = "ctx" if operation == "equal" else "add"
+                    rows.extend(PatchRow(line_type, index + 1, current_lines[index].rstrip("\r\n")) for index in range(new_start, new_end))
         return rows
 
     @staticmethod

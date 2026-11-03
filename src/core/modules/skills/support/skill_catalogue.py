@@ -1,9 +1,9 @@
 from core.base.journal_home import JournalHome
+from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.base.skill.skill_digest import SkillDigest
-from core.modules.skills.support.skill_files import PROGRAM_FOLDERS
 
 FRONT_MATTER_MARK = "---"
 PLUGIN_KEY = "plugin"
@@ -14,15 +14,15 @@ class SkillCatalogue:
     published into any of the agent programs' skill folders, which carry plugin: <name> in their front matter.
     """
 
-    def __init__(self, registry: Registry, home: JournalHome) -> None:
-        self.registry, self.home = registry, home
+    def __init__(self, registry: Registry, home: JournalHome, providers: Providers) -> None:
+        self.registry, self.home, self.providers = registry, home, providers
 
     def skills(self) -> tuple[SkillEntry, ...]:
         return (*self.registry.skills, *self.plugin_skills())
 
     def plugin_skills(self) -> list[SkillEntry]:
         entries: list[SkillEntry] = []
-        paths = {path.parent.name: path for program_folder in reversed(PROGRAM_FOLDERS) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
+        paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
         for path in [paths[name] for name in sorted(paths)]:
             text = path.read_text()
             fields = self.front_matter(text)

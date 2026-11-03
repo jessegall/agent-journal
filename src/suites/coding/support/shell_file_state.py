@@ -20,15 +20,14 @@ class ShellFileState:
         except FileNotFoundError:
             return cls(False, ())
         with os.fdopen(descriptor, "rb", buffering=0) as handle:
-            info = os.fstat(handle.fileno())
-            if not stat.S_ISREG(info.st_mode) or info.st_size > budget.bytes_left:
+            file_stat = os.fstat(handle.fileno())
+            if not stat.S_ISREG(file_stat.st_mode) or file_stat.st_size > budget.remaining_bytes:
                 return None
-            content = handle.read(budget.bytes_left)
-            budget.bytes_left -= len(content)
+            content = handle.read(budget.remaining_bytes)
+            budget.consume_bytes(len(content))
             if os.fstat(handle.fileno()).st_size > len(content) or b"\0" in content:
                 return None
         lines = tuple(content.decode(errors="replace").splitlines(keepends=True))
-        if len(lines) > budget.lines_left:
+        if not budget.accept_lines(len(lines)):
             return None
-        budget.lines_left -= len(lines)
         return cls(True, lines)
