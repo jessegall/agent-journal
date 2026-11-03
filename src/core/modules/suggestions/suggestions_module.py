@@ -15,6 +15,7 @@ from core.modules.suggestions.models.suggestion import Suggestion
 from core.modules.suggestions.rules.suggestion_round_rule import SuggestionRoundRule
 from core.modules.suggestions.support.suggestion_marks import SUGGESTION_MARKS
 from core.modules.suggestions.upgrade.suggestions_move import SuggestionsMove
+from core.modules.suggestions.support.skeletons import SUGGESTIONS_SUGGESTIONS_SKELETON
 
 
 class SuggestionsModule(Module):
@@ -27,7 +28,7 @@ class SuggestionsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Suggestion, excluded_subcommands=["make", "edit", "list", "delete"])]
     moves = [SuggestionsMove]
-    windows = [WindowDeclaration("suggestions.suggestions", "Suggestions", "suggestions.js", WindowLoading.COMPONENT, search=WindowSearch(SuggestionSearcher, "Search the suggestions"), icon=WindowIcon.BULB, reads=["suggestion list"],
+    windows = [WindowDeclaration("suggestions.suggestions", "Suggestions", "suggestions.js", WindowLoading.COMPONENT, skeleton=SUGGESTIONS_SUGGESTIONS_SKELETON, search=WindowSearch(SuggestionSearcher, "Search the suggestions"), icon=WindowIcon.BULB, reads=["suggestion list"],
                                  events=["suggestion.*"])]
     migrations = [SuggestionsTableMigration]
     handlers = [MakeSuggestionsHandler, AnswerSuggestionHandler]

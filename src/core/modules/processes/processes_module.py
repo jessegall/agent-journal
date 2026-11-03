@@ -118,6 +118,7 @@ from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 from core.modules.processes.support.block_conditions.output_ended import OutputEnded
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
 from core.modules.processes.support.block_conditions.output_read import OutputRead
+from core.modules.processes.support.skeletons import PROCESSES_OUTPUTS_SKELETON, PROCESSES_OUTPUT_SKELETON
 
 WINDOW_READS = ["process card", "process show", "process feed", "output peek"]
 WINDOW_RUNS = ["output stop", "output watch"]
@@ -149,6 +150,6 @@ class ProcessesModule(Module):
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS
-    windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
+    windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),
+               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
     seeders = [ProcessesSeeder]

@@ -45,6 +45,7 @@ from core.modules.reviews.seeders.reviews_seeder import ReviewsSeeder
 from core.modules.reviews.models.reviewer_row import ReviewerRow
 from core.modules.reviews.commands.review_board.review_board_subcommand import ReviewBoardSubcommand
 from core.modules.reviews.commands.review_board.review_step_board_subcommand import ReviewStepBoardSubcommand
+from core.modules.reviews.support.skeletons import REVIEWS_REVIEWER_SKELETON, REVIEWS_REVIEWERS_SKELETON
 
 
 class ReviewsModule(Module):
@@ -63,7 +64,7 @@ class ReviewsModule(Module):
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
     marks = REVIEW_MARKS
-    windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
+    windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWER_SKELETON, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
                                  reads=["review board", "review-step board", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"]),
-               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"])]
+               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"])]
     seeders = [ReviewsSeeder]

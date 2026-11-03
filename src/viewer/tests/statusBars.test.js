@@ -120,7 +120,7 @@ test("the agent bar names a paused agent, says nothing of what waits, and has on
 
 test("a dropdown opens under the button that asked for it", () => {
     const anchor = {getBoundingClientRect: () => ({left: 400, bottom: 90})};
-    const catalogue = {dropdown: () => null, window: () => null, loaded: {value: false}};
+    const catalogue = {dropdown: () => null, window: () => null, skeleton: () => [], loaded: {value: false}};
     const groups = [{name: "usage.context", title: "Context", count: 0}];
     const element = mounted(WindowDropdown, {groups, anchor, catalogue, subscriptions: {}, environment: "main"});
     const panel = element.querySelector("[data-dropdown]");
@@ -130,7 +130,7 @@ test("a dropdown opens under the button that asked for it", () => {
 });
 
 test("the helpers dropdown holds every kind under its own header with a count", () => {
-    const catalogue = {dropdown: () => null, window: () => null, loaded: {value: false}};
+    const catalogue = {dropdown: () => null, window: () => null, skeleton: () => [], loaded: {value: false}};
     const groups = [{name: "agents.subagents", title: "Subagents", count: 1}, {name: "workers.workers", title: "Workers", count: 2}, {name: "reviews.reviewers", title: "Reviewers", count: 0}];
     const element = mounted(WindowDropdown, {groups, catalogue, subscriptions: {}, environment: "main"});
     expect([...element.querySelectorAll("[data-dropdown-group]")].map((head) => head.textContent.trim())).toEqual(["Subagents1", "Workers2", "Reviewers0"]);

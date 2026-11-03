@@ -11,6 +11,7 @@ from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.support.update_setting import UPDATE_SETTINGS
 from core.modules.updates.models.release import Release
 from core.modules.updates.upgrade.updates_move import UpdatesMove
+from core.modules.updates.support.skeletons import UPDATES_UPDATES_SKELETON
 
 
 class UpdatesModule(Module):
@@ -27,5 +28,5 @@ class UpdatesModule(Module):
     migrations = [ReleasesTableMigration]
     handlers = [InstallReleaseHandler]
     subcommands = (UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand)
-    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.UPDATE,
+    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", icon=WindowIcon.UPDATE,
                                  reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*"])]

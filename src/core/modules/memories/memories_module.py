@@ -56,6 +56,7 @@ from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARK
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
+from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
 
 
 class MemoriesModule(Module):
@@ -86,5 +87,5 @@ class MemoriesModule(Module):
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
-    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "environment list"], runs=["memory make"], events=["memory.*", "environment.*"])]
+    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "environment list"], runs=["memory make"], events=["memory.*", "environment.*"])]
     seeders = [MemoriesSeeder]

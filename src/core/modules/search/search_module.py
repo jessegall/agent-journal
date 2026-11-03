@@ -6,6 +6,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand
 from core.modules.search.listeners.search_mark_listener import SearchMarkListener
 from core.modules.search.support.search_marks import SEARCH_MARKS
+from core.modules.search.support.skeletons import SEARCH_SEARCH_SKELETON
 
 
 class SearchModule(Module):
@@ -20,4 +21,4 @@ class SearchModule(Module):
     subcommands = [SearchFindSubcommand]
     marks = SEARCH_MARKS
     listeners = [SearchMarkListener]
-    windows = [WindowDeclaration("search.search", "Search", "search.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.SEARCH, reads=["search find"])]
+    windows = [WindowDeclaration("search.search", "Search", "search.js", WindowLoading.COMPONENT, skeleton=SEARCH_SEARCH_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEARCH, reads=["search find"])]

@@ -22,6 +22,7 @@ from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
 from core.modules.schedules.upgrade.schedules_move import SchedulesMove
 from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
 from core.modules.schedules.seeders.schedules_seeder import SchedulesSeeder
+from core.modules.schedules.support.skeletons import SCHEDULES_JOBS_SKELETON
 
 
 class SchedulesModule(Module):
@@ -41,5 +42,5 @@ class SchedulesModule(Module):
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
     listeners = [EndedAgentJobsListener, JobRunMarkListener]
     marks = SCHEDULE_MARKS
-    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN,
+    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN,
                                  reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"])]

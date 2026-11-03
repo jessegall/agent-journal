@@ -50,6 +50,10 @@ def test_a_window_floating_at_no_size_is_refused_at_sync(new_story):
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:FlatFloatModule", "floats.board floats at 0 by 300, and a size is above 0")
 
 
+def test_a_window_with_no_skeleton_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:NoSkeletonModule", "bare.board declares no skeleton of itself to draw while it loads")
+
+
 def test_a_suite_preset_showing_a_window_the_suite_does_not_offer_is_refused_at_sync(new_story):
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetModule", "suite presets's preset chat for home shows messages.chat, which the suite does not offer")
 

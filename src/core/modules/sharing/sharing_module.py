@@ -26,6 +26,7 @@ from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigr
 from core.modules.sharing.seeders.sharing_seeder import SharingSeeder
 from core.modules.sharing.upgrade.share_move import ShareMove
 from core.modules.sharing.models.share_link import ShareLink
+from core.modules.sharing.support.skeletons import SHARING_SHARES_SKELETON
 
 
 class SharingModule(Module):
@@ -44,5 +45,5 @@ class SharingModule(Module):
     handlers = [MakeShareLinkHandler, AcceptShareLinkHandler, CountShareViewHandler, LeaveShareCommentHandler]
     moves = [ShareMove]
     seeders = [SharingSeeder]
-    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
+    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, skeleton=SHARING_SHARES_SKELETON, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
                                  reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"], events=["share_link.*", "share_comment.*"])]

@@ -10,8 +10,8 @@ class WindowEntry:
     """A registered window: its name, the module that declares it, its title, entry file, loading and place,
     whose work it shows, the agent roles it is for, the read lines, commands and events it may use, whether
     the journal ships its module, why it is unavailable when its kit does not fit this viewer (empty when it
-    does), and its icon, float size, pane menu options, count line, the read lines a share link may use and
-    its search, empty when it declares none."""
+    does), and its icon, float size, pane menu options, count line, the read lines a share link may use,
+    its search, empty when it declares none, and its loading skeleton."""
 
     name: str
     module: str
@@ -36,6 +36,7 @@ class WindowEntry:
     tabs: Sequence[Mapping[str, str]] = ()
     search: Mapping[str, object] = field(default_factory=dict[str, object])
     shows: str = "environment"
+    skeleton: Sequence[Mapping[str, object]] = ()
 
     def listing(self, fingerprint: str) -> WindowListing:
         document = self.loading == WindowLoading.DOCUMENT
@@ -44,4 +45,4 @@ class WindowEntry:
         return WindowListing(self.name, self.module, self.title, entry_url, self.entry if document else "", self.loading, self.place, self.roles,
                              self.reads, self.runs, self.events, self.unavailable_reason, self.shipped, self.icon,
                              self.float_width, self.float_height, self.options, self.count, self.group, self.auto_scroll, self.tabs,
-                             search, self.shows)
+                             search, self.shows, self.skeleton)

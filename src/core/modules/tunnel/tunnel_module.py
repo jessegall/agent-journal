@@ -8,6 +8,7 @@ from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.modules.tunnel.guards.tunnel_service_guard import TunnelServiceGuard
 from core.modules.tunnel.support.no_tunnel import NoTunnel
+from core.modules.tunnel.support.skeletons import TUNNEL_TUNNEL_SKELETON
 
 
 class TunnelModule(Module):
@@ -24,4 +25,4 @@ class TunnelModule(Module):
     tunnels = [NoTunnel]
     guards = [TunnelServiceGuard]
     subcommands = [TunnelStatusSubcommand]
-    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.SHARE, reads=["tunnel status"])]
+    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, skeleton=TUNNEL_TUNNEL_SKELETON, group="project", icon=WindowIcon.SHARE, reads=["tunnel status"])]

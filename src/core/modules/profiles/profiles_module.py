@@ -10,6 +10,7 @@ from core.modules.profiles.commands.save_profile.save_profile_subcommand import 
 from core.modules.profiles.listeners.profile_publish_listener import ProfilePublishListener
 from core.modules.profiles.rules.profile_use_rule import ProfileUseRule
 from core.modules.profiles.support.profile_settings import PROFILE_SETTINGS
+from core.modules.profiles.support.skeletons import PROFILES_PROFILES_SKELETON
 
 
 class ProfilesModule(Module):
@@ -26,5 +27,5 @@ class ProfilesModule(Module):
     subcommands = (ProfileListSubcommand, SaveProfileSubcommand)
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
-    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER,
+    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER,
                                  reads=["profile list"], runs=["profile save"])]

@@ -22,6 +22,7 @@ from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.upgrade.mcp_servers_move import McpServersMove
 from core.modules.mcp.seeders.mcp_seeder import McpSeeder
+from core.modules.mcp.support.skeletons import MCP_INTEGRATIONS_SKELETON
 
 
 class McpModule(Module):
@@ -38,5 +39,5 @@ class McpModule(Module):
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
     subcommands = (AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand)
-    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, search=WindowSearch(ServerSearcher, "Search the servers"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
+    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, skeleton=MCP_INTEGRATIONS_SKELETON, search=WindowSearch(ServerSearcher, "Search the servers"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
                                  reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

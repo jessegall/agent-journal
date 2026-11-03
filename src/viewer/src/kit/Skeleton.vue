@@ -152,9 +152,8 @@ const HEADING = [
     flex-direction: column;
     gap: 9px;
     padding: 12px 14px;
-    border: 1px solid var(--border);
     border-radius: 10px;
-    background: var(--raised);
+    background: color-mix(in srgb, var(--raised) 45%, transparent);
 }
 
 .skeleton-files {
@@ -169,14 +168,12 @@ const HEADING = [
     flex-direction: column;
     gap: 9px;
     padding: 12px 14px;
-    border: 1px solid var(--border);
     border-radius: 10px;
-    background: var(--raised);
+    background: color-mix(in srgb, var(--raised) 45%, transparent);
 }
 
 .skeleton-file-head {
     padding-bottom: 9px;
-    border-bottom: 1px solid var(--border);
 }
 
 .skeleton-rows {

@@ -29,6 +29,7 @@ from core.modules.sequences.rules.step_guard_rule import StepGuardRule
 from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
+from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
 
 BUILT = ["make", "show", "list"]
 RUN_BUILT = [*BUILT, "edit", "delete"]
@@ -53,5 +54,5 @@ class SequencesModule(Module):
     listeners = [SequenceRowTriggerListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
-    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.SEQUENCE,
+    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEQUENCE,
                                  reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

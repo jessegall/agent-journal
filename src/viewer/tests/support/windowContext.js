@@ -34,6 +34,14 @@ export async function settle() {
 }
 
 // the element a window component is drawn into once it has settled, given the props its host gives it
+// a component with no window around it, drawn in the page's body
+export function appended(component, props) {
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp({render: () => h(component, props)}).mount(element);
+    return element;
+}
+
 export async function mounted(component, windowContext, props = {}) {
     const element = document.createElement("div");
     const app = createApp({render: () => h(component, props)});

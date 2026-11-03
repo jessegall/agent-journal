@@ -2,7 +2,7 @@
 import {computed, h, ref, watch} from "vue";
 import {windowPermissions} from "./allowancePrompts.js";
 import EmptyState from "../kit/EmptyState.vue";
-import Skeleton from "../kit/Skeleton.vue";
+import WindowSkeleton from "../kit/WindowSkeleton.vue";
 import DocumentWindow from "./DocumentWindow.vue";
 import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
@@ -58,7 +58,7 @@ watch(
 
 <template>
     <template v-if="!entry && catalogue.loaded?.value === false">
-        <Skeleton shape="cards" />
+        <WindowSkeleton :parts="catalogue.skeleton(name)" />
     </template>
     <template v-else-if="entry?.shows === 'one-agent' && agent === null">
         <EmptyState title="No agent is running here" data-window-no-agent />
@@ -109,6 +109,7 @@ watch(
             :auto-scroll="entry.auto_scroll"
             :tabs="entry.tabs"
             :search="entry.search"
+            :skeleton="entry.skeleton"
             :unavailable-reason="entry.unavailable_reason"
             @option="(key, value) => emit('option', key, value)"
         />

@@ -112,6 +112,7 @@ from core.modules.drivers.commands.suite_presets.suite_presets_subcommand import
 from core.modules.drivers.bindings.table_hook_history import TableHookHistory
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
 from core.modules.drivers.seeders.drivers_seeder import DriversSeeder
+from core.modules.drivers.support.skeletons import DRIVERS_NUDGES_SKELETON, DRIVERS_HOOK_CALLS_SKELETON
 
 
 class DriversModule(Module):
@@ -141,7 +142,7 @@ class DriversModule(Module):
     driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
-    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
-               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
+    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
+               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
                                  reads=["hook-call feed", "hook-call show"], events=["hook_call.create"])]
     seeders = [DriversSeeder]

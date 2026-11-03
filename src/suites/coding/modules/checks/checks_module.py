@@ -39,6 +39,7 @@ from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
+from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
 
 BUILT = ["make", "edit", "list", "delete"]
 
@@ -60,7 +61,7 @@ class ChecksModule(Module):
     subcommands = (CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = [(PeriodicChecks, DueCheckRuns)]
-    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
+    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]
     moves = [ChecksMove]

@@ -13,6 +13,8 @@ export {default as Dashboard} from "../src/kit/Dashboard.vue";
 export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
 export {default as Skeleton} from "../src/kit/Skeleton.vue";
+export {default as SkeletonParts} from "../src/kit/SkeletonParts.vue";
+export {default as WindowSkeleton} from "../src/kit/WindowSkeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as PriorityIcon} from "../src/kit/PriorityIcon.vue";
 export {priorityLabel} from "../src/domain/taskPriority.js";

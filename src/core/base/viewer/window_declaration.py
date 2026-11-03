@@ -6,6 +6,7 @@ from core.base.declaration_names import DeclarationNames
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.registry_lines import RegistryLines
+from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_size import WindowSize
@@ -25,8 +26,8 @@ class WindowDeclaration:
     versions it was built for, the read lines and commands it may run, the events it follows, its icon, the
     size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs inside it,
     the read line its tab counts with and the read lines a share link may use, each written as the line and,
-    after a space, the argument that names an id of the shared row or of a row it includes, and the search its
-    bar offers."""
+    after a space, the argument that names an id of the shared row or of a row it includes, the search its
+    bar offers, and the skeleton of itself the viewer draws while it loads."""
 
     name: str
     title: str
@@ -48,6 +49,7 @@ class WindowDeclaration:
     auto_scroll: AutoScroll = AutoScroll.NONE
     tabs: Sequence[WindowTab] = ()
     search: WindowSearch | None = None
+    skeleton: Sequence[SkeletonPart] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -75,6 +77,8 @@ class WindowDeclaration:
                      if provided.matches(pattern) and not self.reads_model(pattern.split(".", 1)[0], read_models)]
         if self.search is not None:
             problems += self.search.problems(self.name)
+        if not self.skeleton:
+            problems.append(f"{self.name} declares no skeleton of itself to draw while it loads")
         return problems
 
     @staticmethod

@@ -1,46 +1,24 @@
 <script setup>
-import {reactive, ref} from "vue";
-import {Btn, RowList, Segmented, WindowRoom, patched, removed, useRows} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, Dialog, Icon, removed, useRows} from "@journal/window-kit";
+import SecretCard from "./SecretCard.vue";
+import SecretDialog from "./SecretDialog.vue";
+import SecretNewDialog from "./SecretNewDialog.vue";
 
-const KINDS = [
-    {key: "api key", label: "API key"},
-    {key: "login", label: "Login"},
-    {key: "custom", label: "Custom"},
-];
-
-const {rows, failure, loaded, act, actionFailure} = useRows("secret list", ["secret.*"]);
+// the Secrets page holds no field: what waits on the person is one button each, a saved secret is one card each, and all change happens in a centred dialog
+const {rows, failure, loaded, act} = useRows("secret list", ["secret.*"]);
 const {rows: deleted, load: loadDeleted} = useRows("secret list --deleted", ["secret.*"]);
-const newFields = reactive({});
-const newPrograms = reactive({});
-const typed = reactive({});
-const drafting = ref(false);
-const draft = reactive({kind: KINDS[0].key, title: "", brief: "", field: ""});
-const editing = ref(0);
-const edited = reactive({title: "", brief: ""});
-const asking = ref(0);
+const openId = ref(0);
+const isMaking = ref(false);
+const removing = ref(null);
+const asked = computed(() => rows.value.filter((row) => row.waiting));
+const saved = computed(() => rows.value.filter((row) => !row.waiting));
+const opened = computed(() => rows.value.find((row) => row.id === openId.value) ?? null);
+const count = computed(() => (rows.value.length === 1 ? "1 secret" : rows.value.length ? `${rows.value.length} secrets` : "No secrets"));
 
-async function create() {
-    if (!draft.title.trim()) return;
-    const field = draft.kind === "custom" && draft.field.trim() ? ["--field", draft.field.trim()] : [];
-    const result = await act(["secret", "make", draft.title.trim(), "--kind", draft.kind, ...field, ...(draft.brief.trim() ? ["--brief", draft.brief.trim()] : [])]);
-    if (!result.ok) return;
-    drafting.value = false;
-    Object.assign(draft, {kind: KINDS[0].key, title: "", brief: "", field: ""});
-}
-
-function edit(row) {
-    editing.value = row.id;
-    Object.assign(edited, {title: row.title, brief: row.brief});
-}
-
-async function saveEdit(row) {
-    const result = await act(["secret", "update", String(row.id), "--title", edited.title.trim(), "--brief", edited.brief.trim()], patched(row.id, {title: edited.title.trim(), brief: edited.brief.trim()}));
-    if (result.ok) editing.value = 0;
-}
-
-async function remove(row) {
-    if (asking.value !== row.id) return void (asking.value = row.id);
-    asking.value = 0;
+async function remove() {
+    const row = removing.value;
+    removing.value = null;
     await act(["secret", "delete", String(row.id)], removed(row.id));
     loadDeleted();
 }
@@ -49,228 +27,250 @@ async function restore(row) {
     await act(["secret", "restore", String(row.id)]);
     loadDeleted();
 }
-
-async function addField(row) {
-    const name = (newFields[row.id] || "").trim();
-    if (!name) return;
-    const result = await act(["secret", "update", String(row.id), "--add-field", name]);
-    if (result.ok) newFields[row.id] = "";
-}
-
-const removeField = (row, field) => act(["secret", "update", String(row.id), "--remove-field", field.name]);
-
-async function allowProgram(row) {
-    const name = (newPrograms[row.id] || "").trim();
-    if (!name) return;
-    const result = await act(["secret", "allow", String(row.id), name]);
-    if (result.ok) newPrograms[row.id] = "";
-}
-
-const key = (row, field) => `${row.id}:${field.name}`;
-const isFilled = (row, field) => row.filled.includes(field.name);
-
-async function fill(row, field) {
-    const value = (typed[key(row, field)] || "").trim();
-    if (!value) return;
-    const result = await act(["secret", "fill", String(row.id), field.name, value], patched(row.id, {filled: [...row.filled, field.name]}));
-    if (result.ok) typed[key(row, field)] = "";
-}
 </script>
 
 <template>
-    <WindowRoom>
-        <template v-if="actionFailure">
-            <p class="failure">{{ actionFailure }}</p>
-        </template>
-        <div class="tools">
-            <Btn small bordered data-secret-new @click="drafting = !drafting">New secret</Btn>
+    <section class="secrets">
+        <div class="bar">
+            <span class="count" data-secret-count>{{ count }}</span>
+            <Btn kind="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
         </div>
-        <template v-if="drafting">
-            <form class="draft" data-secret-draft @submit.prevent="create">
-                <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
-                <input v-model="draft.title" placeholder="Its purpose" aria-label="Title">
-                <input v-model="draft.brief" placeholder="A note on where it is used; you can leave this empty" aria-label="Note">
-                <template v-if="draft.kind === 'custom'">
-                    <input v-model="draft.field" placeholder="The name of its first field" aria-label="First field" data-secret-first-field>
-                </template>
-                <div class="draft-foot">
-                    <Btn small @click="drafting = false">Cancel</Btn>
-                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || (draft.kind === 'custom' && !draft.field.trim())" data-secret-create>Make the secret</Btn>
-                </div>
-            </form>
-        </template>
-        <template v-for="row in deleted" :key="row.id">
-            <p class="removed" data-secret-removed>{{ row.title }} was deleted. <button type="button" data-secret-restore @click="restore(row)">Restore</button></p>
-        </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet" hint="A key or a login you add shows here by its name, never by its value.">
-            <template #default="{row}">
-                <div class="secret" :data-row="row.id">
-                    <template v-if="editing === row.id">
-                        <form class="draft" data-secret-edit @submit.prevent="saveEdit(row)">
-                            <input v-model="edited.title" aria-label="Title">
-                            <input v-model="edited.brief" aria-label="Note">
-                            <div class="draft-foot">
-                                <Btn small @click="editing = 0">Cancel</Btn>
-                                <Btn small kind="primary" type="submit" data-secret-save>Save</Btn>
-                            </div>
-                        </form>
+        <div class="body">
+            <p class="lead">A secret is a key or a login the agent may use without seeing it. You type a value in once and the page never shows it again. The values are kept in a file outside the project.</p>
+            <template v-if="failure">
+                <p class="failure" role="alert">{{ failure }}</p>
+            </template>
+            <template v-if="asked.length">
+                <div class="tiles" data-secret-asks>
+                    <template v-for="row in asked" :key="row.id">
+                        <button type="button" class="ask" :data-secret-ask="row.id" @click="openId = row.id">
+                            <Icon :name="row.secret_type === 'login' ? 'lock' : 'key'" :size="18" />
+                            <span class="names">
+                                <span class="ask-title">{{ row.title }}</span>
+                                <span class="ask-line">The agent asked for this. Click here to give it.</span>
+                            </span>
+                        </button>
                     </template>
-                    <template v-else>
-                        <div class="head">
-                            <span class="title">{{ row.title }}</span>
-                            <span class="kind">{{ row.secret_type }}</span>
-                            <span class="grow" />
-                            <button type="button" data-secret-edit-open @click="edit(row)">Edit</button>
-                            <template v-if="asking === row.id">
-                                <button type="button" @click="asking = 0">Keep it</button>
-                                <button type="button" data-secret-confirm @click="remove(row)">Yes, delete</button>
-                            </template>
-                            <template v-else>
-                                <button type="button" data-secret-delete @click="remove(row)">Delete</button>
-                            </template>
-                        </div>
-                        <template v-if="row.brief">
-                            <p class="brief">{{ row.brief }}</p>
-                        </template>
-                    </template>
-                    <template v-for="field in row.fields" :key="field.name">
-                        <form class="field" @submit.prevent="fill(row, field)">
-                            <label :for="key(row, field)">{{ field.name }}</label>
-                            <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
-                                   :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
-                            <button type="submit">Save</button>
-                            <template v-if="row.secret_type === 'custom'">
-                                <button type="button" :data-secret-field-remove="field.name" @click="removeField(row, field)">Remove</button>
-                            </template>
-                        </form>
-                    </template>
-                    <template v-if="row.secret_type === 'custom'">
-                        <form class="field" data-secret-field-add @submit.prevent="addField(row)">
-                            <input v-model="newFields[row.id]" placeholder="Add a field" aria-label="Add a field" autocomplete="off">
-                            <button type="submit">Add</button>
-                        </form>
-                    </template>
-                    <div class="programs">
-                        <span class="label">Programs</span>
-                        <span>{{ row.programs.length ? row.programs.join(", ") : "None allowed yet" }}</span>
-                        <template v-for="program in row.proposed" :key="program">
-                            <button type="button" @click="act(['secret', 'allow', String(row.id), program])">Allow {{ program }}</button>
-                        </template>
-                        <template v-if="!row.helpers">
-                            <button type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
-                        </template>
-                        <form class="program-add" data-secret-program-add @submit.prevent="allowProgram(row)">
-                            <input v-model="newPrograms[row.id]" placeholder="Allow a program" aria-label="Allow a program" autocomplete="off">
-                            <button type="submit">Allow</button>
-                        </form>
-                    </div>
                 </div>
             </template>
-        </RowList>
-    </WindowRoom>
+            <template v-if="saved.length">
+                <section class="group">
+                    <h3>Saved secrets</h3>
+                    <div class="tiles cards">
+                        <template v-for="row in saved" :key="row.id">
+                            <SecretCard :row="row" @update="openId = row.id" @delete="removing = row" />
+                        </template>
+                    </div>
+                </section>
+            </template>
+            <template v-else-if="loaded && !asked.length && !failure">
+                <div class="none">
+                    <strong>No secrets yet</strong>
+                    A key or a login you add shows here by its name, never by its value.
+                </div>
+            </template>
+            <template v-if="deleted.length">
+                <section class="group">
+                    <h3>Deleted secrets</h3>
+                    <div class="deleted">
+                        <template v-for="row in deleted" :key="row.id">
+                            <p class="deleted-row" data-secret-removed>
+                                <span><b>{{ row.title }}</b> was deleted.</span>
+                                <Btn small bordered data-secret-restore @click="restore(row)">Restore</Btn>
+                            </p>
+                        </template>
+                    </div>
+                </section>
+            </template>
+        </div>
+        <template v-if="opened">
+            <SecretDialog :key="opened.id" :row="opened" :run="act" @close="openId = 0" />
+        </template>
+        <template v-if="isMaking">
+            <SecretNewDialog :run="act" @close="isMaking = false" />
+        </template>
+        <template v-if="removing">
+            <Dialog :title="`Delete ${removing.title}`" fits @close="removing = null">
+                <p class="lead">The agent can no longer use it. You can bring it back with Restore, under Deleted secrets.</p>
+                <template #foot>
+                    <Btn @click="removing = null">Keep it</Btn>
+                    <Btn kind="danger" data-secret-confirm @click="remove">Yes, delete</Btn>
+                </template>
+            </Dialog>
+        </template>
+    </section>
 </template>
 
 <style scoped>
-.program-add {
-    display: inline-flex;
-    gap: 4px;
+.secrets {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    container-type: inline-size;
+}
+
+.bar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    min-height: 45px;
+    padding: 8px 14px 8px 22px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--border);
+}
+
+.count {
+    flex: 1;
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    padding: 22px 24px 40px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.lead {
+    max-width: 640px;
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+    line-height: 1.55;
 }
 
 .failure {
-    margin: 0 0 8px;
-    color: var(--bad, var(--text-2));
+    margin: 0;
+    color: var(--danger);
+    font-size: 12.5px;
+}
+
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+}
+
+/* one row height for all, so every card stands as tall as the tallest */
+.cards {
+    grid-auto-rows: 1fr;
+    gap: 16px;
+}
+
+.ask {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    background: var(--accent-dim);
+    color: var(--accent-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ask:hover {
+    background: color-mix(in srgb, var(--accent) 30%, var(--accent-dim));
+}
+
+.names {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ask-title {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 14.5px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ask-line {
+    color: var(--text-2);
     font-size: 12px;
+    line-height: 1.4;
 }
 
-.tools {
-    margin-bottom: 8px;
-}
-
-.draft {
+.group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
+    gap: 10px;
+    min-width: 0;
+}
+
+h3 {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.none {
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.none strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.deleted {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
     border-radius: 10px;
 }
 
-.draft-foot {
+.deleted-row {
     display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-}
-
-.removed {
-    margin: 0 0 8px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.grow {
-    flex: 1;
-}
-
-.secret {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-}
-
-.head {
-    display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
-}
-
-.title {
-    flex: 1;
-    font-weight: 600;
-}
-
-.kind,
-.brief,
-.label {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.brief {
     margin: 0;
+    padding: 7px 8px 7px 14px;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.deleted-row span {
+    flex: 1;
 }
 
-.field input {
-    padding: 4px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    color: inherit;
-    font-size: 12px;
+.deleted-row b {
+    color: var(--text-2);
+    font-weight: 500;
 }
 
-.programs {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px;
-}
+@container (max-width: 640px) {
+    .bar {
+        padding: 8px 12px 8px 16px;
+    }
 
-button {
-    padding: 2px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    color: inherit;
-    font-size: 12px;
-    cursor: pointer;
+    .body {
+        padding: 16px 16px 32px;
+    }
+
+    .tiles {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 </style>

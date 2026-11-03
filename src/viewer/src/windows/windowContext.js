@@ -10,6 +10,7 @@ export const PANE_PAGE = Symbol("pane-page");
 
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
+const QUIET_AFTER_READS_MS = 50;
 const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment, agent and page, whether it is shown, what it may run, its follows
@@ -18,14 +19,28 @@ export function windowContext({window, environment, agent, visible, permissions,
     const recent = new Map();
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
     const requests = new AbortController();
+    // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way
+    const answered = ref(false);
+    let reading = 0;
+    let quiet = 0;
+    const settle = () => {
+        clearTimeout(quiet);
+        quiet = setTimeout(() => (answered.value = reading === 0), QUIET_AFTER_READS_MS);
+    };
     const read = (line) => {
         const last = recent.get(line);
         if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
-        const answer = lineRead(window, line, environment, requests.signal);
+        reading += 1;
+        const answer = lineRead(window, line, environment, requests.signal).finally(() => {
+            reading -= 1;
+            settle();
+        });
         recent.set(line, {answer, at: performance.now()});
         return answer;
     };
     return {
+        answered,
+        settle,
         window,
         environment,
         agent,

@@ -7,6 +7,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_size import WindowSize
+from core.base.viewer.skeleton_part import SkeletonPart
 
 PATH = "tests.stories.core.base.viewer.support.window_faults"
 DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer"]
@@ -14,7 +15,7 @@ DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer
 
 def frame(name: str, entry: str = "board.html", reads: list[str] | None = None, runs: list[str] | None = None, events: list[str] | None = None,
           kit: str = ">=1,<2") -> WindowDeclaration:
-    return WindowDeclaration(name, "Board", entry, WindowLoading.FRAME, reads=reads or [], runs=runs or [], events=events or [], kit=kit)
+    return WindowDeclaration(name, "Board", entry, WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=reads or [], runs=runs or [], events=events or [], kit=kit)
 
 
 class DuplicateWindowModule(Module):
@@ -70,7 +71,7 @@ class PageWindowModule(Module):
     name = "pages"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.COMPONENT)]
+    windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.COMPONENT, skeleton=[SkeletonPart.line()])]
 
 
 class NewerKitModule(Module):
@@ -84,42 +85,42 @@ class TwiceOptionModule(Module):
     name = "options"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("options.board", "Board", "board.html", WindowLoading.FRAME, options=[ToggleOption("flush", "Flush"), ToggleOption("flush", "Flush all")])]
+    windows = [WindowDeclaration("options.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], options=[ToggleOption("flush", "Flush"), ToggleOption("flush", "Flush all")])]
 
 
 class UnreadShareModule(Module):
     name = "shares"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("shares.board", "Board", "board.html", WindowLoading.FRAME, reads=["task list"], shared_reads=["plan show id"])]
+    windows = [WindowDeclaration("shares.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], shared_reads=["plan show id"])]
 
 
 class UnreadCountModule(Module):
     name = "counts"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("counts.board", "Board", "board.html", WindowLoading.FRAME, reads=["task list"], count="plan list")]
+    windows = [WindowDeclaration("counts.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], count="plan list")]
 
 
 class UnknownIconModule(Module):
     name = "icons"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("icons.board", "Board", "board.html", WindowLoading.FRAME, icon="rocket")]  # pyright: ignore[reportArgumentType]
+    windows = [WindowDeclaration("icons.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], icon="rocket")]  # pyright: ignore[reportArgumentType]
 
 
 class OutsideChoiceModule(Module):
     name = "choices"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("choices.board", "Board", "board.html", WindowLoading.FRAME, options=[ChoiceOption("range", "Range", [("week", "Week")], "year")])]
+    windows = [WindowDeclaration("choices.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], options=[ChoiceOption("range", "Range", [("week", "Week")], "year")])]
 
 
 class FlatFloatModule(Module):
     name = "floats"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("floats.board", "Board", "board.html", WindowLoading.FRAME, float_size=WindowSize(0, 300))]
+    windows = [WindowDeclaration("floats.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], float_size=WindowSize(0, 300))]
 
 
 class ForeignPresetSuite(Suite):
@@ -135,3 +136,10 @@ class ForeignPresetModule(Module):
     dependencies = [*DEPENDENCIES, "journal.core.drivers"]
     suites = [ForeignPresetSuite]
     windows = [frame("presets.board")]
+
+
+class NoSkeletonModule(Module):
+    name = "bare"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    windows = [WindowDeclaration("bare.board", "Board", "board.html", WindowLoading.FRAME)]

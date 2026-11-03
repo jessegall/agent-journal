@@ -54,6 +54,7 @@ from core.modules.documents.support.text_docks import TEXT_DOCKS
 from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
+from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
 
 
 class DocumentsModule(Module):
@@ -71,7 +72,7 @@ class DocumentsModule(Module):
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]

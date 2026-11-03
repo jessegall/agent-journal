@@ -10,6 +10,7 @@ from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handl
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.module.module import Module
 from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS
+from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
 
 
 class DeveloperModule(Module):
@@ -24,5 +25,5 @@ class DeveloperModule(Module):
     handlers = [ResetHookNumbersHandler]
     performance_tools = [SlowTickTool, ReaderTimeTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
-               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["developer hook-requests"])]
+    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
+               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["developer hook-requests"])]

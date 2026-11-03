@@ -9,7 +9,7 @@ const emptyTab = {read: () => null, write: () => {}};
 
 function browserCopy(kept = null) {
     const rows = new Map(kept ? [["key", kept]] : []);
-    return {rows, read: () => rows.get("key") ?? null, write: (key, layout) => rows.set("key", layout)};
+    return {rows, read: () => rows.get("key") ?? null, write: (key, layout) => key.startsWith("journal.layout.") && rows.set("key", layout)};
 }
 
 afterEach(() => vi.restoreAllMocks());

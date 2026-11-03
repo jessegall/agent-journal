@@ -2,6 +2,9 @@ import {checkServer} from "../state/updating.js";
 import {transport} from "../api/transport.js";
 import {computed, shallowRef} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
+import {browserCopy} from "./paneLayout.js";
+
+const SKELETONS_KEY = "journal.window-skeletons";
 
 // the windows the journal lists for this environment and the person they are listed for, asked again whenever the registry is synced: a window whose entry
 // URL changed is mounted again from its new file, a removed one turns into its placeholder, and a new one joins the menu
@@ -15,6 +18,7 @@ export class WindowCatalogue {
         this.pages = shallowRef([]);
         this.loaded = shallowRef(false);
         this.person = null;
+        this.keptSkeletons = browserCopy.read(SKELETONS_KEY) ?? {};
     }
 
     async load() {
@@ -26,6 +30,13 @@ export class WindowCatalogue {
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
         this.loaded.value = true;
+        this.keptSkeletons = Object.fromEntries(offered.map((window) => [window.name, window.skeleton ?? []]));
+        browserCopy.write(SKELETONS_KEY, this.keptSkeletons);
+    }
+
+    // the skeleton a window declares, kept in this browser so the first paint can draw it before the catalogue answers
+    skeleton(name) {
+        return this.keptSkeletons[name] ?? [];
     }
 
     heard(event) {

@@ -1,6 +1,7 @@
 <script setup>
-import {computed, h, inject, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
+import {computed, h, inject, onErrorCaptured, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {OPEN_VIEW, PANE_PAGE, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
+import WindowSkeleton from "../kit/WindowSkeleton.vue";
 import AllowancePrompt from "./AllowancePrompt.vue";
 import WindowPlaceholder from "./WindowPlaceholder.vue";
 
@@ -22,6 +23,7 @@ const props = defineProps({
     search: {type: Object, default: () => ({})},
     readOnly: Boolean,
     shared: {type: Object, default: null},
+    skeleton: {type: Array, default: () => []},
 });
 const emit = defineEmits(["open", "option", "remove"]);
 const failure = ref("");
@@ -58,6 +60,7 @@ const context = windowContext({
 provide(WINDOW_CONTEXT, context);
 
 watch(() => props.visible, (shown) => shown && props.subscriptions.shown(props.name));
+onMounted(context.settle);
 onUnmounted(() => {
     context.cancel();
     props.subscriptions.stopAll(props.name);
@@ -89,13 +92,24 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
         </template>
         <template v-else>
             <Hosted :key="attempt" />
+            <template v-if="skeleton.length && !context.answered.value">
+                <WindowSkeleton class="window-cover" :parts="skeleton" />
+            </template>
         </template>
     </section>
 </template>
 
 <style scoped>
 .window {
+    position: relative;
     animation: window-fade 0.25s ease backwards;
+}
+
+/* the window draws underneath, so it is ready the moment its own skeleton gives way, with no second skeleton of a list in between */
+.window-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
 }
 
 @keyframes window-fade {

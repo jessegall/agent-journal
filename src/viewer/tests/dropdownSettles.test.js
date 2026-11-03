@@ -5,7 +5,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import WindowDropdown from "../src/windows/WindowDropdown.vue";
 
 const SOURCE = readFileSync(resolve(__dirname, "../src/windows/WindowDropdown.vue"), "utf8");
-const CATALOGUE = {dropdown: () => null, window: () => null, loaded: {value: false}};
+const CATALOGUE = {dropdown: () => null, window: () => null, skeleton: () => [], loaded: {value: false}};
 const GROUPS = [{name: "usage.context", title: "Context", count: 0}];
 const WIDTH_MS = 200;
 let app;

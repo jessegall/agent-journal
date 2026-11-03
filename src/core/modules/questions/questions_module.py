@@ -32,6 +32,7 @@ from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
+from core.modules.questions.support.skeletons import QUESTIONS_QUESTIONS_SKELETON, QUESTIONS_QUESTION_SKELETON, QUESTIONS_WAITING_SKELETON
 
 
 class QuestionsModule(Module):
@@ -52,11 +53,11 @@ class QuestionsModule(Module):
     marks = QUESTION_MARKS
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
-    windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
+    windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTIONS_SKELETON, icon=WindowIcon.QUESTION,
                                  reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"],
                                  search=WindowSearch(QuestionSearcher, "Search the questions")),
-               WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
+               WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTION_SKELETON, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
                                  reads=["question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
-               WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
+               WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_WAITING_SKELETON, icon=WindowIcon.HALT,
                                  reads=["wait waiting"], events=["wait.*"])]
     seeders = [QuestionsSeeder]

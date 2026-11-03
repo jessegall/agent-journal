@@ -19,6 +19,7 @@ from tunnels.tunler.commands.tunler_version.tunler_version_subcommand import Tun
 from tunnels.tunler.commands.update_tunler.update_tunler_handler import UpdateTunlerHandler
 from tunnels.tunler.commands.update_tunler.update_tunler_subcommand import UpdateTunlerSubcommand
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
+from tunnels.tunler.support.skeletons import TUNLER_ACCOUNT_SKELETON
 
 
 class TunlerModule(Module):
@@ -34,6 +35,6 @@ class TunlerModule(Module):
     subcommands = [TunlerStatusSubcommand, TunlerDomainsSubcommand, TunlerVersionSubcommand, LoginTunlerSubcommand, LogoutTunlerSubcommand,
                    UpdateTunlerSubcommand, InstallTunlerSubcommand, ReleaseTunlerDomainSubcommand]
     handlers = [LoginTunlerHandler, LogoutTunlerHandler, UpdateTunlerHandler, InstallTunlerHandler, ReleaseTunlerDomainHandler]
-    windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.SHARE,
+    windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, skeleton=TUNLER_ACCOUNT_SKELETON, group="project", icon=WindowIcon.SHARE,
                                  reads=["tunler status", "tunler domains", "tunler version"],
                                  runs=["tunler login", "tunler logout", "tunler update", "tunler install", "tunler release", "setting set"])]

@@ -6,6 +6,7 @@ export const SAVE_DELAY_MS = 500;
 const FOLD_MS = 380;
 
 const tabKey =({environment, person, suite, page, driver}) => `journal.layout.${environment}.${person}.${suite}.${page}.${driver}`;
+const lastKey = (environment, page) => `journal.last-layout.${environment}.${page}`;
 
 // the browser tab's own copy of a layout, so a reload keeps what this tab showed while another tab saves its own
 export const sessionTab = {
@@ -107,11 +108,21 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
         }
     }
 
+    // the first paint, before the person, suite and driver are known: the layout this browser last had for the page, so its skeleton has the panes' number and widths
+    function drawKept(environment, page) {
+        const at = copy.read(lastKey(environment, page));
+        const kept = at && (tab.read(tabKey(at)) ?? copy.read(tabKey(at)));
+        if (!kept || !wellShaped(kept)) return;
+        layout.value = tidied(kept, entry);
+        ready.value = true;
+    }
+
     // no layout is kept while one loads: a change to the empty layout would be saved over the person's own
     async function load(at) {
         await flush();
         key = null;
         loading = at;
+        copy.write(lastKey(at.environment, at.page), at);
         const own = tab.read(tabKey(at));
         const kept = own && wellShaped(own) ? own : copy.read(tabKey(at));
         if (kept && wellShaped(kept)) {
@@ -184,5 +195,5 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
         return [...live, ...closing].sort((a, b) => a.id - b.id);
     });
     const open = computed(() => opened(layout.value));
-    return {layout, ready, settle, refusal, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
+    return {layout, ready, settle, refusal, drawKept, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
 }

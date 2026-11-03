@@ -81,7 +81,7 @@ test("a list shows the skeleton in the shape it was given until its first read a
     const list = read("../kit/RowList.vue");
     expect(list).toContain('<Skeleton :shape="shape" />');
     expect(list).toMatch(/animation: row-list-in/);
-    expect(read("../src/windows/PageWindow.vue")).toContain('<Skeleton shape="cards" />');
+    expect(read("../src/windows/PageWindow.vue")).toContain('<WindowSkeleton :parts="entry.skeleton" />');
 });
 
 // task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the pins

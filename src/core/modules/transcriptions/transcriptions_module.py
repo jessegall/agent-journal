@@ -19,6 +19,7 @@ from core.modules.transcriptions.migrations.m001_transcriptions import Transcrip
 from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.transcriptions.seeders.transcriptions_seeder import TranscriptionsSeeder
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_NUDGES
+from core.modules.transcriptions.support.skeletons import TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON
 
 
 class TranscriptionsModule(Module):
@@ -38,5 +39,5 @@ class TranscriptionsModule(Module):
     nudges = TRANSCRIPTION_NUDGES
     listeners = [TranscriptionTaskListener, TranscriptSequenceListener]
     seeders = [TranscriptionsSeeder]
-    windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, skeleton=TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
                                  reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"])]

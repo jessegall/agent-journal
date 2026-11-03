@@ -34,6 +34,7 @@ from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.support.window_setting_keys import VIEWER_SETTINGS
 from core.modules.viewer.upgrade.viewer_move import ViewerMove
+from core.modules.viewer.support.skeletons import VIEWER_SHELL_SKELETON
 
 SHELL_RUNS = ["doc comment", "report comment", "plan comment", "task comment", "message send", "doc edit", "report edit", "doc close", "report close", "agent pause", "agent resume", "agent control", "agent stop", "agent launch", "task edit", "question answer", "question close", "setting make", "setting set", "plan ready", "plan approve", "plan start", "plan block", "plan unblock", "plan close", "plan cancel", "task start", "task block", "task unblock",
               "task retest", "task close", "task cancel", "task reopen", "environment make", "update install", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove", "memory-keyword make", "memory-keyword delete", "check run", "check stop", "worker send", "worker merge", "worker release"]
@@ -60,4 +61,4 @@ class ViewerModule(Module):
                    SaveWindowSettingSubcommand, WindowSettingSubcommand, WindowSearchSubcommand]
     guards = [PermissionOwnerGuard, LayoutOwnerGuard, PersonPresetOwnerGuard]
     listeners = [PermissionPrunerListener]
-    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, reads=SHELL_READS, runs=SHELL_RUNS)]
+    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, skeleton=VIEWER_SHELL_SKELETON, icon=WindowIcon.WINDOW, reads=SHELL_READS, runs=SHELL_RUNS)]

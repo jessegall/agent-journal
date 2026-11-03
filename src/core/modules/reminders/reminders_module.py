@@ -11,6 +11,7 @@ from core.modules.reminders.migrations.m001_reminders import RemindersTableMigra
 from core.modules.reminders.models.reminder import Reminder
 from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
 from core.modules.reminders.support.reminder_nudges import REMINDER_NUDGES
+from core.modules.reminders.support.skeletons import REMINDERS_REMINDERS_SKELETON
 
 
 class RemindersModule(Module):
@@ -28,5 +29,5 @@ class RemindersModule(Module):
     subcommands = [MakeReminderSubcommand]
     nudges = REMINDER_NUDGES
     driver_rules = [DueReminderRule]
-    windows = [WindowDeclaration("reminders.reminders", "Reminders", "reminders.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE,
+    windows = [WindowDeclaration("reminders.reminders", "Reminders", "reminders.js", WindowLoading.COMPONENT, skeleton=REMINDERS_REMINDERS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE,
                                  reads=["reminder list"], runs=["reminder make", "reminder delete"], events=["reminder.*"])]

@@ -31,6 +31,7 @@ from core.modules.secrets.queries.secret_query import SecretQuery
 from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
+from core.modules.secrets.support.skeletons import SECRETS_SECRETS_SKELETON
 
 
 class SecretsModule(Module):
@@ -52,5 +53,5 @@ class SecretsModule(Module):
                    SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand)
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
-    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
+    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, skeleton=SECRETS_SECRETS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
                                  reads=["secret list", "secret show"], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]

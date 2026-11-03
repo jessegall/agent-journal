@@ -42,6 +42,7 @@ export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, d
     });
 
     let shown = page;
+    store.drawKept(environment, page);
 
     async function load(at = shown) {
         shown = at;

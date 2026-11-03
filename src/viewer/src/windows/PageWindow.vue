@@ -1,6 +1,6 @@
 <script setup>
 import {ref, shallowRef, watch} from "vue";
-import Skeleton from "../kit/Skeleton.vue";
+import WindowSkeleton from "../kit/WindowSkeleton.vue";
 import WindowHost from "./WindowHost.vue";
 import {forgetBuildReload, isStaleBuild, reloadForNewBuild} from "./staleBuild.js";
 
@@ -39,7 +39,7 @@ watch(
 <template>
     <template v-if="!component && !loadFailure && !entry.unavailable_reason">
         <section class="window window-loading" :data-window="entry.name">
-            <Skeleton shape="cards" />
+            <WindowSkeleton :parts="entry.skeleton" />
         </section>
     </template>
     <template v-else>
@@ -59,6 +59,7 @@ watch(
             :tabs="entry.tabs"
             :search="entry.search"
             :events="entry.events"
+            :skeleton="entry.skeleton"
             :unavailable-reason="entry.unavailable_reason || loadFailure"
             @option="(key, value) => emit('option', key, value)"
         />

@@ -37,6 +37,7 @@ from core.modules.phone.commands.send_phone_notices.send_phone_notices_handler i
 from core.modules.phone.support.push_service import PushService
 from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.push.web_push import WebPush
+from core.modules.phone.support.skeletons import PHONE_PHONES_SKELETON
 
 
 class PhoneModule(Module):
@@ -58,7 +59,7 @@ class PhoneModule(Module):
                              secret=True, scope=SettingScope.PROJECT),
                 SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,
                              secret=True, scope=SettingScope.PROJECT)]
-    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
+    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, skeleton=PHONE_PHONES_SKELETON, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
                                  reads=["phone list", "tunnel status"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]

@@ -19,6 +19,7 @@ from core.modules.triggers.upgrade.triggers_move import TriggersMove
 from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
 from core.modules.triggers.rules.phrase_trigger_rule import PhraseTriggerRule
 from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerRule
+from core.modules.triggers.support.skeletons import TRIGGERS_TRIGGERS_SKELETON
 
 BUILT = ["make", "show", "list", "delete"]
 
@@ -36,7 +37,7 @@ class TriggersModule(Module):
     handlers = [MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler]
     subcommands = (MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, TriggerListSubcommand)
     driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
-    windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, icon=WindowIcon.TRIGGER,
+    windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, skeleton=TRIGGERS_TRIGGERS_SKELETON, icon=WindowIcon.TRIGGER,
                                  reads=["trigger list"], runs=["trigger make", "trigger schedule", "trigger edit", "trigger strike"], events=["trigger.*"])]
     seeders = [TriggersSeeder]
     moves = [TriggersMove]

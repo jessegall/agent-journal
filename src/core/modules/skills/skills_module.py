@@ -36,6 +36,7 @@ from core.modules.skills.support.skill_marks import SKILL_MARKS
 from core.modules.skills.support.start_skills import SKILL_SETTINGS
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.block_conditions.skills_read import SkillsRead
+from core.modules.skills.support.skeletons import SKILLS_SKILLS_SKELETON
 
 
 class SkillsModule(Module):
@@ -58,6 +59,6 @@ class SkillsModule(Module):
     listeners = [SkillPublishListener, SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, group="project", shows=WindowShows.SELECTED_AGENT, icon=WindowIcon.SKILL,
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", shows=WindowShows.SELECTED_AGENT, icon=WindowIcon.SKILL,
                                  reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
     seeders = [SkillsSeeder]

@@ -1,19 +1,12 @@
-import {createApp, h, nextTick} from "vue";
+import {nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import AgentFacts from "../src/resource/AgentFacts.vue";
 import RowMoves from "../src/resource/RowMoves.vue";
 import {movesOf} from "../src/domain/resourceKinds.js";
-import {settle} from "./support/windowContext.js";
+import {appended as mounted, settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-
-function mounted(component, props) {
-    const element = document.createElement("div");
-    document.body.append(element);
-    createApp({render: () => h(component, props)}).mount(element);
-    return element;
-}
 
 test("a running agent offers pause and stop, a paused one resume, an ended one nothing", () => {
     expect(movesOf("agent", {ended_at: null, paused_at: null}).map((move) => move.word)).toEqual(["pause", "stop"]);

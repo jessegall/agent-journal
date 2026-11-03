@@ -14,6 +14,7 @@ from core.modules.templates.migrations.m001_templates import TemplatesTableMigra
 from core.modules.templates.models.template import Template
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
 from core.modules.templates.upgrade.templates_move import TemplatesMove
+from core.modules.templates.support.skeletons import TEMPLATES_TEMPLATES_SKELETON
 
 
 class TemplatesModule(Module):
@@ -30,5 +31,5 @@ class TemplatesModule(Module):
     handlers = [MakeTemplateHandler]
     subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)
     seeders = [TemplatesSeeder]
-    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"])]

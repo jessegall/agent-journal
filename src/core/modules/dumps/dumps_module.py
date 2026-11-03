@@ -29,6 +29,7 @@ from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
 from core.modules.dumps.support.dump_docks import DUMP_DOCKS
+from core.modules.dumps.support.skeletons import DUMPS_DUMPS_SKELETON
 
 BUILT = ["make", "edit", "delete"]
 
@@ -50,6 +51,6 @@ class DumpsModule(Module):
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
-    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
+    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  runs=["dump name"], events=["dump.*", "dump_item.*"])]
     seeders = [DumpsSeeder]

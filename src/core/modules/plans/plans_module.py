@@ -53,6 +53,7 @@ from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
+from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 
 PLAN_COMMANDS = (BlockPlan, CancelPlan, ClosePlan)
 
@@ -79,7 +80,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
     docks = PLAN_DOCKS
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]
     shared_rows = [PlanSharedRows]
