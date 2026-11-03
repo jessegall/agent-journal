@@ -19,6 +19,7 @@ const (
 	StartedAnswer = "started"
 	FailedAnswer  = "failed"
 	RunningAnswer = "running"
+	StoppedAnswer = "stopped"
 )
 
 // ErrProgramRunning is the refusal of a second program for an agent whose program still runs.
@@ -26,7 +27,7 @@ var ErrProgramRunning = errors.New("a program of this agent runs already")
 
 // WorkerRequest is what a dispatch hands the launcher: the worker's agent row and session, its environment, the
 // worktree it starts in and the command line that starts its program. A request naming a typed line instead types it
-// into that agent's terminal.
+// into that agent's terminal, and one that says stop ends that agent's program.
 type WorkerRequest struct {
 	AgentID     int               `json:"agent_id"`
 	Session     string            `json:"session"`
@@ -35,6 +36,7 @@ type WorkerRequest struct {
 	Command     []string          `json:"command"`
 	Variables   map[string]string `json:"variables"`
 	Typed       string            `json:"typed"`
+	Stop        bool              `json:"stop"`
 }
 
 // ProgramStart is one program the launcher starts: its agent row, its folder, its command line and the variables it
@@ -70,6 +72,7 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	for name, value := range start.Variables {
 		command.Env = append(command.Env, name+"="+value)
 	}
+	starter.Inputs.Track(start.AgentID, command)
 	log, err := OpenTerminalLog(TerminalFile(starter.Home, start.AgentID))
 	if err != nil {
 		return err
@@ -114,6 +117,12 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 	defer connection.Close()
 	var request WorkerRequest
 	if err := json.NewDecoder(connection).Decode(&request); err != nil {
+		return
+	}
+	if request.Stop {
+		if inputs.StopProgram(request.AgentID) {
+			_, _ = io.WriteString(connection, StoppedAnswer+"\n")
+		}
 		return
 	}
 	if request.Typed != "" {
