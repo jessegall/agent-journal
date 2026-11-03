@@ -52,7 +52,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows())
-        return [task, *(row for row in delivered if row.id != task.id)]
+        return [row for row in (task, *delivered) if row.state is TaskState.TESTING and (row is task or row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         self.checks.check_proofs(worktree)
@@ -63,7 +63,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
                           f"switch the checkout back to {worktree.base_branch}, then merge again")
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
-        self.repository.save(task.moved(TaskLifecycle.retest), context)
+        if task.state is TaskState.TESTING:
+            self.repository.save(task.moved(TaskLifecycle.retest), context)
         line = (f"{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers in those files,"
                 f" then deliver again with journal worker deliver")
         self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=MERGE_CONFLICT_SOURCE), context)
