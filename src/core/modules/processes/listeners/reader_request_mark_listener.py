@@ -5,13 +5,13 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.scope.actor_scope import ActorScope
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.output_folder import OutputFolder
 
-MODULE_NAME = "journal.core.processes"
 SAMPLE_LINES = 3
 COMMAND_CHARACTERS = 70
 
