@@ -1,9 +1,9 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {Btn, RowList, removed, useRows} from "@journal/window-kit";
 
-// the environments of this project, the one you are in first; removing one asks first and says why when it is refused
-const {rows, failure, loaded, load, context} = useRows("environment cards", ["environment.*"]);
+// the environments of this project, the one you are in first; removing one asks first, shows it gone at once, and says why when it is refused
+const {rows, failure, loaded, act, context} = useRows("environment cards", ["environment.*"]);
 const asking = ref(0);
 const refusal = ref({});
 const here = (row) => row.name === context.environment;
@@ -11,10 +11,9 @@ const ordered = computed(() => [...rows.value].sort((a, b) => here(b) - here(a) 
 
 async function remove(row) {
     if (asking.value !== row.id) return void (asking.value = row.id);
-    const answer = await context.run(["environment", "delete", String(row.id)]);
-    refusal.value = {...refusal.value, [row.id]: answer.ok ? "" : answer.error};
     asking.value = 0;
-    if (answer.ok) load();
+    const answer = await act(["environment", "delete", String(row.id)], removed(row.id));
+    refusal.value = {...refusal.value, [row.id]: answer.ok ? "" : answer.error};
 }
 </script>
 

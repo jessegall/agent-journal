@@ -1,12 +1,12 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {Segmented, Skeleton, useRows} from "@journal/window-kit";
+import {Segmented, Skeleton, patchedWhere, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 
 const CHANGED_SOURCES = new Set(["environment", "project"]);
 const TYPING = "input,textarea,select,[contenteditable]";
-const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
+const {rows, failure, loaded, act, context} = useRows("setting tree", ["setting.*"]);
 const TABS = [
     {key: "settings", label: "Settings"},
     {key: "environments", label: "Environments"},
@@ -60,10 +60,9 @@ onUnmounted(() => {
     window.removeEventListener("keydown", slashFocus);
 });
 
-async function saved(words) {
-    const result = await context.run(words);
-    if (result.ok) load();
-    return result;
+// a setting shows its new value at once, and is put back with the refusal when the server refuses it
+function saved(words, change) {
+    return act(words, change && patchedWhere((row) => row.key === change.key, {value: change.value}));
 }
 </script>
 
