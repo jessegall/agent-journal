@@ -5,7 +5,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.support.task_nudges import TASK_TO_TESTING
+from core.modules.tasks.support.task_nudges import TASK_TESTING_QUESTION
 
 TASK_START_COMMAND = ["task", "start"]
 
@@ -27,5 +27,5 @@ class TaskStartRule(DriverRule):
         starts = [list(part.arguments)[2:] for part in parts if part.classification.category is CommandCategory.JOURNAL and list(part.arguments[:2]) == TASK_START_COMMAND]
         if not starts:
             return RuleAnswer.allowed()
-        others = [task.id for task in self.current_tasks.started_tasks(hook.agent_id) if str(task.id) not in starts[0]]
-        return RuleAnswer.with_nudges(TASK_TO_TESTING.nudge(task=others[0])) if others else RuleAnswer.allowed()
+        held_tasks = [task.id for task in self.current_tasks.started_tasks(hook.agent_id) if str(task.id) not in starts[0]]
+        return RuleAnswer.with_nudges(TASK_TESTING_QUESTION.nudge(task=held_tasks[0])) if held_tasks else RuleAnswer.allowed()
