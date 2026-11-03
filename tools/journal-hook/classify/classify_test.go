@@ -1,6 +1,8 @@
 package classify
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
@@ -86,6 +88,23 @@ func TestAMixedLineKeepsTheCategoryOfEachOfItsParts(t *testing.T) {
 	for line, category := range cases {
 		if !hasPartOf(shippedClassifier.Line(line), category) {
 			t.Errorf("%q has no part of %s", line, category)
+		}
+	}
+}
+
+func TestAnAliasIsClassifiedByTheCommandUnderIt(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "runtime"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	aliases := `{"tests": "pytest -q", "tasks": "journal task list", "build-it": "npm run build"}`
+	if err := os.WriteFile(filepath.Join(root, "runtime", aliasFileName), []byte(aliases), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	classifier := ClassifierOf(filepath.Join(root, "command_table.json"))
+	for text, want := range map[string]string{"journal tests tests/a.py": "test run", "journal tasks": "journal", "journal build-it": "build", "journal task list": "journal"} {
+		if category := classifier.Classify(text).Category; category != want {
+			t.Errorf("%s is %q, want %q", text, category, want)
 		}
 	}
 }

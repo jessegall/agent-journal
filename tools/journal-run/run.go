@@ -40,7 +40,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		options.CapCharacters = DefaultCapCharacters
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts)+Script(parts, folder.Path)); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}
