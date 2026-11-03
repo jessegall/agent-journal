@@ -10,7 +10,7 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
 ALLOWED_PLACEHOLDERS = frozenset({
-    "agent", "branch", "category", "check", "count", "required_command", "dump", "emoji", "environment", "folder", "job", "kept", "left", "lines", "memories", "memory", "message",
+    "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "lines", "memories", "memory", "message",
     "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "programs", "proofs", "question",
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "writes", "items",
 })

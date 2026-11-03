@@ -78,7 +78,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "resumed": command.event.is_resume, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
         self.nudges.write(agent.id, answers, context)
-        self.required_commands.open(agent.id, answers.delivered_nudges, call.id, context)
+        self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)

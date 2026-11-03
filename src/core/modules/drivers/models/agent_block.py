@@ -1,13 +1,17 @@
 from dataclasses import dataclass
 
+from core.base.driver.interval import Interval
+from core.base.driver.seconds import Seconds
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
+from core.modules.drivers.support.tool_use_span import ToolUseSpan
 
 
 @dataclass(frozen=True, kw_only=True)
 class AgentBlock(Model):
     """An agent held from all but reading and journal commands: the line its refused tools are told, what ends
-    the block and when it ended."""
+    the block and when it ended. A block with a grace holds only after that many tool uses or seconds, says its
+    countdown line meanwhile, and may be skipped with a reason."""
 
     model_name = "agent_block"
     cli_name = "agent-block"
@@ -19,3 +23,13 @@ class AgentBlock(Model):
     condition_name: str
     condition_text: str
     closed_at: Timestamp | None = None
+    grace_tool_uses: int = 0
+    grace_seconds: int = 0
+    countdown_key: str = ""
+    countdown_text: str = ""
+    skip_reason: str = ""
+
+    @property
+    def grace(self) -> Interval | None:
+        spans = [*([ToolUseSpan(self.grace_tool_uses)] if self.grace_tool_uses else []), *([Seconds(self.grace_seconds)] if self.grace_seconds else [])]
+        return Interval(*spans) if spans else None

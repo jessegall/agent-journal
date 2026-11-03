@@ -1,6 +1,14 @@
 from datetime import timedelta
 
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.base.driver.block_until import BlockUntil
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.conditions.ran_command import RanCommand
+from core.base.driver.interval import Interval
+from core.base.driver.nudge import Nudge
+from core.base.driver.nudge_type import NudgeType
+from core.modules.drivers.support.tool_use_span import ToolUseSpan
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -11,6 +19,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 EDIT_HOOK = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
 TITLE_LINE = "journal output title {process}"
+TITLE_BLOCK = 2
 
 
 def journal_line(line):
@@ -24,19 +33,23 @@ def story_with_required_command(new_story):
     story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": f"journal output monitor {process.id}"}}).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}}))
     story.advance(timedelta(seconds=6))
     story.hook("s-1", HookSamples.stop())
-    story.expect_text("required-command list", TITLE_LINE.format(process=process.id), actor=story.agent)
+    story.expect_text("agent-block list", TITLE_LINE.format(process=process.id), actor=story.agent)
     return story, process
 
 
 def spend(story, count):
-    return [story.hook("s-1", EDIT_HOOK) for _ in range(count)]
+    hooks = []
+    for _ in range(count):
+        story.advance(timedelta(seconds=1))
+        hooks.append(story.hook("s-1", EDIT_HOOK))
+    return hooks
 
 
-def test_a_line_that_names_its_command_opens_one_required_command_however_often_it_is_said(new_story):
+def test_a_line_that_names_its_command_opens_one_block_however_often_it_is_said(new_story):
     story, process = story_with_required_command(new_story)
     story.hook("s-1", HookSamples.stop())
-    story.expect_text("required-command show 1", TITLE_LINE.format(process=process.id), actor=story.agent)
-    story.expect_refusal("required-command show 2", "no required-command 2", actor=story.agent)
+    story.expect_text(f"agent-block show {TITLE_BLOCK}", TITLE_LINE.format(process=process.id), actor=story.agent)
+    story.expect_refusal(f"agent-block show {TITLE_BLOCK + 1}", f"no agent-block {TITLE_BLOCK + 1}", actor=story.agent)
 
 
 def test_the_tool_uses_count_down_and_the_last_three_say_so(new_story):
@@ -54,7 +67,7 @@ def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(new_sto
     spend(story, 5)
     refusal = story.hook("s-1", EDIT_HOOK).refusal
     assert f"title output {process.id} is due" in refusal
-    assert "journal required-command skip 1 --reason" in refusal
+    assert f"journal agent-block skip {TITLE_BLOCK} --reason" in refusal
 
 
 def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(new_story):
@@ -62,7 +75,7 @@ def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_s
     spend(story, 6)
     assert not story.hook("s-1", READ).refusal
     assert not story.hook("s-1", journal_line("journal task list")).refusal
-    assert not story.hook("s-1", journal_line("journal required-command list")).refusal
+    assert not story.hook("s-1", journal_line("journal agent-block list")).refusal
 
 
 def test_running_the_command_settles_it_and_writes_run_again(new_story):
@@ -70,15 +83,15 @@ def test_running_the_command_settles_it_and_writes_run_again(new_story):
     spend(story, 6)
     assert not story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')).refusal
     assert not story.hook("s-1", EDIT_HOOK).refusal
-    story.expect_text("required-command show 1", "closed_at:", actor=story.agent)
+    story.expect_text(f"agent-block show {TITLE_BLOCK}", "closed_at:", actor=story.agent)
 
 
 def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(new_story):
     story, _ = story_with_required_command(new_story)
     spend(story, 6)
-    story.expect_usage_error("required-command skip 1", actor=story.agent)
-    story.expect_refusal('required-command skip 1 --reason "  "', "say why", actor=story.agent)
-    story.expect_success('required-command skip 1 --reason "a one-off command"', actor=story.agent)
+    story.expect_usage_error(f"agent-block skip {TITLE_BLOCK}", actor=story.agent)
+    story.expect_refusal(f'agent-block skip {TITLE_BLOCK} --reason "  "', "say why", actor=story.agent)
+    story.expect_success(f'agent-block skip {TITLE_BLOCK} --reason "a one-off command"', actor=story.agent)
     assert not story.hook("s-1", EDIT_HOOK).refusal
     story.run_listeners()
     assert "a one-off command" in marks_text(story)
@@ -87,4 +100,20 @@ def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(new_story):
 def test_a_line_that_names_no_command_opens_no_debt(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.hook("s-1", HookSamples.stop())
-    story.expect_absent("required-command list", "journal", actor=story.agent)
+    story.expect_absent("agent-block list", "journal", actor=story.agent)
+
+
+def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, "wait"), RanCommand("journal overview")), Actor.core())
+    story.expect_refusal('agent-block skip 1 --reason "no grace"', "cannot be skipped", actor=story.agent)
+
+
+def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    refusal = Nudge("samples.pay", NudgeType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
+    countdown = Nudge("samples.pay_countdown", NudgeType.INSTRUCTION, "fee due: {left} tool uses")
+    story.container.get(Bus).run(BlockUntil(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
+    first, second, third = spend(story, 3)
+    assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines
+    assert third.refusal == "pay the 1 fee: journal agent-block skip 1 --reason '<why>'"
