@@ -9,21 +9,20 @@ from core.modules.plugins.support.service_processes import ServiceProcesses
 
 class ServerPluginServices:
     """The plugin services the server keeps running: followed on a timer while the server runs, so a service
-    that ended is started again and a switched off plugin's services stop, their health checked on a timer of
-    its own, and all stopped with the server."""
+    that ended is started again and a switched off plugin's services stop, each round first making sure the
+    login shell's PATH is known so a service finds its tools, their health checked on a timer of its own, and
+    all stopped with the server."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
         self.processes = ServiceProcesses()
 
     def follow(self) -> None:
+        LoginPath(self.home).fill_missing()
         self.run_job(PluginServiceRound)
 
     def check_health(self) -> None:
         self.run_job(PluginHealthCheck)
-
-    def fill_login_path(self) -> None:
-        LoginPath(self.home).fill_missing()
 
     def run_job(self, job: type[PluginServiceRound] | type[PluginHealthCheck]) -> None:
         container = synced_container(self.home)
