@@ -58,7 +58,7 @@ defineExpose({moves, press});
             <template v-else>
                 <div class="moves">
                     <template v-for="move in moves" :key="move.word">
-                        <Btn small :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
+                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
                     </template>
                 </div>
             </template>

@@ -44,8 +44,9 @@ const endsInHead = (held) => {
 const inList = (held, line) => LIST_ITEM.test(line) || LIST_ITEM.test([...held].reverse().find((kept) => kept.trim()) || "");
 
 function block(lines, lang) {
-    const code = highlight(unescape(lines.join("\n")), lang || guess(lines)).join("\n");
-    return {kind: "html", html: `<div class="chat-code-block"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
+    const language = lang || guess(lines);
+    const code = highlight(unescape(lines.join("\n")), language).map((line) => `<span class="code-line">${line}\n</span>`).join("");
+    return {kind: "html", html: `<div class="chat-code-block" data-language="${language}"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
 }
 
 // the text with each run of paragraphs that is code without a fence made a block, and the text between them kept as it was: a run holds

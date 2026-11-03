@@ -18,6 +18,8 @@ from core.modules.documents.commands.report_comment.report_comment_subcommand im
 from core.modules.documents.commands.close_text.close_text_handler import CloseTextHandler
 from core.modules.documents.commands.close_doc.close_doc_subcommand import CloseDocSubcommand
 from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
+from core.modules.documents.commands.doc_inspect.doc_inspect_subcommand import DocInspectSubcommand
+from core.modules.documents.commands.report_inspect.report_inspect_subcommand import ReportInspectSubcommand
 from core.modules.documents.commands.edit_doc.edit_doc_subcommand import EditDocSubcommand
 from core.modules.documents.commands.doc_list.doc_list_subcommand import DocListSubcommand
 from core.modules.documents.commands.document_library.document_library_subcommand import DocumentLibrarySubcommand
@@ -42,6 +44,8 @@ from core.modules.documents.listeners.report_mention_listener import ReportMenti
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
 from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
+from core.modules.documents.migrations.m004_comment_selections import CommentSelectionsMigration
+from core.modules.documents.models.comment_selection import CommentSelection
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.document_row import DocumentRow
@@ -68,8 +72,8 @@ class DocumentsModule(Module):
     settings = [SettingValue("revision-minutes", "Revision minutes", "How long one person's edits of a document fold into one revision.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration]
+              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS)]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
@@ -81,4 +85,4 @@ class DocumentsModule(Module):
     bindings = [(RowLinks, StoredRowLinks)]
     subcommands = (CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand)
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand)
