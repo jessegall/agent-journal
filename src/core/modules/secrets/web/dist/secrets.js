@@ -1,26 +1,26 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-891b35375270")) { const style = document.createElement("style"); style.id = "window-styles-891b35375270"; style.textContent = ".program-add[data-v-543d055d]{display:inline-flex;gap:4px}.failure[data-v-543d055d]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.tools[data-v-543d055d]{margin-bottom:8px}.draft[data-v-543d055d]{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.draft-foot[data-v-543d055d]{display:flex;gap:6px;justify-content:flex-end}.removed[data-v-543d055d]{margin:0 0 8px;color:var(--text-3);font-size:12px}.grow[data-v-543d055d]{flex:1}.secret[data-v-543d055d]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-543d055d]{display:flex;align-items:baseline;gap:10px}.title[data-v-543d055d]{flex:1;font-weight:600}.kind[data-v-543d055d],.brief[data-v-543d055d],.label[data-v-543d055d]{color:var(--text-3);font-size:12px}.brief[data-v-543d055d]{margin:0}.field[data-v-543d055d]{display:flex;flex-direction:column;gap:4px}.field input[data-v-543d055d]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.programs[data-v-543d055d]{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}button[data-v-543d055d]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-54564e42dcfe")) { const style = document.createElement("style"); style.id = "window-styles-54564e42dcfe"; style.textContent = ".program-add[data-v-baca99fa]{display:inline-flex;gap:4px}.failure[data-v-baca99fa]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.tools[data-v-baca99fa]{margin-bottom:8px}.draft[data-v-baca99fa]{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.draft-foot[data-v-baca99fa]{display:flex;gap:6px;justify-content:flex-end}.removed[data-v-baca99fa]{margin:0 0 8px;color:var(--text-3);font-size:12px}.grow[data-v-baca99fa]{flex:1}.secret[data-v-baca99fa]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-baca99fa]{display:flex;align-items:baseline;gap:10px}.title[data-v-baca99fa]{flex:1;font-weight:600}.kind[data-v-baca99fa],.brief[data-v-baca99fa],.label[data-v-baca99fa]{color:var(--text-3);font-size:12px}.brief[data-v-baca99fa]{margin:0}.field[data-v-baca99fa]{display:flex;flex-direction:column;gap:4px}.field input[data-v-baca99fa]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.programs[data-v-baca99fa]{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}button[data-v-baca99fa]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { reactive as $, ref as E, openBlock as o, createElementBlock as a, Fragment as k, unref as d, toDisplayString as u, createCommentVNode as p, createElementVNode as n, createVNode as f, withCtx as y, createTextVNode as _, withModifiers as V, withDirectives as c, vModelText as b, renderList as I, vModelDynamic as X } from "vue";
 import { useRows as B, Btn as U, Segmented as Z, RowList as w } from "@journal/window-kit";
 const ee = (R, g) => {
-  const N = R.__vccOpts || R;
+  const h = R.__vccOpts || R;
   for (const [T, P] of g)
-    N[T] = P;
-  return N;
+    h[T] = P;
+  return h;
 }, te = {
   key: 0,
   class: "failure"
 }, ie = { class: "tools" }, le = { class: "draft-foot" }, ne = ["onClick"], se = ["data-row"], oe = ["onSubmit"], ae = { class: "draft-foot" }, de = { class: "head" }, re = { class: "title" }, ue = { class: "kind" }, ce = ["onClick"], me = ["onClick"], pe = ["onClick"], fe = {
   key: 0,
   class: "brief"
-}, be = ["onSubmit"], ve = ["for"], ke = ["id", "onUpdate:modelValue", "type", "placeholder"], ye = ["data-secret-field-remove", "onClick"], _e = ["onSubmit"], ge = ["onUpdate:modelValue"], Se = { class: "programs" }, Ce = ["onClick"], $e = ["onClick"], Ve = ["onSubmit"], Ue = ["onUpdate:modelValue"], Ne = {
+}, be = ["onSubmit"], ve = ["for"], ke = ["id", "onUpdate:modelValue", "type", "placeholder"], ye = ["data-secret-field-remove", "onClick"], _e = ["onSubmit"], ge = ["onUpdate:modelValue"], Se = { class: "programs" }, Ce = ["onClick"], $e = ["onClick"], Ve = ["onSubmit"], Ue = ["onUpdate:modelValue"], he = {
   __name: "SecretRows",
   setup(R) {
     const g = [
       { key: "api key", label: "API key" },
       { key: "login", label: "Login" },
       { key: "custom", label: "Custom" }
-    ], { rows: N, failure: T, loaded: P, act: r, actionFailure: L } = B("secret list", ["secret.*"]), { rows: O, load: M } = B("secret list --deleted", ["secret.*"]), A = $({}), F = $({}), h = $({}), S = E(!1), s = $({ kind: g[0].key, title: "", brief: "", field: "" }), x = E(0), m = $({ title: "", brief: "" }), C = E(0);
+    ], { rows: h, failure: T, loaded: P, act: r, actionFailure: L } = B("secret list", ["secret.*"]), { rows: O, load: M } = B("secret list --deleted", ["secret.*"]), A = $({}), N = $({}), F = $({}), S = E(!1), s = $({ kind: g[0].key, title: "", brief: "", field: "" }), x = E(0), m = $({ title: "", brief: "" }), C = E(0);
     async function K() {
       if (!s.title.trim()) return;
       const l = s.kind === "custom" && s.field.trim() ? ["--field", s.field.trim()] : [];
@@ -46,15 +46,15 @@ const ee = (R, g) => {
     }
     const H = (l, e) => r(["secret", "update", String(l.id), "--remove-field", e.name]);
     async function J(l) {
-      const e = (F[l.id] || "").trim();
+      const e = (N[l.id] || "").trim();
       if (!e) return;
-      (await r(["secret", "allow", String(l.id), e])).ok && (F[l.id] = "");
+      (await r(["secret", "allow", String(l.id), e])).ok && (N[l.id] = "");
     }
     const v = (l, e) => `${l.id}:${e.name}`, Q = (l, e) => l.filled.includes(e.name);
     async function W(l, e) {
-      const t = (h[v(l, e)] || "").trim();
+      const t = (F[v(l, e)] || "").trim();
       if (!t) return;
-      (await r(["secret", "fill", String(l.id), e.name, t])).ok && (h[v(l, e)] = "");
+      (await r(["secret", "fill", String(l.id), e.name, t])).ok && (F[v(l, e)] = "");
     }
     return (l, e) => (o(), a(k, null, [
       d(L) ? (o(), a("p", te, u(d(L)), 1)) : p("", !0),
@@ -142,10 +142,11 @@ const ee = (R, g) => {
         }, "Restore", 8, ne)
       ]))), 128)),
       f(d(w), {
-        rows: d(N),
+        rows: d(h),
         failure: d(T),
         loaded: d(P),
-        empty: "No secrets yet"
+        empty: "No secrets yet",
+        hint: "A key or a login you add shows here by its name, never by its value."
       }, {
         default: y(({ row: t }) => [
           n("div", {
@@ -231,12 +232,12 @@ const ee = (R, g) => {
               }, u(i.name), 9, ve),
               c(n("input", {
                 id: v(t, i),
-                "onUpdate:modelValue": (D) => h[v(t, i)] = D,
+                "onUpdate:modelValue": (D) => F[v(t, i)] = D,
                 type: i.hidden ? "password" : "text",
                 autocomplete: "off",
                 placeholder: Q(t, i) ? "Filled; type to replace it" : "Type the value"
               }, null, 8, ke), [
-                [X, h[v(t, i)]]
+                [X, F[v(t, i)]]
               ]),
               e[16] || (e[16] = n("button", { type: "submit" }, "Save", -1)),
               t.secret_type === "custom" ? (o(), a("button", {
@@ -281,12 +282,12 @@ const ee = (R, g) => {
                 onSubmit: V((i) => J(t), ["prevent"])
               }, [
                 c(n("input", {
-                  "onUpdate:modelValue": (i) => F[t.id] = i,
+                  "onUpdate:modelValue": (i) => N[t.id] = i,
                   placeholder: "Allow a program",
                   "aria-label": "Allow a program",
                   autocomplete: "off"
                 }, null, 8, Ue), [
-                  [b, F[t.id]]
+                  [b, N[t.id]]
                 ]),
                 e[18] || (e[18] = n("button", { type: "submit" }, "Allow", -1))
               ], 40, Ve)
@@ -297,7 +298,7 @@ const ee = (R, g) => {
       }, 8, ["rows", "failure", "loaded"])
     ], 64));
   }
-}, he = /* @__PURE__ */ ee(Ne, [["__scopeId", "data-v-543d055d"]]);
+}, Fe = /* @__PURE__ */ ee(he, [["__scopeId", "data-v-baca99fa"]]);
 export {
-  he as default
+  Fe as default
 };

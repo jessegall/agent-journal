@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-CAFSA_oN.js";
-import { Z as Q, P as V, C as R } from "./index-kVH8QhYe.js";
+import { S as U, t as Z, a as j, r as q } from "./VoiceFigure-Cipbatky.js";
+import { Z as Q, P as V, C as R } from "./index-DcgOXEAt.js";
 const X = 4, Y = (u) => u * u * (3 - 2 * u);
 class W {
   constructor(t, s) {

@@ -10,6 +10,7 @@ from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.schedules.models.scheduled_job import ScheduledJob
@@ -40,7 +41,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total
         tasks = self.tasks.environment(environment_id).unclosed().page(1, PAGE_ROWS).total
         waiting = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).page(1, PAGE_ROWS).total
-        mains = agents.filter(role=AgentRole.MAIN).newest().page(1, PAGE_ROWS).rows
+        mains = MainAgentFinder.rows(self.queries, environment_id)
         started_tasks = self.tasks.holder(mains[0].id).started().descending("started_at").page(1, PAGE_ROWS).rows if mains else ()
         jobs = self.queries.query(ScheduledJob).filter(agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs)

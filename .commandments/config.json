@@ -175,7 +175,6 @@
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",
         "architecture_viewer_NoTimerOutsideClocksDetector",
-        "architecture_viewer_NoTimerOutsideClocksVueDetector",
         "architecture_providers_HookNamesByMemberDetector",
         "architecture_providers_ProgramNamesOnlyInProvidersDetector",
         "architecture_providers_ProvidersDecideNothingDetector",

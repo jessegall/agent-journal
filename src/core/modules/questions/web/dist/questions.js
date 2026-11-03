@@ -1,34 +1,33 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-fcd0f5310604")) { const style = document.createElement("style"); style.id = "window-styles-fcd0f5310604"; style.textContent = ".open-questions-icon[data-v-bb9f2ba6]{flex:none;color:var(--text-3)}.open-questions-text[data-v-bb9f2ba6]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.open-questions-space[data-v-bb9f2ba6]{flex:1}.question[data-v-221368c1]{display:flex;flex:1;flex-direction:column;gap:8px;width:100%;max-width:640px;margin-bottom:10px;padding:14px 16px 16px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);overflow-wrap:anywhere}.question-head[data-v-221368c1]{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.question-time[data-v-221368c1]{flex:none;color:var(--text-3);font-size:11.5px}.question-label[data-v-221368c1]{margin:0;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.question-open[data-v-221368c1]{padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4;text-align:left;cursor:pointer}.question-options[data-v-221368c1]{display:flex;flex-direction:column;gap:6px}.question-option[data-v-221368c1]{display:flex;flex-direction:column;overflow:hidden;padding:9px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer;transition:transform .12s ease,border-color .2s ease}.question-option[data-v-221368c1]:hover{border-color:var(--accent)}.question-option[data-v-221368c1]:active{transform:scale(.98)}.question-option.recommended[data-v-221368c1]{border-color:color-mix(in srgb,var(--accent) 40%,var(--border-2))}.question-tag[data-v-221368c1]{margin:-9px -12px 8px;padding:4px 12px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-text);font-size:11px}.question-closed[data-v-221368c1]{margin:0;color:var(--text-3);font-size:12.5px}.question-failure[data-v-221368c1]{margin:0;color:var(--danger);font-size:12.5px}.question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.waiting-heading[data-v-2998b0fd]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-2998b0fd]{flex:1}.detail[data-v-2998b0fd]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as u, createElementBlock as d, createVNode as t, unref as o, withCtx as c } from "vue";
-import { useRows as p, useListTools as _, ListTools as f, RowList as m } from "@journal/window-kit";
-import { Q as w } from "./QuestionCard-C_m75N77.js";
-const h = { class: "questions" }, R = {
+if (!document.getElementById("window-styles-0e56003b45d0")) { const style = document.createElement("style"); style.id = "window-styles-0e56003b45d0"; style.textContent = ".open-questions-icon[data-v-bb9f2ba6]{flex:none;color:var(--text-3)}.open-questions-text[data-v-bb9f2ba6]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.open-questions-space[data-v-bb9f2ba6]{flex:1}.question[data-v-221368c1]{display:flex;flex:1;flex-direction:column;gap:8px;width:100%;max-width:640px;margin-bottom:10px;padding:14px 16px 16px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);overflow-wrap:anywhere}.question-head[data-v-221368c1]{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.question-time[data-v-221368c1]{flex:none;color:var(--text-3);font-size:11.5px}.question-label[data-v-221368c1]{margin:0;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.question-open[data-v-221368c1]{padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4;text-align:left;cursor:pointer}.question-options[data-v-221368c1]{display:flex;flex-direction:column;gap:6px}.question-option[data-v-221368c1]{display:flex;flex-direction:column;overflow:hidden;padding:9px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer;transition:transform .12s ease,border-color .2s ease}.question-option[data-v-221368c1]:hover{border-color:var(--accent)}.question-option[data-v-221368c1]:active{transform:scale(.98)}.question-option.recommended[data-v-221368c1]{border-color:color-mix(in srgb,var(--accent) 40%,var(--border-2))}.question-tag[data-v-221368c1]{margin:-9px -12px 8px;padding:4px 12px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-text);font-size:11px}.question-closed[data-v-221368c1]{margin:0;color:var(--text-3);font-size:12.5px}.question-failure[data-v-221368c1]{margin:0;color:var(--danger);font-size:12.5px}.question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.waiting-heading[data-v-28729d1b]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-28729d1b]{flex:1}.detail[data-v-28729d1b]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as u, createElementBlock as c, createVNode as t, unref as o, withCtx as d } from "vue";
+import { useRows as h, useListTools as p, ListTools as w, RowList as f } from "@journal/window-kit";
+import { Q as _ } from "./QuestionCard-C_m75N77.js";
+const m = { class: "questions" }, v = {
   __name: "QuestionRows",
-  setup(q) {
-    const { rows: l, failure: n, loaded: r, load: a } = p("question list --all", ["question.*"]), s = _(l, { title: (e) => e.text, isOpen: (e) => e.state === "open" });
-    return (e, x) => (u(), d("div", h, [
+  setup(g) {
+    const { rows: n, failure: i, loaded: l, load: a } = h("question list --all", ["question.*"]), s = p(n, { title: (e) => e.text, isOpen: (e) => e.state === "open" });
+    return (e, q) => (u(), c("div", m, [
+      t(o(w), { tools: o(s) }, null, 8, ["tools"]),
       t(o(f), {
-        tools: o(s),
-        placeholder: "Search the questions"
-      }, null, 8, ["tools"]),
-      t(o(m), {
         rows: o(s).shown.value,
-        failure: o(n),
-        loaded: o(r),
-        empty: "No open questions"
+        failure: o(i),
+        loaded: o(l),
+        empty: "No open questions",
+        hint: "A question the agent asks you shows here until you answer it.",
+        searching: o(s).filtering.value
       }, {
-        default: c(({ row: i }) => [
-          t(w, {
-            row: i,
+        default: d(({ row: r }) => [
+          t(_, {
+            row: r,
             onChanged: o(a)
           }, null, 8, ["row", "onChanged"])
         ]),
         _: 1
-      }, 8, ["rows", "failure", "loaded"])
+      }, 8, ["rows", "failure", "loaded", "searching"])
     ]));
   }
 };
 export {
-  R as default
+  v as default
 };

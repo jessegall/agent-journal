@@ -5,11 +5,7 @@
         "select": "call",
         "where": [
             {
-                "nameIn": [
-                    "filter",
-                    "Equal",
-                    "Among"
-                ]
+                "name": "filter"
             },
             {
                 "descendant": {
@@ -22,7 +18,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/core/modules/agents/support/main_agent_finder\\.py$"
+                "fileMatches": "(^|/)src/core/modules/(agents/support/main_agent_finder|drivers/rules/takeover_rule)\\.py$"
             }
         ]
     },

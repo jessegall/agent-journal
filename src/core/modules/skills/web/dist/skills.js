@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-c68952f1f1fd")) { const style = document.createElement("style"); style.id = "window-styles-c68952f1f1fd"; style.textContent = ".skills[data-v-20887a9e]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-20887a9e]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-20887a9e]{display:flex;gap:8px;align-items:center;width:100%;text-align:left}.skills-catalogue[data-v-8edafd71]{margin:0;padding:0;list-style:none}.skill-entry[data-v-8edafd71]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left}.skill-description[data-v-8edafd71]{color:var(--text-3);font-size:12px}.skills-title[data-v-b646e030]{margin:0;font-size:13px}.skills-text[data-v-b646e030]{margin:0;white-space:pre-wrap;font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as h, openBlock as c, createElementBlock as k, createElementVNode as t, createVNode as g, unref as _, withCtx as C, createTextVNode as B, toDisplayString as p, toRef as S, Fragment as L, renderList as R, ref as w, createBlock as T, resolveDynamicComponent as N, normalizeProps as O, guardReactiveProps as q } from "vue";
-import { RowList as I, useListTools as V, ListTools as z, useWindow as A, useRows as D } from "@journal/window-kit";
+if (!document.getElementById("window-styles-09e02680d3ae")) { const style = document.createElement("style"); style.id = "window-styles-09e02680d3ae"; style.textContent = ".skills[data-v-949528d6]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-949528d6]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-949528d6]{display:flex;gap:8px;align-items:center;width:100%;text-align:left}.skills-catalogue[data-v-8edafd71]{margin:0;padding:0;list-style:none}.skill-entry[data-v-8edafd71]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left}.skill-description[data-v-8edafd71]{color:var(--text-3);font-size:12px}.skills-title[data-v-b646e030]{margin:0;font-size:13px}.skills-text[data-v-b646e030]{margin:0;white-space:pre-wrap;font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as b, openBlock as c, createElementBlock as k, createElementVNode as t, createVNode as g, unref as _, withCtx as C, createTextVNode as B, toDisplayString as p, toRef as S, Fragment as L, renderList as R, ref as w, createBlock as T, resolveDynamicComponent as N, normalizeProps as O, guardReactiveProps as q } from "vue";
+import { RowList as A, useListTools as I, ListTools as V, useWindow as z, useRows as D } from "@journal/window-kit";
 const f = (e, s) => {
   const a = e.__vccOpts || e;
   for (const [i, n] of s)
@@ -12,14 +12,15 @@ const f = (e, s) => {
   props: { rows: { type: Array, required: !0 }, failure: { type: String, default: "" }, answered: { type: Boolean, required: !0 } },
   emits: ["open", "browse"],
   setup(e, { emit: s }) {
-    const a = e, i = s, n = h(() => [...a.rows].reverse());
+    const a = e, i = s, n = b(() => [...a.rows].reverse());
     return (r, l) => (c(), k("div", E, [
       l[2] || (l[2] = t("p", { class: "skills-note" }, "Loaded in this window, newest last. Compacting the conversation empties it.", -1)),
-      g(_(I), {
+      g(_(A), {
         rows: n.value,
         failure: e.failure,
         loaded: e.answered,
-        empty: "No skill is loaded in this conversation."
+        empty: "No skill is loaded in this conversation.",
+        hint: "A skill the agent reads shows here with when it read it."
       }, {
         default: C(({ row: o }) => [
           t("button", {
@@ -52,19 +53,19 @@ const f = (e, s) => {
       }, "Browse every skill")
     ]));
   }
-}, P = /* @__PURE__ */ f(M, [["__scopeId", "data-v-20887a9e"]]), j = { class: "skills" }, H = { class: "skills-catalogue" }, W = ["onClick"], G = { class: "skill-name" }, J = { class: "skill-description" }, K = {
+}, P = /* @__PURE__ */ f(M, [["__scopeId", "data-v-949528d6"]]), j = { class: "skills" }, H = { class: "skills-catalogue" }, W = ["onClick"], G = { class: "skill-name" }, J = { class: "skill-description" }, K = {
   __name: "SkillCatalogue",
   props: { rows: { type: Array, required: !0 } },
   emits: ["open", "back"],
   setup(e, { emit: s }) {
-    const a = e, i = s, n = V(S(a, "rows"), { title: (r) => r.folder });
+    const a = e, i = s, n = I(S(a, "rows"), { title: (r) => r.folder });
     return (r, l) => (c(), k("div", j, [
       t("button", {
         type: "button",
         class: "skills-back",
         onClick: l[0] || (l[0] = (o) => i("back"))
       }, "Back"),
-      g(_(z), {
+      g(_(V), {
         tools: _(n),
         placeholder: "Search the skills"
       }, null, 8, ["tools"]),
@@ -103,9 +104,9 @@ const f = (e, s) => {
 }, ee = /* @__PURE__ */ f(Z, [["__scopeId", "data-v-b646e030"]]), le = {
   __name: "SkillRows",
   setup(e) {
-    const s = A(), { rows: a, failure: i, loaded: n } = D(s.agent ? `agent-skill list --agent ${s.agent}` : "agent-skill list", ["agent_skill.*"]), r = w("loaded"), l = w([]), o = w(null), v = w(""), y = { loaded: P, catalogue: Q, text: ee }, x = h(() => ({
-      loaded: { rows: a.value, failure: i.value, answered: n.value, onOpen: b, onBrowse: $ },
-      catalogue: { rows: l.value, onOpen: b, onBack: m },
+    const s = z(), { rows: a, failure: i, loaded: n } = D(s.agent ? `agent-skill list --agent ${s.agent}` : "agent-skill list", ["agent_skill.*"]), r = w("loaded"), l = w([]), o = w(null), v = w(""), y = { loaded: P, catalogue: Q, text: ee }, x = b(() => ({
+      loaded: { rows: a.value, failure: i.value, answered: n.value, onOpen: h, onBrowse: $ },
+      catalogue: { rows: l.value, onOpen: h, onBack: m },
       text: { skill: o.value, failure: v.value, onBack: m }
     })[r.value]);
     function m() {
@@ -115,7 +116,7 @@ const f = (e, s) => {
       const u = await s.read("skill list");
       l.value = u.ok ? u.value.rows : [], r.value = "catalogue";
     }
-    async function b(u) {
+    async function h(u) {
       const d = await s.read(`skill show ${u}`);
       v.value = d.ok ? "" : d.error, o.value = d.ok ? d.value : null, r.value = "text";
     }

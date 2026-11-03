@@ -1,12 +1,12 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-f4c48e2efc18")) { const style = document.createElement("style"); style.id = "window-styles-f4c48e2efc18"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-07a21e8d]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-07a21e8d]{flex:1}.check-command[data-v-07a21e8d]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-07a21e8d]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-07a21e8d]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-07a21e8d]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-07a21e8d]:hover{background:var(--hover)}.check-verdict[data-v-07a21e8d]{color:var(--accent-text)}.check-verdict.failing[data-v-07a21e8d]{color:var(--danger)}.check-note[data-v-07a21e8d]{margin:0;color:var(--text-3)}.cards[data-v-e541cb99]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-e541cb99]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-e541cb99]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-e541cb99]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-e541cb99]{width:14px;height:14px}.card-title[data-v-e541cb99]{font-weight:600}.card-run[data-v-e541cb99]{align-self:flex-start}.card-detail[data-v-e541cb99]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-e541cb99]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-e541cb99]{margin:0;color:var(--text-2)}.card-state[data-v-e541cb99]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-e541cb99]{color:var(--accent-text)}.card-state.failing[data-v-e541cb99]{color:var(--danger)}\n"; document.head.appendChild(style); }
-import { openBlock as t, createElementBlock as a, createElementVNode as l, normalizeStyle as L, normalizeClass as I, ref as b, computed as x, createBlock as f, unref as s, withCtx as S, createVNode as N, createTextVNode as B, toDisplayString as c, createCommentVNode as _, Fragment as w, renderList as D, withKeys as F, withModifiers as K } from "vue";
+if (!document.getElementById("window-styles-681a6401b610")) { const style = document.createElement("style"); style.id = "window-styles-681a6401b610"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-07a21e8d]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-07a21e8d]{flex:1}.check-command[data-v-07a21e8d]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-07a21e8d]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-07a21e8d]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-07a21e8d]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-07a21e8d]:hover{background:var(--hover)}.check-verdict[data-v-07a21e8d]{color:var(--accent-text)}.check-verdict.failing[data-v-07a21e8d]{color:var(--danger)}.check-note[data-v-07a21e8d]{margin:0;color:var(--text-3)}.cards[data-v-752ae174]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-752ae174]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-752ae174]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-752ae174]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-752ae174]{width:14px;height:14px}.card-title[data-v-752ae174]{font-weight:600}.card-run[data-v-752ae174]{align-self:flex-start}.card-detail[data-v-752ae174]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-752ae174]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-752ae174]{margin:0;color:var(--text-2)}.card-state[data-v-752ae174]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-752ae174]{color:var(--accent-text)}.card-state.failing[data-v-752ae174]{color:var(--danger)}\n"; document.head.appendChild(style); }
+import { openBlock as t, createElementBlock as a, createElementVNode as l, normalizeStyle as L, normalizeClass as I, ref as b, computed as x, createBlock as f, unref as s, withCtx as N, createVNode as S, createTextVNode as B, toDisplayString as c, createCommentVNode as _, Fragment as w, renderList as D, withKeys as F, withModifiers as K } from "vue";
 import { useWindow as P, useReadLine as T, Dialog as q, Segmented as z, Btn as V, ago as W, useRows as j, useListTools as M, ListTools as A, Skeleton as G, Icon as H } from "@journal/window-kit";
-const O = (n, h) => {
-  const p = n.__vccOpts || n;
-  for (const [y, g] of h)
-    p[y] = g;
-  return p;
+const O = (n, p) => {
+  const h = n.__vccOpts || n;
+  for (const [y, g] of p)
+    h[y] = g;
+  return h;
 }, J = {
   class: "check-bar",
   "data-check-progress": ""
@@ -14,7 +14,7 @@ const O = (n, h) => {
   __name: "CheckRunBar",
   props: { percent: { type: Number, required: !0 } },
   setup(n) {
-    return (h, p) => (t(), a("span", J, [
+    return (p, h) => (t(), a("span", J, [
       l("span", {
         class: I(["check-bar-fill", { sliding: !n.percent }]),
         style: L(n.percent ? { width: `${n.percent}%` } : {})
@@ -42,11 +42,11 @@ const O = (n, h) => {
   __name: "CheckDialog",
   props: { row: { type: Object, required: !0 }, running: Boolean },
   emits: ["close", "run"],
-  setup(n, { emit: h }) {
-    const p = [
+  setup(n, { emit: p }) {
+    const h = [
       { key: "output", label: "Output" },
       { key: "runs", label: "Runs" }
-    ], y = n, g = h, R = P(), i = b("output"), $ = b(null), { value: k, failure: m, load: C } = T(() => `check runs ${y.row.id}`), o = x(() => {
+    ], y = n, g = p, R = P(), i = b("output"), $ = b(null), { value: k, failure: m, load: C } = T(() => `check runs ${y.row.id}`), o = x(() => {
       var u;
       return ((u = k.value) == null ? void 0 : u.rows) ?? [];
     }), v = x(() => {
@@ -62,10 +62,10 @@ const O = (n, h) => {
       "data-check-dialog": "",
       onClose: d[2] || (d[2] = (r) => g("close"))
     }, {
-      default: S(() => [
+      default: N(() => [
         l("div", U, [
-          N(s(z), {
-            options: p,
+          S(s(z), {
+            options: h,
             value: i.value,
             onPick: d[0] || (d[0] = (r) => i.value = r)
           }, null, 8, ["value"]),
@@ -78,7 +78,7 @@ const O = (n, h) => {
             disabled: n.running,
             onClick: d[1] || (d[1] = (r) => g("run", n.row))
           }, {
-            default: S(() => [
+            default: N(() => [
               B(c(n.running ? "Running" : "Run"), 1)
             ]),
             _: 1
@@ -127,22 +127,19 @@ const O = (n, h) => {
   key: 3,
   class: "cards-note",
   "data-check-refusal": ""
-}, ie = ["data-row", "onClick", "onKeydown"], ke = { class: "card-head" }, he = { class: "card-title" }, pe = { class: "card-detail" }, ve = { class: "card-foot" }, _e = {
+}, ie = ["data-row", "onClick", "onKeydown"], ke = { class: "card-head" }, pe = { class: "card-title" }, he = { class: "card-detail" }, ve = { class: "card-foot" }, _e = {
   __name: "CheckCards",
   setup(n) {
-    const { rows: h, failure: p, loaded: y, context: g } = j("check list", ["check.*"]), R = M(h, { title: (o) => o.title, isOpen: (o) => !o.stopped }), i = b(null), $ = x(() => h.value.find((o) => o.id === i.value) || null), k = b(/* @__PURE__ */ new Set()), m = b("");
+    const { rows: p, failure: h, loaded: y, context: g } = j("check list", ["check.*"]), R = M(p, { title: (o) => o.title, isOpen: (o) => !o.stopped }), i = b(null), $ = x(() => p.value.find((o) => o.id === i.value) || null), k = b(/* @__PURE__ */ new Set()), m = b("");
     async function C(o) {
       m.value = "", k.value = /* @__PURE__ */ new Set([...k.value, o.id]);
       const v = await g.run(["check", "run", String(o.id)]);
       k.value = new Set([...k.value].filter((e) => e !== o.id)), v.ok || (m.value = v.error);
     }
     return (o, v) => (t(), a(w, null, [
-      N(s(A), {
-        tools: s(R),
-        placeholder: "Search the checks"
-      }, null, 8, ["tools"]),
+      S(s(A), { tools: s(R) }, null, 8, ["tools"]),
       l("div", oe, [
-        s(y) ? s(p) ? (t(), a("p", ue, c(s(p)), 1)) : s(y) && !s(h).length ? (t(), a("p", de, "No checks yet")) : _("", !0) : (t(), f(s(G), {
+        s(y) ? s(h) ? (t(), a("p", ue, c(s(h)), 1)) : s(y) && !s(p).length ? (t(), a("p", de, "No checks yet")) : _("", !0) : (t(), f(s(G), {
           key: 0,
           shape: "cards"
         })),
@@ -157,7 +154,7 @@ const O = (n, h) => {
           onKeydown: F((u) => i.value = e.id, ["enter"])
         }, [
           l("span", ke, [
-            N(s(H), {
+            S(s(H), {
               name: "check",
               class: "card-icon"
             }),
@@ -166,8 +163,8 @@ const O = (n, h) => {
               class: I(["card-state", { failing: e.last_passed === !1, passing: e.last_passed === !0 }])
             }, c(e.last_passed === !0 ? "Passing" : e.last_passed === !1 ? "Failing" : "Not run"), 3)
           ]),
-          l("span", he, c(e.title), 1),
-          l("code", pe, c(e.command), 1),
+          l("span", pe, c(e.title), 1),
+          l("code", he, c(e.command), 1),
           e.run_percent !== null && e.run_percent !== void 0 ? (t(), f(E, {
             key: 0,
             percent: e.run_percent
@@ -181,7 +178,7 @@ const O = (n, h) => {
             disabled: k.value.has(e.id),
             onClick: K((u) => C(e), ["stop"])
           }, {
-            default: S(() => [
+            default: N(() => [
               B(c(k.value.has(e.id) ? "Running" : "Run"), 1)
             ]),
             _: 2
@@ -198,7 +195,7 @@ const O = (n, h) => {
       }, null, 8, ["row", "running"])) : _("", !0)
     ], 64));
   }
-}, ge = /* @__PURE__ */ O(_e, [["__scopeId", "data-v-e541cb99"]]);
+}, ge = /* @__PURE__ */ O(_e, [["__scopeId", "data-v-752ae174"]]);
 export {
   ge as default
 };

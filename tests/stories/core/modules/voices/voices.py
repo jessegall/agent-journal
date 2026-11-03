@@ -68,18 +68,18 @@ def test_show_prints_the_instruction_the_agent_is_given(new_story):
     assert "say worker, subagent, task and environment" in text
 
 
-def test_a_session_start_gives_the_instruction_and_asks_the_agent_to_introduce_itself(new_story):
+def test_a_session_started_by_hand_gives_the_instruction_and_no_introduction(new_story):
     story = new_story(fixture=BuilderWithUser)
     given_names(story)
     second = hook_agent(story, story.hook("s-2", SECOND_START))
     [line] = told(story, second.id)
-    assert BUTLER_TEXT in line and 'Address me as "Captain Ada".' in line and "introduce yourself in the chat" in line, line
+    assert BUTLER_TEXT in line and 'Address me as "Captain Ada".' in line and "introduce yourself in the chat" not in line, line
 
 
-def test_the_agent_the_builder_started_was_told_when_it_started(new_story):
+def test_the_agent_the_builder_started_by_hand_was_told_when_it_started(new_story):
     story = new_story(fixture=BuilderWithUser)
     [line] = told(story, story.agent.id)
-    assert BUTLER_TEXT in line and "introduce yourself in the chat" in line, line
+    assert BUTLER_TEXT in line and "introduce yourself in the chat" not in line, line
 
 
 def test_a_resume_is_told_nothing_more_since_its_conversation_holds_the_voice(new_story):
