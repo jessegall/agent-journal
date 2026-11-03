@@ -23,7 +23,10 @@ const tasks = computed(() => props.facts?.tasks ?? []);
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
 const identity = computed(() => [props.row.program, props.facts?.model, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
-const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
+// a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
+const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
+const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role === "worker" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
+const dotState = computed(() => (stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
@@ -52,7 +55,7 @@ const isSubagent = computed(() => props.row.role === "subagent");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
-const showsCommand = computed(() => props.row.role !== "main" && !props.row.ended_at);
+const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value));
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
@@ -70,7 +73,7 @@ readCommand();
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
             <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
-            <template v-if="row.ended_at">
+            <template v-if="row.ended_at && !stoppedWithWork">
                 <TimeAgo class="agent-time" :at="row.ended_at" />
             </template>
             <template v-else>
@@ -89,7 +92,10 @@ readCommand();
         </span>
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
-                <template v-if="waitingForTests">
+                <template v-if="stoppedWithWork">
+                    <span class="agent-stopped" data-agent-stopped>Waiting: started again when there is more to do</span>
+                </template>
+                <template v-else-if="waitingForTests">
                     <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
                 </template>
                 <template v-else>

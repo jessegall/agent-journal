@@ -55,11 +55,16 @@ const hold = (row) => (held.value = new Set([...held.value, row.id]));
 const release = (row) => (held.value = new Set([...held.value].filter((id) => id !== row.id)));
 const leaveStyle = (row) => ({animationDuration: `${LINGER_MS}ms`, animationDelay: `${Math.min(0, lingeringFor(row).leavesAt - LINGER_MS - Date.now())}ms`});
 
-const kept = (row) => show.value === "all" || (show.value === "running") === !row.ended_at || (show.value === "running" && lingering.value.has(row.id));
+// a worker runs one turn at a time: stopped with tasks left it is not finished, so it stays with the running ones
+const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
+const hasWorkLeft = (row) => row.role === "worker" && (factsOf(row)?.tasks ?? []).some((task) => UNFINISHED_STATES.has(task.state));
+const isRunning = (row) => !row.ended_at || hasWorkLeft(row);
+const kept = (row) => show.value === "all" || (show.value === "running") === isRunning(row) || (show.value === "running" && lingering.value.has(row.id));
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const found = (row) => `${row.id} ${row.session} ${row.program} ${row.role} ${factsOf(row)?.profile ?? ""} ${factsOf(row)?.given_name ?? ""}`.toLowerCase().includes(words.value.trim().toLowerCase());
 // the running tab reads every running agent, however old, and those that ended a moment ago; the others page through all agents
-const listed = computed(() => (show.value === "running" ? [...runningRows.value, ...[...lingering.value.values()].map((linger) => linger.row)] : rows.value));
+const stoppedWithWork = computed(() => rows.value.filter((row) => row.ended_at && hasWorkLeft(row) && !lingering.value.has(row.id)));
+const listed = computed(() => (show.value === "running" ? [...runningRows.value, ...stoppedWithWork.value, ...[...lingering.value.values()].map((linger) => linger.row)] : rows.value));
 const searched = computed(() => listed.value.filter((row) => props.only(row) && kept(row) && found(row)));
 
 // the pane menu's order, and an agent as the order reads it: the state its card shows, its role, the number, and when it was last heard of

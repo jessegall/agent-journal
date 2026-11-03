@@ -41,6 +41,12 @@ def judge_sample(*arguments: str):
     return HookSamples.shell(f"journal sins {' '.join(arguments)}", ShellPart("journal", CommandCategory.JOURNAL, ["sins", *arguments], subcommand="sins"))
 
 
+def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(new_story):
+    story, _, worker = delegated_story(new_story)
+    line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
+    assert "a worker judges only its own changes" not in story.hook(worker_session(story, worker), line).refusal
+
+
 def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(new_story):
     story, _, worker = delegated_story(new_story)
     session = worker_session(story, worker)

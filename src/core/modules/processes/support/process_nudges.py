@@ -20,7 +20,7 @@ REDIRECTED_RUN = NudgeDeclaration("processes.redirected_run", NudgeType.STEERING
 RUNNER_MISSING = NudgeDeclaration("processes.runner_missing", NudgeType.STEERING, 'journal-run is not installed in {folder}: your shell lines run as written and are not kept')
 MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, 'do not move with cd: you are in {folder}; use paths, or a tool flag such as npm --prefix')
 OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.STEERING, 'output {output}: running')
-SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep with nothing to wait on is refused: give the run to a Monitor, or journal wait on "<what>"')
+SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused, for every agent: go on working or stop, you are told when a run ends. A main agent gives a run to a Monitor, or journal wait on "<what>"')
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: journal output title {process} "<what it does>"', required_command="journal output title {process}")
 
 PIPED_RUN = NudgeDeclaration("processes.piped_run", NudgeType.STEERING, "{programs} is cut by a pipe, so its reader sees only what is left: run it without the pipe", required_command="")
