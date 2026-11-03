@@ -4,19 +4,20 @@ import TriggerCards from "../../core/modules/triggers/web/src/TriggerCards.vue";
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
 import {mounted} from "./mountedWindow.js";
 
-test("a trigger card shows its number, action and text, and what sets it off", async () => {
-    const element = mounted(TriggerCards, [{id: 1, action: "nudge", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null}]);
+test("a trigger slip shows only its name, its line and its number", async () => {
+    const element = mounted(TriggerCards, [{id: 1, name: "Release checks", description: "Runs the checks", action: "nudge", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null}]);
     await settled();
-    const card = element.querySelector('[data-row="1"]');
-    expect(card.textContent).toContain("Trigger 1 · nudge");
-    expect(card.textContent).toContain("Run the release sequence");
-    expect(card.textContent).toContain("deploy, release");
+    const slip = element.querySelector('[data-row="1"]');
+    expect(slip.textContent).toContain("Release checks");
+    expect(slip.textContent).toContain("Runs the checks");
+    expect(slip.textContent).toContain("#1");
+    expect(slip.textContent).not.toContain("deploy");
 });
 
-test("a scheduled trigger card says when it is next due", async () => {
+test("a trigger from before, with no name, shows by its text", async () => {
     const element = mounted(TriggerCards, [{id: 2, action: "nudge", text: "Check the build", phrases: [], next_at: "2036-01-01T00:00:00Z"}]);
     await settled();
-    expect(element.querySelector('[data-row="2"]').textContent).toContain("Next at");
+    expect(element.querySelector('[data-row="2"]').textContent).toContain("Check the build");
 });
 
 test("a check card shows its title, verdict and how often it runs, and its command and output once opened", async () => {

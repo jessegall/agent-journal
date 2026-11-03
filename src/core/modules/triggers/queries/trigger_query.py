@@ -13,7 +13,7 @@ class TriggerQuery(Query[Trigger]):
         super().__init__(database, tables, Trigger)
 
     def open(self) -> list[Trigger]:
-        return list(self.matching(IsNull("ended_at")).oldest().all_rows())
+        return list(self.matching(IsNull("ended_at")).matching(IsNull("paused_at")).oldest().all_rows())
 
     def phrased(self) -> list[Trigger]:
         return [trigger for trigger in self.open() if not trigger.is_scheduled]

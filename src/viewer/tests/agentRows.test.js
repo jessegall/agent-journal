@@ -218,6 +218,7 @@ test("a worker that stopped with tasks left shows under Running as waiting, not 
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-stopped]")).not.toBeNull());
     expect(element.querySelector("[data-agent-open='4'] .agent-dot").dataset.state).toBe("waiting");
+    expect(element.querySelector("[data-agent-leave]")).toBeNull();
 });
 
 test("a transcript row reads author, words, then its time at the end", async () => {

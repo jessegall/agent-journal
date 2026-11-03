@@ -44,7 +44,7 @@ watch(runningRows, (current) => {
     const ids = new Set(current.map((row) => row.id));
     const next = new Map(lingering.value);
     for (const [id, row] of lastRunning) {
-        if (!ids.has(id) && !next.has(id)) next.set(id, {row: {...row, ended_at: row.ended_at ?? new Date().toISOString()}, leavesAt: Date.now() + LINGER_MS});
+        if (!ids.has(id) && !next.has(id) && !hasWorkLeft(row)) next.set(id, {row: {...row, ended_at: row.ended_at ?? new Date().toISOString()}, leavesAt: Date.now() + LINGER_MS});
     }
     for (const id of ids) next.delete(id);
     lastRunning = new Map(current.map((row) => [row.id, row]));

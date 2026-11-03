@@ -1,22 +1,26 @@
+import json
 from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
+from core.modules.triggers.models.enums.trigger_match import TriggerMatch
+from core.modules.triggers.models.support.trigger_condition import TriggerCondition
+from core.modules.triggers.models.support.trigger_extra_action import TriggerExtraAction
 
 TEXT_LIMIT_CHARACTERS = 600
+INSTRUCTION_PREFIX = "instruction: "
 
 
 @dataclass(frozen=True, kw_only=True)
 class Trigger(Model):
-    """A text that reaches the agent when a phrase is met in the user's words or a tool call, or when its time
-    comes: told as a nudge or an instruction, or as a refusal; a scheduled one runs on its time until its end,
-    its limit or the day it is struck."""
+    """A named text that reaches the agent when its words appear or its time comes, and passes its conditions:
+    as a nudge, an instruction or a refusal, followed by its extra actions. A paused trigger does nothing."""
 
     model_name = "trigger"
     cli_name = "trigger"
-    search_fields = ["text"]
+    search_fields = ["name", "description", "text"]
 
     creator_id: int
     phrases: tuple[str, ...] = ()
@@ -29,13 +33,35 @@ class Trigger(Model):
     fire_limit: int | None = None
     fired_count: int = 0
     ended_at: Timestamp | None = None
+    name: str = ""
+    description: str = ""
+    watch_places: tuple[str, ...] = ("messages", "commands", "files")
+    match_mode: TriggerMatch = TriggerMatch.PART
+    conditions: str = "[]"
+    extra_actions: str = "[]"
+    paused_at: Timestamp | None = None
 
     def __post_init__(self) -> None:
         if not 1 <= len(self.text) <= TEXT_LIMIT_CHARACTERS:
             raise Refusal(f"a trigger's text is 1 to {TEXT_LIMIT_CHARACTERS} characters, not {len(self.text)}", "say it shorter")
         if not self.phrases and self.next_at is None:
             raise Refusal("a trigger has a phrase or a time", "give phrases, or schedule it")
+        try:
+            self.parsed_conditions()
+            self.parsed_extra_actions()
+        except (KeyError, TypeError, ValueError) as wrong:
+            raise Refusal(f"a trigger's conditions or extra actions cannot be read: {wrong}", """write them as JSON, such as [{"type": "agent", "value": "main"}]""") from wrong
 
     @property
     def is_scheduled(self) -> bool:
         return self.next_at is not None
+
+    @property
+    def agent_line(self) -> str:
+        return f"{INSTRUCTION_PREFIX}{self.text}" if self.action is TriggerAction.INSTRUCT else self.text
+
+    def parsed_conditions(self) -> tuple[TriggerCondition, ...]:
+        return tuple(TriggerCondition.parsed(raw) for raw in json.loads(self.conditions))
+
+    def parsed_extra_actions(self) -> tuple[TriggerExtraAction, ...]:
+        return tuple(TriggerExtraAction.parsed(raw) for raw in json.loads(self.extra_actions))

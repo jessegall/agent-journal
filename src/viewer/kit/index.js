@@ -68,6 +68,7 @@ export {default as PinsToggle} from "../src/chat/PinsToggle.vue";
 export {default as Dialog} from "../src/kit/Dialog.vue";
 export {default as DiffCard} from "../src/kit/DiffCard.vue";
 export {default as MenuItem} from "../src/kit/MenuItem.vue";
+export {default as DropList} from "../src/kit/DropList.vue";
 export {default as MenuLabel} from "../src/kit/MenuLabel.vue";
 export {default as MenuPanel} from "../src/kit/MenuPanel.vue";
 export {default as TaskInspector} from "../src/tasks/TaskInspector.vue";
