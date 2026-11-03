@@ -6,6 +6,7 @@ from dataclasses import asdict
 from uuid import uuid4
 from typing import TypeVar
 from datetime import timedelta
+from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
@@ -244,8 +245,19 @@ class Story:
         assert all(checks), f"a row check failed: {checks}"
 
 
+class StoryCodeFingerprint(CodeFingerprint):
+    """The code's hash for stories: their source does not change while a test process runs, so it is worked out once
+    per set of folders and no later command stats a source file, as the real server's ticker arranges."""
+
+    ticked = True
+
+
+STORY_FINGERPRINT = StoryCodeFingerprint()
+
+
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:
     container = synced_container(home)
+    container.bind(CodeFingerprint, STORY_FINGERPRINT)
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
     container.bind(OverviewFirst, StoryOverviewFirst())
