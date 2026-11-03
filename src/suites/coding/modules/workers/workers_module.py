@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_subcommand import RecordWorkerReportSubcommand
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import WORKER_START_FAILED
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
@@ -132,7 +133,7 @@ class WorkersModule(Module):
     views = [WorkerPoints]
     moves = [WorkersMove]
     handlers = [RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
-    subcommands = [WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
+    subcommands = [RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS

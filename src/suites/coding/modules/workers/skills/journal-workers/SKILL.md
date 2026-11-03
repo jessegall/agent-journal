@@ -25,6 +25,9 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 
 ## As the worker
 
+- `journal worker report "<what the task needs>"` sends your main agent a message number to read while you keep
+  working. Use it for a report or a request that does not require stopping.
+
 - `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
   a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <n>` lists the points of your task's brief.
