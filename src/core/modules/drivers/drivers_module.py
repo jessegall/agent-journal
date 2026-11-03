@@ -9,6 +9,7 @@ from core.modules.drivers.support.line_transcript_authors import LineTranscriptA
 from core.modules.drivers.commands.skip_agent_block.skip_agent_block_subcommand import SkipAgentBlockSubcommand
 from core.modules.drivers.listeners.agent_block_skip_mark_listener import AgentBlockSkipMarkListener
 from core.modules.drivers.migrations.m014_block_graces import BlockGracesMigration
+from core.modules.drivers.migrations.m015_agent_line_state_index import AgentLineStateIndexMigration
 from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
@@ -70,6 +71,7 @@ from core.modules.drivers.migrations.m003_hook_call_hook_index import HookCallHo
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
 from core.modules.drivers.listeners.typed_line_listener import TypedLineListener
+from core.modules.drivers.commands.end_gone_worker.end_gone_worker_handler import EndGoneWorkerHandler
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers_handler import EndSilentHelpersHandler
 from core.modules.drivers.support.block_conditions.all_conditions import AllConditions
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
@@ -124,8 +126,8 @@ class DriversModule(Module):
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow, NudgeTotal]
-    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration]
-    handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler,RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration]
+    handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, EndGoneWorkerHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]

@@ -363,6 +363,21 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
     story.expect_text(f"agent-line list --agent {worker.id}", "Second job", "waiting")
 
 
+def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    story.run_listeners()
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(launcher.requests == [])
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
+    launcher.server.close()
+
+
 def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

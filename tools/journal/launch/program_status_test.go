@@ -55,6 +55,26 @@ func TestALineInTwoWritesIsReadWhenItEnds(t *testing.T) {
 	}
 }
 
+func TestALineAfterTheFileMovedToEndedFollowsIt(t *testing.T) {
+	home := t.TempDir()
+	status := NewProgramStatus(home)
+	fmt.Fprint(status, assistantLine)
+	folder := filepath.Join(home, "runtime", "status")
+	if err := os.MkdirAll(filepath.Join(folder, "ended"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(folder, "s-1.json"), filepath.Join(folder, "ended", "s-1.json")); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Fprint(status, resultLine)
+	if _, err := os.Stat(filepath.Join(folder, "s-1.json")); err == nil {
+		t.Fatal("the late line wrote the file back to the live folder")
+	}
+	if keptStatus(t, home, "ended").Cost.TotalCostUSD != 1.5 {
+		t.Fatal("the late line did not reach the ended file")
+	}
+}
+
 func TestAResumedSessionKeepsTheCostOfItsEndedFile(t *testing.T) {
 	home := t.TempDir()
 	ended := filepath.Join(home, "runtime", "status", "ended")

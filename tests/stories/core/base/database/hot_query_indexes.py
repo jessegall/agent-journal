@@ -9,7 +9,8 @@ HOT_QUERIES = ("SELECT * FROM processes WHERE state IN ('running', 'background')
                "SELECT * FROM outputs WHERE state = 'kept' AND ended_at > '' ORDER BY ended_at LIMIT 1",
                "SELECT * FROM tasks WHERE delegated_to = 1 AND state = 'open'",
                "SELECT * FROM dock_items WHERE type = 'run' ORDER BY id",
-               "SELECT * FROM dock_items WHERE target_model = 'process' AND target_id = 1")
+               "SELECT * FROM dock_items WHERE target_model = 'process' AND target_id = 1",
+               "SELECT * FROM agent_lines WHERE state = 'waiting' AND source IN ('a', 'b') ORDER BY id")
 
 
 def query_plan(new_story, query: str) -> str:

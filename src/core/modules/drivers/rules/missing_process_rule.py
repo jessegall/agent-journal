@@ -5,8 +5,8 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from core.base.agent_role import AgentRole
 
 
@@ -28,6 +28,6 @@ class MissingProcessRule(DriverRule):
         if not recorded:
             return RuleAnswer.allowed()
         process_keys = {(row.pid, int(row.started_at.value.timestamp())) for row in self.processes.rows()}
-        end_commands = [EndAgent(agent.id) for agent in recorded if agent.process_started_at is not None
+        end_commands = [EndGoneWorker(agent.id) for agent in recorded if agent.process_started_at is not None
                 and (agent.pid, int(agent.process_started_at.value.timestamp())) not in process_keys]
         return RuleAnswer.allowed().running(*end_commands) if end_commands else RuleAnswer.allowed()

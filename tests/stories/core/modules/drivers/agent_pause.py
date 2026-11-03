@@ -97,6 +97,13 @@ def test_pausing_and_resuming_must_fit_the_state(new_story):
     story.expect_refusal(f"agent pause {story.agent.id}", "is paused already", actor=story.user)
 
 
+def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_refusal(f"agent resume {story.agent.id}", "a paused agent cannot resume itself", actor=story.agent)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+
+
 def paused_story(new_story, fixture):
     story = new_story(fixture=fixture)
     story.container.bind(TerminalTyping, FakeTyping())
