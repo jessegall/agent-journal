@@ -3,13 +3,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.base.driver.conditions.ran_command import RanCommand
-from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-
-FOLLOW_COMMAND = "journal sequence follow"
-ABANDON_COMMAND = "journal sequence abandon"
+from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
 
 class UntakenStepRule(DriverRule):
@@ -20,11 +15,11 @@ class UntakenStepRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, runs: SequenceRunQuery, queries: Queries) -> None:
-        self.runs, self.queries = runs, queries
+    def __init__(self, runs: SequenceRunQuery) -> None:
+        self.runs = runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         run = self.runs.current(hook.agent_id)
         if run is None or run.step_started:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number), AnyCondition(RanCommand(FOLLOW_COMMAND), RanCommand(ABANDON_COMMAND)))
+        return RuleAnswer.blocked(hook, STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number), SequenceStepStarted([run.id, run.step_number]))

@@ -1,0 +1,13 @@
+from dataclasses import dataclass
+
+from core.base.page import Page
+from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.models.proof import Proof
+
+
+@dataclass(frozen=True)
+class WorkerStatus:
+    worker_id: int
+    current_task: Task
+    tests: Page[Proof]
+    assignments: Page[Task]

@@ -3,6 +3,7 @@ import os
 
 from core.base.journal_home import JournalHome
 from core.base.rotated_file import RotatedFile
+from core.base.performance.performance_state import PerformanceState
 
 TIMING_LOG_LIMIT_BYTES = 10_000_000
 
@@ -14,8 +15,11 @@ class TimingLog:
 
     def __init__(self, home: JournalHome, limit_bytes: int = TIMING_LOG_LIMIT_BYTES) -> None:
         self.path, self.limit_bytes = home.timing_log, limit_bytes
+        self.state = PerformanceState(home)
 
     def write(self, fields: dict[str, object]) -> None:
+        if not self.state.can_measure:
+            return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         descriptor = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
         try:

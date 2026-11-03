@@ -11,6 +11,8 @@ from core.base.provider.providers import Providers
 from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
+from core.base.module.performance_tools import PerformanceTools
+from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
@@ -58,6 +60,8 @@ class HookEndpoint:
         container.get(HookRequestLog).record(program, headers, data)
         event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
+        tools = container.get(PerformanceTools)
+        start_points = tools.begin()
         try:
             route = container.get(HookRoute)
             self.timing.stamp("route_ready")
@@ -68,6 +72,10 @@ class HookEndpoint:
             return self.failure(data, error)
         except Exception as error:
             return self.failure(data, error)
+        finally:
+            cost = tools.cost(start_points)
+            if cost is not None:
+                tools.run(RouteCostTool, "/hook", cost)
 
     def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
         if is_raw_body(data):

@@ -1,6 +1,7 @@
+import json
+
 from core.base.journal_home import JournalHome
 from core.modules.developer.support.hook_number import HookNumber
-import json
 
 NUMBERS_FILE = "hook-numbers.json"
 
@@ -13,12 +14,15 @@ class HookNumbersFile:
         self.path = home.costly_hooks_log.parent / NUMBERS_FILE
 
     def read(self) -> list[HookNumber]:
-        return [HookNumber(**row) for row in json.loads(self.path.read_text())] if self.path.exists() else []
+        if not self.path.exists():
+            return []
+        rows = json.loads(self.path.read_text())
+        return [HookNumber(**row) for row in rows if "most_points" in row]
 
-    def add(self, hook: str, milliseconds: int, points: int) -> None:
+    def add(self, hook: str, points: int) -> None:
         rows = {row.hook: row for row in self.read()}
-        kept = rows.get(hook, HookNumber(hook, 0, 0, 0, 0))
-        rows[hook] = HookNumber(hook, kept.count + 1, kept.total_ms + milliseconds, max(kept.slowest_ms, milliseconds), kept.total_points + points)
+        kept = rows.get(hook, HookNumber(hook, 0, 0, 0))
+        rows[hook] = HookNumber(hook, kept.count + 1, kept.total_points + points, max(kept.most_points, points))
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps([vars(row) for row in rows.values()]))
 

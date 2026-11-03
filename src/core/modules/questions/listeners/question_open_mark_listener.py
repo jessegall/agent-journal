@@ -1,4 +1,3 @@
-from core.base.scope.actor_scope import ActorScope
 from core.modules.questions.listeners.question_mark_listener import QuestionMarkListener
 
 
@@ -7,4 +6,3 @@ class QuestionOpenMarkListener(QuestionMarkListener):
 
     name = "questions.open-mark"
     event = "question.create"
-    disabled_scopes = [ActorScope]

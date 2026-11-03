@@ -20,8 +20,14 @@ afterEach(() => (document.body.innerHTML = ""));
 async function dialog() {
     const ran = [];
     const window = context({"task board": BOARD});
+    const subscriptions = [];
+    window.follow = (events, callback) => {
+        subscriptions.push({events, callback});
+        return () => {};
+    };
     window.run = async (line) => {
         ran.push(line);
+        if (line[0] === "task-log") return {ok: true, value: {rows: [{id: 1, line: "Found the rounding", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}};
         if (line[1] === "inspect") return inspection(Number(line[2]));
         if (line[1] === "place") return PLACE;
         if (line[1] === "make") return {ok: true, value: {id: 8}};
@@ -31,7 +37,7 @@ async function dialog() {
     document.body.append(element);
     element.querySelector("[data-manage-tasks]").click();
     await settle();
-    return {ran, shown: document.querySelector("[data-tasks-dialog]")};
+    return {ran, subscriptions, shown: document.querySelector("[data-tasks-dialog]")};
 }
 
 const press = async (key) => {
@@ -55,8 +61,24 @@ test("clicking a task opens the inspector with its place, brief, waits, log and 
     expect(inspector.querySelector("[data-resource-title]").textContent).toBe("Fix the cart");
     expect(inspector.querySelector("[data-task-brief]").textContent).toContain("What done looks like");
     expect(inspector.querySelector("[data-resource-waits]").textContent).toContain("Order the parts");
-    expect(inspector.querySelector("[data-resource-logs]").textContent).toContain("Found the rounding");
+    [...inspector.querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
+    await settle();
+    expect(inspector.querySelector("[data-task-log]").textContent).toContain("Found the rounding");
     expect(inspector.querySelector("[data-move='close']")).not.toBeNull();
+});
+
+test("a new task log entry refreshes the open Log tab", async () => {
+    const {shown, ran, subscriptions} = await dialog();
+    shown.querySelector("[data-row='7']").click();
+    await settle();
+    [...shown.querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
+    await settle();
+    const reads = ran.filter((line) => line[0] === "task-log").length;
+    const subscription = subscriptions.find(({events}) => events.includes("task_log.*"));
+    expect(subscription).toBeDefined();
+    subscription.callback();
+    await settle();
+    expect(ran.filter((line) => line[0] === "task-log")).toHaveLength(reads + 1);
 });
 
 test("the keys walk the list, open the inspector and step it", async () => {

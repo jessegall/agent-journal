@@ -6,6 +6,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -23,6 +24,7 @@ class FullTestRunListener(SaveListener):
 
     name = "tasks.full-test-run"
     event = "process.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

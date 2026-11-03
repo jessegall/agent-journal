@@ -96,7 +96,9 @@ test("a row whose test has not run has no output to open", async () => {
     expect(rowsOf("queued")[1].querySelector("[data-queue-output]")).toBeNull();
 });
 
-test("an empty queue says no test waits", async () => {
+test("an empty process queue says no command waits", async () => {
     await panel(async () => ({ok: true, value: {rows: []}}));
-    expect(document.body.querySelector("[data-queue-empty]").textContent).toBe("No test waits.");
+    expect(document.body.querySelector("[data-queue-empty]").textContent).toBe("No command waits.");
+    expect(document.body.textContent).toContain("Process queue");
+    expect(document.body.textContent).not.toContain("Test queue");
 });

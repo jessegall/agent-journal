@@ -33,6 +33,9 @@ class BookkeepingTable:
     def row_rows(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? ORDER BY id", (row_table, row_id)))
 
+    def child_rows(self, event_id: int) -> list[sqlite3.Row]:
+        return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? AND cause_id = ? ORDER BY id", (event_id, event_id)))
+
     def newest_id(self) -> int:
         return self.database.rows(Statement(f"SELECT coalesce(max(id), 0) FROM {self.table}"))[0][0]
 

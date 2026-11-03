@@ -5,6 +5,7 @@ import {render} from "../../text/index.js";
 import {cliOf} from "../../domain/resourceKinds.js";
 import Btn from "../../kit/Btn.vue";
 import CloseButton from "../../kit/CloseButton.vue";
+import ResourceHeading from "../ResourceHeading.vue";
 import DropList from "../../kit/DropList.vue";
 import Icon from "../../kit/Icon.vue";
 import Skeleton from "../../kit/Skeleton.vue";
@@ -108,13 +109,7 @@ watch(() => `${props.table}:${props.id}`, () => {
             <template v-if="backed">
                 <button type="button" class="document-back" data-resource-back aria-label="Back" @click="emit('back')">←</button>
             </template>
-            <div class="document-names">
-                <p class="document-kind">{{ KIND_LABELS[kind] }} {{ id }}<template v-if="row"> · {{ stateLabel }}</template></p>
-                <h2 data-resource-title>{{ row?.title }}</h2>
-                <template v-if="row?.abstract">
-                    <p class="document-abstract">{{ row.abstract }}</p>
-                </template>
-            </div>
+            <ResourceHeading :label="`${KIND_LABELS[kind]} ${id}${row ? ` · ${stateLabel}` : ''}`" :title="row?.title" :abstract="row?.abstract" />
             <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
         </header>
         <template v-if="row">
@@ -214,18 +209,13 @@ watch(() => `${props.table}:${props.id}`, () => {
     cursor: pointer;
 }
 
-.document-names {
-    flex: 1;
-    min-width: 0;
-}
-
-.document-kind {
+:deep(.resource-kind) {
     margin: 0 0 4px;
     color: var(--text-3);
     font-size: 12px;
 }
 
-h2 {
+:deep(.resource-title) {
     margin: 0;
     font-size: 19px;
     font-weight: 600;
@@ -233,7 +223,7 @@ h2 {
     letter-spacing: -0.01em;
 }
 
-.document-abstract {
+:deep(.resource-abstract) {
     max-width: 640px;
     margin: 6px 0 0;
     color: var(--text-2);
@@ -358,7 +348,7 @@ h2 {
         padding: 16px 10px 10px 16px;
     }
 
-    h2 {
+    :deep(.resource-title) {
         font-size: 17px;
     }
 

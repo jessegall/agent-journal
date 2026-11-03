@@ -6,7 +6,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 SOURCE = Path(__file__).parents[5] / "src"
 COMMAND_IN_TEXT = re.compile(r"`journal ([a-z-]+)(?: ([a-z-]+))?([^`]*)`")
 FLAG = re.compile(r"(?<![\w-])--[a-z][a-z-]*")
-COMMANDS_OF_THE_CLIENT = {("output", "monitor")}
+COMMANDS_OF_THE_CLIENT = {("output", "monitor"), ("module", "sync")}
 
 
 def commands_in_skill_files() -> set[tuple[str, str, tuple[str, ...]]]:

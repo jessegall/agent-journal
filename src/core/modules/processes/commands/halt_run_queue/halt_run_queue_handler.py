@@ -17,4 +17,4 @@ class HaltRunQueueHandler(Handler[HaltRunQueue, str]):
         if not command.reason.strip():
             raise Refusal("say why the queue is halted", "journal queue halt \"<why>\"")
         self.halt.halt(command.reason.strip())
-        return f"the test queue is halted: {command.reason.strip()}"
+        return f"the process queue is halted: {command.reason.strip()}"

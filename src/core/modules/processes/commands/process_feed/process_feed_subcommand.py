@@ -3,8 +3,8 @@ from argparse import Namespace
 from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.base.model.view_model import ViewModel
 from core.base.query.query import Query
+from core.modules.agents.support.main_agent_rows import MainAgentRows
 from core.modules.processes.models.process_row import ProcessRow
-from core.modules.processes.support.main_agent_runs import MainAgentRuns
 
 
 class ProcessFeedSubcommand(ViewRowsSubcommand):
@@ -18,4 +18,4 @@ class ProcessFeedSubcommand(ViewRowsSubcommand):
     name = "feed"
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
-        return query if arguments.id is not None or arguments.agent_id is not None else query.matching(MainAgentRuns())
+        return query if arguments.id is not None or arguments.agent_id is not None else query.matching(MainAgentRows())

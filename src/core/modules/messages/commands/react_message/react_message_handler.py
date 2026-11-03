@@ -1,3 +1,4 @@
+from core.base.scope.actor_scope import ActorScope
 from core.modules.messages.support.message_nudges import MESSAGE_REACTION
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
@@ -19,6 +20,7 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
     agent."""
 
     command = ReactMessage
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

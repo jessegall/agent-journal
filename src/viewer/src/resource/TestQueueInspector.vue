@@ -8,7 +8,7 @@ import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 
-// what the journal's test queue holds and what it ran lately: each test of a proof with the worker that made the proof, its task, its state and the output of its run
+// The process queue and recent proof tests.
 const WAITING = new Set(["queued", "running"]);
 // what a row says of its proof: the test waits, runs, passed or failed; a passed test is not a checked proof, which the main agent decides
 const STATES = {queued: "Waiting", running: "Running", checked: "Passed", short: "Failed"};
@@ -51,7 +51,7 @@ const byRecency = (one, other) => String(other.updated_at ?? "").localeCompare(S
 const queued = computed(() => proofs.value.filter((proof) => WAITING.has(proof.state)).sort((one, other) => one.id - other.id));
 const recent = computed(() => proofs.value.filter((proof) => !WAITING.has(proof.state) && proof.process_id).sort(byRecency).slice(0, RECENT_COUNT));
 const sections = computed(() => [
-    {kind: "queued", heading: "Queue", proofs: queued.value, empty: "No test waits."},
+    {kind: "queued", heading: "Queue", proofs: queued.value, empty: "No command waits."},
     {kind: "recent", heading: "Recent", proofs: recent.value, empty: "Nothing ran yet."},
 ]);
 const workerOf = (proof) => workers.value[proof.worktree_id] ?? null;
@@ -64,9 +64,9 @@ usePoll(load, () => true);
             <template v-if="backed">
                 <BackButton @back="emit('back')" />
             </template>
-            <span class="kind"><Icon name="check" :size="13" /> Test queue</span>
+            <span class="kind"><Icon name="check" :size="13" /> Process queue</span>
             <span class="grow" />
-            <CloseButton title="Close the test queue" data-resource-close @click="emit('close')" />
+            <CloseButton title="Close the process queue" data-resource-close @click="emit('close')" />
         </header>
         <div class="scroll">
             <template v-if="failure">

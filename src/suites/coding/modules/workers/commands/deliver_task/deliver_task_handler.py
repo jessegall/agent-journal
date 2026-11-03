@@ -4,6 +4,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -20,6 +21,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     holds started to testing, delivers the worktree and queues the tests of its proofs."""
 
     command = DeliverTask
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
         self.queries, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = queries, worktrees, proof_queue, repository, task_commit, tasks

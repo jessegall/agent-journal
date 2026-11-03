@@ -1,6 +1,8 @@
 import pytest
 
 from core.base.refusal import Refusal
+from core.base.actor import Actor
+from core.base.timestamp import Timestamp
 from core.modules.memories.models.memory import HIGHEST_WEIGHT, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS, Memory
 
 
@@ -23,8 +25,9 @@ def test_a_text_that_is_empty_or_past_the_limit_is_refused():
 
 
 def test_fading_lowers_the_weight_by_one_and_never_below_0():
-    assert memory(weight=5).faded().weight == 4
-    assert memory(weight=LOWEST_WEIGHT).faded().weight == LOWEST_WEIGHT
+    timestamp = Timestamp.parsed("2026-11-03T12:00:00+00:00")
+    assert memory(weight=5).faded(timestamp, Actor.core()).weight == 4
+    assert memory(weight=LOWEST_WEIGHT).faded(timestamp, Actor.core()).weight == LOWEST_WEIGHT
 
 
 def test_weighing_sets_the_weight():

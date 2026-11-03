@@ -4,6 +4,7 @@ from core.base.cli.console import REFUSED_CODE, USAGE_CODE
 from core.base.caller.process_row import ProcessRow
 from core.base.timestamp import Timestamp
 from tests.stories.core.support.fixtures import AgentWithProcess, MainEnvironment
+from tests.stories.core.modules.agents.support.caller_fixtures import LoginUser
 
 AGENT_START_TIME = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 REUSED_START_TIME = Timestamp.parsed("2026-10-31T11:00:00+00:00")
@@ -32,8 +33,7 @@ def test_a_shell_of_an_agent_program_with_no_runner_session_runs_as_the_agent_it
 
 
 def test_a_shell_of_an_agent_program_no_agent_holds_is_never_taken_for_the_person(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.new_row_id('actor make user "ada"')
+    story = new_story(fixture=LoginUser)
     story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-9", "USER": "ada"}, "/work/journal/src"), f"creator_id: {CORE_ACTOR_ID}", "environment_id: 1")
 
 
@@ -50,8 +50,8 @@ def test_a_reused_pid_with_another_start_time_names_no_agent(new_story):
 
 
 def test_with_no_agent_the_person_of_the_login_name_runs_in_the_environment_holding_the_folder(new_story):
-    story = new_story(fixture=MainEnvironment)
-    person_id = story.new_row_id('actor make user "ada"')
+    story = new_story(fixture=LoginUser)
+    person_id = story.user.id
     story.expect_requested_success(TASK_LINE, CallerRequest({"USER": "ada"}, "/work/journal/src"), f"creator_id: {person_id}", "environment_id: 1")
 
 

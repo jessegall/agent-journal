@@ -4,6 +4,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.support.main_agent_rows import MainAgentRows
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.models.dock import Dock
@@ -16,7 +17,8 @@ QUESTIONS_MODULE = "journal.core.questions"
 
 
 class OpenQuestionsDockListener(CommitListener):
-    """While questions are open one card waits above the chat, and it leaves when the last one is settled."""
+    """While a main agent's questions are open one card waits above the chat, and it leaves when the last one is
+    settled. A worker or a subagent says what it needs in its report instead."""
 
     name = "questions.open-dock"
     event = "question.*"
@@ -29,7 +31,7 @@ class OpenQuestionsDockListener(CommitListener):
         if event.environment_id is None:
             return
         actor = self.actors.actor(QUESTIONS_MODULE)
-        open_ids = {question.id for question in self.questions.open_ones().environment(event.environment_id).oldest().all_rows()}
+        open_ids = {question.id for question in self.questions.open_ones().environment(event.environment_id).matching(MainAgentRows()).oldest().all_rows()}
         docks = [dock.id for dock in self.queries.query(Dock).filter(environment_id=event.environment_id).all_rows()]
         docked = [item for item in self.items.type_items(QuestionDockType.OPEN.value).filter(state=DockItemState.DOCKED).all_rows() if item.dock_id in docks]
         if open_ids and not docked:

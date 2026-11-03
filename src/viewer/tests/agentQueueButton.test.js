@@ -37,8 +37,10 @@ test("the count is nought when no test waits", async () => {
     expect(element.querySelector("[data-agents-queue-count]").textContent).toBe("0");
 });
 
-test("the button opens the test queue inspector", async () => {
+test("the Process queue button opens its inspector", async () => {
     const element = await drawn(PROOFS);
+    expect(element.querySelector("[data-agents-queue]").textContent).toContain("Process queue");
+    expect(element.textContent).not.toContain("Test queue");
     element.querySelector("[data-agents-queue]").click();
     await settle();
     expect(location.hash).toContain("open=test_queue:0");

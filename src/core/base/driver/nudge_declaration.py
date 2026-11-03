@@ -21,7 +21,8 @@ class NudgeDeclaration:
     explains big things), cut in its middle so its ask stays, whether a turn says it only once, as a reminder
     on a clock does not, and the command with {fields} that pays it, which makes the line a required_command.
     Each field is held to its own limit too. Lines of this key in one hook are written as one, each field
-    listing its values, in plural_text when it has one."""
+    listing its values, in plural_text when it has one. A line that wakes its agent is typed to it when
+    idle."""
 
     key: str
     type: NudgeType
@@ -31,6 +32,8 @@ class NudgeDeclaration:
     turn_limited: bool = True
     required_command: str = ""
     plural_text: str = ""
+    field_limit_characters: int = LONGEST_FIELD_CHARACTERS
+    wakes_agent: bool = False
 
     @property
     def limit(self) -> int:
@@ -53,10 +56,9 @@ class NudgeDeclaration:
         rendered = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
         return Nudge(self.key, self.type, self.cut(rendered), self.interval, self.turn_limited, self.required_command.format(**fields), tuple(fields.items()), self)
 
-    @staticmethod
-    def field_text(value: object) -> str:
+    def field_text(self, value: object) -> str:
         text = str(value)
-        return text if len(text) <= LONGEST_FIELD_CHARACTERS else text[:LONGEST_FIELD_CHARACTERS - len(CUT_MARK)] + CUT_MARK
+        return text if len(text) <= self.field_limit_characters else text[:self.field_limit_characters - len(CUT_MARK)] + CUT_MARK
 
     def cut(self, line: str) -> str:
         if len(line) <= self.limit:

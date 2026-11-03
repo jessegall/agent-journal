@@ -1,3 +1,4 @@
+from core.base.scope.actor_scope import ActorScope
 from core.modules.schedules.support.schedule_nudges import JOB_STOPPED
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -16,6 +17,7 @@ class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
     deletion is seen."""
 
     command = StopScheduledJob
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger

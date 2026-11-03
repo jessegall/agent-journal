@@ -15,6 +15,7 @@ from core.base.type_guards import is_mapping
 from server.client_disconnected import client_disconnected
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
+from core.base.performance.performance_state import PerformanceState
 from server.endpoints.chunk_stream import ChunkStream
 from server.endpoints.cli_request import CliRequest
 from server.endpoints.cli_request_error import CliRequestError
@@ -47,14 +48,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def setup(self) -> None:
         super().setup()
-        self.timing = Timing.started("server_accepted")
+        self.timing = Timing.started("server_accepted", PerformanceState(self.journal_server().context.home))
         self.sender_pid = peer_pid(self.connection)
         self.journal_server().connection_idle(self.connection)
 
     def parse_request(self) -> bool:
         self.journal_server().connection_busy()
         if not self.timing.stamps:
-            self.timing = Timing.started("server_accepted")
+            self.timing = Timing.started("server_accepted", PerformanceState(self.journal_server().context.home))
         parsed = super().parse_request()
         if parsed:
             self.timing = Timing.parsed(self.headers.get(TIMING_HEADER, "")).joined(self.timing)
