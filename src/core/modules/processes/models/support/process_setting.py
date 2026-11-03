@@ -17,6 +17,8 @@ class ProcessSetting(Enum):
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Seconds to a lost run", "How long a run may go without a sign of life before it is ended as lost.",
                                   SettingType.NUMBER, default=90)
+    RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many runs of workers go at the same time on this machine; the others wait in a queue. Reads and edits never wait.",
+                                  SettingType.NUMBER, default=2)
     OUTPUTS_KEPT_COUNT = SettingValue("outputs-kept", "Outputs kept", "How many outputs are kept before the oldest are removed.", SettingType.NUMBER, default=40)
     SHORT_OUTPUT_BYTES = SettingValue("short-output", "Short output bytes", "Below how many bytes an output is shown whole and not kept.", SettingType.NUMBER,
                                       default=200)

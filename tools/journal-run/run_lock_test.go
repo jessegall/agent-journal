@@ -71,3 +71,13 @@ func TestAnAliasWaitsOnTheRunLockAsTheCommandUnderItDoes(t *testing.T) {
 		t.Error("an alias does not wait on the run lock")
 	}
 }
+
+func TestAQueuedRunWaitsForItsSpotAndAnyOtherDoesNot(t *testing.T) {
+	if !strings.Contains(SlotWait("/home", 4, true), "/home/processes/4/slot") {
+		t.Error("a queued run does not wait for its spot")
+	}
+	if SlotWait("/home", 4, false) != "" {
+		t.Error("a run that is not queued waits")
+	}
+}
+

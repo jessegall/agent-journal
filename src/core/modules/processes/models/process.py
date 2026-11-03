@@ -33,6 +33,7 @@ class Process(Model):
     moved_at: Timestamp | None = None
     ended_at: Timestamp | None = None
     is_full_test_run: bool = False
+    is_queued: bool = False
 
     def background(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
