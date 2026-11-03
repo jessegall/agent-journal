@@ -23,6 +23,10 @@ function frameOf(element, started, phase) {
         title: box(element.querySelector(".title")),
         contents: box(element.querySelector(":scope > :not(.top)")),
         scroll: element.closest(".history")?.scrollTop ?? 0,
+        running: document.getAnimations().map((animation) => `${animation.effect?.target?.className || animation.effect?.target?.tagName} ${animation.transitionProperty ?? animation.animationName}`),
+        computed: (({width, minWidth, maxWidth, boxSizing, transform, display}) => ({width, minWidth, maxWidth, boxSizing, transform, display}))(getComputedStyle(element)),
+        parent: box(element.parentElement),
+        parentClasses: element.parentElement?.className ?? "",
     };
 }
 

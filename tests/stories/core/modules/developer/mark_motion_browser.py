@@ -15,4 +15,4 @@ def test_clicking_a_chat_mark_in_the_viewer_records_its_frames(new_story):
     story.run_listeners()
     with server_story(story) as server:
         expect_browser(server, "markRecording.browser.mjs", [])
-    assert '"frames"' in story.container.get(MarkMotionFile).text()
+    assert story.container.get(MarkMotionFile).text().count('"frames"') == 4
