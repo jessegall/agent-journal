@@ -14,3 +14,4 @@ class PartSpec:
     category: CommandCategory = CommandCategory.UNKNOWN
     command: str = ""
     named_reader_id: int | None = None
+    command_key: str = ""

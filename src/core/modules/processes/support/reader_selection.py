@@ -4,6 +4,7 @@ from fnmatch import fnmatchcase
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.part_reader import PartReader
+from core.base.driver.command_category import CommandCategory
 
 
 class ReaderSelection:
@@ -22,4 +23,8 @@ class ReaderSelection:
 
     @staticmethod
     def reads(reader: Reader, part: ProcessPart) -> bool:
-        return not part.category.is_readonly and any(fnmatchcase(part.command or part.text, pattern.strip()) for pattern in reader.commands.split(","))
+        return ReaderSelection.reads_command(reader, part.command or part.text, part.category)
+
+    @staticmethod
+    def reads_command(reader: Reader, command: str, category: CommandCategory) -> bool:
+        return not category.is_readonly and any(fnmatchcase(command, pattern.strip()) for pattern in reader.commands.split(","))

@@ -10,6 +10,8 @@ from core.base.query.query import Query
 from core.base.query.select import Select
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
+from core.base.query.conditions.equal import Equal
+from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 PROCESS_PARTS_TABLE = "process_parts"
@@ -41,3 +43,9 @@ class ProcessQuery(Query[Process]):
 
     def moved(self) -> Self:
         return self.matching(Greater("moved_at", ""))
+
+    def has_moved_run(self, environment_id: int, text: str, seconds: int = 0) -> bool:
+        conditions: list[Condition] = [Equal("text", text)]
+        if seconds > 0:
+            conditions.append(PartRunSeconds(seconds))
+        return self.environment(environment_id).with_part(*conditions).moved().exists()

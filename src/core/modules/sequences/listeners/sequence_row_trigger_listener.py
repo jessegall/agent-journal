@@ -25,8 +25,6 @@ class SequenceRowTriggerListener(CommitListener):
         self.queries, self.runs, self.bus = queries, runs, bus
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.environment_id is None:
-            return
         sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, event)), None)
         if sequence is None:
             return

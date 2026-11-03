@@ -20,6 +20,7 @@ class ProcessPart(Model):
     command: str = ""
     piped: bool = False
     category: CommandCategory = CommandCategory.UNKNOWN
+    reader_request_id: int | None = None
     state: PartState = PartState.WAITING
     exit_code: int | None = None
     started_at: Timestamp | None = None

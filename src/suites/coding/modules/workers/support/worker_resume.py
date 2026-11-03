@@ -11,6 +11,7 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
+from core.modules.processes.support.process_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
@@ -32,7 +33,7 @@ class WorkerResume:
     def resume(self, worker: Agent, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(worker.id)
         lines = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
-        job = next((line for line in lines if line.source in RESUMING_SOURCES), None)
+        job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE) if line.source in RESUMING_SOURCES), None)
         if worktree is None or worker.ended_at is None or worker.paused_at is not None or self.is_job_delivering(worker, worker.ended_at):
             return
         job = job or self.lost_job(worker, worker.ended_at)

@@ -10,4 +10,6 @@ LAUNCH_FAILURE_NUDGES = [WORKER_START_FAILED]
 
 @dataclass(frozen=True)
 class RecordWorkerLaunchFailure(Command[None]):
+    """Records that a worker's program could not start."""
+
     worker_id: int

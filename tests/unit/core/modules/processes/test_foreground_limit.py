@@ -40,16 +40,7 @@ class Rows:
     def __init__(self, over_limit: bool = False, waiting: bool = False) -> None:
         self.over_limit, self.waiting = over_limit, waiting
 
-    def environment(self, environment_id: int) -> "Rows":
-        return self
-
-    def with_part(self, *conditions: object) -> "Rows":
-        return self
-
-    def moved(self) -> "Rows":
-        return self
-
-    def exists(self) -> bool:
+    def has_moved_run(self, environment_id: int, text: str, seconds: int = 0) -> bool:
         return self.over_limit
 
 

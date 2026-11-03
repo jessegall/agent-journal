@@ -1,3 +1,4 @@
+from core.modules.processes.support.test_listings import TestListings
 from dataclasses import replace
 
 from core.modules.processes.support.process_nudges import RUNNER_MISSING
@@ -32,8 +33,8 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory) -> None:
-        self.limits, self.runner, self.hook_history = limits, runner, hook_history
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: TestListings) -> None:
+        self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -52,6 +53,7 @@ class RunnerRewriteRule(DriverRule):
         process = next((made for made in results if isinstance(made, Process)), None)
         if process is None:
             return {}
+        run = replace(run, count_line=self.listings.line(process))
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
         return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.runner_text, hook.event.subagent or hook.event.session)}
 

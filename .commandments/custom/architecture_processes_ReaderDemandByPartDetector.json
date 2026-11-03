@@ -1,0 +1,24 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "nameIn": [
+                    "runner_text",
+                    "display_text"
+                ]
+            },
+            {
+                "fileMatches": "/(reader_demands|reader_draft|reader_drafting)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "reader-demand-from-whole-line",
+        "description": "Reader demand or drafting reads the whole shell line instead of one command part.",
+        "rule": "Judge each part's command and its output separately. Reader demand and drafting never read runner_text or display_text.",
+        "skill": "processes-architecture"
+    }
+}

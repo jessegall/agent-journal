@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [{"name": "write_slot"}],
+        "reject": [
+            {"fileMatches": "(^|/)src/core/modules/processes/support/(run_slots|output_folder)\\.py$"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "slot-written-outside-the-queue",
+        "description": "A run receives a slot outside the queue's admission check.",
+        "rule": "Only RunSlots grants a slot after checking run admission.",
+        "skill": "processes-architecture"
+    }
+}
