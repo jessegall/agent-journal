@@ -1,4 +1,5 @@
 import {lineBatch} from "./lineBatch.js";
+import {afterSkeletonMinimum} from "../../kit/skeletonMinimum.js";
 import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
@@ -21,12 +22,13 @@ export function windowContext({window, environment, agent, visible, permissions,
     const requests = new AbortController();
     // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way; it stays true, so a later read never brings the skeleton back
     const answered = ref(false);
+    const startedAt = performance.now();
     let reading = 0;
     let quiet = 0;
     const settle = () => {
         clearTimeout(quiet);
         quiet = setTimeout(() => {
-            if (reading === 0) answered.value = true;
+            if (reading === 0) afterSkeletonMinimum(startedAt, () => (answered.value = true));
         }, QUIET_AFTER_READS_MS);
     };
     const read = (line) => {

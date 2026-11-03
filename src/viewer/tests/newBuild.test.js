@@ -1,6 +1,5 @@
 import {expect, test} from "vitest";
-import {reloadForNewStart} from "../src/state/updating.js";
-import {reloadIfNewBuild} from "../src/windows/staleBuild.js";
+import {reloadForNewStart, reloadIfNewBuild} from "../src/windows/staleBuild.js";
 
 const pageOf = (name) => new DOMParser().parseFromString(`<script type="module" src="/viewer/assets/index-${name}.js"></script>`, "text/html");
 const serving = (name) => async () => ({ok: true, text: async () => pageOf(name).documentElement.outerHTML});

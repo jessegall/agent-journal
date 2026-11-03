@@ -1,7 +1,7 @@
 import {reactive} from "vue";
 import {transport} from "../api/transport.js";
-import {reloadWhenFree} from "../platform/busyField.js";
-import {reloadIfNewBuild} from "../windows/staleBuild.js";
+import {fieldBusy} from "../platform/busyField.js";
+import {reloadForNewStart, reloadIfNewBuild} from "../windows/staleBuild.js";
 
 const ASK_EVERY_MS = 2000;
 export const LATE_AFTER_MS = 30000;
@@ -11,6 +11,9 @@ export const updating = reactive({starting: false, external: false, late: false,
 
 export const covered = () => updating.starting;
 
+// an install restarts the server more than once, so the cover stays until the server has answered well this many times in a row
+const STEADY_ANSWERS = 3;
+let steadyAnswers = 0;
 let asking = 0;
 let lateTimer = 0;
 let waiting = [];
@@ -19,21 +22,10 @@ let waiting = [];
 async function stateOfServer() {
     try {
         const answer = await transport.serverState();
-        return answer.ok ? await answer.json() : {restarting: false, updating: false};
+        return {reachable: true, ...(answer.ok ? await answer.json() : {restarting: false, updating: false})};
     } catch {
-        return {restarting: true, updating: updating.external};
+        return {reachable: false, restarting: true, updating: updating.external};
     }
-}
-
-// when the server last asked had started: a later start may run other code after an install, and this page holds its windows from before
-let knownStart = "";
-
-export function reloadForNewStart(startedAt, reload = () => reloadWhenFree(window)) {
-    if (!startedAt) return false;
-    const isNew = Boolean(knownStart) && knownStart !== startedAt;
-    knownStart = startedAt;
-    if (isNew) reload();
-    return isNew;
 }
 
 function arrived() {
@@ -55,10 +47,12 @@ async function askServer() {
     const state = await stateOfServer();
     isAsking = false;
     updating.external = state.updating;
-    if (!state.restarting && !state.updating) {
-        arrived();
-        reloadForNewStart(state.started_at);
-    }
+    const isSteady = !state.restarting && !state.updating && state.reachable;
+    steadyAnswers = isSteady ? steadyAnswers + 1 : 0;
+    if (steadyAnswers < STEADY_ANSWERS) return;
+    steadyAnswers = 0;
+    const reloads = reloadForNewStart(state.started_at);
+    if (!reloads || fieldBusy()) arrived();
 }
 
 // the server did not answer: the cover goes up and the server is asked until it answers again

@@ -14,7 +14,7 @@ const refused = () => vi.fn(async () => {
 
 async function comesBack() {
     vi.stubGlobal("fetch", answers(WELL));
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(6000);
 }
 
 beforeEach(() => {
@@ -32,6 +32,18 @@ afterEach(async () => {
 test("a request the server never answered puts the cover up, and the server answering takes it down", async () => {
     await expect(transport.raw("/api/line")).rejects.toThrow("Failed to fetch");
     expect(covered()).toBe(true);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(covered()).toBe(true);
+    await comesBack();
+    expect(covered()).toBe(false);
+});
+
+test("a server that answers and goes away again keeps one unbroken cover", async () => {
+    serverGone();
+    vi.stubGlobal("fetch", answers(WELL));
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(covered()).toBe(true);
+    vi.stubGlobal("fetch", refused());
     await vi.advanceTimersByTimeAsync(2000);
     expect(covered()).toBe(true);
     await comesBack();
@@ -65,7 +77,7 @@ test("a window's read waits out the restart and draws what the server then answe
     await vi.advanceTimersByTimeAsync(1);
     expect(covered()).toBe(true);
     vi.stubGlobal("fetch", vi.fn(async (url) => ({ok: true, json: async () => (url === "/api/line" ? {code: 0, value: "usage"} : WELL)})));
-    await vi.advanceTimersByTimeAsync(2100);
+    await vi.advanceTimersByTimeAsync(6100);
     expect(await read).toEqual({ok: true, value: "usage"});
 });
 
