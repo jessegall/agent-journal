@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE, WORKER_JOB_SOURCE
+from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
@@ -64,7 +64,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return
-        self.advance.start(worktree, following, "your tests passed", context)
+        self.advance.after_passed_tests(worktree, following, context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):

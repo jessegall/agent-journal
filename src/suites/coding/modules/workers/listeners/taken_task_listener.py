@@ -27,4 +27,4 @@ class TakenTaskListener(SaveListener):
             return
         following = self.tasks.next_delegated(old.holder_id)
         if following is not None:
-            self.advance.start(worktree, following, f"task:{old.id} was taken from you: leave it", change.context)
+            self.advance.after_taken_task(worktree, old, following, change.context)

@@ -1,6 +1,6 @@
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
-from core.base.driver.nudge_declaration import AUTHORED_LINE_CHARACTERS, NudgeDeclaration
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.INSTRUCTION, '{name}:{agent} has used no tool for {minutes} minutes: check on it', turn_limited=False)
@@ -19,12 +19,14 @@ WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL,
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTION, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False, required_command="")
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.INSTRUCTION, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False, required_command="")
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next, or journal worker deliver on your last task', longest_characters=AUTHORED_LINE_CHARACTERS, turn_limited=False, required_command="")
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next or deliver', turn_limited=False, required_command="")
 WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.INSTRUCTION, 'you ended with tasks left: go on with journal worker next, deliver after the last, and stop only then', required_command="")
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.INSTRUCTION, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False)
 WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.INSTRUCTION, 'the user commented on task:{task}: journal task comments {task}', turn_limited=False, required_command="")
-WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INSTRUCTION, '{opening}. Your next task is task:{task}: journal task show {task}', turn_limited=False, required_command="")
+WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INSTRUCTION, 'your tests passed. Your next task is task:{task}: journal task show {task}', turn_limited=False, required_command="")
+WORKER_TASK_TAKEN = NudgeDeclaration("workers.task_taken", NudgeType.INSTRUCTION, 'task:{task} was taken from you: leave it', turn_limited=False)
+WORKER_TASK_AFTER_TAKEN = NudgeDeclaration("workers.task_after_taken", NudgeType.INSTRUCTION, 'your next task is task:{task}: journal task show {task}', turn_limited=False, required_command="")
 WORKER_REPORT = NudgeDeclaration("workers.report", NudgeType.INSTRUCTION, 'worker:{worker} reports in message:{message}: journal message read {message}', turn_limited=False, required_command="")
 WORKER_REUSE = NudgeDeclaration("workers.reuse", NudgeType.REFUSAL, 'worker:{worker} changed these files: journal worker send {worker} "<job>", or add --fresh if it needs a new one', turn_limited=False)
 WORKER_ENDED_WITH_TASKS = NudgeDeclaration("workers.ended_with_tasks", NudgeType.NUDGE, 'worker:{worker} ended with {tasks} left: journal worker send {worker} "<job>", or journal worker release {worker}', turn_limited=False)
-WORKER_NUDGES = [WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_REPORT, WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_NUDGES = [WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_REPORT, WORKER_NEXT_TASK, WORKER_TASK_TAKEN, WORKER_TASK_AFTER_TAKEN, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
