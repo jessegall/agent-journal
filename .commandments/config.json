@@ -105,6 +105,8 @@
         "architecture_skills_SkillsDueByListenersDetector",
         "architecture_skills_RulesOnlyRefuseDetector",
         "architecture_skills_SkillFilesOnlyInSkillFilesDetector",
+        "architecture_shell_NoHookCallSummaryCheckDetector",
+        "architecture_shell_NoWholeLineCheckDetector",
         "architecture_skills_KeywordMatchInOnePlaceDetector",
         "architecture_upgrade_MovesDeclaredByModulesDetector",
         "architecture_upgrade_SourceReadOnlyDetector",

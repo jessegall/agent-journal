@@ -24,7 +24,8 @@ IDENTITY_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
 
 class Repository:
     """Saves and deletes rows of any model: works out the change, asks the guards, writes it, logs it and runs
-    the listeners, all inside the command's transaction."""
+    the listeners, all inside the command's transaction; update saves new values on a row just read, without
+    reading it a second time."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
                  constraint_refusals: ConstraintRefusals) -> None:
@@ -35,7 +36,6 @@ class Repository:
         return self.save_change(self.stored(model), model, context)
 
     def update(self, stored: M, context: Context, **values: object) -> M:
-        """Saves new values on a row just read in this command, without reading it a second time."""
         return self.save_change(stored, stored.changed(**values), context)
 
     def save_change(self, stored: M | None, model: M, context: Context) -> M:

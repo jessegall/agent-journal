@@ -19,6 +19,6 @@ class WorkerJudgeScopeRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is not None and tool.shell is not None and tool.shell.part_matches(UNSCOPED_JUDGE_PATTERN):
+        if tool is not None and tool.shell is not None and tool.shell.has_part_matching(UNSCOPED_JUDGE_PATTERN):
             return RuleAnswer.refused(WORKER_JUDGE_SCOPE.nudge())
         return RuleAnswer.allowed()

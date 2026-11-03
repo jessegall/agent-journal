@@ -41,12 +41,13 @@ const answers = {
     "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}]),
     "file-edit list --agent 3": page([EDIT]),
 };
-const window = (facts = FACTS, options = {}) => ({
-    ...context({...answers, "usage agents --closed": page(facts)}),
+const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
+const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
+    ...context({...answers, "agent list": page(agents), "agent running": page(agents.filter((row) => !row.ended_at)), "usage agents --closed": page(facts)}),
     tabs: TABS,
     option: (key) => ({value: {...DEFAULT_OPTIONS, ...options}[key]}),
 });
-const drawn = (facts, options) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options));
+const drawn = (facts, options, agents) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options, agents));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
 test("the agents window filters on running or closed", async () => {
@@ -82,7 +83,7 @@ test("the main agent is titled Main agent and its model follows the provider", a
 });
 
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
-    const element = await drawn();
+    const element = await drawn(FACTS, {}, WORKERS);
     document.body.append(element);
     const card = cardOf(element, 3);
     card.click();
@@ -97,7 +98,7 @@ test("a click opens the card on its instruction with no usage line or Inspect bu
 
 test("an opened card has the tabs Tasks, Transcript and File feed, each read only when chosen", async () => {
     const reads = [];
-    const held = window();
+    const held = window(FACTS, {}, WORKERS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
     document.body.append(element);
     const card = cardOf(element, 3);
@@ -191,6 +192,23 @@ test("an agent that has just ended reads just now, never now ago", async () => {
     const ended = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
     expect(element.querySelector(".agent-time").textContent).toBe("just now");
+});
+
+test("an open subagent's card has no tabs: its instruction folded above its transcript", async () => {
+    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
+    const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
+    const element = await mounted({render: () => h(AgentCard, {row: subagent, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
+    expect(element.querySelector("[data-inner-tabs]")).toBeNull();
+    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+    expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
+    expect(element.querySelector("[data-agent-instruction]")).toBeNull();
+});
+
+test("an open worker's card keeps its tabs", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {}, open: true})}, context(lines));
+    expect(element.querySelector("[data-inner-tabs]")).not.toBeNull();
 });
 
 test("a transcript row reads author, words, then its time at the end", async () => {

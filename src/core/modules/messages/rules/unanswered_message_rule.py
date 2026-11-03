@@ -35,7 +35,7 @@ class UnansweredMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unanswered = self.unanswered(hook.environment_id)
         tool = hook.event.tool
-        if not unanswered or (tool is not None and tool.shell is not None and tool.shell.journal_parts("message", "task make")):
+        if not unanswered or (tool is not None and tool.shell is not None and tool.shell.parts_running_journal_command("message", "task make")):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
         first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)

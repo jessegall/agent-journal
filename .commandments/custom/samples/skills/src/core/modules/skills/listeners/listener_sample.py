@@ -7,6 +7,7 @@ from core.modules.skills.commands.require_skill.require_skill import RequireSkil
 class ListenerSample:
     def handle(self, event, call, text_keywords):
         # @sin architecture_skills_KeywordMatchInOnePlaceDetector
+        # @sin architecture_shell_NoHookCallSummaryCheckDetector
         matches = re.findall("[a-z]+", call.summary)
         # @sin architecture_skills_SkillFilesOnlyInSkillFilesDetector
         location = ".claude/skills/journal-notes/SKILL.md"
@@ -14,4 +15,5 @@ class ListenerSample:
         self.run(event, RequireSkill(call.agent_id, "journal-notes"))
         # @righteous architecture_skills_KeywordMatchInOnePlaceDetector
         self.keep(matches, location)
+        # @sin architecture_shell_NoHookCallSummaryCheckDetector
         return text_keywords(call.summary)

@@ -28,7 +28,7 @@ class TaskNameRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        current = self.current_tasks.current(hook.agent_id) if shell is not None and shell.journal_parts(*TASK_MOVES) else None
+        current = self.current_tasks.current(hook.agent_id) if shell is not None and shell.parts_running_journal_command(*TASK_MOVES) else None
         if current is None:
             return RuleAnswer.allowed()
         numbers = {int(number) for number in TASK_NUMBER.findall(current.task.brief)} - {current.task.id}

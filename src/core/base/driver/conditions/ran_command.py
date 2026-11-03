@@ -10,4 +10,4 @@ class RanCommand(BlockCondition):
 
     def is_true(self, check: BlockCheck) -> bool:
         tool = check.hook.event.tool
-        return tool is not None and tool.shell is not None and tool.shell.runs(self.text)
+        return tool is not None and tool.shell is not None and tool.shell.has_part_running(self.text)

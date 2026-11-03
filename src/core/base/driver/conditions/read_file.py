@@ -9,4 +9,4 @@ class ReadFile(BlockCondition):
 
     def is_true(self, check: BlockCheck) -> bool:
         tool = check.hook.event.tool
-        return tool is not None and tool.is_reading and any(path.endswith(self.text) for path in tool.files)
+        return tool is not None and tool.is_read_only and any(path.endswith(self.text) for path in tool.files)

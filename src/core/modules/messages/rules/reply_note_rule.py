@@ -16,5 +16,5 @@ class ReplyNoteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        replies = shell.journal_numbers("message reply") if shell is not None else ()
+        replies = shell.journal_command_numbers("message reply") if shell is not None else ()
         return RuleAnswer.with_nudges(REPLY_NOTE.nudge(message=replies[0])) if replies else RuleAnswer.allowed()

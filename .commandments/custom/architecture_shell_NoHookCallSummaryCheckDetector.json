@@ -1,0 +1,34 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "summary"
+            },
+            {
+                "descendant": {
+                    "name": "call"
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/(core|suites)/.*/(rules|listeners|guards|block_conditions)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/listeners/(keyword_skills_listener|skill_read_listener)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "hook-call-summary-read-as-command",
+        "description": "A rule or a listener decides something from a hook call's summary, which for a shell tool is the whole line, cut short, so a command is judged by where it stands in a chain.",
+        "rule": "A rule reads the parts on hook.event.tool.shell; a listener listens to process_part.create and reads that part. A prompt's or a file tool's summary is no shell line: only the listeners that read those are exempt.",
+        "skill": "plain-code-words"
+    }
+}

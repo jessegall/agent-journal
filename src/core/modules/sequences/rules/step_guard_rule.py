@@ -36,6 +36,6 @@ class StepGuardRule(DriverRule):
         guard = guards[run.step_number - 1]
         if guard.file_edits_allowed:
             return RuleAnswer.allowed()
-        if tool.shell is not None and any(tool.shell.part_matches(pattern) for pattern in guard.allowed_commands):
+        if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(STEP_EDIT_BAN.nudge(sequence=sequence.id, step=run.step_number))

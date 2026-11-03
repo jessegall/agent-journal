@@ -22,7 +22,7 @@ class TaskReturnReminderRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or not shell.journal_parts(*LEAVING_COMMANDS):
+        if shell is None or not shell.parts_running_journal_command(*LEAVING_COMMANDS):
             return RuleAnswer.allowed()
         current = self.current_tasks.current(hook.agent_id)
         return RuleAnswer.with_nudges(TASK_RETURN_REMINDER.nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()

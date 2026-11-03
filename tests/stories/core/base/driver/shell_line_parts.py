@@ -19,30 +19,30 @@ def line_of(text: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> Shel
 
 
 def test_a_chain_tests_when_any_of_its_parts_tests_whichever_comes_first():
-    assert line_of("cat notes && pytest -q", LISTING, TESTING).has_tests
-    assert line_of("pytest -q && cat notes", TESTING, LISTING).has_tests
-    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_tests
+    assert line_of("cat notes && pytest -q", LISTING, TESTING).has_test_run_part
+    assert line_of("pytest -q && cat notes", TESTING, LISTING).has_test_run_part
+    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_test_run_part
 
 
 def test_a_chain_builds_or_writes_when_any_of_its_parts_does():
-    assert line_of("cat notes && make", LISTING, BUILDING).has_builds
-    assert line_of("cat notes && sed -i", LISTING, EDITING).has_writes
-    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_writes
+    assert line_of("cat notes && make", LISTING, BUILDING).has_build_part
+    assert line_of("cat notes && sed -i", LISTING, EDITING).has_part_writing_files
+    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_part_writing_files
 
 
 def test_a_redirect_makes_a_chain_write():
-    assert line_of("cat notes", LISTING, redirects=["> copy.txt"]).has_writes
+    assert line_of("cat notes", LISTING, redirects=["> copy.txt"]).has_part_writing_files
 
 
 def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_reading
-    assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_reading
-    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_reading
-    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_reading
-    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_reading
-    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_reading
+    assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_read_only
+    assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_read_only
+    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_read_only
+    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_read_only
+    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_read_only
+    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_read_only
 
 
 def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():
-    assert line_of("cat notes && pytest -q", LISTING, TESTING).watched_category is CommandCategory.TEST_RUN
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).watched_category is CommandCategory.READ
+    assert line_of("cat notes && pytest -q", LISTING, TESTING).category_of_watched_part is CommandCategory.TEST_RUN
+    assert line_of("cat notes && grep cart", LISTING, SEARCHING).category_of_watched_part is CommandCategory.READ

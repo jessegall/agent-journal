@@ -24,7 +24,7 @@ class PlanOrderRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        numbers = shell.journal_numbers("plan ready", "plan start") if shell is not None else ()
+        numbers = shell.journal_command_numbers("plan ready", "plan start") if shell is not None else ()
         if not numbers:
             return RuleAnswer.allowed()
         plan_id = numbers[0]

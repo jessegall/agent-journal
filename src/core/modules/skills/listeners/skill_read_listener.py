@@ -11,8 +11,9 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class SkillReadListener(SaveListener):
-    """When a tool call reads the SKILL.md of a skill in the catalogue, the agent has that skill loaded in the same
-    write, with the digest of the catalogue's text, so the very next command finds it read."""
+    """When a file tool reads the SKILL.md of a skill in the catalogue, the agent has that skill loaded in the same
+    write, with the digest of the catalogue's text, so the very next command finds it read. A shell line holds
+    spaces and is never one path: its parts are read by the part listener."""
 
     name = "skills.read"
     event = "hook_call.create"
@@ -22,7 +23,7 @@ class SkillReadListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         call = change.new_row
-        if not isinstance(call, HookCall) or call.tool == "" or PurePath(call.summary).name != SKILL_FILE:
+        if not isinstance(call, HookCall) or call.tool == "" or " " in call.summary or PurePath(call.summary).name != SKILL_FILE:
             return
         folder = PurePath(call.summary).parent.name
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == folder), None)

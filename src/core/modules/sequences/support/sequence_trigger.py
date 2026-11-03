@@ -56,13 +56,13 @@ class SequenceTrigger:
         if event.event is not HookEventName.POST_TOOL_USE or tool is None:
             return False
         if category == COMMAND_TRIGGER:
-            return tool.shell is not None and tool.shell.part_matches(self.pattern)
+            return tool.shell is not None and tool.shell.has_part_matching(self.pattern)
         if category == FILE_TRIGGER:
             return any(fnmatch(path, self.pattern) for path in tool.files)
         if category == FILE_TEXT_TRIGGER:
             added = any(row["line_type"] == "add" and self.text in str(row["text"]) for row in tool.diff_rows)
             return added and any(fnmatch(path, self.pattern) for path in tool.files)
         if category == TOOL_TRIGGER:
-            searched = tool.shell.line if tool.shell is not None else " ".join(tool.files)
-            return tool.name == self.tool and (not self.pattern or re.search(self.pattern, searched) is not None)
+            matches = tool.shell.has_part_matching(self.pattern) if tool.shell is not None else re.search(self.pattern, " ".join(tool.files)) is not None
+            return tool.name == self.tool and (not self.pattern or matches)
         return False

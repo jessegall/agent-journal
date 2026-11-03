@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "line"
+            },
+            {
+                "descendant": {
+                    "name": "shell"
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/(core|suites)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/base/driver/(shell_line|hook_keywords)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/(rules/runner_rewrite_rule|commands/start_process/start_process)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/(pins/rules/link_pin_rule|secrets/rules/secrets_folder_rule)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "whole-shell-line-read",
+        "description": "Code reads the whole shell line to decide something, so a command is judged by where it stands in a chain rather than by what each part does.",
+        "rule": "Read the parts of the line, or ask an aggregate on ShellLine: has_tests, has_writes, is_reading, runs, part_matches, journal_parts. Add a new aggregate to ShellLine if none fits. The line itself is only shown or handed to the runner.",
+        "skill": "plain-code-words"
+    }
+}

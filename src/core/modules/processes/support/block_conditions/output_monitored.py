@@ -25,4 +25,4 @@ class OutputMonitored(BlockCondition):
             return False
         if monitor_tool is ToolType.MONITOR:
             return re.search(rf"\b{self.text}\b", str(check.hook.event.tool_input().get("command", ""))) is not None
-        return tool.shell is not None and tool.shell.runs(f"journal output monitor {self.text}")
+        return tool.shell is not None and tool.shell.has_part_running(f"journal output monitor {self.text}")

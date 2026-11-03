@@ -20,7 +20,7 @@ class ReaderHintRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        full_reads = [part for part in shell.journal_parts("output read") if "--all" in part.arguments] if shell is not None else []
+        full_reads = [part for part in shell.parts_running_journal_command("output read") if "--all" in part.arguments] if shell is not None else []
         numbers = [int(term) for part in full_reads for term in part.arguments if term.isdigit()]
         kept = self.queries.query(Output).filter(process_id=numbers[0]).page(1, 1).rows if numbers else ()
         if not kept or kept[0].reader_id is None or not kept[0].reader_lines:

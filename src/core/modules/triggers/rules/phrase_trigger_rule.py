@@ -25,21 +25,21 @@ class PhraseTriggerRule(DriverRule):
         self.triggers = triggers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        text = self.text(hook).lower()
-        matching = [trigger for trigger in self.triggers.phrased() if any(phrase.lower() in text for phrase in trigger.phrases)] if text else []
+        texts = [text.lower() for text in self.texts(hook) if text]
+        matching = [trigger for trigger in self.triggers.phrased() if any(phrase.lower() in text for phrase in trigger.phrases for text in texts)] if texts else []
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
             return RuleAnswer.refused(TRIGGER_DENIES.nudge(text=deny.text))
         return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(text=self.line(trigger)) for trigger in matching)) if matching else RuleAnswer.allowed()
 
-    def text(self, hook: AgentHook) -> str:
+    def texts(self, hook: AgentHook) -> list[str]:
         event = hook.event
         if event.event is HookEventName.PROMPT:
-            return event.prompt or ""
+            return [event.prompt or ""]
         tool = event.tool
         if event.event is not HookEventName.PRE_TOOL_USE or tool is None:
-            return ""
-        return tool.shell.line if tool.shell is not None else " ".join((tool.name, *tool.files))
+            return []
+        return [part.text for part in tool.shell.parts] if tool.shell is not None else [" ".join((tool.name, *tool.files))]
 
     def line(self, trigger: Trigger) -> str:
         return f"{INSTRUCTION_PREFIX}{trigger.text}" if trigger.action is TriggerAction.INSTRUCT else trigger.text

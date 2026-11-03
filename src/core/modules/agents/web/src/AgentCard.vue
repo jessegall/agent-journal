@@ -47,6 +47,9 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
+// a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
+const isSubagent = computed(() => props.row.role === "subagent");
+const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
 const showsCommand = computed(() => props.row.role !== "main" && !props.row.ended_at);
@@ -99,6 +102,19 @@ readCommand();
                 <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                 </template>
+                <template v-if="isSubagent">
+                    <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
+                        <template v-if="facts?.instruction">
+                            <div class="agent-subagent-brief">
+                                <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
+                                    <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                                </FoldGroup>
+                            </div>
+                        </template>
+                        <TranscriptRows :line="`agent transcript ${row.id}`" />
+                    </div>
+                </template>
+                <template v-else>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
@@ -127,6 +143,7 @@ readCommand();
                         </template>
                     </SwitchCase>
                 </div>
+                </template>
             </div>
         </template>
     </div>
@@ -335,6 +352,16 @@ readCommand();
     flex: 1;
     max-height: none;
     min-height: 0;
+}
+
+/* a subagent's instruction sits above its transcript, which keeps the height */
+.agent-card.open .agent-tab-body > .agent-subagent-brief {
+    flex: none;
+    padding: 8px 22px 0 27px;
+}
+
+.agent-card.open .agent-subagent-brief .agent-instruction {
+    max-height: 240px;
 }
 
 .agent-tabs {

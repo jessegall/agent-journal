@@ -22,7 +22,7 @@ class WaitDescriptionRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        described = shell.journal_parts(*DESCRIBING_COMMANDS) if shell is not None else ()
+        described = shell.parts_running_journal_command(*DESCRIBING_COMMANDS) if shell is not None else ()
         if not any(WAIT_TERMS.search(part.text) and not set(BLOCK_FLAGS) & set(part.arguments) for part in described):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(WAIT_DESCRIPTION.nudge())

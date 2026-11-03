@@ -34,31 +34,31 @@ class ShellLine:
         return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), fields.get("is_journal_only") is True, text(fields, "parse_error"))
 
     @property
-    def has_tests(self) -> bool:
-        return self.has_category(CommandCategory.TEST_RUN)
+    def has_test_run_part(self) -> bool:
+        return self.has_category_part(CommandCategory.TEST_RUN)
 
     @property
-    def has_builds(self) -> bool:
-        return self.has_category(CommandCategory.BUILD)
+    def has_build_part(self) -> bool:
+        return self.has_category_part(CommandCategory.BUILD)
 
     @property
-    def has_checks(self) -> bool:
-        return self.has_category(CommandCategory.CHECK)
+    def has_check_part(self) -> bool:
+        return self.has_category_part(CommandCategory.CHECK)
 
     @property
-    def has_file_redirects(self) -> bool:
+    def has_redirect_to_file(self) -> bool:
         return any(">" in redirect and not DESCRIPTOR_REDIRECT.match(redirect) for redirect in self.redirects)
 
     @property
-    def has_writes(self) -> bool:
-        return self.has_file_redirects or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
+    def has_part_writing_files(self) -> bool:
+        return self.has_redirect_to_file or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
-    def is_reading(self) -> bool:
-        return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_writes
+    def is_read_only(self) -> bool:
+        return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_part_writing_files
 
     @property
-    def watched_category(self) -> CommandCategory:
+    def category_of_watched_part(self) -> CommandCategory:
         watched_part = next((part for part in self.parts if part.classification.category.is_watched), None)
         program_part = next((part for part in self.parts if part.classification.category is not CommandCategory.JOURNAL), None)
         return (watched_part or program_part or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN
@@ -67,19 +67,19 @@ class ShellLine:
     def has_full_test_run(self) -> bool:
         return any(part.is_full_test_run for part in self.parts)
 
-    def has_category(self, category: CommandCategory) -> bool:
+    def has_category_part(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)
 
-    def journal_parts(self, *commands: str) -> tuple[Part, ...]:
+    def parts_running_journal_command(self, *commands: str) -> tuple[Part, ...]:
         command_terms = tuple(tuple(command.split()) for command in commands)
         return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and any(part.arguments[:len(terms)] == terms for terms in command_terms))
 
-    def journal_numbers(self, *commands: str) -> tuple[int, ...]:
-        firsts = (next((word for word in part.arguments if word.isdigit()), "") for part in self.journal_parts(*commands))
+    def journal_command_numbers(self, *commands: str) -> tuple[int, ...]:
+        firsts = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))
         return tuple(int(number) for number in firsts if number)
 
-    def runs(self, command: str) -> bool:
+    def has_part_running(self, command: str) -> bool:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)
 
-    def part_matches(self, pattern: str) -> bool:
+    def has_part_matching(self, pattern: str) -> bool:
         return any(re.search(pattern, part.text) for part in self.parts)

@@ -1,6 +1,7 @@
 import re
 
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
@@ -22,7 +23,7 @@ class NativeMemoryRule(DriverRule):
         tool = hook.event.tool
         if tool is None or not tool.is_writing_files():
             return RuleAnswer.allowed()
-        shell_line = tool.shell.line if tool.shell is not None else ""
-        if any(NATIVE_MEMORY_PATH.search(text) for text in (*tool.files, shell_line)):
+        writing_texts = (*(part.text for part in tool.shell.parts if CommandEffect.WRITES_FILES in part.classification.effects), *tool.shell.redirects) if tool.shell is not None else ()
+        if any(NATIVE_MEMORY_PATH.search(text) for text in (*tool.files, *writing_texts)):
             return RuleAnswer.refused(NATIVE_MEMORY_BAN.nudge())
         return RuleAnswer.allowed()

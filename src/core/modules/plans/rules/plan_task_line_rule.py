@@ -33,7 +33,7 @@ class PlanTaskLineRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        numbers = shell.journal_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
+        numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
         ended = [task for task in (self.queries.query(Task).find(number) for number in numbers) if task.state is not TaskState.STARTED]
         if not ended:
             return RuleAnswer.allowed()
