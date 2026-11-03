@@ -1,10 +1,11 @@
 from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import READ_CATEGORIES, ShellLine
+from core.base.driver.shell_line import ShellLine
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
+from core.modules.processes.queries.conditions.part_ran_seconds import PartRanSeconds
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.foreground_run import ForegroundRun
@@ -36,9 +37,8 @@ class ForegroundLimit:
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared)
 
     def has_moved_run(self, environment_id: int, shell: ShellLine) -> bool:
-        writing_parts = tuple(part.text for part in shell.parts if part.classification.category not in READ_CATEGORIES)
-        commands = writing_parts or tuple(part.text for part in shell.parts)
-        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands)).moved().exists()
+        commands = tuple(part.text for part in shell.parts)
+        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands), PartRanSeconds(self.seconds_allowed(environment_id))).moved().exists()
 
     def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()

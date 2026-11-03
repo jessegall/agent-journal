@@ -33,8 +33,11 @@ class ProcessQuery(Query[Process]):
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
 
-    def with_part(self, condition: Condition) -> Self:
-        return self.matching(SubqueryMatch("id", Select(PROCESS_PARTS_TABLE).matching(condition).column("process_id")))
+    def with_part(self, *conditions: Condition) -> Self:
+        select = Select(PROCESS_PARTS_TABLE)
+        for condition in conditions:
+            select = select.matching(condition)
+        return self.matching(SubqueryMatch("id", select.column("process_id")))
 
     def moved(self) -> Self:
         return self.matching(Greater("moved_at", ""))

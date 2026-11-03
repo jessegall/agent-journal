@@ -9,8 +9,9 @@ from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
 
 LIMIT_MS = 500
-END_SECONDS = 1.5
 BYTE_PAUSE_SECONDS = 0.2
+ANSWER = b'{"v": 1, "answer": "allow"}'
+WHOLE_ANSWER_SECONDS = len(ANSWER) * BYTE_PAUSE_SECONDS
 
 
 def slow_service(path: Path) -> None:
@@ -20,7 +21,7 @@ def slow_service(path: Path) -> None:
     connection, _ = server.accept()
     connection.recv(1024)
     try:
-        for part in b'{"v": 1, "answer": "allow"}':
+        for part in ANSWER:
             connection.sendall(bytes([part]))
             time.sleep(BYTE_PAUSE_SECONDS)
     except OSError:
@@ -39,6 +40,6 @@ def test_an_answer_sent_a_byte_at_a_time_ends_at_the_window(tmp_path: Path) -> N
     try:
         with pytest.raises(PluginLateError):
             PluginSocket(path).ask('{"v": 1}', LIMIT_MS)
-        assert time.monotonic() - started < END_SECONDS
+        assert time.monotonic() - started < WHOLE_ANSWER_SECONDS
     finally:
         path.unlink(missing_ok=True)

@@ -1,7 +1,10 @@
 from datetime import timedelta
 
+from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
@@ -31,6 +34,21 @@ def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summa
     story.advance(timedelta(seconds=1))
     assert ENDED in lines_of(story, NOTHING)
     assert ENDED not in lines_of(story, NOTHING)
+
+
+def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_background(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    bus = story.container.get(Bus)
+    parts = (PartSpec("make build", "make", False, CommandCategory.PROCESS), PartSpec("cut -c1-9", "cut", False, CommandCategory.PROCESS))
+    process = bus.run(StartProcess(story.agent.id, None, "make build && cut -c1-9", "/work/main", "zsh", CommandCategory.PROCESS, 15, parts), Actor.core(), environment_id=1)
+    bus.run(MoveProcess(process.id), Actor.core(), environment_id=1)
+    bus.run(StartProcessPart(process.id, 1), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=40))
+    bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
+    bus.run(StartProcessPart(process.id, 2), story.agent, environment_id=1)
+    bus.run(EndProcessPart(process.id, 2, 0), story.agent, environment_id=1)
+    assert "--background" in str(story.hook("s-1", HookSamples.shell("make build", ShellPart("make", CommandCategory.PROCESS, ["build"]))).updated_input)
+    assert "--background" not in str(story.hook("s-1", HookSamples.shell("cut -c1-9", ShellPart("cut", CommandCategory.PROCESS, ["-c1-9"]))).updated_input)
 
 
 def test_the_hold_for_a_monitor_lets_the_tool_search_through_so_the_monitor_tool_can_be_loaded(new_story):
