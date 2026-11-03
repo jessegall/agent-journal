@@ -88,5 +88,9 @@ class RuleAnswers:
     def commands(self) -> list[tuple[str, Command[object]]]:
         return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in rule.answer.commands]
 
+    @property
+    def terminal(self) -> str:
+        return "\n".join(rule.answer.terminal for rule in self.answered if rule.answer is not None and rule.answer.terminal)
+
     def metadata(self) -> dict[str, object]:
-        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules]}
+        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal}

@@ -23,6 +23,7 @@ class RuleAnswer:
     source_name: str = ""
     refusal_priority: int = 0
     dropped_lines: int = 0
+    terminal: str = ""
 
     @classmethod
     def allowed(cls) -> "RuleAnswer":

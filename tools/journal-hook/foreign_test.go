@@ -70,6 +70,13 @@ func TestManagedHookTimeoutKillsItsChild(t *testing.T) {
 	}
 }
 
+func TestFailedManagedHookDoesNotRefuseItsTool(t *testing.T) {
+	run := runOne(ManagedHook{ID: "failed", Command: `printf '{"decision":"block","reason":"ignored"}'; printf details >&2; exit 7`, Timeout: 5}, nil)
+	if run.ExitCode != 7 || run.Stderr != "details" || refuses(run) {
+		t.Fatalf("failed run = %+v", run)
+	}
+}
+
 func TestManagedHooksStartTogetherAndKeepListOrder(t *testing.T) {
 	folder := t.TempDir()
 	requestPipe, responsePipe := filepath.Join(folder, "requestPipe"), filepath.Join(folder, "responsePipe")

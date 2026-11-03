@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.model import Model
+from core.base.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
 
@@ -29,6 +30,11 @@ class HookCall(Model):
     refusal: str = ""
     lines: str = ""
     updated_input: str = "{}"
+
+    @property
+    def terminal(self) -> str:
+        value = self.metadata.module_part(DRIVERS_MODULE).get("terminal", "")
+        return value if isinstance(value, str) else ""
 
     @property
     def is_compaction(self) -> bool:

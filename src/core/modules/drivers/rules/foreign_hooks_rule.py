@@ -31,4 +31,5 @@ class ForeignHooksRule(DriverRule):
             nudges = [*nudges, nudge]
         return RuleAnswer(refusal=refusal, nudges=nudges, updated_input=rewritten.updated_input if rewritten is not None else {},
                           source_name=rewritten.name if rewritten is not None else "", refusal_priority=-1,
-                          dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0)
+                          dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0,
+                          terminal="\n".join(answer.terminal for answer in answers if answer.terminal))

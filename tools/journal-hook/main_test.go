@@ -63,7 +63,7 @@ func TestTheBuiltBinaryPostsFinishedManagedRuns(t *testing.T) {
 		}
 		received <- prepared
 		writer.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(writer).Encode(Reply{})
+		_ = json.NewEncoder(writer).Encode(Reply{Terminal: "project hook diagnostic"})
 	}))
 	defer server.Close()
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -74,6 +74,7 @@ func TestTheBuiltBinaryPostsFinishedManagedRuns(t *testing.T) {
 	hooks := []ManagedHook{
 		{ID: "managed", Program: "claude", Event: "PreToolUse", Matcher: "Bash", Command: "printf finished; printf details >&2; exit 7", Timeout: 5, State: "on"},
 		{ID: "disabled", Program: "claude", Event: "PreToolUse", Command: "exit 99", Timeout: 5, State: "off"},
+		{ID: "expired", Program: "claude", Event: "PreToolUse", Command: "sleep 60", Timeout: 0, State: "on"},
 	}
 	stored, err := json.Marshal(map[string]any{"version": 1, "hooks": hooks})
 	if err != nil {
@@ -81,17 +82,20 @@ func TestTheBuiltBinaryPostsFinishedManagedRuns(t *testing.T) {
 	}
 	writeFile(t, filepath.Join(root, ".journal", "hooks", "managed.json"), string(stored))
 	body := []byte(`{"hook_event_name":"PreToolUse","session_id":"s-1","tool_name":"Bash","tool_input":{"command":"true"}}`)
-	if stdout, code := run(t, builtHook(t), root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch"); code != 0 {
+	if stdout, code := run(t, builtHook(t), root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch"); code != 0 || !strings.Contains(stdout, "project hook diagnostic") {
 		t.Fatalf("exit %d: %s", code, stdout)
 	}
 	select {
 	case prepared := <-received:
-		if prepared.Version != event.Version || len(prepared.Foreign) != 1 {
+		if prepared.Version != event.Version || len(prepared.Foreign) != 2 {
 			t.Fatalf("prepared event = %+v", prepared)
 		}
 		run := prepared.Foreign[0]
 		if run.ID != "managed" || run.ExitCode != 7 || run.Stdout != "finished" || run.Stderr != "details" || run.TimedOut {
 			t.Fatalf("managed run = %+v", run)
+		}
+		if expired := prepared.Foreign[1]; expired.ID != "expired" || !expired.TimedOut || expired.ExitCode == 0 {
+			t.Fatalf("timed out run = %+v", expired)
 		}
 	default:
 		t.Fatal("the fake server received no prepared event")
