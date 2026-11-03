@@ -1,3 +1,4 @@
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -27,5 +28,5 @@ class ProfilesModule(Module):
     subcommands = (ProfileListSubcommand, SaveProfileSubcommand)
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
-    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER,
+    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "profile_type", "model", "codex_model")),
                                  reads=["profile list"], runs=["profile save"])]

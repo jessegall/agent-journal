@@ -75,11 +75,17 @@ defineExpose({focus: () => field.value?.focus()});
 
 <style scoped>
 .search-bar {
+    position: sticky;
+    z-index: 4;
+    top: 0;
     display: flex;
     flex: none;
     gap: 8px;
     align-items: center;
     min-width: 0;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
 }
 
 .search-bar-control {

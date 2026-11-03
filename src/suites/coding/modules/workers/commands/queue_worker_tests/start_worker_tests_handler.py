@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -35,5 +37,6 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
             running.add(proof.worktree_id)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
-        process = self.bus.dispatch(StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True), context)
+        start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
+        process = self.bus.dispatch(replace(start, worker_id=worktree.agent_id, task_id=proof.task_id), context)
         self.repository.save(proof.moved(ProofLifecycle.run, process_id=process.id), context)

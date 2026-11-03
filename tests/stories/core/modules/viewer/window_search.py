@@ -53,6 +53,29 @@ def test_the_declaration_lists_what_the_viewer_draws_without_the_function(new_st
     assert window.search["context"] == [] and window.search["button"] == {}
 
 
+def test_searches_over_read_commands_declare_the_command_placeholder_and_matching_fields(new_story):
+    story = new_story(fixture=UserJoined)
+    windows = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
+    searches = {
+        "settings.settings": ("setting tree", "Find a setting", ["title", "description", "key"]),
+        "profiles.profiles": ("profile list", "Find a profile", ["name", "description", "profile_type", "model", "codex_model"]),
+        "search.search": ("search find", "Search the journal", []),
+        "skills.skills": ("skill list", "Search the skills", ["folder", "description"]),
+        "messages.attachments": ("attachment list", "Search file names and their messages", ["name", "message_text"]),
+        "coding.files": ("project-file find", "Find a file in the project", []),
+    }
+    for name, (read, placeholder, fields) in searches.items():
+        search = windows[name].search
+        assert search["read"] == read and search["placeholder"] == placeholder
+        assert search["fields"] == fields and read in windows[name].reads
+
+
+def test_worker_and_subagent_windows_declare_the_same_agent_search(new_story):
+    story = new_story(fixture=UserJoined)
+    windows = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
+    assert windows["agents.agents"].search == windows["agents.subagents"].search
+
+
 class DatabaseQuestions(StoryFixture):
     parent = BuilderStarted
 

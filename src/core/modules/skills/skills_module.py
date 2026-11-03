@@ -1,3 +1,4 @@
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
@@ -60,6 +61,6 @@ class SkillsModule(Module):
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", shows=WindowShows.SELECTED_AGENT, icon=WindowIcon.SKILL,
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", shows=WindowShows.SELECTED_AGENT, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Search the skills", ("folder", "description")),
                                  reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
     seeders = [SkillsSeeder]

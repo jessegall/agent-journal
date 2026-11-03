@@ -11,6 +11,7 @@ from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_search import WindowSearch
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -48,7 +49,7 @@ class WindowDeclaration:
     group: str = ""
     auto_scroll: AutoScroll = AutoScroll.NONE
     tabs: Sequence[WindowTab] = ()
-    search: WindowSearch | None = None
+    search: WindowSearch | WindowReadSearch | None = None
     skeleton: Sequence[SkeletonPart] = ()
     required_settings: Sequence[str] = ()
 
@@ -78,6 +79,8 @@ class WindowDeclaration:
                      if provided.matches(pattern) and not self.reads_model(pattern.split(".", 1)[0], read_models)]
         if self.search is not None:
             problems += self.search.problems(self.name)
+        if isinstance(self.search, WindowReadSearch) and self.search.read not in self.reads:
+            problems.append(f"{self.name} searches with {self.search.read}, which is not one of its reads")
         if not self.skeleton:
             problems.append(f"{self.name} declares no skeleton of itself to draw while it loads")
         return problems

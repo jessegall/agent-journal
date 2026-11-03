@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import WindowPane from "../src/windows/WindowPane.vue";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
@@ -11,8 +12,10 @@ const entry = (name, place = "pane") => ({name, module: "sample", title: name, p
 const dropdown = entry("usage.fitness", "dropdown");
 const agentDropdown = {...dropdown, shows: "one-agent"};
 const applications = [];
+let checkObservers;
 
 beforeEach(() => {
+    checkObservers = trackMutationObservers();
     vi.useFakeTimers();
     sessionStorage.clear();
     vi.stubGlobal("fetch", vi.fn(perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})}))));
@@ -20,6 +23,7 @@ beforeEach(() => {
 
 afterEach(() => {
     applications.splice(0).forEach((app) => app.unmount());
+    checkObservers();
     document.body.innerHTML = "";
     vi.clearAllTimers();
     vi.useRealTimers();

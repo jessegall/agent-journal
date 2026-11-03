@@ -24,8 +24,8 @@ def draft_sample(new_story):
 def test_a_draft_from_a_pytest_output_finds_each_field_and_saves(draft_sample):
     story, request = draft_sample
     outcome = story.run(f"reader draft {request.id}", actor=story.agent)
-    add_line = next(line for line in outcome.output_text.splitlines() if line.startswith("journal reader add "))
-    story.expect_text(add_line.removeprefix("journal "), "name: pytest", actor=story.agent)
+    reader_command = next(line for line in outcome.output_text.splitlines() if line.startswith("journal reader add "))
+    story.expect_text(reader_command.removeprefix("journal "), "name: pytest", actor=story.agent)
     story.expect_text(f"reader draft {request.id} --save", "saved reader pytest", actor=story.agent)
     reader = story.container.get(Queries).query(Reader).filter(name="pytest").page(1, 1).rows[0]
     story.expect_rows("custom-test run" in reader.commands, "pytest*" in reader.commands)

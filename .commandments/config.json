@@ -86,10 +86,10 @@
         "architecture_workers_GitCallHasTimeLimitDetector",
         "architecture_workers_GuardReadsRowsOnlyDetector",
         "naming_GoPoeticTypeNameDetector",
-        "naming_GoPoeticMethodNameDetector",
+        "naming_PoeticMethodNameDetector",
         "naming_GoPoeticVariableNameDetector",
         "naming_GoSentenceTypeNameDetector",
-        "naming_GoSentenceMethodNameDetector",
+        "naming_SentenceMethodNameDetector",
         "naming_GoSentenceVariableNameDetector",
         "naming_GoUnitlessQuantityNameDetector",
         "syntax_OneElementTupleDetector",
@@ -197,19 +197,14 @@
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
         "naming_NoTypeWordInsideNameDetector",
+        "ArchitectureWorkersWorkerLaunchFunnelDetector",
+        "WindowSearchBarDetector",
         "architecture_processes_ReaderSavedThroughAddReaderDetector",
         "architecture_processes_ReaderDemandByPartDetector"
     ],
     "parallel": 2,
     "configure": {
-        "naming_GoPoeticMethodNameDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "naming_LongDocstringLineDetector": [
+        "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"
@@ -358,6 +353,13 @@
             {
                 "elements": [
                     50
+                ]
+            }
+        ],
+        "naming_LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
                 ]
             }
         ]

@@ -201,8 +201,8 @@ def test_the_main_agent_gets_one_line_and_one_mark_for_two_workers_on_one_comman
     story.run_listeners()
     marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").all_rows())
     story.expect_rows(len(marks) == 1)
-    again = story.hook("s-1", HookSamples.prompt("continue again"))
-    story.expect_rows(not any("reader request" in line for line in again.lines))
+    repeat_reply = story.hook("s-1", HookSamples.prompt("continue again"))
+    story.expect_rows(not any("reader request" in line for line in repeat_reply.lines))
 
 
 def test_the_main_agent_is_held_after_five_tool_uses_with_a_countdown(notified_reader_story):

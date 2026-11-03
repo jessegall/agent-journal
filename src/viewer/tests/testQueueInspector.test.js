@@ -1,26 +1,75 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
+import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
+import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
-vi.stubGlobal("ResizeObserver", class {
-    observe() {}
+vi.stubGlobal(
+    "ResizeObserver",
+    class {
+        observe() {}
 
-    disconnect() {}
-});
+        disconnect() {}
+    }
+);
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 30));
-const PROOFS = [
-    {id: 1, task_id: 11, worktree_id: 3, state: "running", test_command: "pytest tests/cart", process_id: 70, updated_at: "2026-11-03T00:03:00Z"},
-    {id: 2, task_id: 12, worktree_id: 4, state: "queued", test_command: "pytest tests/tax", process_id: null, updated_at: "2026-11-03T00:02:00Z"},
-    {id: 3, task_id: 9, worktree_id: 3, state: "checked", test_command: "pytest tests/old", process_id: 66, updated_at: "2026-11-03T00:01:00Z"},
-    {id: 4, task_id: 8, worktree_id: 4, state: "short", test_command: "pytest tests/older", process_id: 60, updated_at: "2026-11-03T00:00:00Z"},
-    {id: 5, task_id: 7, worktree_id: 4, state: "shown", test_command: "", process_id: null, updated_at: "2026-11-02T23:00:00Z"},
-];
-const WORKTREES = [{id: 3, agent_id: 21}, {id: 4, agent_id: 22}];
-const answers = {"proof list --limit 50": {ok: true, value: {rows: PROOFS}}, "worker-worktree list": {ok: true, value: {rows: WORKTREES}}};
+const RUN = {
+    id: 70,
+    task_id: 11,
+    worker_id: 21,
+    category: "build",
+    line: "make package",
+    state: "running",
+    section: "running",
+    created_at: "2026-11-03T10:00:00Z",
+    started_at: "2026-11-03T10:00:05Z",
+    ended_at: null,
+    uses_slot: true,
+};
+const SNAPSHOT = {
+    environment_id: 1,
+    environment_name: "main",
+    parallel_limit: 2,
+    limit_setting: "journal.core.processes.run-batch-size",
+    count_main_runs: false,
+    main_spots_setting: "journal.core.processes.main-runs-take-slots",
+    used_slots: 1,
+    waiting_count: 2,
+    halted: false,
+    halt_reason: "",
+    running: [RUN],
+    waiting: [
+        {
+            ...RUN,
+            id: 71,
+            task_id: 12,
+            worker_id: 22,
+            section: "waiting",
+            line: "make checks",
+            category: "check",
+            started_at: null,
+            uses_slot: false,
+        },
+        {...RUN, id: 72, task_id: 13, worker_id: 23, section: "waiting", line: "make site", started_at: null, uses_slot: false},
+    ],
+    recent: [
+        {
+            ...RUN,
+            id: 66,
+            task_id: 9,
+            section: "recent",
+            state: "finished",
+            line: "make previous",
+            ended_at: "2026-11-03T10:01:10Z",
+            uses_slot: false,
+        },
+    ],
+};
 let app = null;
+let subscriptions = null;
 
 async function panel(read) {
     location.hash = "#/?open=test_queue:0";
@@ -28,6 +77,8 @@ async function panel(read) {
     const element = document.createElement("div");
     document.body.append(element);
     app = createApp({render: () => h(ResourcePanel, {read})});
+    subscriptions = new WindowSubscriptions();
+    app.provide(RESOURCE_SUBSCRIPTIONS, subscriptions);
     app.mount(element);
     await later();
     await settle();
@@ -35,6 +86,8 @@ async function panel(read) {
 
 afterEach(async () => {
     app?.unmount();
+    expect(subscriptions?.count("resources") ?? 0).toBe(0);
+    subscriptions = null;
     app = null;
     location.hash = "";
     await later();
@@ -43,7 +96,10 @@ afterEach(async () => {
 test("the waiting status of an agent opens the test queue", async () => {
     const worker = {id: 21, session: "s-w", program: "claude", role: "worker", ended_at: null};
     const facts = [{id: 21, model: "sonnet", tasks: [{id: 11, title: "Fix", state: "testing"}], state: "", profile: "", given_name: ""}];
-    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context({"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page(facts)}));
+    const element = await mounted(
+        {render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})},
+        context({"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page(facts), "worker waits": page([{agent_id: 21, reason: "tests"}])})
+    );
     document.body.append(element);
     element.querySelector("[data-agent-waiting]").click();
     await settle();
@@ -51,54 +107,127 @@ test("the waiting status of an agent opens the test queue", async () => {
     expect(element.querySelector("[data-agent-more]")).toBeNull();
 });
 
-const OUTPUT_LINES = ["collected 3 items", "tests/cart passed"];
-const reader = async (line) => answers[line.join(" ")] ?? (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: {rows: []}});
+const OUTPUT_LINES = ["building package", "package built"];
 const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
-const states = (kind) => rowsOf(kind).map((row) => row.querySelector("[data-queue-state]").textContent.trim());
+const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: SNAPSHOT});
 
-test("the test queue lists what waits and what ran lately, each with its worker, task and command", async () => {
-    await panel(reader);
-    const parts = (row) => [...row.querySelectorAll("[data-queue-worker], [data-queue-task], .command")].map((part) => part.textContent.trim());
-    expect(rowsOf("queued").map(parts)).toEqual([["Worker 21", "Task 11", "pytest tests/cart"], ["Worker 22", "Task 12", "pytest tests/tax"]]);
-    expect(rowsOf("recent").map(parts)).toEqual([["Worker 21", "Task 9", "pytest tests/old"], ["Worker 22", "Task 8", "pytest tests/older"]]);
+test("the process queue reads its counts and ordered lists together", async () => {
+    const read = vi.fn(reader);
+    await panel(read);
+    expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
+    expect(document.body.querySelector("[data-resource-panel]").classList.contains("queue")).toBe(true);
+    expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
+    expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
+    expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
+        "Running 1",
+        "Waiting (oldest first) 2",
+        "Finished lately 1",
+    ]);
+    expect(rowsOf("running")[0].textContent).toContain("make package");
+    expect(rowsOf("running")[0].textContent).toContain("Worker 21");
+    expect(rowsOf("running")[0].textContent).toContain("Task 11");
+    expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("build");
+    expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);
+    expect(rowsOf("waiting").map((row) => row.querySelector("[data-queue-position]").textContent)).toEqual(["1", "2"]);
+    expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");
+    expect(rowsOf("recent")[0].querySelector("[data-queue-state]").textContent).toBe("Passed");
 });
 
-test("a row says Waiting, Running, Passed or Failed, and a passed proof never reads as checked", async () => {
-    await panel(reader);
-    expect(states("queued")).toEqual(["Running", "Waiting"]);
-    expect(states("recent")).toEqual(["Passed", "Failed"]);
-    expect(document.body.querySelector("[data-test-queue]").textContent).not.toMatch(/checked|queued|short/i);
-});
-
-test("the headings are Queue and Recent", async () => {
-    await panel(reader);
-    const heading = (kind) => document.body.querySelector(`[data-queue-heading=${kind}]`).textContent.replace(/\d+$/, "").trim();
-    expect(heading("queued")).toBe("Queue");
-    expect(heading("recent")).toBe("Recent");
-});
-
-test("a row's output opens in place under it and collapses again", async () => {
-    await panel(reader);
+test("output opens under a process and collapses again", async () => {
+    const read = vi.fn(reader);
+    await panel(read);
     const row = rowsOf("recent")[0];
-    expect(row.querySelector("[data-queue-output-body]")).toBeNull();
     row.querySelector("[data-queue-output]").click();
     await settle();
     expect(row.querySelector("[data-queue-output-body]").textContent).toBe(OUTPUT_LINES.join("\n"));
     expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("true");
+    expect(read).toHaveBeenCalledWith(["output", "peek", "66", "--lines", "1-10"]);
+    expect(row.querySelector('a[target="_blank"]').getAttribute("href")).toContain("page=processes.output&output=66");
     row.querySelector("[data-queue-output]").click();
     await settle();
     expect(row.querySelector("[data-queue-output-body]")).toBeNull();
-    expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("false");
 });
 
-test("a row whose test has not run has no output to open", async () => {
-    await panel(reader);
-    expect(rowsOf("queued")[1].querySelector("[data-queue-output]")).toBeNull();
+test("the stepper and switch save their declared settings and refresh the queue", async () => {
+    let queue = {...SNAPSHOT};
+    const read = vi.fn(async (line) => {
+        if (line[0] === "setting") {
+            queue =
+                line[2] === SNAPSHOT.limit_setting
+                    ? {...queue, parallel_limit: Number(line[3])}
+                    : {...queue, count_main_runs: line[3] === "on"};
+        }
+        return {ok: true, value: queue};
+    });
+    await panel(read);
+    document.body.querySelector('[aria-label="More runs at once"]').click();
+    await settle();
+    expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.limit_setting, "3"]);
+    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("3");
+    document.body.querySelector('[aria-label="Fewer runs at once"]').click();
+    await settle();
+    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
+    document.body.querySelector("[data-queue-main-spots]").click();
+    await settle();
+    expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.main_spots_setting, "on"]);
+    expect(document.body.querySelector("[data-queue-main-spots]").getAttribute("aria-checked")).toBe("true");
 });
 
-test("an empty process queue says no command waits", async () => {
-    await panel(async () => ({ok: true, value: {rows: []}}));
-    expect(document.body.querySelector("[data-queue-empty]").textContent).toBe("No command waits.");
+test("the minimum limit disables decrease and a refused setting stays unchanged", async () => {
+    await panel(async (line) =>
+        line[0] === "setting" ? {ok: false, error: "Read only"} : {ok: true, value: {...SNAPSHOT, parallel_limit: 1}}
+    );
+    expect(document.body.querySelector('[aria-label="Fewer runs at once"]').disabled).toBe(true);
+    document.body.querySelector('[aria-label="More runs at once"]').click();
+    await settle();
+    expect(document.body.querySelector('[role="alert"]').textContent).toBe("Read only");
+    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("1");
+});
+
+test("a held empty queue shows the reason and empty messages", async () => {
+    await panel(async () => ({
+        ok: true,
+        value: {
+            ...SNAPSHOT,
+            running: [],
+            waiting: [],
+            recent: [],
+            used_slots: 0,
+            waiting_count: 0,
+            halted: true,
+            halt_reason: "Machine maintenance",
+        },
+    }));
+    expect(document.body.querySelector("[data-queue-held]").textContent).toBe("Queue paused: Machine maintenance");
+    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("No run waits. A run that starts now gets a spot at once.");
     expect(document.body.textContent).toContain("Process queue");
     expect(document.body.textContent).not.toContain("Test queue");
+});
+
+test("a failed queue read shows its error", async () => {
+    await panel(async () => ({ok: false, error: "Queue unavailable"}));
+    expect(document.body.querySelector('[role="alert"]').textContent).toBe("Queue unavailable");
+});
+
+test("process events refresh the queue and output events refresh only an open output", async () => {
+    let queue = SNAPSHOT;
+    let output = ["building package"];
+    const read = vi.fn(async (line) => line[0] === "output" ? {ok: true, value: {lines: output}} : {ok: true, value: queue});
+    await panel(read);
+    subscriptions.dispatch({event: "task.update", row_id: 11});
+    await settle();
+    expect(read).toHaveBeenCalledTimes(1);
+    queue = {...SNAPSHOT, waiting: [], waiting_count: 0};
+    subscriptions.dispatch({event: "process.update", row_id: 71});
+    await settle();
+    expect(read).toHaveBeenCalledTimes(2);
+    expect(rowsOf("waiting")).toHaveLength(0);
+    const row = rowsOf("running")[0];
+    row.querySelector("[data-queue-output]").click();
+    await settle();
+    output = ["package built"];
+    subscriptions.dispatch({event: "output.update", row_id: 70});
+    await settle();
+    expect(row.querySelector("[data-queue-output-body]").textContent).toBe("package built");
+    expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
 });

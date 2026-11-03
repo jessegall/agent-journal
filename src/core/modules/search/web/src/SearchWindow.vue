@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Icon, Skeleton, useWindow} from "@journal/window-kit";
+import {Btn, SearchBar, Skeleton, useWindow} from "@journal/window-kit";
 
 // the window a hit opens, by the model it names; a model with no window of its own shows its hit without a link
 const WINDOW_OF = {
@@ -46,11 +46,9 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
 
 <template>
     <div class="search">
-        <form class="search-form" @submit.prevent="find">
-            <Icon name="search" :size="14" />
-            <input v-model="terms" class="search-input" type="search" placeholder="Search the journal" aria-label="Search the journal" />
+        <SearchBar v-model="terms" @keydown.enter.prevent="find">
             <Btn kind="primary" small data-search-go @click="find">Search</Btn>
-        </form>
+        </SearchBar>
         <template v-if="models.length">
             <div class="search-chips">
                 <template v-for="model in models" :key="model">
@@ -88,23 +86,6 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
     display: flex;
     flex-direction: column;
     gap: 14px;
-}
-
-.search-form {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    color: var(--text-3);
-}
-
-.search-input {
-    flex: 1;
-    max-width: 520px;
-    padding: 7px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
 }
 
 .search-chips {

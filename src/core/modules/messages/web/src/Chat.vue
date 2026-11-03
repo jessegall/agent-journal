@@ -4,8 +4,8 @@ import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
 
-const {rows: messages, failure, loaded, load, older, act, context} = useRows("message feed", ["message.*"], {incremental: true});
-const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
+const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useRows("message feed --limit 50", ["message.*"], {incremental: true});
+const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = useRows("chat-mark main --limit 50", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item main", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: pins, act: runOnPin} = useRows("pin list", ["pin.*"]);
@@ -315,7 +315,7 @@ watch(text, (words) => !editing.value && keepDraft(words));
 const paging = ref(false);
 // scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
 async function pageOlder() {
-    if (paging.value || !loaded.value) return;
+    if (returning || paging.value || !loaded.value) return;
     paging.value = true;
     const before = scroller.value.scrollHeight;
     const [more, moreMarks] = await Promise.all([older(), olderMarks()]);
@@ -351,9 +351,11 @@ watch([rows, loaded], async () => {
 // a row that lands while the reader follows the foot comes in as version 4's did: the chat glides up, then the row fades in; the first rows and a page of older ones just appear
 const SETTLE_MS = 1500;
 let settled = false;
-watch(loaded, () => setTimeout(() => (settled = true), SETTLE_MS));
+let settleTimer = 0;
+watch(loaded, () => (settleTimer = setTimeout(() => (settled = true), SETTLE_MS)));
 const comeIn = arrivalQueue();
-const arrivalPane = () => ({pane: scroller.value, follows: () => settled && atFoot && !document.hidden});
+let returning = false;
+const arrivalPane = () => ({pane: scroller.value, follows: () => settled && atFoot && !document.hidden && !returning});
 const rowOf = (element) => rows.value.find((row) => row.id === element.dataset.row)?.row;
 const isEcho = (row) => Boolean(row?.local);
 const arrival = {
@@ -361,11 +363,29 @@ const arrival = {
         const row = rowOf(element);
         return isEcho(row) ? arriveAtOnce(element, arrivalPane(), done) : ["user", "comment"].includes(row?.type) ? done() : comeIn(element, arrivalPane(), done);
     },
-    leave: (element, done) => (!atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
+    leave: (element, done) => (returning || !atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
 };
-const flushWhenHidden = () => document.hidden && comeIn.flush();
-document.addEventListener("visibilitychange", flushWhenHidden);
-onUnmounted(() => document.removeEventListener("visibilitychange", flushWhenHidden));
+async function refreshChat() {
+    comeIn.flush();
+    if (document.hidden || returning) return;
+    returning = true;
+    atFoot = true;
+    awayFromFoot.value = false;
+    arrived.value = 0;
+    try {
+        await Promise.all([loadLatest(), latestMarks()]);
+        await nextTick();
+        if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
+    } finally {
+        returning = false;
+    }
+}
+document.addEventListener("visibilitychange", refreshChat);
+onUnmounted(() => {
+    document.removeEventListener("visibilitychange", refreshChat);
+    clearTimeout(settleTimer);
+    comeIn.flush();
+});
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
 const linkOf = (pin) => (pin.link.startsWith("http") ? pin.link : `#open=${pin.link}`);
 // a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal

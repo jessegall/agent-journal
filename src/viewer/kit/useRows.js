@@ -19,7 +19,9 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     // a changed row is read alone, so one on an older page is kept up to date too; one that no longer lists leaves
     async function changed(id) {
+        const turn = latestLoad;
         const result = await context.read(`${line} --before-id ${id + 1} --limit 1`);
+        if (turn !== latestLoad) return;
         if (!result.ok) return load();
         const row = result.value.rows.find((listed) => listed.id === id);
         rows.value = row ? rows.value.map((held) => (held.id === id ? row : held)) : rows.value.filter((held) => held.id !== id);
@@ -32,7 +34,9 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         const created = incremental && rows.value.length && String(event?.event ?? "").endsWith(".create");
         if (!created) return load();
         const newest = Math.max(...rows.value.map((row) => row.id));
+        const turn = latestLoad;
         const result = await context.read(`${line} --after-id ${newest}`);
+        if (turn !== latestLoad) return;
         if (!result.ok) return load();
         const held = new Set(rows.value.map((row) => row.id));
         rows.value = [...result.value.rows.filter((row) => !held.has(row.id)), ...rows.value];
@@ -41,8 +45,10 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     // the page of rows older than the oldest held, added behind them; false when there are none, and `more` says whether the server holds another page behind it
     async function older() {
         if (!rows.value.length) return false;
+        const turn = latestLoad;
         const oldest = Math.min(...rows.value.map((row) => row.id));
         const result = await context.read(`${line} --before-id ${oldest}`);
+        if (turn !== latestLoad) return false;
         if (!result.ok || !result.value.rows.length) return (more.value = false);
         more.value = followed(result.value);
         const held = new Set(rows.value.map((row) => row.id));
@@ -51,18 +57,28 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     }
 
     let latestLoad = 0;
-    async function load() {
+    async function readPage(take) {
         const turn = ++latestLoad;
         const result = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line);
         if (turn !== latestLoad) return;
         const fresh = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
-        // older pages already read stay when the newest page is read again, so a chat scrolled up keeps its place
+        rows.value = take(fresh);
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
-        rows.value = incremental && result.ok && reach ? [...rows.value.filter((row) => row.id > Math.max(...fresh.map((held) => held.id))), ...fresh, ...rows.value.filter((row) => row.id < reach)] : fresh;
         if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value);
         failure.value = result.ok ? "" : result.error;
         afterSkeletonMinimum(startedAt, () => (loaded.value = true));
     }
+
+    function load() {
+        return readPage((fresh) => {
+            if (!incremental || !fresh.length) return fresh;
+            const reach = Math.min(...fresh.map((row) => row.id));
+            const newest = Math.max(...fresh.map((row) => row.id));
+            return [...rows.value.filter((row) => row.id > newest), ...fresh, ...rows.value.filter((row) => row.id < reach)];
+        });
+    }
+
+    const loadLatest = () => readPage((fresh) => fresh);
 
     // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again; a change, from the rows held to
     // the rows the command will leave, shows at once, and is put back with the reason when the command fails
@@ -79,5 +95,5 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     context.follow(patterns, heard);
     load();
-    return {rows, failure, loaded, more, load, older, act, actionFailure, answer, context};
+    return {rows, failure, loaded, more, load, loadLatest, older, act, actionFailure, answer, context};
 }

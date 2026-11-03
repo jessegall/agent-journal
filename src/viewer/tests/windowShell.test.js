@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from "vue";
-import {afterEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {settledByTimer} from "./settled.js";
@@ -8,7 +9,14 @@ import {perLine} from "./support/windowContext.js";
 const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", line: "task list", loading: "document", reads: ["task list"], runs: [], unavailable_reason: ""};
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
 
-afterEach(() => vi.unstubAllGlobals());
+const mounted = [];
+let checkObservers;
+beforeEach(() => { checkObservers = trackMutationObservers(); });
+afterEach(() => {
+    mounted.splice(0).forEach((app) => app.unmount());
+    checkObservers();
+    vi.unstubAllGlobals();
+});
 
 test("a registry sync asks for the windows again: a removed window shows as not installed and a new one joins the menu", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "the line was refused"})})));
@@ -20,7 +28,9 @@ test("a registry sync asks for the windows again: a removed window shows as not 
         return () => {};
     };
     const element = document.createElement("div");
-    createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], catalogue, events})).mount(element);
+    const app = createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], catalogue, events}));
+    mounted.push(app);
+    app.mount(element);
     await settledByTimer();
     expect(element.textContent).toContain("the line was refused");
     expect(element.querySelector(`[data-reopen="notes.calendar"]`)).toBeNull();
@@ -55,7 +65,9 @@ test("a page window of a module the journal does not ship shows how to trust its
     const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", component_trusted: false, agents: [], windows: []};
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: {...access, rows: []}, error: ""})})));
     const element = document.createElement("div");
-    createApp(() => h(WindowShell, {environment: "main", layout: ["pages.board"], catalogue, events: () => () => {}})).mount(element);
+    const app = createApp(() => h(WindowShell, {environment: "main", layout: ["pages.board"], catalogue, events: () => () => {}}));
+    mounted.push(app);
+    app.mount(element);
     await settledByTimer();
     await new Promise((resolve) => setTimeout(resolve));
     expect(element.textContent).toContain("journal window trust pages");

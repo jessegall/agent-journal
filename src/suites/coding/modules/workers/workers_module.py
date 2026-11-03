@@ -3,6 +3,7 @@ from suites.coding.modules.workers.commands.record_worker_report.record_worker_r
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.migrations.m006_worker_refusals import WorkerRefusalsMigration
+from suites.coding.modules.workers.migrations.m007_process_work import ProofProcessWorkMigration
 from suites.coding.modules.workers.listeners.worker_stop_result_listener import WorkerStopResultListener
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal_handler import RecordWorkerRefusalHandler
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals_handler import ClearWorkerRefusalsHandler
@@ -140,7 +141,7 @@ class WorkersModule(Module):
     models = [ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
+    migrations = [ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove]
     handlers = [RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]

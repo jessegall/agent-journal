@@ -8,9 +8,10 @@ const props = defineProps({tour: {type: Object, required: true}});
 watchEffect(
     (onCleanup) => {
         const step = props.tour.current.value;
+        if (!step) return;
         let marked = null;
         const mark = () => {
-            const target = step && (document.querySelector(step.target) || (step.fallback && document.querySelector(step.fallback)));
+            const target = document.querySelector(step.target) || (step.fallback && document.querySelector(step.fallback));
             if (target === marked) return;
             marked?.classList.remove("tour-target");
             marked = target;

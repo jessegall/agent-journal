@@ -1,5 +1,6 @@
 import {createApp, defineComponent, h} from "vue";
-import {afterEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import {settled} from "./settled.js";
 import {perLine} from "./support/windowContext.js";
 import PaneStage from "../src/windows/PaneStage.vue";
@@ -31,12 +32,15 @@ const entry = (name) => ({name, title: name, icon: "window", options: [], loadin
 const SHAPE = {dir: "row", r: 0.5, a: {tabs: [FEEDS[0]], active: FEEDS[0]}, b: {tabs: [FEEDS[1]], active: FEEDS[1]}};
 // the journal's answer to each line: the old per-window setting is the one given, every other read is refused
 const answers = (setting) => perLine(async (url, init) => {
+    if (String(url).endsWith("/api/session")) return {ok: true, json: async () => ({tour_completed: true})};
     const line = JSON.parse(init.body).line;
     const value = line[1] === "setting" && setting ? {code: 0, value: {value: setting}} : {code: 1, value: null, error: "refused"};
     return {ok: true, json: async () => value};
 });
 
 let drawn = [];
+let checkObservers;
+beforeEach(() => { checkObservers = trackMutationObservers(); });
 
 // a stage over a layout that was saved as it is given, and the layout it saves
 async function stage({page = "home", saved = null, setting = null} = {}) {
@@ -65,6 +69,7 @@ async function stage({page = "home", saved = null, setting = null} = {}) {
 
 afterEach(() => {
     drawn.forEach(({app, element}) => (app.unmount(), element.remove()));
+    checkObservers();
     drawn = [];
     vi.unstubAllGlobals();
     vi.stubGlobal("ResizeObserver", class {

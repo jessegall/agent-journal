@@ -1,0 +1,47 @@
+import assert from "node:assert/strict";
+import {chromium} from "playwright-core";
+
+const [address, worker, subagent, capture] = process.argv.slice(2);
+const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
+try {
+    const page = await browser.newPage({viewport: {width: 1000, height: 960}});
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${address}&windows=agents.agents`);
+    const window = page.locator('[data-window="agents.agents"]');
+    for (const id of [worker, subagent]) {
+        const card = window.locator(`[data-agent-open="${id}"]`);
+        await card.click();
+        if (id === worker) await card.locator('[data-tab="transcript"]').click();
+        await card.getByText("Transcript row 119", {exact: false}).waitFor();
+        const sizes = await window.evaluate((element) => {
+            const card = element.querySelector('[aria-expanded="true"].agent-card');
+            const body = card.querySelector("[data-agent-tab-body]");
+            const pane = body.querySelector(".auto-scroll-pane");
+            const band = element.querySelector("[data-agents-held]");
+            return {bottom: card.getBoundingClientRect().bottom, end: band.getBoundingClientRect().top, body: body.clientHeight, pane: pane.clientHeight, scroll: pane.scrollHeight, outer: element.scrollHeight, height: element.clientHeight, rows: pane.querySelectorAll('[data-row]').length, list: pane.querySelector('.row-list')?.clientHeight, first: pane.querySelector('[data-row]')?.clientHeight};
+        });
+        assert.ok(Math.abs(sizes.bottom - sizes.end) < 3, JSON.stringify(sizes));
+        assert.ok(sizes.body > 600 && sizes.pane > 600, JSON.stringify(sizes));
+        assert.ok(sizes.scroll > sizes.pane, JSON.stringify(sizes));
+        assert.ok(sizes.outer <= sizes.height + 2, JSON.stringify(sizes));
+        await card.locator(".agent-head").click();
+    }
+    await window.locator(`[data-agent-open="${worker}"]`).click();
+    const card = window.locator(`[data-agent-open="${worker}"]`);
+    await card.locator('[data-tab="file-feed"]').click();
+    await card.locator(".file-feed [data-row-list-empty]").waitFor();
+    await page.setViewportSize({width: 1000, height: 1200});
+    const feed = await card.locator(".file-feed").boundingBox();
+    assert.ok(feed.height > 850, JSON.stringify(feed));
+    await page.setViewportSize({width: 1000, height: 700});
+    const smaller = await card.locator(".file-feed").boundingBox();
+    assert.ok(smaller.height < feed.height - 400 && smaller.height > 300, JSON.stringify(smaller));
+    await page.setViewportSize({width: 1000, height: 960});
+    await card.locator('[data-tab="transcript"]').click();
+    await card.getByText("Transcript row 119", {exact: false}).waitFor();
+    await page.screenshot({path: capture, fullPage: true});
+    assert.deepEqual(errors, []);
+} finally {
+    await browser.close();
+}

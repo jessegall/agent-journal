@@ -1,33 +1,33 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-8b26ce1663d7")) { const style = document.createElement("style"); style.id = "window-styles-8b26ce1663d7"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-worker[data-v-24bc1602]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-24bc1602]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-24bc1602]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-24bc1602]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-24bc1602]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-24bc1602]{position:sticky;z-index:2;top:0;display:flex;gap:8px;align-items:center;margin:0 -12px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg)}.tasks-fold[data-v-24bc1602]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-24bc1602]:hover{color:var(--text)}.tasks-caret.closed[data-v-24bc1602]{transform:rotate(-90deg)}.tasks-search[data-v-24bc1602]{flex:1;min-width:0}.tasks-group-head[data-v-24bc1602]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-24bc1602]{margin-left:4px}.task[data-v-24bc1602]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-24bc1602]:hover{background:var(--hover)}.task.selected[data-v-24bc1602]{background:var(--raised)}.task-mark[data-v-24bc1602]{flex:none;width:12px;height:12px;border:1.5px solid var(--text-4);border-radius:50%}.task-mark.started[data-v-24bc1602]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}.task-mark.testing[data-v-24bc1602]{border-color:var(--tone-sequence);background:linear-gradient(90deg,var(--tone-sequence) 50%,transparent 50%)}.tasks-group[data-state=testing] .tasks-fold[data-v-24bc1602]{color:var(--tone-sequence)}.task-mark.blocked[data-v-24bc1602]{border-color:var(--tone-warn)}.task-mark.completed[data-v-24bc1602]{border-color:var(--accent);background:var(--accent)}.task-mark.cancelled[data-v-24bc1602]{opacity:.4}.task-id[data-v-24bc1602]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-24bc1602]{flex:1;min-width:0}.tasks-note[data-v-24bc1602]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-2110d667]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-2110d667]{display:flex;gap:8px;align-items:center}.title[data-v-2110d667],.brief[data-v-2110d667]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-2110d667]{font-weight:500}.brief[data-v-2110d667]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-2110d667]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-2110d667]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-2110d667]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7f04b1f6]{overflow:auto;padding:16px 20px}.graph-note[data-v-7f04b1f6]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7f04b1f6]{position:relative}.graph-lines[data-v-7f04b1f6]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7f04b1f6]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7f04b1f6]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7f04b1f6]:hover,.graph-node.selected[data-v-7f04b1f6]{border-color:var(--accent)}.graph-title[data-v-7f04b1f6]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-00325e8a]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-00325e8a]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-00325e8a],.clear[data-v-00325e8a]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-00325e8a]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-00325e8a]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-00325e8a]{margin:0;font-size:15px;font-weight:600}.standing[data-v-00325e8a]{color:var(--text-3);font-size:12px}.grow[data-v-00325e8a]{flex:1}.tasks-body[data-v-00325e8a]{display:flex;flex:1;min-height:0}.tasks-list[data-v-00325e8a]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
-import { ref as w, computed as R, watch as ue, onUnmounted as le, openBlock as n, createElementBlock as f, createBlock as U, unref as r, toDisplayString as D, Fragment as P, createElementVNode as T, createVNode as y, withCtx as h, renderSlot as $e, createCommentVNode as K, renderList as A, normalizeClass as ae, createTextVNode as _, withKeys as se, onMounted as fe, withModifiers as de, withDirectives as ie, vModelText as ce, normalizeStyle as ke, vShow as be, nextTick as Ce, createSlots as Se } from "vue";
+if (!document.getElementById("window-styles-8bb7e927f7d5")) { const style = document.createElement("style"); style.id = "window-styles-8bb7e927f7d5"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-worker[data-v-4423d110]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-4423d110]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-4423d110]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-4423d110]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-4423d110]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-4423d110]{margin:0 -12px}.tasks-fold[data-v-4423d110]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-4423d110]:hover{color:var(--text)}.tasks-caret.closed[data-v-4423d110]{transform:rotate(-90deg)}.tasks-group-head[data-v-4423d110]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-4423d110]{margin-left:4px}.task[data-v-4423d110]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-4423d110]:hover{background:var(--hover)}.task.selected[data-v-4423d110]{background:var(--raised)}.task-mark[data-v-4423d110]{flex:none;width:12px;height:12px;border:1.5px solid var(--text-4);border-radius:50%}.task-mark.started[data-v-4423d110]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}.task-mark.testing[data-v-4423d110]{border-color:var(--tone-sequence);background:linear-gradient(90deg,var(--tone-sequence) 50%,transparent 50%)}.tasks-group[data-state=testing] .tasks-fold[data-v-4423d110]{color:var(--tone-sequence)}.task-mark.blocked[data-v-4423d110]{border-color:var(--tone-warn)}.task-mark.completed[data-v-4423d110]{border-color:var(--accent);background:var(--accent)}.task-mark.cancelled[data-v-4423d110]{opacity:.4}.task-id[data-v-4423d110]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-4423d110]{flex:1;min-width:0}.tasks-note[data-v-4423d110]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-2110d667]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-2110d667]{display:flex;gap:8px;align-items:center}.title[data-v-2110d667],.brief[data-v-2110d667]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-2110d667]{font-weight:500}.brief[data-v-2110d667]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-2110d667]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-2110d667]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-2110d667]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7f04b1f6]{overflow:auto;padding:16px 20px}.graph-note[data-v-7f04b1f6]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7f04b1f6]{position:relative}.graph-lines[data-v-7f04b1f6]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7f04b1f6]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7f04b1f6]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7f04b1f6]:hover,.graph-node.selected[data-v-7f04b1f6]{border-color:var(--accent)}.graph-title[data-v-7f04b1f6]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-00325e8a]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-00325e8a]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-00325e8a],.clear[data-v-00325e8a]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-00325e8a]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-00325e8a]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-00325e8a]{margin:0;font-size:15px;font-weight:600}.standing[data-v-00325e8a]{color:var(--text-3);font-size:12px}.grow[data-v-00325e8a]{flex:1}.tasks-body[data-v-00325e8a]{display:flex;flex:1;min-height:0}.tasks-list[data-v-00325e8a]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
+import { ref as w, computed as R, watch as ue, onUnmounted as le, openBlock as n, createElementBlock as f, createBlock as U, unref as r, toDisplayString as D, Fragment as P, createVNode as y, withCtx as h, renderSlot as $e, createCommentVNode as K, renderList as A, createElementVNode as N, normalizeClass as ae, createTextVNode as _, withKeys as se, onMounted as fe, withModifiers as de, withDirectives as ie, vModelText as ce, normalizeStyle as ke, vShow as be, nextTick as Ce, createSlots as Se } from "vue";
 import { useWindow as X, Skeleton as ye, SearchBar as xe, Icon as re, priorityLabel as _e, PriorityIcon as De, peekRef as Me, TaskStatusIcon as me, Btn as Y, MenuPanel as he, MenuItem as F, SwitchCase as Te, MenuLabel as J, Dialog as Ne, Segmented as Ee, TaskInspector as Ie } from "@journal/window-kit";
 import { _ as Q } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 async function we(g) {
   const O = await g.read("plan board");
-  return O.ok ? (await Promise.all(O.value.plans.map((N) => g.read(`plan outline ${N.id}`)))).flatMap((N, v) => {
+  return O.ok ? (await Promise.all(O.value.plans.map((T) => g.read(`plan outline ${T.id}`)))).flatMap((T, v) => {
     const $ = O.value.plans[v];
-    return N.ok ? N.value.phases.map((u) => ({ phaseId: u.id, label: `Plan ${$.id}: ${$.title} › ${u.title}`, taskIds: u.tasks.map((m) => m.id) })) : [];
+    return T.ok ? T.value.phases.map((u) => ({ phaseId: u.id, label: `Plan ${$.id}: ${$.title} › ${u.title}`, taskIds: u.tasks.map((m) => m.id) })) : [];
   }) : [];
 }
 const Oe = { class: "tasks" }, Ke = {
   key: 1,
   class: "tasks-note"
-}, Le = { class: "tasks-tools" }, Pe = {
+}, Le = {
   key: 0,
   class: "tasks-note"
-}, Ge = ["data-state"], Ve = {
+}, Pe = ["data-state"], Ge = {
   key: 0,
   class: "tasks-group-head",
   "data-group-head": ""
-}, Be = ["data-fold", "aria-expanded", "onClick"], Re = { class: "tasks-count" }, Ue = ["data-row", "onClick", "onKeydown"], Ye = {
+}, Ve = ["data-fold", "aria-expanded", "onClick"], Be = { class: "tasks-count" }, Re = ["data-row", "onClick", "onKeydown"], Ue = {
   key: 0,
   class: "task-id"
-}, qe = { class: "task-title" }, Ae = ["title"], Fe = {
+}, Ye = { class: "task-title" }, qe = ["title"], Ae = {
   key: 2,
   class: "task-reason",
   "data-task-reason": ""
-}, We = ["title"], je = ["data-more", "onClick"], ve = "journal.tasks.folded", oe = "Not in a plan", ze = {
+}, Fe = ["title"], We = ["data-more", "onClick"], ve = "journal.tasks.folded", oe = "Not in a plan", je = {
   __name: "TaskGroups",
   props: {
     selectable: Boolean,
@@ -37,7 +37,7 @@ const Oe = { class: "tasks" }, Ke = {
   },
   emits: ["select"],
   setup(g, { expose: O, emit: I }) {
-    const N = /* @__PURE__ */ new Set(["completed", "cancelled"]), v = g, $ = I, u = X(), m = w(null), S = w([]), b = w(""), t = w(!1), p = w(/* @__PURE__ */ new Set()), o = w(""), x = u.option("rows"), L = R(() => Number(x.value) > 0 ? ` --limit ${Number(x.value)}` : "");
+    const T = /* @__PURE__ */ new Set(["completed", "cancelled"]), v = g, $ = I, u = X(), m = w(null), S = w([]), b = w(""), t = w(!1), p = w(/* @__PURE__ */ new Set()), o = w(""), x = u.option("rows"), L = R(() => Number(x.value) > 0 ? ` --limit ${Number(x.value)}` : "");
     function G() {
       try {
         return new Set(JSON.parse(localStorage.getItem(ve) || "[]"));
@@ -67,13 +67,13 @@ const Oe = { class: "tasks" }, Ke = {
       return s.ok ? s.value.groups[0] : e;
     }
     async function B(e) {
-      const k = e.rows.length ? N.has(e.state) ? ` --before-closed-at ${e.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...e.rows.map((q) => q.id))}` : "", s = await u.read(`task board --state ${e.state}${k}${L.value}`);
+      const k = e.rows.length ? T.has(e.state) ? ` --before-closed-at ${e.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...e.rows.map((q) => q.id))}` : "", s = await u.read(`task board --state ${e.state}${k}${L.value}`);
       if (!s.ok) return void (b.value = s.error);
       p.value = /* @__PURE__ */ new Set([...p.value, e.state]);
       const E = S.value.find((q) => q.state === e.state), C = new Set(E.rows.map((q) => q.id));
       E.rows = [...E.rows, ...s.value.groups[0].rows.filter((q) => !C.has(q.id))];
     }
-    const W = (e) => e.total && (v.states.length ? v.states.includes(e.state) : v.display.showDone || !N.has(e.state)), Z = w([]), j = ["started", "testing", "blocked", "open"], z = (e) => e.state === "delegated" ? [...e.rows].sort((k, s) => j.indexOf(k.state) - j.indexOf(s.state)) : e.rows, ee = R(() => {
+    const W = (e) => e.total && (v.states.length ? v.states.includes(e.state) : v.display.showDone || !T.has(e.state)), Z = w([]), j = ["started", "testing", "blocked", "open"], z = (e) => e.state === "delegated" ? [...e.rows].sort((k, s) => j.indexOf(k.state) - j.indexOf(s.state)) : e.rows, ee = R(() => {
       const e = o.value.trim().toLowerCase();
       return S.value.filter(W).map((k) => ({ group: k, tasks: z(k).filter((s) => !e || `${s.title} ${s.id}`.toLowerCase().includes(e)) })).filter(({ tasks: k }) => !e || k.length);
     }), ne = R(() => {
@@ -97,28 +97,26 @@ const Oe = { class: "tasks" }, Ke = {
       return (e = m.value) == null ? void 0 : e.focus();
     } }), (e, k) => (n(), f("div", Oe, [
       t.value ? b.value ? (n(), f("p", Ke, D(b.value), 1)) : (n(), f(P, { key: 2 }, [
-        T("div", Le, [
-          y(r(xe), {
-            ref_key: "search",
-            ref: m,
-            modelValue: o.value,
-            "onUpdate:modelValue": k[0] || (k[0] = (s) => o.value = s),
-            class: "tasks-search"
-          }, {
-            default: h(() => [
-              $e(e.$slots, "tools", {}, void 0, !0)
-            ]),
-            _: 3
-          }, 8, ["modelValue"])
-        ]),
-        H.value.length ? K("", !0) : (n(), f("p", Pe, D(o.value ? "No task matches" : "No tasks yet"), 1)),
+        y(r(xe), {
+          ref_key: "search",
+          ref: m,
+          modelValue: o.value,
+          "onUpdate:modelValue": k[0] || (k[0] = (s) => o.value = s),
+          class: "tasks-tools"
+        }, {
+          default: h(() => [
+            $e(e.$slots, "tools", {}, void 0, !0)
+          ]),
+          _: 3
+        }, 8, ["modelValue"]),
+        H.value.length ? K("", !0) : (n(), f("p", Le, D(o.value ? "No task matches" : "No tasks yet"), 1)),
         (n(!0), f(P, null, A(H.value, ({ group: s, tasks: E }) => (n(), f("section", {
           key: s.state,
           class: "tasks-group",
           "data-state": s.state
         }, [
-          g.display.grouping !== "none" ? (n(), f("h3", Ve, [
-            T("button", {
+          g.display.grouping !== "none" ? (n(), f("h3", Ge, [
+            N("button", {
               type: "button",
               class: "tasks-fold",
               "data-fold": s.state,
@@ -131,8 +129,8 @@ const Oe = { class: "tasks" }, Ke = {
                 class: ae(["tasks-caret", { closed: M.value.has(s.state) }])
               }, null, 8, ["class"]),
               _(" " + D(s.label ?? te(s.state)) + " ", 1),
-              T("span", Re, D(s.total), 1)
-            ], 8, Be)
+              N("span", Be, D(s.total), 1)
+            ], 8, Ve)
           ])) : K("", !0),
           (n(!0), f(P, null, A(M.value.has(s.state) ? [] : E, (C) => (n(), f("div", {
             key: C.id,
@@ -143,56 +141,56 @@ const Oe = { class: "tasks" }, Ke = {
             onClick: (q) => d(C.id),
             onKeydown: se((q) => d(C.id), ["enter"])
           }, [
-            T("span", {
+            N("span", {
               class: ae(["task-mark", C.state])
             }, null, 2),
-            g.display.number ? (n(), f("span", Ye, D(C.id), 1)) : K("", !0),
-            T("span", qe, D(C.title), 1),
+            g.display.number ? (n(), f("span", Ue, D(C.id), 1)) : K("", !0),
+            N("span", Ye, D(C.title), 1),
             s.state === "delegated" ? (n(), f("span", {
               key: 1,
               class: "task-worker",
               title: `Delegated to agent ${C.delegated_to}, in state ${C.state}`,
               "data-task-worker": ""
-            }, "Worker " + D(C.delegated_to), 9, Ae)) : K("", !0),
-            g.display.reason && C.reason ? (n(), f("span", Fe, D(C.reason), 1)) : K("", !0),
-            T("span", {
+            }, "Worker " + D(C.delegated_to), 9, qe)) : K("", !0),
+            g.display.reason && C.reason ? (n(), f("span", Ae, D(C.reason), 1)) : K("", !0),
+            N("span", {
               title: `Priority: ${r(_e)(C.priority)}`,
               "data-task-priority": ""
             }, [
               y(r(De), {
                 value: C.priority
               }, null, 8, ["value"])
-            ], 8, We)
-          ], 42, Ue))), 128)),
+            ], 8, Fe)
+          ], 42, Re))), 128)),
           !M.value.has(s.state) && s.rows.length < s.total ? (n(), f("button", {
             key: 1,
             type: "button",
             class: "tasks-more",
             "data-more": s.state,
             onClick: (C) => B(s)
-          }, D(s.rows.length ? "Show more" : `Show ${s.total} ${s.total === 1 ? "task" : "tasks"}`), 9, je)) : K("", !0)
-        ], 8, Ge))), 128))
+          }, D(s.rows.length ? "Show more" : `Show ${s.total} ${s.total === 1 ? "task" : "tasks"}`), 9, We)) : K("", !0)
+        ], 8, Pe))), 128))
       ], 64)) : (n(), U(r(ye), {
         key: 0,
         shape: "rows"
       }))
     ]));
   }
-}, ge = /* @__PURE__ */ Q(ze, [["__scopeId", "data-v-24bc1602"]]), He = { class: "line" }, Xe = ["onKeydown"], Je = {
+}, ge = /* @__PURE__ */ Q(je, [["__scopeId", "data-v-4423d110"]]), ze = { class: "line" }, He = ["onKeydown"], Xe = {
   key: 0,
   class: "failure",
   role: "alert"
-}, Qe = { class: "foot" }, Ze = {
+}, Je = { class: "foot" }, Qe = {
   __name: "NewTask",
   emits: ["filed", "cancel"],
   setup(g, { emit: O }) {
-    const I = O, N = X(), v = w(""), $ = w(""), u = w(""), m = w(null), S = R(() => !!v.value.trim());
+    const I = O, T = X(), v = w(""), $ = w(""), u = w(""), m = w(null), S = R(() => !!v.value.trim());
     async function b() {
       if (!S.value) return;
-      const M = await N.run(["task", "make", v.value.trim(), ...$.value.trim() ? ["--brief", $.value.trim()] : []]);
+      const M = await T.run(["task", "make", v.value.trim(), ...$.value.trim() ? ["--brief", $.value.trim()] : []]);
       if (u.value = M.ok ? "" : M.error, !!M.ok) {
         if (t.value) {
-          const i = await N.run(["phase", "place", String(M.value.id), "--phase", String(t.value.phaseId)]);
+          const i = await T.run(["phase", "place", String(M.value.id), "--phase", String(t.value.phaseId)]);
           u.value = i.ok ? "" : i.error;
         }
         I("filed", M.value.id);
@@ -200,7 +198,7 @@ const Oe = { class: "tasks" }, Ke = {
     }
     const t = w(null), p = w([]), o = w(null);
     async function x(M) {
-      o.value = M.currentTarget, p.value = await we(N);
+      o.value = M.currentTarget, p.value = await we(T);
     }
     function L(M) {
       t.value = M, o.value = null;
@@ -211,9 +209,9 @@ const Oe = { class: "tasks" }, Ke = {
       "data-task-draft": "",
       onKeydown: i[5] || (i[5] = se(de((a) => I("cancel"), ["stop", "prevent"]), ["esc"]))
     }, [
-      T("div", He, [
+      N("div", ze, [
         y(r(me), { status: "open" }),
-        ie(T("input", {
+        ie(N("input", {
           ref_key: "input",
           ref: m,
           "onUpdate:modelValue": i[0] || (i[0] = (a) => v.value = a),
@@ -221,11 +219,11 @@ const Oe = { class: "tasks" }, Ke = {
           placeholder: "Task title",
           "aria-label": "Task title",
           onKeydown: se(de(b, ["prevent"]), ["enter"])
-        }, null, 40, Xe), [
+        }, null, 40, He), [
           [ce, v.value]
         ])
       ]),
-      ie(T("textarea", {
+      ie(N("textarea", {
         "onUpdate:modelValue": i[1] || (i[1] = (a) => $.value = a),
         class: "brief",
         rows: "1",
@@ -235,9 +233,9 @@ const Oe = { class: "tasks" }, Ke = {
       }, null, 544), [
         [ce, $.value]
       ]),
-      u.value ? (n(), f("p", Je, D(u.value), 1)) : K("", !0),
-      T("div", Qe, [
-        i[9] || (i[9] = T("span", { class: "hint" }, "Enter to file it, Esc to cancel", -1)),
+      u.value ? (n(), f("p", Xe, D(u.value), 1)) : K("", !0),
+      N("div", Je, [
+        i[9] || (i[9] = N("span", { class: "hint" }, "Enter to file it, Esc to cancel", -1)),
         y(r(Y), {
           small: "",
           "data-task-place": "",
@@ -301,16 +299,16 @@ const Oe = { class: "tasks" }, Ke = {
       ])
     ], 32));
   }
-}, et = /* @__PURE__ */ Q(Ze, [["__scopeId", "data-v-2110d667"]]), V = { width: 188, height: 52, gapX: 40, gapY: 12 };
-function tt(g, O) {
+}, Ze = /* @__PURE__ */ Q(Qe, [["__scopeId", "data-v-2110d667"]]), V = { width: 188, height: 52, gapX: 40, gapY: 12 };
+function et(g, O) {
   var b;
   const I = new Map(g.map((t) => [t.id, []]));
   for (const [t, p] of O) (b = I.get(t)) == null || b.push(p);
-  const N = /* @__PURE__ */ new Map(), v = (t, p = /* @__PURE__ */ new Set()) => {
-    if (N.has(t)) return N.get(t);
+  const T = /* @__PURE__ */ new Map(), v = (t, p = /* @__PURE__ */ new Set()) => {
+    if (T.has(t)) return T.get(t);
     if (p.has(t)) return 0;
     const o = (I.get(t) ?? []).map((L) => v(L, /* @__PURE__ */ new Set([...p, t])) + 1), x = o.length ? Math.max(...o) : 0;
-    return N.set(t, x), x;
+    return T.set(t, x), x;
   }, $ = /* @__PURE__ */ new Map(), u = g.map((t) => {
     const p = v(t.id), o = $.get(p) ?? 0;
     return $.set(p, o + 1), { task: t, x: p * (V.width + V.gapX), y: o * (V.height + V.gapY) };
@@ -322,34 +320,34 @@ function tt(g, O) {
     height: Math.max(0, ...u.map((t) => t.y + V.height))
   };
 }
-const at = {
+const tt = {
   class: "graph",
   "data-task-graph": ""
-}, st = {
+}, at = {
   key: 0,
   class: "graph-note"
-}, lt = {
+}, st = {
   key: 2,
   class: "graph-note"
-}, nt = ["width", "height"], ot = ["d"], it = ["data-graph-node", "onClick"], rt = { class: "graph-title" }, ut = {
+}, lt = ["width", "height"], nt = ["d"], ot = ["data-graph-node", "onClick"], it = { class: "graph-title" }, rt = {
   __name: "TaskGraphView",
   props: { selected: { type: Number, default: 0 } },
   emits: ["select"],
   setup(g, { emit: O }) {
-    const I = O, N = X(), v = w(null), $ = w(""), u = R(() => {
+    const I = O, T = X(), v = w(null), $ = w(""), u = R(() => {
       var t, p;
-      return tt(((t = v.value) == null ? void 0 : t.tasks) ?? [], ((p = v.value) == null ? void 0 : p.edges) ?? []);
+      return et(((t = v.value) == null ? void 0 : t.tasks) ?? [], ((p = v.value) == null ? void 0 : p.edges) ?? []);
     }), m = (t) => {
       const p = t.from.x + V.width, o = t.from.y + V.height / 2, x = t.to.y + V.height / 2, L = (p + t.to.x) / 2;
       return `M ${p} ${o} C ${L} ${o}, ${L} ${x}, ${t.to.x} ${x}`;
     };
     async function S() {
-      const t = await N.read("task graph");
+      const t = await T.read("task graph");
       $.value = t.ok ? "" : t.error, t.ok && (v.value = t.value);
     }
-    const b = N.follow(["task.*"], S);
-    return le(() => b == null ? void 0 : b()), S(), (t, p) => (n(), f("div", at, [
-      $.value ? (n(), f("p", st, D($.value), 1)) : v.value ? u.value.nodes.length ? (n(), f("div", {
+    const b = T.follow(["task.*"], S);
+    return le(() => b == null ? void 0 : b()), S(), (t, p) => (n(), f("div", tt, [
+      $.value ? (n(), f("p", at, D($.value), 1)) : v.value ? u.value.nodes.length ? (n(), f("div", {
         key: 3,
         class: "graph-canvas",
         style: ke({ width: `${u.value.width}px`, height: `${u.value.height}px` })
@@ -364,8 +362,8 @@ const at = {
             key: o.key,
             d: m(o),
             "data-graph-line": ""
-          }, null, 8, ot))), 128))
-        ], 8, nt)),
+          }, null, 8, nt))), 128))
+        ], 8, lt)),
         (n(!0), f(P, null, A(u.value.nodes, (o) => (n(), f("button", {
           key: o.task.id,
           type: "button",
@@ -377,24 +375,24 @@ const at = {
           y(r(me), {
             status: o.task.state
           }, null, 8, ["status"]),
-          T("span", rt, D(o.task.id) + " " + D(o.task.title), 1)
-        ], 14, it))), 128))
-      ], 4)) : (n(), f("p", lt, "No task waits on another. Block one with what it waits on and it shows here.")) : (n(), U(r(ye), {
+          N("span", it, D(o.task.id) + " " + D(o.task.title), 1)
+        ], 14, ot))), 128))
+      ], 4)) : (n(), f("p", st, "No task waits on another. Block one with what it waits on and it shows here.")) : (n(), U(r(ye), {
         key: 1,
         shape: "rows"
       }))
     ]));
   }
-}, dt = /* @__PURE__ */ Q(ut, [["__scopeId", "data-v-7f04b1f6"]]), ct = {
+}, ut = /* @__PURE__ */ Q(rt, [["__scopeId", "data-v-7f04b1f6"]]), dt = {
   key: 0,
   class: "menu-note",
   role: "alert"
-}, kt = {
+}, ct = {
   __name: "TasksMenus",
   props: { states: { type: Array, required: !0 }, display: { type: Object, required: !0 }, selected: { type: Number, default: 0 } },
   emits: ["states", "display", "deleted"],
   setup(g, { emit: O }) {
-    const I = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"], N = [
+    const I = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"], T = [
       { key: "state", label: "Status" },
       { key: "plan", label: "Plan and phase" },
       { key: "none", label: "Nothing" }
@@ -509,7 +507,7 @@ const at = {
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A(N, (c) => y(r(F), {
+              (n(), f(P, null, A(T, (c) => y(r(F), {
                 key: c.key,
                 on: g.display.grouping === c.key,
                 "data-grouping": c.key,
@@ -555,12 +553,12 @@ const at = {
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A($, ([c, B]) => T("span", {
+              (n(), f(P, null, A($, ([c, B]) => N("span", {
                 key: c,
                 class: "key-line"
               }, [
                 _(D(B), 1),
-                T("kbd", null, D(c), 1)
+                N("kbd", null, D(c), 1)
               ])), 64))
             ]),
             default: h(() => [
@@ -579,7 +577,7 @@ const at = {
                 ]),
                 _: 1
               }),
-              p.value ? (n(), f("p", ct, D(p.value), 1)) : K("", !0)
+              p.value ? (n(), f("p", dt, D(p.value), 1)) : K("", !0)
             ]),
             _: 1
           }, 8, ["value"])
@@ -588,27 +586,27 @@ const at = {
       }, 8, ["anchor"])) : K("", !0)
     ], 64));
   }
-}, vt = /* @__PURE__ */ Q(kt, [["__scopeId", "data-v-29d89535"]]), pt = {
+}, kt = /* @__PURE__ */ Q(ct, [["__scopeId", "data-v-29d89535"]]), vt = {
   class: "tasks-dialog",
   "data-tasks-dialog": ""
-}, ft = { class: "tasks-head" }, yt = {
+}, pt = { class: "tasks-head" }, ft = {
   class: "standing",
   "data-tasks-standing": ""
-}, mt = {
+}, yt = {
   key: 0,
   class: "filters",
   "data-task-filters": ""
-}, ht = {
+}, mt = {
   key: 0,
   class: "chip"
-}, wt = {
+}, ht = {
   key: 1,
   class: "chip"
-}, gt = { class: "tasks-body" }, $t = { class: "tasks-list" }, pe = "input,textarea,select,[contenteditable],.menu-panel", bt = {
+}, wt = { class: "tasks-body" }, gt = { class: "tasks-list" }, pe = "input,textarea,select,[contenteditable],.menu-panel", $t = {
   __name: "TasksDialog",
   emits: ["close"],
   setup(g, { emit: O }) {
-    const I = O, N = X(), v = w(!0), $ = w(null), u = w(null), m = w(0), S = w(!1), b = w(!1), t = w(0), p = [
+    const I = O, T = X(), v = w(!0), $ = w(null), u = w(null), m = w(0), S = w(!1), b = w(!1), t = w(0), p = [
       { key: "list", label: "List" },
       { key: "graph", label: "Graph" }
     ], o = w("list"), x = w([]), L = w({ grouping: "state", number: !0, reason: !1, showDone: !1 }), G = R(() => {
@@ -621,7 +619,7 @@ const at = {
     function c() {
       S.value = !1, m.value = 0;
     }
-    const B = N.follow(["task.*", "task_log.*"], () => t.value += 1);
+    const B = T.follow(["task.*", "task_log.*"], () => t.value += 1);
     le(() => B == null ? void 0 : B());
     const W = R(() => {
       var d;
@@ -686,17 +684,17 @@ const at = {
       onClose: l[10] || (l[10] = (e) => I("close"))
     }, {
       default: h(() => [
-        T("div", pt, [
-          T("header", ft, [
-            l[12] || (l[12] = T("h2", null, "Tasks", -1)),
-            T("span", yt, D(Z.value), 1),
-            l[13] || (l[13] = T("span", { class: "grow" }, null, -1)),
+        N("div", vt, [
+          N("header", pt, [
+            l[12] || (l[12] = N("h2", null, "Tasks", -1)),
+            N("span", ft, D(Z.value), 1),
+            l[13] || (l[13] = N("span", { class: "grow" }, null, -1)),
             y(r(Ee), {
               options: p,
               value: o.value,
               onPick: l[0] || (l[0] = (e) => o.value = e)
             }, null, 8, ["value"]),
-            y(vt, {
+            y(kt, {
               states: x.value,
               display: L.value,
               selected: m.value,
@@ -734,45 +732,45 @@ const at = {
               _: 1
             })
           ]),
-          M.value ? (n(), f("div", mt, [
-            x.value.length ? (n(), f("span", ht, [
+          M.value ? (n(), f("div", yt, [
+            x.value.length ? (n(), f("span", mt, [
               _(" Status: " + D(x.value.map(i).join(" or ")) + " ", 1),
-              T("button", {
+              N("button", {
                 type: "button",
                 title: "Remove this filter",
                 "aria-label": "Remove this filter",
                 onClick: l[5] || (l[5] = (e) => x.value = [])
               }, "×")
             ])) : K("", !0),
-            G.value ? (n(), f("span", wt, [
+            G.value ? (n(), f("span", ht, [
               _(" Search: “" + D(G.value) + "” ", 1),
-              T("button", {
+              N("button", {
                 type: "button",
                 title: "Clear the search",
                 "aria-label": "Clear the search",
                 onClick: l[6] || (l[6] = (e) => $.value.query = "")
               }, "×")
             ])) : K("", !0),
-            T("button", {
+            N("button", {
               type: "button",
               class: "clear",
               "data-clear-filters": "",
               onClick: a
             }, "Clear all")
           ])) : K("", !0),
-          T("div", gt, [
-            T("div", $t, [
-              b.value ? (n(), U(et, {
+          N("div", wt, [
+            N("div", gt, [
+              b.value ? (n(), U(Ze, {
                 key: 0,
                 onFiled: ee,
                 onCancel: l[7] || (l[7] = (e) => b.value = !1)
               })) : K("", !0),
-              o.value === "graph" ? (n(), U(dt, {
+              o.value === "graph" ? (n(), U(ut, {
                 key: 1,
                 selected: m.value,
                 onSelect: j
               }, null, 8, ["selected"])) : K("", !0),
-              ie(T("div", null, [
+              ie(N("div", null, [
                 y(ge, {
                   ref_key: "list",
                   ref: $,
@@ -792,7 +790,7 @@ const at = {
               ref: u,
               stepped: "",
               id: m.value,
-              read: r(N).run,
+              read: r(T).run,
               changes: t.value,
               onClose: l[8] || (l[8] = (e) => S.value = !1),
               onStep: z,
@@ -804,11 +802,11 @@ const at = {
       _: 1
     }, 8, ["open"]));
   }
-}, Ct = /* @__PURE__ */ Q(bt, [["__scopeId", "data-v-00325e8a"]]), Dt = {
+}, bt = /* @__PURE__ */ Q($t, [["__scopeId", "data-v-00325e8a"]]), _t = {
   __name: "TasksWindow",
   setup(g) {
     const O = X(), I = w(!1);
-    return (N, v) => (n(), f(P, null, [
+    return (T, v) => (n(), f(P, null, [
       y(ge, null, Se({ _: 2 }, [
         r(O).shared ? void 0 : {
           name: "tools",
@@ -828,7 +826,7 @@ const at = {
           key: "0"
         }
       ]), 1024),
-      I.value ? (n(), U(Ct, {
+      I.value ? (n(), U(bt, {
         key: 0,
         onClose: v[1] || (v[1] = ($) => I.value = !1)
       })) : K("", !0)
@@ -836,5 +834,5 @@ const at = {
   }
 };
 export {
-  Dt as default
+  _t as default
 };

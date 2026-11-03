@@ -1,5 +1,5 @@
-# @righteous-file naming_GoPoeticMethodNameDetector
-# @righteous-file naming_GoSentenceMethodNameDetector
+# @righteous-file naming_PoeticMethodNameDetector
+# @righteous-file naming_SentenceMethodNameDetector
 # @righteous-file naming_PoeticVariableNameDetector
 # @righteous-file naming_SentenceVariableNameDetector
 

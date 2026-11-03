@@ -10,7 +10,7 @@ const tools = useListTools(toRef(props, "rows"), {title: (skill) => skill.folder
 <template>
     <div class="skills">
         <button type="button" class="skills-back" @click="emit('back')">Back</button>
-        <ListTools :tools="tools" placeholder="Search the skills" />
+        <ListTools :tools="tools" />
         <ul class="skills-catalogue">
             <template v-for="skill in tools.shown.value" :key="skill.folder">
                 <li>

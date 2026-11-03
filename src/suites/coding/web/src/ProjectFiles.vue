@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, Skeleton, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, Icon, SearchBar, Skeleton, useWindow} from "@journal/window-kit";
 
 // the project's files as version 4's browser had them: a folder's entries or the files a search finds, and the file chosen beside them
 const context = useWindow();
@@ -50,13 +50,12 @@ if (address.get("file")) open({id: address.get("file"), folder: false}, Number(a
 
 <template>
     <div class="files">
-        <div class="files-bar">
-            <TextInput v-model="words" icon="search" class="files-search" placeholder="Find a file in the project" data-files-search />
+        <SearchBar v-model="words" class="files-bar" data-files-search>
             <Btn small data-files-root :disabled="!folder" @click="folder = ''">Project</Btn>
             <template v-for="(crumb, index) in crumbs" :key="crumbPath(index)">
                 <Btn small :data-files-crumb="crumbPath(index)" @click="folder = crumbPath(index)">{{ crumb }}</Btn>
             </template>
-        </div>
+        </SearchBar>
         <div class="files-body">
             <div class="files-list" data-files-list>
                 <template v-if="failure">
@@ -104,18 +103,8 @@ if (address.get("file")) open({id: address.get("file"), folder: false}, Number(a
 }
 
 .files-bar {
-    display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.files-search {
-    flex: 0 1 280px;
-    min-width: 160px;
-    margin-right: 6px;
 }
 
 .files-body {

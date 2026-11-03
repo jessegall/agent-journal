@@ -50,7 +50,7 @@
     },
     "sin": {
         "description": "A method is named as a sentence: a function word in it, an article, a pronoun, an adverb, a preposition phrase or a place word, such as typed_one_by_one, hold_the_stop, tried_again, blocked_outside.",
-        "name": "go-sentence-method-name",
+        "name": "sentence-method-name",
         "rule": "A method name is a verb and its object, in the imperative, without articles, pronouns, adverbs or preposition phrases: type_lines, hold_stop, retry, speak_to_user.",
         "skill": "plain-code-words"
     }

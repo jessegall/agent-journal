@@ -20,4 +20,4 @@ class TriggerActionsListener(CommitListener):
         if FIRED_FIELD not in event.data:
             return
         for action in self.queries.query(Trigger).find(event.row_id).parsed_extra_actions():
-            self.process.start(action)
+            self.process.start(action, event)

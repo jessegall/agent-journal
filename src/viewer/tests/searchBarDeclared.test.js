@@ -1,8 +1,11 @@
 import {afterEach, expect, test} from "vitest";
 import {createApp, h} from "vue";
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, settle} from "./support/windowContext.js";
 import SearchBar from "../kit/SearchBar.vue";
+import {matchesSearch} from "../kit/searchFields.js";
 
 const SEARCH = {
     placeholder: "Search the tasks",
@@ -40,6 +43,21 @@ async function bar(search, props = {}) {
 }
 
 const entry = (title) => document.querySelector(`[data-search-entry="${title}"]`);
+
+test("the shared search bar owns its sticky position and bottom border", () => {
+    const source = readFileSync(resolve(__dirname, "../kit/SearchBar.vue"), "utf8");
+    const style = source.slice(source.indexOf(".search-bar {"), source.indexOf(".search-bar-control {"));
+    expect(style).toContain("position: sticky;");
+    expect(style).toContain("top: 0;");
+    expect(style).toContain("border-bottom: 1px solid var(--border);");
+});
+
+test("a search matches only the fields its backend declaration names", () => {
+    const row = {title: "Cart totals", body: "Private implementation notes"};
+    expect(matchesSearch(row, "cart", ["title"])).toBe(true);
+    expect(matchesSearch(row, "private", ["title"])).toBe(false);
+    expect(matchesSearch(row, "private", ["body"])).toBe(true);
+});
 
 test("the bar draws the placeholder the window declares over the one it was given", async () => {
     await bar(SEARCH, {placeholder: "Search"});

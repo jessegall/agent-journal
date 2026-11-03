@@ -50,3 +50,15 @@ test("older rows are read before the oldest held and added behind them", async (
     expect(await rows.older()).toBe(false);
     expect([...reads].slice(1)).toEqual(["message list --before-id 4", "message list --before-id 2"]);
 });
+
+test("loading the newest page drops older pages and ignores an earlier incremental answer", async () => {
+    const reads = [];
+    reads.answers = [[{id: 5}, {id: 4}], [{id: 3}, {id: 2}], [{id: 6}], [{id: 50}, {id: 49}]];
+    const {rows, heard} = rowsOf(reads);
+    await new Promise((resolve) => setTimeout(resolve));
+    await rows.older();
+    const catchingUp = heard[0]({event: "message.create"});
+    const newest = rows.loadLatest();
+    await Promise.all([catchingUp, newest]);
+    expect(rows.rows.value).toEqual([{id: 50}, {id: 49}]);
+});

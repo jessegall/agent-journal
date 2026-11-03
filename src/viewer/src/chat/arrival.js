@@ -37,7 +37,15 @@ function arrive(el, {pane, follows, frame = requestAnimationFrame, clock = () =>
     el.style.height = `${height}px`;
     const began = clock();
     let fading = false;
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        Object.assign(el.style, {boxSizing: "", height: "", overflow: "", opacity: "", transform: "", transition: ""});
+        done();
+    };
     const hold = () => {
+        if (finished) return;
         if (follows()) pane.scrollTop = holdFoot(pane, el);
         const elapsed = clock() - began;
         if (!fading && elapsed >= PUSH_MS) {
@@ -47,10 +55,10 @@ function arrive(el, {pane, follows, frame = requestAnimationFrame, clock = () =>
             el.style.transform = "translateY(0)";
         }
         if (elapsed < PUSH_MS + FADE_MS) return frame(hold);
-        Object.assign(el.style, {boxSizing: "", height: "", overflow: "", opacity: "", transform: "", transition: ""});
-        done();
+        finish();
     };
     frame(hold);
+    return finish;
 }
 
 // The user's own message, just sent: it is there at once at its full size, so the user sees what they sent before the journal answers,
@@ -81,11 +89,18 @@ export const BATCH_ROWS = 5;
 // ones still waiting held off the page (display none) so the chat stays where it is. A reader who is away gets every turn at once.
 export function arrivalQueue({gap = QUEUE_GAP_MS, later = setTimeout} = {}) {
     const waiting = [];
+    const active = new Set();
     let running = false;
-    const finish = (item) => {
-        item.done();
-        later(next, gap);
-    };
+    let timer = 0;
+    let bulk = false;
+    function start(item, finished) {
+        active.add(item);
+        item.cancel = item.arrival(item.el, item.options, () => {
+            active.delete(item);
+            item.done();
+            finished();
+        });
+    }
     function next() {
         const batch = waiting.splice(0, BATCH_ROWS);
         running = batch.length > 0;
@@ -93,25 +108,30 @@ export function arrivalQueue({gap = QUEUE_GAP_MS, later = setTimeout} = {}) {
         let left = batch.length;
         for (const item of batch) {
             item.el.style.display = item.display;
-            item.arrival(item.el, item.options, () => {
-                item.done();
+            start(item, () => {
                 left -= 1;
-                if (!left) later(next, gap);
+                if (!left) timer = later(next, gap);
             });
         }
     }
     const enqueue = (el, options, done, arrival = arrive) => {
-        if (!options.pane || !options.follows()) return done();
+        if (bulk || !options.pane || !options.follows()) return done();
         const item = {el, options, done, arrival, display: el.style.display || ""};
         if (!running) {
             running = true;
-            return arrival(el, options, () => finish(item));
+            return start(item, () => (timer = later(next, gap)));
         }
         el.style.display = "none";
         waiting.push(item);
+        if (waiting.length >= BATCH_ROWS) enqueue.flush();
     };
     // every turn still waiting is shown at once, as when the tab is hidden and nobody sees them come in
     enqueue.flush = () => {
+        bulk = true;
+        queueMicrotask(() => (bulk = false));
+        for (const item of [...active]) item.cancel?.();
+        clearTimeout(timer);
+        running = false;
         for (const item of waiting.splice(0)) {
             item.el.style.display = item.display;
             item.done();

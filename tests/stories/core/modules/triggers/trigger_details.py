@@ -49,6 +49,14 @@ class RunSignal:
         assert readable, "the extra command did not run"
 
 
+def extra_command_runner(story):
+    binary = story.home.folder / "bin" / "journal-run"
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    binary.write_text('#!/bin/sh\nfor line do :; done\nexec sh -c "$line"\n')
+    binary.chmod(0o755)
+    return story
+
+
 def test_a_trigger_keeps_its_name_and_description(new_story):
     story = new_story(fixture=AgentsEnableTriggers)
     made(story, '--name "Never force push" --description "Blocks it"')
@@ -128,7 +136,7 @@ def test_a_paused_trigger_rests_and_goes_on_again(new_story):
 
 
 def test_a_fired_trigger_runs_its_extra_command(new_story, tmp_path):
-    story = new_story(fixture=AgentsEnableTriggers)
+    story = extra_command_runner(new_story(fixture=AgentsEnableTriggers))
     marker = RunSignal(tmp_path)
     story.expect_success('trigger make "cart" "Mind the cart"', actor=story.agent)
     story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""", actor=story.agent)
@@ -139,7 +147,7 @@ def test_a_fired_trigger_runs_its_extra_command(new_story, tmp_path):
 
 
 def test_a_trigger_that_blocks_counts_as_fired_and_runs_its_extra_command(new_story, tmp_path):
-    story = new_story(fixture=AgentsEnableTriggers)
+    story = extra_command_runner(new_story(fixture=AgentsEnableTriggers))
     marker = RunSignal(tmp_path)
     made(story, f"""--extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""")
     story.expect_hook_refusal("s-1", GIT_CHAIN, "Never force push")
@@ -158,7 +166,7 @@ def test_a_trigger_ends_at_its_limit_of_firings(new_story):
 
 
 def test_a_scheduled_trigger_runs_its_extra_command_when_its_time_comes(new_story, tmp_path):
-    story = new_story(fixture=AgentsEnableTriggers)
+    story = extra_command_runner(new_story(fixture=AgentsEnableTriggers))
     marker = RunSignal(tmp_path)
     story.expect_success('trigger schedule "Look at the build" --at 2020-01-01T00:00:00+00:00', actor=story.agent)
     story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""", actor=story.agent)

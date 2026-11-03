@@ -1,5 +1,6 @@
 import {createApp, h, shallowRef} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 import {settled} from "./settled.js";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
@@ -57,8 +58,9 @@ async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "
     catalogue.windows.value = offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)}));
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main", ...stageProps})).mount(element);
-    mounted.push(element);
+    const app = createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main", ...stageProps}));
+    app.mount(element);
+    mounted.push({app, element});
     await settled();
     return {store, element};
 }
@@ -79,15 +81,21 @@ async function dragTo(element, name, x, y, {drop = true} = {}) {
     }
 }
 
+let checkObservers;
 beforeEach(() => {
+    checkObservers = trackMutationObservers();
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
     vi.stubGlobal("requestAnimationFrame", (run) => setTimeout(run, 0));
     measured();
 });
 
 afterEach(() => {
-    mounted.forEach((element) => element.remove());
+    mounted.forEach(({app, element}) => {
+        app.unmount();
+        element.remove();
+    });
     mounted = [];
+    checkObservers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
 });

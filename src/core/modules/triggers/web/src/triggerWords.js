@@ -49,7 +49,7 @@ export const CONDITION_TYPES = [
 ];
 
 export const EXTRA_ACTIONS = [
-    {key: "run", value: "run", label: "Run a command", note: "On this computer", ask: "Command line, run in the project folder", example: "npm run lint"},
+    {key: "run", value: "run", label: "Run a command", note: "On the computer running the journal", ask: "Command line", example: "npm run lint"},
     {key: "web", value: "web", label: "Call a web address", note: "Send a request when it fires", ask: "Web address", example: "https://example.com/notify"},
 ];
 

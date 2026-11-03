@@ -27,6 +27,8 @@ class StartProcess(Command[Process]):
     reader_id: int | None = None
     is_full_test_run: bool = False
     is_queued: bool = False
+    worker_id: int | None = None
+    task_id: int | None = None
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, is_queued: bool = False) -> "StartProcess":

@@ -26,10 +26,10 @@ def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
-    before = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    assert json.loads(before)["rows"][0]["task_count"] == 1
+    initial_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
+    assert json.loads(initial_progress)["rows"][0]["task_count"] == 1
     story.advance(timedelta(hours=1))
     story.expect_success('worker report "The proof is ready"', actor=worker)
     story.expect_success(f'worker send {worker.id} "Correct the total"', actor=story.agent)
-    after = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    assert json.loads(after) == json.loads(before)
+    updated_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
+    assert json.loads(updated_progress) == json.loads(initial_progress)
