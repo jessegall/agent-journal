@@ -55,4 +55,4 @@ class AgentBlockRule(DriverRule):
         if not block.countdown_text or not block.grace_tool_uses:
             return None
         left = block.grace_tool_uses - ToolUseCount.after_timestamp(self.queries, hook.agent_id, block.creation_timestamp()) - 1
-        return Nudge(block.countdown_key, NudgeType.INSTRUCTION, block.countdown_text.replace("{left}", str(left)), turn_limited=False) if 0 <= left < COUNTDOWN_USES else None
+        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(left)), turn_limited=False) if 0 <= left < COUNTDOWN_USES else None

@@ -10,7 +10,7 @@ TASK_ASSIGNMENT = NudgeDeclaration("coding.task_is_yours", NudgeType.REFUSAL, 't
 SUBAGENT_EDIT_BAN = NudgeDeclaration("coding.subagent_reads_only", NudgeType.REFUSAL, 'a subagent reads and searches only: the agent that sent it makes the change')
 OPEN_TASKS_WAIT = NudgeDeclaration("coding.open_tasks_wait", NudgeType.REFUSAL, 'open tasks wait for a worker: {tasks}')
 
-INTRODUCE_YOURSELF = NudgeDeclaration("coding.introduce_yourself", NudgeType.INSTRUCTION, "introduce yourself in the chat in one or two lines, then ask what to do unless the user has already asked")
-WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.NUDGE, "waiting for you: {items}")
+INTRODUCE_YOURSELF = NudgeDeclaration("coding.introduce_yourself", NudgeType.STEERING, "introduce yourself in the chat in one or two lines, then ask what to do unless the user has already asked")
+WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.STEERING, "waiting for you: {items}")
 WORKER_FULL_TEST_RUN = NudgeDeclaration("coding.worker_full_test_run", NudgeType.REFUSAL, 'a worker runs only the tests of what it changed, never the whole suite: name the test files', turn_limited=False)
 CODING_NUDGES = [WORKER_FULL_TEST_RUN, INTRODUCE_YOURSELF, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, BUILDER_SUBAGENT_BAN, TASK_ASSIGNMENT, SUBAGENT_EDIT_BAN, OPEN_TASKS_WAIT]

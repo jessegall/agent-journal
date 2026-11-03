@@ -112,7 +112,7 @@ def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
 def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     refusal = Nudge("samples.pay", NudgeType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
-    countdown = Nudge("samples.pay_countdown", NudgeType.INSTRUCTION, "fee due: {left} tool uses")
+    countdown = Nudge("samples.pay_countdown", NudgeType.STEERING, "fee due: {left} tool uses")
     story.container.get(Bus).run(BlockUntil(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
     first, second, third = spend(story, 3)
     assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines

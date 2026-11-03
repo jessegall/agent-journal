@@ -3,7 +3,7 @@ import hashlib
 import json
 import pickle
 import shutil
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from core.base.clock import Clock
@@ -53,7 +53,7 @@ class TemplateDatabases:
 
     @staticmethod
     @contextmanager
-    def locked(path: Path) -> Iterator[None]:
+    def locked(path: Path) -> Generator[None]:
         with path.open("w") as lock_file:
             fcntl.flock(lock_file, fcntl.LOCK_EX)
             yield

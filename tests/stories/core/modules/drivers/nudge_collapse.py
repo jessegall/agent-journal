@@ -5,10 +5,10 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_record import RuleRecord
 
-QUEUED = NudgeDeclaration("shop.queued", NudgeType.NUDGE, "task {task} is still queued for worker {worker}", many_text="tasks {task} are still queued for worker {worker}")
-STALE = NudgeDeclaration("shop.stale", NudgeType.NUDGE, "cart {cart} is stale")
-PAID = NudgeDeclaration("shop.paid", NudgeType.INSTRUCTION, "pay {cart}", required_command="shop pay {cart}")
-FREE_TEXT = NudgeDeclaration("shop.free", NudgeType.NUDGE, "{text}")
+QUEUED = NudgeDeclaration("shop.queued", NudgeType.STEERING, "task {task} is still queued for worker {worker}", many_text="tasks {task} are still queued for worker {worker}")
+STALE = NudgeDeclaration("shop.stale", NudgeType.STEERING, "cart {cart} is stale")
+PAID = NudgeDeclaration("shop.paid", NudgeType.STEERING, "pay {cart}", required_command="shop pay {cart}")
+FREE_TEXT = NudgeDeclaration("shop.free", NudgeType.STEERING, "{text}")
 
 
 def answers_of(*nudges: Nudge) -> RuleAnswers:
@@ -52,7 +52,7 @@ def test_a_field_that_differs_is_listed_once_per_value():
 
 def test_the_collapsed_line_keeps_its_key_type_and_labelled_words():
     answers = answers_of(QUEUED.nudge(task=1, worker=425), QUEUED.nudge(task=2, worker=425))
-    assert [(nudge.key, nudge.type) for nudge in answers.delivered_nudges] == [("shop.queued", NudgeType.NUDGE)] and answers.labelled_lines == ["journal: tasks 1, 2 are still queued for worker 425"]
+    assert [(nudge.key, nudge.type) for nudge in answers.delivered_nudges] == [("shop.queued", NudgeType.STEERING)] and answers.labelled_lines == ["journal: tasks 1, 2 are still queued for worker 425"]
 
 
 def test_a_line_that_names_a_command_to_run_is_never_merged():

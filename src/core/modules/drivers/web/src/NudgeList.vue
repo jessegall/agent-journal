@@ -48,7 +48,7 @@ const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
     color: var(--tone-bad);
 }
 
-.nudge-type[data-type="instruction"] {
+.nudge-type[data-type="steering"] {
     color: var(--accent-text);
 }
 

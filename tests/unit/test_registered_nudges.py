@@ -6,6 +6,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
+LONGEST_INFO_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
@@ -24,6 +25,9 @@ def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
 
 
+KINDS: dict[str, str] = {}
+
+
 def declarations() -> list[tuple[str, str, Path]]:
     rows = []
     for path in source_files():
@@ -32,6 +36,7 @@ def declarations() -> list[tuple[str, str, Path]]:
             is_declaration = isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and getattr(node.value.func, "id", "") == "NudgeDeclaration"
             if is_declaration and isinstance(node.value.args[2], ast.Constant):
                 rows.append((node.targets[0].id, node.value.args[2].value, path))
+                KINDS[node.targets[0].id] = getattr(node.value.args[1], "attr", "")
     return rows
 
 
@@ -43,8 +48,15 @@ def test_the_scan_finds_the_declared_lines():
 
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
-def test_a_line_is_at_most_120_characters(name, text, path):
-    assert len(text) <= LONGEST_LINE_CHARACTERS, f"{name} is {len(text)} characters: {text}"
+def test_a_steering_line_and_a_refusal_are_at_most_120_characters_and_only_info_may_be_longer(name, text, path):
+    if KINDS[name] == "INFO":
+        assert len(text) <= LONGEST_INFO_CHARACTERS, f"{name} is {len(text)} characters: {text}"
+        return
+    assert len(text) <= LONGEST_LINE_CHARACTERS, f"{name} is {len(text)} characters and is no info: {text}"
+
+
+def test_every_declared_line_is_info_steering_or_a_refusal():
+    assert set(KINDS.values()) <= {"INFO", "STEERING", "REFUSAL"}
 
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
