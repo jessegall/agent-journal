@@ -57,7 +57,7 @@ const props = defineProps({
 });
 
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
-const isAgentWindow = (name) => props.catalogue.window(name)?.place === "agent";
+const isAgentWindow = (name) => props.catalogue.window(name)?.shows === "one-agent";
 // an agent window follows the page's main agent unless its pane was set to another
 const agentOf = (name, pane = null) => (isAgentWindow(name) ? (pane?.options?.agent ?? props.agent) : null);
 const followable = computed(() => usage.value.agents.filter((row) => row.id !== props.agent && !row.ended_at));

@@ -32,7 +32,7 @@ test("a layout kept in the tab is drawn before the server answers", async () => 
     const mine = {tree: {id: 1}, panes: {1: {tabs: ["messages.chat"], active: "messages.chat"}}, next: 2};
     let release;
     const gate = new Promise((resolve) => (release = resolve));
-    const layout = paneLayout({saved: async () => (await gate, null), defaults: async () => null, save: async () => ({ok: true}), tab: {read: () => mine, write: () => {}}, entry: (name) => ({name, place: "environment"})});
+    const layout = paneLayout({saved: async () => (await gate, null), defaults: async () => null, save: async () => ({ok: true}), tab: {read: () => mine, write: () => {}}, entry: (name) => ({name, place: "pane", shows: "environment"})});
     const loading = layout.load("home");
     await nextTick();
     expect(JSON.stringify(layout.layout.value)).toContain("messages.chat");
@@ -42,7 +42,7 @@ test("a layout kept in the tab is drawn before the server answers", async () => 
 });
 
 test("a layout is not ready until it is loaded, and a page that loads none is settled all the same", async () => {
-    const layout = paneLayout({saved: async () => null, defaults: async () => null, save: async () => ({ok: true}), tab: {read: () => null, write: () => {}}, entry: (name) => ({name, place: "environment"})});
+    const layout = paneLayout({saved: async () => null, defaults: async () => null, save: async () => ({ok: true}), tab: {read: () => null, write: () => {}}, entry: (name) => ({name, place: "pane", shows: "environment"})});
     expect(layout.ready.value).toBe(false);
     layout.settle();
     expect(layout.ready.value).toBe(true);

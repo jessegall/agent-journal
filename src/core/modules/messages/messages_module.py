@@ -73,7 +73,7 @@ class MessagesModule(Module):
     nudges = MESSAGE_NUDGES
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
@@ -83,8 +83,8 @@ class MessagesModule(Module):
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     subcommands = (AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
-               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek", "output list"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "notice close", "dump make", "dock remove", "dock keep", "dock unkeep"],
-                                 events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"],
+               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output list", "process-part list"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep"],
+                                 events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*"],
                                  options=[ChoiceOption("figure", "Figure", [("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "none"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS

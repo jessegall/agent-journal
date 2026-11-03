@@ -61,16 +61,13 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return ToolFacts(wait_target=" and ".join((*self.running_titles(agent_id), *question_lines)))
 
     def running_part_text(self, call: HookCall) -> str:
-        runs = self.processes.agent(call.agent_id).running().newest().limited(1)
+        runs = self.processes.agent(call.agent_id).newest().limited(1)
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
         if runs[0].is_queued:
             return QUEUE_LINE
-        for state in (PartState.RUNNING, PartState.WAITING):
-            parts = self.queries.query(ProcessPart).filter(process_id=runs[0].id, state=state).ordered("position").limited(1)
-            if parts:
-                return parts[0].text
-        return ""
+        parts = tuple(self.queries.query(ProcessPart).filter(process_id=runs[0].id).ordered("position").all_rows())
+        return next((part.text for state in (PartState.RUNNING, PartState.WAITING) for part in parts if part.state is state), parts[-1].text if parts else "")
 
     def line_changes(self, call: HookCall) -> str:
         return f"+{call.lines_added} -{call.lines_removed}" if call.lines_added or call.lines_removed else ""

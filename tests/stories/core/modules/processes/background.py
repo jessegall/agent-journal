@@ -8,6 +8,7 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 
 from core.base.driver.command_category import CommandCategory
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
@@ -30,6 +31,13 @@ def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summa
     story.advance(timedelta(seconds=1))
     assert ENDED in lines_of(story, NOTHING)
     assert ENDED not in lines_of(story, NOTHING)
+
+
+def test_the_hold_for_a_monitor_lets_the_tool_search_through_so_the_monitor_tool_can_be_loaded(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    moved_run(story, "pytest -q")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "set a Monitor on")
+    story.expect_hook_allowed("s-1", HookSamples.tool_use("ToolSearch", ClaudeCodeProvider.tool_categories["ToolSearch"], [], None))
 
 
 def ended_lines(new_story, line, text=TESTS_REPORT, category=None):

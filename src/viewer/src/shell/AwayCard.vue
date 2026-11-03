@@ -3,10 +3,10 @@ import {onMounted, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import {peekRef} from "../route.js";
 
-// what came in while the page was out of sight for five minutes or more, as version 4's card told it: the notices since, each opening its row
+// what came in while the page was out of sight for five minutes or more, as version 4's card told it: the pins since, each opening its row
 const AWAY_MILLISECONDS = 5 * 60 * 1000;
 const props = defineProps({run: {type: Function, required: true}});
-const notices = ref([]);
+const pins = ref([]);
 let hiddenAt = 0;
 
 async function heardVisibility() {
@@ -16,13 +16,13 @@ async function heardVisibility() {
     }
     if (!hiddenAt || Date.now() - hiddenAt < AWAY_MILLISECONDS) return;
     const since = hiddenAt;
-    const answer = await props.run(["notice", "list"]);
-    notices.value = answer.ok ? answer.value.rows.filter((row) => new Date(row.created_at).getTime() >= since) : [];
+    const answer = await props.run(["pin", "list"]);
+    pins.value = answer.ok ? answer.value.rows.filter((row) => new Date(row.created_at).getTime() >= since) : [];
 }
 
-function open(notice) {
-    notices.value = notices.value.filter((row) => row.id !== notice.id);
-    peekRef(`notices:${notice.id}`);
+function open(pin) {
+    pins.value = pins.value.filter((row) => row.id !== pin.id);
+    peekRef(`pins:${pin.id}`);
 }
 
 onMounted(() => document.addEventListener("visibilitychange", heardVisibility));
@@ -30,14 +30,14 @@ onUnmounted(() => document.removeEventListener("visibilitychange", heardVisibili
 </script>
 
 <template>
-    <template v-if="notices.length">
+    <template v-if="pins.length">
         <div class="away-card" role="status" data-away-card>
             <div class="away-head">
-                <span class="away-title">While you were away: {{ notices.length }} {{ notices.length === 1 ? "notification" : "notifications" }}</span>
-                <Btn small data-away-close @click="notices = []">Close</Btn>
+                <span class="away-title">While you were away: {{ pins.length }} {{ pins.length === 1 ? "notification" : "notifications" }}</span>
+                <Btn small data-away-close @click="pins = []">Close</Btn>
             </div>
-            <template v-for="notice in notices" :key="notice.id">
-                <button type="button" class="away-line" data-away-line @click="open(notice)">{{ notice.title }}</button>
+            <template v-for="pin in pins" :key="pin.id">
+                <button type="button" class="away-line" data-away-line @click="open(pin)">{{ pin.title }}</button>
             </template>
         </div>
     </template>

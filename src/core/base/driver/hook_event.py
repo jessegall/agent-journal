@@ -64,6 +64,10 @@ class HookEvent:
         return self.raw.get("source") == RESUME_SOURCE
 
     @property
+    def is_interrupt(self) -> bool:
+        return self.event is HookEventName.POST_TOOL_USE_FAILURE and self.raw.get("is_interrupt") is True
+
+    @property
     def is_continuing(self) -> bool:
         return self.raw.get("source") in CONTINUING_SOURCES
 

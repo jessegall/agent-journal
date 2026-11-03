@@ -5,6 +5,8 @@ from collections.abc import Mapping, Sequence
 
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -19,6 +21,7 @@ from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
 
 BACKGROUND_FLAG = "run_in_background"
+FILE_ACCESS_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
 
 
 class RunnerRewriteRule(DriverRule):
@@ -43,8 +46,11 @@ class RunnerRewriteRule(DriverRule):
         if not self.runner.is_installed():
             return self.missing(hook)
         decided = self.limits.decide(hook.environment_id, shell)
-        run = replace(decided, queued=hook.role is AgentRole.WORKER and decided.seconds > 0)
+        run = replace(decided, queued=hook.role is AgentRole.WORKER and decided.seconds > 0 and not self.is_read_write(shell))
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
+
+    def is_read_write(self, shell: ShellLine) -> bool:
+        return bool(shell.parts) and all(part.classification.category in FILE_ACCESS_CATEGORIES and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)

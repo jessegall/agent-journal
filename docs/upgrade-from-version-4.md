@@ -24,7 +24,7 @@ an upgrade (another machine or session still ran version 4), a further upgrade r
 ## What moves
 
 Actors, environments, agents, settings, tasks with their logs and dependencies, plans and phases, messages, memories
-(with rules and reminders), questions, documents and reports, sequences, templates, triggers, notices, suggestions,
+(with rules and reminders), questions, documents and reports, sequences, templates, triggers, pins (version 4's notices), suggestions,
 dumps, command outputs (as processes), file edits, plugins, share links and the viewer's layouts keep their numbers.
 What a version 5 table cannot hold is counted in the report: a text cut to a limit, a loop of dependencies, a worker's
 history, a chat card version 5 has no mark for.

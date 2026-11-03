@@ -32,6 +32,11 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.layout_shape import loaded_layout, stored_layout
 
 
+# a registry saved before windows were split into where they are drawn and whose work they show: an environment or agent window was drawn in a pane
+LEGACY_PLACES = {"environment": "pane", "agent": "pane"}
+LEGACY_SHOWS = {"agent": "one-agent"}
+
+
 @dataclass(frozen=True)
 class Registry:
     """What sync found in every module: which module owns each entry, which handler runs each command, which
@@ -88,10 +93,10 @@ class Registry:
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
-            windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
+            windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(window["place"], window["place"]), tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
-                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})))
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
@@ -127,7 +132,7 @@ class Registry:
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
                          "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
-                         "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
+                         "place": window.place, "shows": window.shows, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
                          "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],

@@ -37,14 +37,14 @@ export class WindowCatalogue {
     }
 
     placed(page) {
-        const place = page === "agent" ? "agent" : "environment";
-        return this.windows.value.filter((window) => window.place === place);
+        const shows = page === "agent" ? "one-agent" : "environment";
+        return this.windows.value.filter((window) => window.shows === shows);
     }
 
-    // the windows an agent of this role is offered: every environment window, and the agent windows whose roles name it or name none
+    // the windows an agent of this role is offered: every window of the environment's work, and the one-agent windows whose roles name it or name none
     forAgent(role) {
         const view = Object.create(this);
-        view.windows = computed(() => this.windows.value.filter((window) => window.place !== "agent" || !window.roles?.length || window.roles.includes(role)));
+        view.windows = computed(() => this.windows.value.filter((window) => window.shows !== "one-agent" || !window.roles?.length || window.roles.includes(role)));
         return view;
     }
 

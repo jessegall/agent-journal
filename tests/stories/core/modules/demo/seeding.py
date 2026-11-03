@@ -26,7 +26,7 @@ SHOWN = {
     "dumps": ("dump items 1", "1: filed - made a task (tasks:1)", "2: not read yet"),
     "reports": ("link list --source report:1", "about  task:1"),
     "sequences": ("sequence show 1", "Release steps", "Run the whole suite"),
-    "notices": ("notice list --environment demo", "Design for the checkout", "Build 12 of the cart"),
+    "pins": ("pin list --environment demo", "Design for the checkout", "Build 12 of the cart"),
     "aliases": ("alias list", "cart-tests", "greet"),
     "templates": ("template list", "Find what is missing (for plan, critique)", "Full suite (for any, testing)"),
     "share links": ("share list", "active", "plan"),

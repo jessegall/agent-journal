@@ -13,6 +13,7 @@ from core.base.viewer.window_search import WindowSearch
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 
 DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 
@@ -20,7 +21,7 @@ DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 @dataclass(frozen=True)
 class WindowDeclaration:
     """A window a module adds to the viewer: its name and title, the file the viewer loads from the
-    module's web folder and how, where it belongs and for which agent roles, the window kit versions
+    module's web folder and how, where it is drawn, whose work it shows and for which agent roles, the window kit versions
     it was built for, the read lines and commands it may run, the events it follows, its icon, the
     size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs
     inside it, the read line its tab counts with and the read lines a share link may use, each
@@ -31,7 +32,8 @@ class WindowDeclaration:
     title: str
     entry: str
     loading: WindowLoading
-    place: WindowPlace = WindowPlace.ENVIRONMENT
+    place: WindowPlace = WindowPlace.PANE
+    shows: WindowShows = WindowShows.ENVIRONMENT
     roles: Sequence[str] = ()
     kit: str = ">=1,<2"
     reads: Sequence[str] = ()
@@ -56,6 +58,8 @@ class WindowDeclaration:
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
         keys = [option.key for option in self.options]
         problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
+        if self.shows is WindowShows.ONE_AGENT and self.place is not WindowPlace.PANE:
+            problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}, and only a pane has an agent to pick")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)
         problems += [f"{self.name} starts its option {option.key} at {option.default}, which is none of its choices" for option in self.options
                      if isinstance(option, ChoiceOption) and option.default not in (value for value, _ in option.choices)]

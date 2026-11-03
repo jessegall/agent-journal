@@ -11,7 +11,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 
 def task_end(task_id):
     line = f"journal task close {task_id}"
-    return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="task")).with_fields(event="post_tool_use")
+    return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="task")).with_fields(event="post_tool_use", raw={"tool_input": {"command": line}})
 
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
@@ -36,11 +36,11 @@ def closed_lines(story, task_id):
     return story.hook("s-1", task_end(task_id)).lines
 
 
-def test_ending_a_task_names_the_task_now_in_hand_with_its_brief_and_the_phase_it_ended(new_story):
+def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(new_story):
     story = plan_story(new_story)
     story.expect_success("task start 1", "state: started", actor=story.agent)
     lines = closed_lines(story, 1)
-    assert "task:2 is in hand in plan 1" in lines
+    assert [line for line in lines if "task:2" in line] == ["back to task:2: carry on, close it, or release it"]
     assert "plan 1: phase Build done" in lines
 
 

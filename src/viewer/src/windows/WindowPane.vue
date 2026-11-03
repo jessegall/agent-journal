@@ -60,7 +60,7 @@ watch(
     <template v-if="!entry && catalogue.loaded?.value === false">
         <Skeleton shape="cards" />
     </template>
-    <template v-else-if="entry?.place === 'agent' && agent === null">
+    <template v-else-if="entry?.shows === 'one-agent' && agent === null">
         <EmptyState title="No agent is running here" data-window-no-agent />
     </template>
     <template v-else-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">
