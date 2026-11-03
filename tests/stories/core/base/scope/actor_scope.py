@@ -19,6 +19,7 @@ TASK_LINE = 'task make "Fix the cart" --environment main'
 MAIN_CHAT = "chat-mark main --environment main"
 MAIN_DOCK = "dock-item main --environment main"
 MADE = "Task 1 created"
+QUESTION_LINE = 'question ask "Which cart?" --options "the old" "the new" --environment main'
 DOC_LINE = 'doc make "Cart rules" --abstract "How the cart counts" --body "Cents" --environment main'
 
 
@@ -123,3 +124,30 @@ def test_a_helpers_reminder_does_not_fire_at_the_main_agent(new_story):
     story.expect_success('reminder make "Log the task" --every-minutes 10 --environment main', actor=story.subagent)
     story.advance(timedelta(minutes=11))
     assert "reminder:1: Log the task" not in story.hook("s-1", HookSamples.edit("src/cart.py")).lines
+
+
+def test_a_helpers_question_is_refused_and_it_reports_to_the_agent_that_sent_it_instead(new_story):
+    story = new_story(fixture=SubagentStarted)
+    story.expect_refusal(QUESTION_LINE, "put it in the worker's report", actor=story.subagent)
+
+
+def test_a_main_agents_question_still_reaches_the_chat(new_story):
+    story = new_story(fixture=SubagentStarted)
+    story.expect_success(QUESTION_LINE, actor=story.agent)
+    story.run_listeners()
+    story.expect_text(MAIN_DOCK, "questions.open")
+
+
+def test_an_edit_of_a_shown_mark_under_an_agent_leaves_it_in_the_main_chat(new_story):
+    story = new_story(fixture=SubagentStarted)
+    story.run(TASK_LINE)
+    story.run_listeners()
+    mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
+    assert mark.agent_id is None and mark.changed(text="new").scoped(story.subagent.id).agent_id is None
+
+
+def test_a_helpers_reaction_still_reaches_the_main_agent(new_story):
+    story = new_story(fixture=SubagentStarted)
+    story.run('message send "The cart is done" --environment main', actor=story.agent)
+    story.run('message react 1 "👍"', actor=story.subagent)
+    story.expect_absent("agent-line list --state hidden", "message 1")
