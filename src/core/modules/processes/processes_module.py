@@ -1,3 +1,6 @@
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.processes.support.process_nudges import PROCESS_NUDGES
@@ -116,6 +119,7 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
+    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"

@@ -8,6 +8,10 @@ from core.modules.drivers.commands.close_required_command.close_required_command
 from core.modules.drivers.commands.skip_required_command.skip_required_command_subcommand import SkipRequiredCommandSubcommand
 from core.modules.drivers.listeners.required_command_skip_mark_listener import RequiredCommandSkipMarkListener
 from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.drivers.ticks.agent_ticks import AgentTicks
+from core.modules.drivers.ticks.hook_pruning import HookPruning
 from core.modules.drivers.migrations.m006_required_commands import RequiredCommandsMigration
 from core.modules.drivers.migrations.m007_nudge_record_delivery import NudgeRecordDeliveryMigration
 from core.modules.drivers.migrations.m008_required_command_type import RequiredCommandTypeMigration
@@ -125,6 +129,8 @@ class DriversModule(Module):
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", at_start=True),
+                     TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", at_start=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed, RequiredCommandClosed]
     driver_rules = [DispatchMarkRule, RequiredCommandRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
