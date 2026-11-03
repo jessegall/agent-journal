@@ -23,6 +23,7 @@ from core.modules.sequences.listeners.standard_sequences_listener import Standar
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
 from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
+from core.modules.sequences.migrations.m004_close_legacy_step_blocks import CloseLegacyStepBlocksMigration
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
@@ -33,6 +34,7 @@ from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
+from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
 BUILT = ["make", "show", "list"]
 RUN_BUILT = [*BUILT, "edit", "delete"]
@@ -45,10 +47,11 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers"]
+    block_conditions = [SequenceStepStarted]
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
-    migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration]
+    migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard]
