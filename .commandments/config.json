@@ -170,6 +170,8 @@
         "architecture_memories_LinesOnlyFromRulesDetector",
         "architecture_memories_MemoryBuiltInHandlersDetector",
         "architecture_nudges_NoRawLineFromARuleDetector",
+        "architecture_nudges_InstructionDeclaresWhatPaysItDetector",
+        "architecture_processes_ReaderOnlyOnTickDetector",
         "architecture_providers_HookNamesByMemberDetector",
         "architecture_providers_ProgramNamesOnlyInProvidersDetector",
         "architecture_providers_ProvidersDecideNothingDetector",

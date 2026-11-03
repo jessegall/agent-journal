@@ -318,10 +318,14 @@ async function read(table, whole) {
     return rows;
 }
 
-async function entriesAndSettings() {
-    const [entries, settings] = await Promise.all([api.entries(0, RECENT), api.settings()]);
-    keepEntries([...remembered(entriesKey(), []), ...entries]);
+async function readSettings() {
+    const settings = await api.settings();
     if (JSON.stringify(settings) !== JSON.stringify(store.settings)) store.settings = settings;
+}
+
+async function entriesAndSettings() {
+    const [entries] = await Promise.all([api.entries(0, RECENT), readSettings()]);
+    keepEntries([...remembered(entriesKey(), []), ...entries]);
 }
 
 const failedTable = (table, whole) =>
@@ -376,7 +380,7 @@ export function refresh(tables, because = true) {
             owed.add(table);
             if (because) changed.add(table);
         });
-    if (owed.has("settings")) owedWhole = true;
+    if (owed.delete("settings")) readSettings();
     return drain();
 }
 
