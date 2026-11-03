@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.foreign_run import ForeignRun
+from core.base.driver.foreign_outcome import ForeignOutcome
 
 
 @dataclass(frozen=True)
@@ -14,3 +15,4 @@ class ManagedHookHistory:
     failed: int
     last: ForeignRun | None
     last_at: str | None = None
+    last_outcome: ForeignOutcome | None = None

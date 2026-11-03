@@ -1,4 +1,5 @@
 from core.base.driver.foreign_answer import ForeignAnswer
+from core.base.driver.foreign_outcome import ForeignOutcome
 from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.query import Query
@@ -30,4 +31,5 @@ class ManagedHookHistoryQuery(Query[HookCall]):
                                   timed_out=sum(record.run.timed_out for record in records),
                                   failed=sum(record.run.exit_code not in (0, 2) and not record.run.timed_out for record in records),
                                   last=records[0].run if records else None,
-                                  last_at=calls[0].creation_timestamp().text if records else None)
+                                  last_at=calls[0].creation_timestamp().text if records else None,
+                                  last_outcome=ForeignOutcome.detected(records[0].run, answers[0]) if records else None)
