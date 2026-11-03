@@ -16,6 +16,10 @@ from core.modules.settings.commands.set_setting.set_setting_handler import SetSe
 from core.modules.settings.commands.set_setting.set_setting_subcommand import SetSettingSubcommand
 from core.modules.settings.commands.set_managed_hook.set_managed_hook_handler import SetManagedHookHandler
 from core.modules.settings.commands.set_managed_hook.set_managed_hook_subcommand import SetManagedHookSubcommand
+from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_handler import ScanManagedHooksHandler
+from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_subcommand import ScanManagedHooksSubcommand
+from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_handler import RestoreManagedHooksHandler
+from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_subcommand import RestoreManagedHooksSubcommand
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
 from core.modules.settings.commands.setting_show.setting_show_subcommand import SettingShowSubcommand
@@ -36,9 +40,9 @@ class SettingsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
-    handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler]
+    handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
                                  reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"])]
-    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, SetManagedHookSubcommand)
+    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]
     moves = [SettingsMove]
