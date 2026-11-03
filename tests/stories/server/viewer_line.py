@@ -22,6 +22,13 @@ def test_an_abbreviated_flag_is_a_usage_error(new_story):
         story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["environment", "list", "--js"], "environment": "main"}, 200, '"code": 2')
 
 
+def test_a_line_with_words_after_a_flag_separator_keeps_them_as_words(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        body = {"window": "triggers.triggers", "line": ["trigger", "make", "--do", "deny", "--", "--force", "Never force push"], "environment": "main"}
+        story.expect_viewer_line(cookie, body, 200, '"code": 0')
+
+
 def test_a_write_from_a_window_is_recorded_as_the_person_at_the_viewer(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
