@@ -1,14 +1,10 @@
-from typing import TypedDict
-from core.modules.processes.support.process_queue_run_json import ProcessQueueRunJson
+from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
 
 
-class ProcessQueueJson(TypedDict):
+class ProcessQueueJson(QueueInspectorJson):
     """The queue page and the setting that controls its parallel runs."""
 
     page: int
     size: int
     total: int
-    environment_id: int
-    parallel_limit: int
-    limit_setting: str
-    rows: list[ProcessQueueRunJson]
+    rows: list[dict[str, object]]

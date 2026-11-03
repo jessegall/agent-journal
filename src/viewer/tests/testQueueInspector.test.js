@@ -1,6 +1,8 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
+import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
+import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
@@ -66,6 +68,7 @@ const SNAPSHOT = {
     ],
 };
 let app = null;
+let subscriptions = null;
 
 async function panel(read) {
     location.hash = "#/?open=test_queue:0";
@@ -73,6 +76,8 @@ async function panel(read) {
     const element = document.createElement("div");
     document.body.append(element);
     app = createApp({render: () => h(ResourcePanel, {read})});
+    subscriptions = new WindowSubscriptions();
+    app.provide(RESOURCE_SUBSCRIPTIONS, subscriptions);
     app.mount(element);
     await later();
     await settle();
@@ -80,6 +85,8 @@ async function panel(read) {
 
 afterEach(async () => {
     app?.unmount();
+    expect(subscriptions?.count("resources") ?? 0).toBe(0);
+    subscriptions = null;
     app = null;
     location.hash = "";
     await later();
@@ -103,10 +110,10 @@ const OUTPUT_LINES = ["building package", "package built"];
 const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
 const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: SNAPSHOT});
 
-test("one queue read shows spots and all three server-ordered lists with command kind worker task and time", async () => {
+test("the process queue reads its counts and ordered lists together", async () => {
     const read = vi.fn(reader);
     await panel(read);
-    expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "inspect"]);
+    expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
     expect(document.body.querySelector("[data-resource-panel]").classList.contains("queue")).toBe(true);
     expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 / 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
@@ -196,4 +203,27 @@ test("a held empty queue shows the reason and empty messages", async () => {
 test("a failed queue read shows its error", async () => {
     await panel(async () => ({ok: false, error: "Queue unavailable"}));
     expect(document.body.querySelector('[role="alert"]').textContent).toBe("Queue unavailable");
+});
+
+test("process events refresh the queue and output events refresh only an open output", async () => {
+    let queue = SNAPSHOT;
+    let output = ["building package"];
+    const read = vi.fn(async (line) => line[0] === "output" ? {ok: true, value: {lines: output}} : {ok: true, value: queue});
+    await panel(read);
+    subscriptions.dispatch({event: "task.update", row_id: 11});
+    await settle();
+    expect(read).toHaveBeenCalledTimes(1);
+    queue = {...SNAPSHOT, waiting: [], waiting_count: 0};
+    subscriptions.dispatch({event: "process.update", row_id: 71});
+    await settle();
+    expect(read).toHaveBeenCalledTimes(2);
+    expect(rowsOf("waiting")).toHaveLength(0);
+    const row = rowsOf("running")[0];
+    row.querySelector("[data-queue-output]").click();
+    await settle();
+    output = ["package built"];
+    subscriptions.dispatch({event: "output.update", row_id: 70});
+    await settle();
+    expect(row.querySelector("[data-queue-output-body]").textContent).toBe("package built");
+    expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
 });

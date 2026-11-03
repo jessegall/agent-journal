@@ -1,26 +1,30 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.query.conditions.among import Among
+from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.models.support.process_setting import ProcessSetting
-from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.models.process_queue_row import ProcessQueueRow
+from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.support.queue_run_workers import QueueRunWorkers
+from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
+from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 MAX_PAGE_SIZE = 100
 
 
 class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
-    """Lists a page of waiting and running commands admitted through an environment's process queue."""
+    """Reads queue controls and ordered inspector lists, with a page of active queued commands for the CLI."""
 
     cli_name = "queue"
     name = "list"
 
-    def __init__(self, processes: ProcessQuery, workers: QueueRunWorkers, settings: ProcessSettings) -> None:
-        self.processes, self.workers, self.settings = processes, workers, settings
+    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt) -> None:
+        self.queries, self.settings, self.halt = queries, settings, halt
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment-id", type=int)
@@ -31,9 +35,22 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         environment_id = arguments.environment_id if arguments.environment_id is not None else caller.environment_id
         if environment_id is None:
             raise Refusal("the process queue needs an environment", "queue list --environment-id <number>")
-        page = self.processes.environment(environment_id).running().filter(is_queue_run=True).oldest().page(max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit)))
-        return ProcessQueuePage(page, self.workers.read(page), environment_id,
-                                self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id))
+        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id)
+        query = self.queries.query(ProcessQueueRow).filter(environment_id=environment_id)
+        running = [row.inspector_json(main_spots) for row in query.filter(section=QueueSection.RUNNING).oldest().all_rows()]
+        waiting = [row.inspector_json(main_spots) for row in query.filter(section=QueueSection.WAITING).oldest().all_rows()]
+        recent = [row.inspector_json(main_spots) for row in query.filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(10)]
+        inspector: QueueInspectorJson = {
+            "environment_id": environment_id,
+            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id),
+            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key,
+            "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
+            "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
+            "halted": self.halt.is_halted, "halt_reason": self.halt.reason,
+            "running": running, "waiting": waiting, "recent": recent}
+        active = query.filter(is_queue_run=True).matching(Among("section", (QueueSection.RUNNING, QueueSection.WAITING)))
+        page = active.oldest().page(max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit)))
+        return ProcessQueuePage(page, inspector)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):

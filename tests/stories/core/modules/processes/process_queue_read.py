@@ -20,6 +20,9 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     start_process(story, "ls cart", category=CommandCategory.READ)
     page = queue_page(story)
     story.expect_rows(page["parallel_limit"] == 1, page["total"] == 2,
+                      page["used_slots"] == 1, page["waiting_count"] == 1,
+                      [row["id"] for row in page["running"]] == [first.id],
+                      [row["id"] for row in page["waiting"]] == [second.id],
                       [row["id"] for row in page["rows"]] == [first.id, second.id],
                       [row["is_queued"] for row in page["rows"]] == [False, True],
                       [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.CHECK.value],
@@ -38,3 +41,13 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_rows(limited["total"] == 2, limited["page"] == 2, limited["size"] == 1,
                       [row["id"] for row in limited["rows"]] == [third.id])
     story.expect_success(f"output peek {third.id} --all", actor=story.user)
+
+
+def test_the_inspector_lists_every_waiting_command_beyond_the_default_page(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    story.expect_success("setting set journal.core.processes.run-batch-size 0 --environment main", actor=story.user)
+    story.agent = Actor(story.new_row_id("agent start long-queue-worker claude worker --environment main"), ActorType.AGENT)
+    processes = [start_process(story, f"make package-{number}", category=CommandCategory.BUILD, is_queued=True) for number in range(51)]
+    page = queue_page(story)
+    story.expect_rows(len(page["rows"]) == 50, page["waiting_count"] == 51,
+                      [row["id"] for row in page["waiting"]] == [process.id for process in processes])

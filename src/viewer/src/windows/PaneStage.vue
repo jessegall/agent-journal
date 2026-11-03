@@ -29,6 +29,7 @@ import InformationBar from "../shell/InformationBar.vue";
 import OptionsPicker from "../shell/OptionsPicker.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
+import {RESOURCE_SUBSCRIPTIONS} from "../resource/resourceEvents.js";
 import UpdateBand from "../shell/UpdateBand.vue";
 import {peekRef} from "../route.js";
 import {rememberedRef} from "./rememberedState.js";
@@ -156,6 +157,7 @@ const pageAddress = (name) => `?environment=${encodeURIComponent(props.environme
 const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? location.assign(pageAddress(name)) : openView(name));
 provide(OPEN_VIEW, goTo);
 provide(PANE_PAGE, props.page);
+provide(RESOURCE_SUBSCRIPTIONS, props.subscriptions);
 const openDropdown = ref(null);
 const windowTitle = (name) => (props.catalogue.dropdown(name) || props.catalogue.window(name)).title;
 const helperGroups = () =>

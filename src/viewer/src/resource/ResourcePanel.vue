@@ -10,7 +10,7 @@ import MemoryFacts from "./MemoryFacts.vue";
 import WorkerFacts from "./WorkerFacts.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
-import TestQueueInspector from "./TestQueueInspector.vue";
+import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
@@ -89,7 +89,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             />
                         </template>
                         <template #test-queue>
-                            <TestQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
+                            <ProcessQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
                         </template>
                         <template #doc>
                             <DocumentInspector

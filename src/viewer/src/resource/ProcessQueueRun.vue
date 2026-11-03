@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
-import {usePoll} from "../../kit/usePoll.js";
+import {useSharedNow} from "../composables/now.js";
+import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import FoldSign from "../kit/FoldSign.vue";
 
@@ -11,13 +12,13 @@ const props = defineProps({
 });
 const expanded = ref(false);
 const lines = ref([]);
-const now = ref(Date.now());
+const now = useSharedNow();
 const STATES = {running: "Running", waiting: "Waiting", finished: "Passed", failed: "Failed", stopped: "Stopped", orphaned: "Lost"};
 const state = computed(() => (props.run.section === "recent" ? STATES[props.run.state] : STATES[props.run.section]));
 const duration = computed(() => {
     const start = props.run.section === "waiting" ? props.run.created_at : props.run.started_at;
     if (!start) return "";
-    const end = props.run.ended_at ? new Date(props.run.ended_at).getTime() : now.value;
+    const end = props.run.ended_at ? new Date(props.run.ended_at).getTime() : now.value * 1000;
     const seconds = Math.max(0, Math.floor((end - new Date(start).getTime()) / 1000));
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
@@ -25,7 +26,6 @@ const duration = computed(() => {
 });
 
 async function refresh() {
-    now.value = Date.now();
     if (!expanded.value) return;
     const answer = await props.read(["output", "peek", String(props.run.id), "--all"]);
     lines.value = answer.ok ? answer.value.lines : [answer.error];
@@ -34,11 +34,11 @@ async function toggle() {
     expanded.value = !expanded.value;
     if (expanded.value) await refresh();
 }
-usePoll(refresh, () => props.run.section !== "recent" || expanded.value);
+useResourceEvents(["output.*"], refresh);
 </script>
 
 <template>
-    <div :class="['run', run.section]" :data-queue-row="run.section">
+    <div :class="['run', run.section]" :data-queue-row="run.section" :data-queue-process="run.id">
         <div class="run-line">
             <template v-if="run.section === 'waiting'">
                 <span class="position" data-queue-position>{{ position }}</span>

@@ -19,6 +19,15 @@ try {
     await recent.locator("[data-queue-output]").click();
     await recent.locator("[data-queue-output-body]").filter({hasText: "package built"}).waitFor();
     await page.screenshot({path: capture, fullPage: true});
+    const processId = await page.locator('[data-queue-row="running"]').getAttribute("data-queue-process");
+    const stopped = await page.evaluate(async (id) => {
+        const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window: "processes.outputs", environment: "main", line: ["output", "stop", id]})});
+        return response.json();
+    }, processId);
+    assert.equal(stopped.code, 0, JSON.stringify(stopped));
+    await page.locator('[data-queue-row="running"]').filter({hasText: "make checks"}).waitFor();
+    assert.equal(await page.locator('[data-queue-row="waiting"]').count(), 0);
+    await page.screenshot({path: capture.replace(".png", "-events.png"), fullPage: true});
     await page.getByRole("button", {name: "More runs at once"}).click();
     await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "2");
     await page.locator("[data-queue-main-spots]").click();

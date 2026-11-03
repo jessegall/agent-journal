@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {usePoll} from "../../kit/usePoll.js";
+import {computed, onMounted, ref} from "vue";
+import {useResourceEvents} from "./resourceEvents.js";
 import BackButton from "../kit/BackButton.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -12,6 +12,7 @@ const props = defineProps({read: {type: Function, required: true}, backed: Boole
 const emit = defineEmits(["close", "back"]);
 const queue = ref(null);
 const failure = ref("");
+let reading = 0;
 const sections = computed(() => [
     {kind: "running", heading: "Running", rows: queue.value.running, empty: "No command runs."},
     {kind: "waiting", heading: "Waiting", rows: queue.value.waiting, empty: "No command waits."},
@@ -19,11 +20,14 @@ const sections = computed(() => [
 ]);
 
 async function load() {
-    const answer = await props.read(["queue", "inspect"]);
+    const turn = ++reading;
+    const answer = await props.read(["queue", "list"]);
+    if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) queue.value = answer.value;
 }
-usePoll(load, () => true);
+useResourceEvents(["process.*", "setting.*"], load);
+onMounted(load);
 </script>
 
 <template>

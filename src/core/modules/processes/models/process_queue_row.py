@@ -28,6 +28,7 @@ class ProcessQueueRow(ViewModel):
     started_at: Timestamp | None
     ended_at: Timestamp | None
     is_queued: bool
+    is_queue_run: bool
     slot_assigned: bool
     is_main: bool
     worker_id: int | None
@@ -35,5 +36,5 @@ class ProcessQueueRow(ViewModel):
     section: QueueSection
 
     def inspector_json(self, count_main_runs: bool) -> dict[str, object]:
-        return {**self.json(), "uses_slot": self.section is QueueSection.RUNNING and
+        return {**self.json(), "output_id": self.id, "uses_slot": self.section is QueueSection.RUNNING and
                 (self.slot_assigned or (self.is_main and count_main_runs))}
