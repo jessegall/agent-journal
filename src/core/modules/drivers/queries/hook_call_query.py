@@ -10,6 +10,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
+from core.modules.drivers.models.support.views import tool_use_counts_select
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.base.module.driver_entries import DRIVERS_MODULE
@@ -53,9 +54,8 @@ class HookCallQuery(Query[HookCall]):
 
     def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
         """How many tools the agent used after each start, all counted in one query over the newest start's range."""
-        sums = ", ".join("coalesce(sum(created_at > ?), 0)" for _ in starts)
         parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
-        row = self.database.rows(Statement(f"SELECT {sums} FROM hook_calls WHERE agent_id = ? AND hook = ? AND created_at > ?", parameters))[0]
+        row = self.database.rows(Statement(tool_use_counts_select(len(starts)), parameters))[0]
         return [int(count) for count in row]
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:

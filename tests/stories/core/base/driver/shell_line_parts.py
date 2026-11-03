@@ -35,14 +35,14 @@ def test_a_redirect_makes_a_chain_write():
 
 
 def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_read_only
-    assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_read_only
-    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_read_only
-    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_read_only
-    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_read_only
-    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_read_only
+    assert line_of("cat notes && grep cart", LISTING, SEARCHING).writes_nothing
+    assert not line_of("cat notes && pytest -q", LISTING, TESTING).writes_nothing
+    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).writes_nothing
+    assert line_of("cat notes", LISTING, redirects=["2>&1"]).writes_nothing
+    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).writes_nothing
+    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).writes_nothing
 
 
 def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():
-    assert line_of("cat notes && pytest -q", LISTING, TESTING).category_of_watched_part is CommandCategory.TEST_RUN
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).category_of_watched_part is CommandCategory.READ
+    assert line_of("cat notes && pytest -q", LISTING, TESTING).watched_part_category is CommandCategory.TEST_RUN
+    assert line_of("cat notes && grep cart", LISTING, SEARCHING).watched_part_category is CommandCategory.READ

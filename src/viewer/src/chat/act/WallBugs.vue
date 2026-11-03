@@ -44,18 +44,22 @@ const drops = computed(() => props.camera.flatMap((each, shot) => cameraDrops(ea
     </template>
     <defs>
         <template v-for="each in splashes" :key="each.name">
-            <clipPath v-if="each.clip" :id="`${clipId}-${each.name}`">
-                <rect :x="each.clip.left" :y="each.clip.top" :width="each.clip.right - each.clip.left" :height="each.clip.bottom - each.clip.top" />
-            </clipPath>
+            <template v-if="each.clip">
+                <clipPath :id="`${clipId}-${each.name}`">
+                    <rect :x="each.clip.left" :y="each.clip.top" :width="each.clip.right - each.clip.left" :height="each.clip.bottom - each.clip.top" />
+                </clipPath>
+            </template>
         </template>
     </defs>
-    <g v-for="each in splashes" :key="each.name" :clip-path="each.clip ? `url(#${clipId}-${each.name})` : null" :data-act-surface="each.on === 'surface' ? '' : null">
-        <template v-if="each.run > 0">
-            <rect :x="each.x - each.r * 0.22" :y="each.y" :width="each.r * 0.44" :height="each.run" :rx="each.r * 0.2" :fill="GREEN" stroke="none" :opacity="each.opacity * 0.75" data-act-run />
-            <circle :cx="each.x" :cy="each.y + each.run" :r="each.r * 0.4" :fill="GREEN" :stroke="DARK_GREEN" stroke-width="0.5" :opacity="each.opacity * 0.9" />
-        </template>
-        <ellipse :cx="each.x" :cy="each.y" :rx="each.r * (each.on === 'floor' || each.on === 'top' ? 1.4 : 0.7)" :ry="each.r * (each.on === 'floor' || each.on === 'top' ? 0.7 : 1.4)" :fill="GREEN" :stroke="DARK_GREEN" stroke-width="0.5" :opacity="each.opacity * 0.9" data-act-splash />
-    </g>
+    <template v-for="each in splashes" :key="each.name">
+        <g :clip-path="each.clip ? `url(#${clipId}-${each.name})` : null" :data-act-surface="each.on === 'surface' ? '' : null">
+            <template v-if="each.run > 0">
+                <rect :x="each.x - each.r * 0.22" :y="each.y" :width="each.r * 0.44" :height="each.run" :rx="each.r * 0.2" :fill="GREEN" stroke="none" :opacity="each.opacity * 0.75" data-act-run />
+                <circle :cx="each.x" :cy="each.y + each.run" :r="each.r * 0.4" :fill="GREEN" :stroke="DARK_GREEN" stroke-width="0.5" :opacity="each.opacity * 0.9" />
+            </template>
+            <ellipse :cx="each.x" :cy="each.y" :rx="each.r * (each.on === 'floor' || each.on === 'top' ? 1.4 : 0.7)" :ry="each.r * (each.on === 'floor' || each.on === 'top' ? 0.7 : 1.4)" :fill="GREEN" :stroke="DARK_GREEN" stroke-width="0.5" :opacity="each.opacity * 0.9" data-act-splash />
+        </g>
+    </template>
     <template v-for="each in flying" :key="each.name">
         <circle :cx="each.x" :cy="each.y" :r="each.r" :fill="GREEN" :stroke="DARK_GREEN" stroke-width="0.5" data-act-slush />
     </template>

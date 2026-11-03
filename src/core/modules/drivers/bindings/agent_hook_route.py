@@ -49,7 +49,7 @@ class AgentHookRoute(HookRoute):
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)
         if main is None and event.event == HookEventName.SESSION_START and not event.subagent:
-            main = self.resumed_or_new(event)
+            main = self.known_or_new_agent(event)
         if main is None or not event.subagent:
             return main
         subagent = self.open_agent(event.subagent)
@@ -57,7 +57,7 @@ class AgentHookRoute(HookRoute):
             return self.started(event, AgentRole.SUBAGENT, main.id)
         return subagent
 
-    def resumed_or_new(self, event: HookEvent) -> Agent | None:
+    def known_or_new_agent(self, event: HookEvent) -> Agent | None:
         ended = self.queries.query(Agent).filter(session=event.session).page(1, 1).rows
         if ended:
             return self.started(event, ended[0].role, ended[0].parent_id)
