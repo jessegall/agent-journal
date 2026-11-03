@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-import { computed as r, openBlock as l, createElementBlock as u, unref as o, createCommentVNode as _, createVNode as v, withCtx as k, ref as w, onUnmounted as ge, normalizeClass as te, createElementVNode as g, toDisplayString as f, createBlock as ee, Fragment as G, withModifiers as oe, renderList as le, watch as re, createTextVNode as ve } from "vue";
-import { useRows as J, AutoScrollPane as pe, RowList as de, DiffCard as fe, useNow as we, age as me, useWindow as ce, TimeAgo as ke, Icon as he, peekRef as ae, RunningCommand as _e, FoldGroup as ie, InnerTabs as ye, SwitchCase as be, TaskStatusIcon as Se, SearchBar as Ce, Segmented as $e, Btn as Te } from "@journal/window-kit";
-import { _ as ne, T as ue } from "./TranscriptRows-CqsIYdpP.mjs";
+import { computed as r, openBlock as l, createElementBlock as u, unref as o, createCommentVNode as _, createVNode as v, withCtx as k, ref as f, onUnmounted as ge, normalizeClass as te, createElementVNode as g, toDisplayString as w, createBlock as ee, Fragment as G, withModifiers as oe, renderList as le, watch as re, createTextVNode as ve } from "vue";
+import { useRows as J, AutoScrollPane as pe, RowList as de, DiffCard as we, useNow as fe, age as me, useWindow as ce, TimeAgo as ke, Icon as he, peekRef as ae, RunningCommand as _e, FoldGroup as ie, InnerTabs as ye, SwitchCase as be, TaskStatusIcon as Se, SearchBar as Ce, Segmented as $e, Btn as Te } from "@journal/window-kit";
+import { _ as ne, T as ue } from "./TranscriptRows-DhYd90lu.js";
 const xe = { class: "file-feed" }, Re = 5, Ae = {
   __name: "AgentFileEdits",
   props: { agent: { type: Number, required: !0 } },
@@ -28,7 +28,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
             hint: "The files it changes show here as it works."
           }, {
             default: k(({ row: c }) => [
-              v(o(fe), {
+              v(o(we), {
                 flush: "",
                 lines: Re,
                 path: c.path,
@@ -46,7 +46,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
       }, 8, ["row-count"])
     ]));
   }
-}, Ie = /* @__PURE__ */ ne(Ae, [["__scopeId", "data-v-b60acb7e"]]), Oe = ["data-agent-open", "aria-expanded", "title"], Ne = { class: "agent-head" }, qe = ["data-state"], Ee = {
+}, Ie = /* @__PURE__ */ ne(Ae, [["__scopeId", "data-v-69712d4d"]]), Oe = ["data-agent-open", "aria-expanded", "title"], Ne = { class: "agent-head" }, qe = ["data-state"], Ee = {
   class: "agent-title",
   "data-agent-title": ""
 }, Be = {
@@ -96,7 +96,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
   props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, open: Boolean },
   emits: ["toggle"],
   setup(s, { emit: L }) {
-    const h = { main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer" }, F = /* @__PURE__ */ new Set(["subagent", "worker", "reviewer"]), V = ["started", "testing", "blocked", "open", "completed", "cancelled"], t = s, x = L, R = we(), j = r(() => {
+    const h = { main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer" }, F = /* @__PURE__ */ new Set(["subagent", "worker", "reviewer"]), V = ["started", "testing", "blocked", "open", "completed", "cancelled"], t = s, x = L, R = fe(), j = r(() => {
       var n;
       const e = ((n = t.facts) == null ? void 0 : n.profile) || h[t.row.role] || t.row.role;
       return e.slice(0, 1).toUpperCase() + e.slice(1);
@@ -123,7 +123,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
       var K;
       const e = Date.parse(((K = t.progress) == null ? void 0 : K.started_at) || t.row.created_at), n = t.progress ? t.progress.finished_at : t.row.ended_at, b = ((n ? Date.parse(n) : R.value) - e) / Ye;
       return t.row.role === "worker" && b > 0 && I.value ? `${Math.round(I.value / b)}/h` : "";
-    }), N = r(() => V.map((e) => ({ state: e, label: e.slice(0, 1).toUpperCase() + e.slice(1), tasks: p.value.filter((n) => n.state === e) })).filter((e) => e.tasks.length)), Y = /* @__PURE__ */ new Set(["completed"]), M = w({}), q = (e) => !(M.value[e] ?? Y.has(e)), Z = (e) => M.value = { ...M.value, [e]: q(e) }, E = ce(), m = w(E.tabs[0]), B = r(() => t.row.role === "subagent"), D = w(!1), z = w(""), X = w(""), i = r(() => t.row.role !== "main" && (!t.row.ended_at || S.value || t.waitReason));
+    }), N = r(() => V.map((e) => ({ state: e, label: e.slice(0, 1).toUpperCase() + e.slice(1), tasks: p.value.filter((n) => n.state === e) })).filter((e) => e.tasks.length)), Y = /* @__PURE__ */ new Set(["completed"]), M = f({}), q = (e) => !(M.value[e] ?? Y.has(e)), Z = (e) => M.value = { ...M.value, [e]: q(e) }, E = ce(), m = f(E.tabs[0]), B = r(() => t.row.role === "subagent"), D = f(!1), z = f(""), X = f(""), i = r(() => t.row.role !== "main" && (!t.row.ended_at || S.value || t.waitReason));
     async function a() {
       if (!i.value) return;
       const e = await E.read(`usage tool --agent ${t.row.id}`);
@@ -144,13 +144,13 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
             class: "agent-dot",
             "data-state": Q.value
           }, null, 8, qe),
-          g("span", Ee, f(j.value), 1),
-          g("span", Be, f(((W = s.facts) == null ? void 0 : W.given_name) || s.row.id), 1),
+          g("span", Ee, w(j.value), 1),
+          g("span", Be, w(((W = s.facts) == null ? void 0 : W.given_name) || s.row.id), 1),
           s.row.ended_at && !S.value ? (l(), ee(o(ke), {
             key: 0,
             class: "agent-time",
             at: s.row.ended_at
-          }, null, 8, ["at"])) : (l(), u("span", De, f(c.value), 1)),
+          }, null, 8, ["at"])) : (l(), u("span", De, w(c.value), 1)),
           v(o(he), {
             class: te(["agent-chevron", { opened: s.open }]),
             name: "caret",
@@ -158,10 +158,10 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
           }, null, 8, ["class"])
         ]),
         g("span", We, [
-          g("span", Le, f(A.value), 1),
+          g("span", Le, w(A.value), 1),
           O.value ? (l(), u(G, { key: 0 }, [
-            H.value ? (l(), u("span", Fe, f(H.value), 1)) : _("", !0),
-            g("span", Ve, f(U.value), 1)
+            H.value ? (l(), u("span", Fe, w(H.value), 1)) : _("", !0),
+            g("span", Ve, w(U.value), 1)
           ], 64)) : _("", !0)
         ]),
         i.value ? (l(), u("span", je, [
@@ -172,7 +172,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
             "data-agent-waiting": "",
             title: "Open the process queue",
             onClick: n[0] || (n[0] = oe((C) => o(ae)("test_queue:0"), ["stop"]))
-          }, "Waiting: " + f(s.waitReason), 1)) : S.value ? (l(), u("span", Pe, "Waiting")) : (l(), ee(o(_e), {
+          }, "Waiting: " + w(s.waitReason), 1)) : S.value ? (l(), u("span", Pe, "Waiting")) : (l(), ee(o(_e), {
             key: 2,
             text: z.value,
             idle: X.value || "thinking"
@@ -185,7 +185,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
           onClick: n[3] || (n[3] = oe(() => {
           }, ["stop"]))
         }, [
-          P.value ? (l(), u("span", Ue, f(P.value), 1)) : _("", !0),
+          P.value ? (l(), u("span", Ue, w(P.value), 1)) : _("", !0),
           B.value ? (l(), u("div", He, [
             (b = s.facts) != null && b.instruction ? (l(), u("div", Me, [
               v(o(ie), {
@@ -195,7 +195,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
                 onToggle: n[1] || (n[1] = (C) => D.value = !D.value)
               }, {
                 default: k(() => [
-                  g("div", ze, f(s.facts.instruction), 1)
+                  g("div", ze, w(s.facts.instruction), 1)
                 ]),
                 _: 1
               }, 8, ["open"])
@@ -239,15 +239,15 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
                           v(o(Se), {
                             status: T.state
                           }, null, 8, ["status"]),
-                          g("span", Je, f(T.id), 1),
-                          g("span", Qe, f(T.title), 1)
+                          g("span", Je, w(T.id), 1),
+                          g("span", Qe, w(T.title), 1)
                         ], 8, Ge))), 128))
                       ]),
                       _: 2
                     }, 1032, ["label", "count", "open", "data-agent-section", "onToggle"]))), 128)),
                     (C = s.facts) != null && C.instruction ? (l(), u(G, { key: 0 }, [
                       n[5] || (n[5] = g("p", { class: "agent-label" }, "Instruction", -1)),
-                      g("div", Xe, f(s.facts.instruction), 1)
+                      g("div", Xe, w(s.facts.instruction), 1)
                     ], 64)) : _("", !0)
                   ];
                 }),
@@ -269,7 +269,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
       ], 10, Oe);
     };
   }
-}, et = /* @__PURE__ */ ne(Ze, [["__scopeId", "data-v-02ad9d94"]]), tt = { class: "agents-bar" }, at = {
+}, et = /* @__PURE__ */ ne(Ze, [["__scopeId", "data-v-c8a92d8c"]]), tt = { class: "agents-bar" }, at = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, nt = ["data-agent-row"], st = {
@@ -283,7 +283,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
     ], h = s, { rows: F } = J("usage agents --closed", ["agent.*", "task.*"]), { rows: V } = J("worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]), { rows: t } = J("worker progress", ["task.*", "worker_worktree.*"]), x = (i) => t.value.find((a) => a.agent_id === i.id) ?? null, R = (i) => {
       var a;
       return ((a = V.value.find((d) => d.agent_id === i.id)) == null ? void 0 : a.reason) ?? "";
-    }, { rows: j } = J("proof list --limit 50", ["proof.*"]), p = /* @__PURE__ */ new Set(["queued", "running"]), A = r(() => j.value.filter((i) => p.has(i.state)).length), c = w("running"), y = w(""), S = ce(), Q = w([]), P = w(""), I = w(!1), O = w(!1), U = w(25);
+    }, { rows: j } = J("proof list --limit 50", ["proof.*"]), p = /* @__PURE__ */ new Set(["queued", "running"]), A = r(() => j.value.filter((i) => p.has(i.state)).length), c = f("running"), y = f(""), S = ce(), Q = f([]), P = f(""), I = f(!1), O = f(!1), U = f(25);
     let H = 0;
     async function N() {
       const i = ++H, a = await S.read(`${h.line} --show ${c.value} --search ${JSON.stringify(y.value)} --limit ${U.value}`);
@@ -295,7 +295,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
     re([c, y], () => {
       U.value = 25, N();
     }), S.follow(["agent.*", "task.*", "worker_worktree.*"], N), N();
-    const M = (i) => F.value.find((a) => a.id === i.id) ?? null, q = Q, Z = r(() => !!y.value.trim()), E = r(() => h.texts[c.value] ?? { title: h.empty, hint: "" }), m = w(null), B = r(() => q.value.find((i) => i.id === m.value) ?? null), D = r(() => B.value ? [B.value] : q.value), z = r(() => q.value.length - D.value.length), X = (i) => m.value = m.value === i.id ? null : i.id;
+    const M = (i) => F.value.find((a) => a.id === i.id) ?? null, q = Q, Z = r(() => !!y.value.trim()), E = r(() => h.texts[c.value] ?? { title: h.empty, hint: "" }), m = f(null), B = r(() => q.value.find((i) => i.id === m.value) ?? null), D = r(() => B.value ? [B.value] : q.value), z = r(() => q.value.length - D.value.length), X = (i) => m.value = m.value === i.id ? null : i.id;
     return re(y, (i) => i.trim() && (m.value = null)), (i, a) => (l(), u("div", {
       class: te(["agents", { focused: B.value }])
     }, [
@@ -321,7 +321,7 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
             }, {
               default: k(() => [
                 a[4] || (a[4] = ve("Process queue ", -1)),
-                g("span", at, f(A.value), 1)
+                g("span", at, w(A.value), 1)
               ]),
               _: 1
             })
@@ -362,10 +362,10 @@ const xe = { class: "file-feed" }, Re = 5, Ae = {
         class: "agents-held",
         "data-agents-held": "",
         onClick: a[3] || (a[3] = (d) => m.value = null)
-      }, f(z.value) + " more", 1)) : _("", !0)
+      }, w(z.value) + " more", 1)) : _("", !0)
     ], 2));
   }
-}, ut = /* @__PURE__ */ ne(st, [["__scopeId", "data-v-a2f0b622"]]);
+}, ut = /* @__PURE__ */ ne(st, [["__scopeId", "data-v-275307d6"]]);
 export {
   ut as A
 };
