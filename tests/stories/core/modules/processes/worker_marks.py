@@ -48,7 +48,10 @@ def test_a_test_run_and_a_build_make_a_chat_mark_and_a_docked_card_for_the_main_
         worker_run(story, worker, line, category)
         main_run = moved_run(story, line, category=category)
         story.run(f"output watch {main_run.id}", actor=story.agent)
+    story.advance(timedelta(seconds=6))
+    story.tick("s-1")
+    story.tick("s-9")
     story.run_listeners()
     for process in range(1, 5):
         story.expect_text(MARKS, f"process:{process}")
-        story.expect_text(f"dock-item list", "processes.output")
+    story.expect_text("dock-item show 4", "type: processes.output")

@@ -4,6 +4,7 @@ from enum import StrEnum
 class ProcessMarkVariant(StrEnum):
     """Where the run a mark follows stands."""
 
+    QUEUED = "queued"
     RUNNING = "running"
     BACKGROUND = "background"
     FINISHED = "finished"

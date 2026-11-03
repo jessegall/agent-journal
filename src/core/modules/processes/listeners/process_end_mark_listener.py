@@ -27,9 +27,9 @@ ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, Proce
 
 class ProcessEndMarkListener(CommitListener):
     """A visible run shows one mark naming its command alone, whatever else its line runs; the mark is kept up
-    to date in place by the key process:<id>: running, with the reader's progress as its figure, moved to the
-    background, then ended with its outcome. A mark once shown always ends, also when the run's output is gone
-    by then."""
+    to date in place by the key process:<id>: queued, running with the reader's progress as its figure, moved to
+    the background, then ended with its outcome. A mark once shown always ends, also when the run's output is
+    gone by then."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -47,13 +47,19 @@ class ProcessEndMarkListener(CommitListener):
         if part is None:
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
-        variant = ProcessMarkVariant(process.state.value)
+        variant = ProcessMarkVariant.QUEUED if process.is_queued else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
-        text = output.title if output and output.title else f"{PHRASES[process.state]} {ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS]}"
+        text = self.text(process, output.title if output else "", ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS])
         self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
+
+    @staticmethod
+    def text(process: Process, title: str, line: str) -> str:
+        if process.is_queued:
+            return f"Queued: {title or line}"
+        return title or f"{PHRASES[process.state]} {line}"
 
     @staticmethod
     def figure(process: Process, output: Output | None) -> str:
