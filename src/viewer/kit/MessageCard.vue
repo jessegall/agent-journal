@@ -61,8 +61,10 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 // the rows a person's message names, under it, as version 4's line of what it linked
 const context = inject(WINDOW_CONTEXT, null);
 const SUBJECT_LINK = "about";
+const SENT_LINK = "sent_to";
 const CHIPS_BELOW = 3;
 const links = ref([]);
+const sentTo = ref([]);
 const linksOpen = ref(false);
 const linksLine = computed(() => `Linked: ${links.value.join(", ")}`);
 const linksCounted = computed(() => links.value.length >= CHIPS_BELOW);
@@ -70,7 +72,10 @@ const linkCount = computed(() => `${links.value.length} linked ${links.value.eve
 async function readLinks() {
     if (!fromPerson.value || !context?.read || props.message.local) return;
     const answer = await context.read(`link list --source message:${props.message.id}`);
-    if (answer.ok) links.value = (answer.value.rows ?? answer.value ?? []).filter((link) => link.link_type === SUBJECT_LINK).map((link) => `${link.target_model} ${link.target_id}`);
+    if (!answer.ok) return;
+    const rows = answer.value.rows ?? answer.value ?? [];
+    links.value = rows.filter((link) => link.link_type === SUBJECT_LINK).map((link) => `${link.target_model} ${link.target_id}`);
+    sentTo.value = rows.filter((link) => link.link_type === SENT_LINK).map((link) => link.target_id);
 }
 readLinks();
 context?.follow?.(["link.*"], readLinks);
@@ -171,6 +176,14 @@ function pick(face) {
                     </template>
                 </div>
             </template>
+            <template v-if="sentTo.length">
+                <div class="message-sent-to" data-message-sent-to>
+                    <Icon name="send" :size="12" />
+                    <template v-for="id in sentTo" :key="id">
+                        <button type="button" class="message-sent-worker" :data-sent-worker="id" :title="`Open worker ${id}`" @click.stop="peekRef(`agents:${id}`)">Also sent to worker {{ id }}</button>
+                    </template>
+                </div>
+            </template>
             <div class="message-foot">
                 <time class="message-time">{{ time }}</time>
                 <template v-if="Number.isInteger(message.id)">
@@ -218,6 +231,30 @@ function pick(face) {
     color: var(--text-3);
     font-size: 11.5px;
     line-height: 1.45;
+}
+
+.message-sent-to {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 2px 6px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.message-sent-worker {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.message-sent-worker:hover {
+    color: var(--text);
 }
 
 .message-links-icon {

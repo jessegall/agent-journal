@@ -18,8 +18,9 @@ SOURCE = "workers.delegated-task-comment"
 
 
 class DelegatedTaskCommentListener(SaveListener):
-    """A person's comment on a task delegated to a worker goes to the worker as a job, and the main agent, which
-    reads the comment as a message, is told the worker has it too, so it decides who acts on it."""
+    """A person's comment on a task delegated to a worker goes to the worker as a job, and the comment is linked to
+    that worker so the chat shows where it went; the main agent, which reads the comment as a message, is told the
+    worker has it too, so it decides who acts on it."""
 
     name = "workers.delegated-task-comment"
     event = "link.create"
@@ -36,6 +37,7 @@ class DelegatedTaskCommentListener(SaveListener):
             return
         message = self.queries.query(Message).find(link.source_id)
         self.repository.save(AgentLine(agent_id=worker_id, creator_id=change.actor.id, text=WORKER_TASK_COMMENT.nudge(job=message.text).text, source=WORKER_JOB_SOURCE), change.context)
+        self.repository.save(Link(creator_id=change.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker_id, link_type=LinkType.SENT_TO), change.context)
         parent_id = self.queries.query(Agent).find(worker_id).parent_id
         if parent_id is not None:
             copy_line = WORKER_COMMENT_COPY.nudge(worker=worker_id, message=message.id).text

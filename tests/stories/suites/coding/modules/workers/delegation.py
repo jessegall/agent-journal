@@ -1,6 +1,8 @@
 import json
 
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.modules.messages.models.message import Message
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -21,6 +23,10 @@ def delegated_story(new_story):
     return story, repository, worker
 
 
+def last_message_id(story) -> int:
+    return story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].id
+
+
 def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -39,11 +45,20 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
 
 
-def test_a_comment_on_a_task_with_no_worker_tells_no_worker(new_story):
+def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_also_sent_to(new_story):
+    story, _, worker = delegated_story(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
+    message_id = last_message_id(story)
+    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
+
+
+def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    assert "sent_to" not in story.run(f"link list --source message:{last_message_id(story)}").output_text
 
 
 def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
