@@ -1,8 +1,11 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
+import MenuItem from "../kit/MenuItem.vue";
+import MenuLabel from "../kit/MenuLabel.vue";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 
-// one pane's menu: splitting, detaching, its width and agent, its window's options, moving and closing it
+// one pane's menu in sections: what to do with the pane (split, detach, its width), the agent it follows, its window's options with the marks behind a fold,
+// then moving it, closing it and resetting the layout; it is one narrow column that scrolls when it is long
 defineProps({
     pane: {type: Object, required: true},
     floats: {type: Boolean, default: false},
@@ -18,29 +21,34 @@ const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]
 
 <template>
 <div class="pane-menu" role="menu">
-    <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="emit('split', 'right')">Split right</Btn>
-    <Btn data-menu="split-below" :disabled="pane.tabs.length < 2" @click="emit('split', 'bottom')">Split below</Btn>
+    <MenuItem data-menu="split-right" :disabled="pane.tabs.length < 2" @click="emit('split', 'right')">Split right</MenuItem>
+    <MenuItem data-menu="split-below" :disabled="pane.tabs.length < 2" @click="emit('split', 'bottom')">Split below</MenuItem>
     <template v-if="floats">
-        <Btn data-menu="detach" @click="emit('detach')">Detach</Btn>
+        <MenuItem data-menu="detach" @click="emit('detach')">Detach</MenuItem>
     </template>
-    <Btn data-menu="width" @click="emit('option', 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</Btn>
+    <MenuItem data-menu="width" @click="emit('option', 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</MenuItem>
     <template v-if="agentWindow">
         <div class="pane-menu-choice" data-option="agent">
-            <span>Agent</span>
-            <Btn data-choice="main" :aria-pressed="!pane.options?.agent" @click="emit('option', 'agent', null)">Main agent</Btn>
+            <MenuLabel>Agent</MenuLabel>
+            <Btn small data-choice="main" :aria-pressed="!pane.options?.agent" @click="emit('option', 'agent', null)">Main agent</Btn>
             <template v-for="row in followable" :key="row.id">
-                <Btn :data-choice="row.id" :aria-pressed="pane.options?.agent === row.id" @click="emit('option', 'agent', row.id)">{{ row.role }} {{ row.id }}</Btn>
+                <Btn small :data-choice="row.id" :aria-pressed="pane.options?.agent === row.id" @click="emit('option', 'agent', row.id)">{{ row.role }} {{ row.id }}</Btn>
             </template>
         </div>
     </template>
     <PaneMenuOptions :declared="declared" :values="pane.options || {}" @set="(key, value) => emit('option', key, value)" />
+    <template v-if="others.length">
+        <MenuLabel>Move</MenuLabel>
+    </template>
     <template v-for="other in others" :key="other.id">
-        <Btn :data-menu="`move-${other.id}`" @click="emit('move', other.id)">Move to {{ other.title }}</Btn>
+        <MenuItem :data-menu="`move-${other.id}`" @click="emit('move', other.id)">Move to {{ other.title }}</MenuItem>
     </template>
-    <Btn data-menu="close" :disabled="!canClose" @click="emit('close')">Close</Btn>
-    <template v-if="canReset">
-        <Btn data-menu="reset" @click="emit('reset')">Reset layout</Btn>
-    </template>
+    <div class="pane-menu-foot">
+        <MenuItem data-menu="close" :disabled="!canClose" @click="emit('close')">Close</MenuItem>
+        <template v-if="canReset">
+            <MenuItem data-menu="reset" @click="emit('reset')">Reset layout</MenuItem>
+        </template>
+    </div>
 </div>
 </template>
 
@@ -52,10 +60,73 @@ const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]
     z-index: 6;
     display: flex;
     flex-direction: column;
+    gap: 1px;
+    box-sizing: border-box;
+    width: 240px;
+    max-height: min(70vh, 560px);
+    padding: 4px;
+    overflow-y: auto;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--raised);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+    scrollbar-width: thin;
+}
+
+.pane-menu :deep(.pane-menu-choice) {
+    display: flex;
+    flex-wrap: wrap;
     gap: 4px;
-    padding: 6px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--bg);
+    align-items: center;
+    padding: 0 4px 6px;
+}
+
+.pane-menu :deep(.pane-menu-choice > .menu-label),
+.pane-menu :deep(.pane-menu-choice > span:first-child) {
+    flex-basis: 100%;
+    padding: 10px 4px 2px;
+    color: var(--text-4);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pane-menu :deep(.pane-menu-group) {
+    padding-left: 12px;
+}
+
+.pane-menu :deep(.pane-menu-main-only) {
+    align-self: flex-start;
+    margin: 0 0 2px 12px;
+}
+
+.pane-menu :deep(.pane-menu-fold) {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 6px 8px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pane-menu :deep(.pane-menu-fold:hover) {
+    color: var(--text);
+}
+
+.pane-menu-foot {
+    display: flex;
+    flex-direction: column;
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
 }
 </style>

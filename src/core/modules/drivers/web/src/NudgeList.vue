@@ -6,7 +6,7 @@ const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No module declares a nudge">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No module declares a nudge" hint="A line a module may say to an agent is listed here with the module that declares it.">
         <template #default="{row}">
             <div class="nudge" data-nudge>
                 <p class="nudge-head">

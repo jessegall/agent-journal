@@ -10,7 +10,7 @@ const edits = computed(() => rows.value.map((edit) => ({...edit, lines: JSON.par
 </script>
 
 <template>
-    <RowList :rows="edits" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No edits by this agent yet">
+    <RowList :rows="edits" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No edits by this agent yet" hint="The files it changes show here as it works.">
         <template #default="{row}">
             <DiffCard flush :lines="CARD_LINES" :path="row.path" :kind="row.edit_type" :added="row.added" :removed="row.removed" :ago="ago(row.created_at)" :rows="row.lines" />
         </template>

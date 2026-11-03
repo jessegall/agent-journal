@@ -3,8 +3,9 @@ from enum import StrEnum
 
 class LinkType(StrEnum):
     """What a link between two rows means: the row a report is about, a row a text names, or a comment on a
-    row."""
+    row, or the agent a message also went to."""
 
     SUBJECT = "about"
     MENTION = "mentions"
     COMMENT = "comments_on"
+    SENT_TO = "sent_to"

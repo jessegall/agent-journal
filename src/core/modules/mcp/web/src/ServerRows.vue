@@ -68,8 +68,8 @@ async function giveKey(row) {
         </template>
         <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
     </div>
-    <ListTools :tools="tools" placeholder="Search the servers" />
-    <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
+    <ListTools :tools="tools" />
+    <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed" hint="Install one of the suggested servers below, or add your own." :searching="tools.filtering.value">
         <template #default="{row}">
             <div class="server" :data-row="row.id">
                 <div class="head">
@@ -101,7 +101,7 @@ async function giveKey(row) {
         <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
     </form>
     <h3 class="heading">Suggested</h3>
-    <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed">
+    <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="A server the journal suggests shows here until it is installed.">
         <template #default="{row}">
             <div class="server">
                 <div class="head">

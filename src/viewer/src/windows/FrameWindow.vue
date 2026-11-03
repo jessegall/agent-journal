@@ -32,6 +32,7 @@ const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
         :declared="entry.options"
         :auto-scroll="entry.auto_scroll"
         :tabs="entry.tabs"
+        :search="entry.search"
         :events="entry.events || []"
         :unavailable-reason="entry.unavailable_reason || ''"
         @option="(key, value) => emit('option', key, value)"

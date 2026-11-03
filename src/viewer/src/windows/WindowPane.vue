@@ -108,6 +108,7 @@ watch(
             :declared="entry.options"
             :auto-scroll="entry.auto_scroll"
             :tabs="entry.tabs"
+            :search="entry.search"
             :unavailable-reason="entry.unavailable_reason"
             @option="(key, value) => emit('option', key, value)"
         />

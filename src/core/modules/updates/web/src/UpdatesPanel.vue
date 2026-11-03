@@ -66,7 +66,7 @@ readNotes(1);
         </template>
     </div>
     <h3 class="heading">Installed releases</h3>
-    <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet">
+    <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet" hint="A release you install from this journal shows here with when.">
         <template #default="{row}">
             <div class="release" :data-row="row.id">
                 <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>

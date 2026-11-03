@@ -18,6 +18,8 @@ const props = defineProps({
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},
     run: {type: Function, default: null},
+    // a page shell that changes its page in place gives this, called with the name of the page a plain click asks for
+    navigate: {type: Function, default: null},
     mini: Boolean,
 });
 const drafting = ref(false);
@@ -31,8 +33,16 @@ const sections = computed(() => [{key: "environment", title: "Environment", wind
 // each page has its own address, which a click follows
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;
 
+const isPlainClick = (event) => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
 function go(event, page) {
-    if (page.unavailable_reason) event.preventDefault();
+    if (page.unavailable_reason) {
+        event.preventDefault();
+        return;
+    }
+    if (!props.navigate || !isPlainClick(event)) return;
+    event.preventDefault();
+    if (page.name !== props.open) props.navigate(page.name);
 }
 
 function fold(key) {

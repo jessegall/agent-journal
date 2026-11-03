@@ -11,8 +11,8 @@ const watch = (row) => context.run(`output watch ${row.id}`);
 </script>
 
 <template>
-    <ListTools :tools="tools" placeholder="Search the commands" />
-    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet">
+    <ListTools :tools="tools" />
+    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet" hint="The commands an agent runs show here, each with its output." :searching="tools.filtering.value">
         <template #default="{row}">
             <div class="run">
                 <span :class="['state', row.state]">{{ row.state }}</span>

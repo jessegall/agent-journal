@@ -19,7 +19,7 @@ async function remove(row) {
 </script>
 
 <template>
-    <RowList :rows="ordered" :failure="failure" :loaded="loaded" empty="No environments yet">
+    <RowList :rows="ordered" :failure="failure" :loaded="loaded" empty="No environments yet" hint="An environment is one line of work in this project; make one to start.">
         <template #default="{row}">
             <div class="environment" :data-environment="row.name">
                 <div class="environment-names">

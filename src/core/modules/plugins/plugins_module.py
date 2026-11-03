@@ -2,6 +2,8 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.plugins.support.plugin_searcher import PluginSearcher
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
@@ -69,7 +71,7 @@ class PluginsModule(Module):
               ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=BUILT)]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards"],
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginsTablesMigration]
     handlers = [UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,

@@ -41,7 +41,7 @@ load();
         <template v-else-if="!cards.length">
             <p class="dumps-note">No dumps</p>
         </template>
-        <ListTools :tools="tools" placeholder="Search the dumps" />
+        <ListTools :tools="tools" />
         <template v-for="card in tools.shown.value" :key="card.id">
             <section class="dump" :data-dump="card.id">
                 <h3 class="dump-title">{{ card.title || `Dump ${card.id}` }}</h3>

@@ -13,8 +13,8 @@ const marks = [{id: 1, type: "memory"}, {id: 2, type: "reminder"}, {id: 3, type:
 
 test("each family gets one switch, on by default", () => {
     expect(familyOptions(declarations)).toEqual([
-        {control: "toggle", key: "show-memories.memories", label: "Memories", default: true},
-        {control: "toggle", key: "show-memories.reminders", label: "Reminders", default: true},
+        {control: "toggle", key: "show-memories.memories", label: "Memories", default: true, section: "marks"},
+        {control: "toggle", key: "show-memories.reminders", label: "Reminders", default: true, section: "marks"},
     ]);
 });
 

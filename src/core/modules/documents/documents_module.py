@@ -3,6 +3,8 @@ from core.modules.documents.commands.record_subject_link.record_subject_link_han
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.documents.support.doc_searcher import DocSearcher
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
@@ -71,7 +73,7 @@ class DocumentsModule(Module):
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]

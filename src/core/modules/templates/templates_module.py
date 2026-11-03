@@ -1,6 +1,8 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.templates.support.template_searcher import TemplateSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -28,5 +30,5 @@ class TemplatesModule(Module):
     handlers = [MakeTemplateHandler]
     subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)
     seeders = [TemplatesSeeder]
-    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"])]

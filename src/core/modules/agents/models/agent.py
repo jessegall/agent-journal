@@ -12,6 +12,7 @@ class Agent(Model):
 
     model_name = "agent"
     cli_name = "agent"
+    search_fields = ["given_name", "program", "program_model", "profile", "session"]
 
     environment_id: int
     parent_id: int | None = None

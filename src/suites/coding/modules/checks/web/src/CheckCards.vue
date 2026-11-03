@@ -22,7 +22,7 @@ async function run(row) {
 </script>
 
 <template>
-    <ListTools :tools="tools" placeholder="Search the checks" />
+    <ListTools :tools="tools" />
     <div class="cards">
         <template v-if="!loaded">
             <Skeleton shape="cards" />

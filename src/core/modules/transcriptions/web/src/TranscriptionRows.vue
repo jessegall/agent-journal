@@ -62,8 +62,8 @@ async function fetchFrom(server) {
                 <Btn small kind="primary" type="submit" :disabled="!canMake">Save</Btn>
             </form>
         </template>
-        <ListTools :tools="tools" placeholder="Search the transcriptions" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet">
+        <ListTools :tools="tools" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="A recording you have transcribed shows here with its text." :searching="tools.filtering.value">
             <template #default="{row}">
                 <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
                     <span class="title">{{ row.title }}</span>

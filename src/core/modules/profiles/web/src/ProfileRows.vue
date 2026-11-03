@@ -1,139 +1,176 @@
 <script setup>
-import {computed, reactive, ref} from "vue";
-import {ago, Btn, Dialog, ListTools, RowList, Segmented, useListTools, useRows} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {ago, Btn, EmptyState, ListRow, TextInput, useRows} from "@journal/window-kit";
+import ProfilePanel from "./ProfilePanel.vue";
 
-const TYPES = [
-    {key: "subagent", label: "Subagent"},
-    {key: "worker", label: "Worker"},
-];
-const NEW_PROFILE = {name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false};
+// the Agent profiles page as version 4 drew it: a bar with the find box, New profile and the count, a row for each profile with its kind, models and use, and
+// the profile opened in a panel at the side, where it is edited and saved; the person saves, an agent is refused
+const NEW_PROFILE = {name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
 
 const {rows, failure, loaded, act, actionFailure} = useRows("profile list", []);
-const tools = useListTools(rows, {title: (row) => `${row.name} ${row.description} ${row.profile_type} ${row.model} ${row.codex_model}`});
-const opened = ref(null);
-const draft = reactive({...NEW_PROFILE});
+const opened = ref("");
+const query = ref("");
 const notice = ref("");
+const making = ref(false);
 
-const validName = computed(() => /^[a-z0-9_-]+$/i.test(draft.name));
-const canSave = computed(() => validName.value && draft.description.trim());
+const matching = computed(() => {
+    const words = query.value.toLowerCase().split(/\s+/).filter(Boolean);
+    return rows.value.filter((row) => words.every((word) => `${row.name} ${row.description} ${row.profile_type} ${row.model} ${row.codex_model}`.toLowerCase().includes(word)));
+});
+const panel = computed(() => (making.value ? NEW_PROFILE : rows.value.find((row) => row.name === opened.value) || null));
 const usedWords = (row) => (row.uses ? `Dispatched ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Never dispatched here");
 
-function open(row) {
-    opened.value = row;
-    Object.assign(draft, row);
+function make() {
+    making.value = true;
+    opened.value = "";
 }
 
-async function save() {
-    const result = await act(["profile", "save", draft.name, "--description", draft.description, "--tools", draft.tools, "--type", draft.profile_type, "--model", draft.model, "--codex-model", draft.codex_model, "--body", draft.body]);
+function open(row) {
+    making.value = false;
+    opened.value = row.name;
+}
+
+function close() {
+    making.value = false;
+    opened.value = "";
+}
+
+async function save(profile, fields) {
+    notice.value = "";
+    const name = profile.name || fields.name;
+    const result = await act(["profile", "save", name, "--description", fields.description, "--tools", fields.tools, "--type", fields.profile_type, "--model", fields.model, "--codex-model", fields.codex_model, "--body", fields.body]);
     if (!result.ok) return;
-    notice.value = `${draft.name} saved; the agent reads it at its next dispatch.`;
-    opened.value = null;
+    making.value = false;
+    opened.value = name;
+    notice.value = `${name} saved; the agent reads it at its next dispatch.`;
 }
 </script>
 
 <template>
-    <div class="bar">
-        <Btn small data-profile-new @click="open(NEW_PROFILE)">New profile</Btn>
-        <span class="count">{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }} in .claude/agents</span>
-        <template v-if="notice">
-            <span class="count" data-profile-notice>{{ notice }}</span>
+    <section class="profiles" data-profiles>
+        <div class="bar">
+            <TextInput v-model="query" class="profiles-find" icon="search" placeholder="Find a profile" aria-label="Find a profile" data-profile-find @keydown.esc="query = ''" />
+            <Btn kind="ghost" small data-profile-new @click="make">New profile</Btn>
+            <span class="count" data-profile-count>{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }} in .claude/agents</span>
+            <template v-if="notice">
+                <span class="notice" data-profile-notice>{{ notice }}</span>
+            </template>
+            <template v-if="actionFailure">
+                <span class="notice failed" role="alert" data-profile-failure>{{ actionFailure }}</span>
+            </template>
+        </div>
+        <template v-if="failure">
+            <EmptyState class="empty" title="The profiles could not be read">{{ failure }}</EmptyState>
         </template>
-    </div>
-    <template v-if="actionFailure">
-        <p class="failure">{{ actionFailure }}</p>
-    </template>
-    <ListTools :tools="tools" placeholder="Find a profile" />
-    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No profiles yet" row-key="name">
-        <template #default="{row}">
-            <button type="button" class="profile" :data-profile="row.name" @click="open(row)">
-                <span class="title">{{ row.name }}</span>
-                <span class="subject">{{ row.description }}</span>
-                <span class="subject">{{ row.profile_type }} · {{ row.model || "the agent's model" }} on Claude · {{ row.codex_model || "the agent's model" }} on Codex</span>
-                <span class="subject">{{ usedWords(row) }}</span>
-            </button>
+        <template v-else-if="!loaded || !rows.length">
+            <EmptyState class="empty" :loading="!loaded" title="No profiles yet">
+                A profile is a subagent the agent can start for one kind of job: its description says when, its tools what it may do, its model what it runs on.
+                The journal writes a researcher, a planner and a debugger at setup.
+            </EmptyState>
         </template>
-    </RowList>
-    <template v-if="opened">
-        <Dialog :title="opened.name || 'New profile'" @close="opened = null">
-            <form class="form" data-profile-form @submit.prevent="save">
-                <template v-if="!opened.name">
-                    <label class="field">Name<input v-model.trim="draft.name" placeholder="critic" aria-label="Name"></label>
+        <template v-else-if="!matching.length">
+            <EmptyState class="empty" title="No profile matches">Try other words.</EmptyState>
+        </template>
+        <template v-else>
+            <div class="rows">
+                <template v-for="profile in matching" :key="profile.name">
+                    <Btn kind="text" fill class="profile-open" :aria-label="`Open ${profile.name}`" :data-profile="profile.name" @click="open(profile)">
+                        <ListRow :title="profile.name" :text="profile.description">
+                            <template #end>
+                                <span class="profile-meta">
+                                    <span class="profile-model">{{ profile.profile_type }} · {{ profile.model || "the agent's model" }} on Claude · {{ profile.codex_model || "the agent's model" }} on Codex</span>
+                                    <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
+                                </span>
+                            </template>
+                        </ListRow>
+                    </Btn>
                 </template>
-                <label class="field">When it is used<textarea v-model="draft.description" rows="3" aria-label="When it is used"></textarea></label>
-                <label class="field">Tools<input v-model="draft.tools" placeholder="Read, Grep, Glob" aria-label="Tools"></label>
-                <div class="field">Type<Segmented :options="TYPES" :value="draft.profile_type" @pick="draft.profile_type = $event" /></div>
-                <label class="field">Model on Claude Code<input v-model="draft.model" aria-label="Model on Claude Code"></label>
-                <label class="field">Model on Codex<input v-model="draft.codex_model" aria-label="Model on Codex"></label>
-                <label class="field">Instructions<textarea v-model="draft.body" rows="12" aria-label="Instructions"></textarea></label>
-                <template v-if="opened.shipped">
-                    <p class="count">The journal ships this profile; the next start puts it back as shipped.</p>
-                </template>
-                <Btn small kind="primary" type="submit" :disabled="!canSave">Save</Btn>
-            </form>
-        </Dialog>
-    </template>
+            </div>
+        </template>
+        <template v-if="panel">
+            <ProfilePanel :profile="panel" :used="usedWords(panel)" @close="close" @save="save" />
+        </template>
+    </section>
 </template>
 
 <style scoped>
+.profiles {
+    padding: 0 0 40px;
+}
+
 .bar {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 8px;
-}
-
-.count,
-.subject {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.failure {
-    margin: 0 0 8px;
-    color: var(--bad, var(--text-2));
-    font-size: 12px;
-}
-
-.profile {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    padding: 8px;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.title {
-    font-weight: 600;
-}
-
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 8px 12px;
+    min-height: 44px;
+    padding: 8px 14px 8px 22px;
+    border-bottom: 1px solid var(--border);
     color: var(--text-2);
+}
+
+.profiles-find {
+    flex: 0 1 280px;
+}
+
+.count {
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.notice {
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.notice.failed {
+    color: var(--danger);
+}
+
+.empty {
+    margin: 40px auto;
+    max-width: 480px;
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 14px 0 22px;
+}
+
+.profile-open {
+    text-align: left;
+}
+
+.profile-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
     font-size: 12px;
 }
 
-.field input,
-.field textarea {
-    padding: 4px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface, none);
-    color: inherit;
-    font: inherit;
+.profile-model {
+    color: var(--text-2);
+}
+
+.profile-used {
+    color: var(--text-3);
+    white-space: nowrap;
+}
+
+.profile-used.never {
+    color: var(--text-4);
+}
+
+@media (max-width: 640px) {
+    .profiles-find {
+        flex: 1 1 100%;
+    }
+
+    .profile-meta {
+        display: none;
+    }
 }
 </style>

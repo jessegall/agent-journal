@@ -1,10 +1,13 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import DockLeave from "./DockLeave.vue";
+import {isLeaving} from "../domain/dockItems.js";
 import {usePoll} from "../../kit/usePoll.js";
 import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 
-// one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, and a line of its progress
+// one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, a line of its progress,
+// and, once it ended, the countdown to its leaving along its top edge as its card has
 const OUTPUT_WINDOW = "processes.output";
 const CHIP_READ_MILLISECONDS = 5000;
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--tone-bad)"};
@@ -26,6 +29,9 @@ usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
 
 <template>
     <button type="button" class="run-chip" data-run-chip :title="name" :aria-label="`${name}; show its card`" :style="{'--tone': tone}">
+        <template v-if="isLeaving(item)">
+            <DockLeave :ends-at="item.leaves_at" />
+        </template>
         <span class="run-chip-in">
             <template v-if="running">
                 <span class="run-chip-ring"></span>

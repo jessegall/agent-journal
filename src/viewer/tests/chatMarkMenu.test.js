@@ -14,14 +14,23 @@ const declared = withFamilyOptions([{name: CHAT_WINDOW, options: []}], KINDS)[0]
 let drawn = [];
 
 // the chat's pane menu over a pane that keeps its options, as the stage keeps them
-function menu() {
+function menu(options = declared) {
     const values = ref({});
     const element = document.createElement("div");
     document.body.append(element);
-    const app = createApp(() => h(PaneMenuOptions, {declared, values: values.value, onSet: (key, value) => (values.value = {...values.value, [key]: value})}));
+    const app = createApp(() => h(PaneMenuOptions, {declared: options, values: values.value, onSet: (key, value) => (values.value = {...values.value, [key]: value})}));
     app.mount(element);
     drawn.push({app, element});
     return {element, values};
+}
+
+// the marks are listed behind a fold, which a person opens
+async function opened(options) {
+    const shown = menu(options);
+    await settled();
+    shown.element.querySelector("[data-menu-marks]").click();
+    await settled();
+    return shown;
 }
 
 afterEach(() => {
@@ -30,8 +39,7 @@ afterEach(() => {
 });
 
 test("the chat's menu lists each group with Only its main marks and a switch for each kind in it, after the presets", async () => {
-    const {element} = menu();
-    await settled();
+    const {element} = await opened();
     const keys = [...element.querySelectorAll("[data-option]")].map((control) => control.dataset.option);
     expect(keys).toEqual(["show-preset", "main-only-memory", "show-memories.memories", "show-memories.reminders", "main-only-task", "show-tasks.tasks"]);
     expect([...element.querySelectorAll("[data-group]")].map((heading) => heading.textContent)).toEqual(["Memory", "Task"]);
@@ -39,8 +47,7 @@ test("the chat's menu lists each group with Only its main marks and a switch for
 });
 
 test("Only its main marks switches a group's kinds without a main mark off on the pane, and again switches them all on", async () => {
-    const {element, values} = menu();
-    await settled();
+    const {element, values} = await opened();
     const press = element.querySelector('[data-option="main-only-memory"]');
     press.click();
     await settled();
@@ -53,9 +60,51 @@ test("Only its main marks switches a group's kinds without a main mark off on th
     expect(press.getAttribute("aria-pressed")).toBe("false");
 });
 
-test("a switch for one kind is kept on the pane beside the group's main-only choice", async () => {
-    const {element, values} = menu();
+// the kinds as the modules declare them, with the group label every kind carries unformatted and two families that once shared a title
+const DECLARED = [
+    {type: "dispatch", family: "drivers.dispatches", family_title: "Subagent dispatches", group: "agent", group_label: "{family}: {count} updates", shown: true, main: true},
+    {type: "subagent", family: "agents.subagents", family_title: "Subagents", group: "agent", group_label: "{family}: {count} subagent updates", shown: true, main: true},
+    {type: "fault", family: "chat.faults", family_title: "Faults", group: "journal", group_label: "{family}: {count} updates", shown: false, main: false},
+    {type: "task", family: "tasks.tasks", family_title: "Tasks", group: "work", group_label: "{family}: {count} updates", shown: true, main: true},
+    {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", group_label: "{family}: {count} updates", shown: true, main: true},
+];
+const realMenu = withFamilyOptions([{name: CHAT_WINDOW, options: [{control: "choice", key: "figure", label: "Figure", choices: [["none", "None"], ["butler", "Butler"]], default: "none"}]}], DECLARED)[0].options;
+
+test("no raw placeholder shows in the chat's menu, whether its marks are folded or open", async () => {
+    const {element} = menu(realMenu);
     await settled();
+    expect(element.textContent).not.toMatch(/[{}]|\bcount\b|\bfamily\b/);
+    element.querySelector("[data-menu-marks]").click();
+    await settled();
+    expect(element.textContent).not.toMatch(/[{}]|\bcount\b|\bfamily\b/);
+});
+
+test("each group is named in plain words and no entry of the menu repeats", async () => {
+    const {element} = await opened(realMenu);
+    expect([...element.querySelectorAll("[data-group]")].map((heading) => heading.textContent)).toEqual(["The agent", "The journal", "Work", "Reminders"]);
+    const switches = [...element.querySelectorAll('[data-option^="show-"]:not([data-option="show-preset"])')].map((entry) => entry.textContent.replace("✓", "").trim());
+    expect(switches).toEqual(["Subagent dispatches", "Subagents", "Faults", "Tasks", "Memories"]);
+    expect(new Set(switches).size).toBe(switches.length);
+    const keys = [...element.querySelectorAll("[data-option]")].map((entry) => entry.dataset.option);
+    expect(new Set(keys).size).toBe(keys.length);
+});
+
+test("the marks stay behind a fold until it is opened, and the figure and presets are labelled choices", async () => {
+    const {element} = menu(realMenu);
+    await settled();
+    expect(element.querySelector('[data-option="show-tasks.tasks"]')).toBeNull();
+    expect([...element.querySelectorAll("[data-option] > .menu-label")].map((label) => label.textContent)).toEqual(["Figure", "Show in chat"]);
+    expect([...element.querySelectorAll('[data-option="show-preset"] [data-choice]')].map((choice) => choice.textContent.trim())).toEqual(["Only chat", "Chat with context", "Every mark"]);
+    element.querySelector("[data-menu-marks]").click();
+    await settled();
+    expect(element.querySelector('[data-option="show-tasks.tasks"]')).not.toBeNull();
+    element.querySelector("[data-menu-marks]").click();
+    await settled();
+    expect(element.querySelector('[data-option="show-tasks.tasks"]')).toBeNull();
+});
+
+test("a switch for one kind is kept on the pane beside the group's main-only choice", async () => {
+    const {element, values} = await opened();
     element.querySelector('[data-option="show-tasks.tasks"]').click();
     await settled();
     expect(values.value).toEqual({"show-tasks.tasks": false});

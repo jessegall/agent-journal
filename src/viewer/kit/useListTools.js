@@ -12,5 +12,7 @@ export function useListTools(rows, {title, isOpen = null}) {
         const kept = rows.value.filter((row) => (!wanted || JSON.stringify(row).toLowerCase().includes(wanted)) && (state.value === "all" || !isOpen || isOpen(row) === (state.value === "open")));
         return order.value === NEWEST ? kept : [...kept].sort((one, two) => title(one).localeCompare(title(two)));
     });
-    return {words, order, state, shown, hasStates: Boolean(isOpen)};
+    // whether the words or the choice of open or closed hold rows back, which is when an empty list means nothing matches
+    const filtering = computed(() => Boolean(words.value.trim()) || (Boolean(isOpen) && state.value !== "all"));
+    return {words, order, state, shown, filtering, hasStates: Boolean(isOpen)};
 }

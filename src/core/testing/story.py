@@ -33,6 +33,8 @@ from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.story_overview_first import StoryOverviewFirst
 from core.testing.story_skill_requirement import StorySkillRequirement
+from core.testing.story_task_brief_requirement import StoryTaskBriefRequirement
+from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock
@@ -239,4 +241,5 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(ProcessTable, process_table)
     container.bind(OverviewFirst, StoryOverviewFirst())
     container.bind(SkillRequirement, StorySkillRequirement())
+    container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container

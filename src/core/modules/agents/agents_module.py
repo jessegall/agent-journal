@@ -34,6 +34,8 @@ from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcomma
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.agents.support.agent_searcher import AgentSearcher
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -46,8 +48,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 
 
-CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list", "process-part list"]
-CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create", "process_part.*"]
+CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list", "process-part list", "proof list"]
+CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create", "process_part.*", "proof.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 
@@ -63,7 +65,7 @@ class AgentsModule(Module):
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS,
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS,
                                  options=[ToggleOption("working", "Working agents", True), ToggleOption("waiting", "Blocked agents", True), ToggleOption("idle", "Idle agents", True), ToggleOption("stopped", "Agents not running", True),
                                           ToggleOption("environment", "Environment agents", True), ToggleOption("worker", "Workers", True), ToggleOption("subagent", "Subagents", True),
                                           ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number"),

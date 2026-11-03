@@ -3,6 +3,8 @@ from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
+from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
+from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
 from core.modules.tasks.commands.block_task.block_task import BlockTask
 from core.modules.tasks.commands.environment_cards.environment_cards_subcommand import EnvironmentCardsSubcommand
 from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGraphSubcommand
@@ -16,6 +18,14 @@ from core.modules.tasks.migrations.m005_task_priority_number import TaskPriority
 from core.modules.tasks.migrations.m006_task_started_at import TaskStartTimeMigration
 from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
 from core.modules.tasks.migrations.m008_delegated_task_index import DelegatedTaskIndexMigration
+from core.modules.tasks.migrations.m009_task_reads import TaskReadsTableMigration
+from core.modules.tasks.models.task_read import TaskRead
+from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
+from core.modules.tasks.commands.read_task_brief.task_brief_subcommand import TaskBriefSubcommand
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler import ResetTaskReadsHandler
+from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
+from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
+from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
@@ -49,6 +59,8 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.upgrade.tasks_move import TasksMove
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
 from core.base.module.module import Module
+from core.base.viewer.window_search import WindowSearch
+from core.modules.tasks.support.task_searcher import TaskSearcher
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -80,22 +92,23 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
     requires_core = ">=5,<6"
-    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged]
+    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
-    models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration]
-    subcommands = (AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
+    models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
+              ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"]))
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration]
+    subcommands = (AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, TaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
-    handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, RemoveTaskDependencyHandler, WaitTaskHandler]
+    handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
-    listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener]
+    listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
-    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
+    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]

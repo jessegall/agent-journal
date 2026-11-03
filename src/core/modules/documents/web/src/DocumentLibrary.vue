@@ -99,7 +99,7 @@ load();
 <template>
     <div class="library" data-window-flush>
         <div class="library-bar">
-            <SearchBar v-model="words" class="library-search" placeholder="Search titles and abstracts" />
+            <SearchBar v-model="words" class="library-search" />
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
             <Segmented :options="STATES" :value="state" data-library-state @pick="state = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />

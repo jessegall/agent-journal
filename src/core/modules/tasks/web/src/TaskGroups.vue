@@ -124,7 +124,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
         </template>
         <template v-else>
             <div class="tasks-tools">
-                <SearchBar ref="search" v-model="query" class="tasks-search" placeholder="Search the tasks">
+                <SearchBar ref="search" v-model="query" class="tasks-search">
                     <slot name="tools" />
                 </SearchBar>
             </div>

@@ -11,8 +11,8 @@ const shown = computed(() => {
 </script>
 
 <template>
-    <SearchBar v-model="filter" class="filter" placeholder="Filter files" data-edits-filter />
-    <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" :empty="filter ? 'No file matches' : 'No edits yet'">
+    <SearchBar v-model="filter" class="filter" data-edits-filter />
+    <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" empty="No edits yet" hint="The files an agent changes show here as it works." :searching="Boolean(filter)" matches="No file matches">
         <template #default="{row}">
             <span class="main">{{ row.path }}</span>
             <span class="note">+{{ row.added }}</span>

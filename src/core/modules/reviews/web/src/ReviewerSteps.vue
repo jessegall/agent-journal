@@ -22,7 +22,7 @@ load();
         <template v-if="!reviews.length">
             <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
         </template>
-        <ListTools :tools="tools" placeholder="Search the reviews" />
+        <ListTools :tools="tools" />
         <template v-for="review in tools.shown.value" :key="review.id">
             <section class="review">
                 <h3 class="review-title">{{ review.title }}</h3>
