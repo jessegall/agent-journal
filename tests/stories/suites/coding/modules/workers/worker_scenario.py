@@ -17,6 +17,36 @@ def proved(story, repository, worker, point_file: str, text: str) -> None:
     story.expect_success(f'proof make 1 "{point_file}:1, its story" --test "pytest tests/{point_file}"', actor=worker)
 
 
+def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_the_tested_task_closes(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
+    story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
+    proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
+    story.expect_success("worker next", actor=worker)
+    story.run_listeners()
+    story.expect_success("task start 3", actor=worker)
+    ended(story, started[0], 0)
+    expect_states(story, task1="completed", task2="open", task3="started")
+    story.expect_success('proof make 1 "receipt.py:1, read by hand"', actor=worker)
+    story.expect_text("proof list --task 3", "receipt.py:1", actor=worker)
+
+
+def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
+    story.expect_success('proof make 1 "read by hand, no test to run"', actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    expect_states(story, task1="completed")
+
+
 def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_once_and_is_merged(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)

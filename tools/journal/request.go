@@ -5,8 +5,9 @@ import (
 	"os"
 )
 
-// CallerVariables are the environment variables the server reads to name the caller.
-var CallerVariables = []string{"JOURNAL_AGENT_SESSION", "USER"}
+// CallerVariables are the environment variables the server reads to name the caller: the runner's session, the session
+// each agent program sets in its own shells (a provider's session_variable), and the login name.
+var CallerVariables = []string{"JOURNAL_AGENT_SESSION", "CLAUDE_CODE_SESSION_ID", "CODEX_THREAD_ID", "USER"}
 
 // CliRequest is the body of POST /cli: the command line's words, the variables that name the caller, the
 // working folder, and how long the caller waits when it says so. The server reads the caller's pid from the

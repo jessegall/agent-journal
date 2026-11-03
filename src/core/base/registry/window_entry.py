@@ -31,5 +31,5 @@ class WindowEntry:
     group: str = ""
     auto_scroll: str = ""
     tabs: Sequence[Mapping[str, str]] = ()
-    search: Mapping[str, object] = field(default_factory=dict)
+    search: Mapping[str, object] = field(default_factory=dict[str, object])
     shows: str = "environment"
