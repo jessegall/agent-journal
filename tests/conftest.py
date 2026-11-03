@@ -4,9 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.testing.pytest_plugin import new_story, pytest_terminal_summary as story_terminal_summary, templates
-
-STORY_FIXTURES = (new_story, templates)
+pytest_plugins = ["core.testing.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
 REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
@@ -34,7 +32,6 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: pytest.Config) -> None:
-    story_terminal_summary(terminalreporter, config)
     real_reports = [report for outcome in ("passed", "failed") for report in terminalreporter.stats.get(outcome, []) if REAL_PROGRAM_MARK in getattr(report, "keywords", {}) and report.when == "call"]
     terminalreporter.write_line(f"{len(real_reports)} stories used a real Claude Code or Codex")
 

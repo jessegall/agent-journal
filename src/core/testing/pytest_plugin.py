@@ -1,17 +1,24 @@
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from pathlib import Path
 
 import pytest
+from xdist.workermanage import WorkerController
 
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
+from core.testing.story_steps import StorySteps
 from core.testing.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
-CURRENT_TEST_VARIABLE = "PYTEST_CURRENT_TEST"
+STORY_RUNS = pytest.StashKey[list[StorySteps]]()
+STORY_STEPS_KEY = "journal_story_steps"
 XDIST_WORKER_VARIABLE = "PYTEST_XDIST_WORKER"
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.stash[STORY_OVERLAP] = StoryOverlap()
 
 
 @pytest.fixture(scope="session")
@@ -23,17 +30,46 @@ def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
 
 
 @pytest.fixture
-def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Callable[..., Story]:
-    overlap = request.config.stash.setdefault(STORY_OVERLAP, StoryOverlap())
+def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., Story]]:
+    overlap = request.config.stash[STORY_OVERLAP]
+    created = request.node.stash.setdefault(STORY_RUNS, [])
 
     def started(*modules: str, fixture: type[StoryFixture] | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
-        overlap.add(os.environ.get(CURRENT_TEST_VARIABLE, "").split(" ")[0], story)
+        created.append(StorySteps(story))
         return story
-    return started
+    yield started
+    for steps in created:
+        overlap.add(request.node.nodeid, steps.lines())
 
 
-def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: pytest.Config) -> None:
-    overlap = config.stash.get(STORY_OVERLAP, None)
-    for line in overlap.report_lines() if overlap else ():
-        terminalreporter.write_line(line)
+@pytest.hookimpl(wrapper=True, tryfirst=True)
+def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
+    for steps in item.stash.get(STORY_RUNS, []):
+        steps.begin_test()
+    try:
+        yield
+    finally:
+        for steps in item.stash.get(STORY_RUNS, []):
+            steps.finish_test()
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_testnodedown(node: WorkerController, error: object) -> None:
+    output = getattr(node, "workeroutput", {})
+    node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
+
+
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    overlap = session.config.stash[STORY_OVERLAP]
+    if hasattr(session.config, "workeroutput"):
+        session.config.workeroutput[STORY_STEPS_KEY] = overlap.stories
+        return
+    lines = overlap.report_lines()
+    if not lines:
+        return
+    report = pytest.TestReport(nodeid="stories::shared_first_steps", location=("stories", 0, "shared_first_steps"),
+                               keywords={}, outcome="failed", longrepr="\n".join(lines), when="call", sections=[])
+    session.config.hook.pytest_runtest_logreport(report=report)
+    if session.exitstatus == pytest.ExitCode.OK:
+        session.exitstatus = pytest.ExitCode.TESTS_FAILED

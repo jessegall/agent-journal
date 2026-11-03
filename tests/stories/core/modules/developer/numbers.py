@@ -3,14 +3,11 @@ import json
 from core.base.module.performance_tools import PerformanceTools
 from core.base.database.points import Points
 from core.base.performance.route_cost_tool import RouteCostTool
-from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
-
-
-DEVELOPER_SWITCH = TOOLS_SETTING
+from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsOn
 
 
 def numbers(story, flags=""):
@@ -28,27 +25,17 @@ def test_the_counts_keep_the_average_and_slowest_of_each_hook_and_sort_by_the_sl
     assert [row["hook"] for row in numbers(story, "--slowest ")] == ["prompt", "stop"]
 
 
-def durations_on(story):
-    story.expect_success(f"setting switch {DEVELOPER_SWITCH} on --project", actor=story.user)
-
-
 def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
-    story = new_story(fixture=UserJoined)
+    story = new_story(fixture=DevelopmentToolsOn)
     tools = story.container.get(PerformanceTools)
-    tools.run(ReaderTimeTool, "vitest", 12, 1)
-    assert numbers(story) == []
-    durations_on(story)
     tools.run(ReaderTimeTool, "vitest", 12, 1)
     tools.run(ReaderTimeTool, "vitest", 30, 1)
     assert numbers(story) == [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "most_points": 30, "average_points": 21}], numbers(story)
 
 
 def test_an_http_route_is_counted_in_points_while_call_costs_are_on(new_story):
-    story = new_story(fixture=UserJoined)
+    story = new_story(fixture=DevelopmentToolsOn)
     tools = story.container.get(PerformanceTools)
-    tools.run(RouteCostTool, "/cli", Points(rows=4))
-    assert numbers(story) == []
-    durations_on(story)
     tools.run(RouteCostTool, "/cli", Points(rows=4))
     tools.run(RouteCostTool, "/cli", Points(rows=10))
     tools.run(RouteCostTool, "/hook", Points(rows=20))

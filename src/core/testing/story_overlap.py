@@ -1,4 +1,5 @@
-from core.testing.story import Story
+from collections.abc import Sequence
+from itertools import combinations, groupby
 
 OVERLAP_LIMIT_STEPS = 2
 
@@ -8,18 +9,17 @@ class StoryOverlap:
     steps, so those steps move into a fixture both start from."""
 
     def __init__(self) -> None:
-        self.stories: dict[str, Story] = {}
+        self.stories: dict[str, list[str]] = {}
 
-    def add(self, test_id: str, story: Story) -> None:
-        self.stories[test_id] = story
+    def add(self, test_id: str, lines: Sequence[str]) -> None:
+        self.stories[test_id] = list(lines)
 
     def report_lines(self) -> list[str]:
         lines: list[str] = []
-        names = sorted(self.stories)
-        for position, first in enumerate(names):
-            for second in names[position + 1:]:
+        for _, names in groupby(sorted(self.stories), key=lambda name: name.partition("::")[0]):
+            for first, second in combinations(names, 2):
                 shared = self.shared_steps(first, second)
-                if first.split("::")[0] == second.split("::")[0] and len(shared) >= OVERLAP_LIMIT_STEPS:
+                if len(shared) >= OVERLAP_LIMIT_STEPS:
                     lines.append(f"stories share their first {len(shared)} steps, move them into a fixture: {first} and {second.split('::')[-1]}")
         return lines
 
@@ -32,4 +32,4 @@ class StoryOverlap:
         return shared
 
     def lines(self, test_id: str) -> list[str]:
-        return [outcome.line for outcome in self.stories[test_id].results]
+        return self.stories[test_id]
