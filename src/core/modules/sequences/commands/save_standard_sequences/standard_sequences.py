@@ -1,0 +1,83 @@
+import json
+
+from core.base.actor import CORE_ACTOR_ID
+from core.modules.sequences.models.sequence import Sequence
+
+PLAIN_WRITING = "Write in the user's own language in plain words. "
+FILE_EDITS_BLOCKED: dict[str, object] = {"file_edits_allowed": False, "allowed_commands": []}
+FILE_EDITS_OPEN: dict[str, object] = {"file_edits_allowed": True, "allowed_commands": []}
+UPDATE_PHRASES = ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up", "what happened since",
+                  "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken", "praat me bij", "bijpraten", "wat is er gebeurd")
+INSTRUCTION_CHECK_PHRASES = ("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
+                             "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies")
+
+
+def row_trigger(event_name: str) -> str:
+    return json.dumps([{"trigger_type": "row", "event": event_name}])
+
+
+def phrase_triggers(phrases: tuple[str, ...]) -> str:
+    return json.dumps([{"trigger_type": "phrase", "text": phrase} for phrase in phrases])
+
+
+def guards(*steps: dict[str, object]) -> str:
+    return json.dumps(steps)
+
+
+PLAN_BUILDING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Building a plan",
+    triggers=row_trigger("plan.create"),
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
+    steps=(
+        f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
+        "Add the phases: Add the plan's phases in order with `journal phase make --plan <plan n> \"<title>\" --goal \"<what is true when done>\"`, and `--checkpoint` where the user should look before it goes on",
+        "File the tasks: File each task with `journal task make \"<title>\" --brief \"<done when>\"` and put it under its phase with `journal phase place <task> --phase <phase>`; one task per step a person could check",
+        "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. Only they approve it; `journal plan start <plan n>` once they have, never before",
+    ),
+)
+UPDATE_WRITING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Writing an update",
+    triggers=phrase_triggers(UPDATE_PHRASES),
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
+    steps=(
+        f"See what the update covers: {PLAIN_WRITING}Look at what changed since the last update with `journal overview` and `journal task list`; read any row you do not remember before you sum it up",
+        "Write the update: Write it with `journal report make \"Update\" --abstract \"<one or two sentences>\" --body \"<what got done and what waits on the user>\"`, in plain words",
+        "Tell the user: Tell the user in one short line that the update is there, with its reference like report 3; talk about the work, never about rows or commands",
+    ),
+)
+PLAN_REVIEW_APPLYING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Applying a plan's reviews",
+    triggers=row_trigger("review.assign"),
+    step_guards=guards(FILE_EDITS_OPEN, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
+    steps=(
+        f"Wait for the reviewers: {PLAIN_WRITING}Read what each reviewer finds as it comes back, noting every finding with the phase it belongs in; you may work on other files meanwhile",
+        "Put the findings into the plan: Put each finding into the plan: a new task with `journal task make` placed with `journal phase place <task> --phase <phase>`, or a wider brief with `journal task edit <n> --brief \"<brief>\"`. File edits wait until this step is done",
+        "Ready the plan: Compile the findings into one report with `journal report make \"<title>\" --abstract \"<what it found>\" --file <path>`. Then `journal plan ready <plan n>`, and tell the user in one or two plain lines what the reviews found, with the report's reference like report 3",
+    ),
+)
+INSTRUCTION_FILES_CHECK = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Checking the instruction files",
+    triggers=phrase_triggers(INSTRUCTION_CHECK_PHRASES),
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_OPEN, FILE_EDITS_BLOCKED),
+    steps=(
+        f"Read the instruction files: {PLAIN_WRITING}Read AGENTS.md and CLAUDE.md at the project root narrowly: grep for the headings, then read the sections you need; note every place where two of them tell an agent opposite things, with the file and line on both sides",
+        "Write the report: Write what you found with `journal report make \"Instruction files checked\" --abstract \"<what it found>\" --file <path>`: each contradiction with both sides quoted, and the fix you propose; never edit the files",
+        "Tell the user: Tell the user in one short line how many contradictions you found, with the report's reference like report 3; the user decides which fixes to make",
+    ),
+)
+DOCUMENT_SORTING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Filing a document that is already written",
+    triggers=row_trigger("doc.create"),
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
+    steps=(
+        "Check the document: Check the document you filed reads as you meant: `journal doc show <doc n>` lists its sections, one for each ## heading of the file",
+        "Tell the user: Tell the user in one or two plain lines what the document concludes, then its reference like doc 41, never in backticks",
+    ),
+)
+STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING)
+STANDARD_SEQUENCE_FIELDS = ("steps", "triggers", "step_guards")

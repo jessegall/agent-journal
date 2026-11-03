@@ -6,7 +6,6 @@ import pytest
 
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
-from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -33,7 +32,6 @@ def test_a_late_program_whose_child_keeps_its_output_open_ends_soon_after_its_li
     (folder / "run.sh").chmod(0o755)
     program = PluginProgram(home, folders, PluginSocketPaths(home))
     call = PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {})
-    LoginPath.value()
     started = time.monotonic()
     with pytest.raises(PluginLateError):
         program.run(call, LIMIT_MS)

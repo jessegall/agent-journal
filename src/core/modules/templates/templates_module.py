@@ -10,6 +10,9 @@ from core.modules.templates.commands.make_template.make_template_handler import 
 from core.modules.templates.commands.make_template.make_template_subcommand import MakeTemplateSubcommand
 from core.modules.templates.commands.template_list.template_list_subcommand import TemplateListSubcommand
 from core.modules.templates.commands.template_show.template_show_subcommand import TemplateShowSubcommand
+from core.modules.templates.commands.save_standard_templates.save_standard_templates_handler import SaveStandardTemplatesHandler
+from core.modules.templates.guards.standard_template_guard import StandardTemplateGuard
+from core.modules.templates.listeners.standard_templates_listener import StandardTemplatesListener
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.models.template import Template
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
@@ -28,8 +31,10 @@ class TemplatesModule(Module):
     models = [ModelDeclaration(Template, excluded_subcommands=["make", "edit", "show", "list"])]
     migrations = [TemplatesTableMigration]
     moves = [TemplatesMove]
-    handlers = [MakeTemplateHandler]
+    handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler]
     subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)
+    listeners = [StandardTemplatesListener]
+    guards = [StandardTemplateGuard]
     seeders = [TemplatesSeeder]
     windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"])]

@@ -81,6 +81,35 @@ test("a window's own skeleton stays over it until its reads have answered", asyn
     vi.unstubAllGlobals();
 });
 
+// message 101493: sending a message reads the chat again, and that must not bring the skeleton back
+test("a read after the first load never brings the skeleton back", async () => {
+    vi.useFakeTimers();
+    const answers = [];
+    vi.stubGlobal("fetch", vi.fn(() => new Promise((resolve) => answers.push(resolve))));
+    let readAgain;
+    const Reading = {
+        setup() {
+            const context = inject(WINDOW_CONTEXT);
+            readAgain = () => context.read("usage show again");
+            onMounted(() => context.read("usage show"));
+            return () => h("p", {class: "body"}, "loaded");
+        },
+    };
+    const element = drawn(WindowHost, {name: "a.b", component: Reading, subscriptions: {stopAll: () => {}, follow: () => {}}, skeleton: [line("large")]});
+    await vi.advanceTimersByTimeAsync(10);
+    answers.shift()({ok: true, json: async () => ({code: 0, value: "usage"})});
+    await vi.advanceTimersByTimeAsync(200);
+    await nextTick();
+    expect(element.querySelector("[data-window-skeleton]")).toBeNull();
+    readAgain();
+    await vi.advanceTimersByTimeAsync(200);
+    await nextTick();
+    expect(element.querySelector("[data-window-skeleton]")).toBeNull();
+    answers.shift()({ok: true, json: async () => ({code: 0, value: "usage"})});
+    await vi.advanceTimersByTimeAsync(200);
+    vi.unstubAllGlobals();
+});
+
 test("a window that reads nothing shows no skeleton after it mounts", async () => {
     vi.useFakeTimers();
     const element = drawn(WindowHost, {name: "a.b", component: {render: () => h("p", "plain")}, subscriptions: {stopAll: () => {}, follow: () => {}}, skeleton: [line("large")]});

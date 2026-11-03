@@ -16,7 +16,10 @@ from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import
 from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
 from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
 from core.modules.sequences.commands.sequence_show.sequence_show_subcommand import SequenceShowSubcommand
+from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences_handler import SaveStandardSequencesHandler
+from core.modules.sequences.guards.standard_sequence_guard import StandardSequenceGuard
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
+from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
 from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
@@ -47,11 +50,12 @@ class SequencesModule(Module):
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration]
     moves = [SequencesMove]
-    handlers = [MakeSequenceHandler, MoveSequenceRunHandler]
+    handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
+    guards = [StandardSequenceGuard]
     subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand)
     views = [SequenceRunRow]
-    listeners = [SequenceRowTriggerListener]
+    listeners = [SequenceRowTriggerListener, StandardSequencesListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEQUENCE,

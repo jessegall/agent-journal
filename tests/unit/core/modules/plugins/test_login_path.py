@@ -1,5 +1,6 @@
 import stat
 
+from core.base.journal_home import JournalHome
 from core.modules.plugins.support.login_path import FALLBACK_FOLDERS, LoginPath
 
 
@@ -22,6 +23,6 @@ def test_a_shell_that_gives_no_path_answers_nothing(tmp_path, monkeypatch):
 
 def test_with_no_shell_the_usual_folders_are_used(monkeypatch, tmp_path):
     monkeypatch.setenv("SHELL", str(tmp_path / "missing"))
-    LoginPath.value.cache_clear()
-    assert LoginPath.value() == ":".join(FALLBACK_FOLDERS)
-    LoginPath.value.cache_clear()
+    login_path = LoginPath(JournalHome(tmp_path))
+    login_path.read_shell()
+    assert login_path.value() == ":".join(FALLBACK_FOLDERS)

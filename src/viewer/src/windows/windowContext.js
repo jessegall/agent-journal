@@ -19,13 +19,15 @@ export function windowContext({window, environment, agent, visible, permissions,
     const recent = new Map();
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
     const requests = new AbortController();
-    // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way
+    // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way; it stays true, so a later read never brings the skeleton back
     const answered = ref(false);
     let reading = 0;
     let quiet = 0;
     const settle = () => {
         clearTimeout(quiet);
-        quiet = setTimeout(() => (answered.value = reading === 0), QUIET_AFTER_READS_MS);
+        quiet = setTimeout(() => {
+            if (reading === 0) answered.value = true;
+        }, QUIET_AFTER_READS_MS);
     };
     const read = (line) => {
         const last = recent.get(line);

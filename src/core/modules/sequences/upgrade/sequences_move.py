@@ -15,6 +15,8 @@ from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.sequences.upgrade.version_four_step import VersionFourStep
 
 TABLE = "sequences"
+RENAMED_EVENTS = {"plan.review_started": "review.assign"}
+TRIGGER_ROW_PREFIX = "trigger:"
 
 
 class SequencesMove(VersionFourMove):
@@ -41,6 +43,8 @@ class SequencesMove(VersionFourMove):
                 report.skip(TABLE, row["id"], problem)
                 continue
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, steps, creators.actor_id(row["creator"]), context)))
+            for event_name in self.dead_events(row):
+                report.note(f"sequence {row['id']}, {row['title']}, starts on {event_name}, which no longer happens: give it a new trigger")
         return report
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, steps: list[str], creator_id: int, context: MoveContext) -> int:
@@ -50,7 +54,6 @@ class SequencesMove(VersionFourMove):
 
     def problem(self, row: sqlite3.Row) -> str | None:
         try:
-            SequenceTriggers.parsed(row["triggers"] or "[]")
             SequenceTriggers.parsed(json.dumps(self.triggers(row)))
             SequenceGuards.parsed(json.dumps(self.guards(row)))
         except Refusal as refusal:
@@ -62,8 +65,11 @@ class SequencesMove(VersionFourMove):
         moved: list[dict[str, object]] = []
         for trigger in json.loads(row["triggers"] or "[]"):
             event_name = trigger.pop("moment", "")
-            moved.append({**trigger, "event": event_name.replace(".created", ".create")} if event_name else trigger)
+            moved.append({**trigger, "event": RENAMED_EVENTS.get(event_name, event_name.replace(".created", ".create"))} if event_name else trigger)
         return moved
+
+    def dead_events(self, row: sqlite3.Row) -> list[str]:
+        return [str(trigger["event"]) for trigger in self.triggers(row) if str(trigger.get("event", "")).startswith(TRIGGER_ROW_PREFIX)]
 
     @staticmethod
     def guards(row: sqlite3.Row) -> list[dict[str, object]]:

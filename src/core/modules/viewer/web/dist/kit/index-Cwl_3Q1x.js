@@ -4796,7 +4796,9 @@ function $m({ window: e, environment: t, agent: n, visible: s, permissions: a, e
   const x = /* @__PURE__ */ new Map(), M = new AbortController(), V = D(!1);
   let _ = 0, g = 0;
   const N = () => {
-    clearTimeout(g), g = setTimeout(() => V.value = _ === 0, bm);
+    clearTimeout(g), g = setTimeout(() => {
+      _ === 0 && (V.value = !0);
+    }, bm);
   }, C = (I) => {
     const $ = x.get(I);
     if ($ && performance.now() - $.at < km) return $.answer;
@@ -9782,7 +9784,7 @@ const hk = /* @__PURE__ */ ck(dk), fk = ["width", "height", "viewBox"], pk = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, j4 = /* @__PURE__ */ K(vk, [["__scopeId", "data-v-47e67f04"]]), q4 = Fi(() => import("./VoiceFigure-CSYm1g-T.js").then((e) => e.V)), F4 = "1.0.0", W4 = "3.5";
+}, j4 = /* @__PURE__ */ K(vk, [["__scopeId", "data-v-47e67f04"]]), q4 = Fi(() => import("./VoiceFigure-teWURdls.js").then((e) => e.V)), F4 = "1.0.0", W4 = "3.5";
 export {
   bl as $,
   _e as A,
