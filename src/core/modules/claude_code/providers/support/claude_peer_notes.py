@@ -4,12 +4,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from core.base.provider.peer_note import PeerNote
+from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_mapping
 from core.modules.claude_code.providers.support.claude_inbox import ENVELOPE
 
 QUEUE_ROW = "queue-operation"
 QUEUED = "enqueue"
-TAIL_BYTES = 256 * 1024
 UNKNOWN_SENDER = "another session"
 ARRIVED = re.compile(rf"^<{ENVELOPE}\s+([^>]*)>(.*?)</{ENVELOPE}>$", re.S)
 SENDER_NAME = re.compile(r'\bfrom-name="([^"]*)"')
@@ -24,16 +24,7 @@ class ClaudePeerNotes:
         self.path = path
 
     def notes(self) -> Sequence[PeerNote]:
-        return [note for line in self.tail_lines() for note in self.note(line)]
-
-    def tail_lines(self) -> list[str]:
-        if not self.path.is_file():
-            return []
-        size = self.path.stat().st_size
-        with self.path.open("rb") as transcript:
-            transcript.seek(max(size - TAIL_BYTES, 0))
-            lines = transcript.read().decode(errors="replace").splitlines()
-        return lines if size <= TAIL_BYTES else lines[1:]
+        return [note for line in TranscriptTail(self.path).lines() for note in self.note(line)]
 
     @staticmethod
     def note(line: str) -> list[PeerNote]:

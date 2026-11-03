@@ -4,6 +4,7 @@ from pathlib import Path
 from core.base.caller.caller import Caller
 from core.base.page import Page
 from core.base.provider.providers import Providers
+from core.base.provider.transcript_index import TranscriptIndex
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.query.queries import Queries
 from core.base.subcommand.page_arguments import page_arguments
@@ -19,8 +20,8 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
     cli_name = "agent"
     name = "transcript"
 
-    def __init__(self, queries: Queries, providers: Providers) -> None:
-        self.queries, self.providers = queries, providers
+    def __init__(self, queries: Queries, providers: Providers, index: TranscriptIndex) -> None:
+        self.queries, self.providers, self.index = queries, providers, index
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)
@@ -31,6 +32,6 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
         folder = Path(self.queries.query(Environment).find(agent.environment_id).folder)
         provider = self.providers.provider(agent.program)
         path = provider.transcript(folder, agent.session)
-        rows = tuple(provider.transcript_rows(path)) if path is not None else ()
-        end = max(len(rows) - (arguments.page - 1) * arguments.limit, 0)
-        return Page(rows[max(end - arguments.limit, 0):end], arguments.page, arguments.limit, len(rows))
+        if path is None:
+            return Page((), arguments.page, arguments.limit, 0)
+        return self.index.page(provider, path, arguments.page, arguments.limit)

@@ -14,7 +14,9 @@ from core.modules.processes.models.enums.process_mark_variant import ProcessMark
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.base.driver.support.fixtures import LeadStarted, SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 
@@ -417,3 +419,108 @@ def test_editing_an_unread_message_says_nothing(new_story):
     story.expect_success('message edit 1 --text "Better words"', actor=story.user)
     story.run_listeners()
     assert not any("updated" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
+
+
+class IdleLead(StoryFixture):
+    """The sample lead has a person, was given a prompt and let to stop, so it sits idle."""
+
+    parent = LeadStarted
+
+    def steps(self, story: Story) -> None:
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        story.hook("s-1", HookSamples.prompt("Fix the cart"))
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(f"agent show {story.agent.id}", "session: s-1")
+
+
+def idle_lead_story(new_story):
+    return new_story(SAMPLES, fixture=IdleLead)
+
+
+class RefusingThenTyping(KeptTyping):
+    """Refuses to type until told it may, and counts what it was asked."""
+
+    def __init__(self) -> None:
+        super().__init__(working=False)
+        self.asked = 0
+
+    def type_line(self, agent_id: int, line: str) -> None:
+        self.asked += 1
+        super().type_line(agent_id, line)
+
+
+def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_again(new_story):
+    story = idle_lead_story(new_story)
+    typing = RefusingThenTyping()
+    story.container.bind(TerminalTyping, typing)
+    agent = story.agent
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    assert typing.typed == []
+    typing.working = True
+    story.advance(timedelta(seconds=11))
+    story.tick("s-1")
+    story.run_listeners()
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
+    for _ in range(3):
+        story.advance(timedelta(seconds=11))
+        story.tick("s-1")
+        story.run_listeners()
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
+
+
+def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
+    story = idle_lead_story(new_story)
+    typing = RefusingThenTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    for _ in range(5):
+        story.advance(timedelta(seconds=1))
+        story.tick("s-1")
+        story.run_listeners()
+    assert typing.asked == 1
+    story.advance(timedelta(seconds=10))
+    story.tick("s-1")
+    story.run_listeners()
+    assert typing.asked == 2
+
+
+def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks_pass(new_story):
+    story = idle_lead_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    agent = story.agent
+    for number in range(3):
+        story.run(f'message send "Message {number}" --environment main', actor=story.user)
+    for _ in range(3):
+        story.advance(timedelta(seconds=11))
+        story.tick("s-1")
+        story.run_listeners()
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
+
+
+def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(new_story):
+    story = idle_lead_story(new_story)
+    story.container.bind(TerminalTyping, RefusingThenTyping())
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.advance(timedelta(seconds=11))
+    story.tick("s-1")
+    story.run_listeners()
+    lines = story.hook("s-1", HookSamples.prompt("Carry on")).lines
+    assert [line for line in lines if "new message 1" in line] == ["new message 1"]
+    assert not any("new message 1" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
+
+
+def test_a_message_read_before_its_line_was_typed_is_never_typed_nor_told_again(new_story):
+    story = idle_lead_story(new_story)
+    typing = RefusingThenTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.hook("s-1", READ_MESSAGE_HOOK)
+    typing.working = True
+    story.advance(timedelta(seconds=11))
+    story.tick("s-1")
+    story.run_listeners()
+    assert typing.typed == []
+    assert not any("new message 1" in line for line in story.hook("s-1", HookSamples.prompt("Carry on")).lines)

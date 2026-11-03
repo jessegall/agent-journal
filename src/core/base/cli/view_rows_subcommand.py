@@ -44,7 +44,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:
             query = query.matching(Less("id", arguments.before_id))
-        return ViewRowPage(tuple(query.newest().page(1, arguments.limit).rows))
+        return ViewRowPage(tuple(query.newest().limited(arguments.limit)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ViewRowPage):

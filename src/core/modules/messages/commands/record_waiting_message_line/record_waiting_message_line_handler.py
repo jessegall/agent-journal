@@ -5,31 +5,35 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
-from core.base.query.conditions.among import Among
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
+from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
+
+RETRY_SECONDS = 10
+MOST_WAITING_LINES = 3
 
 
-class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Message | None]):
-    """An idle main agent, paused or not, sends no hook that could carry a message, so the first of the queue
-    is typed to it; the rest reach it by the hooks that follow, once it wakes."""
+class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLine | None]):
+    """An idle main agent, paused or not, sends no hook that could carry a message, so a line for the first of
+    the queue is typed to it; the rest reach it by the hooks that follow, once it wakes. The message counts as
+    delivered only once its line was typed or a hook took it, so a line that could not be typed is made anew
+    every ten seconds, at most three waiting at once."""
 
     command = RecordWaitingMessageLine
 
-    def __init__(self, queries: Queries, repository: Repository, hook_calls: HookCallQuery) -> None:
-        self.queries, self.repository, self.hook_calls = queries, repository, hook_calls
+    def __init__(self, queries: Queries, repository: Repository, hook_calls: HookCallQuery, lines: WaitingMessageLines) -> None:
+        self.queries, self.repository, self.hook_calls, self.lines = queries, repository, hook_calls, lines
 
-    def handle(self, command: RecordWaitingMessageLine, context: Context) -> Message | None:
-        agents = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
-        if not agents or not self.hook_calls.is_idle(agents[0].id, context.timestamp):
+    def handle(self, command: RecordWaitingMessageLine, context: Context) -> AgentLine | None:
+        agent = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
+        if agent is None or not self.hook_calls.is_idle(agent.id, context.timestamp):
             return None
-        waiting = self.queries.query(Message).filter(environment_id=command.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
-        if not waiting or waiting[0].delivered_at is not None:
+        message = self.lines.oldest_unread(command.environment_id)
+        if message is None or message.delivered_at is not None:
             return None
-        self.repository.save(AgentLine(agent_id=agents[0].id, creator_id=context.actor.id, text=NEW_MESSAGE.nudge(message=waiting[0].id).text, source=IDLE_MESSAGE_SOURCE), context)
-        return self.repository.save(waiting[0].changed(delivered_at=context.timestamp), context)
+        waiting = self.lines.waiting(agent.id).limited(MOST_WAITING_LINES)
+        if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
+            return None
+        return self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=NEW_MESSAGE.nudge(message=message.id).text, source=WAITING_MESSAGE_SOURCE), context)

@@ -49,19 +49,19 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the tool is shown for one environment", "name it with --environment")
-        mains = self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
+        mains = self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().limited(1)
         if not mains:
             return ToolFacts()
         return self.agent_tool(mains[0].id, self.open_question_lines(environment_id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
-        calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
+        calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         return ToolFacts(wait_target=" and ".join((*self.running_titles(agent_id), *question_lines)))
 
     def running_part_text(self, call: HookCall) -> str:
-        runs = self.processes.agent(call.agent_id).newest().page(1, 1).rows
+        runs = self.processes.agent(call.agent_id).newest().limited(1)
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
         if runs[0].is_queued:
@@ -76,7 +76,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)
 
     def title(self, process: Process) -> str:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         return kept[0].title if kept and kept[0].title else process.line
 
     def open_question_lines(self, environment_id: int) -> list[str]:

@@ -36,7 +36,7 @@ class ChatMannersRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        rows = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        rows = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.AGENT).newest().limited(1)
         if not rows:
             return RuleAnswer.allowed()
         text = rows[0].text.strip()

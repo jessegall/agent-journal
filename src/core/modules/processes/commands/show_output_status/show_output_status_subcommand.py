@@ -10,8 +10,12 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_access import OutputAccess
 
 
+OUTPUTS_SHOWN = 100
+
+
 class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
-    """`journal output status [n]`: one line for each output, running, finished, or failed with its code."""
+    """`journal output status [n]`: one line for each of the last 100 outputs, oldest first, running, finished,
+    or failed with its code."""
 
     cli_name = "output"
     name = "status"
@@ -25,10 +29,10 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
     def read(self, arguments: Namespace, caller: Caller) -> OutputLines:
         if arguments.process_id is not None:
             return OutputLines([self.line(self.access.process(caller.actor, arguments.process_id))])
-        query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).oldest()
+        query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).newest()
         if self.access.is_worker(caller.actor):
             query = query.agent(caller.actor.id)
-        return OutputLines([self.line(process) for process in query.all_rows()])
+        return OutputLines([self.line(process) for process in reversed(query.limited(OUTPUTS_SHOWN))])
 
     def line(self, process: Process) -> str:
         if process.state in RUNNING_STATES:

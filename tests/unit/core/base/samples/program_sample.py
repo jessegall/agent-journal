@@ -50,8 +50,8 @@ class SampleProgram(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         return None
 
-    def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
-        return []
+    def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
+        return None
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         return None

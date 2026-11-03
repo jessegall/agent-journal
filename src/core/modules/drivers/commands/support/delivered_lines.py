@@ -13,16 +13,18 @@ TOOL_HOOK_LINES = 3
 @dataclass(frozen=True)
 class DeliveredLines:
     """The waiting lines a hook gives the agent: none on a tick, which reaches no agent, or while the newest
-    layer delays lines, three on a tool hook, all of them on any other; the rest stay waiting."""
+    layer delays lines, three on a tool hook, all of them on any other; the rest stay waiting. A text the rules
+    already say, or an earlier line says, is told once."""
 
     rows: Sequence[AgentLine]
+    told: Sequence[str] = ()
 
     @classmethod
     def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "DeliveredLines":
         if answers.delays_lines or event.event == HookEventName.TICK:
             return cls([])
-        return cls(list(waiting)[:TOOL_HOOK_LINES] if event.event in TOOL_HOOKS else list(waiting))
+        return cls(list(waiting)[:TOOL_HOOK_LINES] if event.event in TOOL_HOOKS else list(waiting), answers.lines)
 
     @property
     def texts(self) -> list[str]:
-        return [row.text for row in self.rows]
+        return [text for text in dict.fromkeys(row.text for row in self.rows) if text not in self.told]

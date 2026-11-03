@@ -68,6 +68,13 @@ class Query(Generic[M]):
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         return Page(tuple(self.rows(self.select.sliced(size, (number - 1) * size))), number, size, self.count())
 
+    def limited(self, size: int) -> list[M]:
+        return self.rows(self.select.sliced(size, 0))
+
+    def first(self) -> M | None:
+        rows = self.limited(1)
+        return rows[0] if rows else None
+
     def all_rows(self, size: int = PAGE_SIZE_ROWS) -> Iterator[M]:
         offset = 0
         while rows := self.rows(self.select.sliced(size, offset)):
