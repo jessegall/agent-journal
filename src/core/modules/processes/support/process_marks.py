@@ -1,6 +1,5 @@
 from core.base.chat.dock_declaration import DockDeclaration
 from core.base.chat.mark_button import MarkButton
-from core.base.chat.mark_click import MarkClick
 from core.base.chat.mark_colouring import MarkColouring
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.chat.mark_family import MarkFamily
@@ -16,7 +15,7 @@ DOCK = MarkButton("dock", "Dock", "dock add processes.output process {row_id}", 
 UNWATCH = MarkButton("close", "Stop watching", "output unwatch {row_id}")
 DRAFT_READER = MarkButton("terminal", "Draft reader", "reader draft {row_id}")
 
-PROCESS_MARKS = [MarkDeclaration(ProcessMarkType.COMMAND, ProcessMarkVariant, COMMANDS_FAMILY, "Commands run", "terminal", click=MarkClick.OPEN_ROW, buttons=[STOP, DOCK], process=True),
+PROCESS_MARKS = [MarkDeclaration(ProcessMarkType.COMMAND, ProcessMarkVariant, COMMANDS_FAMILY, "Commands run", "terminal", buttons=[STOP, DOCK], process=True),
                  MarkDeclaration(ProcessMarkType.READER_REQUEST, ProcessMarkVariant, COMMANDS_FAMILY, "Reader requests", "terminal", buttons=[DRAFT_READER])]
 
 PROCESS_DOCKS = [DockDeclaration(ProcessDockType.OUTPUT, "terminal", "Output {row_id}", "output-dock.js", buttons=[STOP], most=6, leaves_after_seconds=5, draws_head=True,

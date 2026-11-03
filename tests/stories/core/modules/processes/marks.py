@@ -75,10 +75,10 @@ def test_a_run_moved_to_the_background_updates_its_mark_in_place(background_buil
     story.expect_text(MARKS, "process:1", "Running make build")
 
 
-def test_the_mark_is_a_process_mark_that_opens_the_output_and_has_a_stop_and_a_dock_button(new_story):
+def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_a_dock_button(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
-    assert (mark.family, mark.family_title, mark.group, mark.click, mark.process) == ("processes.commands", "Commands", "work", "open row", True)
+    assert (mark.family, mark.family_title, mark.group, mark.click, mark.process) == ("processes.commands", "Commands", "work", "unfold", True)
     assert [(button["label"], button["runs"]) for button in mark.buttons] == [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")]
 
 

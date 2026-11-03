@@ -7,8 +7,8 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.registry_table import RegistryTable
+from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from core.testing.story_code_fingerprint import STORY_FINGERPRINT
 from server.server_files import SERVER_LOG_LIMIT_BYTES, ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
@@ -44,7 +44,7 @@ def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(ne
     database.connection.commit()
     with ServerProcess(story.home) as server:
         server.expect_health()
-    assert RegistryTable(database).row()["fingerprint"] == STORY_FINGERPRINT.text(ModuleFinder(story.home).modules())
+    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
 
 
 def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_story):
@@ -54,7 +54,7 @@ def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_sto
     database.connection.commit()
     with ServerProcess(story.home) as server:
         server.expect_health()
-    assert RegistryTable(database).row()["fingerprint"] == STORY_FINGERPRINT.text(ModuleFinder(story.home).modules())
+    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
     assert "core.gone" not in RegistryTable(database).row()["entries"]
 
 

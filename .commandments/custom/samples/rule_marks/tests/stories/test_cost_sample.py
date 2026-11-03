@@ -2,19 +2,6 @@ import ast
 import subprocess
 import sys
 
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.testing.story_code_fingerprint import STORY_FINGERPRINT
-
-
-def walked_tree(modules):
-    # @sin architecture_testing_NoFingerprintPerStoryDetector
-    return CodeFingerprint().text(modules)
-
-
-def kept_text(modules):
-    # @righteous architecture_testing_NoFingerprintPerStoryDetector
-    return STORY_FINGERPRINT.text(modules)
-
 
 def interpreter_run():
     # @sin architecture_testing_NoInterpreterInATestDetector

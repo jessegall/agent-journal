@@ -3,8 +3,7 @@ import shutil
 import time
 from pathlib import Path
 
-from core.base.module.code_fingerprint import CORE_FOLDER
-from core.testing.story_code_fingerprint import STORY_FINGERPRINT
+from core.base.module.code_fingerprint import CORE_FOLDER, CodeFingerprint
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
 UNUSED_CHECKOUT_SECONDS = 7 * 24 * 3600
@@ -22,7 +21,7 @@ class TemplateCache:
 
     def folder(self) -> Path:
         checkout = self.root / hashlib.sha1(str(CORE_FOLDER).encode()).hexdigest()[:HASH_CHARACTERS]
-        current = checkout / STORY_FINGERPRINT.folder_text([CORE_FOLDER.parent])[:HASH_CHARACTERS]
+        current = checkout / CodeFingerprint().folder_text([CORE_FOLDER.parent])[:HASH_CHARACTERS]
         if not current.is_dir():
             self.remove_old(checkout)
         current.mkdir(parents=True, exist_ok=True)

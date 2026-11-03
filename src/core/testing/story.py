@@ -7,7 +7,6 @@ from uuid import uuid4
 from typing import TypeVar
 from datetime import timedelta
 from core.base.module.code_fingerprint import CodeFingerprint
-from core.testing.story_code_fingerprint import STORY_FINGERPRINT
 from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
@@ -248,7 +247,6 @@ class Story:
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:
     container = synced_container(home)
-    container.bind(CodeFingerprint, STORY_FINGERPRINT)
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
     container.bind(OverviewFirst, StoryOverviewFirst())

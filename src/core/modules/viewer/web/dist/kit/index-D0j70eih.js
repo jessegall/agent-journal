@@ -3817,7 +3817,7 @@ const f1 = ["data-incoming", "data-ref"], m1 = ["data-figure-mark", "data-figure
       }, null, 8, ["links"])) : A("", !0)
     ], 8, m1));
   }
-}, ob = /* @__PURE__ */ J(q1, [["__scopeId", "data-v-0597555d"]]), F1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
+}, ob = /* @__PURE__ */ J(q1, [["__scopeId", "data-v-b057248a"]]), F1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
   __name: "SkeletonParts",
   props: { parts: { type: Array, default: () => [] } },
   setup(e) {
@@ -10129,7 +10129,7 @@ const V2 = /* @__PURE__ */ H2(z2), G2 = ["width", "height", "viewBox"], K2 = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, yx = /* @__PURE__ */ J(Z2, [["__scopeId", "data-v-47e67f04"]]), wx = Qi(() => import("./VoiceFigure-BfVWYSKS.js").then((e) => e.V)), kx = "1.0.0", bx = "3.5";
+}, yx = /* @__PURE__ */ J(Z2, [["__scopeId", "data-v-47e67f04"]]), wx = Qi(() => import("./VoiceFigure-4pttv39G.js").then((e) => e.V)), kx = "1.0.0", bx = "3.5";
 export {
   Ll as $,
   Me as A,
