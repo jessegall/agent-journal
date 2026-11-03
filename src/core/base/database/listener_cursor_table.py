@@ -5,6 +5,7 @@ START = Statement("INSERT OR IGNORE INTO listener_cursors (listener, event_id) V
 POSITION = Statement("SELECT event_id FROM listener_cursors WHERE listener = ?")
 CLAIM = Statement("UPDATE listener_cursors SET event_id = ? WHERE listener = ? AND event_id = ?")
 UNHANDLED_EVENTS = Statement("SELECT (SELECT coalesce(min(event_id), 0) FROM listener_cursors) < (SELECT coalesce(max(id), 0) FROM events)")
+PENDING_EVENTS = Statement("SELECT EXISTS(SELECT 1 FROM listener_cursors WHERE event_id < ?)")
 FAILURE_COUNT = Statement("INSERT INTO listener_skips (listener, event_id, failures) VALUES (?, ?, 1)"
                           " ON CONFLICT (listener, event_id) DO UPDATE SET failures = failures + 1 RETURNING failures")
 CURSOR_REMOVAL = Statement("DELETE FROM listener_cursors WHERE listener = ?")
@@ -30,6 +31,9 @@ class ListenerCursorTable:
 
     def has_unhandled_events(self) -> bool:
         return bool(self.database.rows(UNHANDLED_EVENTS)[0][0])
+
+    def has_pending_events(self, event_id: int) -> bool:
+        return bool(self.database.rows(Statement(PENDING_EVENTS.sql, [event_id]))[0][0])
 
     def failure_count(self, listener: str, event_id: int) -> int:
         return self.database.rows(Statement(FAILURE_COUNT.sql, (listener, event_id)))[0][0]

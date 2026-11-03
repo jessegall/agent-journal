@@ -13,6 +13,7 @@ if __name__ == "__main__":
 from core.base.container import Container
 from core.base.journal_home import JournalHome
 from core.base.periodic_checks import PeriodicChecks
+from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.base.timestamp import Timestamp
@@ -71,6 +72,7 @@ def main(argv: list[str]) -> int:
     if not files.acquire_lock():
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
+    PerformanceState(home).begin_start()
     TimingLog(home).rotate()
     files.rotate_log()
     files.clear_leftover_socket()
