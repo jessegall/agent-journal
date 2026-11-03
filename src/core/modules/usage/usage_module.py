@@ -4,6 +4,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand
@@ -34,6 +35,6 @@ class UsageModule(Module):
     subcommands = (UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
                WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
-               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
-               WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
+               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"]),
+               WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"]),
                WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, skeleton=USAGE_CONTEXT_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"])]

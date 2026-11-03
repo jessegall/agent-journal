@@ -74,3 +74,9 @@ def test_the_coding_suite_offers_output_and_keeps_internal_renderers_private(new
     names = {window.name for window in story.container.get(SuiteWindows).windows("coding")}
     assert "processes.output" in names
     assert not {"questions.question", "viewer.shell"} & names
+
+
+def test_agent_dropdowns_declare_that_they_need_one_agent(new_story):
+    window = window_story(new_story)
+    for name in ("schedules.jobs", "usage.fitness", "usage.load"):
+        window.expect_declared_window(name, "component", "dropdown", "one-agent")

@@ -60,8 +60,8 @@ class WindowDeclaration:
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
         keys = [option.key for option in self.options]
         problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
-        if self.shows is WindowShows.SELECTED_AGENT and self.place is not WindowPlace.PANE:
-            problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}, and only a pane has an agent to pick")
+        if self.shows is WindowShows.SELECTED_AGENT and self.place not in (WindowPlace.PANE, WindowPlace.DROPDOWN):
+            problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}: use a pane or dropdown")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)
         problems += [f"{self.name} starts its option {option.key} at {option.default}, which is none of its choices" for option in self.options
                      if isinstance(option, ChoiceOption) and option.default not in (value for value, _ in option.choices)]

@@ -25,7 +25,7 @@ export class WindowCatalogue {
         const offers = await this.fetchOffers();
         this.person = offers.person_id ?? null;
         const offered = withFamilyOptions(offers.windows, await this.fetchMarks());
-        this.windows.value = offered.filter((window) => !["dropdown", "bar", "page"].includes(window.place));
+        this.windows.value = offered.filter((window) => !["bar", "page"].includes(window.place));
         this.pages.value = offered.filter((window) => window.place === "page");
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
@@ -53,7 +53,7 @@ export class WindowCatalogue {
 
     placed(page) {
         const shows = page === "agent" ? "one-agent" : "environment";
-        return this.windows.value.filter((window) => window.shows === shows);
+        return this.windows.value.filter((window) => window.place === "dropdown" || window.shows === shows);
     }
 
     // the windows an agent of this role is offered: every window of the environment's work, and the one-agent windows whose roles name it or name none
