@@ -15,6 +15,7 @@ class ProcessSetting(Enum):
                                       SettingType.NUMBER, default=15)
     READER_BLOCK_MINUTES = SettingValue("reader-block-minutes", "Minutes to wait for a reader", "How long a worker waits for a proper reader. Runs start after at most 30 minutes even with a longer block.", SettingType.NUMBER, default=25)
     READERS_FORCED = SettingValue("readers-forced", "Require readers for workers", "Block workers whose tests, builds or background checks need a proper reader.", SettingType.FLAG, default=True)
+    WORKER_TEST_LIMIT = SettingValue("worker-run-most-tests", "Tests per worker run", "Stop or refuse worker commands above this test count; 0 allows any count. Tests run by the journal are exempt.", SettingType.NUMBER, default=0)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Seconds to a lost run", "How long a run may go without a sign of life before it is ended as lost.",
