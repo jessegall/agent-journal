@@ -7,3 +7,4 @@ class ModelTier(StrEnum):
     FAST = "fast"
     GENERAL = "general"
     STRONGEST = "strongest"
+    RARE = "rare"

@@ -21,6 +21,7 @@ from server.viewer.share_scope import ShareScope
 from server.viewer.shared_row import SharedRow
 
 REFUSED_CODE = 1
+FLAG_SEPARATOR = "--"
 
 
 class LineRoute:
@@ -42,7 +43,7 @@ class LineRoute:
             return Caller(person, container.get(EnvironmentNames).environment_id(environment))
 
         try:
-            code = self.line_run.run_as([*argv, "--json"], checked_caller, stream)
+            code = self.line_run.run_as(self.json_line(argv), checked_caller, stream)
         except UsageError as error:
             return LineAnswer(USAGE_CODE, error=str(error))
         except ShareRefusal:
@@ -52,3 +53,8 @@ class LineRoute:
         if code != 0:
             return LineAnswer(code, error=stream.getvalue().strip())
         return LineAnswer(code, value=json.loads(stream.getvalue() or "null"))
+
+    @staticmethod
+    def json_line(argv: list[str]) -> list[str]:
+        flags_end = argv.index(FLAG_SEPARATOR) if FLAG_SEPARATOR in argv else len(argv)
+        return [*argv[:flags_end], "--json", *argv[flags_end:]]

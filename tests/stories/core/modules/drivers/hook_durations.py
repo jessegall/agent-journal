@@ -21,7 +21,7 @@ def test_a_hook_duration_reaches_the_terminal_once_the_developer_switch_is_on(ne
     story = new_story(fixture=BuilderWithUser)
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     line = terminal_line(story)
-    assert line.startswith("hook stop ") and " ms, " in line and " points (" in line and " KB" in line, line
+    assert line.startswith("hook stop ") and " ms" not in line and " points (" in line and " KB" in line, line
 
 
 def test_switching_the_hooks_group_off_stops_the_durations_while_the_developer_switch_stays_on(new_story):
@@ -43,7 +43,7 @@ def test_a_stop_hook_costs_the_database_less_than_the_50_points_a_hook_may_cost(
     story = new_story(fixture=BuilderWithUser)
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     line = terminal_line(story)
-    points = int(line.split(" ms, ")[1].split(" points")[0])
+    points = int(line.split("hook stop ")[1].split(" points")[0])
     assert points < 50, line
 
 

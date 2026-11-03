@@ -91,7 +91,7 @@ class PluginRule(DriverRule):
                      values: dict[int, dict[str, object]]) -> str:
         if plugin.id not in values:
             values[plugin.id] = self.settings.values(plugin, manifest)
-        call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, values[plugin.id])
+        call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id)
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING, hook.environment_id)))
         except PluginLateError:

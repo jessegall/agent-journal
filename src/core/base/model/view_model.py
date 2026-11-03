@@ -14,6 +14,7 @@ class ViewModel:
     view: ClassVar[str]
     key: ClassVar[str]
     select: ClassVar[str]
+    shared_rows: ClassVar[bool] = False
 
     def json(self) -> dict[str, object]:
         return {field.name: json_value(getattr(self, field.name)) for field in fields(self)}

@@ -31,6 +31,7 @@ class NudgeDeclaration:
     turn_limited: bool = True
     required_command: str = ""
     plural_text: str = ""
+    field_limit_characters: int = LONGEST_FIELD_CHARACTERS
 
     @property
     def limit(self) -> int:
@@ -53,10 +54,9 @@ class NudgeDeclaration:
         rendered = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
         return Nudge(self.key, self.type, self.cut(rendered), self.interval, self.turn_limited, self.required_command.format(**fields), tuple(fields.items()), self)
 
-    @staticmethod
-    def field_text(value: object) -> str:
+    def field_text(self, value: object) -> str:
         text = str(value)
-        return text if len(text) <= LONGEST_FIELD_CHARACTERS else text[:LONGEST_FIELD_CHARACTERS - len(CUT_MARK)] + CUT_MARK
+        return text if len(text) <= self.field_limit_characters else text[:self.field_limit_characters - len(CUT_MARK)] + CUT_MARK
 
     def cut(self, line: str) -> str:
         if len(line) <= self.limit:

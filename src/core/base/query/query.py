@@ -10,6 +10,7 @@ from core.base.model.tables import Tables
 from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.own_rows import OwnRows
 from core.base.page import Page
 from core.base.query.select import Select
 from core.base.query.unknown_column_error import UnknownColumnError
@@ -17,6 +18,7 @@ from core.base.query.unknown_column_error import UnknownColumnError
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
+AGENT_COLUMN = "agent_id"
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time.
     """
@@ -82,10 +84,10 @@ class Query(Generic[M]):
             offset += size
 
     def count(self) -> int:
-        return self.database.rows(self.select.count_statement())[0][0]
+        return self.database.rows(self.scoped(self.select).count_statement())[0][0]
 
     def exists(self) -> bool:
-        return bool(self.database.rows(self.select.exists_statement()))
+        return bool(self.database.rows(self.scoped(self.select).exists_statement()))
 
     def with_select(self, select: Select) -> Self:
         query = copy(self)
@@ -93,7 +95,13 @@ class Query(Generic[M]):
         return query
 
     def rows(self, select: Select) -> list[M]:
-        return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
+        return [self.typed(self.table.row_model(row)) for row in self.database.rows(self.scoped(select).statement())]
+
+    def scoped(self, select: Select) -> Select:
+        actor_id = self.database.read_actor_id
+        if actor_id is None or self.model.shared_rows or not self.table.has_column(AGENT_COLUMN):
+            return select
+        return select.matching(OwnRows(actor_id))
 
     def typed(self, row: Model | ViewModel) -> M:
         if isinstance(row, self.model):

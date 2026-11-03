@@ -4,6 +4,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -17,6 +18,7 @@ class ReassignedTaskListener(SaveListener):
 
     name = "workers.taken-task"
     event = "task.release"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository) -> None:
         self.tasks, self.worktrees, self.advance, self.repository = tasks, worktrees, advance, repository

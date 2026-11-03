@@ -1,4 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
+from core.base.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
 from core.modules.plugins.models.enums.plugin_mark_variant import PluginMarkVariant
@@ -11,6 +12,7 @@ class PluginHealthMarkListener(MarkListener):
 
     name = "plugins.health-mark"
     event = "plugin.update"
+    disabled_scopes = [ActorScope]
     module_name = "journal.core.plugins"
 
     def handle(self, event: LoggedEvent) -> None:

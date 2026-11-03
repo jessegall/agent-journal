@@ -4,9 +4,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class AgentFacts:
-    """What an agent's card says beyond its row: its model, context in use, what its session cost so far, the
-    task it works on, the tasks given to it or held by it, whether it waits or is blocked, and the profile,
-    given name and instruction its dispatch gave it."""
+    """What an agent's card says beyond its row: its model and effort, context in use, what its session cost so
+    far, the task it works on, the tasks given to it or held by it, whether it waits or is blocked, and the
+    profile, given name and instruction its dispatch gave it."""
 
     agent_id: int
     model: str
@@ -19,7 +19,8 @@ class AgentFacts:
     profile: str = ""
     given_name: str = ""
     instruction: str = ""
+    effort: str = ""
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.agent_id, "model": self.model, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
+        return {"id": self.agent_id, "model": self.model, "effort": self.effort, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
                 "tasks": list(self.tasks), "state": self.state, "profile": self.profile, "given_name": self.given_name, "instruction": self.instruction}

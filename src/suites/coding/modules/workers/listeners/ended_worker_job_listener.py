@@ -3,6 +3,7 @@ from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
@@ -14,6 +15,7 @@ class EndedWorkerJobListener(CommitListener):
 
     name = "workers.ended-worker-job"
     event = "agent_line.create"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, resume: WorkerResume) -> None:
         self.queries, self.worker_resume = queries, resume

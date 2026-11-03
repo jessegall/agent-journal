@@ -3,6 +3,7 @@ from typing import ClassVar, Generic, TypeIs, TypeVar
 from core.base.actor import Actor
 from core.base.command.command import Command
 from core.base.command.context import Context
+from core.base.scope.scopes import WholeScopes
 
 C = TypeVar("C", bound=Command[object], contravariant=True)
 R = TypeVar("R", covariant=True)
@@ -16,6 +17,7 @@ class Handler(Generic[C, R]):
 
     command: ClassVar[type[Command[object]]]
     transactional: ClassVar[bool] = True
+    disabled_scopes: ClassVar[WholeScopes] = ()
 
     def prepare(self, command: C, actor: Actor) -> None:
         return None

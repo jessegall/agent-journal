@@ -33,7 +33,7 @@ class PluginProgram:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
-        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "data": dict(call.event.data)})
+        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "data": dict(call.event.data)})
         socket_services = [service.name for service in manifest.services if service.answers]
         if socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
             try:

@@ -8,7 +8,7 @@ from core.base.model.view_model import ViewModel
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS
+from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
@@ -37,12 +37,15 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
         environment_missing = ENVIRONMENT_COLUMN in self.filters and ENVIRONMENT_COLUMN not in given
         if environment_missing and caller.environment_id is not None:
             given[ENVIRONMENT_COLUMN] = caller.environment_id
-        query = self.queries.query(self.model).filter(**given)
+        query = self.filtered(self.queries.query(self.model).filter(**given), arguments)
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:
             query = query.matching(Less("id", arguments.before_id))
         return ViewRowPage(tuple(query.newest().limited(arguments.limit)))
+
+    def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
+        return query
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ViewRowPage):

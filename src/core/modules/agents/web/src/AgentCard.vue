@@ -21,9 +21,12 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
-const identity = computed(() => [props.row.program, props.facts?.model, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
-const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
+// a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
+const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
+const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role === "worker" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
+const dotState = computed(() => (stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
@@ -52,12 +55,14 @@ const isSubagent = computed(() => props.row.role === "subagent");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
-const showsCommand = computed(() => props.row.role !== "main" && !props.row.ended_at);
+const waitTarget = ref("");
+const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value));
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
     runningCommand.value = answer.ok ? answer.value.tool : "";
     noCommandNote.value = answer.ok ? answer.value.note : "";
+    waitTarget.value = answer.ok ? answer.value.wait_target ?? "" : "";
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
 onUnmounted(() => stopFollowing?.());
@@ -70,7 +75,7 @@ readCommand();
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
             <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
-            <template v-if="row.ended_at">
+            <template v-if="row.ended_at && !stoppedWithWork">
                 <TimeAgo class="agent-time" :at="row.ended_at" />
             </template>
             <template v-else>
@@ -89,8 +94,11 @@ readCommand();
         </span>
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
-                <template v-if="waitingForTests">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
+                <template v-if="stoppedWithWork">
+                    <span class="agent-stopped" data-agent-stopped>{{ waitTarget ? `Waiting: ${waitTarget}` : "Waiting" }}</span>
+                </template>
+                <template v-else-if="waitingForTests">
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the process queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
                 </template>
                 <template v-else>
                     <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />
@@ -252,6 +260,8 @@ readCommand();
     display: flex;
     min-width: 0;
     padding-left: 15px;
+    color: var(--text-3);
+    font-size: 10.5px;
 }
 
 .agent-identity {
@@ -342,7 +352,7 @@ readCommand();
 }
 
 /* what a tab holds, a transcript or a file feed, takes the whole body */
-.agent-card.open .agent-tab-body > :deep(*) {
+.agent-card.open .agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) {
     flex: 1;
     min-height: 0;
 }

@@ -4,6 +4,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType
@@ -24,6 +25,7 @@ class DelegatedTaskCommentListener(SaveListener):
 
     name = "workers.delegated-task-comment"
     event = "link.create"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, repository: Repository, queries: Queries, nudger: Nudger) -> None:
         self.repository, self.queries, self.nudger = repository, queries, nudger

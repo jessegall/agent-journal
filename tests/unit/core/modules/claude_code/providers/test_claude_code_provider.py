@@ -49,7 +49,7 @@ def test_a_resumed_session_runs_claude_with_resume(provider):
 
 def test_a_helper_runs_its_brief_without_a_terminal_and_prints_stream_json(provider):
     command = provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Write the tests"))
-    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--dangerously-skip-permissions", "--output-format",
+    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--output-format",
                                        "stream-json", "--verbose", "--session-id", "s-2"]
 
 

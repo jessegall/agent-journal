@@ -2,6 +2,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.checks.models.check import Check
@@ -13,6 +14,7 @@ class TaskWaitPassListener(SaveListener):
 
     name = "checks.task-wait-pass"
     event = "check.update"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, waits: TaskWaits) -> None:
         self.queries, self.waits = queries, waits

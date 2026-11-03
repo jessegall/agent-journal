@@ -1,3 +1,4 @@
+import {afterSkeletonMinimum} from "./skeletonMinimum.js";
 import {ref} from "vue";
 import {useWindow} from "./windowContextKey.js";
 
@@ -11,6 +12,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     const rows = ref([]);
     const failure = ref("");
     const loaded = ref(false);
+    const startedAt = performance.now();
     const more = ref(false);
     const actionFailure = ref("");
     const answer = ref(null);
@@ -59,7 +61,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         rows.value = incremental && result.ok && reach ? [...rows.value.filter((row) => row.id > Math.max(...fresh.map((held) => held.id))), ...fresh, ...rows.value.filter((row) => row.id < reach)] : fresh;
         if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value);
         failure.value = result.ok ? "" : result.error;
-        loaded.value = true;
+        afterSkeletonMinimum(startedAt, () => (loaded.value = true));
     }
 
     // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again; a change, from the rows held to

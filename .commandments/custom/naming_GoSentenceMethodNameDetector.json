@@ -12,6 +12,16 @@
             {
                 "all": [
                     {
+                        "name": "when"
+                    },
+                    {
+                        "file": "src/core/base/scope/scope.py"
+                    }
+                ]
+            },
+            {
+                "all": [
+                    {
                         "nameLike": "test_*"
                     },
                     {

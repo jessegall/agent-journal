@@ -1,6 +1,8 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import {useNow} from "../composables/now.js";
+import {WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {pressButton} from "./markButtons.js";
 import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
@@ -20,7 +22,20 @@ const held = ref(new Set());
 const grouped = ref(false);
 const opened = ref(false);
 
-const docked = computed(() => dockedItems(props.items, now.value, held.value));
+const context = inject(WINDOW_CONTEXT);
+// a card leaves the moment its close is pressed, and comes back with the reason if the server refuses
+const closed = ref(new Set());
+const refusals = ref({});
+
+async function undock(item, button) {
+    closed.value = new Set([...closed.value, item.id]);
+    const answer = await pressButton(button, item, context.environment);
+    if (answer?.ok !== false) return;
+    closed.value = new Set([...closed.value].filter((id) => id !== item.id));
+    refusals.value = {...refusals.value, [item.id]: answer.error};
+}
+
+const docked = computed(() => dockedItems(props.items.filter((item) => !closed.value.has(item.id)), now.value, held.value));
 const runs = computed(() => keptRuns(docked.value.filter((item) => isRunItem(item, dockDeclaration)), now.value));
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
@@ -56,7 +71,7 @@ function release(item) {
 <template>
     <TransitionGroup tag="div" name="dock" :duration="DOCK_ARRIVAL_MS" class="dock-stack">
         <template v-for="item in rows" :key="item.id">
-            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" @mouseenter="hold(item)" @mouseleave="release(item)" />
+            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" :refusal="refusals[item.id]" @fold="fold(item)" @undock="undock(item, $event)" @mouseenter="hold(item)" @mouseleave="release(item)" />
         </template>
         <template v-if="grouped && opened">
             <div key="runs-head" class="dock-runs-head">
@@ -64,7 +79,7 @@ function release(item) {
             </div>
         </template>
         <template v-for="item in shared ? [] : runs" :key="item.id">
-            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" @mouseenter="hold(item)" @mouseleave="release(item)" />
+            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" :refusal="refusals[item.id]" @fold="fold(item)" @undock="undock(item, $event)" @mouseenter="hold(item)" @mouseleave="release(item)" />
         </template>
         <template v-if="shared">
             <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">

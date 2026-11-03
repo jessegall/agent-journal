@@ -77,15 +77,15 @@ def test_a_countdown_comes_before_tool_calls_wait(new_story):
     story, _ = read_story(new_story)
     for _ in range(7):
         story.hook("s-1", VIEW_LINE)
-    assert any("tool calls wait after" in line for line in story.hook("s-1", VIEW_LINE).lines)
+    assert any("reply to message 1 due:" in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
 def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(new_story):
     story, _ = read_story(new_story)
     for _ in range(7):
         story.hook("s-1", CHAINED_LINE)
-    assert "reply to message 1; tool calls wait after 3 more" in story.hook("s-1", CHAINED_LINE).lines
-    assert "reply to message 1; tool calls wait after 2 more" in story.hook("s-1", VIEW_LINE).lines
+    assert "reply to message 1 due: 3 tool uses" in story.hook("s-1", CHAINED_LINE).lines
+    assert "reply to message 1 due: 2 tool uses" in story.hook("s-1", VIEW_LINE).lines
 
 
 def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(new_story):

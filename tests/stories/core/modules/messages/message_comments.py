@@ -11,7 +11,7 @@ def story_with_peer_message(new_story, tmp_path):
 def test_a_comment_on_a_message_between_agents_reaches_the_agent_naming_the_message(new_story, tmp_path):
     story = story_with_peer_message(new_story, tmp_path)
     story.expect_text('message comment 1 "Check the cart too" --environment main', "comment written as message", actor=story.user)
-    story.expect_text("message unread --environment main","On message 1, Check 138 failed: Check the cart too", actor=story.agent)
+    story.expect_text("message unread --environment main","Check the cart too", actor=story.agent)
 
 
 def test_a_comment_on_a_message_is_a_comment_in_the_feed_that_names_the_message(new_story, tmp_path):

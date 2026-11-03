@@ -10,6 +10,8 @@ their own numbers, so write the kind with the number: doc 12, report 3.
 
 - `journal doc make "<title>" --abstract "<one line>" --body "<text>"` writes one; `--file <path>` takes the text from a
   file. `journal report make` takes the same.
+- A subagent files its own documents and reports with these commands, even though it writes no files: they show in the
+  viewer and dock in the chat. Name the number in your report rather than handing the text back.
 - `journal doc show <n>` gives its outline; ask for a section, its bullets, a search or the whole with the flags
   `journal doc show --help` lists. Read narrowly.
 - `journal doc edit <n> --abstract "<one line>" --body "<text>"` changes it; `journal doc keep <n>` keeps the open

@@ -60,6 +60,7 @@ class ClaudeCodeProvider(Provider):
     subagent_events = ["SubagentStart", "SubagentStop", "PreToolUse", "PostToolUse", "PostToolUseFailure"]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
+    skills_folder = ".claude/skills"
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
     monitor_tool = ToolType.MONITOR
@@ -73,7 +74,8 @@ class ClaudeCodeProvider(Provider):
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
                 ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))))
-    models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST)]
+    models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST),
+              ProgramModel("fable", ModelTier.RARE)]
     session_tier = ModelTier.STRONGEST
 
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
@@ -89,9 +91,12 @@ class ClaudeCodeProvider(Provider):
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
-        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--dangerously-skip-permissions",
+        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", SESSION_EFFORT, "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, launch.variables, launch.session.session)
+
+    def session_effort(self, home: JournalHome, session: str) -> str:
+        return SESSION_EFFORT
 
     def new_session_arguments(self, session: str) -> Sequence[str]:
         return ["--session-id", session]

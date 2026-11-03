@@ -1,5 +1,6 @@
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
+import pytest
 
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
@@ -100,11 +101,17 @@ def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
     story.expect_absent("usage tool --environment main", "Bash", actor=story.user)
 
 
-def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(new_story):
+@pytest.fixture
+def pending_test_chain(new_story):
     story = new_story(fixture=UserJoined)
     line = "cat notes && pytest -q"
     story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
     process = start_process(story, line)
+    return story, process
+
+
+def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(pending_test_chain):
+    story, process = pending_test_chain
     bus = story.container.get(Bus)
     bus.run(StartProcessPart(process.id, 1), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash cat notes", actor=story.user)
@@ -113,11 +120,8 @@ def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(new_story):
     story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
 
 
-def test_the_tool_of_a_chain_names_the_part_that_began_and_not_one_that_waits(new_story):
-    story = new_story(fixture=UserJoined)
-    line = "cat notes && pytest -q"
-    story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    process = start_process(story, line)
+def test_the_tool_of_a_chain_names_the_part_that_began_and_not_one_that_waits(pending_test_chain):
+    story, process = pending_test_chain
     story.container.get(Bus).run(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
 
@@ -199,6 +203,12 @@ def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
     story.expect_text("usage agents --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)
 
 
+def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.session_start())
+    story.expect_text("usage agents --environment main --json", '"effort": "high"', actor=story.user)
+
+
 def test_a_subagents_facts_carry_its_profile_given_name_and_instruction(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     dispatch = {"subagent_type": "journal-researcher", "model": "sonnet", "description": "Madame Curie, reader of the cart", "prompt": "Read the cart"}
@@ -252,38 +262,46 @@ def ended_helper(story, session: str, windows: bool) -> None:
     story.run_listeners()
 
 
-def test_the_status_file_of_an_ended_session_is_removed_and_its_plan_windows_stay_in_plan_json(new_story):
+@pytest.fixture
+def ended_worker_report(new_story):
     story = new_story(fixture=UserJoined)
     ended_helper(story, "s-2", windows=True)
+    return story
+
+
+@pytest.fixture
+def ended_worker_without_windows(ended_worker_report):
+    ended_helper(ended_worker_report, "s-3", windows=False)
+    return ended_worker_report
+
+
+def test_the_status_file_of_an_ended_session_is_removed_and_its_plan_windows_stay_in_plan_json(ended_worker_report):
+    story = ended_worker_report
     assert not (story.home.status_folder / "s-2.json").exists() and (story.home.status_folder / "plan.json").is_file()
 
 
-def test_the_status_file_of_a_session_with_no_plan_windows_is_removed_and_leaves_plan_json_as_it_was(new_story):
-    story = new_story(fixture=UserJoined)
-    ended_helper(story, "s-2", windows=True)
-    ended_helper(story, "s-3", windows=False)
+def test_the_status_file_of_a_session_with_no_plan_windows_is_removed_and_leaves_plan_json_as_it_was(ended_worker_without_windows):
+    story = ended_worker_without_windows
     assert not (story.home.status_folder / "s-3.json").exists()
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used", actor=story.user)
 
 
-def test_the_plan_windows_are_still_shown_after_many_ended_sessions(new_story):
-    story = new_story(fixture=UserJoined)
-    for number in range(2, 12):
+def test_the_plan_windows_are_still_shown_after_many_ended_sessions(ended_worker_report):
+    story = ended_worker_report
+    for number in range(3, 12):
         ended_helper(story, f"s-{number}", windows=True)
     assert sorted(path.name for path in story.home.status_folder.glob("*.json")) == ["plan.json"]
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used, starts again 2026-11-01 15:00 UTC; 7 days 65% used", actor=story.user)
 
 
-def test_an_ended_sessions_report_stays_readable_for_its_card(new_story):
-    story = new_story(fixture=UserJoined)
-    ended_helper(story, "s-2", windows=True)
+def test_an_ended_sessions_report_stays_readable_for_its_card(ended_worker_report):
+    story = ended_worker_report
     assert (story.home.status_folder / "ended" / "s-2.json").is_file()
     assert story.container.get(StatusFiles).status("s-2").windows
 
 
-def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(new_story):
-    story = new_story(fixture=UserJoined)
-    ended_helper(story, "s-2", windows=True)
+def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(ended_worker_report):
+    story = ended_worker_report
     save_status_file(story, "s-1", {"rate_limits": {"seven_day": {"used_percentage": 17, "resets_at": SEVEN_DAYS_RESET}}})
     story.expect_text("usage show --environment main", "plan: 7 days 17% used", actor=story.user)
     assert (story.home.status_folder / "s-1.json").is_file()

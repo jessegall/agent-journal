@@ -20,6 +20,7 @@ class AgentCard(ViewModel):
     environment_id: int
     session: str
     role: AgentRole
+    program: str
     program_model: str
     profile: str
     given_name: str

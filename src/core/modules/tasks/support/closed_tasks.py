@@ -11,6 +11,8 @@ from core.modules.tasks.models.task import Task
 class ClosedTasks:
     """A span of tasks closed in the agent's environment."""
 
+    unit = "closed tasks"
+
     count: int
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:

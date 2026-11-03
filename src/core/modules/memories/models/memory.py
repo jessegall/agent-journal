@@ -20,6 +20,7 @@ class Memory(Model):
     """
 
     model_name = "memory"
+    shared_rows = True
     cli_name = "memory"
     search_fields = ["text", "reason"]
     lifecycle = MemoryLifecycle

@@ -12,8 +12,8 @@ from core.modules.triggers.models.trigger import Trigger
 
 
 class FireTriggerHandler(Handler[FireTrigger, Trigger]):
-    """Counts one firing of a scheduled trigger and moves its next time on; it ends when its limit is reached,
-    its end has passed, or it was set for one time only."""
+    """Counts one firing of a trigger and moves a scheduled one on to its next time; it ends when its limit is
+    reached, its end has passed, or it was set for one time only."""
 
     command = FireTrigger
 
@@ -23,9 +23,11 @@ class FireTriggerHandler(Handler[FireTrigger, Trigger]):
     def handle(self, command: FireTrigger, context: Context) -> Trigger:
         trigger = self.queries.query(Trigger).find(command.trigger_id)
         count = trigger.fired_count + 1
+        if not trigger.is_scheduled:
+            return self.repository.update(trigger, context, fired_count=count, ended_at=context.timestamp if self.limit_reached(trigger, count) else None)
         next_time = self.next_time(trigger, context.timestamp)
         ends = next_time is None or self.limit_reached(trigger, count) or (trigger.end_at is not None and next_time > trigger.end_at)
-        return self.repository.save(replace(trigger, fired_count=count, next_at=next_time, ended_at=context.timestamp if ends else None), context)
+        return self.repository.save(replace(trigger, fired_count=count, next_at=next_time or trigger.next_at, ended_at=context.timestamp if ends else None), context)
 
     def limit_reached(self, trigger: Trigger, count: int) -> bool:
         return trigger.fire_limit is not None and count >= trigger.fire_limit

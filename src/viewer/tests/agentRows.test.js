@@ -211,6 +211,23 @@ test("an open worker's card keeps its tabs", async () => {
     expect(element.querySelector("[data-inner-tabs]")).not.toBeNull();
 });
 
+test("an agent's card shows its effort beside its model", async () => {
+    const worker = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
+    const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {model: "gpt-6.1-sol", effort: "medium"}})}, context(lines));
+    expect(element.textContent).toContain("gpt-6.1-sol · medium");
+});
+
+test("a worker that stopped with tasks left shows under Running as waiting, not closed", async () => {
+    const stopped = {id: 4, session: "s-4", program: "codex", role: "worker", ended_at: "2026-11-03T13:35:28Z"};
+    const facts = [{id: 4, tasks: [{id: 11, title: "Fix the cart", state: "open"}]}];
+    const lines = {"agent list": page([stopped]), "agent running": page([]), "usage agents --closed": page(facts), "usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-stopped]")).not.toBeNull());
+    expect(element.querySelector("[data-agent-open='4'] .agent-dot").dataset.state).toBe("waiting");
+    expect(element.querySelector("[data-agent-leave]")).toBeNull();
+});
+
 test("a transcript row reads author, words, then its time at the end", async () => {
     const lines = {"agent transcript 6": page([{id: 1, author: "worker", text: "I read the guidance", time: "2026-11-03T13:19:21Z"}])};
     const element = await mounted({render: () => h(TranscriptRows, {line: "agent transcript 6"})}, context(lines));

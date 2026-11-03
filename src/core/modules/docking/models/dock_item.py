@@ -17,6 +17,7 @@ class DockItem(Model):
     lifecycle = DockItemLifecycle
 
     dock_id: int
+    agent_id: int | None = None
     creator_id: int
     type: str
     target_model: str
@@ -33,3 +34,6 @@ class DockItem(Model):
 
     def dock(self, timestamp: Timestamp, actor: Actor) -> "DockItem":
         return self.moved(DockItemLifecycle.dock, undocked_at=None)
+
+    def scoped(self, actor_id: int) -> "DockItem":
+        return self if self.is_saved else self.changed(agent_id=actor_id)

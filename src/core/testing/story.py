@@ -2,6 +2,7 @@ import io
 import json
 import re
 import shlex
+from dataclasses import asdict
 from uuid import uuid4
 from typing import TypeVar
 from datetime import timedelta
@@ -57,6 +58,7 @@ class Story:
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
+        self.steps: list[str] = []
         self.agent, self.user, self.subagent = state.agent, state.user, state.subagent
 
     @classmethod
@@ -73,17 +75,21 @@ class Story:
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
-        code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
+        caller = Caller(actor or Actor.core(), environment_id)
+        self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
+        code = self.container.get(Console).run(shlex.split(line), caller, stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
     def run_requested(self, line: str, request: CallerRequest) -> LineOutcome:
         stream = io.StringIO()
+        self.steps.append(f"request {line}: {json.dumps(asdict(request), sort_keys=True)}")
         code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
     def use_processes(self, *rows: ProcessRow) -> None:
+        self.steps.append(f"process table {rows!r}")
         self.process_table.fixed_rows = list(rows)
 
     def row(self, model: type[M], row_id: int) -> M:
@@ -93,15 +99,18 @@ class Story:
         return self.container.get(RefusalLog).page(1, 1000).rows
 
     def advance(self, duration: timedelta) -> None:
+        self.steps.append(f"advance {duration}")
         self.clock.advance(duration)
 
     def hook(self, session: str, sample: HookSample) -> HookReply:
+        self.steps.append(f"hook {session}: {json.dumps(sample.body, sort_keys=True)}")
         milliseconds = int(self.clock.timestamp().value.timestamp() * 1000)
         firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
         event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
         return self.container.get(HookRoute).answer(event)
 
     def run_listeners(self) -> None:
+        self.steps.append("listeners")
         self.container.get(CommitListenerRunner).run()
 
     def tick(self, session: str) -> HookReply:

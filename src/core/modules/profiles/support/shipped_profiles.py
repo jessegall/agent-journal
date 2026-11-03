@@ -1,9 +1,11 @@
 from core.modules.profiles.support.agent_profile import WORKER, AgentProfile
 from core.modules.profiles.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 
-READER_RULES = ("You only read: change no file, run no tests and write nothing to the journal; the agent that started you does the writing. "
+READER_RULES = ("You only read: change no file and run no tests. "
                      "Read narrowly: search for the line, read the range you need, never a whole large file. Answer in a short report written to "
-                     "the agent that started you, with the files and lines that show each point and what you could not check.")
+                     "the agent that started you, with the files and lines that show each point and what you could not check. When your findings are long or "
+                     "will be read again, file them yourself so they show in the viewer: journal doc make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", "
+                     "or journal report make with the same options, and name its number in your report.")
 DOCUMENT_RULES = ("You change no file and run no tests, and use Bash only for journal commands. Read narrowly: search for the line, read the range you need, "
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "

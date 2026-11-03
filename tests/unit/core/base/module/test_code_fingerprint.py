@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 
 from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.module import Module
 
 
 def sample_file(folder, name, text="x = 1\n"):
@@ -8,6 +10,22 @@ def sample_file(folder, name, text="x = 1\n"):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
     return path
+
+
+def test_a_built_window_file_changes_its_modules_version(tmp_path):
+    class SampleModule(Module):
+        @classmethod
+        def folder(cls) -> Path:
+            return tmp_path
+
+    built = tmp_path / "web" / "dist"
+    built.mkdir(parents=True)
+    (built / "agents.js").write_text("old")
+    fingerprint = CodeFingerprint()
+    first_text = fingerprint.module_text(SampleModule)
+    assert fingerprint.module_text(SampleModule) == first_text
+    (built / "agents.js").write_text("new window code")
+    assert fingerprint.module_text(SampleModule) != first_text
 
 
 def test_the_text_changes_when_a_file_is_added_changed_moved_or_removed(tmp_path):

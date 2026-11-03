@@ -19,6 +19,11 @@ def test_a_hook_prompt_shows_as_its_plain_words():
     assert object.__new__(CodexProvider).transcript_row(line, 1).text == "say why with <why>"
 
 
+def test_a_line_from_the_journal_is_a_row_by_the_journal():
+    row = object.__new__(CodexProvider).transcript_row(rollout_line("developer", "your run 12 ended"), 1)
+    assert (row.author, row.text) == ("journal", "your run 12 ended")
+
+
 def test_the_brief_and_the_answer_are_rows_of_the_transcript():
     provider = object.__new__(CodexProvider)
     assert provider.transcript_row(rollout_line("user", "You are worker 446"), 1) is not None

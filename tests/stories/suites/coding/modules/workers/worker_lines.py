@@ -58,10 +58,10 @@ def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_st
     edit = HookSamples.edit("cart.py")
     for _ in range(LOG_REQUEST_WRITES - 1):
         story.hook(session, edit)
-    story.expect_hook_allowed(session, edit, f"{LOG_REQUEST_WRITES} writes since you logged task:1")
+    story.expect_hook_allowed(session, edit, f"log task 1 due: {LOG_REQUEST_WRITES} writes")
     for _ in range(UNLOGGED_WRITES_CEILING - LOG_REQUEST_WRITES - 1):
         story.hook(session, edit)
-    story.expect_hook_refusal(session, edit, f"{UNLOGGED_WRITES_CEILING} writes since you logged task:1")
+    story.expect_hook_refusal(session, edit, "log task 1 due: 0 writes")
     story.advance(timedelta(minutes=1))
     story.expect_success("task log 1 'the cart total is worked out'", actor=worker)
     story.expect_hook_allowed(session, edit)

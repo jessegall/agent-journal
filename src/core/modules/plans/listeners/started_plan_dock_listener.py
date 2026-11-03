@@ -4,6 +4,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
@@ -21,6 +22,7 @@ class StartedPlanDockListener(CommitListener):
 
     name = "plans.started-dock"
     event = "plan.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items

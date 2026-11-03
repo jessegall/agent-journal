@@ -1,4 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkType
@@ -12,6 +13,7 @@ class DispatchMarkListener(MarkListener):
 
     name = "drivers.dispatch-mark"
     event = "subagent_dispatch.*"
+    disabled_scopes = [ActorScope]
     module_name = "journal.core.drivers"
 
     def handle(self, event: LoggedEvent) -> None:

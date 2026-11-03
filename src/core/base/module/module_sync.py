@@ -45,6 +45,7 @@ from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.module.module_check import ModuleCheck
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
+from core.base.performance.performance_state import PerformanceState
 from core.base.module.module_order import ModuleOrder
 from core.base.module.sync_notes import SyncNotes
 from core.base.module.sync_report import SyncReport
@@ -69,6 +70,10 @@ class ModuleSync:
         self.actors, self.registry_table, self.entries, self.providers, self.home, self.notes = actors, registry_table, entries, providers, home, notes
 
     def run(self) -> SyncReport:
+        with PerformanceState(self.home).reload():
+            return self.synchronize()
+
+    def synchronize(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
         rules = self.entries.rules(modules)
         self.check.check(modules, rules)

@@ -1,0 +1,17 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {"fileMatches": "(^|/)src/(suites|core)/.+_nudges\\.py$"},
+            {"textMatches": "(?i)(waits? after|more tool uses|\\{[a-z_]+\\} more\\b|writes since|due: \\{)"}
+        ]
+    },
+    "sin": {
+        "name": "countdown-line-form",
+        "description": "A line counting down to a hold is written in its own words, not through CountDown.",
+        "rule": "Declare it as CountDown(key, action, span), which says read message 123 due: 3 tool uses.",
+        "skill": "plain-code-words"
+    }
+}

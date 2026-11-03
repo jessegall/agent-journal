@@ -52,6 +52,6 @@ const workerMoves = (row) => (row?.role !== "worker" || row.ended_at ? [] : [
 
 const checkMoves = (row) => (!row || row.removed_at ? [] : [row.stopped ? {word: "run", label: "Start again", main: true} : {word: "run", label: "Run now", main: true}, ...(row.stopped ? [] : [{word: "stop", label: "Stop"}])]);
 
-const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Close", flag: "--why", ask: "Why does it need no action?"}]);
+const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
 
 export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? [...workerMoves(row), ...agentMoves(row)] : kind === "check" ? checkMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);

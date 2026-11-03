@@ -25,12 +25,19 @@ const LANGUAGES = {
     text: {keywords: "", quotes: []},
 };
 
+// the names a fence or a file gives a language, for each language the table above knows
+const ALIASES = {
+    javascript: "js", mjs: "js", cjs: "js", ts: "js", typescript: "js", tsx: "js", jsx: "js", vue: "html",
+    python: "py", cpp: "c", cc: "c", h: "c", hpp: "c", cs: "c", csharp: "c", java: "c", kt: "c", kotlin: "c", go: "c", golang: "c", rs: "c", rust: "c", swift: "c", scala: "c", dart: "c",
+    bash: "sh", shell: "sh", zsh: "sh", fish: "sh", scss: "css", less: "css", htm: "html", xml: "html", yml: "yaml", markdown: "md",
+};
+
 function startsAt(text, i, mark) {
     return mark && text.startsWith(mark, i);
 }
 
 function tokenize(text, lang) {
-    const spec = LANGUAGES[lang] || LANGUAGES.text;
+    const spec = LANGUAGES[ALIASES[lang] ?? lang] || LANGUAGES.text;
     const keywords = new Set(spec.keywords.split(" ").filter(Boolean));
     const out = [];
     let i = 0;

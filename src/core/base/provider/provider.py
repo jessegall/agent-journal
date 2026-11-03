@@ -42,6 +42,7 @@ class Provider(ABC):
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
+    skills_folder: ClassVar[str] = ".agents/skills"
     hook_file: ClassVar[HookFile]
     controls: ClassVar[Sequence[ControlGroup]] = ()
     session_variable: ClassVar[str]
@@ -102,6 +103,9 @@ class Provider(ABC):
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None
+
+    def session_effort(self, home: JournalHome, session: str) -> str:
+        return ""
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}

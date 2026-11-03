@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from core.base.change.logged_event import LoggedEvent
+from core.base.scope.scopes import DisabledScopes
 
 
 class CommitListener:
@@ -10,6 +11,7 @@ class CommitListener:
     name: ClassVar[str]
     event: ClassVar[str]
     run_order: ClassVar[int] = 0
+    disabled_scopes: ClassVar[DisabledScopes] = ()
 
     def handle(self, event: LoggedEvent) -> None:
         raise NotImplementedError(f"{type(self).__name__} handles nothing")

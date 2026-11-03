@@ -97,7 +97,10 @@ function stepSidebar() {
     else sideMini.value = true;
 }
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
-const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || "agent-journal");
+// the project's name as this browser last knew it, so it does not change when the server answers
+const lastProject = rememberedRef("last-project", "agent-journal");
+const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
+watchEffect(() => (lastProject.value = project.value));
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
 let activityTimer = null;
 let usageTimer = null;
@@ -127,7 +130,7 @@ const clock = useSharedNow();
 const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
+const COUNT_WINDOWS = {skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
 const HELPER_WINDOW = "agents.subagents";
 const usage = ref({agents: [], windows: []});

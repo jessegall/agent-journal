@@ -9,6 +9,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -24,6 +25,7 @@ class InactiveHelperRule(DriverRule):
     hook = HookEventName.TICK
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues) -> None:
         self.queries, self.calls, self.hook_history, self.settings = queries, calls, history, settings

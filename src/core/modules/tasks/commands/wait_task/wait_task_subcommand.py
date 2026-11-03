@@ -9,8 +9,7 @@ DEFAULT_INTERVAL_MINUTES = 2
 
 
 class WaitTaskSubcommand(Subcommand[WaitTask, Task]):
-    """`journal task block <n>` with `--on task:<m>`, `--until '<command>'` or `--reason '<words>'`: what it
-    waits on."""
+    """Blocks a task on a task, question, plan or worker, a passing command, or a written reason."""
 
     cli_name = "task"
     name = "block"
@@ -18,7 +17,7 @@ class WaitTaskSubcommand(Subcommand[WaitTask, Task]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)
         parser.add_argument("--reason", default="")
-        parser.add_argument("--on", action="append", default=[], help="a row that opens the task once it resolves: task:<n>, question:<n> or plan:<n>")
+        parser.add_argument("--on", action="append", default=[], help="a target that opens the task once it finishes: task:<n>, question:<n>, plan:<n> or worker:<n>")
         parser.add_argument("--until", default="", help="a shell command that opens the task once it passes")
         parser.add_argument("--every", type=int, default=DEFAULT_INTERVAL_MINUTES, help="minutes between two runs of the --until command")
 

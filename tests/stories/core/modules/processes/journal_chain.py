@@ -60,7 +60,7 @@ def test_a_loop_whose_commit_message_holds_the_words_journal_agent_stays_allowed
 def test_a_sleep_poll_followed_by_another_command_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     loop = ShellPart("until", CommandCategory.PROCESS, ["pgrep"])
-    story.expect_hook_refusal("s-1", HookSamples.shell("until pgrep -f build; do sleep 5; done && ls build", loop, LISTING_PART), "a sleep with nothing to wait on is refused")
+    story.expect_hook_refusal("s-1", HookSamples.shell("until pgrep -f build; do sleep 5; done && ls build", loop, LISTING_PART), "a sleep is refused")
 
 
 def test_a_journal_command_piped_into_a_cutting_program_is_refused(new_story):

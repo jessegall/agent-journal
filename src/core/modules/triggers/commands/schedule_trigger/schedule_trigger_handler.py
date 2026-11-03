@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import timedelta
 
 from core.base.clock import Clock
@@ -27,7 +28,7 @@ class ScheduleTriggerHandler(Handler[ScheduleTrigger, Trigger]):
             raise Refusal("--every is a number of minutes, 1 or more", "journal trigger schedule \"<text>\" --every 30")
         end = Timestamp.parsed(command.end_text) if command.end_text else None
         return self.repository.save(Trigger(creator_id=context.actor.id, text=command.text, next_at=self.first_time(command), interval_minutes=command.interval_minutes,
-                                            cron_line=command.cron_line, end_at=end, fire_limit=command.limit), context)
+                                            cron_line=command.cron_line, end_at=end, fire_limit=command.limit, action=command.action, **asdict(command.details)), context)
 
     def first_time(self, command: ScheduleTrigger) -> Timestamp:
         if command.start_text:

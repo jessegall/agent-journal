@@ -9,6 +9,7 @@ from core.base.database.database import Database
 from core.base.deadline import Deadline
 from core.base.guard.explanation import Explanation
 from core.base.registry.registry import Registry
+from core.base.scope.scopes import Scopes
 from core.base.timing import Timing
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
@@ -22,8 +23,8 @@ class Bus:
     has committed; a command run inside another, by a handler or a listener, runs in a savepoint of that
     transaction with the same actor and timestamp."""
 
-    def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline, timing: Timing) -> None:
-        self.container, self.database, self.registry, self.clock, self.deadline, self.timing = container, database, registry, clock, deadline, timing
+    def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline, timing: Timing, scopes: Scopes) -> None:
+        self.container, self.database, self.registry, self.clock, self.deadline, self.timing, self.scopes = container, database, registry, clock, deadline, timing, scopes
 
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
             environment_id: int | None = None) -> R:
@@ -31,14 +32,15 @@ class Bus:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
         handler.prepare(command, actor)
-        if not handler.transactional:
-            return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)), command)
-        with self.database.transaction():
-            self.timing.stamp("write_started")
-            context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
-            command_output = self.result(handler.handle(command, context), command)
-            self.timing.stamp("handled")
-            self.deadline.check()
+        with self.scopes.command_scope(handler.disabled_scopes, actor):
+            if not handler.transactional:
+                return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)), command)
+            with self.database.transaction():
+                self.timing.stamp("write_started")
+                context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
+                command_output = self.result(handler.handle(command, context), command)
+                self.timing.stamp("handled")
+                self.deadline.check()
         self.timing.stamp("committed")
         return command_output
 
@@ -57,7 +59,7 @@ class Bus:
         if not self.database.has_transaction:
             raise TransactionError(f"{command.label()} was dispatched outside a transaction: run it instead")
         handler = self.handler(command)
-        with self.database.savepoint(command.label()):
+        with self.database.savepoint(command.label()), self.scopes.command_scope(handler.disabled_scopes, context.actor):
             return self.result(handler.handle(command, context.nested(command)), command)
 
     def handler(self, command: Command[object]) -> Handler[Command[object], object]:

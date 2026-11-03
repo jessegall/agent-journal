@@ -10,11 +10,10 @@ class StandardTemplatesListener(CommitListener):
     """As the journal starts or an update changes its modules, writes the templates it ships again."""
 
     name = "templates.save-standard"
-    event = "*.*"
+    event = FILE_PUBLISHING_EVENTS
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
     def handle(self, event: LoggedEvent) -> None:
-        if event.event in FILE_PUBLISHING_EVENTS:
-            self.bus.run(SaveStandardTemplates(), Actor.core(), cause_id=event.id, environment_id=event.environment_id)
+        self.bus.run(SaveStandardTemplates(), Actor.core(), cause_id=event.id, environment_id=event.environment_id)

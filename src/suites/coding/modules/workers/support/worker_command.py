@@ -13,6 +13,8 @@ from suites.coding.modules.workers.support.allowed_models import AllowedModels
 
 ENVIRONMENT_VARIABLE = "JOURNAL_ENV"
 ACTIVE_VARIABLE = "AGENT_JOURNAL_ACTIVE"
+WORK_STEPS = ("Prove each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last. "
+              "You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends.")
 
 
 class WorkerCommand:
@@ -23,11 +25,17 @@ class WorkerCommand:
         self.providers, self.models = providers, models
 
     def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
-        brief = f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\nProve each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last."
+        skills = Path(worktree.folder) / self.providers.provider(worker.program).skills_folder
+        reads = "\n".join(str(skills / name / "SKILL.md") for name in
+                          ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
+        brief = (f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\n"
+                 f"Read these files before your first write:\n{reads}\n"
+                 f"Run journal overview, then journal task show {task.id}. Read the architectural skills required by the files you change in {skills}.\n"
+                 f"Run only tests of the code you change, never the whole test suite.\n{WORK_STEPS}")
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
 
     def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:
-        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{job}\nProve each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last.")
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{job}\n{WORK_STEPS}")
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         provider = self.providers.provider(worker.program)
