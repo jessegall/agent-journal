@@ -35,12 +35,12 @@ def test_a_redirect_makes_a_chain_write():
 
 
 def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).writes_nothing
-    assert not line_of("cat notes && pytest -q", LISTING, TESTING).writes_nothing
-    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).writes_nothing
-    assert line_of("cat notes", LISTING, redirects=["2>&1"]).writes_nothing
-    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).writes_nothing
-    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).writes_nothing
+    assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_readonly
+    assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_readonly
+    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_readonly
+    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_readonly
+    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_readonly
+    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_readonly
 
 
 def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():

@@ -41,3 +41,10 @@ def test_a_plain_answer_to_a_new_message_line_reaches_the_chat(new_story):
     story.hook("s-1", HookSamples.prompt("[journal] new message 7"))
     story.hook("s-1", HookSamples.message_display("Yes, done."))
     assert "Yes, done" in chat(story)
+
+
+def test_a_plain_answer_to_an_answered_question_line_reaches_the_chat(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.hook("s-1", HookSamples.prompt("[journal] question:58 is answered"))
+    story.hook("s-1", HookSamples.message_display("Going with your choice."))
+    assert "Going with your choice" in chat(story)

@@ -7,9 +7,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.waits.models.enums.wait_state import WaitState
-from core.modules.waits.models.enums.wait_type import WaitType
-from core.modules.waits.models.wait import Wait
+from core.base.query.conditions.minimum import Minimum
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -21,9 +19,10 @@ RESUME_LIMIT_COUNT = 3
 
 class EndedWorkerListener(SaveListener):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
-    agent gets one quiet line; one that ended while its tests wait gets its next task from them. A worker a person or another agent stopped holds no delegated task or was ended by them; that one,
-    one that reported being stuck and one that keeps ending leave its main agent one line naming all its
-    tasks."""
+    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
+    ended while a run of its own goes is started again when the run ends. A worker a person or another agent
+    stopped holds no delegated task or was ended by them; that one, one that reported being stuck and one that
+    keeps ending leave its main agent one line naming all its tasks."""
 
     name = "workers.ended-worker"
     event = "agent.update"
@@ -43,9 +42,12 @@ class EndedWorkerListener(SaveListener):
             return
         delegated = any(task.delegated_to == new.id for task in unfinished)
         tasks = self.unfinished.names(unfinished)
-        help_requested = self.queries.query(Wait).filter(agent_id=new.id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()
-        resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).count()
+        help_requested = self.stop.has_open_help_request(new.id)
+        progress = Minimum("created_at", self.unfinished.last_progress_text(new.id))
+        resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
         if delegated and not help_requested and not self.stop.is_final(new, change.actor.id) and resume_count < RESUME_LIMIT_COUNT:
+            if self.unfinished.has_running_process(new.id):
+                return
             self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, change.context)
             self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, change.context, worker=new.id, tasks=tasks)
             return

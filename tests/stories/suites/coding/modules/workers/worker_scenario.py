@@ -1,5 +1,10 @@
+import subprocess
+from datetime import timedelta
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -44,6 +49,25 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
+    expect_states(story, task1="completed")
+
+
+def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    folder = story.container.get(OutputFolder)
+    folder.write_pid(started[0], ended_program.pid)
+    folder.write_end(started[0], 0)
+    story.advance(timedelta(seconds=11))
+    RunEndRecovery()(story.container)
+    story.run_listeners()
     expect_states(story, task1="completed")
 
 

@@ -12,7 +12,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.support.tool_use_count import ToolUseCount
+from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 
 COUNTDOWN_USES = 3
 

@@ -3,6 +3,8 @@ import json
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
+from core.modules.processes.models.process import Process
+from core.base.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
@@ -33,7 +35,8 @@ def queued_story(new_story, monkeypatch):
 
 
 def ended(story, process_id: int, code: int) -> None:
-    story.container.get(Bus).run(EndProcess(process_id, code, 0, 0), story.agent, environment_id=1)
+    owner = Actor(story.container.get(Queries).query(Process).find(process_id).agent_id, ActorType.AGENT)
+    story.container.get(Bus).run(EndProcess(process_id, code, 0, 0), owner, environment_id=1)
     story.run_listeners()
 
 

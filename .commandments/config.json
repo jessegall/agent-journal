@@ -86,10 +86,10 @@
         "architecture_workers_GitCallHasTimeLimitDetector",
         "architecture_workers_GuardReadsRowsOnlyDetector",
         "naming_GoPoeticTypeNameDetector",
-        "naming_GoPoeticMethodNameDetector",
+        "naming_PoeticMethodNameDetector",
         "naming_GoPoeticVariableNameDetector",
         "naming_GoSentenceTypeNameDetector",
-        "naming_GoSentenceMethodNameDetector",
+        "naming_SentenceMethodNameDetector",
         "naming_GoSentenceVariableNameDetector",
         "naming_GoUnitlessQuantityNameDetector",
         "syntax_OneElementTupleDetector",
@@ -199,7 +199,7 @@
     ],
     "parallel": 2,
     "configure": {
-        "naming_GoPoeticMethodNameDetector": [
+        "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
-from core.modules.drivers.support.tool_use_count import ToolUseCount
+from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 
 
 @dataclass(frozen=True)

@@ -12,14 +12,14 @@ class RunFolderEnds:
     def __init__(self, parts: ProcessPartQuery, folder: OutputFolder) -> None:
         self.parts, self.folder = parts, folder
 
-    def commands(self, process: Process) -> list[Command]:
+    def commands(self, process: Process) -> list[Command[object]]:
         code = self.folder.end(process.id)
         if code is None:
             return []
         byte_count, line_count = self.folder.sizes(process.id)
         return [*self.parts_ended(process), EndProcess(process.id, code, byte_count, line_count)]
 
-    def parts_ended(self, process: Process) -> list[Command]:
+    def parts_ended(self, process: Process) -> list[Command[object]]:
         rows = self.parts.process(process.id).all_rows()
         statuses = ((part, self.folder.status(process.id, part.position)) for part in rows if part.ended_at is None)
         return [EndProcessPart(process.id, part.position, status) for part, status in statuses if status is not None]

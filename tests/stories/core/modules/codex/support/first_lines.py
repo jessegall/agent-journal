@@ -44,7 +44,6 @@ def expect_image_read(story) -> None:
     story.container.get(SkillRequirement).is_required = True
     home = story.home.folder
     (home.parent / ".journal").symlink_to(home, target_is_directory=True)
-    (home / "hooks-on-socket").touch()
     binary = GoBuild.built("journal-hook", home.parent / "journal-hook")
     with server_story(story):
         story.expect_success(f"skill require {story.agent.id} journal-memory")

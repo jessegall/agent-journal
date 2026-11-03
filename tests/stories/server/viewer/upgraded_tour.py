@@ -8,6 +8,8 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.tour_browser import expect_browser_tour
 
+pytestmark = pytest.mark.browser_job
+
 
 def test_a_seen_version_four_tour_stays_closed_in_a_fresh_browser_after_upgrade(completed_tour_server):
     expect_browser_tour(completed_tour_server, visible=False)

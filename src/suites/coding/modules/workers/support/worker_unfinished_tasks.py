@@ -1,3 +1,4 @@
+from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -9,8 +10,8 @@ class WorkerUnfinishedTasks:
     """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
     its tests are waiting, since those hand it its next task."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery) -> None:
-        self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery) -> None:
+        self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
         started = tuple(self.tasks.holder(worker_id).started().all_rows())
@@ -19,6 +20,14 @@ class WorkerUnfinishedTasks:
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()
         return (*started, *self.tasks.filter(delegated_to=worker_id, state=TaskState.OPEN).all_rows())
+
+    def last_progress_text(self, worker_id: int) -> str:
+        tasks = self.tasks.filter(delegated_to=worker_id).all_rows()
+        stamps = [stamp.text for task in tasks for stamp in (task.started_at, task.closed_at) if stamp]
+        return max(stamps, default="")
+
+    def has_running_process(self, worker_id: int) -> bool:
+        return self.processes.agent(worker_id).running().exists()
 
     @staticmethod
     def names(tasks: tuple[Task, ...]) -> str:

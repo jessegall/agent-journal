@@ -1,4 +1,3 @@
-import os
 from collections.abc import Callable, Generator
 from pathlib import Path
 
@@ -8,12 +7,12 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
 from core.testing.story_steps import StorySteps
+from core.testing.template_cache import TemplateCache
 from core.testing.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 STORY_STEPS_KEY = "journal_story_steps"
-XDIST_WORKER_VARIABLE = "PYTEST_XDIST_WORKER"
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -25,11 +24,8 @@ def pytest_itemcollected(item: pytest.Item) -> None:
 
 
 @pytest.fixture(scope="session")
-def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
-    run_folder = tmp_path_factory.getbasetemp().parent if XDIST_WORKER_VARIABLE in os.environ else tmp_path_factory.getbasetemp()
-    folder = run_folder / "templates"
-    folder.mkdir(exist_ok=True)
-    return TemplateDatabases(folder)
+def templates() -> TemplateDatabases:
+    return TemplateDatabases(TemplateCache().folder())
 
 
 @pytest.fixture
@@ -45,6 +41,8 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     yield started
     for steps in created:
         overlap.add(item.nodeid, steps.lines())
+        steps.story.close()
+    created.clear()
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)

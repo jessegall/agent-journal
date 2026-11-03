@@ -40,7 +40,7 @@
     },
     "sin": {
         "description": "A method is named by a word that does not say what it does: about, worded, meaning, whisper, tell.",
-        "name": "go-poetic-method-name",
+        "name": "poetic-method-name",
         "rule": "Name a method for what it does, in an ordinary word: create, rendered, with_values, on_tool_starting.",
         "skill": "plain-code-words"
     }
