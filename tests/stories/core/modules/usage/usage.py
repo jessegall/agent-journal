@@ -114,6 +114,20 @@ def test_the_tool_of_a_chain_names_the_part_that_began_and_not_one_that_waits(ne
     story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
 
 
+def test_the_tool_of_a_chain_that_ended_names_its_last_part_and_never_the_whole_chain(new_story):
+    story = new_story(fixture=UserJoined)
+    line = "cat notes && sed -n 1,2p notes"
+    story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("sed", CommandCategory.READ, ["-n", "1,2p", "notes"])))
+    process = start_process(story, line)
+    bus = story.container.get(Bus)
+    bus.run(StartProcessPart(process.id, 1), story.agent, environment_id=process.environment_id)
+    bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=process.environment_id)
+    bus.run(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
+    bus.run(EndProcessPart(process.id, 2, 0), story.agent, environment_id=process.environment_id)
+    story.expect_text("usage tool --environment main", "Bash sed -n 1,2p notes", actor=story.user)
+    story.expect_absent("usage tool --environment main", "cat notes", actor=story.user)
+
+
 def test_the_tool_of_an_edit_shows_the_lines_it_adds_and_removes(new_story):
     story = new_story(fixture=UserJoined)
     story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1))

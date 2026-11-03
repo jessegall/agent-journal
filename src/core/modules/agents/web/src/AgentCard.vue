@@ -53,7 +53,7 @@ async function readCommand() {
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
     runningCommand.value = answer.ok ? answer.value.tool : "";
 }
-const stopFollowing = context.follow(["hook_call.*"], readCommand);
+const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
 onUnmounted(() => stopFollowing?.());
 readCommand();
 </script>
