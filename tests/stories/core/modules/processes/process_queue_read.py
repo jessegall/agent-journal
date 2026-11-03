@@ -2,13 +2,27 @@ import json
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
+QUEUE_READ_POINTS = 60
+
 
 def queue_page(story, flags=""):
     return json.loads(story.run(f"queue list --environment-id 1 --json {flags}", actor=story.user).output_text)
+
+
+def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    for number in range(40):
+        end_run(story, start_process(story, f"make old-{number}", category=CommandCategory.BUILD), "built\n")
+    database = story.container.get(Database)
+    start = database.tally.points()
+    page = queue_page(story)
+    cost = database.tally.points().minus(start)
+    assert page["running"] == [] and cost.total < QUEUE_READ_POINTS, cost.line()
 
 
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):

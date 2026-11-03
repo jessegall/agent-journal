@@ -19,6 +19,7 @@ WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
+SAMPLE_PARTS = 50
 
 
 class ReaderJudge:
@@ -76,9 +77,9 @@ class ReaderJudge:
         return tuple(miss for miss, valid in checks.items() if not valid)
 
     def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:
-        parts = self.parts.with_kept_output().newest().all_rows()
-        matching = (part for part in parts if ReaderSelection.reads(reader, part))
-        return tuple(matching)
+        patterns = tuple(pattern.strip() for pattern in reader.commands.split(","))
+        parts = self.parts.kept_samples(patterns, reader.environment_id).page(1, SAMPLE_PARTS).rows
+        return tuple(part for part in parts if ReaderSelection.reads(reader, part))
 
     def output_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))

@@ -1,6 +1,5 @@
 from datetime import timedelta
 from pathlib import Path
-from fnmatch import fnmatchcase
 
 from core.base.agent_role import AgentRole
 from core.base.clock import Clock
@@ -41,9 +40,11 @@ class ReaderRequests:
         reason = self.demands.reason(spec, reader)
         if not reason:
             return None
-        key = self.command_key(spec)
-        sample = next((part for part in self.parts.with_kept_output().newest().all_rows() if fnmatchcase(part.command or part.text, f"{key}*")), None)
-        return self.open_request(process, spec, reason, sample.process_id if sample else process.id, context)
+        existing = self.open_row(process.environment_id, self.command_key(spec))
+        if existing is not None:
+            return existing.id
+        samples = self.parts.kept_samples([f"{self.command_key(spec)}*"], process.environment_id).page(1, 1).rows
+        return self.open_request(process, spec, reason, samples[0].process_id if samples else process.id, context)
 
     def after_run(self, process: Process, spec: PartSpec, reader: Reader, context: Context) -> None:
         if not self.demands.needs_reader(process.environment_id, spec):
@@ -56,11 +57,14 @@ class ReaderRequests:
     def command_key(spec: PartSpec) -> str:
         return spec.command_key or Path(spec.program).name
 
+    def open_row(self, environment_id: int, key: str) -> ReaderRequest | None:
+        return next(iter(self.requests.open().filter(environment_id=environment_id, command_key=key).page(1, 1).rows), None)
+
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)
-        existing = self.requests.open().filter(environment_id=process.environment_id, command_key=key).page(1, 1).rows
-        if existing:
-            return existing[0].id
+        existing = self.open_row(process.environment_id, key)
+        if existing is not None:
+            return existing.id
         command = spec.command or spec.text
         current_time = self.clock.timestamp()
         minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)

@@ -2,8 +2,13 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
+from core.base.database.database import Database
+from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.hook_event import HookEvent
+from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
@@ -14,6 +19,8 @@ from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
+
+RULE_LIMIT_POINTS = 20
 
 
 def worker_with_background_run(new_story):
@@ -80,6 +87,21 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
     assert story.run(f"agent-line list --agent {worker.id}").output_text.count("you ended with tasks left") == 2
+
+
+def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    for number in range(30):
+        worker_id = story.new_row_id(f"agent start ended-{number} claude worker --parent {story.agent.id} --environment main")
+        story.run(f"agent end {worker_id}", actor=story.agent)
+    story.advance(timedelta(minutes=31))
+    event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
+    hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.orchestrator", timestamp=story.clock.timestamp())
+    database = story.container.get(Database)
+    start = database.tally.points()
+    story.container.get(StoppedWorkerRunRule).answer(hook)
+    cost = database.tally.points().minus(start)
+    assert cost.total < RULE_LIMIT_POINTS, cost.line()
 
 
 def test_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_main_agent(new_story):
