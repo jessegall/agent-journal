@@ -1,14 +1,17 @@
 <script setup>
 import {computed, ref} from "vue";
-import {age, Btn, Icon, peekRef, TaskStatusIcon, useNow} from "@journal/window-kit";
+import {age, Btn, Icon, InnerTabs, peekRef, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import AgentFileEdits from "./AgentFileEdits.vue";
+import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
-// its number, usage, Inspect, its tasks under the state names of the tasks window, and its instruction
+// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const now = useNow();
+const tab = ref(useWindow().tabs[0]);
 const title = computed(() => {
     const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
     return name.slice(0, 1).toUpperCase() + name.slice(1);
@@ -52,20 +55,31 @@ const opened = ref(false);
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                     <Btn small bordered data-agent-inspect @click="peekRef(`agents:${row.id}`)">Inspect</Btn>
                 </span>
-                <template v-for="section in sections" :key="section.state">
-                    <p class="agent-label" :data-agent-section="section.state">{{ section.label }} <span class="agent-section-count">{{ section.tasks.length }}</span></p>
-                    <template v-for="task in section.tasks" :key="task.id">
-                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                            <TaskStatusIcon :status="task.state" />
-                            <span class="agent-task-number">{{ task.id }}</span>
-                            <span class="agent-task-title">{{ task.title }}</span>
-                        </button>
+                <InnerTabs :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
+                    <template v-if="tab?.key === 'tasks'">
+                        <template v-for="section in sections" :key="section.state">
+                            <p class="agent-label" :data-agent-section="section.state">{{ section.label }} <span class="agent-section-count">{{ section.tasks.length }}</span></p>
+                            <template v-for="task in section.tasks" :key="task.id">
+                                <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                                    <TaskStatusIcon :status="task.state" />
+                                    <span class="agent-task-number">{{ task.id }}</span>
+                                    <span class="agent-task-title">{{ task.title }}</span>
+                                </button>
+                            </template>
+                        </template>
+                        <template v-if="facts?.instruction">
+                            <p class="agent-label">Instruction</p>
+                            <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                        </template>
                     </template>
-                </template>
-                <template v-if="facts?.instruction">
-                    <p class="agent-label">Instruction</p>
-                    <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
-                </template>
+                    <template v-else-if="tab?.key === 'transcript'">
+                        <TranscriptRows :line="`agent transcript ${row.id}`" />
+                    </template>
+                    <template v-else-if="tab?.key === 'file-feed'">
+                        <AgentFileEdits :agent="row.id" />
+                    </template>
+                </div>
             </div>
         </template>
     </div>
@@ -229,6 +243,23 @@ const opened = ref(false);
     gap: 6px;
     padding: 6px 0 2px 15px;
     cursor: default;
+}
+
+.agent-tab-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.agent-tab-body:not([data-agent-tab-body="tasks"]) {
+    min-height: 96px;
+}
+
+.agent-tab-body :deep(.row-list-row) {
+    padding: 6px 8px;
 }
 
 .agent-usage-line {

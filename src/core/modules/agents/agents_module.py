@@ -37,9 +37,15 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_tab import WindowTab
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
+
+
+CARD_READS = ["agent list", "usage agents", "agent transcript", "hook-call feed", "file-edit list"]
+CARD_EVENTS = ["agent.*", "hook_call.create", "file_edit.create"]
+CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 
 class AgentsModule(Module):
@@ -54,9 +60,9 @@ class AgentsModule(Module):
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
     subcommands = [AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent show", "usage agents"], events=["agent.*"]),
-               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list", "usage agents"],
-                                 events=["agent.*"]),
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS),
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=CARD_READS,
+                                 events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [MenuAnswerMarkListener]
