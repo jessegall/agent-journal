@@ -9,17 +9,17 @@ import (
 	"regexp"
 )
 
-// assumedContextWindow is the size of a model's context window until the program's first result names it.
-const assumedContextWindow = 1_000_000
+// assumedContextWindowTokens is the size of a model's context window until the program's first result names it.
+const assumedContextWindowTokens = 1_000_000
 
 var sessionFileName = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 
 // statusReport is the part of a status file the journal reads for a card, in the shape Claude Code's status line
 // hands over.
 type statusReport struct {
-	SessionID string          `json:"session_id"`
-	Context   *statusContext  `json:"context_window,omitempty"`
-	Cost      *statusCost     `json:"cost,omitempty"`
+	SessionID string         `json:"session_id"`
+	Context   *statusContext `json:"context_window,omitempty"`
+	Cost      *statusCost    `json:"cost,omitempty"`
 }
 
 type statusContext struct {
@@ -54,17 +54,17 @@ type programEvent struct {
 // stream-json lines of its output, so its card shows its context and cost; the cost of a resumed session starts from
 // what its last file said. Any other output is left alone.
 type ProgramStatus struct {
-	folder  string
-	pending []byte
-	report  statusReport
-	model   string
-	tokens  int
-	window  int
+	folder       string
+	pending      []byte
+	report       statusReport
+	model        string
+	tokens       int
+	windowTokens int
 }
 
 // NewProgramStatus keeps status files in the status folder under the journal's folder.
 func NewProgramStatus(home string) *ProgramStatus {
-	return &ProgramStatus{folder: filepath.Join(home, "runtime", "status"), window: assumedContextWindow}
+	return &ProgramStatus{folder: filepath.Join(home, "runtime", "status"), windowTokens: assumedContextWindowTokens}
 }
 
 // Write takes the program's output as it comes and reads each finished line.
@@ -93,7 +93,7 @@ func (status *ProgramStatus) read(line []byte) {
 	case event.Type == "result" && event.TotalCostUSD != nil:
 		status.report.Cost = &statusCost{TotalCostUSD: *event.TotalCostUSD}
 		if window := event.ModelUsage[status.model].ContextWindow; window > 0 {
-			status.window = window
+			status.windowTokens = window
 		}
 	default:
 		return
@@ -109,7 +109,7 @@ func (status *ProgramStatus) keep(session string) {
 		}
 	}
 	if status.tokens > 0 {
-		status.report.Context = &statusContext{UsedPercentage: int(math.Round(float64(status.tokens) * 100 / float64(status.window)))}
+		status.report.Context = &statusContext{UsedPercentage: int(math.Round(float64(status.tokens) * 100 / float64(status.windowTokens)))}
 	}
 	body, err := json.Marshal(status.report)
 	if err != nil || os.MkdirAll(status.folder, 0o755) != nil {
