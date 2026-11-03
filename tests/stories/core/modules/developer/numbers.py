@@ -2,11 +2,14 @@ import json
 
 from core.base.module.performance_tools import PerformanceTools
 from core.base.timing_log import TimingLog
-from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING
+from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+
+
+DEVELOPER_SWITCH = TOOLS_SETTING
 
 
 def numbers(story, flags=""):
@@ -25,7 +28,7 @@ def test_the_counts_keep_the_average_and_slowest_of_each_hook_and_sort_by_the_sl
 
 
 def durations_on(story):
-    story.expect_success(f"setting set {HOOK_DURATIONS_SETTING} true --project", actor=story.user)
+    story.expect_success(f"setting switch {DEVELOPER_SWITCH} on --project", actor=story.user)
 
 
 def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
@@ -36,7 +39,7 @@ def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
     durations_on(story)
     tools.run(ReaderTimeTool, "vitest", 12, 1)
     tools.run(ReaderTimeTool, "vitest", 30, 1)
-    assert numbers(story) == [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "average_ms": 21, "slowest_ms": 30, "average_points": 0}]
+    assert numbers(story) == [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "average_ms": 21, "slowest_ms": 30, "average_points": 0}], numbers(story)
 
 
 def test_an_http_route_is_counted_from_the_timing_log_while_hook_durations_is_on(new_story):
@@ -48,7 +51,7 @@ def test_an_http_route_is_counted_from_the_timing_log_while_hook_durations_is_on
     assert numbers(story) == []
     durations_on(story)
     assert numbers(story) == [{"id": "route /cli", "hook": "route /cli", "count": 2, "average_ms": 7, "slowest_ms": 10, "average_points": 0},
-                              {"id": "route /hook", "hook": "route /hook", "count": 1, "average_ms": 20, "slowest_ms": 20, "average_points": 0}]
+                              {"id": "route /hook", "hook": "route /hook", "count": 1, "average_ms": 20, "slowest_ms": 20, "average_points": 0}], numbers(story)
 
 
 def test_a_reset_starts_the_counts_again_and_the_window_may_read_and_reset(new_story):
