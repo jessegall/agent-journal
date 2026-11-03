@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "branch",
+        "where": [
+            {
+                "of": "enclosingFunction",
+                "name": "handle"
+            },
+            {
+                "of": "enclosingType",
+                "fileMatches": "listeners/"
+            },
+            {
+                "of": "condition",
+                "repeated": {
+                    "atLeast": 2,
+                    "files": 2,
+                    "eitherWay": true
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "listener-repeats-a-decision",
+        "description": "Two listeners ask the same condition, so one decision lives in two places and grows apart.",
+        "rule": "Move the decision into one check that both listeners call.",
+        "skill": "plain-code-words"
+    }
+}
