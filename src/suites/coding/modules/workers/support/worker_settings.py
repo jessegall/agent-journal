@@ -11,10 +11,12 @@ ALLOWED_MODELS = f"{MODULE_KEY}.allowed-models"
 TEST_RUNS = f"{MODULE_KEY}.test-runs"
 QUIET_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
+WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
 WORKER_SETTINGS = [
     SettingValue("builder-dispatches-workers", "Builder sends workers", "Whether the builder may send workers.", SettingType.FLAG, default=True),
     SettingValue("worker-limit", "Worker limit", "How many workers an environment may have out at once.", SettingType.NUMBER, default=2),
     SettingValue("test-runs", "Worker test runs at once", "How many workers' tests run at the same time; 1 tests one worker at a time.", SettingType.NUMBER, default=1),
+    SettingValue("worker-idle-hours", "Worker idle hours", "How many hours a worker that has delivered nothing may use no tool before it is retired and its worktree removed.", SettingType.NUMBER, default=6),
     SettingValue("worker-batch-size", "Worker batch size", "How many tasks a dispatch should give a worker; a dispatch of fewer tells the main agent to queue more.", SettingType.NUMBER, default=3),
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "How many minutes a worker or subagent may use no tool before the main agent is told to check on it.", SettingType.NUMBER, default=5),
     SettingValue("allowed-models", "Allowed worker models", "Models a worker may run on, such as claude sonnet; a program with none listed may use all.",
