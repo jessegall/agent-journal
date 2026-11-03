@@ -11,6 +11,7 @@ from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.dotted_path.dotted_path_error import DottedPathError
+from core.base.database.registry_table import RegistryTable
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
@@ -71,6 +72,14 @@ def test_a_registry_built_from_other_code_is_refused(database):
     registry.require_current("abc")
     with pytest.raises(StaleRegistryError, match="journal module sync"):
         registry.require_current("def")
+
+
+def test_a_second_read_of_the_same_row_parses_nothing_and_a_sync_is_seen_at_once(database):
+    first = Registry.read(database)
+    assert Registry.read(database) is first
+    RegistryTable(database).write("newer code", first.entries_text(), "2026-11-03T22:00:00+00:00")
+    changed = Registry.read(database)
+    assert changed is not first and changed.fingerprint == "newer code"
 
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):

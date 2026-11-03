@@ -94,7 +94,7 @@ usePoll(load, () => true);
 .columns,
 .row {
     display: grid;
-    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 36px 96px 72px;
+    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 64px 96px 72px;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
@@ -114,6 +114,7 @@ usePoll(load, () => true);
 }
 
 .parts {
+    padding-right: 28px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
 }

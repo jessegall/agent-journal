@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict, dataclass, field, replace
+from functools import lru_cache
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
@@ -35,12 +36,14 @@ from core.base.viewer.layout_shape import loaded_layout, stored_layout
 # a registry saved before windows were split into where they are drawn and whose work they show: an environment or agent window was drawn in a pane
 LEGACY_PLACES = {"environment": "pane", "agent": "pane"}
 LEGACY_SHOWS = {"agent": "one-agent"}
+KEPT_REGISTRIES = 8
 
 
 @dataclass(frozen=True)
 class Registry:
     """What sync found in every module: which module owns each entry, which handler runs each command, which
-    class answers each subcommand, and every guard and listener with the events it covers."""
+    class answers each subcommand, and every guard and listener with the events it covers. A parse is kept by the
+    text it came from, so a read costs a parse only after a sync changed that text."""
 
     fingerprint: str
     models: dict[str, ModelEntry]
@@ -70,9 +73,14 @@ class Registry:
         row = RegistryTable(database).row()
         if row is None:
             raise StaleRegistryError("the journal has never been synced: journal module sync")
-        entries = json.loads(row["entries"])
+        return cls.parsed(row["fingerprint"], row["entries"])
+
+    @classmethod
+    @lru_cache(maxsize=KEPT_REGISTRIES)
+    def parsed(cls, fingerprint: str, entries_text: str) -> "Registry":
+        entries = json.loads(entries_text)
         return cls(
-            fingerprint=row["fingerprint"],
+            fingerprint=fingerprint,
             models={cli_name: ModelEntry(entry["module"], DottedPath(entry["model"]), tuple(entry["commands"]), tuple(entry["excluded_subcommands"])) for cli_name, entry in entries["models"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
