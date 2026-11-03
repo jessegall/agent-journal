@@ -36,6 +36,20 @@ def test_a_checked_worktree_merges_into_the_base_branch_in_the_environments_fold
     repository.expect_head(ENVIRONMENT_BRANCH)
 
 
+def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_named_as_inactive(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is None)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is not None)
+    story.advance(timedelta(minutes=10))
+    story.tick("s-1")
+    story.run_listeners()
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has used no tool")
+
+
 def test_a_worktree_with_a_proof_not_checked_is_refused_its_merge_naming_the_point(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

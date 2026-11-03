@@ -2,9 +2,11 @@ import json
 
 import pytest
 
+from core.base.driver.command_category import CommandCategory
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
@@ -46,6 +48,18 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     assert request["duration_ms"] > 0
     assert request["outcome"] == outcome.value
     assert request["body"] == dict(sample.body)
+
+
+def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
+    server = recording_server
+    parts = [ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("ls", CommandCategory.READ, [])]
+    chain = HookSamples.shell("git status && ls", *parts).with_fields(session="s-1", environment="main", firing="record-chain")
+    stop = HookSamples.sample("stop").with_fields(session="s-1", environment="main", firing="record-stop")
+    for sample in (chain, stop):
+        server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
+    assert [row["part_count"] for row in value["rows"]] == [0, 2]
 
 
 def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recording_server):

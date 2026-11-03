@@ -9,7 +9,8 @@ test("opening a hook request shows its headers and its body", async () => {
     const element = await mounted(HookRequests, window);
     await settle();
     expect(element.querySelector("[data-hook-request='7']").textContent).toContain("stop");
-    expect([...element.querySelectorAll("[data-hook-column]")].map((column) => column.textContent)).toEqual(["Event", "Tool", "Time", "Duration"]);
+    expect([...element.querySelectorAll("[data-hook-column]")].map((column) => column.textContent)).toEqual(["Event", "Tool", "Parts", "Time", "Duration"]);
+    expect(element.querySelector("[data-hook-request='7'] [data-hook-parts]").textContent).toBe("");
     expect(element.querySelector("[data-hook-day]").textContent).toContain("2026-11-02");
     expect(element.querySelector("[data-hook-request='7']").textContent).toContain("18:00:00.000");
     expect(element.querySelector("[data-hook-request='7']").textContent).toContain("12 ms");

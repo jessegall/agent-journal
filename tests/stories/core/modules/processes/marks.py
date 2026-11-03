@@ -19,7 +19,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 from tests.stories.core.support.fixtures import UserJoined
 
 MARKS = "chat-mark list --environment 1 --oldest"
@@ -88,15 +88,15 @@ def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_ru
     end_run(story, process, "a\n")
     story.expect_refusal(f"dock add processes.output process {process.id} --environment main", "has ended, so it cannot be docked", actor=story.agent)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
-    assert [button["variants"] for button in mark.buttons] == [["running", "background"], ["running", "background"]]
+    assert [button["variants"] for button in mark.buttons] == [["queued", "running", "background"], ["running", "background"]]
 
 
-def test_a_watch_docks_the_output_and_it_leaves_10_seconds_after_its_process_ends_unless_kept(new_story):
+def test_a_docked_output_leaves_10_seconds_after_its_process_ends_unless_kept(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     kept, leaving = start_process(story, "make kept", category=CommandCategory.BUILD), start_process(story, "make leaving", category=CommandCategory.BUILD)
-    story.run(f"output watch {kept.id}", actor=story.agent)
-    story.run(f"output watch {leaving.id}", actor=story.agent)
+    story.advance(timedelta(seconds=6))
+    story.tick("s-1")
     story.run_listeners()
     story.expect_text("dock-item list --oldest", "processes.output")
     story.container.get(Bus).run(KeepDockItem(1), user)
@@ -167,6 +167,37 @@ def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new
     story.run_listeners()
     story.expect_text("dock-item show 1", "state: docked")
     story.expect_refusal("dock-item show 2", "no dock-item 2")
+
+
+def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
+    story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
+    first = start_process(story, "make one", category=CommandCategory.BUILD, is_queued=True)
+    start_process(story, "make two", category=CommandCategory.BUILD, is_queued=True)
+    story.run_listeners()
+    story.expect_text(MARKS, "Queued: make two")
+    story.advance(timedelta(seconds=20))
+    end_run(story, first, "built\n")
+    story.run_listeners()
+    story.expect_absent(MARKS, "Queued: make two")
+    story.expect_text(MARKS, "Running make two")
+    story.tick("queue-worker")
+    story.run_listeners()
+    story.expect_absent("dock-item list", "processes.output")
+    story.advance(timedelta(seconds=6))
+    story.tick("queue-worker")
+    story.run_listeners()
+    story.expect_text("dock-item list", "processes.output")
+
+
+def test_a_watch_docks_no_run_before_5_seconds_of_running(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.run(f"output watch {process.id}", actor=story.agent)
+    story.run_listeners()
+    story.expect_absent("dock-item list", "processes.output")
 
 
 def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):

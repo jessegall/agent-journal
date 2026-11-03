@@ -19,7 +19,8 @@ DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """Docks visible runs after five seconds and asks for a name when a docked run has none."""
+    """Docks visible runs after five seconds of running, time in the queue left out, and asks for a name when a
+    docked run has none."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS
@@ -43,6 +44,6 @@ class LongRunDockRule(DriverRule):
         return bool(kept) and RunTitle.is_descriptive(kept[0].title, process.line)
 
     def needs_dock(self, process: Process, hook: AgentHook) -> bool:
-        if not self.visibility.is_visible(process) or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
+        if process.started_at is None or not self.visibility.is_visible(process) or process.started_at.elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.folder.end(process.id) is not None:
             return False
         return not self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists()

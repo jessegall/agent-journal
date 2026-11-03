@@ -27,6 +27,7 @@ class HookRequest(ViewModel):
     outcome: HookAnswer
     event: str
     tool: str
+    part_count: int
     day: str
     time: str
     day_start: bool

@@ -72,4 +72,43 @@ test("a person's message shows the rows it linked, under it", async () => {
     expect(line.textContent).toMatch(/^Linked: /);
     expect(line.textContent.match(/report 1/gi)).toHaveLength(1);
     expect(line.querySelector(".md.inline")).not.toBeNull();
+    const foot = element.querySelector(".message-foot");
+    expect(foot.compareDocumentPosition(element.querySelector("[data-message-links]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(foot.querySelector(".message-dot").textContent).toBe("•");
+});
+
+test("four linked tasks group into a chip that opens a list with their titles", async () => {
+    const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
+    const element = document.createElement("div");
+    document.body.append(element);
+    const link = (id) => ({target_model: "task", target_id: id, link_type: "about"});
+    const read = async (line) => (line.startsWith("link list") ? {ok: true, value: {rows: [link(1), link(2), link(3), link(4)]}} : {ok: true, value: {id: Number(line.split(" ")[2]), title: `Title of ${line.split(" ")[2]}`}});
+    const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see these", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
+    app.provide(WINDOW_CONTEXT, {environment: "main", read});
+    app.mount(element);
+    await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+    const count = element.querySelector("[data-message-links-count]");
+    expect(count.textContent).toContain("4 linked tasks");
+    expect(element.querySelector(".message-links").classList.contains("many")).toBe(true);
+    count.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+    const list = element.querySelector("[data-message-links-list]");
+    expect(list.querySelectorAll("button")).toHaveLength(4);
+    expect(list.textContent).toContain("Title of 3");
+    app.unmount();
+    element.remove();
+});
+
+test("one linked task shows no group", async () => {
+    const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
+    const element = document.createElement("div");
+    const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see it", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
+    app.provide(WINDOW_CONTEXT, {environment: "main", read: async () => ({ok: true, value: {rows: [{target_model: "task", target_id: 9, link_type: "about"}]}})});
+    app.mount(element);
+    await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+    expect(element.querySelector("[data-message-links-count]")).toBeNull();
+    expect(element.querySelector("[data-message-links-rows]").textContent).toContain("task 9");
 });

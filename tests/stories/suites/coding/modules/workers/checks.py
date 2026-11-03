@@ -3,7 +3,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, delivered_worker, repository_environment
 
 SHORTFALL = "the rounding has no test"
-PROOF_SHORT = f'proof short 1 --shortfall "{SHORTFALL}"'
+PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
 
 
 def test_a_proof_the_main_agent_checks_is_checked(new_story):
