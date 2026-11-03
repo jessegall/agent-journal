@@ -9,12 +9,12 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
-PROGRAM_PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
 SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
 
@@ -74,5 +74,5 @@ class PluginProgram:
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}
         code, data, journal = self.folders.code(plugin_name).resolve(), self.folders.data(plugin_name).resolve(), self.home.folder.resolve()
-        return {**passed, "PATH": f"{journal / 'bin'}:{PROGRAM_PATH}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
+        return {**passed, "PATH": f"{journal / 'bin'}:{LoginPath.value()}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
                 "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_SETTINGS": str(data / SETTINGS_FILE)}
