@@ -35,6 +35,7 @@ class ServerFiles:
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.folder / "run-lock"
         self.restart_mark = home.folder / "server-restarting"
+        self.start_mark = home.folder / "server-starting"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
 
@@ -119,6 +120,7 @@ class ServerFiles:
 
     def clear_restart(self) -> None:
         self.restart_mark.unlink(missing_ok=True)
+        self.start_mark.unlink(missing_ok=True)
 
     def mark_run_lock(self) -> None:
         self.run_lock.write_text(str(os.getpid()))
