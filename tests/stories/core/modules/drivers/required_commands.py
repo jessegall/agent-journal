@@ -10,7 +10,7 @@ from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.interval import Interval
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
-from core.modules.drivers.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

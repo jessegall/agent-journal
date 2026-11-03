@@ -12,9 +12,9 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOC
 
 
 class WorkerStopRule(DriverRule):
-    """A worker stops only once it holds no started task and has no task queued, while its tests wait, as its next
-    task then reaches it, or while a run of its own goes, as the run's end starts it again; a stop before that names
-    the way to deliver, and a stuck report is the way out."""
+    """A worker stops only once it holds no started task and has no task queued, while its tests wait, as
+    its next task then reaches it, or while a run of its own goes, as the run's end starts it again; a
+    stop before that names the way to deliver, and a stuck report is the way out."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP

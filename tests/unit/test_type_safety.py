@@ -2,6 +2,10 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.type_check
+
 ROOT = Path(__file__).resolve().parents[2]
 PYRIGHT = ROOT / ".venv" / "bin" / "pyright"
 TIMEOUT_SECONDS = 300

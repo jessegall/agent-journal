@@ -1,6 +1,10 @@
+import pytest
+
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+
+pytestmark = pytest.mark.browser_job
 
 
 def test_a_document_collapsed_by_the_user_stays_collapsed_until_reopened_in_the_browser(new_story):

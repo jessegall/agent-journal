@@ -10,7 +10,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired import RecordReminderFired
 from core.modules.reminders.models.reminder import Reminder
 from core.modules.reminders.support.reminder_nudges import REMINDER_BLOCK, REMINDER_LINE
