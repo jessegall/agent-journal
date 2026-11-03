@@ -73,16 +73,17 @@ test("the plans window shows each plan's title and state", async () => {
 });
 
 test("the agents window shows each agent's role", async () => {
-    const text = await drawn(AgentList, context({"agent list": page([{id: 2, role: "main", session: "s-1", program: "claude"}])}));
-    expect(text).toContain("Main agent 2");
+    const text = await drawn(AgentList, context({"agent list": page([{id: 2, role: "main", session: "s-1", program: "claude"}]), "agent running": page([{id: 2, role: "main", session: "s-1", program: "claude"}])}));
+    expect(text).toContain("Main agent2");
 });
 
 test("the helpers window lists every agent but the main one", async () => {
-    const windowContext = context({"agent list": page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "subagent", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}])}, 2);
+    const everyAgent = page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "subagent", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}]);
+    const windowContext = context({"agent list": everyAgent, "agent running": everyAgent}, 2);
     const text = await drawn(SubagentList, windowContext);
-    expect(text).toContain("Helper 5");
-    expect(text).toContain("Worker 6");
-    expect(text).not.toContain("Main agent 2");
+    expect(text).toContain("Subagent5");
+    expect(text).toContain("Worker6");
+    expect(text).not.toContain("Main agent2");
 });
 
 test("the hook calls window shows its agent's hook calls with their answers", async () => {

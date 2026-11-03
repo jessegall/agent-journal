@@ -34,6 +34,8 @@ from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcomma
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
+from core.base.viewer.choice_option import ChoiceOption
+from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -55,7 +57,11 @@ class AgentsModule(Module):
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent running", "agent show", "usage agents", "usage tool", "hook-call feed"], events=["agent.*", "hook_call.*"]),
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent running", "agent show", "usage agents", "usage tool", "hook-call feed"], events=["agent.*", "hook_call.*"],
+                                 options=[ToggleOption("working", "Working agents", True), ToggleOption("waiting", "Blocked agents", True), ToggleOption("idle", "Idle agents", True), ToggleOption("stopped", "Agents not running", True),
+                                          ToggleOption("environment", "Environment agents", True), ToggleOption("worker", "Workers", True), ToggleOption("subagent", "Subagents", True),
+                                          ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number"),
+                                          ToggleOption("every", "Show every agent")]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list", "usage agents"],
                                  events=["agent.*"]),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
