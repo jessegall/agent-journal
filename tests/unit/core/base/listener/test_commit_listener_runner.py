@@ -145,6 +145,19 @@ def test_a_listener_a_person_waits_on_goes_first_and_again_after_each_other_list
     assert HANDLED == ["urgent 1", "slow 1", "urgent 2", "slow 2"]
 
 
+def test_the_urgent_listeners_and_the_ordinary_ones_run_apart(tmp_path):
+    container = container_with(tmp_path, SlowCounter, UrgentCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    runner.run_urgent()
+    assert HANDLED == ["urgent 1"]
+    runner.run_ordinary()
+    assert HANDLED == ["urgent 1", "slow 1", "slow 2"]
+    runner.run_urgent()
+    assert HANDLED == ["urgent 1", "slow 1", "slow 2", "urgent 2"]
+
+
 def test_a_listener_with_nothing_to_handle_does_not_run_the_urgent_listeners_again(tmp_path, monkeypatch):
     container = container_with(tmp_path, UrgentCounter, PausedItemCounter)
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
