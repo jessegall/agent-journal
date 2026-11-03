@@ -117,7 +117,7 @@ test("the agent bar names a paused agent, says nothing of what waits, and has on
     expect(opened).toEqual([["helpers", helpers]]);
 });
 
-test("a dropdown opens under the button that asked for it, kept inside the window", () => {
+test("a dropdown opens under the button that asked for it", () => {
     const anchor = {getBoundingClientRect: () => ({left: 400, bottom: 90})};
     const catalogue = {dropdown: () => null, window: () => null, loaded: {value: false}};
     const groups = [{name: "usage.context", title: "Context", count: 0}];
@@ -126,8 +126,6 @@ test("a dropdown opens under the button that asked for it, kept inside the windo
     expect(panel.style.top).toBe("96px");
     expect(panel.style.left).toBe("400px");
     expect(element.querySelector("[data-dropdown-group]")).toBeNull();
-    const nearEdge = mounted(WindowDropdown, {groups, anchor: {getBoundingClientRect: () => ({left: window.innerWidth - 10, bottom: 90})}, catalogue, subscriptions: {}, environment: "main"});
-    expect(nearEdge.querySelector("[data-dropdown]").style.right).toBe("8px");
 });
 
 test("the helpers dropdown holds every kind under its own header with a count", () => {

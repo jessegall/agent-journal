@@ -28,15 +28,15 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 // while it moves and fading in once it has settled, so no text moves with the width. The width it moves from is the last it settled at.
 const WIDTH_MS = 200;
 const panel = ref(null);
-let settledWidth = 0;
+const panelWidth = ref(0);
 let moving = 0;
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 function fitWidth() {
     const el = panel.value;
     if (!el || el.hasAttribute(HIDING)) return;
-    const from = settledWidth;
+    const from = panelWidth.value;
     const to = el.offsetWidth;
-    settledWidth = to;
+    panelWidth.value = to;
     if (!from || Math.abs(to - from) < 2 || reducedMotion()) return;
     el.setAttribute(HIDING, "");
     el.style.width = `${from}px`;
@@ -52,7 +52,7 @@ function fitWidth() {
 }
 const watcher = new ResizeObserver(fitWidth);
 onMounted(() => {
-    settledWidth = panel.value.offsetWidth;
+    panelWidth.value = panel.value.offsetWidth;
     watcher.observe(panel.value);
 });
 onUnmounted(() => {
@@ -65,8 +65,8 @@ const placed = computed(() => {
     const box = props.anchor?.getBoundingClientRect();
     const size = {minWidth: `${smallest}px`, maxWidth: `min(${MOST_WIDTH_PIXELS}px, calc(100vw - ${2 * EDGE_PIXELS}px))`};
     if (!box) return size;
-    const top = `${box.bottom + GAP_PIXELS}px`;
-    return box.left + MOST_WIDTH_PIXELS + EDGE_PIXELS > window.innerWidth ? {...size, top, left: "auto", right: `${EDGE_PIXELS}px`} : {...size, top, left: `${box.left}px`};
+    const left = Math.max(EDGE_PIXELS, Math.min(box.left, window.innerWidth - panelWidth.value - EDGE_PIXELS));
+    return {...size, top: `${box.bottom + GAP_PIXELS}px`, left: `${left}px`};
 });
 </script>
 
