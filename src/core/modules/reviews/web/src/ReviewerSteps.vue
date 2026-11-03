@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {ago, EmptyState, ListTools, useListTools, useWindow} from "@journal/window-kit";
+import {EmptyState, ListTools, WindowRoom, ago, useListTools, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const reviews = ref([]);
@@ -18,29 +18,31 @@ load();
 </script>
 
 <template>
-    <div class="reviewer">
-        <template v-if="!reviews.length">
-            <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
-        </template>
-        <ListTools :tools="tools" />
-        <template v-for="review in tools.shown.value" :key="review.id">
-            <section class="review">
-                <h3 class="review-title">{{ review.title }}</h3>
-                <ol class="steps">
-                    <template v-for="step in review.steps" :key="step.id">
-                        <li class="step">
-                            <span class="dot" :data-outcome="step.outcome"></span>
-                            <span class="text">{{ step.text }}</span>
-                            <time>{{ ago(step.created_at) }}</time>
-                        </li>
-                    </template>
-                </ol>
-            </section>
-        </template>
-        <template v-if="queued">
-            <p class="queue">{{ queued }} {{ queued === 1 ? "review" : "reviews" }} waiting</p>
-        </template>
-    </div>
+    <WindowRoom>
+        <div class="reviewer">
+            <template v-if="!reviews.length">
+                <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
+            </template>
+            <ListTools :tools="tools" />
+            <template v-for="review in tools.shown.value" :key="review.id">
+                <section class="review">
+                    <h3 class="review-title">{{ review.title }}</h3>
+                    <ol class="steps">
+                        <template v-for="step in review.steps" :key="step.id">
+                            <li class="step">
+                                <span class="dot" :data-outcome="step.outcome"></span>
+                                <span class="text">{{ step.text }}</span>
+                                <time>{{ ago(step.created_at) }}</time>
+                            </li>
+                        </template>
+                    </ol>
+                </section>
+            </template>
+            <template v-if="queued">
+                <p class="queue">{{ queued }} {{ queued === 1 ? "review" : "reviews" }} waiting</p>
+            </template>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

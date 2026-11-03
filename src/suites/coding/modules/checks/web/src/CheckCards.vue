@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Icon, ListTools, Skeleton, useListTools, useRows, Btn} from "@journal/window-kit";
+import {Btn, Icon, ListTools, Skeleton, WindowRoom, useListTools, useRows} from "@journal/window-kit";
 import CheckDialog from "./CheckDialog.vue";
 import CheckRunBar from "./CheckRunBar.vue";
 
@@ -22,38 +22,40 @@ async function run(row) {
 </script>
 
 <template>
-    <ListTools :tools="tools" />
-    <div class="cards">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
+    <WindowRoom>
+        <ListTools :tools="tools" />
+        <div class="cards">
+            <template v-if="!loaded">
+                <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+                <p class="cards-note">{{ failure }}</p>
+            </template>
+            <template v-else-if="loaded && !rows.length">
+                <p class="cards-note">No checks yet</p>
+            </template>
+            <template v-if="refusal">
+                <p class="cards-note" data-check-refusal>{{ refusal }}</p>
+            </template>
+            <template v-for="row in tools.shown.value" :key="row.id">
+                <div role="button" tabindex="0" class="card" :data-row="row.id" @click="openedId = row.id" @keydown.enter="openedId = row.id">
+                    <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
+                    <span class="card-title">{{ row.title }}</span>
+                    <code class="card-detail">{{ row.command }}</code>
+                    <template v-if="row.run_percent !== null && row.run_percent !== undefined">
+                        <CheckRunBar :percent="row.run_percent" />
+                    </template>
+                    <template v-if="!row.stopped">
+                        <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
+                    </template>
+                    <span class="card-foot">{{ row.status }} · {{ row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand" }}</span>
+                </div>
+            </template>
+        </div>
+        <template v-if="opened">
+            <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
         </template>
-        <template v-else-if="failure">
-            <p class="cards-note">{{ failure }}</p>
-        </template>
-        <template v-else-if="loaded && !rows.length">
-            <p class="cards-note">No checks yet</p>
-        </template>
-        <template v-if="refusal">
-            <p class="cards-note" data-check-refusal>{{ refusal }}</p>
-        </template>
-        <template v-for="row in tools.shown.value" :key="row.id">
-            <div role="button" tabindex="0" class="card" :data-row="row.id" @click="openedId = row.id" @keydown.enter="openedId = row.id">
-                <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
-                <span class="card-title">{{ row.title }}</span>
-                <code class="card-detail">{{ row.command }}</code>
-                <template v-if="row.run_percent !== null && row.run_percent !== undefined">
-                    <CheckRunBar :percent="row.run_percent" />
-                </template>
-                <template v-if="!row.stopped">
-                    <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
-                </template>
-                <span class="card-foot">{{ row.status }} · {{ row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand" }}</span>
-            </div>
-        </template>
-    </div>
-    <template v-if="opened">
-        <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
-    </template>
+    </WindowRoom>
 </template>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, SearchBar, useRows} from "@journal/window-kit";
+import {RowList, SearchBar, WindowRoom, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded, more, older} = useRows("file-edit list", ["file_edit.create"], {incremental: true});
 const filter = ref("");
@@ -11,15 +11,17 @@ const shown = computed(() => {
 </script>
 
 <template>
-    <SearchBar v-model="filter" class="filter" data-edits-filter />
-    <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" empty="No edits yet" hint="The files an agent changes show here as it works." :searching="Boolean(filter)" matches="No file matches">
-        <template #default="{row}">
-            <span class="main">{{ row.path }}</span>
-            <span class="note">+{{ row.added }}</span>
-            <span class="note">-{{ row.removed }}</span>
-            <span class="note">agent {{ row.agent_id }}</span>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <SearchBar v-model="filter" class="filter" data-edits-filter />
+        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" empty="No edits yet" hint="The files an agent changes show here as it works." :searching="Boolean(filter)" matches="No file matches">
+            <template #default="{row}">
+                <span class="main">{{ row.path }}</span>
+                <span class="note">+{{ row.added }}</span>
+                <span class="note">-{{ row.removed }}</span>
+                <span class="note">agent {{ row.agent_id }}</span>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

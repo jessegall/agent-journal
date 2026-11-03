@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1132af40f586")) { const style = document.createElement("style"); style.id = "window-styles-1132af40f586"; style.textContent = ".cards[data-v-0edcb949]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-0edcb949]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-0edcb949]:hover,.card.open[data-v-0edcb949]{border-color:var(--border-strong, var(--border))}.card-head[data-v-0edcb949]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-0edcb949]{width:14px;height:14px}.card-title[data-v-0edcb949]{font-weight:600}.card-brief[data-v-0edcb949]{color:var(--text-2);font-size:13px}.card-steps[data-v-0edcb949]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-0edcb949]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-0edcb949]{margin:0;color:var(--text-2)}.card-age[data-v-0edcb949]{margin-left:auto}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-c78085c80af5")) { const style = document.createElement("style"); style.id = "window-styles-c78085c80af5"; style.textContent = ".cards[data-v-ae4bdb7f]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-ae4bdb7f]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-ae4bdb7f]:hover,.card.open[data-v-ae4bdb7f]{border-color:var(--border-strong, var(--border))}.card-head[data-v-ae4bdb7f]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-ae4bdb7f]{width:14px;height:14px}.card-title[data-v-ae4bdb7f]{font-weight:600}.card-brief[data-v-ae4bdb7f]{color:var(--text-2);font-size:13px}.card-steps[data-v-ae4bdb7f]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-ae4bdb7f]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-ae4bdb7f]{margin:0;color:var(--text-2)}.card-age[data-v-ae4bdb7f]{margin-left:auto}\n"; document.head.appendChild(style); }
 import { openBlock as s, createElementBlock as a, unref as t, createBlock as v, toDisplayString as o, createCommentVNode as f, createVNode as y, Fragment as _, renderList as u, normalizeClass as C, createElementVNode as c, createTextVNode as g } from "vue";
 import { useRows as T, useListTools as N, useOpenRow as x, Skeleton as V, ListTools as B, Icon as L, ago as R } from "@journal/window-kit";
 const E = (p, r) => {
@@ -7,10 +7,7 @@ const E = (p, r) => {
   for (const [d, i] of r)
     l[d] = i;
   return l;
-}, F = {
-  class: "cards",
-  "data-window-flush": ""
-}, I = {
+}, F = { class: "cards" }, I = {
   key: 1,
   class: "cards-note"
 }, O = {
@@ -57,7 +54,7 @@ const E = (p, r) => {
       ], 10, S))), 128))
     ]));
   }
-}, K = /* @__PURE__ */ E(G, [["__scopeId", "data-v-0edcb949"]]);
+}, K = /* @__PURE__ */ E(G, [["__scopeId", "data-v-ae4bdb7f"]]);
 export {
   K as default
 };

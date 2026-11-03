@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 import QuestionCard from "./QuestionCard.vue";
 
 // a question in the chat: the card itself, read from the row its mark points at
@@ -18,7 +18,9 @@ load();
 </script>
 
 <template>
-    <template v-if="row">
-        <QuestionCard :row="row" @changed="load" />
-    </template>
+    <WindowRoom padding="14px 16px">
+        <template v-if="row">
+            <QuestionCard :row="row" @changed="load" />
+        </template>
+    </WindowRoom>
 </template>

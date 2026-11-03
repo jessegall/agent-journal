@@ -7,7 +7,7 @@ const {opened, toggle} = useOpenRow();
 </script>
 
 <template>
-    <div class="cards" data-window-flush>
+    <div class="cards">
         <template v-if="!loaded">
             <Skeleton shape="cards" />
         </template>

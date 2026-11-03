@@ -84,10 +84,6 @@ test("a list shows the skeleton in the shape it was given until its first read a
     expect(read("../src/windows/PageWindow.vue")).toContain('<Skeleton shape="cards" />');
 });
 
-test("a window drawn as a page of its own keeps a gutter around its content", () => {
-    expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 8px 12px;/);
-});
-
 // task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the pins
 test("the docks at the foot of the chat scroll inside a share of its height", () => {
     const chat = read("../../core/modules/messages/web/src/Chat.vue");

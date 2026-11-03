@@ -1,6 +1,6 @@
 <script setup>
 import {reactive, ref} from "vue";
-import {Btn, RowList, Segmented, patched, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, Segmented, WindowRoom, patched, removed, useRows} from "@journal/window-kit";
 
 const KINDS = [
     {key: "api key", label: "API key"},
@@ -78,94 +78,96 @@ async function fill(row, field) {
 </script>
 
 <template>
-    <template v-if="actionFailure">
-        <p class="failure">{{ actionFailure }}</p>
-    </template>
-    <div class="tools">
-        <Btn small bordered data-secret-new @click="drafting = !drafting">New secret</Btn>
-    </div>
-    <template v-if="drafting">
-        <form class="draft" data-secret-draft @submit.prevent="create">
-            <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
-            <input v-model="draft.title" placeholder="Its purpose" aria-label="Title">
-            <input v-model="draft.brief" placeholder="A note on where it is used; you can leave this empty" aria-label="Note">
-            <template v-if="draft.kind === 'custom'">
-                <input v-model="draft.field" placeholder="The name of its first field" aria-label="First field" data-secret-first-field>
-            </template>
-            <div class="draft-foot">
-                <Btn small @click="drafting = false">Cancel</Btn>
-                <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || (draft.kind === 'custom' && !draft.field.trim())" data-secret-create>Make the secret</Btn>
-            </div>
-        </form>
-    </template>
-    <template v-for="row in deleted" :key="row.id">
-        <p class="removed" data-secret-removed>{{ row.title }} was deleted. <button type="button" data-secret-restore @click="restore(row)">Restore</button></p>
-    </template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet" hint="A key or a login you add shows here by its name, never by its value.">
-        <template #default="{row}">
-            <div class="secret" :data-row="row.id">
-                <template v-if="editing === row.id">
-                    <form class="draft" data-secret-edit @submit.prevent="saveEdit(row)">
-                        <input v-model="edited.title" aria-label="Title">
-                        <input v-model="edited.brief" aria-label="Note">
-                        <div class="draft-foot">
-                            <Btn small @click="editing = 0">Cancel</Btn>
-                            <Btn small kind="primary" type="submit" data-secret-save>Save</Btn>
-                        </div>
-                    </form>
-                </template>
-                <template v-else>
-                    <div class="head">
-                        <span class="title">{{ row.title }}</span>
-                        <span class="kind">{{ row.secret_type }}</span>
-                        <span class="grow" />
-                        <button type="button" data-secret-edit-open @click="edit(row)">Edit</button>
-                        <template v-if="asking === row.id">
-                            <button type="button" @click="asking = 0">Keep it</button>
-                            <button type="button" data-secret-confirm @click="remove(row)">Yes, delete</button>
-                        </template>
-                        <template v-else>
-                            <button type="button" data-secret-delete @click="remove(row)">Delete</button>
-                        </template>
-                    </div>
-                    <template v-if="row.brief">
-                        <p class="brief">{{ row.brief }}</p>
-                    </template>
-                </template>
-                <template v-for="field in row.fields" :key="field.name">
-                    <form class="field" @submit.prevent="fill(row, field)">
-                        <label :for="key(row, field)">{{ field.name }}</label>
-                        <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
-                               :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
-                        <button type="submit">Save</button>
-                        <template v-if="row.secret_type === 'custom'">
-                            <button type="button" :data-secret-field-remove="field.name" @click="removeField(row, field)">Remove</button>
-                        </template>
-                    </form>
-                </template>
-                <template v-if="row.secret_type === 'custom'">
-                    <form class="field" data-secret-field-add @submit.prevent="addField(row)">
-                        <input v-model="newFields[row.id]" placeholder="Add a field" aria-label="Add a field" autocomplete="off">
-                        <button type="submit">Add</button>
-                    </form>
-                </template>
-                <div class="programs">
-                    <span class="label">Programs</span>
-                    <span>{{ row.programs.length ? row.programs.join(", ") : "None allowed yet" }}</span>
-                    <template v-for="program in row.proposed" :key="program">
-                        <button type="button" @click="act(['secret', 'allow', String(row.id), program])">Allow {{ program }}</button>
-                    </template>
-                    <template v-if="!row.helpers">
-                        <button type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
-                    </template>
-                    <form class="program-add" data-secret-program-add @submit.prevent="allowProgram(row)">
-                        <input v-model="newPrograms[row.id]" placeholder="Allow a program" aria-label="Allow a program" autocomplete="off">
-                        <button type="submit">Allow</button>
-                    </form>
-                </div>
-            </div>
+    <WindowRoom>
+        <template v-if="actionFailure">
+            <p class="failure">{{ actionFailure }}</p>
         </template>
-    </RowList>
+        <div class="tools">
+            <Btn small bordered data-secret-new @click="drafting = !drafting">New secret</Btn>
+        </div>
+        <template v-if="drafting">
+            <form class="draft" data-secret-draft @submit.prevent="create">
+                <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
+                <input v-model="draft.title" placeholder="Its purpose" aria-label="Title">
+                <input v-model="draft.brief" placeholder="A note on where it is used; you can leave this empty" aria-label="Note">
+                <template v-if="draft.kind === 'custom'">
+                    <input v-model="draft.field" placeholder="The name of its first field" aria-label="First field" data-secret-first-field>
+                </template>
+                <div class="draft-foot">
+                    <Btn small @click="drafting = false">Cancel</Btn>
+                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || (draft.kind === 'custom' && !draft.field.trim())" data-secret-create>Make the secret</Btn>
+                </div>
+            </form>
+        </template>
+        <template v-for="row in deleted" :key="row.id">
+            <p class="removed" data-secret-removed>{{ row.title }} was deleted. <button type="button" data-secret-restore @click="restore(row)">Restore</button></p>
+        </template>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet" hint="A key or a login you add shows here by its name, never by its value.">
+            <template #default="{row}">
+                <div class="secret" :data-row="row.id">
+                    <template v-if="editing === row.id">
+                        <form class="draft" data-secret-edit @submit.prevent="saveEdit(row)">
+                            <input v-model="edited.title" aria-label="Title">
+                            <input v-model="edited.brief" aria-label="Note">
+                            <div class="draft-foot">
+                                <Btn small @click="editing = 0">Cancel</Btn>
+                                <Btn small kind="primary" type="submit" data-secret-save>Save</Btn>
+                            </div>
+                        </form>
+                    </template>
+                    <template v-else>
+                        <div class="head">
+                            <span class="title">{{ row.title }}</span>
+                            <span class="kind">{{ row.secret_type }}</span>
+                            <span class="grow" />
+                            <button type="button" data-secret-edit-open @click="edit(row)">Edit</button>
+                            <template v-if="asking === row.id">
+                                <button type="button" @click="asking = 0">Keep it</button>
+                                <button type="button" data-secret-confirm @click="remove(row)">Yes, delete</button>
+                            </template>
+                            <template v-else>
+                                <button type="button" data-secret-delete @click="remove(row)">Delete</button>
+                            </template>
+                        </div>
+                        <template v-if="row.brief">
+                            <p class="brief">{{ row.brief }}</p>
+                        </template>
+                    </template>
+                    <template v-for="field in row.fields" :key="field.name">
+                        <form class="field" @submit.prevent="fill(row, field)">
+                            <label :for="key(row, field)">{{ field.name }}</label>
+                            <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
+                                   :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
+                            <button type="submit">Save</button>
+                            <template v-if="row.secret_type === 'custom'">
+                                <button type="button" :data-secret-field-remove="field.name" @click="removeField(row, field)">Remove</button>
+                            </template>
+                        </form>
+                    </template>
+                    <template v-if="row.secret_type === 'custom'">
+                        <form class="field" data-secret-field-add @submit.prevent="addField(row)">
+                            <input v-model="newFields[row.id]" placeholder="Add a field" aria-label="Add a field" autocomplete="off">
+                            <button type="submit">Add</button>
+                        </form>
+                    </template>
+                    <div class="programs">
+                        <span class="label">Programs</span>
+                        <span>{{ row.programs.length ? row.programs.join(", ") : "None allowed yet" }}</span>
+                        <template v-for="program in row.proposed" :key="program">
+                            <button type="button" @click="act(['secret', 'allow', String(row.id), program])">Allow {{ program }}</button>
+                        </template>
+                        <template v-if="!row.helpers">
+                            <button type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
+                        </template>
+                        <form class="program-add" data-secret-program-add @submit.prevent="allowProgram(row)">
+                            <input v-model="newPrograms[row.id]" placeholder="Allow a program" aria-label="Allow a program" autocomplete="off">
+                            <button type="submit">Allow</button>
+                        </form>
+                    </div>
+                </div>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { computed as l, openBlock as r, createElementBlock as v, unref as o, createCommentVNode as y, createVNode as p, withCtx as T, ref as b, onUnmounted as _e, normalizeClass as le, createElementVNode as g, toDisplayString as m, Fragment as Z, withModifiers as ve, createBlock as pe, renderList as me, watch as fe, createTextVNode as Se, normalizeStyle as $e } from "vue";
-import { useRows as U, AutoScrollPane as Ce, RowList as he, DiffCard as Te, ago as xe, useNow as Ae, age as we, useWindow as ke, Icon as Ie, peekRef as de, RunningCommand as De, InnerTabs as Oe, SwitchCase as Ne, FoldGroup as Ee, TaskStatusIcon as Me, ordered as Re, hiddenBy as qe, hiddenSummary as Be, SearchBar as Le, Segmented as Fe, Btn as je } from "@journal/window-kit";
-import { _ as ie, T as Ve } from "./TranscriptRows-CNFnFT3c.js";
+import { useRows as U, AutoScrollPane as Ce, RowList as he, DiffCard as Te, ago as xe, useNow as Ae, age as we, useWindow as ke, Icon as Ie, peekRef as ie, RunningCommand as De, InnerTabs as Oe, SwitchCase as Ne, FoldGroup as Ee, TaskStatusIcon as Me, ordered as Re, hiddenBy as qe, hiddenSummary as Be, SearchBar as Le, Segmented as Fe, Btn as je } from "@journal/window-kit";
+import { _ as de, T as Ve } from "./TranscriptRows-DMVGl_Ye.js";
 const Ke = { class: "file-feed" }, We = 5, ze = {
   __name: "AgentFileEdits",
   props: { agent: { type: Number, required: !0 } },
@@ -46,7 +46,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
       }, 8, ["row-count"])
     ]));
   }
-}, He = /* @__PURE__ */ ie(ze, [["__scopeId", "data-v-3fd4f736"]]), Ue = ["data-agent-open", "aria-expanded", "title"], Pe = { class: "agent-head" }, Ge = ["data-state"], Je = {
+}, He = /* @__PURE__ */ de(ze, [["__scopeId", "data-v-3fd4f736"]]), Ue = ["data-agent-open", "aria-expanded", "title"], Pe = { class: "agent-head" }, Ge = ["data-state"], Je = {
   class: "agent-title",
   "data-agent-title": ""
 }, Qe = {
@@ -70,7 +70,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
   key: 0,
   class: "agent-usage",
   "data-agent-card-usage": ""
-}, st = ["data-agent-tab-body"], ot = ["data-agent-delegated", "onClick"], lt = { class: "agent-task-number" }, dt = { class: "agent-task-title" }, it = {
+}, st = ["data-agent-tab-body"], ot = ["data-agent-delegated", "onClick"], lt = { class: "agent-task-number" }, it = { class: "agent-task-title" }, dt = {
   class: "agent-instruction",
   "data-agent-instruction": ""
 }, rt = 36e5, ut = {
@@ -79,8 +79,8 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
   emits: ["toggle"],
   setup(u, { emit: L }) {
     const h = { main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer" }, F = /* @__PURE__ */ new Set(["subagent", "worker", "reviewer"]), j = ["started", "testing", "blocked", "open", "completed", "cancelled"], a = u, M = L, O = Ae(), R = l(() => {
-      var d;
-      const t = ((d = a.facts) == null ? void 0 : d.profile) || h[a.row.role] || a.row.role;
+      var i;
+      const t = ((i = a.facts) == null ? void 0 : i.profile) || h[a.row.role] || a.row.role;
       return t.slice(0, 1).toUpperCase() + t.slice(1);
     }), c = l(() => {
       var t;
@@ -92,27 +92,27 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
       var t;
       return a.row.ended_at ? "closed" : N.value ? "waiting" : ((t = a.facts) == null ? void 0 : t.state) || "running";
     }), x = l(() => {
-      var d, _, E;
+      var i, _, E;
       const t = [];
-      return ((d = a.facts) == null ? void 0 : d.context_percent) !== null && ((_ = a.facts) == null ? void 0 : _.context_percent) !== void 0 && t.push(`Context ${a.facts.context_percent}%`), (E = a.facts) != null && E.cost_dollars && t.push(`$${a.facts.cost_dollars.toFixed(2)}`), t.join(" · ");
+      return ((i = a.facts) == null ? void 0 : i.context_percent) !== null && ((_ = a.facts) == null ? void 0 : _.context_percent) !== void 0 && t.push(`Context ${a.facts.context_percent}%`), (E = a.facts) != null && E.cost_dollars && t.push(`$${a.facts.cost_dollars.toFixed(2)}`), t.join(" · ");
     }), V = l(() => c.value.filter((t) => t.state === "completed").length), w = l(() => `${V.value} of ${c.value.length} ${c.value.length === 1 ? "task" : "tasks"}`), A = l(() => {
       const t = Date.parse(a.row.process_started_at || a.row.created_at), _ = ((a.row.ended_at ? Date.parse(a.row.ended_at) : O.value) - t) / rt;
       return a.row.role === "worker" && _ > 0 && V.value ? `${Math.round(V.value / _)}/h` : "";
-    }), P = l(() => j.map((t) => ({ state: t, label: t.slice(0, 1).toUpperCase() + t.slice(1), tasks: c.value.filter((d) => d.state === t) })).filter((t) => t.tasks.length)), G = /* @__PURE__ */ new Set(["completed"]), K = b({}), W = (t) => !(K.value[t] ?? G.has(t)), te = (t) => K.value = { ...K.value, [t]: W(t) }, z = ke(), q = b(z.tabs[0]), J = b(""), I = b(""), Q = l(() => a.row.role !== "main" && !a.row.ended_at);
+    }), P = l(() => j.map((t) => ({ state: t, label: t.slice(0, 1).toUpperCase() + t.slice(1), tasks: c.value.filter((i) => i.state === t) })).filter((t) => t.tasks.length)), G = /* @__PURE__ */ new Set(["completed"]), K = b({}), W = (t) => !(K.value[t] ?? G.has(t)), te = (t) => K.value = { ...K.value, [t]: W(t) }, z = ke(), q = b(z.tabs[0]), J = b(""), I = b(""), Q = l(() => a.row.role !== "main" && !a.row.ended_at);
     async function X() {
       if (!Q.value) return;
       const t = await z.read(`usage tool --agent ${a.row.id}`);
       J.value = t.ok ? t.value.tool : "", I.value = t.ok ? t.value.note : "";
     }
     const H = z.follow(["hook_call.*", "process_part.*"], X);
-    return _e(() => H == null ? void 0 : H()), X(), (t, d) => {
+    return _e(() => H == null ? void 0 : H()), X(), (t, i) => {
       var _, E, D;
       return r(), v("div", {
         class: le(["agent-card", { open: u.open }]),
         "data-agent-open": u.row.id,
         "aria-expanded": u.open,
         title: u.row.session,
-        onClick: d[3] || (d[3] = (S) => M("toggle"))
+        onClick: i[3] || (i[3] = (S) => M("toggle"))
       }, [
         g("span", Pe, [
           g("span", {
@@ -142,7 +142,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
             class: "agent-waiting",
             "data-agent-waiting": "",
             title: "Open the test queue",
-            onClick: d[0] || (d[0] = ve((S) => o(de)("test_queue:0"), ["stop"]))
+            onClick: i[0] || (i[0] = ve((S) => o(ie)("test_queue:0"), ["stop"]))
           }, "Waiting: tests")) : (r(), pe(o(De), {
             key: 1,
             text: J.value,
@@ -153,7 +153,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
           key: 1,
           class: "agent-more",
           "data-agent-more": "",
-          onClick: d[2] || (d[2] = ve(() => {
+          onClick: i[2] || (i[2] = ve(() => {
           }, ["stop"]))
         }, [
           x.value ? (r(), v("span", nt, m(x.value), 1)) : y("", !0),
@@ -161,7 +161,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
             class: "agent-tabs",
             active: q.value,
             answer: { tasks: c.value.length },
-            onChoose: d[1] || (d[1] = (S) => q.value = S)
+            onChoose: i[1] || (i[1] = (S) => q.value = S)
           }, null, 8, ["active", "answer"]),
           g("div", {
             class: "agent-tab-body",
@@ -187,20 +187,20 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
                         type: "button",
                         class: "agent-task",
                         "data-agent-delegated": C.id,
-                        onClick: (ae) => o(de)(`tasks:${C.id}`)
+                        onClick: (ae) => o(ie)(`tasks:${C.id}`)
                       }, [
                         p(o(Me), {
                           status: C.state
                         }, null, 8, ["status"]),
                         g("span", lt, m(C.id), 1),
-                        g("span", dt, m(C.title), 1)
+                        g("span", it, m(C.title), 1)
                       ], 8, ot))), 128))
                     ]),
                     _: 2
                   }, 1032, ["label", "count", "open", "data-agent-section", "onToggle"]))), 128)),
                   (S = u.facts) != null && S.instruction ? (r(), v(Z, { key: 0 }, [
-                    d[4] || (d[4] = g("p", { class: "agent-label" }, "Instruction", -1)),
-                    g("div", it, m(u.facts.instruction), 1)
+                    i[4] || (i[4] = g("p", { class: "agent-label" }, "Instruction", -1)),
+                    g("div", dt, m(u.facts.instruction), 1)
                   ], 64)) : y("", !0)
                 ];
               }),
@@ -221,7 +221,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
       ], 10, Ue);
     };
   }
-}, ct = /* @__PURE__ */ ie(ut, [["__scopeId", "data-v-d1df82bf"]]), gt = { class: "agents-bar" }, vt = {
+}, ct = /* @__PURE__ */ de(ut, [["__scopeId", "data-v-d1df82bf"]]), gt = { class: "agents-bar" }, vt = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, pt = {
@@ -245,30 +245,29 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
     let P = Date.now(), G = /* @__PURE__ */ new Map();
     const K = setInterval(() => {
       const e = Date.now(), s = new Map(w.value);
-      for (const [n, i] of s)
-        A.value.has(n) ? s.set(n, { ...i, leavesAt: i.leavesAt + (e - P) }) : e >= i.leavesAt && s.delete(n);
-      P = e, V.value = e, (s.size !== w.value.size || [...s].some(([n, i]) => i !== w.value.get(n))) && (w.value = s);
+      for (const [n, d] of s)
+        A.value.has(n) ? s.set(n, { ...d, leavesAt: d.leavesAt + (e - P) }) : e >= d.leavesAt && s.delete(n);
+      P = e, V.value = e, (s.size !== w.value.size || [...s].some(([n, d]) => d !== w.value.get(n))) && (w.value = s);
     }, wt);
     _e(() => clearInterval(K)), fe(R, (e) => {
-      const s = new Set(e.map((i) => i.id)), n = new Map(w.value);
-      for (const [i, ge] of G)
-        !s.has(i) && !n.has(i) && n.set(i, { row: { ...ge, ended_at: ge.ended_at ?? (/* @__PURE__ */ new Date()).toISOString() }, leavesAt: Date.now() + oe });
-      for (const i of s) n.delete(i);
-      G = new Map(e.map((i) => [i.id, i])), w.value = n;
+      const s = new Set(e.map((d) => d.id)), n = new Map(w.value);
+      for (const [d, ge] of G)
+        !s.has(d) && !n.has(d) && n.set(d, { row: { ...ge, ended_at: ge.ended_at ?? (/* @__PURE__ */ new Date()).toISOString() }, leavesAt: Date.now() + oe });
+      for (const d of s) n.delete(d);
+      G = new Map(e.map((d) => [d.id, d])), w.value = n;
     });
     const W = (e) => w.value.get(e.id) ?? null, te = (e) => A.value = /* @__PURE__ */ new Set([...A.value, e.id]), z = (e) => A.value = new Set([...A.value].filter((s) => s !== e.id)), q = (e) => ({ animationDuration: `${oe}ms`, animationDelay: `${Math.min(0, W(e).leavesAt - oe - Date.now())}ms` }), J = (e) => k.value === "all" || k.value === "running" == !e.ended_at || k.value === "running" && w.value.has(e.id), I = (e) => c.value.find((s) => s.id === e.id) ?? null, Q = (e) => {
       var s, n;
       return `${e.id} ${e.session} ${e.program} ${e.role} ${((s = I(e)) == null ? void 0 : s.profile) ?? ""} ${((n = I(e)) == null ? void 0 : n.given_name) ?? ""}`.toLowerCase().includes(x.value.trim().toLowerCase());
-    }, X = l(() => k.value === "running" ? [...R.value, ...[...w.value.values()].map((e) => e.row)] : F.value), H = l(() => X.value.filter((e) => h.only(e) && J(e) && Q(e))), t = ke(), d = ["working", "waiting", "idle", "stopped"], _ = ["environment", "worker", "subagent"], E = { main: "environment", worker: "worker", subagent: "subagent" }, D = Object.fromEntries([...d, ..._, "order", "every"].map((e) => [e, t.option(e)])), S = l(() => ({
-      states: Object.fromEntries(d.map((e) => [e, D.every.value || D[e].value !== !1])),
+    }, X = l(() => k.value === "running" ? [...R.value, ...[...w.value.values()].map((e) => e.row)] : F.value), H = l(() => X.value.filter((e) => h.only(e) && J(e) && Q(e))), t = ke(), i = ["working", "waiting", "idle", "stopped"], _ = ["environment", "worker", "subagent"], E = { main: "environment", worker: "worker", subagent: "subagent" }, D = Object.fromEntries([...i, ..._, "order", "every"].map((e) => [e, t.option(e)])), S = l(() => ({
+      states: Object.fromEntries(i.map((e) => [e, D.every.value || D[e].value !== !1])),
       kinds: Object.fromEntries(_.map((e) => [e, D.every.value || D[e].value !== !1]))
     })), $ = (e) => {
       var s, n;
       return e.ended_at ? "stopped" : ((s = I(e)) == null ? void 0 : s.state) === "blocked" ? "waiting" : ((n = I(e)) == null ? void 0 : n.state) === "waiting" || e.paused_at ? "idle" : "working";
     }, C = (e) => ({ key: String(e.id), kind: E[e.role] ?? e.role, n: e.id, time: Date.parse(e.updated_at ?? e.created_at ?? 0) / 1e3 || 0, card: { state: $(e) }, row: e }), ae = l(() => H.value.map(C)), ne = l(() => Re(ae.value.filter((e) => !qe(e, S.value)), D.order.value ?? "number").map((e) => e.row)), se = l(() => Be(ae.value, S.value).join(", ")), ye = l(() => !!x.value.trim() || !!se.value), re = l(() => h.texts[k.value] ?? { title: h.empty, hint: "" }), B = b(null), Y = l(() => ne.value.find((e) => e.id === B.value) ?? null), ue = l(() => Y.value ? [Y.value] : ne.value), ce = l(() => ne.value.length - ue.value.length), be = (e) => B.value = B.value === e.id ? null : e.id;
     return fe(x, (e) => e.trim() && (B.value = null)), (e, s) => (r(), v("div", {
-      class: le(["agents", { focused: Y.value }]),
-      "data-window-flush": ""
+      class: le(["agents", { focused: Y.value }])
     }, [
       g("div", gt, [
         p(o(Le), {
@@ -288,7 +287,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
               bordered: "",
               title: "Open the test queue",
               "data-agents-queue": "",
-              onClick: s[1] || (s[1] = (n) => o(de)("test_queue:0"))
+              onClick: s[1] || (s[1] = (n) => o(ie)("test_queue:0"))
             }, {
               default: T(() => [
                 s[4] || (s[4] = Se("Test queue ", -1)),
@@ -315,14 +314,14 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
           g("div", {
             class: "agent-row",
             "data-agent-row": n.id,
-            onMouseenter: (i) => te(n),
-            onMouseleave: (i) => z(n)
+            onMouseenter: (d) => te(n),
+            onMouseleave: (d) => z(n)
           }, [
             p(ct, {
               row: n,
               facts: I(n),
               open: n.id === B.value,
-              onToggle: (i) => be(n)
+              onToggle: (d) => be(n)
             }, null, 8, ["row", "facts", "open", "onToggle"]),
             W(n) ? (r(), v("span", ft, [
               g("i", {
@@ -342,7 +341,7 @@ const Ke = { class: "file-feed" }, We = 5, ze = {
       }, m(ce.value) + " more", 1)) : y("", !0)
     ], 2));
   }
-}, bt = /* @__PURE__ */ ie(_t, [["__scopeId", "data-v-ba7b296d"]]);
+}, bt = /* @__PURE__ */ de(_t, [["__scopeId", "data-v-d4f81122"]]);
 export {
   bt as A
 };

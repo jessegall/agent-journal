@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Skeleton, useWindow} from "@journal/window-kit";
+import {Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 
 // whether phones and share links can reach this viewer from outside: the tunnel's state, its address, and why not
 const WORDS = {connected: "Connected", disconnected: "Not connected", reconnecting: "Reconnecting"};
@@ -18,23 +18,25 @@ load();
 </script>
 
 <template>
-    <div class="tunnel" data-tunnel>
-        <template v-if="failure">
-            <p class="tunnel-failure" role="alert">{{ failure }}</p>
-        </template>
-        <template v-else-if="!status">
-            <Skeleton shape="text" />
-        </template>
-        <template v-else>
-            <p class="tunnel-state" :data-state="status.state">{{ WORDS[status.state] ?? status.state }}</p>
-            <template v-if="status.address">
-                <p class="tunnel-address" data-tunnel-address>{{ status.address }}</p>
+    <WindowRoom>
+        <div class="tunnel" data-tunnel>
+            <template v-if="failure">
+                <p class="tunnel-failure" role="alert">{{ failure }}</p>
             </template>
-            <template v-if="status.reason">
-                <p class="tunnel-reason" data-tunnel-reason>{{ status.reason }}</p>
+            <template v-else-if="!status">
+                <Skeleton shape="text" />
             </template>
-        </template>
-    </div>
+            <template v-else>
+                <p class="tunnel-state" :data-state="status.state">{{ WORDS[status.state] ?? status.state }}</p>
+                <template v-if="status.address">
+                    <p class="tunnel-address" data-tunnel-address>{{ status.address }}</p>
+                </template>
+                <template v-if="status.reason">
+                    <p class="tunnel-reason" data-tunnel-reason>{{ status.reason }}</p>
+                </template>
+            </template>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

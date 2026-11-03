@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {usePoll, useUsage} from "@journal/window-kit";
+import {WindowRoom, usePoll, useUsage} from "@journal/window-kit";
 
 // the main agent's context window as version 4's context menu drew it: a meter of how full it is, and when it was last compacted
 const REFRESH_MILLISECONDS = 30000;
@@ -12,13 +12,15 @@ usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>
-    <p class="current">Context window</p>
-    <div class="meter" data-context-meter>
-        <span>Used</span>
-        <strong>{{ Math.round(main?.context_percent ?? 0) }}%</strong>
-        <span class="track"><span :style="{width: `${main?.context_percent ?? 0}%`}" /></span>
-        <small data-last-compacted>Last compacted: {{ compacted }}</small>
-    </div>
+    <WindowRoom padding="14px 16px">
+        <p class="current">Context window</p>
+        <div class="meter" data-context-meter>
+            <span>Used</span>
+            <strong>{{ Math.round(main?.context_percent ?? 0) }}%</strong>
+            <span class="track"><span :style="{width: `${main?.context_percent ?? 0}%`}" /></span>
+            <small data-last-compacted>Last compacted: {{ compacted }}</small>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

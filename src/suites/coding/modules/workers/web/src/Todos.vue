@@ -1,5 +1,5 @@
 <script setup>
-import {RowList, useRows, useWindow} from "@journal/window-kit";
+import {RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 
 const STATE_TEXT = {pending: "to do", in_progress: "doing", completed: "done"};
 
@@ -7,12 +7,14 @@ const {rows, failure, loaded} = useRows(`todo-item list --agent ${useWindow().ag
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="This agent has written no tasks yet" hint="The tasks it files with journal task make show here.">
-        <template #default="{row}">
-            <span class="main">{{ row.text }}</span>
-            <span class="note">{{ STATE_TEXT[row.state] || row.state }}</span>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="This agent has written no tasks yet" hint="The tasks it files with journal task make show here.">
+            <template #default="{row}">
+                <span class="main">{{ row.text }}</span>
+                <span class="note">{{ STATE_TEXT[row.state] || row.state }}</span>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

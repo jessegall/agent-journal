@@ -49,7 +49,7 @@ if (address.get("file")) open({id: address.get("file"), folder: false}, Number(a
 </script>
 
 <template>
-    <div class="files" data-window-flush>
+    <div class="files">
         <div class="files-bar">
             <TextInput v-model="words" icon="search" class="files-search" placeholder="Find a file in the project" data-files-search />
             <Btn small data-files-root :disabled="!folder" @click="folder = ''">Project</Btn>

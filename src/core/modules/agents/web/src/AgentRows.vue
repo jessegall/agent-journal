@@ -92,7 +92,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
 </script>
 
 <template>
-    <div :class="['agents', {focused: openRow}]" data-window-flush>
+    <div :class="['agents', {focused: openRow}]">
         <div class="agents-bar">
             <SearchBar v-model="words" class="agents-search" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />

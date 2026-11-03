@@ -97,7 +97,7 @@ load();
 </script>
 
 <template>
-    <div class="library" data-window-flush>
+    <div class="library">
         <div class="library-bar">
             <SearchBar v-model="words" class="library-search" />
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />

@@ -2,7 +2,7 @@
 import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, patched, removed, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
+import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, act, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
@@ -490,9 +490,10 @@ async function runCommand(pin) {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    /* the history scrolls right up to the tab bar: out past the pane's top padding */
-    height: calc(100% + 8px);
-    margin-top: -8px;
+    box-sizing: border-box;
+    /* no padding on top: the history scrolls right up to the tab bar */
+    height: 100%;
+    padding: 0 12px 8px;
     min-height: 0;
 }
 

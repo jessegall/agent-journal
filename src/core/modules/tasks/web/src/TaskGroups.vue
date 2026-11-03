@@ -115,7 +115,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
-    <div class="tasks" data-window-flush>
+    <div class="tasks">
         <template v-if="!loaded">
             <Skeleton shape="rows" />
         </template>

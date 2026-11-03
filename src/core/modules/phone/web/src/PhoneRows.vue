@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, QrCode, RowList, removed, useRows, ListTools, useListTools} from "@journal/window-kit";
+import {Btn, ListTools, QrCode, RowList, WindowRoom, removed, useListTools, useRows} from "@journal/window-kit";
 
 const ABILITIES = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"];
 
@@ -18,36 +18,38 @@ readTunnel();
 </script>
 
 <template>
-    <div class="phones">
-        <template v-if="tunnel?.state === 'disconnected'">
-            <p class="phones-failure" data-phone-tunnel>A phone can't reach this journal yet: {{ tunnel.reason }}</p>
-        </template>
-        <div class="phones-pair">
-            <Btn kind="primary" @click="act(['phone', 'pair'])">Pair a phone</Btn>
-            <template v-if="answer">
-                <p class="phones-code">Code: {{ answer.code }}</p>
-                <template v-if="answer.link">
-                    <div data-phone-qr><QrCode :text="answer.link" /></div>
-                </template>
-                <p class="phones-hint">Open {{ answer.link }} on the phone, or type the code on its pairing page. The code works once, for ten minutes.</p>
+    <WindowRoom>
+        <div class="phones">
+            <template v-if="tunnel?.state === 'disconnected'">
+                <p class="phones-failure" data-phone-tunnel>A phone can't reach this journal yet: {{ tunnel.reason }}</p>
             </template>
-            <template v-if="actionFailure">
-                <p class="phones-failure">{{ actionFailure }}</p>
-            </template>
-            <ul class="phones-abilities" data-phone-abilities>
-                <template v-for="ability in ABILITIES" :key="ability">
-                    <li>{{ ability }}</li>
+            <div class="phones-pair">
+                <Btn kind="primary" @click="act(['phone', 'pair'])">Pair a phone</Btn>
+                <template v-if="answer">
+                    <p class="phones-code">Code: {{ answer.code }}</p>
+                    <template v-if="answer.link">
+                        <div data-phone-qr><QrCode :text="answer.link" /></div>
+                    </template>
+                    <p class="phones-hint">Open {{ answer.link }} on the phone, or type the code on its pairing page. The code works once, for ten minutes.</p>
                 </template>
-            </ul>
+                <template v-if="actionFailure">
+                    <p class="phones-failure">{{ actionFailure }}</p>
+                </template>
+                <ul class="phones-abilities" data-phone-abilities>
+                    <template v-for="ability in ABILITIES" :key="ability">
+                        <li>{{ ability }}</li>
+                    </template>
+                </ul>
+            </div>
+            <ListTools :tools="tools" />
+            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired" hint="A phone you pair with this journal shows here." :searching="tools.filtering.value">
+                <template #default="{row}">
+                    <span class="phones-name">{{ row.name }}</span>
+                    <Btn small @click="act(['phone', 'unpair', String(row.id)], removed(row.id))">Unpair</Btn>
+                </template>
+            </RowList>
         </div>
-        <ListTools :tools="tools" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired" hint="A phone you pair with this journal shows here." :searching="tools.filtering.value">
-            <template #default="{row}">
-                <span class="phones-name">{{ row.name }}</span>
-                <Btn small @click="act(['phone', 'unpair', String(row.id)], removed(row.id))">Unpair</Btn>
-            </template>
-        </RowList>
-    </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

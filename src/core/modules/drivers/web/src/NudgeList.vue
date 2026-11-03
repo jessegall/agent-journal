@@ -1,23 +1,25 @@
 <script setup>
-import {RowList, useRows} from "@journal/window-kit";
+import {RowList, WindowRoom, useRows} from "@journal/window-kit";
 
 // every line the modules can say to an agent: its key, its type, its words and how often it was said
 const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No module declares a nudge" hint="A line a module may say to an agent is listed here with the module that declares it.">
-        <template #default="{row}">
-            <div class="nudge" data-nudge>
-                <p class="nudge-head">
-                    <span class="nudge-key">{{ row.key }}</span>
-                    <span class="nudge-type" :data-type="row.type">{{ row.type }}</span>
-                    <span class="nudge-count">said {{ row.delivery_count }} {{ row.delivery_count === 1 ? "time" : "times" }}</span>
-                </p>
-                <p class="nudge-text">{{ row.text }}</p>
-            </div>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No module declares a nudge" hint="A line a module may say to an agent is listed here with the module that declares it.">
+            <template #default="{row}">
+                <div class="nudge" data-nudge>
+                    <p class="nudge-head">
+                        <span class="nudge-key">{{ row.key }}</span>
+                        <span class="nudge-type" :data-type="row.type">{{ row.type }}</span>
+                        <span class="nudge-count">said {{ row.delivery_count }} {{ row.delivery_count === 1 ? "time" : "times" }}</span>
+                    </p>
+                    <p class="nudge-text">{{ row.text }}</p>
+                </div>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

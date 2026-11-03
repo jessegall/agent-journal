@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, useRows, useWindow} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 import {nextRun, scheduleWords} from "./cron.js";
 
 // the jobs this agent scheduled for itself; a stop asks the agent to delete the job, so it stays listed until the agent has
@@ -27,22 +27,24 @@ async function stop(row) {
 </script>
 
 <template>
-    <div class="agent-jobs">
-        <template v-if="refusal">
-            <p class="agent-jobs-refusal" role="alert" data-job-refusal>{{ refusal }}</p>
-        </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="The agent has scheduled nothing" hint="A job the agent sets to run later shows here.">
-            <template #default="{row}">
-                <div class="agent-job" :data-job="row.job_id">
-                    <div class="agent-job-text">
-                        <b>{{ firstLine(row.prompt) }}</b>
-                        <span>{{ words(row) }} · {{ next(row) }}</span>
-                    </div>
-                    <Btn small :disabled="Boolean(row.stop_requested_at)" data-job-stop @click="stop(row)">{{ row.stop_requested_at ? "Stopping" : "Stop" }}</Btn>
-                </div>
+    <WindowRoom padding="14px 16px">
+        <div class="agent-jobs">
+            <template v-if="refusal">
+                <p class="agent-jobs-refusal" role="alert" data-job-refusal>{{ refusal }}</p>
             </template>
-        </RowList>
-    </div>
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="The agent has scheduled nothing" hint="A job the agent sets to run later shows here.">
+                <template #default="{row}">
+                    <div class="agent-job" :data-job="row.job_id">
+                        <div class="agent-job-text">
+                            <b>{{ firstLine(row.prompt) }}</b>
+                            <span>{{ words(row) }} · {{ next(row) }}</span>
+                        </div>
+                        <Btn small :disabled="Boolean(row.stop_requested_at)" data-job-stop @click="stop(row)">{{ row.stop_requested_at ? "Stopping" : "Stop" }}</Btn>
+                    </div>
+                </template>
+            </RowList>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

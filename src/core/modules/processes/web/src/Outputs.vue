@@ -1,5 +1,5 @@
 <script setup>
-import {RowList, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {ListTools, RowList, WindowRoom, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const {rows, failure, loaded} = useRows("process feed", ["process.*", "output.*"]);
@@ -11,19 +11,21 @@ const watch = (row) => context.run(`output watch ${row.id}`);
 </script>
 
 <template>
-    <ListTools :tools="tools" />
-    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet" hint="The commands an agent runs show here, each with its output." :searching="tools.filtering.value">
-        <template #default="{row}">
-            <div class="run">
-                <span :class="['state', row.state]">{{ row.state }}</span>
-                <span class="line">{{ row.line }}</span>
-                <template v-if="isRunning(row)">
-                    <button class="stop" type="button" @click="stop(row)">Stop</button>
-                    <button class="watch" type="button" @click="watch(row)">Watch</button>
-                </template>
-            </div>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <ListTools :tools="tools" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet" hint="The commands an agent runs show here, each with its output." :searching="tools.filtering.value">
+            <template #default="{row}">
+                <div class="run">
+                    <span :class="['state', row.state]">{{ row.state }}</span>
+                    <span class="line">{{ row.line }}</span>
+                    <template v-if="isRunning(row)">
+                        <button class="stop" type="button" @click="stop(row)">Stop</button>
+                        <button class="watch" type="button" @click="watch(row)">Watch</button>
+                    </template>
+                </div>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

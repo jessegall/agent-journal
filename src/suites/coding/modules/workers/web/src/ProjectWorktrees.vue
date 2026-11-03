@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, removed, useRows} from "@journal/window-kit";
 
 // the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says why when it is refused
 const {rows, failure, loaded, act} = useRows("project-worktree list", []);
@@ -25,26 +25,28 @@ async function remove(row) {
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No worktrees" hint="A worker's worktree shows here while it works and until its work is merged.">
-        <template #default="{row}">
-            <div class="worktree" :data-worktree="row.folder">
-                <div class="worktree-names">
-                    <span class="worktree-holder">{{ holder(row) }}</span>
-                    <p class="worktree-folder">{{ row.folder }}{{ row.branch ? ` on ${row.branch}` : "" }}</p>
-                    <template v-if="refusal[row.id]">
-                        <p class="worktree-refusal" role="alert" data-worktree-refusal>{{ refusal[row.id] }}</p>
+    <WindowRoom>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No worktrees" hint="A worker's worktree shows here while it works and until its work is merged.">
+            <template #default="{row}">
+                <div class="worktree" :data-worktree="row.folder">
+                    <div class="worktree-names">
+                        <span class="worktree-holder">{{ holder(row) }}</span>
+                        <p class="worktree-folder">{{ row.folder }}{{ row.branch ? ` on ${row.branch}` : "" }}</p>
+                        <template v-if="refusal[row.id]">
+                            <p class="worktree-refusal" role="alert" data-worktree-refusal>{{ refusal[row.id] }}</p>
+                        </template>
+                    </div>
+                    <template v-if="asking === row.id">
+                        <Btn small data-worktree-keep @click="asking = ''">Keep it</Btn>
+                        <Btn small kind="danger" data-worktree-confirm @click="remove(row)">Yes, remove the folder</Btn>
+                    </template>
+                    <template v-else-if="!isHeld(row)">
+                        <Btn small kind="danger" title="Remove this worktree folder, keeping its branch" data-worktree-remove @click="remove(row)">Remove worktree</Btn>
                     </template>
                 </div>
-                <template v-if="asking === row.id">
-                    <Btn small data-worktree-keep @click="asking = ''">Keep it</Btn>
-                    <Btn small kind="danger" data-worktree-confirm @click="remove(row)">Yes, remove the folder</Btn>
-                </template>
-                <template v-else-if="!isHeld(row)">
-                    <Btn small kind="danger" title="Remove this worktree folder, keeping its branch" data-worktree-remove @click="remove(row)">Remove worktree</Btn>
-                </template>
-            </div>
-        </template>
-    </RowList>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

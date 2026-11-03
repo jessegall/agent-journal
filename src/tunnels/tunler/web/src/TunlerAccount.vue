@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, Skeleton, useWindow} from "@journal/window-kit";
+import {Btn, Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 import TunlerDomain from "./TunlerDomain.vue";
 import TunlerLoginForm from "./TunlerLoginForm.vue";
 
@@ -46,86 +46,88 @@ load();
 </script>
 
 <template>
-    <div class="account" data-tunler>
-        <template v-if="failure">
-            <p class="failure" role="alert" data-tunler-failure>{{ failure }}</p>
-        </template>
-        <template v-if="!status">
-            <template v-if="!failure">
-                <Skeleton shape="text" />
+    <WindowRoom>
+        <div class="account" data-tunler>
+            <template v-if="failure">
+                <p class="failure" role="alert" data-tunler-failure>{{ failure }}</p>
             </template>
-        </template>
-        <template v-else>
-            <section class="part">
-                <h3>Connection</h3>
-                <template v-if="!status.installed">
-                    <p class="line">tunler isn't installed on this machine, so sharing and phones can't reach it.</p>
-                    <form class="row" data-tunler-install @submit.prevent="run(['tunler', 'install', server.trim()])">
-                        <input v-model="server" placeholder="tunler.example.com" aria-label="Tunler server address">
-                        <Btn small kind="primary" type="submit">Install tunler</Btn>
-                    </form>
+            <template v-if="!status">
+                <template v-if="!failure">
+                    <Skeleton shape="text" />
                 </template>
-                <template v-else-if="status.authenticated && !switching">
-                    <p class="line" data-tunler-account>Connected as <b>{{ status.account }}</b> on <b>{{ status.host }}</b>. Every journal on this machine uses this login.</p>
-                    <p class="line">tunler is installed at <code>{{ status.command }}</code></p>
-                    <div class="row">
-                        <Btn small data-tunler-switch @click="switching = true">Use another account</Btn>
-                        <Btn small data-tunler-logout @click="run(['tunler', 'logout'])">Log out</Btn>
-                    </div>
-                </template>
-                <template v-else>
-                    <template v-if="switching">
-                        <p class="line">Logging in with another account replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so those addresses stop answering until you switch back with that account's password.</p>
+            </template>
+            <template v-else>
+                <section class="part">
+                    <h3>Connection</h3>
+                    <template v-if="!status.installed">
+                        <p class="line">tunler isn't installed on this machine, so sharing and phones can't reach it.</p>
+                        <form class="row" data-tunler-install @submit.prevent="run(['tunler', 'install', server.trim()])">
+                            <input v-model="server" placeholder="tunler.example.com" aria-label="Tunler server address">
+                            <Btn small kind="primary" type="submit">Install tunler</Btn>
+                        </form>
                     </template>
-                    <template v-else-if="status.rejected">
-                        <p class="line" data-tunler-rejected>The tunler server no longer accepts the saved login. Log in again.</p>
-                    </template>
-                    <template v-else>
-                        <p class="line">No account is connected here. Log in once, and every journal on this machine uses that account.</p>
-                    </template>
-                    <TunlerLoginForm :host="status.host ?? ''" @ready="ready" />
-                    <template v-if="switching">
+                    <template v-else-if="status.authenticated && !switching">
+                        <p class="line" data-tunler-account>Connected as <b>{{ status.account }}</b> on <b>{{ status.host }}</b>. Every journal on this machine uses this login.</p>
+                        <p class="line">tunler is installed at <code>{{ status.command }}</code></p>
                         <div class="row">
-                            <Btn small @click="switching = false">Keep the current account</Btn>
+                            <Btn small data-tunler-switch @click="switching = true">Use another account</Btn>
+                            <Btn small data-tunler-logout @click="run(['tunler', 'logout'])">Log out</Btn>
                         </div>
                     </template>
-                </template>
-                <template v-if="version?.current">
-                    <div class="row" data-tunler-version>
-                        <span class="line">tunler {{ version.current }}</span>
-                        <template v-if="version.update_available">
-                            <span class="fine">{{ version.latest }} is available</span>
-                            <Btn small kind="primary" data-tunler-update @click="run(['tunler', 'update'])">Update tunler</Btn>
+                    <template v-else>
+                        <template v-if="switching">
+                            <p class="line">Logging in with another account replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so those addresses stop answering until you switch back with that account's password.</p>
+                        </template>
+                        <template v-else-if="status.rejected">
+                            <p class="line" data-tunler-rejected>The tunler server no longer accepts the saved login. Log in again.</p>
                         </template>
                         <template v-else>
-                            <span class="fine">up to date</span>
+                            <p class="line">No account is connected here. Log in once, and every journal on this machine uses that account.</p>
                         </template>
-                    </div>
-                </template>
-            </section>
-            <template v-if="status.authenticated">
-                <section class="part">
-                    <h3>This journal</h3>
-                    <p class="line" data-tunler-in-use>{{ status.is_used ? "Phones and share links reach this journal through tunler." : "This journal doesn't use tunler yet." }}</p>
-                    <form class="row" data-tunler-use @submit.prevent="useTunler">
-                        <input v-model="subdomain" placeholder="The name in front of the server's address" aria-label="Subdomain">
-                        <Btn small kind="primary" type="submit" :disabled="!subdomain.trim()">{{ status.is_used ? "Save" : "Use tunler" }}</Btn>
-                        <template v-if="status.is_used">
-                            <Btn small data-tunler-stop @click="run(setting(SERVICE_SETTING, 'none'))">Stop using tunler</Btn>
+                        <TunlerLoginForm :host="status.host ?? ''" @ready="ready" />
+                        <template v-if="switching">
+                            <div class="row">
+                                <Btn small @click="switching = false">Keep the current account</Btn>
+                            </div>
                         </template>
-                    </form>
-                </section>
-            </template>
-            <template v-if="domains.length">
-                <section class="part">
-                    <h3>Domains</h3>
-                    <template v-for="domain in domains" :key="domain.name">
-                        <TunlerDomain :domain="domain" @run="run(...$event)" />
+                    </template>
+                    <template v-if="version?.current">
+                        <div class="row" data-tunler-version>
+                            <span class="line">tunler {{ version.current }}</span>
+                            <template v-if="version.update_available">
+                                <span class="fine">{{ version.latest }} is available</span>
+                                <Btn small kind="primary" data-tunler-update @click="run(['tunler', 'update'])">Update tunler</Btn>
+                            </template>
+                            <template v-else>
+                                <span class="fine">up to date</span>
+                            </template>
+                        </div>
                     </template>
                 </section>
+                <template v-if="status.authenticated">
+                    <section class="part">
+                        <h3>This journal</h3>
+                        <p class="line" data-tunler-in-use>{{ status.is_used ? "Phones and share links reach this journal through tunler." : "This journal doesn't use tunler yet." }}</p>
+                        <form class="row" data-tunler-use @submit.prevent="useTunler">
+                            <input v-model="subdomain" placeholder="The name in front of the server's address" aria-label="Subdomain">
+                            <Btn small kind="primary" type="submit" :disabled="!subdomain.trim()">{{ status.is_used ? "Save" : "Use tunler" }}</Btn>
+                            <template v-if="status.is_used">
+                                <Btn small data-tunler-stop @click="run(setting(SERVICE_SETTING, 'none'))">Stop using tunler</Btn>
+                            </template>
+                        </form>
+                    </section>
+                </template>
+                <template v-if="domains.length">
+                    <section class="part">
+                        <h3>Domains</h3>
+                        <template v-for="domain in domains" :key="domain.name">
+                            <TunlerDomain :domain="domain" @run="run(...$event)" />
+                        </template>
+                    </section>
+                </template>
             </template>
-        </template>
-    </div>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

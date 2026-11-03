@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {useRows, useWindow} from "@journal/window-kit";
+import {WindowRoom, useRows, useWindow} from "@journal/window-kit";
 import LoadedSkills from "./LoadedSkills.vue";
 import SkillCatalogue from "./SkillCatalogue.vue";
 import SkillText from "./SkillText.vue";
@@ -37,5 +37,7 @@ async function open(folder) {
 </script>
 
 <template>
-    <component :is="screens[view]" v-bind="props" />
+    <WindowRoom>
+        <component :is="screens[view]" v-bind="props" />
+    </WindowRoom>
 </template>

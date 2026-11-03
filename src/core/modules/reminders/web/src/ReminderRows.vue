@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive} from "vue";
-import {Btn, RowList, added, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, added, removed, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded, act, actionFailure} = useRows("reminder list", ["reminder.*"]);
 const draft = reactive({text: "", at: "", minutes: "", once: false});
@@ -27,27 +27,29 @@ async function make() {
 </script>
 
 <template>
-    <div class="reminders" data-reminders>
-        <form class="form" data-reminder-form @submit.prevent="make">
-            <input v-model="draft.text" placeholder="Reminder text" aria-label="Reminder text">
-            <label class="note">At<input v-model="draft.at" type="datetime-local" aria-label="At"></label>
-            <label class="note">Every minutes<input v-model="draft.minutes" type="number" min="1" aria-label="Every minutes"></label>
-            <label class="note"><input v-model="draft.once" type="checkbox" aria-label="Once"> Once</label>
-            <Btn small kind="primary" type="submit" :disabled="!canMake">Add</Btn>
-        </form>
-        <template v-if="actionFailure">
-            <p class="failure">{{ actionFailure }}</p>
-        </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet" hint="A reminder you set for the agent shows here with when it is due.">
-            <template #default="{row}">
-                <div class="row" :data-reminder="row.id">
-                    <span class="text">{{ row.text }}</span>
-                    <span class="note">{{ when(row) }}</span>
-                    <Btn small data-reminder-remove @click="act(['reminder', 'delete', String(row.id)], removed(row.id))">Remove</Btn>
-                </div>
+    <WindowRoom>
+        <div class="reminders" data-reminders>
+            <form class="form" data-reminder-form @submit.prevent="make">
+                <input v-model="draft.text" placeholder="Reminder text" aria-label="Reminder text">
+                <label class="note">At<input v-model="draft.at" type="datetime-local" aria-label="At"></label>
+                <label class="note">Every minutes<input v-model="draft.minutes" type="number" min="1" aria-label="Every minutes"></label>
+                <label class="note"><input v-model="draft.once" type="checkbox" aria-label="Once"> Once</label>
+                <Btn small kind="primary" type="submit" :disabled="!canMake">Add</Btn>
+            </form>
+            <template v-if="actionFailure">
+                <p class="failure">{{ actionFailure }}</p>
             </template>
-        </RowList>
-    </div>
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet" hint="A reminder you set for the agent shows here with when it is due.">
+                <template #default="{row}">
+                    <div class="row" :data-reminder="row.id">
+                        <span class="text">{{ row.text }}</span>
+                        <span class="note">{{ when(row) }}</span>
+                        <Btn small data-reminder-remove @click="act(['reminder', 'delete', String(row.id)], removed(row.id))">Remove</Btn>
+                    </div>
+                </template>
+            </RowList>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

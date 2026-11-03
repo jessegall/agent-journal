@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, patched, useRows} from "@journal/window-kit";
+import {RowList, WindowRoom, patched, useRows} from "@journal/window-kit";
 
 const ALLOWED_MODELS = "journal.suites.coding.workers.allowed-models";
 
@@ -19,23 +19,25 @@ async function toggle(row) {
 </script>
 
 <template>
-    <div class="worker-models">
-        <p class="worker-models-note">Listed from the cheapest to the strongest. A worker runs on the general model when it is ticked, otherwise on the ticked model nearest to it.</p>
-        <template v-if="refusal">
-            <p class="worker-models-refusal" role="alert">{{ refusal }}</p>
-        </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No agent programs" hint="An agent program a module offers shows here with its models.">
-            <template #default="{row}">
-                <div class="worker-model" :data-worker-model="row.id">
-                    <span class="worker-model-program">{{ programStart.has(row.id) ? row.title : "" }}</span>
-                    <label class="worker-model-name">
-                        <input type="checkbox" :checked="row.allowed" :disabled="isLast(row)" :title="isLast(row) ? 'A program keeps at least one model' : ''" @change="toggle(row)" />
-                        {{ row.model }}
-                    </label>
-                </div>
+    <WindowRoom>
+        <div class="worker-models">
+            <p class="worker-models-note">Listed from the cheapest to the strongest. A worker runs on the general model when it is ticked, otherwise on the ticked model nearest to it.</p>
+            <template v-if="refusal">
+                <p class="worker-models-refusal" role="alert">{{ refusal }}</p>
             </template>
-        </RowList>
-    </div>
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No agent programs" hint="An agent program a module offers shows here with its models.">
+                <template #default="{row}">
+                    <div class="worker-model" :data-worker-model="row.id">
+                        <span class="worker-model-program">{{ programStart.has(row.id) ? row.title : "" }}</span>
+                        <label class="worker-model-name">
+                            <input type="checkbox" :checked="row.allowed" :disabled="isLast(row)" :title="isLast(row) ? 'A program keeps at least one model' : ''" @change="toggle(row)" />
+                            {{ row.model }}
+                        </label>
+                    </div>
+                </template>
+            </RowList>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

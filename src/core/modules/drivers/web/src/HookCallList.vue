@@ -1,17 +1,19 @@
 <script setup>
-import {RowList, useRows, useWindow} from "@journal/window-kit";
+import {RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${useWindow().agent}`, ["hook_call.create"], {incremental: true});
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing recorded for this agent yet" hint="Each call the agent program makes to the journal is listed here.">
-        <template #default="{row}">
-            <span class="note">{{ row.hook }}</span>
-            <span class="main">{{ row.tool }} {{ row.summary }}</span>
-            <span class="note">{{ row.refusal || row.answer }}</span>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing recorded for this agent yet" hint="Each call the agent program makes to the journal is listed here.">
+            <template #default="{row}">
+                <span class="note">{{ row.hook }}</span>
+                <span class="main">{{ row.tool }} {{ row.summary }}</span>
+                <span class="note">{{ row.refusal || row.answer }}</span>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

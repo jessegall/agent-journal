@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ago, Btn, ListTools, RowList, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {Btn, ListTools, RowList, WindowRoom, ago, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const {rows, failure, loaded, act, actionFailure} = useRows("transcription list", ["transcription.*"]);
@@ -42,54 +42,56 @@ async function fetchFrom(server) {
 </script>
 
 <template>
-    <div class="transcriptions" data-transcriptions>
-        <div class="bar">
-            <Btn small data-transcription-new @click="drafting = !drafting">New transcription</Btn>
-            <template v-for="server in sources.rows.value" :key="server.name">
-                <Btn small :data-transcription-fetch="server.name" @click="fetchFrom(server)">Fetch transcriptions from {{ server.title }}</Btn>
+    <WindowRoom>
+        <div class="transcriptions" data-transcriptions>
+            <div class="bar">
+                <Btn small data-transcription-new @click="drafting = !drafting">New transcription</Btn>
+                <template v-for="server in sources.rows.value" :key="server.name">
+                    <Btn small :data-transcription-fetch="server.name" @click="fetchFrom(server)">Fetch transcriptions from {{ server.title }}</Btn>
+                </template>
+                <template v-if="notice">
+                    <span class="note" data-transcription-notice>{{ notice }}</span>
+                </template>
+            </div>
+            <template v-if="actionFailure">
+                <p class="failure">{{ actionFailure }}</p>
             </template>
-            <template v-if="notice">
-                <span class="note" data-transcription-notice>{{ notice }}</span>
+            <template v-if="drafting">
+                <form class="form" data-transcription-form @submit.prevent="make">
+                    <input v-model="draft.title" placeholder="Title" aria-label="Title">
+                    <textarea v-model="draft.text" rows="10" placeholder="Paste the transcript" aria-label="Transcript"></textarea>
+                    <Btn small kind="primary" type="submit" :disabled="!canMake">Save</Btn>
+                </form>
+            </template>
+            <ListTools :tools="tools" />
+            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="A recording you have transcribed shows here with its text." :searching="tools.filtering.value">
+                <template #default="{row}">
+                    <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
+                        <span class="title">{{ row.title }}</span>
+                        <span class="note">{{ row.source || "pasted" }} · {{ ago(row.created_at) }}</span>
+                        <span class="note">{{ preview(row) }}</span>
+                    </button>
+                </template>
+            </RowList>
+            <template v-if="opened">
+                <section class="opened" data-transcription-opened>
+                    <h3 class="title">{{ opened.title }}</h3>
+                    <textarea v-model="openedText" rows="14" aria-label="Transcript"></textarea>
+                    <div class="bar">
+                        <Btn small kind="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
+                        <Btn small @click="opened = null">Close</Btn>
+                    </div>
+                    <h3 class="note">Made from it</h3>
+                    <template v-if="!linked.length">
+                        <p class="note">Nothing yet</p>
+                    </template>
+                    <template v-for="link in linked" :key="link.id">
+                        <button type="button" class="row" data-transcription-link @click="peekRef(`${link.target_model}:${link.target_id}`)">{{ link.target_model }} {{ link.target_id }}</button>
+                    </template>
+                </section>
             </template>
         </div>
-        <template v-if="actionFailure">
-            <p class="failure">{{ actionFailure }}</p>
-        </template>
-        <template v-if="drafting">
-            <form class="form" data-transcription-form @submit.prevent="make">
-                <input v-model="draft.title" placeholder="Title" aria-label="Title">
-                <textarea v-model="draft.text" rows="10" placeholder="Paste the transcript" aria-label="Transcript"></textarea>
-                <Btn small kind="primary" type="submit" :disabled="!canMake">Save</Btn>
-            </form>
-        </template>
-        <ListTools :tools="tools" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="A recording you have transcribed shows here with its text." :searching="tools.filtering.value">
-            <template #default="{row}">
-                <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
-                    <span class="title">{{ row.title }}</span>
-                    <span class="note">{{ row.source || "pasted" }} · {{ ago(row.created_at) }}</span>
-                    <span class="note">{{ preview(row) }}</span>
-                </button>
-            </template>
-        </RowList>
-        <template v-if="opened">
-            <section class="opened" data-transcription-opened>
-                <h3 class="title">{{ opened.title }}</h3>
-                <textarea v-model="openedText" rows="14" aria-label="Transcript"></textarea>
-                <div class="bar">
-                    <Btn small kind="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
-                    <Btn small @click="opened = null">Close</Btn>
-                </div>
-                <h3 class="note">Made from it</h3>
-                <template v-if="!linked.length">
-                    <p class="note">Nothing yet</p>
-                </template>
-                <template v-for="link in linked" :key="link.id">
-                    <button type="button" class="row" data-transcription-link @click="peekRef(`${link.target_model}:${link.target_id}`)">{{ link.target_model }} {{ link.target_id }}</button>
-                </template>
-            </section>
-        </template>
-    </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

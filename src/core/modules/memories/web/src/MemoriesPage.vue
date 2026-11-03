@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Segmented, useRows, useWindow} from "@journal/window-kit";
+import {Segmented, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 import MemoryRows from "./MemoryRows.vue";
 
 const ALL = "";
@@ -13,10 +13,12 @@ const tabs = computed(() => [{key: ALL, label: "All"}, ...environments.value.map
 </script>
 
 <template>
-    <div class="memories-page">
-        <Segmented :options="tabs" :value="tab" data-memory-tabs @pick="tab = $event" />
-        <MemoryRows :key="tab" :environment="tab" />
-    </div>
+    <WindowRoom>
+        <div class="memories-page">
+            <Segmented :options="tabs" :value="tab" data-memory-tabs @pick="tab = $event" />
+            <MemoryRows :key="tab" :environment="tab" />
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

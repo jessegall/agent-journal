@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ListTools, Skeleton, useListTools, useWindow} from "@journal/window-kit";
+import {ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
 // dumps as version 4 drew them: the list of dumps with a phase pill each, the open one with its title (renamed while it is filing),
 // a bar of the files settled, what each file became and from which file; one read brings them all
@@ -57,68 +57,76 @@ load();
 </script>
 
 <template>
-    <div class="dumps">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
-        </template>
-        <template v-else-if="failure">
-            <p class="dumps-note">{{ failure }}</p>
-        </template>
-        <template v-else-if="!cards.length">
-            <p class="dumps-note">No dumps</p>
-        </template>
-        <ListTools :tools="tools" />
-        <template v-for="card in shown" :key="card.id">
-            <section v-if="card.id === openId" class="dump" :data-dump="card.id">
-                <header class="dump-head">
-                    <template v-if="renaming === card.id">
-                        <input v-model="draft" class="dump-name" data-dump-name maxlength="80" @keydown.enter="rename(card)" @blur="rename(card)">
-                    </template>
-                    <template v-else>
-                        <h3 class="dump-title">{{ nameOf(card) }}</h3>
-                    </template>
-                    <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
-                    <template v-if="!card.outcome && renaming !== card.id">
-                        <button type="button" class="dump-rename" data-dump-rename @click="startRename(card)">Rename</button>
-                    </template>
-                </header>
-                <p class="dump-brief">{{ card.outcome ? `Closed: ${card.outcome}` : card.brief }}</p>
-                <template v-if="card.items.length">
-                    <div class="dump-progress" data-dump-progress>
-                        <span class="dump-bar"><span class="dump-fill" :style="{width: `${(100 * settledOf(card)) / card.items.length}%`}" /></span>
-                        <span class="dump-count">{{ settledOf(card) }} of {{ card.items.length }} files settled</span>
-                    </div>
-                </template>
-                <template v-for="item in card.items" :key="item.id">
-                    <div class="item" :data-item="item.id" :data-state="item.state">
-                        <span :class="['item-state', item.state]">{{ STATES[item.state] || item.state }}</span>
-                        <span class="item-text">{{ item.text }}</span>
-                        <template v-if="item.summary || item.note">
-                            <span class="item-note">{{ item.summary || item.note }}</span>
+    <WindowRoom>
+        <div class="dumps">
+            <template v-if="!loaded">
+                <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+                <p class="dumps-note">{{ failure }}</p>
+            </template>
+            <template v-else-if="!cards.length">
+                <p class="dumps-note">No dumps</p>
+            </template>
+            <ListTools :tools="tools" />
+            <template v-for="card in shown" :key="card.id">
+                <template v-if="card.id === openId">
+                    <section class="dump" :data-dump="card.id">
+                        <header class="dump-head">
+                            <template v-if="renaming === card.id">
+                                <input v-model="draft" class="dump-name" data-dump-name maxlength="80" @keydown.enter="rename(card)" @blur="rename(card)">
+                            </template>
+                            <template v-else>
+                                <h3 class="dump-title">{{ nameOf(card) }}</h3>
+                            </template>
+                            <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
+                            <template v-if="!card.outcome && renaming !== card.id">
+                                <button type="button" class="dump-rename" data-dump-rename @click="startRename(card)">Rename</button>
+                            </template>
+                        </header>
+                        <p class="dump-brief">{{ card.outcome ? `Closed: ${card.outcome}` : card.brief }}</p>
+                        <template v-if="card.items.length">
+                            <div class="dump-progress" data-dump-progress>
+                                <span class="dump-bar"><span class="dump-fill" :style="{width: `${(100 * settledOf(card)) / card.items.length}%`}" /></span>
+                                <span class="dump-count">{{ settledOf(card) }} of {{ card.items.length }} files settled</span>
+                            </div>
                         </template>
-                        <template v-if="item.refs.length">
-                            <span class="item-refs">Filed into {{ item.refs.join(", ") }}</span>
+                        <template v-for="item in card.items" :key="item.id">
+                            <div class="item" :data-item="item.id" :data-state="item.state">
+                                <span :class="['item-state', item.state]">{{ STATES[item.state] || item.state }}</span>
+                                <span class="item-text">{{ item.text }}</span>
+                                <template v-if="item.summary || item.note">
+                                    <span class="item-note">{{ item.summary || item.note }}</span>
+                                </template>
+                                <template v-if="item.refs.length">
+                                    <span class="item-refs">Filed into {{ item.refs.join(", ") }}</span>
+                                </template>
+                            </div>
                         </template>
-                    </div>
+                        <template v-if="madeOf(card).length">
+                            <h4 class="made-title">{{ madeOf(card).length }} things filed</h4>
+                            <template v-for="made in madeOf(card)" :key="`${made.ref}-${made.from}`">
+                                <div class="made" data-made>
+                                    <span class="made-kind">{{ kindOf(made.ref) }}</span>
+                                    <span class="made-ref">{{ made.ref }}</span>
+                                    <span class="made-from">From {{ made.from }}</span>
+                                </div>
+                            </template>
+                        </template>
+                    </section>
                 </template>
-                <template v-if="madeOf(card).length">
-                    <h4 class="made-title">{{ madeOf(card).length }} things filed</h4>
-                    <div v-for="made in madeOf(card)" :key="`${made.ref}-${made.from}`" class="made" data-made>
-                        <span class="made-kind">{{ kindOf(made.ref) }}</span>
-                        <span class="made-ref">{{ made.ref }}</span>
-                        <span class="made-from">From {{ made.from }}</span>
-                    </div>
+                <template v-else>
+                    <button type="button" class="dump dump-earlier" :data-dump="card.id" @click="chosen = card.id">
+                        <span class="dump-title">{{ nameOf(card) }}</span>
+                        <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
+                    </button>
                 </template>
-            </section>
-            <button v-else type="button" class="dump dump-earlier" :data-dump="card.id" @click="chosen = card.id">
-                <span class="dump-title">{{ nameOf(card) }}</span>
-                <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
-            </button>
-        </template>
-        <template v-if="cards.length < total">
-            <button type="button" class="dumps-more" @click="more">Show more</button>
-        </template>
-    </div>
+            </template>
+            <template v-if="cards.length < total">
+                <button type="button" class="dumps-more" @click="more">Show more</button>
+            </template>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

@@ -1,12 +1,9 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a0eccbdc5bc5")) { const style = document.createElement("style"); style.id = "window-styles-a0eccbdc5bc5"; style.textContent = ".search-mark[data-v-65b45c0e]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-65b45c0e]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-65b45c0e]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-65b45c0e]:disabled{cursor:default}.search-child-name[data-v-65b45c0e]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-65b45c0e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-65b45c0e]{align-items:center;color:var(--text-3)}.search-none[data-v-65b45c0e]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-71001cb2]{display:flex;flex-direction:column;gap:14px}.search-form[data-v-71001cb2]{display:flex;gap:10px;align-items:center;color:var(--text-3)}.search-input[data-v-71001cb2]{flex:1;max-width:520px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.search-chips[data-v-71001cb2]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-71001cb2]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-71001cb2]{background:var(--accent);color:#fff}.search-hits[data-v-71001cb2]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-71001cb2]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-71001cb2]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-71001cb2]:disabled{cursor:default}.search-hit-name[data-v-71001cb2]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-71001cb2]{flex:1;min-width:0}.search-note[data-v-71001cb2]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { ref as u, computed as $, openBlock as n, createElementBlock as o, createElementVNode as c, withModifiers as C, createVNode as g, unref as h, withDirectives as q, vModelText as N, withCtx as B, createTextVNode as V, Fragment as _, renderList as y, normalizeClass as W, toDisplayString as l, createCommentVNode as S, createBlock as j } from "vue";
+if (!document.getElementById("window-styles-6f398262ef03")) { const style = document.createElement("style"); style.id = "window-styles-6f398262ef03"; style.textContent = ".search-mark[data-v-65b45c0e]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-65b45c0e]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-65b45c0e]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-65b45c0e]:disabled{cursor:default}.search-child-name[data-v-65b45c0e]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-65b45c0e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-65b45c0e]{align-items:center;color:var(--text-3)}.search-none[data-v-65b45c0e]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-0bbbd9bc]{display:flex;flex-direction:column;gap:14px}.search-form[data-v-0bbbd9bc]{display:flex;gap:10px;align-items:center;color:var(--text-3)}.search-input[data-v-0bbbd9bc]{flex:1;max-width:520px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.search-chips[data-v-0bbbd9bc]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-0bbbd9bc]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-0bbbd9bc]{background:var(--accent);color:#fff}.search-hits[data-v-0bbbd9bc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-0bbbd9bc]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-0bbbd9bc]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-0bbbd9bc]:disabled{cursor:default}.search-hit-name[data-v-0bbbd9bc]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-0bbbd9bc]{flex:1;min-width:0}.search-note[data-v-0bbbd9bc]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { ref as u, computed as $, openBlock as n, createElementBlock as o, createElementVNode as c, withModifiers as C, createVNode as g, unref as h, withDirectives as q, vModelText as N, withCtx as B, createTextVNode as V, Fragment as _, renderList as y, normalizeClass as W, toDisplayString as l, createCommentVNode as b, createBlock as j } from "vue";
 import { useWindow as z, Icon as D, Btn as I, Skeleton as O } from "@journal/window-kit";
 import { _ as E } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const F = {
-  class: "search",
-  "data-window-flush": ""
-}, M = {
+const F = { class: "search" }, M = {
   key: 0,
   class: "search-chips"
 }, T = ["data-model", "onClick"], L = {
@@ -22,7 +19,7 @@ const F = {
 }, P = {
   __name: "SearchWindow",
   setup(Q) {
-    const x = {
+    const S = {
       task: "tasks.tasks",
       plan: "plans.plans",
       doc: "documents.documents",
@@ -31,7 +28,7 @@ const F = {
       sequence: "sequences.sequences",
       trigger: "triggers.triggers",
       check: "checks.checks"
-    }, f = z(), i = u(""), r = u(/* @__PURE__ */ new Set()), s = u(null), d = u(""), p = u(!1), k = $(() => {
+    }, k = z(), i = u(""), r = u(/* @__PURE__ */ new Set()), s = u(null), d = u(""), p = u(!1), f = $(() => {
       var a;
       return [.../* @__PURE__ */ new Set([...(((a = s.value) == null ? void 0 : a.hits) || []).map((t) => t.cli_name), ...r.value])].sort();
     });
@@ -39,14 +36,14 @@ const F = {
       const a = i.value.trim().split(/\s+/).filter(Boolean);
       if (!a.length) return void (s.value = null);
       p.value = !0;
-      const t = r.value.size ? ` --model ${[...r.value].join(",")}` : "", e = await f.read(`search find ${a.map((m) => `"${m}"`).join(" ")}${t}`);
+      const t = r.value.size ? ` --model ${[...r.value].join(",")}` : "", e = await k.read(`search find ${a.map((m) => `"${m}"`).join(" ")}${t}`);
       p.value = !1, d.value = e.ok ? "" : e.error, s.value = e.ok ? e.value : null;
     }
-    function b(a) {
+    function x(a) {
       const t = new Set(r.value);
       t.has(a) ? t.delete(a) : t.add(a), r.value = t, v();
     }
-    const w = (a) => x[a.cli_name] || "";
+    const w = (a) => S[a.cli_name] || "";
     return (a, t) => (n(), o("div", F, [
       c("form", {
         class: "search-form",
@@ -77,15 +74,15 @@ const F = {
           _: 1
         })
       ], 32),
-      k.value.length ? (n(), o("div", M, [
-        (n(!0), o(_, null, y(k.value, (e) => (n(), o("button", {
+      f.value.length ? (n(), o("div", M, [
+        (n(!0), o(_, null, y(f.value, (e) => (n(), o("button", {
           key: e,
           type: "button",
           class: W(["search-chip", { on: r.value.has(e) }]),
           "data-model": e,
-          onClick: (m) => b(e)
+          onClick: (m) => x(e)
         }, l(e), 11, T))), 128))
-      ])) : S("", !0),
+      ])) : b("", !0),
       p.value ? (n(), j(h(O), {
         key: 1,
         shape: "rows"
@@ -99,7 +96,7 @@ const F = {
               class: "search-hit",
               "data-hit": "",
               disabled: !w(e),
-              onClick: (m) => h(f).open(w(e))
+              onClick: (m) => h(k).open(w(e))
             }, [
               c("span", H, l(e.cli_name) + " " + l(e.id), 1),
               c("span", J, l(e.excerpt), 1)
@@ -107,10 +104,10 @@ const F = {
           ]))), 128))
         ]),
         c("p", K, l(s.value.total) + " " + l(s.value.total === 1 ? "row holds" : "rows hold") + " all of: " + l(i.value.trim()) + l(s.value.total > s.value.hits.length ? `, the newest ${s.value.hits.length} are shown` : ""), 1)
-      ], 64)) : S("", !0)
+      ], 64)) : b("", !0)
     ]));
   }
-}, Z = /* @__PURE__ */ E(P, [["__scopeId", "data-v-71001cb2"]]);
+}, Z = /* @__PURE__ */ E(P, [["__scopeId", "data-v-0bbbd9bc"]]);
 export {
   Z as default
 };

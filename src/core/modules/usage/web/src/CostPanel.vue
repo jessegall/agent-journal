@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {usePoll, useUsage, useWindow} from "@journal/window-kit";
+import {WindowRoom, usePoll, useUsage, useWindow} from "@journal/window-kit";
 import {byAgent, byModel, dollars} from "./costBreakdown.js";
 
 // what the open sessions would cost through an API, as a total, for this session and for each model and agent that reported one
@@ -15,42 +15,44 @@ usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>
-    <p class="current">Predicted API price</p>
-    <p class="note" data-cost-note>What these sessions would cost when using Claude Code or Codex through an API. It is not what a plan charges.</p>
-    <template v-if="failure">
-        <p class="none">{{ failure }}</p>
-    </template>
-    <template v-else-if="usage">
-        <div class="line total" data-cost-total>
-            <span>All open sessions</span>
-            <strong>{{ dollars(total) }}</strong>
-        </div>
-        <template v-if="own">
-            <div class="line" data-cost-session>
-                <span>This session</span>
-                <strong>{{ dollars(own.cost_dollars) }}</strong>
+    <WindowRoom padding="14px 16px">
+        <p class="current">Predicted API price</p>
+        <p class="note" data-cost-note>What these sessions would cost when using Claude Code or Codex through an API. It is not what a plan charges.</p>
+        <template v-if="failure">
+            <p class="none">{{ failure }}</p>
+        </template>
+        <template v-else-if="usage">
+            <div class="line total" data-cost-total>
+                <span>All open sessions</span>
+                <strong>{{ dollars(total) }}</strong>
             </div>
-        </template>
-        <template v-if="total > 0">
-            <p class="group">By model</p>
-            <template v-for="row in byModel(agents)" :key="row.label">
-                <div class="line" data-cost-model>
-                    <span>{{ row.label }}</span>
-                    <strong>{{ dollars(row.cost) }}</strong>
+            <template v-if="own">
+                <div class="line" data-cost-session>
+                    <span>This session</span>
+                    <strong>{{ dollars(own.cost_dollars) }}</strong>
                 </div>
             </template>
-            <p class="group">By agent</p>
-            <template v-for="row in byAgent(agents)" :key="row.label">
-                <div class="line" data-cost-agent>
-                    <span>{{ row.label }}</span>
-                    <strong>{{ dollars(row.cost) }}</strong>
-                </div>
+            <template v-if="total > 0">
+                <p class="group">By model</p>
+                <template v-for="row in byModel(agents)" :key="row.label">
+                    <div class="line" data-cost-model>
+                        <span>{{ row.label }}</span>
+                        <strong>{{ dollars(row.cost) }}</strong>
+                    </div>
+                </template>
+                <p class="group">By agent</p>
+                <template v-for="row in byAgent(agents)" :key="row.label">
+                    <div class="line" data-cost-agent>
+                        <span>{{ row.label }}</span>
+                        <strong>{{ dollars(row.cost) }}</strong>
+                    </div>
+                </template>
+            </template>
+            <template v-else>
+                <p class="none">No session has reported a cost yet.</p>
             </template>
         </template>
-        <template v-else>
-            <p class="none">No session has reported a cost yet.</p>
-        </template>
-    </template>
+    </WindowRoom>
 </template>
 
 <style scoped>

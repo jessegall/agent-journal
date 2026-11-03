@@ -118,11 +118,6 @@ watchEffect(() => {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 8px 12px;
-}
-
-.view-window.standalone :deep(.window:has([data-window-flush])) {
-    padding: 0;
 }
 
 .view-window-bar {

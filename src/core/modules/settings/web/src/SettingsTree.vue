@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {Segmented, Skeleton, patchedWhere, useRows} from "@journal/window-kit";
+import {Segmented, Skeleton, WindowRoom, patchedWhere, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 
@@ -67,47 +67,49 @@ function saved(words, change) {
 </script>
 
 <template>
-    <div class="settings">
-        <Segmented :options="TABS" :value="tab" data-settings-tabs @pick="tab = $event" />
-        <template v-if="tab === 'environments'">
-            <SettingsEnvironments />
-        </template>
-        <template v-else>
-        <div class="settings-bar">
-            <label class="settings-search">
-                <input ref="field" v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" @keydown.esc="query = ''" />
-            </label>
-            <Segmented :options="filters" :value="filter" data-settings-filter @pick="filter = $event" />
-            <span class="settings-saved">Changes are saved as you make them</span>
-        </div>
-        <template v-if="!loaded">
-            <Skeleton shape="text" />
-        </template>
-        <template v-else-if="failure">
-            <p class="settings-failure">{{ failure }}</p>
-        </template>
-        <template v-else-if="loaded && !rows.length">
-            <p class="settings-empty">No module declares a setting.</p>
-        </template>
-        <div class="settings-body">
-            <nav class="settings-nav" aria-label="Modules">
-                <template v-for="module in modules" :key="module">
-                    <button type="button" :class="['settings-nav-item', {current: module === current}]" :data-jump="module" @click="chosen = module">{{ heading(module) }}</button>
-                </template>
-            </nav>
-            <div class="settings-sections" data-settings-sections>
-                <template v-for="module in modules.filter((name) => name === current)" :key="module">
-                    <section class="settings-module" :data-module="module">
-                        <h3 class="settings-module-heading">{{ heading(module) }}</h3>
-                        <template v-for="row in tops.filter((top) => top.module === module)" :key="row.key">
-                            <SettingNode :row="row" :rows="shown" :read-only="readOnly" :save="saved" />
-                        </template>
-                    </section>
-                </template>
+    <WindowRoom>
+        <div class="settings">
+            <Segmented :options="TABS" :value="tab" data-settings-tabs @pick="tab = $event" />
+            <template v-if="tab === 'environments'">
+                <SettingsEnvironments />
+            </template>
+            <template v-else>
+            <div class="settings-bar">
+                <label class="settings-search">
+                    <input ref="field" v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" @keydown.esc="query = ''" />
+                </label>
+                <Segmented :options="filters" :value="filter" data-settings-filter @pick="filter = $event" />
+                <span class="settings-saved">Changes are saved as you make them</span>
             </div>
+            <template v-if="!loaded">
+                <Skeleton shape="text" />
+            </template>
+            <template v-else-if="failure">
+                <p class="settings-failure">{{ failure }}</p>
+            </template>
+            <template v-else-if="loaded && !rows.length">
+                <p class="settings-empty">No module declares a setting.</p>
+            </template>
+            <div class="settings-body">
+                <nav class="settings-nav" aria-label="Modules">
+                    <template v-for="module in modules" :key="module">
+                        <button type="button" :class="['settings-nav-item', {current: module === current}]" :data-jump="module" @click="chosen = module">{{ heading(module) }}</button>
+                    </template>
+                </nav>
+                <div class="settings-sections" data-settings-sections>
+                    <template v-for="module in modules.filter((name) => name === current)" :key="module">
+                        <section class="settings-module" :data-module="module">
+                            <h3 class="settings-module-heading">{{ heading(module) }}</h3>
+                            <template v-for="row in tops.filter((top) => top.module === module)" :key="row.key">
+                                <SettingNode :row="row" :rows="shown" :read-only="readOnly" :save="saved" />
+                            </template>
+                        </section>
+                    </template>
+                </div>
+            </div>
+            </template>
         </div>
-        </template>
-    </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

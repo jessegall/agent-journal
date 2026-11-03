@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {Btn, Icon, MenuItem, MenuPanel, Switch} from "@journal/window-kit";
 
 // one installed plugin as version 4 drew it: its initials, title, version and switch, what it is for, any fault, where it came from, the services it runs,
-// and along its foot its settings, its dashboard, what it did and a menu to check for updates or remove it; what opens below it comes in the slot
+// and along its foot its settings, its dashboard, its log and a menu to check for updates or remove it; what opens below it comes in the slot
 const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, services: {type: Array, default: () => []}, board: {type: Object, default: null}});
 const emit = defineEmits(["toggle", "settings", "board", "record", "latest", "remove"]);
 const more = ref(null);
@@ -57,7 +57,7 @@ function pick(event) {
             <template v-if="board">
                 <Btn small data-plugin-board @click="emit('board')">{{ board.title }}</Btn>
             </template>
-            <Btn small data-plugin-record @click="emit('record')">What it did</Btn>
+            <Btn small data-plugin-record @click="emit('record')">Log</Btn>
             <span ref="more" class="more">
                 <Btn kind="icon" small data-plugin-more title="Check for updates or remove" @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
             </span>

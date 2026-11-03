@@ -125,7 +125,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
 </script>
 
 <template>
-    <section class="plugins" data-plugins data-window-flush>
+    <section class="plugins" data-plugins>
         <div class="bar">
             <form class="install" data-plugin-install-form @submit.prevent="showPreview">
                 <TextInput v-model="source" icon="download" placeholder="Install a plugin from owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">

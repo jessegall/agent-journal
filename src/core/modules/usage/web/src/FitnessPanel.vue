@@ -1,5 +1,5 @@
 <script setup>
-import {useReadLine, useWindow} from "@journal/window-kit";
+import {WindowRoom, useReadLine, useWindow} from "@journal/window-kit";
 
 // the measures behind an agent's fitness score, each with its value and the level it should stay under
 const context = useWindow();
@@ -9,21 +9,23 @@ load();
 </script>
 
 <template>
-    <div class="fitness" data-fitness>
-        <template v-if="failure">
-            <p class="fitness-note">{{ failure }}</p>
-        </template>
-        <template v-if="fitness">
-            <p class="fitness-head" data-fitness-head>{{ fitness.is_measured ? `Fitness ${fitness.score} of 100` : "Fitness not measured yet: an agent is measured after its first half hour" }}</p>
-            <template v-for="measure in fitness.measures" :key="measure.key">
-                <p class="fitness-measure" :data-measure="measure.key">
-                    <span>{{ measure.label }}</span>
-                    <span>{{ measure.value }}<template v-if="measure.pass_level !== null"> of {{ measure.pass_level }}</template></span>
-                </p>
+    <WindowRoom padding="14px 16px">
+        <div class="fitness" data-fitness>
+            <template v-if="failure">
+                <p class="fitness-note">{{ failure }}</p>
             </template>
-            <p class="fitness-note">Counts messages, waits and tasks. Version 4 also measured workers, merges and lines of code, which this version does not record.</p>
-        </template>
-    </div>
+            <template v-if="fitness">
+                <p class="fitness-head" data-fitness-head>{{ fitness.is_measured ? `Fitness ${fitness.score} of 100` : "Fitness not measured yet: an agent is measured after its first half hour" }}</p>
+                <template v-for="measure in fitness.measures" :key="measure.key">
+                    <p class="fitness-measure" :data-measure="measure.key">
+                        <span>{{ measure.label }}</span>
+                        <span>{{ measure.value }}<template v-if="measure.pass_level !== null"> of {{ measure.pass_level }}</template></span>
+                    </p>
+                </template>
+                <p class="fitness-note">Counts messages, waits and tasks. Version 4 also measured workers, merges and lines of code, which this version does not record.</p>
+            </template>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

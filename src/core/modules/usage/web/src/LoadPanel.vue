@@ -1,5 +1,5 @@
 <script setup>
-import {useReadLine, useWindow} from "@journal/window-kit";
+import {WindowRoom, useReadLine, useWindow} from "@journal/window-kit";
 
 // what an agent's load is made of: the messages reaching it an hour against those it answers, and those waiting to be read
 const context = useWindow();
@@ -9,18 +9,20 @@ load();
 </script>
 
 <template>
-    <div class="load" data-load>
-        <template v-if="failure">
-            <p class="load-note">{{ failure }}</p>
-        </template>
-        <template v-if="fitness">
-            <p class="load-head" data-load-head>Load {{ fitness.workload.toFixed(2) }}</p>
-            <p class="load-row" data-load-row="arrivals"><span>Your messages arriving an hour</span><span>{{ Math.round(fitness.arrivals_hourly) }}</span></p>
-            <p class="load-row" data-load-row="answers"><span>Messages the agent answers an hour</span><span>{{ Math.round(fitness.answers_hourly) }}</span></p>
-            <p class="load-row" data-load-row="waiting"><span>Your messages waiting to be read</span><span>{{ fitness.waiting_messages }}</span></p>
-            <p class="load-note">Load is messages arriving against those answered, over the last half hour.</p>
-        </template>
-    </div>
+    <WindowRoom padding="14px 16px">
+        <div class="load" data-load>
+            <template v-if="failure">
+                <p class="load-note">{{ failure }}</p>
+            </template>
+            <template v-if="fitness">
+                <p class="load-head" data-load-head>Load {{ fitness.workload.toFixed(2) }}</p>
+                <p class="load-row" data-load-row="arrivals"><span>Your messages arriving an hour</span><span>{{ Math.round(fitness.arrivals_hourly) }}</span></p>
+                <p class="load-row" data-load-row="answers"><span>Messages the agent answers an hour</span><span>{{ Math.round(fitness.answers_hourly) }}</span></p>
+                <p class="load-row" data-load-row="waiting"><span>Your messages waiting to be read</span><span>{{ fitness.waiting_messages }}</span></p>
+                <p class="load-note">Load is messages arriving against those answered, over the last half hour.</p>
+            </template>
+        </div>
+    </WindowRoom>
 </template>
 
 <style scoped>

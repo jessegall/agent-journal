@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, TextDisplay, useRows} from "@journal/window-kit";
+import {Btn, RowList, TextDisplay, WindowRoom, useRows} from "@journal/window-kit";
 
 const releases = useRows("release list", ["release.*"]);
 const standing = ref(null);
@@ -43,53 +43,55 @@ readNotes(1);
 </script>
 
 <template>
-    <template v-if="installing">
-        <div class="cover" role="status" data-update-cover>Updating the journal. This takes a short while.</div>
-    </template>
-    <template v-if="installed">
-        <div class="arrived" role="status" data-update-arrived>
-            <span class="line">The update is installed. Reload the page to see it.</span>
-            <Btn small kind="primary" data-update-reload @click="reload">Reload</Btn>
+    <WindowRoom>
+        <template v-if="installing">
+            <div class="cover" role="status" data-update-cover>Updating the journal. This takes a short while.</div>
+        </template>
+        <template v-if="installed">
+            <div class="arrived" role="status" data-update-arrived>
+                <span class="line">The update is installed. Reload the page to see it.</span>
+                <Btn small kind="primary" data-update-reload @click="reload">Reload</Btn>
+            </div>
+        </template>
+        <template v-if="checkFailure || releases.actionFailure.value">
+            <p class="failure">{{ checkFailure || releases.actionFailure.value }}</p>
+        </template>
+        <div class="standing">
+            <span class="line">{{ standing ? standing.line : "Checking for a newer release" }}</span>
+            <button type="button" @click="check">Check again</button>
+            <template v-if="standing && !standing.is_current">
+                <Btn small kind="primary" data-update-install @click="install">{{ standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+            </template>
+            <template v-else-if="standing">
+                <button type="button" data-update-force @click="install">Install it again</button>
+            </template>
         </div>
-    </template>
-    <template v-if="checkFailure || releases.actionFailure.value">
-        <p class="failure">{{ checkFailure || releases.actionFailure.value }}</p>
-    </template>
-    <div class="standing">
-        <span class="line">{{ standing ? standing.line : "Checking for a newer release" }}</span>
-        <button type="button" @click="check">Check again</button>
-        <template v-if="standing && !standing.is_current">
-            <Btn small kind="primary" data-update-install @click="install">{{ standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+        <h3 class="heading">Installed releases</h3>
+        <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet" hint="A release you install from this journal shows here with when.">
+            <template #default="{row}">
+                <div class="release" :data-row="row.id">
+                    <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>
+                    <span class="detail">{{ new Date(row.created_at).toLocaleString() }}</span>
+                </div>
+            </template>
+        </RowList>
+        <h3 class="heading">What changed</h3>
+        <template v-if="notesFailure">
+            <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
         </template>
-        <template v-else-if="standing">
-            <button type="button" data-update-force @click="install">Install it again</button>
+        <template v-for="note in notes" :key="note.tag">
+            <article class="note" data-update-note>
+                <div class="release">
+                    <span class="title">{{ note.tag }}</span>
+                    <span class="detail">{{ new Date(note.published_at).toLocaleDateString() }}</span>
+                </div>
+                <TextDisplay :text="note.text" />
+            </article>
         </template>
-    </div>
-    <h3 class="heading">Installed releases</h3>
-    <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet" hint="A release you install from this journal shows here with when.">
-        <template #default="{row}">
-            <div class="release" :data-row="row.id">
-                <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>
-                <span class="detail">{{ new Date(row.created_at).toLocaleString() }}</span>
-            </div>
+        <template v-if="!lastPage">
+            <button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button>
         </template>
-    </RowList>
-    <h3 class="heading">What changed</h3>
-    <template v-if="notesFailure">
-        <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
-    </template>
-    <template v-for="note in notes" :key="note.tag">
-        <article class="note" data-update-note>
-            <div class="release">
-                <span class="title">{{ note.tag }}</span>
-                <span class="detail">{{ new Date(note.published_at).toLocaleDateString() }}</span>
-            </div>
-            <TextDisplay :text="note.text" />
-        </article>
-    </template>
-    <template v-if="!lastPage">
-        <button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button>
-    </template>
+    </WindowRoom>
 </template>
 
 <style scoped>

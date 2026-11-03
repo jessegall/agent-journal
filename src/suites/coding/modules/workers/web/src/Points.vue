@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {RowList, useWindow} from "@journal/window-kit";
+import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const points = ref([]);
@@ -19,18 +19,20 @@ load();
 </script>
 
 <template>
-    <RowList :rows="points" :failure="failure" :loaded="loaded" empty="This agent has no task brief to prove" hint="The points of the brief of the task it was given show here, each with its proof.">
-        <template #default="{row}">
-            <span class="number">{{ row.id }}</span>
-            <span class="main">
-                <span>{{ row.text }}</span>
-                <span class="note">{{ row.proof ? `${row.proof.state}: ${row.proof.text}` : "no proof yet" }}</span>
-                <template v-if="row.proof && row.proof.shortfall">
-                    <span class="note">missing: {{ row.proof.shortfall }}</span>
-                </template>
-            </span>
-        </template>
-    </RowList>
+    <WindowRoom>
+        <RowList :rows="points" :failure="failure" :loaded="loaded" empty="This agent has no task brief to prove" hint="The points of the brief of the task it was given show here, each with its proof.">
+            <template #default="{row}">
+                <span class="number">{{ row.id }}</span>
+                <span class="main">
+                    <span>{{ row.text }}</span>
+                    <span class="note">{{ row.proof ? `${row.proof.state}: ${row.proof.text}` : "no proof yet" }}</span>
+                    <template v-if="row.proof && row.proof.shortfall">
+                        <span class="note">missing: {{ row.proof.shortfall }}</span>
+                    </template>
+                </span>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

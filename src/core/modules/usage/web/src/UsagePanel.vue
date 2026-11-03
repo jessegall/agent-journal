@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {usePoll, useUsage} from "@journal/window-kit";
+import {WindowRoom, usePoll, useUsage} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again
 const REFRESH_MILLISECONDS = 30000;
@@ -12,21 +12,23 @@ usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>
-    <p class="current">Plan allowance used</p>
-    <template v-if="failure">
-        <p class="none">{{ failure }}</p>
-    </template>
-    <template v-for="window in windows" :key="window.title">
-        <div class="meter" data-usage-meter>
-            <span>{{ window.title }}</span>
-            <strong>{{ Math.round(window.used_percent) }}%</strong>
-            <span class="track"><span :style="{width: `${window.used_percent}%`}" /></span>
-            <small>{{ reset(window.reset_epoch_seconds) }}</small>
-        </div>
-    </template>
-    <template v-if="usage && !windows.length">
-        <p class="none">No current plan window has been reported here.</p>
-    </template>
+    <WindowRoom padding="14px 16px">
+        <p class="current">Plan allowance used</p>
+        <template v-if="failure">
+            <p class="none">{{ failure }}</p>
+        </template>
+        <template v-for="window in windows" :key="window.title">
+            <div class="meter" data-usage-meter>
+                <span>{{ window.title }}</span>
+                <strong>{{ Math.round(window.used_percent) }}%</strong>
+                <span class="track"><span :style="{width: `${window.used_percent}%`}" /></span>
+                <small>{{ reset(window.reset_epoch_seconds) }}</small>
+            </div>
+        </template>
+        <template v-if="usage && !windows.length">
+            <p class="none">No current plan window has been reported here.</p>
+        </template>
+    </WindowRoom>
 </template>
 
 <style scoped>

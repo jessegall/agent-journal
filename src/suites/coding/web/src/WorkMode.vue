@@ -1,6 +1,6 @@
 <script setup>
 import {onUnmounted, ref} from "vue";
-import {Icon, Segmented, Switch, useOutside, useWindow} from "@journal/window-kit";
+import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
 
 // the coding suite's part of the top bar, as version 4's status bar drew it: the auto switch, the two work modes and the settings behind them
 const AUTO_MODE = "journal.suites.coding.auto-mode";
@@ -82,37 +82,39 @@ load();
 </script>
 
 <template>
-    <span ref="root" class="agentset" data-work-mode>
-        <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="toggleAuto" />
-        <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
-        <template v-if="asking">
-            <div class="agentset-menu" role="dialog" aria-label="Switch the work mode" data-mode-ask>
-                <p class="agentset-ask">{{ asking.question }}</p>
-                <div class="agentset-ask-buttons">
-                    <button type="button" data-mode-keep @click="asking = null">Keep the mode</button>
-                    <button type="button" data-mode-switch @click="switchMode(asking.key)">Switch</button>
+    <WindowRoom>
+        <span ref="root" class="agentset" data-work-mode>
+            <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="toggleAuto" />
+            <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
+            <template v-if="asking">
+                <div class="agentset-menu" role="dialog" aria-label="Switch the work mode" data-mode-ask>
+                    <p class="agentset-ask">{{ asking.question }}</p>
+                    <div class="agentset-ask-buttons">
+                        <button type="button" data-mode-keep @click="asking = null">Keep the mode</button>
+                        <button type="button" data-mode-switch @click="switchMode(asking.key)">Switch</button>
+                    </div>
                 </div>
-            </div>
-        </template>
-        <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="open = !open">
-            <Icon name="caret" :size="12" />
-        </button>
-        <template v-if="open">
-            <div class="agentset-menu" role="dialog" aria-label="Work mode settings" data-work-menu>
-                <label class="agentset-row">
-                    <span>Builder sends workers</span>
-                    <Switch :on="dispatches" @change="toggleDispatches" />
-                </label>
-                <label class="agentset-row">
-                    <span>Worker limit</span>
-                    <input class="agentset-number" type="number" min="0" :value="limit" @change="changeLimit" />
-                </label>
-                <template v-if="failure">
-                    <p class="agentset-failure" role="alert">{{ failure }}</p>
-                </template>
-            </div>
-        </template>
-    </span>
+            </template>
+            <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="open = !open">
+                <Icon name="caret" :size="12" />
+            </button>
+            <template v-if="open">
+                <div class="agentset-menu" role="dialog" aria-label="Work mode settings" data-work-menu>
+                    <label class="agentset-row">
+                        <span>Builder sends workers</span>
+                        <Switch :on="dispatches" @change="toggleDispatches" />
+                    </label>
+                    <label class="agentset-row">
+                        <span>Worker limit</span>
+                        <input class="agentset-number" type="number" min="0" :value="limit" @change="changeLimit" />
+                    </label>
+                    <template v-if="failure">
+                        <p class="agentset-failure" role="alert">{{ failure }}</p>
+                    </template>
+                </div>
+            </template>
+        </span>
+    </WindowRoom>
 </template>
 
 <style scoped>

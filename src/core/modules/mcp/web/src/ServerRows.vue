@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {ago, added as addedRow, Btn, RowList, removed, useRows, ListTools, useListTools} from "@journal/window-kit";
+import {Btn, ListTools, RowList, WindowRoom, added as addedRow, ago, removed, useListTools, useRows} from "@journal/window-kit";
 
 const installed = useRows("mcp list", []);
 const suggested = useRows("mcp suggested", []);
@@ -56,63 +56,65 @@ async function giveKey(row) {
 </script>
 
 <template>
-    <template v-if="failure">
-        <p class="failure">{{ failure }}</p>
-    </template>
-    <template v-if="notice">
-        <p class="notice" data-mcp-notice>{{ notice }}</p>
-    </template>
-    <div class="top">
-        <h3 class="heading">Installed</h3>
-        <template v-if="checkedAt">
-            <span class="subject" data-mcp-checked>Checked {{ ago(checkedAt) }}</span>
+    <WindowRoom>
+        <template v-if="failure">
+            <p class="failure">{{ failure }}</p>
         </template>
-        <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
-    </div>
-    <ListTools :tools="tools" />
-    <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed" hint="Install one of the suggested servers below, or add your own." :searching="tools.filtering.value">
-        <template #default="{row}">
-            <div class="server" :data-row="row.id">
-                <div class="head">
-                    <span class="title">{{ row.title }}</span>
-                    <span class="standing">{{ row.standing }}</span>
-                    <template v-if="row.auth === 'oauth'">
-                        <button type="button" data-mcp-sign-in @click="signIn(row)">Sign in</button>
+        <template v-if="notice">
+            <p class="notice" data-mcp-notice>{{ notice }}</p>
+        </template>
+        <div class="top">
+            <h3 class="heading">Installed</h3>
+            <template v-if="checkedAt">
+                <span class="subject" data-mcp-checked>Checked {{ ago(checkedAt) }}</span>
+            </template>
+            <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
+        </div>
+        <ListTools :tools="tools" />
+        <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed" hint="Install one of the suggested servers below, or add your own." :searching="tools.filtering.value">
+            <template #default="{row}">
+                <div class="server" :data-row="row.id">
+                    <div class="head">
+                        <span class="title">{{ row.title }}</span>
+                        <span class="standing">{{ row.standing }}</span>
+                        <template v-if="row.auth === 'oauth'">
+                            <button type="button" data-mcp-sign-in @click="signIn(row)">Sign in</button>
+                        </template>
+                        <button type="button" @click="installed.act(['mcp', 'remove', row.name], removed(row.id))">Remove</button>
+                    </div>
+                    <code class="subject">{{ row.url || [row.command, ...row.args].join(" ") }}</code>
+                    <template v-if="checkLine(row)">
+                        <span class="subject" data-mcp-check>{{ checkLine(row) }}</span>
                     </template>
-                    <button type="button" @click="installed.act(['mcp', 'remove', row.name], removed(row.id))">Remove</button>
+                    <template v-if="row.standing === 'needs its key'">
+                        <form class="key" @submit.prevent="giveKey(row)">
+                            <label :for="`key-${row.name}`">{{ row.key_variable }}</label>
+                            <input :id="`key-${row.name}`" v-model="typed[row.name]" type="password" autocomplete="off" placeholder="Paste the key">
+                            <button type="submit">Save</button>
+                        </form>
+                    </template>
                 </div>
-                <code class="subject">{{ row.url || [row.command, ...row.args].join(" ") }}</code>
-                <template v-if="checkLine(row)">
-                    <span class="subject" data-mcp-check>{{ checkLine(row) }}</span>
-                </template>
-                <template v-if="row.standing === 'needs its key'">
-                    <form class="key" @submit.prevent="giveKey(row)">
-                        <label :for="`key-${row.name}`">{{ row.key_variable }}</label>
-                        <input :id="`key-${row.name}`" v-model="typed[row.name]" type="password" autocomplete="off" placeholder="Paste the key">
-                        <button type="submit">Save</button>
-                    </form>
-                </template>
-            </div>
-        </template>
-    </RowList>
-    <h3 class="heading">Add a server</h3>
-    <form class="add" data-mcp-add @submit.prevent="add">
-        <input v-model="added.name" placeholder="Name" aria-label="Name">
-        <input v-model="added.target" placeholder="Its address, or the command that starts it" aria-label="Its address, or the command that starts it">
-        <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
-    </form>
-    <h3 class="heading">Suggested</h3>
-    <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="A server the journal suggests shows here until it is installed.">
-        <template #default="{row}">
-            <div class="server">
-                <div class="head">
-                    <span class="title">{{ row.title }}</span>
-                    <button type="button" @click="install(row)">Install</button>
+            </template>
+        </RowList>
+        <h3 class="heading">Add a server</h3>
+        <form class="add" data-mcp-add @submit.prevent="add">
+            <input v-model="added.name" placeholder="Name" aria-label="Name">
+            <input v-model="added.target" placeholder="Its address, or the command that starts it" aria-label="Its address, or the command that starts it">
+            <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
+        </form>
+        <h3 class="heading">Suggested</h3>
+        <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="A server the journal suggests shows here until it is installed.">
+            <template #default="{row}">
+                <div class="server">
+                    <div class="head">
+                        <span class="title">{{ row.title }}</span>
+                        <button type="button" @click="install(row)">Install</button>
+                    </div>
+                    <span class="subject">{{ row.subject }}</span>
                 </div>
-                <span class="subject">{{ row.subject }}</span>
-            </div>
-        </template>
-    </RowList>
+            </template>
+        </RowList>
+    </WindowRoom>
 </template>
 
 <style scoped>

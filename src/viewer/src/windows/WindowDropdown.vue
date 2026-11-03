@@ -128,17 +128,12 @@ const placed = computed(() => {
 }
 
 .dropdown-body {
-    padding: 14px 16px;
     transition: opacity 0.16s ease;
 }
 
 .dropdown[data-settling] .dropdown-body {
     opacity: 0;
     transition: none;
-}
-
-.dropdown-body:has([data-window-flush]) {
-    padding: 0;
 }
 
 .group-count {

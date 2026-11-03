@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {AutoScrollPane, EmptyState, usePoll, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const outputId = ref(0);
@@ -33,24 +33,26 @@ usePoll(load, isRunning);
 </script>
 
 <template>
-    <template v-if="!outputId">
-        <EmptyState title="No output yet" />
-    </template>
-    <template v-else>
-        <div class="output">
-            <div class="bar">
-                <span class="line">{{ run ? run.line : "" }}</span>
-                <button class="whole" type="button" @click="toggle">{{ isWhole ? "Reader lines" : "Whole output" }}</button>
-                <template v-if="isRunning()">
-                    <button class="stop" type="button" @click="context.run(`output stop ${outputId}`)">Stop</button>
-                    <button class="watch" type="button" @click="context.run(`output watch ${outputId}`)">Watch</button>
-                </template>
+    <WindowRoom>
+        <template v-if="!outputId">
+            <EmptyState title="No output yet" />
+        </template>
+        <template v-else>
+            <div class="output">
+                <div class="bar">
+                    <span class="line">{{ run ? run.line : "" }}</span>
+                    <button class="whole" type="button" @click="toggle">{{ isWhole ? "Reader lines" : "Whole output" }}</button>
+                    <template v-if="isRunning()">
+                        <button class="stop" type="button" @click="context.run(`output stop ${outputId}`)">Stop</button>
+                        <button class="watch" type="button" @click="context.run(`output watch ${outputId}`)">Watch</button>
+                    </template>
+                </div>
+                <AutoScrollPane :row-count="lines.length">
+                    <pre class="text" data-output-text>{{ lines.join("\n") }}</pre>
+                </AutoScrollPane>
             </div>
-            <AutoScrollPane :row-count="lines.length">
-                <pre class="text" data-output-text>{{ lines.join("\n") }}</pre>
-            </AutoScrollPane>
-        </div>
-    </template>
+        </template>
+    </WindowRoom>
 </template>
 
 <style scoped>
