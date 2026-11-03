@@ -10,15 +10,17 @@ try {
     await page.goto(`${address}#/?open=test_queue:0`);
     const panel = page.locator("[data-resource-panel]");
     await page.locator("[data-queue-controls]").waitFor();
-    assert.equal(Math.round((await panel.boundingBox()).width), 660);
+    assert.equal(Math.round((await panel.boundingBox()).width), 640);
     assert.match(await page.locator('[data-queue-row="running"]').innerText(), /make package/, await panel.innerText());
     assert.match(await page.locator('[data-queue-row="running"] [data-queue-task]').innerText(), /Task \d+/);
     assert.match(await page.locator('[data-queue-row="waiting"]').innerText(), /make checks/);
     assert.equal(await page.locator("[data-queue-position]").innerText(), "1");
     const recent = page.locator('[data-queue-row="recent"]');
-    await recent.locator("[data-queue-output]").click();
+    await recent.getByRole("button", {expanded: false}).click();
     await recent.locator("[data-queue-output-body]").filter({hasText: "package built"}).waitFor();
-    assert.match(await recent.innerText(), /10 lines from start/);
+    assert.match(await recent.innerText(), /\$ /);
+    assert.equal(await page.locator('[data-queue-row="running"] .dot').count(), 1);
+    assert.deepEqual(await page.locator('.spots span').first().evaluate((element) => { const style = getComputedStyle(element); return [style.width, style.height, style.borderRadius]; }), ["14px", "14px", "4px"]);
     const popupPromise = page.waitForEvent("popup");
     await recent.getByRole("link", {name: "Open in its own window"}).click();
     const popup = await popupPromise;
@@ -35,7 +37,7 @@ try {
     await page.locator('[data-queue-row="running"]').filter({hasText: "make checks"}).waitFor();
     await page.locator('[data-queue-row="waiting"]').waitFor({state: "detached"});
     await page.screenshot({path: capture.replace(".png", "-events.png"), fullPage: true});
-    await page.getByRole("button", {name: "More runs at once"}).click();
+    await page.getByRole("button", {name: "One more command at once"}).click();
     await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "2");
     await page.locator("[data-queue-main-spots]").click();
     await page.waitForFunction(() => document.querySelector("[data-queue-main-spots]")?.getAttribute("aria-checked") === "true");
@@ -45,6 +47,7 @@ try {
     assert.equal(await page.locator("[data-queue-main-spots]").getAttribute("aria-checked"), "true");
     await page.setViewportSize({width: 390, height: 844});
     await page.waitForFunction(() => document.querySelector("[data-resource-panel]").getBoundingClientRect().width <= 390, null, {timeout: 5000});
+    await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true});
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

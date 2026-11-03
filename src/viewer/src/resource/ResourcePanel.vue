@@ -59,7 +59,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 <template>
     <Teleport to="body">
         <Transition name="side" appear>
-            <div v-if="opened" class="veil" @click.self="close">
+            <div v-if="opened" :class="['veil', {fades: kind === 'test-queue'}]" @click.self="close">
                 <aside
                     :class="['panel', {wide, task: kind === 'task', document: isDocument, queue: kind === 'test-queue'}]"
                     role="dialog"
@@ -187,8 +187,17 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 }
 
 .panel.queue {
-    width: min(660px, 100vw);
+    width: min(640px, 100vw);
+    border-left-color: var(--border-2);
 }
+
+.veil.fades { background: rgba(0, 0, 0, .45); }
+.side-enter-active.fades { transition: opacity 220ms ease; }
+.side-leave-active.fades { transition: opacity 160ms ease; }
+.side-enter-from.fades, .side-leave-to.fades { opacity: 0; }
+.side-enter-active.fades .panel, .side-leave-active.fades .panel { transition: none; }
+.side-enter-from.fades .panel, .side-leave-to.fades .panel { transform: none; }
+@media (prefers-reduced-motion: reduce) { .side-enter-active.fades, .side-leave-active.fades { transition-duration: 100ms; } }
 
 .panel.task {
     width: min(640px, 100vw);
