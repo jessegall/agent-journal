@@ -76,7 +76,7 @@ function withCodeParagraphs(text) {
     return pieces.length === 1 && pieces[0].kind === "text" ? [{kind: "text", text}] : pieces;
 }
 
-export function lift(text) {
+function lift(text) {
     const lines = text.split("\n");
     const out = [];
     let held = [];

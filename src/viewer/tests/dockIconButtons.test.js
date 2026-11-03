@@ -3,7 +3,9 @@ import {afterEach, expect, test, vi} from "vitest";
 import {settled} from "./settled.js";
 import {perLine} from "./support/windowContext.js";
 import DockWrapper from "../src/chat/DockWrapper.vue";
-import {dockButtons} from "../src/domain/dockLook.js";
+import {dockLook} from "../src/domain/dockLook.js";
+
+const dockButtons = (item, declaration) => dockLook(item, declaration).buttons;
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 

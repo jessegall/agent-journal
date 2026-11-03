@@ -129,10 +129,6 @@ export function peekChip(event) {
     if (target) peekRef(target, event.target.closest("[data-peek]").dataset.sub || "");
 }
 
-export function swap(table, id) {
-    opening([...route.value.stack.slice(0, -1), {table, id, comment: 0}]);
-}
-
 export function unpeek() {
     opening(route.value.stack.slice(0, -1));
 }

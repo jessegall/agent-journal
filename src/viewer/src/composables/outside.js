@@ -4,7 +4,7 @@ const anchors = new WeakMap();
 
 export const anchorTo = (panel, anchor) => anchors.set(panel, anchor);
 
-export function within(node, target) {
+function within(node, target) {
     for (let at = target; at; at = anchors.get(at) ?? at.parentElement) if (at === node) return true;
     return false;
 }

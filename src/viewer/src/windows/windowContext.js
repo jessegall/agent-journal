@@ -80,7 +80,7 @@ export async function lineResult(window, line, environment, signal = undefined) 
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
-export async function uploaded(file, signal = undefined) {
+async function uploaded(file, signal = undefined) {
     try {
         const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
         const answer = await response.json();

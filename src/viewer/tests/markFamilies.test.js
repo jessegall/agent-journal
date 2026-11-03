@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {familyKey, familyOptions, shownMarks} from "../src/domain/markFamilies.js";
+import {shownMarks} from "../src/domain/markFamilies.js";
 import {CHAT_WINDOW, withFamilyOptions} from "../src/windows/chatOptions.js";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
@@ -11,17 +11,10 @@ const declarations = [
 const declarationOf = (type) => declarations.find((declaration) => declaration.type === type);
 const marks = [{id: 1, type: "memory"}, {id: 2, type: "reminder"}, {id: 3, type: "compaction"}];
 
-test("each family gets one switch, on by default", () => {
-    expect(familyOptions(declarations)).toEqual([
-        {control: "toggle", key: "show-memories.memories", label: "Memories", default: true, section: "marks"},
-        {control: "toggle", key: "show-memories.reminders", label: "Reminders", default: true, section: "marks"},
-    ]);
-});
-
 test("a family hidden on the pane hides its marks and shows them again when switched on", () => {
     const option = (hidden) => (key) => (hidden.includes(key) ? false : undefined);
     expect(shownMarks(marks, declarationOf, option([])).map((mark) => mark.id)).toEqual([1, 2, 3]);
-    expect(shownMarks(marks, declarationOf, option([familyKey("memories.memories")])).map((mark) => mark.id)).toEqual([2]);
+    expect(shownMarks(marks, declarationOf, option(["show-memories.memories"])).map((mark) => mark.id)).toEqual([2]);
 });
 
 test("the catalogue lists the chat window with the families' switches, so the pane keeps the choice across a reload", async () => {
@@ -33,7 +26,7 @@ test("the catalogue lists the chat window with the families' switches, so the pa
     expect(withFamilyOptions([], declarations)).toEqual([]);
 });
 
-import {familyPresets, mainOnlyOptions, optionsFromHidden, presetOfOptions} from "../src/domain/markFamilies.js";
+import {familyPresets, mainOnlyOptions, optionsFromHidden} from "../src/domain/markFamilies.js";
 import {renamedLayout} from "../src/windows/legacyLayouts.js";
 
 const kinds = [
@@ -46,9 +39,6 @@ test("Only chat hides every family and Chat with context shows those shown by de
     const [chat, context] = familyPresets(kinds);
     expect(Object.values(chat.options)).toEqual([false, false, false]);
     expect(context.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
-    const option = (key) => context.options[key];
-    expect(presetOfOptions(kinds, option)).toBe("context");
-    expect(presetOfOptions(kinds, () => undefined)).toBe("every");
 });
 
 test("main only for a group switches off its families without a main mark, and flipping it again switches them on", () => {

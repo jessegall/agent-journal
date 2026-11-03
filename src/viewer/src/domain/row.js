@@ -60,6 +60,3 @@ export const closable = (table) => Boolean(CLOSED[table]);
 export const createdAt = (row) => seconds(row.created_at);
 export const updatedAt = (row) => seconds(row.updated_at) || createdAt(row);
 
-// Who made the row: the user, the agent, the journal or a plugin, from its stamp, user:1 or agent:s1.
-export const madeBy = (row) => (row.creator || "system").split(":")[0];
-

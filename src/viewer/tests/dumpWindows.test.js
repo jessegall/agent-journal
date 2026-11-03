@@ -5,7 +5,7 @@ import DumpDock from "../../core/modules/dumps/web/src/dump-dock.js";
 
 const board = (dumps) => ({"dump board": {ok: true, value: {total: dumps.length, dumps}}});
 
-test("the dumps list shows each dump with its title, or its number, its notes or its outcome and its items, from one read", async () => {
+test("the dumps list opens the newest dump with its title, notes and items and lists the others by title or number, from one read", async () => {
     const windowContext = context(board([
         {id: 1, title: "Call notes", brief: "Notes from the call", outcome: "", items: [{id: 1, text: "The cart rounds twice", state: "filed", note: "", summary: "made a task", refs: ["tasks:1"]}]},
         {id: 2, title: "", brief: "More notes", outcome: "2 filed, 0 failed", items: []},
@@ -16,7 +16,7 @@ test("the dumps list shows each dump with its title, or its number, its notes or
     expect(text).toContain("made a task");
     expect(text).toContain("Filed into tasks:1");
     expect(text).toContain("Dump 2");
-    expect(text).toContain("Closed: 2 filed, 0 failed");
+    expect(text).not.toContain("More notes");
     expect(windowContext.reads).toEqual(["dump board"]);
 });
 

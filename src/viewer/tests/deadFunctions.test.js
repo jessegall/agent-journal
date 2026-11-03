@@ -15,25 +15,14 @@ const FIGURE_PORT = {
     "src/viewer/src/domain/figureMotion.js": 5661,
     "src/viewer/src/domain/falls.js": 5661,
 };
-// exported functions that no other file uses, found when tests stopped counting as uses; task 6004 removes each or stops exporting it
+// modules a frame window imports by their address, which no file of this repository imports
+const PUBLIC_MODULES = ["src/viewer/kit/frameBridgeClient.js"];
+// exported functions that only a test uses, whose own file uses them too; each needs its test to go through the function that calls it, and
+// then to stop being exported: task 6004 is not done until this list is empty
 const PENDING_REMOVAL = new Set([
-    "src/viewer/src/api/transport.js: answered", "src/viewer/src/chat/arrival.js: arrive", "src/viewer/src/chat/attachments.js: attach", "src/viewer/src/chat/attachments.js: refusal",
-    "src/viewer/src/chat/fittedBubble.js: fittedWidth", "src/viewer/src/chat/markButtons.js: buttonLine", "src/viewer/src/chat/outbox.js: token", "src/viewer/src/composables/outside.js: within",
-    "src/viewer/src/composables/poll.js: unseen", "src/viewer/src/domain/agentState.js: waitingFor", "src/viewer/src/domain/agentState.js: lineOf", "src/viewer/src/domain/agentState.js: phrase",
-    "src/viewer/src/domain/agents.js: offers", "src/viewer/src/domain/agents.js: agentOf", "src/viewer/src/domain/dockLook.js: dockTitle", "src/viewer/src/domain/dockLook.js: dockButtons",
-    "src/viewer/src/domain/flowchart.js: wrapped", "src/viewer/src/domain/markFamilies.js: familyKey", "src/viewer/src/domain/markFamilies.js: familyOptions",
-    "src/viewer/src/domain/markFamilies.js: presetOfOptions", "src/viewer/src/domain/orchestra.js: agentState", "src/viewer/src/domain/panes.js: centre", "src/viewer/src/domain/panes.js: forgotten",
-    "src/viewer/src/domain/placeholders.js: answers", "src/viewer/src/domain/plans.js: statusOf", "src/viewer/src/domain/plans.js: planGroups", "src/viewer/src/domain/plans.js: workersHolding",
-    "src/viewer/src/domain/plans.js: rowsOf", "src/viewer/src/domain/plans.js: taskCount", "src/viewer/src/domain/records.js: open", "src/viewer/src/domain/records.js: planned",
-    "src/viewer/src/domain/records.js: paused", "src/viewer/src/domain/records.js: happened", "src/viewer/src/domain/records.js: missed", "src/viewer/src/domain/statusQueue.js: frames",
-    "src/viewer/src/domain/tables.js: label", "src/viewer/src/domain/taskBoard.js: statusOf", "src/viewer/src/domain/workers.js: workerMoves", "src/viewer/src/domain/workers.js: workersHolding",
-    "src/viewer/src/format/files.js: isText", "src/viewer/src/format/files.js: textOf", "src/viewer/src/format/time.js: stamp", "src/viewer/src/kit/tip.js: hide", "src/viewer/src/route.js: swap",
-    "src/viewer/src/state/updating.js: locked", "src/viewer/src/state/updating.js: starting", "src/viewer/src/state/updating.js: counting", "src/viewer/src/state/updating.js: begin",
-    "src/viewer/src/state/updating.js: fail", "src/viewer/src/state/updating.js: clear", "src/viewer/src/sync/rows.js: isWhole", "src/viewer/src/sync/rows.js: whole",
-    "src/viewer/src/sync/rows.js: refresh", "src/viewer/src/text/code.js: lift", "src/viewer/src/windows/colorScheme.js: applyColorScheme", "src/viewer/src/windows/layoutPresets.js: cellsOf",
-    "src/viewer/src/windows/legacyLayouts.js: renamedLayout", "src/viewer/src/windows/paneLayout.js: tabKey", "src/viewer/src/windows/windowContext.js: refusalWords",
-    "src/viewer/src/windows/windowContext.js: uploaded", "src/viewer/kit/frameBridgeClient.js: connect", "src/core/modules/schedules/web/src/cron.js: parsed",
-    "src/core/modules/sequences/web/src/sequenceTriggers.js: triggerWords", "src/core/modules/triggers/web/src/triggerWords.js: wordsText",
+    "src/viewer/src/chat/arrival.js: arrive", "src/viewer/src/chat/fittedBubble.js: fittedWidth", "src/viewer/src/chat/markButtons.js: buttonLine",
+    "src/viewer/src/windows/colorScheme.js: applyColorScheme", "src/viewer/src/windows/layoutPresets.js: cellsOf", "src/viewer/src/windows/legacyLayouts.js: renamedLayout",
+    "src/viewer/src/windows/paneLayout.js: tabKey", "src/viewer/src/windows/windowContext.js: refusalWords",
 ]);
 const IMPORT =/import\s*([^;'"]*?)\s*from\s*["'][^"']+["']|export\s*\{([^}]*)\}\s*from\s*["'][^"']+["']/g;
 
@@ -100,7 +89,7 @@ test("every exported function of the viewer and of the windows is imported or ca
     const unused = [];
     for (const file of CHECKED.flatMap((folder) => filesUnder(join(ROOT, folder))).filter((path) => isWindowCode(relative(ROOT, path)) && !isTest(relative(ROOT, path)))) {
         const mine = relative(ROOT, file);
-        if (Object.keys(FIGURE_PORT).some((port) => mine.startsWith(port))) continue;
+        if (PUBLIC_MODULES.includes(mine) || Object.keys(FIGURE_PORT).some((port) => mine.startsWith(port))) continue;
         for (const name of exportedFunctions(readFileSync(file, "utf8"))) {
             if (![...(uses.get(name) || [])].some((other) => other !== file)) unused.push(`${mine}: ${name}`);
         }

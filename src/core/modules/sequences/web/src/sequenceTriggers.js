@@ -19,7 +19,7 @@ const WORDS = {
     tool: (trigger) => `When ${trigger.tool} is used${trigger.pattern ? ` with “${trigger.pattern}” in its input` : ""}`,
 };
 
-export const triggerWords = (trigger) => WORDS[trigger.trigger_type](trigger);
+const triggerWords = (trigger) => WORDS[trigger.trigger_type](trigger);
 
 export const startWords = (triggers) => (triggers.length ? triggers.map(triggerWords) : ["Only when you or the agent start it"]);
 

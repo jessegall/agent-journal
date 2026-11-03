@@ -47,9 +47,4 @@ export function elapsed(seconds) {
     return `${Math.floor(s / 3600)}h ${two(Math.floor((s % 3600) / 60))}m ${two(s % 60)}s`;
 }
 
-export function stamp(at) {
-    return at
-        ? new Date(at * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})
-        : "";
-}
 

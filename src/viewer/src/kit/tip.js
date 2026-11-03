@@ -69,7 +69,7 @@ function keep() {
     shown.leaving = false;
 }
 
-export function hide(now = false) {
+function hide(now = false) {
     clearTimeout(hideTimer);
     if (shown.key === null) return;
     if (!now) {

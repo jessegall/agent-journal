@@ -19,7 +19,7 @@ function values(field, [low, high]) {
     return picked;
 }
 
-export function parsed(expression) {
+function parsed(expression) {
     const fields = String(expression || "").trim().split(/\s+/);
     return fields.length === 5 ? fields.map((field, i) => values(field, RANGES[i])) : null;
 }
