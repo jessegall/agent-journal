@@ -1,12 +1,11 @@
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting
@@ -40,9 +39,7 @@ class RunSlots:
         if not self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id):
             return 0
         running = [process for process in runs if not process.is_queued and not self.folder.has_slot(process.id)]
-        main: set[int] = set()
-        if running:
-            main = {agent.id for agent in self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(Among("id", tuple({process.agent_id for process in running}))).all_rows()}
+        main = MainAgentFinder.main_ids(self.queries, tuple({process.agent_id for process in running})) if running else set[int]()
         return sum(1 for process in running if process.agent_id in main)
 
     def grant_all_environments(self, context: Context) -> None:

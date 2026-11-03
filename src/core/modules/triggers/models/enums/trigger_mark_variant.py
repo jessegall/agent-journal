@@ -6,3 +6,4 @@ class TriggerMarkVariant(StrEnum):
 
     WAITING = "waiting"
     ENABLED = "enabled"
+    REMOVED = "removed"

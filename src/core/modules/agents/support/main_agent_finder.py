@@ -1,4 +1,5 @@
 from core.base.agent_role import AgentRole
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -18,3 +19,7 @@ class MainAgentFinder:
     @staticmethod
     def newest(queries: Queries, environment_id: int) -> Agent | None:
         return next(iter(MainAgentFinder.rows(queries, environment_id)), None)
+
+    @staticmethod
+    def main_ids(queries: Queries, agent_ids: tuple[int, ...]) -> set[int]:
+        return {agent.id for agent in queries.query(Agent).filter(role=AgentRole.MAIN).matching(Among("id", agent_ids)).all_rows()}

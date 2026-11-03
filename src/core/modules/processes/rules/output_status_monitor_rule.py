@@ -2,6 +2,7 @@ from core.base.agent_role import AgentRole
 from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, WORKER_RUN_WATCHED
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
@@ -27,8 +28,13 @@ class OutputStatusMonitorRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         numbers = [part.arguments[2] for part in shell.parts if self.is_status(part)] if shell is not None else []
-        note = WORKER_RUN_WATCHED if hook.role is AgentRole.WORKER else MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
+        note = self.note(hook)
         return RuleAnswer.with_nudges(*(note.nudge(output=number) for number in numbers))
+
+    def note(self, hook: AgentHook) -> NudgeDeclaration:
+        if hook.role is AgentRole.WORKER:
+            return WORKER_RUN_WATCHED
+        return MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
 
     def is_status(self, part: Part) -> bool:
         return part.program == JOURNAL and list(part.arguments[:2]) == OUTPUT_STATUS_COMMAND and len(part.arguments) > 2

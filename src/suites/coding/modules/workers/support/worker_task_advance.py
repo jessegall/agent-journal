@@ -20,11 +20,7 @@ class WorkerTaskAdvance:
     def __init__(self, bus: Bus, repository: Repository, nudger: Nudger) -> None:
         self.bus, self.repository, self.nudger = bus, repository, nudger
 
-    def after_passed_tests(self, worktree: Worktree, following: Task, context: Context) -> None:
-        self.start(worktree, following, context)
-        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
-
-    def after_released_task(self, worktree: Worktree, following: Task, context: Context) -> None:
+    def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
         self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
 

@@ -1,6 +1,6 @@
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.base.performance.route_cost_tool import RouteCostTool
-from core.modules.developer.support.route_cost_tool import DeveloperRouteCostTool
+from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon

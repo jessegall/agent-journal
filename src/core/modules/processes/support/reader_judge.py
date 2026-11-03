@@ -1,8 +1,10 @@
 import re
+from dataclasses import replace
 from itertools import islice
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
@@ -24,28 +26,45 @@ class ReaderJudge:
         self.run, self.folder, self.parts = run, folder, parts
 
     def judged(self, reader: Reader, category: CommandCategory) -> ReaderJudgement:
-        return ReaderJudgement(self.fields_missing(reader, category), tuple(miss for text in self.samples(reader, category) for miss in self.misses(reader, category, text)))
+        return replace(self.tested(reader), missing=self.fields_missing(reader, category))
+
+    def tested(self, reader: Reader) -> ReaderJudgement:
+        samples = self.samples(reader)
+        missed = tuple(f"on output {part.process_id}: {', '.join(misses)}" for part in samples
+                       if (misses := self.misses(reader, part.category, self.output_text(part.process_id, part.position))))
+        output_id = samples[0].process_id if samples and not missed else None
+        return ReaderJudgement(missed=missed, output_id=output_id)
 
     def fields_missing(self, reader: Reader, category: CommandCategory) -> tuple[str, ...]:
         wanted = {"--title": reader.title, "--lines or --script": reader.lines_pattern or reader.script, "--summary": reader.summary_pattern}
         if category is CommandCategory.TEST_RUN:
-            wanted["--progress"] = reader.progress_pattern
+            wanted["--count"] = reader.count_pattern
+            wanted["--progress or --step with --count"] = reader.progress_pattern or (reader.step_pattern and reader.count_pattern)
         return tuple(flag for flag, value in wanted.items() if not value)
 
     def misses(self, reader: Reader, category: CommandCategory, text: str) -> tuple[str, ...]:
         lines = self.run.lines(reader, text, "finished")
         total = len(text.splitlines())
+        summary = self.run.summary(reader, text)
+        count = self.run.count(reader, text, 0)
         checks = {"--lines picked none": bool(lines) or total < FEW_LINES,
-                 "--lines picked nearly all": total < WIDTH_LINE_COUNT or len(lines) * WIDE_SHARE < total * (WIDE_SHARE - 1),
-                 "--summary found nothing": bool(self.run.summary(reader, text))}
-        if category is not CommandCategory.CHECK and COUNTED.search(text):
+                  "--lines picked nearly all": total < WIDTH_LINE_COUNT or len(lines) * WIDE_SHARE < total * (WIDE_SHARE - 1)}
+        if reader.summary_pattern:
+            checks["--summary found nothing"] = bool(summary)
+        if reader.count_pattern and not reader.count_command:
+            checks["--count found nothing"] = count > 0
+        numbers = re.findall(r"\d+", summary)
+        if count > 0 and numbers:
+            checks["--summary exceeds --count"] = int(numbers[0]) <= count
+        step_progress = reader.step_pattern and count > 0
+        if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
         return tuple(miss for miss, valid in checks.items() if not valid)
 
-    def samples(self, reader: Reader, category: CommandCategory) -> tuple[str, ...]:
-        parts = self.parts.with_kept_output().filter(category=category).newest().all_rows()
+    def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:
+        parts = self.parts.with_kept_output().newest().all_rows()
         matching = (part for part in parts if ReaderSelection.reads(reader, part))
-        return tuple(self.output_text(part.process_id, part.position) for part in islice(matching, SAMPLE_OUTPUTS))
+        return tuple(islice(matching, SAMPLE_OUTPUTS))
 
     def output_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))

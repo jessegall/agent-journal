@@ -52,6 +52,7 @@ class ForeignAnswer:
         terminal = cls.text(data, "systemMessage")
         if output.get("permissionDecision") == "ask":
             terminal = "\n".join(line for line in (terminal, f"{name}: hook asked for permission; the journal cannot ask") if line)
+            return cls(name, terminal=terminal)
         updated_input = output.get("updatedInput", {})
         if not is_mapping(updated_input):
             updated_input = {}

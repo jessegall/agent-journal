@@ -125,12 +125,13 @@ class ClaudeCodeProvider(Provider):
 
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
         fields: object = json.loads(line) if line.strip() else {}
-        message = fields.get("message") if is_mapping(fields) else None
-        author = fields.get("type") if is_mapping(fields) else None
+        if not is_mapping(fields):
+            return None
+        message, author = fields.get("message"), fields.get("type")
         if author not in TRANSCRIPT_AUTHORS or not is_mapping(message):
             return None
         text = "\n".join(self.message_texts(message.get("content")))
-        return TranscriptAuthor.row(position, author, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
+        return TranscriptAuthor.row(position, author, text, fields.get("timestamp")) if text.strip() else None
 
     @staticmethod
     def message_texts(content: object) -> list[str]:

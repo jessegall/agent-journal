@@ -1,6 +1,5 @@
 import json
 
-from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -8,6 +7,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.models.setting import Setting
@@ -48,10 +48,9 @@ class WorkerLimitListener(SaveListener):
         return self.settings.number(WORKER_LIMIT, None)
 
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:
-        agents = self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at"))
-        if setting.environment_id is not None:
-            agents = agents.filter(environment_id=setting.environment_id)
-        return tuple(agents.all_rows())
+        if setting.environment_id is None:
+            return MainAgentFinder.all_running(self.queries)
+        return MainAgentFinder.rows(self.queries, setting.environment_id)
 
     def undelegated(self, environment_id: int) -> int:
         return self.queries.query(Task).filter(environment_id=environment_id, state=TaskState.OPEN).matching(IsNull("delegated_to")).count()

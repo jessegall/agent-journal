@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
+from tests.stories.core.modules.processes.support.process_samples import start_process
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
@@ -20,6 +21,32 @@ def inactive_line(role: str, agent_id: int, count: int = DEFAULT_MINUTES) -> str
 
 def line_count(story, line: str) -> int:
     return story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line)
+
+
+def quiet_worker(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    return story, worker
+
+
+def test_the_inactive_line_names_the_commands_that_answer_it(new_story):
+    story, worker = quiet_worker(new_story)
+    story.advance(minutes(DEFAULT_MINUTES))
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker send {worker.id}", f"journal worker release {worker.id}")
+
+
+def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
+    story, worker = quiet_worker(new_story)
+    main = story.agent
+    start_process(story, "make first", is_queued=True)
+    start_process(story, "make second", is_queued=True)
+    story.agent = worker
+    process = start_process(story, "make third", is_queued=True)
+    story.advance(minutes(DEFAULT_MINUTES))
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {main.id}", f"its run {process.id} waits for a spot, 2 runs ahead", f"journal worker send {worker.id}", f"journal worker release {worker.id}", actor=main)
 
 
 def test_a_worker_that_has_used_no_tool_for_five_minutes_is_named_to_its_main_agent_again_every_five_minutes(new_story):

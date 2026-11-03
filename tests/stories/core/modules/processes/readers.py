@@ -104,3 +104,10 @@ def test_a_reader_counts_the_steps_of_a_run_and_keeps_them_on_its_output(new_sto
 def test_a_reader_with_a_pattern_that_does_not_compile_is_refused(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_refusal('reader add broken --commands "make*" --lines "ok" --topic "("', "--topic pattern that does not compile", actor=story.agent)
+
+
+def test_a_count_pattern_is_checked_and_its_fields_survive_an_update(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_refusal('reader add broken --commands "make*" --lines "ok" --count "("', "--count pattern that does not compile", actor=story.agent)
+    story.expect_success('reader add counted --commands "make*" --lines "ok" --count "collected ([0-9]+)" --count-command "{part} --list"', actor=story.agent)
+    story.expect_success('reader add counted --title "Running tests"', "count_pattern: collected ([0-9]+)", "count_command: {part} --list", actor=story.agent)

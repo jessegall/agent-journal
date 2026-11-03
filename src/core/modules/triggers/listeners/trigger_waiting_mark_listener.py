@@ -17,10 +17,15 @@ class TriggerWaitingMarkListener(MarkListener):
 
     def handle(self, event: LoggedEvent) -> None:
         trigger = self.queries.query(Trigger).find(event.row_id)
-        waiting = "needs_enabling" in event.data and event.data["needs_enabling"][1] in (1, True)
-        enabled = event.event.endswith(".update") and "needs_enabling" in event.data and not trigger.needs_enabling
-        if not (waiting or enabled):
-            return
-        variant = TriggerMarkVariant.WAITING if waiting else TriggerMarkVariant.ENABLED
-        mark_text = f"An agent made a trigger that waits for you: {trigger.name or trigger.text}" if waiting else f"Trigger enabled: {trigger.name or trigger.text}"
-        self.show(event, TriggerMarkType.WAITING, variant, mark_text, row_model="trigger", row_id=trigger.id, detail=f"{trigger.action.value}: {trigger.text}\n{trigger.extra_actions}", key=f"trigger:{trigger.id}", ended=not waiting)
+        name = trigger.name or trigger.text
+        if "ended_at" in event.data and trigger.ended_at is not None:
+            if trigger.needs_enabling:
+                self.shown(event, trigger, TriggerMarkVariant.REMOVED, f"Trigger removed: {name}", True)
+        elif "needs_enabling" in event.data:
+            if trigger.needs_enabling:
+                self.shown(event, trigger, TriggerMarkVariant.WAITING, f"An agent made a trigger that waits for you: {name}", False)
+            else:
+                self.shown(event, trigger, TriggerMarkVariant.ENABLED, f"Trigger enabled: {name}", True)
+
+    def shown(self, event: LoggedEvent, trigger: Trigger, variant: TriggerMarkVariant, mark_text: str, ended: bool) -> None:
+        self.show(event, TriggerMarkType.WAITING, variant, mark_text, row_model="trigger", row_id=trigger.id, detail=f"{trigger.action.value}: {trigger.text}\n{trigger.extra_actions}", key=f"trigger:{trigger.id}", ended=ended)

@@ -1,4 +1,6 @@
 from core.base.command.context import Context
+from core.base.conflict_files import ConflictFiles
+from pathlib import Path
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -51,6 +53,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             conflicts = self.git.sync(worktree) if moved and not rebased else ()
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
+        self.git.rebuild(worktree, environment.folder)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.agent_id}")
         for delivered in self.delivered_tasks(worktree, task):
             self.repository.save(delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
@@ -63,6 +66,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         return [row for row in (task, *delivered) if row.state is TaskState.TESTING and (row is task or row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
+        ConflictFiles(Path(environment.folder)).check()
         self.checks.check_proofs(worktree)
         self.checks.check_base_branch(worktree)
         head = self.git.head(environment.folder)

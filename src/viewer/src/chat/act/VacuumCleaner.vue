@@ -43,19 +43,21 @@ const vacuumed = computed(() => {
 </script>
 
 <template>
-    <g v-if="vacuumed.on > 0" :opacity="vacuumed.on">
-        <path :d="vacuumed.hose" fill="none" stroke-width="2.6" :stroke="COLOURS.ink" />
-        <path :d="vacuumed.hose" fill="none" stroke-width="1.4" stroke="#6366f1" />
-        <rect :x="vacuumed.x - 9" :y="vacuumed.y - 16" width="18" height="14" rx="4" fill="#ef476f" />
-        <circle :cx="vacuumed.x - 5" :cy="vacuumed.y - 2" r="2.5" :fill="COLOURS.ink" />
-        <circle :cx="vacuumed.x + 5" :cy="vacuumed.y - 2" r="2.5" :fill="COLOURS.ink" />
-        <g :transform="vacuumed.nozzle">
-            <path d="M-6 -1.6H2L6 -4.5V4.5L2 1.6H-6Z" fill="#35374b" />
+    <template v-if="vacuumed.on > 0">
+        <g :opacity="vacuumed.on">
+            <path :d="vacuumed.hose" fill="none" stroke-width="2.6" :stroke="COLOURS.ink" />
+            <path :d="vacuumed.hose" fill="none" stroke-width="1.4" stroke="#6366f1" />
+            <rect :x="vacuumed.x - 9" :y="vacuumed.y - 16" width="18" height="14" rx="4" fill="#ef476f" />
+            <circle :cx="vacuumed.x - 5" :cy="vacuumed.y - 2" r="2.5" :fill="COLOURS.ink" />
+            <circle :cx="vacuumed.x + 5" :cy="vacuumed.y - 2" r="2.5" :fill="COLOURS.ink" />
+            <g :transform="vacuumed.nozzle">
+                <path d="M-6 -1.6H2L6 -4.5V4.5L2 1.6H-6Z" fill="#35374b" />
+            </g>
+            <template v-for="word in vacuumed.words" :key="word.word">
+                <text :x="word.x" :y="word.y" :font-size="7 * word.size" :opacity="word.opacity" text-anchor="middle" class="figure-act-word" stroke="none" :fill="COLOURS.paper">{{ word.word }}</text>
+            </template>
         </g>
-        <template v-for="word in vacuumed.words" :key="word.word">
-            <text :x="word.x" :y="word.y" :font-size="7 * word.size" :opacity="word.opacity" text-anchor="middle" class="figure-act-word" stroke="none" :fill="COLOURS.paper">{{ word.word }}</text>
-        </template>
-    </g>
+    </template>
 </template>
 
 <style scoped>

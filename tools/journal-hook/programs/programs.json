@@ -118,6 +118,7 @@
         "apply_patch": "edit",
         "collaborationspawn_agent": "agent",
         "read_file": "read",
+        "view_image": "read",
         "request_user_input": "question",
         "write_file": "write"
       }

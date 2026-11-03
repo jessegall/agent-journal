@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from core.base.code_copy import CodeCopy
+from core.base.refusal import Refusal
 from core.base.journal_home import HOME_VARIABLE, JournalHome
 from install.code_replacement import CodeReplacement
 from install.version_four import ANSWER, VersionFour
@@ -29,7 +30,11 @@ class InstallJournal:
             print(f"version 5 is already installed in {self.home.folder}; nothing changed")
             return INSTALLED
         self.home.folder.mkdir(parents=True, exist_ok=True)
-        CodeReplacement(self.home).run([self.copy_code, self.sync])
+        try:
+            CodeReplacement(self.home).run([self.copy_code, self.sync])
+        except Refusal as refusal:
+            print(refusal.text, file=sys.stderr)
+            return REFUSED
         print(f"version 5 is installed in {self.home.folder}: its code in {self.code()}, its database {self.home.database.name} synced from the core modules")
         return 0
 

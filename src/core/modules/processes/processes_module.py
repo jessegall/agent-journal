@@ -39,6 +39,7 @@ from core.modules.processes.commands.watch_output.watch_output_handler import Wa
 from core.modules.processes.commands.watch_output.watch_output_subcommand import WatchOutputSubcommand
 from core.modules.processes.listeners.background_run_watch_listener import BackgroundRunWatchListener
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
+from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
 from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
 from core.modules.processes.commands.prune_outputs.prune_outputs_handler import PruneOutputsHandler
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
@@ -105,6 +106,9 @@ from core.modules.processes.migrations.m014_output_reader_position import Output
 from core.modules.processes.migrations.m015_process_part_text_index import ProcessPartTextIndexMigration
 from core.modules.processes.migrations.m016_hot_query_indexes import ProcessHotQueryIndexesMigration
 from core.modules.processes.migrations.m018_process_part_command import ProcessPartCommandMigration
+from core.modules.processes.migrations.m019_reader_test_counts import ReaderTestCountsMigration
+from core.modules.processes.migrations.m020_output_test_count import OutputTestCountMigration
+from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
 from core.modules.processes.migrations.m017_queue_membership import QueueMembershipMigration
 from core.modules.processes.commands.list_run_queue.list_run_queue_subcommand import ListRunQueueSubcommand
 from core.modules.processes.models.reader import Reader
@@ -145,12 +149,12 @@ class ProcessesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     views = [ProcessRow]
-    migrations = [ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
+    migrations = [ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
     handlers = [TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
     subcommands = [ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
+    listeners = [RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS

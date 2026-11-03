@@ -1,4 +1,6 @@
 from core.base.driver.nudge import Nudge
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
 from pathlib import PurePath
 
@@ -10,6 +12,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_visibility import RunVisibility
+from core.modules.processes.support.reader_writers import ReaderWriters
 
 SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time", "bash", "sh", "zsh"))
 
@@ -19,12 +22,12 @@ class EndedOutputText:
     how it ended, and how to read it; and, for a run shown in the chat, how to read such a run better next
     time."""
 
-    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, parts: ProcessPartQuery, visibility: RunVisibility, judge: ReaderJudge) -> None:
-        self.outputs, self.readers, self.parts, self.visibility, self.judge = outputs, readers, parts, visibility, judge
+    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, parts: ProcessPartQuery, visibility: RunVisibility, judge: ReaderJudge, writers: ReaderWriters) -> None:
+        self.outputs, self.readers, self.parts, self.visibility, self.judge, self.writers = outputs, readers, parts, visibility, judge, writers
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
-        if not self.visibility.is_visible(process):
+        if not self.writers.allows(Actor(process.agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
             return tuple([ended])
         program = self.read_program(process)
         draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if self.needs_reader(process) and program else []

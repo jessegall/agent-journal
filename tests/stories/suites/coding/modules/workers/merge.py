@@ -18,6 +18,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 
 MAIN_SESSION = "s-1"
 BUILT_FILE = "app/web/dist/chat.js"
@@ -146,12 +147,9 @@ def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_b
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
-def test_a_clash_only_on_built_files_merges_with_the_branchs_built_files(new_story):
+def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    repository = repository_environment(story)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    (repository.folder / "app/web/dist").mkdir(parents=True)
-    repository.committed(BUILT_FILE, "built 1\n", "A build")
+    repository = build_repository(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.changed(worker.id, BUILT_FILE, "built by the worker\n")
@@ -162,7 +160,7 @@ def test_a_clash_only_on_built_files_merges_with_the_branchs_built_files(new_sto
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
-    repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, "built on the branch\n")
+    repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, BUILT_TEXT)
 
 
 def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):

@@ -9,6 +9,13 @@
             }
         ],
         "reject": [
+            {
+                "all": [
+                    {"nameMatches": "^[a-z]+ed_on$"},
+                    {"field": "target"},
+                    {"of": "closest:type-declaration", "extends": "Model"}
+                ]
+            },
             {"name": "named_reader_id"},
             {
                 "of": "parent",
