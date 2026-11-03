@@ -15,5 +15,5 @@ class WorkerTestLaunch:
         self.runner = runner
 
     def start(self, process_id: int, line: str, folder: str, session: str) -> None:
-        command = RunnerLine.build(self.runner.path, process_id, ForegroundRun(LIMIT_SECONDS, True), line, session)
+        command = RunnerLine.build(self.runner.path, process_id, ForegroundRun(LIMIT_SECONDS, True, queued=True), line, session)
         subprocess.Popen(command, shell=True, cwd=folder, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)

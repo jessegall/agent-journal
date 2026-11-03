@@ -48,7 +48,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
     story.run_listeners()
     ended(story, started[1], 0)
-    expect_states(story, task1="testing", task2="started", task3="open")
+    expect_states(story, task1="completed", task2="started", task3="open")
     story.expect_text(f"agent-line list --agent {worker.id}", "Your next task, task:2: Add the tax")
 
     # the second task
@@ -56,17 +56,19 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_success("worker next", actor=worker)
     story.run_listeners()
     ended(story, started[2], 0)
-    expect_states(story, task1="testing", task2="testing", task3="started")
+    expect_states(story, task1="completed", task2="completed", task3="started")
+    story.expect_text("chat-mark list --environment 1", "worker-tests:1:1", "worker-tests:1:2")
 
     # the last task: there is no next, and the one delivery hands all three in and runs its test
     proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n")
     story.expect_refusal("worker next", "task 3 is your last", actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
-    expect_states(story, task1="testing", task2="testing", task3="testing")
+    expect_states(story, task1="completed", task2="completed", task3="testing")
     assert "handed in task 1, task 2, task 3" in marks_text(story), marks_text(story)
     ended(story, started[3], 0)
     assert "passed" in marks_text(story), marks_text(story)
+    expect_states(story, task1="completed", task2="completed", task3="completed")
 
     # all pass: the main agent is told to merge, and the merge closes all three
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)

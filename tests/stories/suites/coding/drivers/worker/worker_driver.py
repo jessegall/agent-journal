@@ -49,3 +49,12 @@ def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_sto
     story = new_story(fixture=BuilderWithOpenTask)
     worker_with_started_task(story)
     story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task:1 is not finished: journal worker next, journal worker deliver")
+
+
+def test_a_worker_is_refused_a_whole_chain_with_a_full_test_run_and_may_run_named_tests(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    worker_with_started_task(story)
+    suite_sample = HookSamples.shell("echo before && pytest tests", ShellPart("echo", "read", ["before"]), ShellPart("pytest", "test run", ["tests"], is_full_test_run=True))
+    cart_sample = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", "test run", ["tests/cart.py"]))
+    story.expect_hook_refusal(WORKER_SESSION, suite_sample, "never the whole suite")
+    story.expect_hook_allowed(WORKER_SESSION, cart_sample)

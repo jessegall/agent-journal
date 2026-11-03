@@ -1,12 +1,12 @@
 package main
 
 import (
-	"strings"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Flags are what the rewritten command line says: the process, the foreground limit, whether to move at once and the
@@ -15,6 +15,7 @@ type Flags struct {
 	Process    int
 	Limit      int
 	Background bool
+	Queue      bool
 	Line       string
 	Follow     bool
 	Folder     string
@@ -72,6 +73,8 @@ func ParseFlags(arguments []string) (Flags, error) {
 			return finished(flags, hasProcess)
 		case "--background":
 			flags.Background = true
+		case "--queue":
+			flags.Queue = true
 		case "--follow":
 			flags.Follow = true
 		case "--aliases":

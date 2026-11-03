@@ -18,6 +18,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
+from core.base.provider.transcript_author import TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
@@ -103,7 +104,7 @@ class CodexProvider(Provider):
             if role in TRANSCRIPT_AUTHORS and is_list(content):
                 text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
                 if text.strip():
-                    rows.append(TranscriptRow(len(rows) + 1, str(role), str(role), text))
+                    rows.append(TranscriptAuthor.row(len(rows) + 1, role, text))
         return rows
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:

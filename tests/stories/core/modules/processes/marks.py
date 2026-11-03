@@ -61,10 +61,9 @@ def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_st
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1", "process:2")
 
 
-def test_a_short_run_whose_output_is_dropped_still_ends_the_mark_its_reader_gave_it(new_story):
+def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run(PROGRESS, actor=story.agent)
-    process = start_process(story, "make plain", category=CommandCategory.PROCESS)
+    process = start_process(story, "make plain", category=CommandCategory.BUILD)
     story.run_listeners()
     story.expect_text(MARKS, "process:1")
     end_run(story, process, "ok\n")
@@ -102,7 +101,7 @@ def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_ru
 def test_a_watch_docks_the_output_and_it_leaves_10_seconds_after_its_process_ends_unless_kept(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    kept, leaving = start_process(story, "make kept"), start_process(story, "make leaving")
+    kept, leaving = start_process(story, "make kept", category=CommandCategory.BUILD), start_process(story, "make leaving", category=CommandCategory.BUILD)
     story.run(f"output watch {kept.id}", actor=story.agent)
     story.run(f"output watch {leaving.id}", actor=story.agent)
     story.run_listeners()

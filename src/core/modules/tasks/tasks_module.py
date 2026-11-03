@@ -31,6 +31,7 @@ from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClos
 from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
 from core.modules.tasks.rules.unlogged_write_rule import UnloggedWriteRule
+from core.modules.tasks.listeners.full_test_run_listener import FullTestRunListener
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlockedMigration
@@ -87,7 +88,7 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
-    listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener]
+    listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

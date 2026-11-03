@@ -30,8 +30,13 @@ func main() {
 		tracker.Watch()
 		return
 	}
-	os.Exit(Run(Options{Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Line: flags.Line, Home: home, Shell: userShell(),
-		HeartbeatEvery: HeartbeatInterval, Detach: Detach}, client, os.Stdout))
+	os.Exit(Run(flags.runOptions(home, userShell()), client, os.Stdout))
+}
+
+// runOptions are the options of a run from its flags.
+func (flags Flags) runOptions(home, shell string) Options {
+	return Options{Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
+		HeartbeatEvery: HeartbeatInterval, Detach: Detach}
 }
 
 // HeartbeatInterval is how often a run's heartbeat is written while its shell lives.

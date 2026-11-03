@@ -28,7 +28,10 @@ from suites.coding.modules.workers.listeners.boot_worktree_sweep_listener import
 from suites.coding.modules.workers.commands.sweep_worktrees.sweep_worktrees_handler import SweepWorktreesHandler
 from suites.coding.modules.workers.rules.worker_file_rule import WorkerFileRule
 from suites.coding.modules.workers.rules.worker_log_due_rule import WorkerLogDueRule
+from suites.coding.modules.workers.rules.worker_reuse_rule import WorkerReuseRule
 from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
+from suites.coding.modules.workers.rules.worker_report_rule import WorkerReportRule
+from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_handler import RecordWorkerReportHandler
 from suites.coding.modules.workers.commands.send_worker.send_worker_handler import SendWorkerHandler
 from suites.coding.modules.workers.commands.send_worker.send_worker_subcommand import SendWorkerSubcommand
 from suites.coding.modules.workers.listeners.ended_worker_job_listener import EndedWorkerJobListener
@@ -77,7 +80,6 @@ from suites.coding.modules.workers.upgrade.workers_move import WorkersMove
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
 from suites.coding.modules.workers.commands.worker_models.worker_models_subcommand import WorkerModelsSubcommand
-from suites.coding.modules.workers.rules.worker_test_turn_rule import WorkerTestTurnRule
 from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
@@ -100,10 +102,10 @@ class WorkersModule(Module):
     migrations = [WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
     views = [WorkerPoints]
     moves = [WorkersMove]
-    handlers = [StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, SweepWorktreesHandler]
+    handlers = [StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, SweepWorktreesHandler]
     subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [WorkerTestTurnRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, IdleWorkerRetireRule, WorktreeSweepRule]
+    driver_rules = [WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, IdleWorkerRetireRule, WorktreeSweepRule, WorkerReportRule]
     marks = WORKER_MARKS
     listeners = [DelegatedTaskCommentListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, BootWorktreeSweepListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.ONE_AGENT,

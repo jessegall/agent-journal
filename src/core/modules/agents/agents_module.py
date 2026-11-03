@@ -40,9 +40,15 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_shows import WindowShows
+from core.base.viewer.window_tab import WindowTab
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
+
+
+CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list"]
+CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create"]
+CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 
 class AgentsModule(Module):
@@ -57,13 +63,13 @@ class AgentsModule(Module):
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent running", "agent show", "usage agents", "usage tool", "hook-call feed"], events=["agent.*", "hook_call.*"],
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS,
                                  options=[ToggleOption("working", "Working agents", True), ToggleOption("waiting", "Blocked agents", True), ToggleOption("idle", "Idle agents", True), ToggleOption("stopped", "Agents not running", True),
                                           ToggleOption("environment", "Environment agents", True), ToggleOption("worker", "Workers", True), ToggleOption("subagent", "Subagents", True),
                                           ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number"),
                                           ToggleOption("every", "Show every agent")]),
-               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.ONE_AGENT, reads=["agent list", "usage agents"],
-                                 events=["agent.*"]),
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.ONE_AGENT, reads=CARD_READS,
+                                 events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.ONE_AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [MenuAnswerMarkListener]

@@ -1,3 +1,4 @@
+from core.modules.messages.messages_module import MessagesModule
 from datetime import timedelta
 
 import pytest
@@ -134,3 +135,9 @@ def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_i
     task_id = running_task(story, "Fix the cart")
     with pytest.raises(Refusal, match="has no title"):
         docked(story, task_id, SampleDockType.UNTITLED)
+
+
+def test_the_chat_window_may_run_the_buttons_of_its_docked_cards():
+    chat = next(window for window in MessagesModule.windows if window.name == "messages.chat")
+    assert {"dock remove", "dock keep", "dock unkeep"} <= set(chat.runs)
+

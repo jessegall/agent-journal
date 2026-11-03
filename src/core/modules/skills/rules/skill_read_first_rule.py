@@ -8,11 +8,12 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.modules.skills.support.block_conditions.skills_read import SkillsRead
+from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 
 
 class SkillReadFirstRule(DriverRule):
-    """While a skill is due the agent is blocked, and the refusal gives the path of the first one to read."""
+    """While a skill is due the agent is blocked until it has read that skill, and the next one due blocks it anew,
+    so the refusal always names one that is due, by a path a worker's worktree can read too."""
 
     name = "skills.read-first"
     hook = HookEventName.PRE_TOOL_USE
@@ -26,4 +27,5 @@ class SkillReadFirstRule(DriverRule):
         names = self.unread_skills.names(hook.agent_id)
         if not names or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, READ_SKILL_FIRST.nudge(path=self.files.relative(names[0])), SkillsRead())
+        path = self.files.readable(names[0]) if hook.role is AgentRole.WORKER else self.files.relative(names[0])
+        return RuleAnswer.blocked(hook, READ_SKILL_FIRST.nudge(path=path), SkillLoaded(names[0]))

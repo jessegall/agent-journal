@@ -15,6 +15,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
+from core.base.provider.transcript_author import TranscriptAuthor
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
@@ -107,8 +108,11 @@ class ClaudeCodeProvider(Provider):
         return HelperOutcome(report, results[-1].session or session, report if results[-1].is_error else None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        path = self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl"
-        return path if path.is_file() else None
+        projects = self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects"
+        path = projects / ClaudeFolderName.folder_name(project) / f"{session}.jsonl"
+        if path.is_file():
+            return path
+        return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
     def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
         rows: list[TranscriptRow] = []
@@ -120,7 +124,7 @@ class ClaudeCodeProvider(Provider):
                 continue
             text = "\n".join(self.message_texts(message.get("content")))
             if text.strip():
-                rows.append(TranscriptRow(len(rows) + 1, str(author), str(author), text))
+                rows.append(TranscriptAuthor.row(len(rows) + 1, author, text))
         return rows
 
     @staticmethod

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -26,6 +27,18 @@ func LockWait(home string, process int, parts []Part, aliases []string) string {
 }
 
 // isJournalLine says every part is a journal command; an alias is the command under it, so it waits like any other.
+// SlotWaitLimitSeconds is how long a queued run waits for its spot at most, so a queue that died leaves no run waiting.
+const SlotWaitLimitSeconds = 1800
+
+// SlotWait holds a queued run until the journal has written its spot into its folder.
+func SlotWait(home string, process int, queued bool) string {
+	if !queued {
+		return ""
+	}
+	mark := quoted(filepath.Join(home, "processes", strconv.Itoa(process), "slot"))
+	return fmt.Sprintf("__journal_slot=0\nwhile [ ! -e %s ] && [ \"$__journal_slot\" -lt %d ]; do sleep 1; __journal_slot=$((__journal_slot + 1)); done\n", mark, SlotWaitLimitSeconds)
+}
+
 func isJournalLine(parts []Part, aliases []string) bool {
 	for _, part := range parts {
 		words := strings.Fields(part.Text)

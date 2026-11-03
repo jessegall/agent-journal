@@ -1,6 +1,6 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {createApp, h} from "vue";
+import {createApp, h, nextTick} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import WindowDropdown from "../src/windows/WindowDropdown.vue";
 
@@ -33,13 +33,25 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-function opened() {
+function opened(anchor = null) {
     host = document.createElement("div");
     document.body.append(host);
-    app = createApp(() => h(WindowDropdown, {groups: GROUPS, catalogue: CATALOGUE, subscriptions: {}, environment: "main"}));
+    app = createApp(() => h(WindowDropdown, {groups: GROUPS, anchor, catalogue: CATALOGUE, subscriptions: {}, environment: "main"}));
     app.mount(host);
     return host.querySelector("[data-dropdown]");
 }
+
+test("a dropdown opens under its button, and moves left only as far as its own width needs to stay in the window", async () => {
+    const panel = opened({getBoundingClientRect: () => ({left: window.innerWidth - 100, bottom: 90})});
+    await nextTick();
+    expect(panel.style.left).toBe(`${window.innerWidth - width - 8}px`);
+    app.unmount();
+    host.remove();
+    const roomy = opened({getBoundingClientRect: () => ({left: 40, bottom: 90})});
+    await nextTick();
+    expect(roomy.style.left).toBe("40px");
+    expect(roomy.style.top).toBe("96px");
+});
 
 test("a dropdown at rest shows its contents at the width it has", () => {
     const panel = opened();

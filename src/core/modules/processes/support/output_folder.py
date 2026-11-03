@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
+from core.modules.processes.support.colour_codes import ColourCodes
 
 FOLDER_NAME = "processes"
 LINE_FILE = "line"
@@ -11,6 +12,7 @@ PID_FILE = "pid"
 END_FILE = "end"
 FIRST_OUTPUT_FILE = "1.out"
 HEARTBEAT_FILE = "heartbeat"
+SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
 
@@ -39,6 +41,14 @@ class OutputFolder:
     def part_texts(self, process_id: int) -> list[str]:
         text = self.text(process_id, PARTS_FILE)
         return text.split("\n") if text else []
+
+    def write_slot(self, process_id: int) -> None:
+        folder = self.home.folder / FOLDER_NAME / str(process_id)
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / SLOT_FILE).touch()
+
+    def has_slot(self, process_id: int) -> bool:
+        return (self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE).exists()
 
     def write_pid(self, process_id: int, pid: int) -> None:
         self.write_number(process_id, PID_FILE, pid)
@@ -116,7 +126,7 @@ class OutputFolder:
 
     def last_lines(self, process_id: int, count: int) -> list[str]:
         total = sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
-        return self.bytes_after(process_id, max(0, total - TAIL_BYTES)).decode(errors="replace").splitlines()[-count:]
+        return ColourCodes.removed(self.bytes_after(process_id, max(0, total - TAIL_BYTES)).decode(errors="replace")).splitlines()[-count:]
 
     def reader_lines(self, process_id: int) -> list[str]:
         return self.text(process_id, READER_LINES_FILE).splitlines()
@@ -129,7 +139,7 @@ class OutputFolder:
         self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in lines))
 
     def all_output(self, process_id: int) -> str:
-        return "".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1))
+        return ColourCodes.removed("".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)))
 
     def sizes(self, process_id: int) -> tuple[int, int]:
         texts = [self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)]

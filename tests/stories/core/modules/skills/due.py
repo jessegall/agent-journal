@@ -94,6 +94,20 @@ def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_i
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
 
 
+def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(new_story):
+    story = environment(new_story)
+    start(story)
+    for skill in DEFAULTS:
+        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
+    memory_list = HookSamples.shell("journal memory list", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "list"], subcommand="memory"))
+    story.expect_hook_refusal("s-1", memory_list, "read this first: .claude/skills/journal-memory")
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", digest_of(story, "journal-tasks")), story.agent)
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first: .claude/skills/journal-memory")
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", digest_of(story, "journal-memory")), story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+
+
 def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(new_story):
     story = environment(new_story)
     start(story)

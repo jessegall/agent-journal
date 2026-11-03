@@ -16,4 +16,5 @@ class RunnerLine:
     def build(runner: Path, process_id: int, run: ForegroundRun, line: str, session: str) -> str:
         background = " --background" if run.background else ""
         background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
+        background += " --queue" if run.queued else ""
         return f"{SESSION_VARIABLE}={shlex.quote(session)} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

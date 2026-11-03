@@ -1,4 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
+from core.base.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -38,5 +39,5 @@ class WorkerMoveMarkListener(MarkListener):
     def tasks_text(self, move: str, worktree: Worktree, task: Task) -> str:
         if move != DELIVERY_MOVE:
             return f"task {task.id}"
-        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows()
+        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
         return ", ".join(f"task {row.id}" for row in sorted(delivered, key=lambda row: row.id))

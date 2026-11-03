@@ -26,7 +26,7 @@ class ForegroundLimit:
 
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         alias_runs = self.background.alias_runs(shell)
-        if shell.is_journal_line and (not alias_runs or shell.all_parts_in_category(CommandCategory.JOURNAL)):
+        if shell.is_journal_line and (not alias_runs or all(part.classification.category is CommandCategory.JOURNAL for part in shell.parts)):
             return ForegroundRun(0, False)
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}

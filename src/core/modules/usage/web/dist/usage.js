@@ -1,47 +1,42 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d0e219c05149")) { const style = document.createElement("style"); style.id = "window-styles-d0e219c05149"; style.textContent = ".current[data-v-78349099]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-78349099]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-78349099]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-78349099]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-78349099]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-78349099]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-78349099]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-88e82b42]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-88e82b42]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-88e82b42]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-88e82b42]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-88e82b42]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-88e82b42]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-88e82b42]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-7beafc0d]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-7beafc0d]{margin:0;font-weight:600}.fitness-measure[data-v-7beafc0d]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-7beafc0d]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-27cf7d88]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-27cf7d88]{margin:0;font-weight:600}.load-row[data-v-27cf7d88]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-27cf7d88]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-de71da80]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-de71da80]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-de71da80]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-de71da80]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-de71da80]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-de71da80]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-de71da80]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as p, computed as f, onUnmounted as h, openBlock as s, createElementBlock as a, Fragment as _, createElementVNode as t, toDisplayString as l, createCommentVNode as i, renderList as k, normalizeStyle as y } from "vue";
-import { useWindow as S } from "@journal/window-kit";
-import { _ as E } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const I = {
+if (!document.getElementById("window-styles-1ba3a9e0ff56")) { const style = document.createElement("style"); style.id = "window-styles-1ba3a9e0ff56"; style.textContent = ".current[data-v-1aa2ca93]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-1aa2ca93]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-1aa2ca93]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-1aa2ca93]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-1aa2ca93]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-1aa2ca93]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-1aa2ca93]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-0e906283]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-0e906283]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-0e906283]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-0e906283]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-0e906283]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-0e906283]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-0e906283]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-7beafc0d]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-7beafc0d]{margin:0;font-weight:600}.fitness-measure[data-v-7beafc0d]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-7beafc0d]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-27cf7d88]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-27cf7d88]{margin:0;font-weight:600}.load-row[data-v-27cf7d88]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-27cf7d88]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-4db9ff50]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-4db9ff50]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-4db9ff50]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-4db9ff50]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-4db9ff50]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-4db9ff50]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-4db9ff50]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as g, openBlock as n, createElementBlock as a, Fragment as _, createElementVNode as e, unref as l, toDisplayString as r, createCommentVNode as d, renderList as f, normalizeStyle as h } from "vue";
+import { useReadLine as S, usePoll as k } from "@journal/window-kit";
+import { _ as v } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const y = {
   key: 0,
   class: "none"
-}, w = { class: "track" }, x = {
+}, E = { class: "track" }, L = {
   key: 1,
   class: "none"
-}, L = 3e4, N = {
+}, N = 3e4, P = {
   __name: "UsagePanel",
-  setup(D) {
-    const m = S(), o = p(null), r = p(""), u = f(() => {
-      var e;
-      return ((e = o.value) == null ? void 0 : e.windows) ?? [];
-    });
-    async function c() {
-      const e = await m.read("usage show");
-      o.value = e.ok ? e.value : null, r.value = e.ok ? "" : e.error;
-    }
-    const v = (e) => `Starts again ${new Date(e * 1e3).toLocaleString()}`, g = setInterval(c, L);
-    return h(() => clearInterval(g)), c(), (e, d) => (s(), a(_, null, [
-      d[0] || (d[0] = t("p", { class: "current" }, "Plan allowance used", -1)),
-      r.value ? (s(), a("p", I, l(r.value), 1)) : i("", !0),
-      (s(!0), a(_, null, k(u.value, (n) => (s(), a("div", {
-        key: n.title,
+  setup(x) {
+    const { value: o, failure: u, load: i } = S(() => "usage show"), c = g(() => {
+      var t;
+      return ((t = o.value) == null ? void 0 : t.windows) ?? [];
+    }), m = (t) => `Starts again ${new Date(t * 1e3).toLocaleString()}`;
+    return k(i, () => !0, N), (t, p) => (n(), a(_, null, [
+      p[0] || (p[0] = e("p", { class: "current" }, "Plan allowance used", -1)),
+      l(u) ? (n(), a("p", y, r(l(u)), 1)) : d("", !0),
+      (n(!0), a(_, null, f(c.value, (s) => (n(), a("div", {
+        key: s.title,
         class: "meter",
         "data-usage-meter": ""
       }, [
-        t("span", null, l(n.title), 1),
-        t("strong", null, l(Math.round(n.used_percent)) + "%", 1),
-        t("span", w, [
-          t("span", {
-            style: y({ width: `${n.used_percent}%` })
+        e("span", null, r(s.title), 1),
+        e("strong", null, r(Math.round(s.used_percent)) + "%", 1),
+        e("span", E, [
+          e("span", {
+            style: h({ width: `${s.used_percent}%` })
           }, null, 4)
         ]),
-        t("small", null, l(v(n.reset_epoch_seconds)), 1)
+        e("small", null, r(m(s.reset_epoch_seconds)), 1)
       ]))), 128)),
-      o.value && !u.value.length ? (s(), a("p", x, "No current plan window has been reported here.")) : i("", !0)
+      l(o) && !c.value.length ? (n(), a("p", L, "No current plan window has been reported here.")) : d("", !0)
     ], 64));
   }
-}, C = /* @__PURE__ */ E(N, [["__scopeId", "data-v-de71da80"]]);
+}, b = /* @__PURE__ */ v(P, [["__scopeId", "data-v-4db9ff50"]]);
 export {
-  C as default
+  b as default
 };
