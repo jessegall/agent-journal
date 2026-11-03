@@ -1,11 +1,10 @@
-import time
-
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
 from core.base.fault_sink import FaultSink
 from core.base.listener.commit_listener import CommitListener
+from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -15,14 +14,15 @@ from core.base.listener.commit_listener_error import CommitListenerError
 
 FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
-SLOW_LISTENER_SECONDS = 2.0
+COSTLY_LISTENER_POINTS = 500
 
 
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
     run left undone is done by the next. It claims each event before handling it, so a second runner never
     handles the same one; an event that fails is given back to be tried again, and one that fails three
-    times is skipped. Listeners a person waits on run again after each other listener, and a slow one is noted."""
+    times is skipped. Listeners a person waits on run again after each other listener, and a costly one is noted
+    with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  faults: FaultSink) -> None:
@@ -69,11 +69,13 @@ class CommitListenerRunner:
         listener_class = entry.path.loaded()
         if not issubclass(listener_class, CommitListener):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
-        started = time.monotonic()
+        tally = self.container.get(Database).tally
+        points_before = tally.points()
         try:
             self.container.get(listener_class).handle(event)
-            if time.monotonic() - started >= SLOW_LISTENER_SECONDS:
-                self.errors.noted(f"listener {entry.name} took {time.monotonic() - started:.1f} seconds on event {event.id} {event.event}")
+            cost = tally.points().minus(points_before)
+            if cost.total >= COSTLY_LISTENER_POINTS:
+                self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
