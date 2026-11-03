@@ -17,7 +17,7 @@ from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
-from core.modules.aliases.support.alias_nudges import ALIAS_REFUSAL
+from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_WORKERS_REFUSED, ALIAS_UNEXPANDED
 
 
 class AliasesModule(Module):
@@ -35,4 +35,4 @@ class AliasesModule(Module):
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
     driver_rules = [AliasExpansionRule]
-    nudges = [ALIAS_REFUSAL]
+    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_WORKERS_REFUSED]

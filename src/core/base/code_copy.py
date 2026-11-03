@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.conflict_files import ConflictFiles
 
 IGNORED = ("__pycache__", "node_modules", "*.pyc", ".venv")
 
@@ -17,4 +18,5 @@ class CodeCopy:
         return self.home.folder / "src"
 
     def make(self) -> None:
+        ConflictFiles(self.source).check()
         shutil.copytree(self.source, self.folder(), ignore=shutil.ignore_patterns(*IGNORED), dirs_exist_ok=True)

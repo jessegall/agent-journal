@@ -95,6 +95,7 @@
         "syntax_OneElementTupleDetector",
         "architecture_chat_MarkShownByListenerDetector",
         "architecture_scope_DisabledScopesOnlyDeclaredDetector",
+        "architecture_processes_ReaderJudgedInOnePlaceDetector",
         "architecture_drivers_BlocksThroughBlockUntilDetector",
         "architecture_chat_NoRawMarkTypeDetector",
         "architecture_chat_MarkEnumsInEnumsFolderDetector",

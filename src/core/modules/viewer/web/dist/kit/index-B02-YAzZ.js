@@ -10054,7 +10054,7 @@ const Pk = /* @__PURE__ */ Lk(Dk), jk = ["width", "height", "viewBox"], qk = ["w
       me(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, ux = /* @__PURE__ */ K(Hk, [["__scopeId", "data-v-47e67f04"]]), dx = Yi(() => import("./VoiceFigure-DC05bqLT.js").then((e) => e.V)), hx = "1.0.0", fx = "3.5";
+}, ux = /* @__PURE__ */ K(Hk, [["__scopeId", "data-v-47e67f04"]]), dx = Yi(() => import("./VoiceFigure-BQHuTTsw.js").then((e) => e.V)), hx = "1.0.0", fx = "3.5";
 export {
   Tl as $,
   Se as A,

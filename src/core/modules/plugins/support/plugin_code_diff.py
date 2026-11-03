@@ -22,11 +22,15 @@ class PluginCodeDiff:
     def file_lines(self, relative: str, old: Path, new: Path) -> list[str]:
         old_text, new_text = self.text(old), self.text(new)
         if old_text is None or new_text is None:
-            return [f"changed {relative}: not text"] if old.exists() and new.exists() and old.read_bytes() != new.read_bytes() else self.presence(relative, old, new)
+            return [f"changed {relative}: not text"] if self.has_changed_bytes(old, new) else self.presence(relative, old, new)
         if old_text == new_text:
             return []
         diff = list(difflib.unified_diff(old_text.splitlines(), new_text.splitlines(), f"{relative} (installed)", f"{relative} (new)", lineterm="", n=CONTEXT_LINES))
-        return [*diff[:FILE_LINES], *([f"... {len(diff) - FILE_LINES} more lines of {relative}"] if len(diff) > FILE_LINES else [])]
+        return diff if len(diff) <= FILE_LINES else [*diff[:FILE_LINES], f"... {len(diff) - FILE_LINES} more lines of {relative}"]
+
+    @staticmethod
+    def has_changed_bytes(old: Path, new: Path) -> bool:
+        return old.exists() and new.exists() and old.read_bytes() != new.read_bytes()
 
     @staticmethod
     def presence(relative: str, old: Path, new: Path) -> list[str]:

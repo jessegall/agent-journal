@@ -3,7 +3,7 @@ name: code-reviewer
 description: Reviews this repository's code every two hours and on request: faults, what the user asked against what exists, funnels, performance, SQL views, indexes, frontend requests and detectors, and files its findings as critical tasks. Read-only on files.
 tools: Read,Grep,Glob,Bash
 kind: subagent
-model: sonnet
+model: opus
 codex-model: 
 ---
 

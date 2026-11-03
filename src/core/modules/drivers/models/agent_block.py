@@ -31,5 +31,5 @@ class AgentBlock(Model):
 
     @property
     def grace(self) -> Interval | None:
-        spans = [*([ToolUseSpan(self.grace_tool_uses)] if self.grace_tool_uses else []), *([Seconds(self.grace_seconds)] if self.grace_seconds else [])]
+        spans = [span for span in (ToolUseSpan(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]
         return Interval(*spans) if spans else None

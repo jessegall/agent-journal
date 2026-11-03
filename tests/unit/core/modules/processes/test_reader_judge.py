@@ -52,8 +52,17 @@ def test_a_check_reader_needs_no_progress_even_when_its_output_prints_a_count():
 
 
 def test_a_test_reader_requires_progress_and_a_build_reader_requires_its_other_fields():
-    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == tuple(["--progress"])
+    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == ("--count", "--progress or --step with --count")
     assert judge().fields_missing(reader(title="", lines_pattern="", summary_pattern=""), CommandCategory.BUILD) == ("--title", "--lines or --script", "--summary")
+
+
+def test_a_test_reader_can_use_steps_and_count_for_progress():
+    counted = reader(count_pattern=r"collected ([0-9]+)", step_pattern="[.FE]")
+    assert judge().fields_missing(counted, CommandCategory.TEST_RUN) == ()
+    assert "--count found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")
+    assert "--progress found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")
+    assert "--count found nothing" in judge().misses(counted, CommandCategory.TEST_RUN, "done\n")
+    assert "--count found nothing" not in judge().misses(reader(count_command="list-tests"), CommandCategory.TEST_RUN, "done\n")
 
 
 def test_a_judgement_reports_its_missing_fields_and_misses():
@@ -69,10 +78,10 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
     rows = [ProcessPart(id=position, version=1, process_id=position, position=1, text="journal compile", command="make build", program="journal", category=CommandCategory.BUILD)
             for position in range(SAMPLE_OUTPUTS + 2, 0, -1)]
     rows.insert(0, ProcessPart(id=100, version=1, process_id=100, position=1, text="other", program="other", category=CommandCategory.BUILD))
-    parts.with_kept_output.return_value.filter.return_value.newest.return_value.all_rows.return_value = iter(rows)
+    parts.with_kept_output.return_value.newest.return_value.all_rows.return_value = iter(rows)
     folder.output.side_effect = lambda process_id, position: f"\x1b[32mdone {process_id}\x1b[0m\n"
-    selection = ReaderJudge(ReaderRun(), folder, parts).samples(reader(), CommandCategory.BUILD)
-    assert selection == tuple(f"done {position}\n" for position in range(SAMPLE_OUTPUTS + 2, 2, -1))
+    judgement = ReaderJudge(ReaderRun(), folder, parts).tested(reader())
+    assert judgement.output_id == SAMPLE_OUTPUTS + 2
+    assert judgement.missed == ()
     parts.with_kept_output.assert_called_once_with()
-    parts.with_kept_output.return_value.filter.assert_called_once_with(category=CommandCategory.BUILD)
     assert folder.output.call_count == SAMPLE_OUTPUTS

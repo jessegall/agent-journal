@@ -39,4 +39,5 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
         if advance.progress != process.progress and process.state in OPEN:
             self.repository.save(replace(process, progress=advance.progress), context)
         return self.repository.save(replace(kept[0], read_offset=advance.read_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
-                                            reader_summary=advance.summary, progress=advance.progress, steps_passed=advance.steps_passed, steps_failed=advance.steps_failed), context)
+                                            reader_summary=advance.summary, progress=advance.progress, steps_passed=advance.steps_passed, steps_failed=advance.steps_failed,
+                                            test_count=advance.test_count), context)

@@ -21,7 +21,9 @@ from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
+from core.base.provider.transcript_author import AGENT_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow
+from core.base.provider.transcript_tail import TranscriptTail
 
 
 class Provider(ABC):
@@ -84,6 +86,12 @@ class Provider(ABC):
 
     @abstractmethod
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None: ...
+
+    def last_reply(self, project: Path, session: str) -> str:
+        path = self.transcript(project, session)
+        lines = TranscriptTail(path).lines() if path else []
+        rows = (self.transcript_row(line, position) for position, line in enumerate(reversed(lines)))
+        return next((row.text for row in rows if row and row.author == AGENT_AUTHOR), "")
 
     @abstractmethod
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None: ...

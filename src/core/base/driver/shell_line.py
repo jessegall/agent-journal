@@ -59,19 +59,19 @@ class ShellLine:
         return self.has_category_part(CommandCategory.CHECK)
 
     @property
-    def has_redirect_to_file(self) -> bool:
+    def has_file_redirect(self) -> bool:
         return any(">" in redirect and not DESCRIPTOR_REDIRECT.match(redirect) for redirect in self.redirects)
 
     @property
     def has_part_writing_files(self) -> bool:
-        return self.has_redirect_to_file or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
+        return self.has_file_redirect or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
-    def is_read_only(self) -> bool:
+    def writes_nothing(self) -> bool:
         return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_part_writing_files
 
     @property
-    def category_of_watched_part(self) -> CommandCategory:
+    def watched_part_category(self) -> CommandCategory:
         watched_part = next((part for part in self.parts if part.classification.category.is_watched), None)
         program_part = next((part for part in self.parts if part.classification.category is not CommandCategory.JOURNAL), None)
         return (watched_part or program_part or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN

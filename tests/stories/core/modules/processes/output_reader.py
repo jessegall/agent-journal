@@ -1,4 +1,5 @@
 import stat
+import pytest
 from unittest.mock import patch
 
 from core.base.command.bus import Bus
@@ -25,6 +26,35 @@ def append(story, process_id: int, text: str) -> None:
 
 def reader_texts(reader_mock) -> list[str]:
     return [call.args[2] for call in reader_mock.call_args_list]
+
+
+@pytest.mark.parametrize("scripted", [False, True])
+def test_a_running_output_keeps_its_count_for_pattern_and_script_readers(new_story, tmp_path, scripted):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    script = tmp_path / "read.sh"
+    script.write_text("#!/bin/sh\ncat\n")
+    script.chmod(script.stat().st_mode | stat.S_IXUSR)
+    lines = f"--script {script}" if scripted else '--lines "FAILED"'
+    story.expect_success(f'reader add counted --commands "make*" {lines} --count "^collected ([0-9]+) items" --step "[.FE]"', actor=story.agent)
+    process = start_process(story, "make test")
+    append(story, process.id, "collected ")
+    tick(story)
+    story.expect_text(f"output show {process.id}", "test_count: 0", actor=story.agent)
+    append(story, process.id, "4 items\n.F\n")
+    tick(story)
+    story.expect_text(f"process show {process.id}", "state: running", "progress: 50", actor=story.agent)
+    story.expect_text(f"output show {process.id}", "test_count: 4", "steps_passed: 1", "steps_failed: 1", actor=story.agent)
+    if scripted:
+        assert story.container.get(OutputFolder).reader_lines(process.id) == []
+    append(story, process.id, ".\n")
+    tick(story)
+    story.expect_text(f"output show {process.id}", "test_count: 4", "progress: 75", actor=story.agent)
+    bus = story.container.get(Bus)
+    bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
+    bus.run(EndProcess(process.id, 0, BYTES_LONG, 4), story.agent, environment_id=1)
+    story.expect_text(f"output show {process.id}", "test_count: 4", "steps_passed: 2", "steps_failed: 1", actor=story.agent)
+    if scripted:
+        assert story.container.get(OutputFolder).reader_lines(process.id) == ["collected 4 items", ".F", "."]
 
 
 def test_a_long_run_read_twice_runs_the_reader_once_for_each_new_chunk(new_story):

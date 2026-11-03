@@ -6,6 +6,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
+from core.modules.processes.support.stock_reader import STOCK_READERS
 
 
 def reader(identifier: int = 1, **fields: object) -> Reader:
@@ -49,6 +50,28 @@ def test_a_chain_is_read_by_the_reader_of_its_test_run_whatever_stands_before_it
 def test_a_pattern_picks_the_matching_lines_with_their_numbers():
     selected_lines = ReaderRun().lines(reader(lines_pattern="FAILED|error"), "ok\nFAILED a\nfine\nerror b\n", "finished")
     assert selected_lines == ["2: FAILED a", "4: error b"]
+
+
+def test_a_count_uses_the_last_number_group_and_keeps_the_count_without_a_match():
+    counted = reader(count_pattern=r"collected ([0-9]+) items|([0-9]+) tests collected")
+    assert ReaderRun().count(counted, "collected 12 items\n7 tests collected\n", 3) == 7
+    assert ReaderRun().count(counted, "running\n", 7) == 7
+
+
+def test_a_count_without_groups_adds_matching_lines():
+    counted = reader(count_pattern=r"^\S+\.(?:test|spec)\.\w+ > ")
+    assert ReaderRun().count(counted, "a.test.js > first\nnoise\na.spec.ts > second\n", 3) == 5
+
+
+def test_stock_patterns_match_real_pytest_collection_and_vitest_listing_output():
+    pytest_reader, vitest_reader = STOCK_READERS[:2]
+    assert ReaderRun().count(reader(count_pattern=pytest_reader.count), "11 tests collected in 0.01s\n", 0) == 11
+    listing = (
+        "tests/dockFold.test.js > scrolling down to the foot opens the docked cards, and scrolling up away from it folds them\n"
+        "tests/dockFold.test.js > a scroll that goes down but stays away from the foot, or up within the last few pixels, changes nothing\n"
+        "tests/dockFold.test.js > a card folded by hand keeps that, else it follows the scroll\n"
+    )
+    assert ReaderRun().count(reader(count_pattern=vitest_reader.count), listing, 0) == 3
 
 
 def test_the_summary_is_the_last_match_with_its_groups_joined_or_the_whole_match():
