@@ -5,8 +5,8 @@ import {reloadIfNewBuild} from "../windows/staleBuild.js";
 const ASK_EVERY_MS = 2000;
 export const LATE_AFTER_MS = 30000;
 
-// whether the server is away, whether an install holds it, and whether it has been away for longer than a restart takes
-export const updating = reactive({starting: false, external: false, late: false});
+// whether the server is away, whether an install holds it, whether it has been away for longer than a restart takes, and whether this browser has no network
+export const updating = reactive({starting: false, external: false, late: false, offline: false});
 
 export const covered = () => updating.starting;
 
@@ -28,13 +28,20 @@ function arrived() {
     clearInterval(asking);
     clearTimeout(lateTimer);
     asking = 0;
-    Object.assign(updating, {starting: false, external: false, late: false});
+    Object.assign(updating, {starting: false, external: false, late: false, offline: false});
     waiting.splice(0).forEach((resolve) => resolve());
     reloadIfNewBuild();
 }
 
+// one question at a time, so a server that takes the question and never answers does not pile them up
+let isAsking = false;
+
 async function askServer() {
+    updating.offline = !navigator.onLine;
+    if (isAsking) return;
+    isAsking = true;
     const state = await stateOfServer();
+    isAsking = false;
     updating.external = state.updating;
     if (!state.restarting && !state.updating) arrived();
 }
@@ -43,6 +50,7 @@ async function askServer() {
 export function serverGone() {
     if (updating.starting) return;
     updating.starting = true;
+    updating.offline = !navigator.onLine;
     asking = setInterval(askServer, ASK_EVERY_MS);
     lateTimer = setTimeout(() => (updating.late = true), LATE_AFTER_MS);
 }

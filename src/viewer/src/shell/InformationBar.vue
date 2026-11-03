@@ -11,6 +11,7 @@ import {providerName} from "../domain/agents.js";
 // long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
     agent: {type: Object, default: null},
+    loading: Boolean,
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     branch: {type: String, default: ""},
@@ -90,7 +91,7 @@ const uptime = computed(() => {
                 <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Load, messages arriving against those answered" @click="emit('open', 'load', $event.currentTarget)"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
             </template>
         </template>
-        <template v-else-if="run">
+        <template v-else-if="run && !loading">
             <button type="button" class="fact lead" data-agent-start @click="openMenu($event, 'start')"><Icon name="agents" :size="12" /> Start an agent</button>
         </template>
         <span class="space" />

@@ -65,8 +65,8 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
             return {
                 key: name,
                 title: entry?.title || pane.titles?.[name] || name,
-                icon: entry?.icon || "window",
-                gone: !entry,
+                icon: entry?.icon || catalogue.keptIcon?.(name) || "window",
+                gone: !entry && catalogue.loaded?.value !== false,
                 count: counts.value[name]?.count,
                 hot: Boolean(counts.value[name]?.warm),
                 on: name === pane.active,

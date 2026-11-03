@@ -102,6 +102,37 @@ test("the cover says updating while an install holds the server", async () => {
     expect(updating.external).toBe(true);
 });
 
+test("a server that takes the question and never answers is not asked again until the first ends", async () => {
+    let endAsking;
+    const pending = vi.fn(() => new Promise((_, reject) => (endAsking = reject)));
+    vi.stubGlobal("fetch", pending);
+    serverGone();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(pending).toHaveBeenCalledTimes(1);
+    expect(pending.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+    endAsking(new DOMException("timed out", "TimeoutError"));
+    await vi.advanceTimersByTimeAsync(1);
+});
+
+test("a browser with no network says it is offline, not that the journal restarts", async () => {
+    const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const element = document.createElement("div");
+    const app = createApp(ServerCover);
+    app.mount(element);
+    serverGone();
+    await nextTick();
+    expect(element.querySelector("[data-server-cover]").textContent).toContain("You are offline");
+    expect(element.querySelector("[data-server-cover]").textContent).not.toContain("Restarting");
+    app.unmount();
+    online.mockRestore();
+});
+
+test("a write cut off by the journal going away says it may have gone through", async () => {
+    const answer = lineResult("a.b", ["task", "close", "1"], "main");
+    await vi.advanceTimersByTimeAsync(1);
+    expect((await answer).error).toContain("may or may not have gone through");
+});
+
 test("what waits for the server goes on at once when the server never left", async () => {
     await expect(serverBack()).resolves.toBeUndefined();
 });

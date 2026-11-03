@@ -6,10 +6,14 @@ import {updating} from "../state/updating.js";
 
 // version 4's cover: the page blurred behind one centred card while the server is away; it closes by itself when the server answers
 const title = computed(() => {
+    if (updating.offline) return "You are offline";
     if (updating.late) return "The journal is not answering";
     return updating.external ? "Updating the journal" : "Restarting the journal";
 });
-const step = computed(() => (updating.external ? "This can take a minute" : "This takes a few seconds"));
+const step = computed(() => {
+    if (updating.offline) return "This page reconnects when your network is back";
+    return updating.external ? "This can take a minute" : "This takes a few seconds";
+});
 const reload = () => window.location.reload();
 </script>
 
@@ -19,7 +23,7 @@ const reload = () => window.location.reload();
             <div class="panel">
                 <Spinner :size="22" class="spin" />
                 <p class="title">{{ title }}</p>
-                <template v-if="updating.late">
+                <template v-if="updating.late && !updating.offline">
                     <Btn small kind="primary" data-server-cover-reload @click="reload">Reload</Btn>
                 </template>
                 <template v-else>

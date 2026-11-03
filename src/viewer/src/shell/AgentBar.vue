@@ -51,7 +51,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
     display: flex;
     gap: 10px;
     align-items: center;
-    min-height: 46px;
+    min-height: 54px;
     padding: 0 16px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;

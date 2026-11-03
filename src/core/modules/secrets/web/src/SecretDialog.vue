@@ -71,7 +71,7 @@ async function save() {
 </script>
 
 <template>
-    <Dialog :title="row.title" wide @close="emit('close')">
+    <Dialog :title="row.title" @close="emit('close')">
         <div class="sections">
             <template v-if="row.waiting">
                 <p class="lead">The agent asked for this. Type what it needs and save.</p>

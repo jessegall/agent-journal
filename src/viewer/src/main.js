@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage.vue";
 import WindowShell from "./windows/WindowShell.vue";
 import PairPage from "./pages/PairPage.vue";
 import SharePage from "./pages/SharePage.vue";
+import {browserCopy} from "./windows/paneLayout.js";
 import {readSession} from "./windows/startup.js";
 import {pageRoute} from "./pageRoute.js";
 import {followColorScheme, pageTitle} from "./windows/colorScheme.js";
@@ -35,5 +36,14 @@ const start = (answer) => {
     createApp(ServerCover).mount(document.body.appendChild(document.createElement("div")));
 };
 
-// the cookie says which face this is: a share link's visitor gets the share page (so does a page the server marks as a gone link), anyone else the viewer
-readSession().catch(() => ({})).then(start);
+// the cookie says which face this is: a share link's visitor gets the share page (so does a page the server marks as a gone link), anyone else the viewer;
+// a person who opened the viewer in this browser before gets the page at once, so its skeleton shows before the journal has answered, and a new answer reloads it
+const SESSION_TYPE_KEY = "journal.session-type";
+const PERSON = "person";
+const opensAtOnce = browserCopy.read(SESSION_TYPE_KEY) === PERSON && location.pathname !== PAIRING_PATH && !document.querySelector(ENDED_LINK_MARK);
+if (opensAtOnce) start({type: PERSON});
+readSession().catch(() => ({})).then((answer) => {
+    if (answer.type) browserCopy.write(SESSION_TYPE_KEY, answer.type);
+    if (!opensAtOnce) start(answer);
+    else if (answer.type && answer.type !== PERSON) location.reload();
+});

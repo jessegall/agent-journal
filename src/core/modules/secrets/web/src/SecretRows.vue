@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, Icon, removed, useRows} from "@journal/window-kit";
+import {Btn, Dialog, EmptyState, Icon, removed, useRows} from "@journal/window-kit";
 import SecretCard from "./SecretCard.vue";
 import SecretDialog from "./SecretDialog.vue";
 import SecretNewDialog from "./SecretNewDialog.vue";
@@ -63,11 +63,8 @@ async function restore(row) {
                     </div>
                 </section>
             </template>
-            <template v-else-if="loaded && !asked.length && !failure">
-                <div class="none">
-                    <strong>No secrets yet</strong>
-                    A key or a login you add shows here by its name, never by its value.
-                </div>
+            <template v-else-if="!asked.length && !failure">
+                <EmptyState :loading="!loaded" title="No secrets yet">A key or a login you add shows here by its name, never by its value.</EmptyState>
             </template>
             <template v-if="deleted.length">
                 <section class="group">
@@ -216,19 +213,6 @@ async function restore(row) {
 
 h3 {
     margin: 0;
-    color: var(--text-2);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.none {
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.none strong {
-    display: block;
-    margin-bottom: 4px;
     color: var(--text-2);
     font-size: 14px;
     font-weight: 500;

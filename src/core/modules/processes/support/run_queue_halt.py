@@ -1,4 +1,5 @@
 from core.base.journal_home import JournalHome
+from core.base.server_restart_state import ServerRestartState
 
 
 class RunQueueHalt:
@@ -14,7 +15,7 @@ class RunQueueHalt:
 
     @property
     def is_restarting(self) -> bool:
-        return self.home.restart_mark.is_file()
+        return ServerRestartState(self.home).is_restarting
 
     @property
     def is_halted(self) -> bool:

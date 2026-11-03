@@ -82,7 +82,7 @@ function refusalWords(text) {
 }
 
 export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
-const UNREACHABLE = "The journal did not answer, so this did not go through. Try again.";
+const UNREACHABLE = "The journal did not answer, so this may or may not have gone through. Check before you try again.";
 
 // a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
 // gone never draws the answer
