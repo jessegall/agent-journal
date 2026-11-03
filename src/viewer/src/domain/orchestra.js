@@ -8,7 +8,7 @@ const STATES = {
 };
 const KEYS = {working: "working", busy: "working", compacting: "working", waiting: "waiting", you: "waiting", stuck: "stuck", silent: "stuck", stopped: "stopped"};
 
-export const agentState = (card) => {
+const agentState = (card) => {
     const key = KEYS[card.state] || "idle";
     return {key, ...STATES[key]};
 };

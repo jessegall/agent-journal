@@ -171,7 +171,6 @@ export const meta = (table) => TABLES[table];
 const WORDS = new Map(ORDER.flatMap((name) => [name, name.replace(/s$/, ""), TABLES[name].title.toLowerCase()].map((word) => [word, name])));
 export const tableOfWord = (word) => WORDS.get(String(word).toLowerCase()) || "";
 export const WORD_PATTERN = [...WORDS.keys()].sort((a, b) => b.length - a.length).join("|");
-export const label = (table, field, fallback) => (TABLES[table]?.labels || {})[field] || fallback;
 
 export const SHARED = ["docs", "reports", "plans"];
 export const MENUED = ["rules", "memories", "triggers"];

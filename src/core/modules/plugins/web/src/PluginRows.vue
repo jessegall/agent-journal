@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {Dashboard, Dialog, Btn, Skeleton, useReadLine, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {fileAddress} from "./fileAddress.js";
 import PluginGuide from "./PluginGuide.vue";
 import PluginInstallPreview from "./PluginInstallPreview.vue";
 import PluginRecordDialog from "./PluginRecordDialog.vue";
@@ -65,14 +66,11 @@ async function showUpgrade(row) {
 async function applyUpgrade() {
     const name = upgrade.value.name;
     upgrade.value = null;
-    if (await run(["plugin", "upgrade", name, "--yes"])) latest.value = {...latest.value, [name]: {line: `${name} is upgraded; running services change at the next restart`, is_newer: false}};
+    if (await run(["plugin", "upgrade", name, "--yes"])) latest.value = {...latest.value, [name]: {line: `${name} is upgraded; its running services start again within a minute`, is_newer: false}};
 }
 
 function openFile(node) {
-    const address = new URL(window.location.href);
-    address.searchParams.set("page", "coding.files");
-    address.searchParams.set("file", node.path);
-    window.location.assign(address.href);
+    window.location.assign(fileAddress(window.location.href, node));
 }
 
 const board = ref(null);

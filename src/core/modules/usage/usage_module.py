@@ -12,6 +12,7 @@ from core.modules.usage.commands.usage_fitness.usage_fitness_subcommand import U
 from core.modules.usage.commands.usage_tool.usage_tool_subcommand import UsageToolSubcommand
 from core.modules.usage.listeners.ended_agent_status_listener import EndedAgentStatusListener
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
+from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.models.statistic import Statistic
 from core.modules.usage.upgrade.statistics_move import StatisticsMove
 
@@ -26,6 +27,7 @@ class UsageModule(Module):
     dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits"]
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
+    views = [AgentCard]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     subcommands = (UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)

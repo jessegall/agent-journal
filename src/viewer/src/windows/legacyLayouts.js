@@ -32,7 +32,7 @@ const workerDriver = (drivers) => drivers.split(", ").find((driver) => driver.st
 const withFamilySwitches = (pane, declarations) =>
     pane.hide && declarations.length && !pane.options ? {...pane, options: optionsFromHidden(pane.hide, declarations)} : pane;
 
-export function renamedLayout(layout, declarations = []) {
+function renamedLayout(layout, declarations = []) {
     if (!layout?.tree || !layout.panes) return null;
     const panes = Object.fromEntries(
         Object.entries(layout.panes).map(([id, pane]) => {

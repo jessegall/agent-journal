@@ -1,6 +1,5 @@
 import {expect, test} from "vitest";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
-import {refusalWords} from "../src/windows/windowContext.js";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const QUESTION = {id: 7, text: "Merge now?", state: "open", options: ["Now", "Later"], recommended: "Later", created_at: "2026-11-02T10:00:00+00:00"};
@@ -46,9 +45,4 @@ test("close goes at once and elaborate asks the agent in a message", async () =>
     await settle();
     expect(asked[1]).toEqual(["question", "close", "7"]);
     expect(element.querySelector("[data-question-settled]").textContent).toBe("Closed");
-});
-
-test("the words of a refusal read as words, with what to do about it", () => {
-    expect(refusalWords(JSON.stringify({guard: "", refused: "too long", skip_flag: "", suggestion: "say it shorter"}))).toBe("too long: say it shorter");
-    expect(refusalWords("plain words")).toBe("plain words");
 });

@@ -28,7 +28,7 @@ function holdFoot(pane, el) {
 // A turn that arrives while the reader follows the foot: the chat first glides up by the turn's height, the turn still unseen in the room
 // being made (the pane held at its foot every frame), and only then the turn fades in and slides up from a little below into that room.
 // A reader who is away sees nothing move: `done` is called at once. `frame` and `clock` are the page's own, given so a test can step them.
-export function arrive(el, {pane, follows, frame = requestAnimationFrame, clock = () => performance.now()}, done) {
+function arrive(el, {pane, follows, frame = requestAnimationFrame, clock = () => performance.now()}, done) {
     if (!pane || !follows()) return done();
     const height = el.offsetHeight;
     Object.assign(el.style, {boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0", transform: `translateY(${SLIDE_PX}px)`});

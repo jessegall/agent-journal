@@ -1,3 +1,4 @@
+from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
@@ -22,4 +23,4 @@ class WorkerJobResumeListener(CommitListener):
         worker = self.queries.query(Agent).find(event.row_id)
         ended_worker = worker.role is AgentRole.WORKER and worker.ended_at is not None
         if ended_worker and self.queries.query(ActorRecord).find(event.actor_id).type is not ActorType.USER:
-            self.worker_resume.resume(worker, event.actor_id)
+            self.worker_resume.resume(worker, Actor(event.actor_id, ActorType.AGENT))

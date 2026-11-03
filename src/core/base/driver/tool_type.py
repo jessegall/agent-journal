@@ -13,3 +13,11 @@ class ToolType(StrEnum):
     AGENT = "agent"
     QUESTION = "question"
     UNCATEGORISED = "other"
+
+    @property
+    def reads_files(self) -> bool:
+        return self in (ToolType.READ, ToolType.SEARCH)
+
+    @property
+    def writes_files(self) -> bool:
+        return self in (ToolType.EDIT, ToolType.NEW_FILE)

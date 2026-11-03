@@ -20,6 +20,11 @@ class SuiteChoice:
         tops = self.registry.top_suites()
         return tops[0] if len(tops) == 1 else None
 
+    def runs(self, environment_id: int, suite_name: str) -> bool:
+        """Whether the environment runs the suite of that name, as the suite it chose or one that requires it, however far down."""
+        suite = self.suite(environment_id)
+        return suite is not None and suite_name in self.registry.lineage(suite)
+
     def driver(self, environment_id: int, role: str) -> DriverEntry | None:
         suite = self.suite(environment_id)
         if suite is None:

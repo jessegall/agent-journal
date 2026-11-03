@@ -1,21 +1,34 @@
 from collections.abc import Sequence
+from dataclasses import replace
 
+from core.base.command.bus import Bus
 from core.base.command.context import Context
+from core.base.driver.block_until import BlockUntil
+from core.base.driver.conditions.ran_command import RanCommand
+from core.base.driver.interval import Interval
 from core.base.driver.nudge import Nudge
-from core.base.query.queries import Queries
-from core.base.query.conditions.is_null import IsNull
-from core.base.repository.repository import Repository
-from core.modules.drivers.models.required_command import RequiredCommand
+from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_COUNTDOWN, REQUIRED_COMMAND_REFUSAL
+from core.modules.drivers.support.tool_use_span import ToolUseSpan
+
+TOOL_USES_GIVEN = 5
 
 
 class RequiredCommands:
-    """Opens a required_command for each line said that declares the command paying it, once while it stays
-    open."""
+    """Opens a block for each line said that declares the command paying it, once while it stays open: the agent has
+    five tool uses to run the command, and is held after them until it does or skips it."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
 
-    def open(self, agent_id: int, nudges: Sequence[Nudge], call_id: int, context: Context) -> None:
+    def open(self, agent_id: int, nudges: Sequence[Nudge], context: Context) -> None:
         for nudge in nudges:
-            if nudge.required_command and not self.queries.query(RequiredCommand).filter(agent_id=agent_id, required_command=nudge.required_command).matching(IsNull("closed_at")).exists():
-                self.repository.save(RequiredCommand(agent_id=agent_id, creator_id=context.actor.id, key=nudge.key, line=nudge.text, required_command=nudge.required_command, opened_call_id=call_id), context)
+            if nudge.required_command:
+                self.bus.dispatch(self.block(agent_id, nudge), context)
+
+    @staticmethod
+    def block(agent_id: int, nudge: Nudge) -> BlockUntil:
+        words = nudge.required_command.split()
+        subject = " ".join(dict.fromkeys((*words[2:3], words[1], words[-1])))
+        refusal = REQUIRED_COMMAND_REFUSAL.nudge(subject=subject, block="{block}")
+        countdown = REQUIRED_COMMAND_COUNTDOWN.nudge(subject=subject, left="{left}")
+        return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RanCommand(nudge.required_command), Interval(ToolUseSpan(TOOL_USES_GIVEN)), countdown)

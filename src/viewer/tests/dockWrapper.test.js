@@ -1,5 +1,8 @@
 import {expect, test} from "vitest";
-import {dockButtons, dockLook, dockTitle} from "../src/domain/dockLook.js";
+import {dockLook} from "../src/domain/dockLook.js";
+
+const dockButtons = (item, declaration) => dockLook(item, declaration).buttons;
+const dockTitle = (item, declaration) => dockLook(item, declaration).title;
 
 const declaration = {icon: "fact", title: "Memory {row_id}: {row_title}", buttons: [{icon: "x", label: "Weigh", runs: "memory weigh {row_id}"}]};
 const item = {id: 5, type: "memory", target_model: "memories", target_id: 3, kept: false, leaves_at: null, row_title: "Use tabs"};

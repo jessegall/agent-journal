@@ -11,11 +11,15 @@ from core.testing.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 CURRENT_TEST_VARIABLE = "PYTEST_CURRENT_TEST"
+XDIST_WORKER_VARIABLE = "PYTEST_XDIST_WORKER"
 
 
 @pytest.fixture(scope="session")
 def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
-    return TemplateDatabases(tmp_path_factory.mktemp("templates"))
+    run_folder = tmp_path_factory.getbasetemp().parent if XDIST_WORKER_VARIABLE in os.environ else tmp_path_factory.getbasetemp()
+    folder = run_folder / "templates"
+    folder.mkdir(exist_ok=True)
+    return TemplateDatabases(folder)
 
 
 @pytest.fixture

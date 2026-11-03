@@ -27,15 +27,27 @@ const isChanged = computed(() => CHANGED_SOURCES.has(props.row.source));
 const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && isChanged.value && props.row.default !== null && props.row.default !== undefined);
 const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
 
+// what the row shows once the text is saved: a value in the form the server lists it in; a secret shows none, and a list is kept as a JSON list
+function shownAs(text) {
+    if (props.row.type === "flag") return text === "on";
+    if (props.row.type === "number") return Number.isNaN(Number(text)) ? text : Number(text);
+    if (props.row.type === "list" || props.row.type === "number list") {
+        const items = text.startsWith("[") ? JSON.parse(text) : text.split(",").map((item) => item.trim()).filter(Boolean);
+        return JSON.stringify(props.row.type === "number list" ? items.map(Number) : items);
+    }
+    return text;
+}
+
+// the row shows the new value at once, and the refusal says why it went back
 async function saveValue(text) {
     const line = ["setting", "set", props.row.key, String(text), ...scopeFlag.value];
-    const result = await props.save(line);
+    const result = await props.save(line, props.row.secret ? null : {key: props.row.key, value: shownAs(String(text))});
     if (result.ok) refusal.value = "";
     else refusal.value = result.error;
 }
 
 async function switchGroup() {
-    const result = await props.save(["setting", "switch", props.row.key, props.row.value === false ? "on" : "off", "--project"]);
+    const result = await props.save(["setting", "switch", props.row.key, props.row.value === false ? "on" : "off", "--project"], {key: props.row.key, value: props.row.value === false});
     refusal.value = result.ok ? "" : result.error;
 }
 

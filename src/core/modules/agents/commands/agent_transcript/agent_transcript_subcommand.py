@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from dataclasses import replace
 from pathlib import Path
 
 from core.base.caller.caller import Caller
@@ -10,6 +11,7 @@ from core.base.query.queries import Queries
 from core.base.subcommand.page_arguments import page_arguments
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.transcript_authors import TranscriptAuthors
 from core.modules.environments.models.environment import Environment
 
 
@@ -20,8 +22,8 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
     cli_name = "agent"
     name = "transcript"
 
-    def __init__(self, queries: Queries, providers: Providers, index: TranscriptIndex) -> None:
-        self.queries, self.providers, self.index = queries, providers, index
+    def __init__(self, queries: Queries, providers: Providers, index: TranscriptIndex, authors: TranscriptAuthors) -> None:
+        self.queries, self.providers, self.index, self.authors = queries, providers, index, authors
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)
@@ -34,4 +36,5 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
         path = provider.transcript(folder, agent.session)
         if path is None:
             return Page((), arguments.page, arguments.limit, 0)
-        return self.index.page(provider, path, arguments.page, arguments.limit)
+        page = self.index.page(provider, path, arguments.page, arguments.limit)
+        return replace(page, rows=self.authors.tagged(agent, page.rows))

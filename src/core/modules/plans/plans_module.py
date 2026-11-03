@@ -25,6 +25,8 @@ from core.modules.plans.models.plan_card import PlanCard
 from core.modules.plans.migrations.m003_plan_state_index import PlanStateIndexMigration
 from core.modules.plans.migrations.m004_plan_start_time import PlanStartTimeMigration
 from core.modules.plans.commands.plan_progress.plan_progress_subcommand import PlanProgressSubcommand
+from core.modules.plans.models.plan_event_row import PlanEventRow
+from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
@@ -69,7 +71,7 @@ class PlansModule(Module):
     moves = [PlansMove]
     subcommands = (CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
-    views = [PlanTask, PlanProgress, PlanCard]
+    views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener)

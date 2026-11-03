@@ -28,6 +28,7 @@ from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.query.shared_rows import SharedRows
 from core.base.setting.setting_node import SettingNode
+from core.base.ticker.tick_handler import TickHandler
 from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
 from core.base.performance.performance_tool import PerformanceTool
@@ -44,7 +45,8 @@ class Module:
     on, the core version it needs, its migrations and views, its handlers, subcommands, guards and
     listeners, the classes it binds in place of the core's interfaces, the migration that removes its
     tables, and the suites, drivers, overlays, driver rules, windows, chat marks, docked items, skills,
-    seeders, the moves of its rows from version 4 and agent programs it adds."""
+    seeders, the moves of its rows from version 4, agent programs it adds and the handlers the ticker runs for
+    it on an interval."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -67,6 +69,7 @@ class Module:
     block_conditions: ClassVar[Sequence[type[BlockCondition]]] = ()
     performance_tools: ClassVar[Sequence[type[PerformanceTool]]] = ()
     nudges: ClassVar[Sequence[NudgeDeclaration]] = ()
+    tick_handlers: ClassVar[Sequence[TickHandler]] = ()
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
     settings: ClassVar[Sequence[SettingNode]] = ()

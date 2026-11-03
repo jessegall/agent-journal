@@ -1,3 +1,5 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
@@ -18,4 +20,4 @@ class EndedWorkerJobListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         line = self.queries.query(AgentLine).find(event.row_id)
-        self.worker_resume.resume(self.queries.query(Agent).find(line.agent_id), event.actor_id)
+        self.worker_resume.resume(self.queries.query(Agent).find(line.agent_id), Actor(event.actor_id, ActorType.AGENT))

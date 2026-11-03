@@ -27,7 +27,8 @@ from core.base.provider.transcript_row import TranscriptRow
 class Provider(ABC):
     """The base of every agent program's provider: how the journal starts the program, which hooks it sends
     under which event names, how its answers are printed, where its hooks are written, where it keeps its
-    sessions, and how it trusts a folder."""
+    sessions, and how it trusts a folder. monitor_tool is the tool the program watches a background run with:
+    a Monitor tool, or its shell when it has none; a program with none is never held for a monitor."""
 
     name: ClassVar[str]
     title: ClassVar[str]
@@ -37,6 +38,7 @@ class Provider(ABC):
     line_events: ClassVar[Sequence[HookEventName]]
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
+    monitor_tool: ClassVar[ToolType | None] = None
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON

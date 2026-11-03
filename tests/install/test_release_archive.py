@@ -49,7 +49,7 @@ def test_a_release_with_no_archive_stops_the_install_and_says_so(tmp_path):
     assert install_run.returncode == 1 and "the release has no agent-journal.tar.gz" in install_run.stderr
 
 
-STRAY_NAMES = ("version-4.bak", "d1short.txt", "d2.txt", "journal.db", "notes.orig", ".DS_Store", "cart.py.swp", "__pycache__", "node_modules", "viewer/tests")
+EXCLUDED_NAMES = ("version-4.bak", "d1short.txt", "d2.txt", "journal.db", "notes.orig", ".DS_Store", "cart.py.swp", "__pycache__", "node_modules", "viewer/tests")
 
 
 def test_the_archive_the_release_script_packs_holds_what_the_release_runs_and_no_stray_file(tmp_path):
@@ -58,7 +58,7 @@ def test_the_archive_the_release_script_packs_holds_what_the_release_runs_and_no
     subprocess.run(["sh", str(checkout / "scripts" / "build_archive.sh"), str(dist_folder)], cwd=checkout, check=True, capture_output=True, timeout=TIMEOUT_SECONDS)
     names = subprocess.run(["tar", "-tzf", str(dist_folder / ARCHIVE)], capture_output=True, text=True, check=True, timeout=TIMEOUT_SECONDS).stdout.splitlines()
     assert "src/core/journal.py" in names and "src/install/hook.sh" in names
-    assert not [name for name in names if any(stray in name for stray in STRAY_NAMES) or name.endswith((".pyc", ".bak", ".orig", ".swp", "~"))], names[:5]
+    assert not [name for name in names if any(excluded in name for excluded in EXCLUDED_NAMES) or name.endswith((".pyc", ".bak", ".orig", ".swp", "~"))], names[:5]
     sums = (dist_folder / "checksums.txt").read_text().splitlines()
     assert sum(line.endswith(f"  {ARCHIVE}") for line in sums) == 1
     subprocess.run(["sh", str(checkout / "scripts" / "build_archive.sh"), str(dist_folder)], cwd=checkout, check=True, capture_output=True, timeout=TIMEOUT_SECONDS)

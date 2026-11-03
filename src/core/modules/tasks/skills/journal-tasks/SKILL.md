@@ -8,7 +8,7 @@ description: Declare, log and finish the current work; read it before the first 
 A task is one unit of work: open, started, then completed or cancelled. Declare a task before you write.
 
 - `journal task make "<title>" --brief "<what and done when>"` files one; `--priority low|high|critical` when it is not
-  normal. Do not start what you file: the journal hands out tasks by priority.
+  normal. Do not start what you file: leave it open, and the suite of the environment hands it out, if it has a way to.
 - `journal task start <n>` takes a task in hand; `journal task list` shows the tasks here, `--state open` narrows it.
 - `journal task brief <n>` prints a task's title, brief and comments. A task handed to you blocks your writes until you
   have run it, and again after each compaction.

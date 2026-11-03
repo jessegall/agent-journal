@@ -1,6 +1,7 @@
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
+import {fileAddress} from "../../core/modules/plugins/web/src/fileAddress.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -43,6 +44,11 @@ test("a plugin shows everything it would run, and installs only from there", asy
     await settle();
     expect(ran).toContainEqual(["plugin", "install", "owner/repo", "--yes"]);
     expect(document.querySelector("[data-plugin-preview]")).toBeNull();
+});
+
+test("a dashboard's file row opens the Files window at the row's line, or at the top when it names none", () => {
+    expect(fileAddress("http://journal.test/viewer/?page=plugins", {path: "AGENTS.md", line: 12})).toBe("http://journal.test/viewer/?page=coding.files&file=AGENTS.md&line=12");
+    expect(fileAddress("http://journal.test/viewer/?page=plugins&line=9", {path: "src/a.py"})).toBe("http://journal.test/viewer/?page=coding.files&file=src%2Fa.py");
 });
 
 test("checking for updates says what the source has", async () => {

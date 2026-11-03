@@ -189,3 +189,16 @@ test("the files window opens the file its address names", async () => {
     expect(element.textContent).toContain("TOTAL = 0");
 });
 
+test("the files window marks the line its address names and scrolls it into view", async () => {
+    window.history.pushState({}, "", "?page=coding.files&file=src/cart.py&line=2");
+    const scrolled = [];
+    window.HTMLElement.prototype.scrollIntoView = function () { scrolled.push(this.dataset.fileLine); };
+    const shown = {...context({'project-file list ""': page([])}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0\nTAX = 1\nFEE = 2"}} : page([]))};
+    const element = await mounted(ProjectFiles, shown);
+    window.history.pushState({}, "", "?");
+    await settle();
+    expect([...element.querySelectorAll(".files-line.target")].map((line) => line.dataset.fileLine)).toEqual(["2"]);
+    expect(scrolled).toEqual(["2"]);
+    delete window.HTMLElement.prototype.scrollIntoView;
+});
+

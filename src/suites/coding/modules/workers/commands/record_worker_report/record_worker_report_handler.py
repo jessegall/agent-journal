@@ -12,7 +12,7 @@ SOURCE = "workers.report"
 
 class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
     """Saves the worker's report as an agent message of the worker, which the chat draws as the worker's, and
-    gives the same text to its main agent as a line."""
+    tells its main agent the message's number as a line."""
 
     command = RecordWorkerReport
 

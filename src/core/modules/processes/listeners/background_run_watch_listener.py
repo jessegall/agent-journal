@@ -13,12 +13,13 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
-from core.modules.processes.support.process_nudges import REQUIRED_MONITOR
+from core.modules.processes.support.process_nudges import REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND
 
 
 class BackgroundRunWatchListener(SaveListener):
     """A run moved to the background is watched by the agent that started it, so it hears how the run goes. An
-    agent whose program has a Monitor tool is held until it sets one on a run it started itself."""
+    agent whose program has a way to watch a run is held until it watches a run it started itself: it sets a
+    Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool."""
 
     name = "processes.background-run-watch"
     event = "process.*"
@@ -30,10 +31,13 @@ class BackgroundRunWatchListener(SaveListener):
         process = change.row
         if isinstance(process, Process) and change.move is not None and change.move.name == "background":
             self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=UNANNOUNCED_PERCENT), change.context)
-            if self.needs_monitor(process):
-                nudge = REQUIRED_MONITOR.nudge(output=process.id)
+            monitor_tool = self.monitor_tool(process)
+            if monitor_tool is not None:
+                declaration = REQUIRED_MONITOR if monitor_tool is ToolType.MONITOR else REQUIRED_MONITOR_COMMAND
+                nudge = declaration.nudge(output=process.id)
                 self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id)), change.context)
 
-    def needs_monitor(self, process: Process) -> bool:
-        program = self.queries.query(Agent).find(process.agent_id).program
-        return process.creator_id == process.agent_id and ToolType.MONITOR in self.providers.provider(program).tool_categories.values()
+    def monitor_tool(self, process: Process) -> ToolType | None:
+        if process.creator_id != process.agent_id:
+            return None
+        return self.providers.provider(self.queries.query(Agent).find(process.agent_id).program).monitor_tool

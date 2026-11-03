@@ -25,11 +25,6 @@ async function writeQueue(queue) {
     if (!remember(KEY, queue)) throw new Error("Could not save the message for retry");
 }
 
-export function token() {
-    if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
-    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
 function fileFrom(record) {
     const binary = atob(record.data);
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));

@@ -11,6 +11,7 @@ from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGra
 from core.modules.tasks.models.environment_card import EnvironmentCard
 from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHandler
 from core.modules.tasks.models.task_edge import TaskEdge
+from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
 from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
@@ -33,8 +34,6 @@ from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
-from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
-from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
 from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks_handler import ClearDelegatedTasksHandler
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
 from core.modules.tasks.commands.close_task.close_task import CloseTask
@@ -103,7 +102,7 @@ class TasksModule(Module):
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
-    views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
+    views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow]
     listeners = [FullTestRunListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS

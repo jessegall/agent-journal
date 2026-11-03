@@ -28,7 +28,7 @@ function playable(queue, state, now) {
     return {time: held.time, since: state.since, message: held};
 }
 
-export function frames(message, elapsed) {
+function frames(message, elapsed) {
     return ((message && message.parts) || []).map((part) => {
         const values = Array.isArray(part.value) ? part.value : [part.value];
         const step = Math.floor(elapsed / (part.duration || 1));

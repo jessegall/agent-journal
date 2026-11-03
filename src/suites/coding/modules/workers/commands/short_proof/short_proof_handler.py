@@ -11,6 +11,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.support.worker_nudges import WORKER_PROOF_SHORT
 
 SOURCE = "workers.short-proof"
 
@@ -29,7 +30,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
             self.repository.save(self.queries.query(Task).find(proof.task_id).moved(TaskLifecycle.retest), context)
-        line = (f"point {proof.point} of task {proof.task_id} is short: {command.shortfall}. Fix it, show it again with journal proof make {proof.point}"
-                f" \"<text>\" and deliver again with journal worker deliver")
-        self.nudger.send_text(worktree.agent_id, line, SOURCE, context)
+        self.nudger.send(worktree.agent_id, WORKER_PROOF_SHORT, SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof

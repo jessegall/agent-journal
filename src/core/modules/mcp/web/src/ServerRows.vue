@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {ago, Btn, RowList, useRows, ListTools, useListTools} from "@journal/window-kit";
+import {ago, added as addedRow, Btn, RowList, removed, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const installed = useRows("mcp list", []);
 const suggested = useRows("mcp suggested", []);
@@ -28,7 +28,8 @@ async function refresh() {
 }
 
 async function add() {
-    const result = await installed.act(["mcp", "add", added.name.trim(), added.target.trim()]);
+    const pending = {id: `adding-${Date.now()}`, name: added.name.trim(), title: added.name.trim(), standing: "adding", auth: "", url: added.target.trim(), command: "", args: [], key_variable: ""};
+    const result = await installed.act(["mcp", "add", added.name.trim(), added.target.trim()], addedRow(pending));
     if (!result.ok) return;
     Object.assign(added, {name: "", target: ""});
     await check();
@@ -42,7 +43,7 @@ async function signIn(row) {
 check();
 
 async function install(row) {
-    await suggested.act(["mcp", "install", row.name]);
+    await suggested.act(["mcp", "install", row.name], removed(row.id));
     await installed.load();
 }
 
@@ -78,7 +79,7 @@ async function giveKey(row) {
                     <template v-if="row.auth === 'oauth'">
                         <button type="button" data-mcp-sign-in @click="signIn(row)">Sign in</button>
                     </template>
-                    <button type="button" @click="installed.act(['mcp', 'remove', row.name])">Remove</button>
+                    <button type="button" @click="installed.act(['mcp', 'remove', row.name], removed(row.id))">Remove</button>
                 </div>
                 <code class="subject">{{ row.url || [row.command, ...row.args].join(" ") }}</code>
                 <template v-if="checkLine(row)">

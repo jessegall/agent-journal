@@ -1,34 +1,34 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-26d825489715")) { const style = document.createElement("style"); style.id = "window-styles-26d825489715"; style.textContent = ".setting-input[data-v-89c9f086]{display:flex;gap:8px;align-items:center}.setting-unit[data-v-89c9f086]{flex:none;color:var(--text-3);font-size:12px}.setting-list[data-v-89c9f086]{resize:vertical}.setting-head[data-v-89c9f086]{display:flex;gap:6px;align-items:center}.setting-dot[data-v-89c9f086]{width:6px;height:6px;border-radius:50%;background:var(--accent)}.setting-reset[data-v-89c9f086]{margin-left:auto;padding:0 6px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:11.5px;cursor:pointer}.setting-reset[data-v-89c9f086]:hover{background:var(--hover);color:var(--text)}.setting-group[data-v-89c9f086]{display:flex;flex-direction:column;gap:6px}.setting-group-head[data-v-89c9f086]{display:flex;align-items:center;gap:10px}.setting-group-title[data-v-89c9f086]{margin:0;font-size:13px;font-weight:600}.setting-children[data-v-89c9f086]{display:flex;flex-direction:column;gap:14px;padding-left:14px;border-left:1px solid var(--line)}.setting-children.off[data-v-89c9f086]{opacity:.5}.setting-value[data-v-89c9f086]{display:flex;flex-direction:column;gap:4px}.setting-label[data-v-89c9f086]{font-size:12px;color:var(--text)}.setting-description[data-v-89c9f086],.setting-shown[data-v-89c9f086]{margin:0;font-size:12px;color:var(--text-3)}.setting-field[data-v-89c9f086]{max-width:360px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.setting-switch[data-v-89c9f086]{align-self:flex-start;padding:2px 10px;border:0;border-radius:10px;color:var(--text-2);background:var(--raised);font-size:11px;cursor:pointer}.setting-switch[aria-checked=true][data-v-89c9f086]{color:#fff;background:var(--accent)}.setting-choices[data-v-89c9f086]{display:flex;gap:6px}.setting-refusal[data-v-89c9f086]{margin:0;font-size:12px;color:var(--danger)}.environment[data-v-33d34628]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.environment-names[data-v-33d34628]{flex:1;min-width:0}.environment-name[data-v-33d34628]{font-weight:500}.environment-here[data-v-33d34628]{margin-left:8px;color:var(--accent-text);font-size:12px}.environment-folder[data-v-33d34628]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.environment-refusal[data-v-33d34628]{margin:2px 0 0;color:var(--danger);font-size:12.5px}.settings-nav-item.current[data-v-e412288f]{background:var(--hover);color:var(--text)}.settings[data-v-e412288f]{display:flex;flex-direction:column;gap:16px}.settings-bar[data-v-e412288f]{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.settings-search[data-v-e412288f]{flex:1;min-width:200px;max-width:360px}.settings-saved[data-v-e412288f]{color:var(--text-3);font-size:12px}.settings-search-field[data-v-e412288f]{width:100%;max-width:360px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.settings-body[data-v-e412288f]{display:flex;gap:28px;align-items:flex-start}.settings-nav[data-v-e412288f]{display:flex;flex:none;flex-direction:column;gap:2px;width:150px;position:sticky;top:0}.settings-nav-item[data-v-e412288f]{padding:5px 10px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.settings-nav-item[data-v-e412288f]:hover{background:var(--hover);color:var(--text)}.settings-sections[data-v-e412288f]{display:flex;flex:1;flex-direction:column;gap:32px;min-width:0}.settings-module[data-v-e412288f]{display:flex;flex-direction:column;gap:18px}.settings-module-heading[data-v-e412288f]{margin:0;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}.settings-failure[data-v-e412288f],.settings-empty[data-v-e412288f]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { computed as g, ref as O, openBlock as t, createElementBlock as o, createElementVNode as l, toDisplayString as v, createBlock as x, unref as f, createCommentVNode as _, normalizeClass as W, Fragment as A, renderList as R, withDirectives as z, vModelText as Q, withCtx as L, createTextVNode as I, createVNode as D, onMounted as te, onUnmounted as ne, withKeys as se } from "vue";
-import { Switch as H, Btn as q, useRows as X, RowList as ae, Segmented as J, Skeleton as oe } from "@journal/window-kit";
-const P = (e, n) => {
+if (!document.getElementById("window-styles-ac4c3ed54c90")) { const style = document.createElement("style"); style.id = "window-styles-ac4c3ed54c90"; style.textContent = ".setting-input[data-v-796b5794]{display:flex;gap:8px;align-items:center}.setting-unit[data-v-796b5794]{flex:none;color:var(--text-3);font-size:12px}.setting-list[data-v-796b5794]{resize:vertical}.setting-head[data-v-796b5794]{display:flex;gap:6px;align-items:center}.setting-dot[data-v-796b5794]{width:6px;height:6px;border-radius:50%;background:var(--accent)}.setting-reset[data-v-796b5794]{margin-left:auto;padding:0 6px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:11.5px;cursor:pointer}.setting-reset[data-v-796b5794]:hover{background:var(--hover);color:var(--text)}.setting-group[data-v-796b5794]{display:flex;flex-direction:column;gap:6px}.setting-group-head[data-v-796b5794]{display:flex;align-items:center;gap:10px}.setting-group-title[data-v-796b5794]{margin:0;font-size:13px;font-weight:600}.setting-children[data-v-796b5794]{display:flex;flex-direction:column;gap:14px;padding-left:14px;border-left:1px solid var(--line)}.setting-children.off[data-v-796b5794]{opacity:.5}.setting-value[data-v-796b5794]{display:flex;flex-direction:column;gap:4px}.setting-label[data-v-796b5794]{font-size:12px;color:var(--text)}.setting-description[data-v-796b5794],.setting-shown[data-v-796b5794]{margin:0;font-size:12px;color:var(--text-3)}.setting-field[data-v-796b5794]{max-width:360px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.setting-switch[data-v-796b5794]{align-self:flex-start;padding:2px 10px;border:0;border-radius:10px;color:var(--text-2);background:var(--raised);font-size:11px;cursor:pointer}.setting-switch[aria-checked=true][data-v-796b5794]{color:#fff;background:var(--accent)}.setting-choices[data-v-796b5794]{display:flex;gap:6px}.setting-refusal[data-v-796b5794]{margin:0;font-size:12px;color:var(--danger)}.environment[data-v-f4755e01]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.environment-names[data-v-f4755e01]{flex:1;min-width:0}.environment-name[data-v-f4755e01]{font-weight:500}.environment-here[data-v-f4755e01]{margin-left:8px;color:var(--accent-text);font-size:12px}.environment-folder[data-v-f4755e01]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.environment-refusal[data-v-f4755e01]{margin:2px 0 0;color:var(--danger);font-size:12.5px}.settings-nav-item.current[data-v-9ca5647a]{background:var(--hover);color:var(--text)}.settings[data-v-9ca5647a]{display:flex;flex-direction:column;gap:16px}.settings-bar[data-v-9ca5647a]{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.settings-search[data-v-9ca5647a]{flex:1;min-width:200px;max-width:360px}.settings-saved[data-v-9ca5647a]{color:var(--text-3);font-size:12px}.settings-search-field[data-v-9ca5647a]{width:100%;max-width:360px;padding:7px 12px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text)}.settings-body[data-v-9ca5647a]{display:flex;gap:28px;align-items:flex-start}.settings-nav[data-v-9ca5647a]{display:flex;flex:none;flex-direction:column;gap:2px;width:150px;position:sticky;top:0}.settings-nav-item[data-v-9ca5647a]{padding:5px 10px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.settings-nav-item[data-v-9ca5647a]:hover{background:var(--hover);color:var(--text)}.settings-sections[data-v-9ca5647a]{display:flex;flex:1;flex-direction:column;gap:32px;min-width:0}.settings-module[data-v-9ca5647a]{display:flex;flex-direction:column;gap:18px}.settings-module-heading[data-v-9ca5647a]{margin:0;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}.settings-failure[data-v-9ca5647a],.settings-empty[data-v-9ca5647a]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { computed as h, ref as N, openBlock as n, createElementBlock as o, createElementVNode as u, toDisplayString as f, createBlock as O, unref as g, createCommentVNode as _, normalizeClass as H, Fragment as B, renderList as x, withDirectives as z, vModelText as Q, withCtx as R, createTextVNode as I, createVNode as D, onMounted as te, onUnmounted as ne, withKeys as se } from "vue";
+import { Switch as P, Btn as q, useRows as X, RowList as ae, removed as oe, Segmented as Y, Skeleton as le, patchedWhere as ie } from "@journal/window-kit";
+const M = (e, t) => {
   const b = e.__vccOpts || e;
-  for (const [C, N] of n)
-    b[C] = N;
+  for (const [S, j] of t)
+    b[S] = j;
   return b;
-}, le = ["data-setting"], ie = { class: "setting-group-head" }, re = { class: "setting-group-title" }, ue = { class: "setting-description" }, de = {
+}, re = ["data-setting"], ue = { class: "setting-group-head" }, de = { class: "setting-group-title" }, ce = { class: "setting-description" }, ve = {
   key: 0,
   class: "setting-refusal"
-}, ce = ["data-setting"], ve = { class: "setting-head" }, fe = {
+}, fe = ["data-setting"], ye = { class: "setting-head" }, ge = {
   key: 0,
   class: "setting-dot",
   "data-setting-changed": "",
   title: "Changed from the default"
-}, ge = ["for"], ye = ["title"], me = { class: "setting-description" }, he = { class: "setting-shown" }, ke = ["id", "disabled"], we = {
+}, me = ["for"], he = ["title"], ke = { class: "setting-description" }, we = { class: "setting-shown" }, pe = ["id", "disabled"], be = {
   key: 2,
   class: "setting-choices"
-}, pe = ["id", "value", "disabled"], be = {
+}, Se = ["id", "value", "disabled"], Ce = {
   key: 4,
   class: "setting-input"
-}, Ce = ["id", "type", "value", "disabled"], Se = {
+}, $e = ["id", "type", "value", "disabled"], _e = {
   key: 0,
   class: "setting-unit",
   "data-setting-unit": ""
-}, $e = {
+}, Ne = {
   key: 5,
   class: "setting-refusal"
-}, _e = {
+}, Oe = {
   __name: "SettingNode",
   props: {
     row: { type: Object, required: !0 },
@@ -37,47 +37,56 @@ const P = (e, n) => {
     save: { type: Function, required: !0 }
   },
   setup(e) {
-    const n = e, b = g(() => n.rows.filter((k) => k.parent === n.row.key)), C = g(() => n.row.type === "group"), N = g(() => n.row.scope === "project" ? ["--project"] : []), w = O(""), m = O(""), j = /* @__PURE__ */ new Set(["environment", "project"]), p = { seconds: "seconds", minutes: "minutes", hours: "hours", days: "days", bytes: "bytes", characters: "characters", percent: "%" }, S = g(() => n.row.type === "number" ? p[n.row.key.split(/[-_.]/).at(-1)] ?? "" : ""), $ = g(() => n.row.type === "list" || n.row.type === "number list"), y = g(() => n.row.value ? JSON.parse(n.row.value).join(`
-`) : ""), a = g(() => j.has(n.row.source)), d = g(() => !n.readOnly && !n.row.secret && !C.value && a.value && n.row.default !== null && n.row.default !== void 0), E = g(() => typeof n.row.default == "boolean" ? n.row.default ? "on" : "off" : Array.isArray(n.row.default) ? n.row.default.join(",") : String(n.row.default));
-    async function T(k) {
-      const h = ["setting", "set", n.row.key, String(k), ...N.value], i = await n.save(h);
+    const t = e, b = h(() => t.rows.filter((l) => l.parent === t.row.key)), S = h(() => t.row.type === "group"), j = h(() => t.row.scope === "project" ? ["--project"] : []), w = N(""), k = N(""), E = /* @__PURE__ */ new Set(["environment", "project"]), p = { seconds: "seconds", minutes: "minutes", hours: "hours", days: "days", bytes: "bytes", characters: "characters", percent: "%" }, C = h(() => t.row.type === "number" ? p[t.row.key.split(/[-_.]/).at(-1)] ?? "" : ""), $ = h(() => t.row.type === "list" || t.row.type === "number list"), m = h(() => t.row.value ? JSON.parse(t.row.value).join(`
+`) : ""), a = h(() => E.has(t.row.source)), c = h(() => !t.readOnly && !t.row.secret && !S.value && a.value && t.row.default !== null && t.row.default !== void 0), A = h(() => typeof t.row.default == "boolean" ? t.row.default ? "on" : "off" : Array.isArray(t.row.default) ? t.row.default.join(",") : String(t.row.default));
+    function G(l) {
+      if (t.row.type === "flag") return l === "on";
+      if (t.row.type === "number") return Number.isNaN(Number(l)) ? l : Number(l);
+      if (t.row.type === "list" || t.row.type === "number list") {
+        const y = l.startsWith("[") ? JSON.parse(l) : l.split(",").map((i) => i.trim()).filter(Boolean);
+        return JSON.stringify(t.row.type === "number list" ? y.map(Number) : y);
+      }
+      return l;
+    }
+    async function T(l) {
+      const y = ["setting", "set", t.row.key, String(l), ...j.value], i = await t.save(y, t.row.secret ? null : { key: t.row.key, value: G(String(l)) });
       i.ok ? w.value = "" : w.value = i.error;
     }
-    async function G() {
-      const k = await n.save(["setting", "switch", n.row.key, n.row.value === !1 ? "on" : "off", "--project"]);
-      w.value = k.ok ? "" : k.error;
+    async function F() {
+      const l = await t.save(["setting", "switch", t.row.key, t.row.value === !1 ? "on" : "off", "--project"], { key: t.row.key, value: t.row.value === !1 });
+      w.value = l.ok ? "" : l.error;
     }
-    function F(k) {
-      T(k.target.value);
+    function U(l) {
+      T(l.target.value);
     }
-    function U(k) {
-      const h = k.target.value.split(`
+    function L(l) {
+      const y = l.target.value.split(`
 `).map((i) => i.trim()).filter(Boolean);
-      T(n.row.type === "list" ? JSON.stringify(h) : h.join(","));
+      T(t.row.type === "list" ? JSON.stringify(y) : y.join(","));
     }
-    function B() {
-      m.value && T(m.value).then(() => m.value = "");
+    function J() {
+      k.value && T(k.value).then(() => k.value = "");
     }
-    return (k, h) => C.value ? (t(), o("section", {
+    return (l, y) => S.value ? (n(), o("section", {
       key: 0,
       class: "setting-group",
       "data-setting": e.row.key
     }, [
-      l("div", ie, [
-        l("h3", re, v(e.row.title), 1),
-        e.row.toggleable && !e.readOnly ? (t(), x(f(H), {
+      u("div", ue, [
+        u("h3", de, f(e.row.title), 1),
+        e.row.toggleable && !e.readOnly ? (n(), O(g(P), {
           key: 0,
           on: e.row.value !== !1,
           title: `Switch ${e.row.title} ${e.row.value === !1 ? "on" : "off"}`,
           "data-group-switch": "",
-          onChange: G
+          onChange: F
         }, null, 8, ["on", "title"])) : _("", !0)
       ]),
-      l("p", ue, v(e.row.description), 1),
-      l("div", {
-        class: W(["setting-children", { off: e.row.value === !1 }])
+      u("p", ce, f(e.row.description), 1),
+      u("div", {
+        class: H(["setting-children", { off: e.row.value === !1 }])
       }, [
-        (t(!0), o(A, null, R(b.value, (i) => (t(), x(Z, {
+        (n(!0), o(B, null, x(b.value, (i) => (n(), O(Z, {
           key: i.key,
           row: i,
           rows: e.rows,
@@ -85,271 +94,271 @@ const P = (e, n) => {
           save: e.save
         }, null, 8, ["row", "rows", "read-only", "save"]))), 128))
       ], 2),
-      w.value ? (t(), o("p", de, v(w.value), 1)) : _("", !0)
-    ], 8, le)) : (t(), o("div", {
+      w.value ? (n(), o("p", ve, f(w.value), 1)) : _("", !0)
+    ], 8, re)) : (n(), o("div", {
       key: 1,
       class: "setting-value",
       "data-setting": e.row.key
     }, [
-      l("div", ve, [
-        a.value ? (t(), o("span", fe)) : _("", !0),
-        l("label", {
+      u("div", ye, [
+        a.value ? (n(), o("span", ge)) : _("", !0),
+        u("label", {
           class: "setting-label",
           for: e.row.key
-        }, v(e.row.title), 9, ge),
-        d.value ? (t(), o("button", {
+        }, f(e.row.title), 9, me),
+        c.value ? (n(), o("button", {
           key: 1,
           type: "button",
           class: "setting-reset",
           "data-setting-reset": "",
-          title: `Back to the default: ${E.value}`,
-          onClick: h[0] || (h[0] = (i) => T(E.value))
-        }, "Reset", 8, ye)) : _("", !0)
+          title: `Back to the default: ${A.value}`,
+          onClick: y[0] || (y[0] = (i) => T(A.value))
+        }, "Reset", 8, he)) : _("", !0)
       ]),
-      l("p", me, v(e.row.description), 1),
-      e.row.secret ? (t(), o(A, { key: 0 }, [
-        l("p", he, v(e.row.shown), 1),
-        z(l("input", {
+      u("p", ke, f(e.row.description), 1),
+      e.row.secret ? (n(), o(B, { key: 0 }, [
+        u("p", we, f(e.row.shown), 1),
+        z(u("input", {
           id: e.row.key,
-          "onUpdate:modelValue": h[1] || (h[1] = (i) => m.value = i),
+          "onUpdate:modelValue": y[1] || (y[1] = (i) => k.value = i),
           class: "setting-field",
           type: "password",
           disabled: e.readOnly,
           placeholder: "Type a new value",
-          onChange: B
-        }, null, 40, ke), [
-          [Q, m.value]
+          onChange: J
+        }, null, 40, pe), [
+          [Q, k.value]
         ])
-      ], 64)) : e.row.type === "flag" ? (t(), x(f(H), {
+      ], 64)) : e.row.type === "flag" ? (n(), O(g(P), {
         key: 1,
         on: e.row.value === !0,
         title: e.row.title,
         disabled: e.readOnly,
         "data-flag-switch": "",
-        onChange: h[2] || (h[2] = (i) => !e.readOnly && T(i ? "on" : "off"))
-      }, null, 8, ["on", "title", "disabled"])) : e.row.type === "choice" ? (t(), o("div", we, [
-        (t(!0), o(A, null, R(e.row.choices, (i) => (t(), x(f(q), {
+        onChange: y[2] || (y[2] = (i) => !e.readOnly && T(i ? "on" : "off"))
+      }, null, 8, ["on", "title", "disabled"])) : e.row.type === "choice" ? (n(), o("div", be, [
+        (n(!0), o(B, null, x(e.row.choices, (i) => (n(), O(g(q), {
           key: i,
           small: "",
           kind: i === e.row.value ? "primary" : "ghost",
           "data-choice": i,
           disabled: e.readOnly,
-          onClick: (K) => T(i)
+          onClick: (W) => T(i)
         }, {
-          default: L(() => [
-            I(v(i), 1)
+          default: R(() => [
+            I(f(i), 1)
           ]),
           _: 2
         }, 1032, ["kind", "data-choice", "disabled", "onClick"]))), 128))
-      ])) : $.value ? (t(), o("textarea", {
+      ])) : $.value ? (n(), o("textarea", {
         key: 3,
         id: e.row.key,
         class: "setting-field setting-list",
         rows: "3",
-        value: y.value,
+        value: m.value,
         disabled: e.readOnly,
         placeholder: "One on each line",
         "data-setting-list": "",
-        onChange: U
-      }, null, 40, pe)) : (t(), o("div", be, [
-        l("input", {
+        onChange: L
+      }, null, 40, Se)) : (n(), o("div", Ce, [
+        u("input", {
           id: e.row.key,
           class: "setting-field",
           type: e.row.type === "number" ? "number" : "text",
           value: e.row.value,
           disabled: e.readOnly,
-          onChange: F
-        }, null, 40, Ce),
-        S.value ? (t(), o("span", Se, v(S.value), 1)) : _("", !0)
+          onChange: U
+        }, null, 40, $e),
+        C.value ? (n(), o("span", _e, f(C.value), 1)) : _("", !0)
       ])),
-      w.value ? (t(), o("p", $e, v(w.value), 1)) : _("", !0)
-    ], 8, ce));
+      w.value ? (n(), o("p", Ne, f(w.value), 1)) : _("", !0)
+    ], 8, fe));
   }
-}, Z = /* @__PURE__ */ P(_e, [["__scopeId", "data-v-89c9f086"]]), Oe = ["data-environment"], xe = { class: "environment-names" }, Ne = { class: "environment-name" }, je = {
+}, Z = /* @__PURE__ */ M(Oe, [["__scopeId", "data-v-796b5794"]]), je = ["data-environment"], Ee = { class: "environment-names" }, Ae = { class: "environment-name" }, Te = {
   key: 0,
   class: "environment-here"
-}, Ee = { class: "environment-folder" }, Te = {
+}, Be = { class: "environment-folder" }, Le = {
   class: "environment-folder",
   "data-environment-state": ""
-}, Ae = {
+}, Re = {
   key: 1,
   class: "environment-refusal",
   role: "alert",
   "data-environment-refusal": ""
-}, Be = {
+}, xe = {
   __name: "SettingsEnvironments",
   setup(e) {
-    const { rows: n, failure: b, loaded: C, load: N, context: w } = X("environment cards", ["environment.*"]), m = O(0), j = O({}), p = (y) => y.name === w.environment, S = g(() => [...n.value].sort((y, a) => p(a) - p(y) || y.name.localeCompare(a.name)));
-    async function $(y) {
-      if (m.value !== y.id) return void (m.value = y.id);
-      const a = await w.run(["environment", "delete", String(y.id)]);
-      j.value = { ...j.value, [y.id]: a.ok ? "" : a.error }, m.value = 0, a.ok && N();
+    const { rows: t, failure: b, loaded: S, act: j, context: w } = X("environment cards", ["environment.*"]), k = N(0), E = N({}), p = (m) => m.name === w.environment, C = h(() => [...t.value].sort((m, a) => p(a) - p(m) || m.name.localeCompare(a.name)));
+    async function $(m) {
+      if (k.value !== m.id) return void (k.value = m.id);
+      k.value = 0;
+      const a = await j(["environment", "delete", String(m.id)], oe(m.id));
+      E.value = { ...E.value, [m.id]: a.ok ? "" : a.error };
     }
-    return (y, a) => (t(), x(f(ae), {
-      rows: S.value,
-      failure: f(b),
-      loaded: f(C),
+    return (m, a) => (n(), O(g(ae), {
+      rows: C.value,
+      failure: g(b),
+      loaded: g(S),
       empty: "No environments yet",
       hint: "An environment is one line of work in this project; make one to start."
     }, {
-      default: L(({ row: d }) => [
-        l("div", {
+      default: R(({ row: c }) => [
+        u("div", {
           class: "environment",
-          "data-environment": d.name
+          "data-environment": c.name
         }, [
-          l("div", xe, [
-            l("span", Ne, v(d.name), 1),
-            p(d) ? (t(), o("span", je, "You are here")) : _("", !0),
-            l("p", Ee, v(d.folder) + v(d.branch ? ` on ${d.branch}` : ""), 1),
-            l("p", Te, v(d.running_agent_count ? "Agent running" : "No agent running") + " · " + v(d.unfinished_task_count) + " " + v(d.unfinished_task_count === 1 ? "task" : "tasks") + " not done", 1),
-            j.value[d.id] ? (t(), o("p", Ae, v(j.value[d.id]), 1)) : _("", !0)
+          u("div", Ee, [
+            u("span", Ae, f(c.name), 1),
+            p(c) ? (n(), o("span", Te, "You are here")) : _("", !0),
+            u("p", Be, f(c.folder) + f(c.branch ? ` on ${c.branch}` : ""), 1),
+            u("p", Le, f(c.running_agent_count ? "Agent running" : "No agent running") + " · " + f(c.unfinished_task_count) + " " + f(c.unfinished_task_count === 1 ? "task" : "tasks") + " not done", 1),
+            E.value[c.id] ? (n(), o("p", Re, f(E.value[c.id]), 1)) : _("", !0)
           ]),
-          m.value === d.id ? (t(), o(A, { key: 0 }, [
-            D(f(q), {
+          k.value === c.id ? (n(), o(B, { key: 0 }, [
+            D(g(q), {
               small: "",
               "data-environment-keep": "",
-              onClick: a[0] || (a[0] = (E) => m.value = 0)
+              onClick: a[0] || (a[0] = (A) => k.value = 0)
             }, {
-              default: L(() => [...a[1] || (a[1] = [
+              default: R(() => [...a[1] || (a[1] = [
                 I("Keep it", -1)
               ])]),
               _: 1
             }),
-            D(f(q), {
+            D(g(q), {
               small: "",
               kind: "danger",
               "data-environment-confirm": "",
-              onClick: (E) => $(d)
+              onClick: (A) => $(c)
             }, {
-              default: L(() => [...a[2] || (a[2] = [
+              default: R(() => [...a[2] || (a[2] = [
                 I("Yes, remove", -1)
               ])]),
               _: 1
             }, 8, ["onClick"])
-          ], 64)) : (t(), x(f(q), {
+          ], 64)) : (n(), O(g(q), {
             key: 1,
             small: "",
             kind: "danger",
             "data-environment-remove": "",
-            disabled: p(d),
-            title: p(d) ? "Switch to another environment to remove this one" : "Remove this environment",
-            onClick: (E) => $(d)
+            disabled: p(c),
+            title: p(c) ? "Switch to another environment to remove this one" : "Remove this environment",
+            onClick: (A) => $(c)
           }, {
-            default: L(() => [...a[3] || (a[3] = [
+            default: R(() => [...a[3] || (a[3] = [
               I("Remove environment", -1)
             ])]),
             _: 1
           }, 8, ["disabled", "title", "onClick"]))
-        ], 8, Oe)
+        ], 8, je)
       ]),
       _: 1
     }, 8, ["rows", "failure", "loaded"]));
   }
-}, Le = /* @__PURE__ */ P(Be, [["__scopeId", "data-v-33d34628"]]), Re = { class: "settings" }, Fe = { class: "settings-bar" }, Ue = { class: "settings-search" }, Ve = {
+}, Fe = /* @__PURE__ */ M(xe, [["__scopeId", "data-v-f4755e01"]]), Ue = { class: "settings" }, Ve = { class: "settings-bar" }, Ie = { class: "settings-search" }, qe = {
   key: 1,
   class: "settings-failure"
-}, Ie = {
+}, De = {
   key: 2,
   class: "settings-empty"
-}, qe = { class: "settings-body" }, De = {
+}, Ge = { class: "settings-body" }, Je = {
   class: "settings-nav",
   "aria-label": "Modules"
-}, Ge = ["data-jump", "onClick"], Ke = {
+}, We = ["data-jump", "onClick"], Ke = {
   class: "settings-sections",
   "data-settings-sections": ""
 }, Me = ["data-module"], Pe = { class: "settings-module-heading" }, Ye = "input,textarea,select,[contenteditable]", He = {
   __name: "SettingsTree",
   setup(e) {
-    const n = /* @__PURE__ */ new Set(["environment", "project"]), { rows: b, failure: C, loaded: N, load: w, context: m } = X("setting tree", ["setting.*"]), j = [
+    const t = /* @__PURE__ */ new Set(["environment", "project"]), { rows: b, failure: S, loaded: j, act: w, context: k } = X("setting tree", ["setting.*"]), E = [
       { key: "settings", label: "Settings" },
       { key: "environments", label: "Environments" }
-    ], p = O("settings"), S = O(""), $ = O("all"), y = O(null), a = g(() => b.value.filter((r) => !r.key.endsWith(".*"))), d = (r) => r.type !== "group" && n.has(r.source), E = (r) => r.value === !1, T = { all: () => !0, changed: d, off: E }, G = g(() => [
+    ], p = N("settings"), C = N(""), $ = N("all"), m = N(null), a = h(() => b.value.filter((d) => !d.key.endsWith(".*"))), c = (d) => d.type !== "group" && t.has(d.source), A = (d) => d.value === !1, G = { all: () => !0, changed: c, off: A }, T = h(() => [
       { key: "all", label: "All" },
-      { key: "changed", label: "Changed", title: "Settings you changed from their default", count: a.value.filter(d).length },
-      { key: "off", label: "Off", count: a.value.filter(E).length }
-    ]), F = g(() => {
-      const r = S.value.trim().toLowerCase();
-      if (!r && $.value === "all") return a.value;
-      const u = a.value.filter((c) => T[$.value](c) && [c.title, c.description, c.key].join(" ").toLowerCase().includes(r)), s = new Set(u.map((c) => c.key));
-      for (const c of u)
-        for (let V = a.value.find((M) => M.key === c.parent); V; V = a.value.find((M) => M.key === V.parent)) s.add(V.key);
-      return a.value.filter((c) => s.has(c.key));
-    }), U = g(() => F.value.filter((r) => r.parent === null)), B = g(() => [...new Set(U.value.map((r) => r.module))]), k = m.face === "phone";
-    function h(r) {
-      const u = r.split("."), s = u[u.length - 1].replace(/[-_]/g, " ");
+      { key: "changed", label: "Changed", title: "Settings you changed from their default", count: a.value.filter(c).length },
+      { key: "off", label: "Off", count: a.value.filter(A).length }
+    ]), F = h(() => {
+      const d = C.value.trim().toLowerCase();
+      if (!d && $.value === "all") return a.value;
+      const r = a.value.filter((v) => G[$.value](v) && [v.title, v.description, v.key].join(" ").toLowerCase().includes(d)), s = new Set(r.map((v) => v.key));
+      for (const v of r)
+        for (let V = a.value.find((K) => K.key === v.parent); V; V = a.value.find((K) => K.key === V.parent)) s.add(V.key);
+      return a.value.filter((v) => s.has(v.key));
+    }), U = h(() => F.value.filter((d) => d.parent === null)), L = h(() => [...new Set(U.value.map((d) => d.module))]), J = k.face === "phone";
+    function l(d) {
+      const r = d.split("."), s = r[r.length - 1].replace(/[-_]/g, " ");
       return s.slice(0, 1).toUpperCase() + s.slice(1);
     }
-    const i = O(""), K = g(() => B.value.includes(i.value) ? i.value : B.value[0] ?? "");
-    function Y(r) {
-      var u, s, c;
-      r.key !== "/" || (s = (u = r.target).closest) != null && s.call(u, Ye) || (r.preventDefault(), (c = y.value) == null || c.focus());
+    const y = N(""), i = h(() => L.value.includes(y.value) ? y.value : L.value[0] ?? "");
+    function W(d) {
+      var r, s, v;
+      d.key !== "/" || (s = (r = d.target).closest) != null && s.call(r, Ye) || (d.preventDefault(), (v = m.value) == null || v.focus());
     }
     te(() => {
-      window.addEventListener("keydown", Y);
+      window.addEventListener("keydown", W);
     }), ne(() => {
-      window.removeEventListener("keydown", Y);
+      window.removeEventListener("keydown", W);
     });
-    async function ee(r) {
-      const u = await m.run(r);
-      return u.ok && w(), u;
+    function ee(d, r) {
+      return w(d, r && ie((s) => s.key === r.key, { value: r.value }));
     }
-    return (r, u) => (t(), o("div", Re, [
-      D(f(J), {
-        options: j,
+    return (d, r) => (n(), o("div", Ue, [
+      D(g(Y), {
+        options: E,
         value: p.value,
         "data-settings-tabs": "",
-        onPick: u[0] || (u[0] = (s) => p.value = s)
+        onPick: r[0] || (r[0] = (s) => p.value = s)
       }, null, 8, ["value"]),
-      p.value === "environments" ? (t(), x(Le, { key: 0 })) : (t(), o(A, { key: 1 }, [
-        l("div", Fe, [
-          l("label", Ue, [
-            z(l("input", {
+      p.value === "environments" ? (n(), O(Fe, { key: 0 })) : (n(), o(B, { key: 1 }, [
+        u("div", Ve, [
+          u("label", Ie, [
+            z(u("input", {
               ref_key: "field",
-              ref: y,
-              "onUpdate:modelValue": u[1] || (u[1] = (s) => S.value = s),
+              ref: m,
+              "onUpdate:modelValue": r[1] || (r[1] = (s) => C.value = s),
               class: "settings-search-field",
               type: "search",
               placeholder: "Find a setting",
               "aria-label": "Find a setting",
-              onKeydown: u[2] || (u[2] = se((s) => S.value = "", ["esc"]))
+              onKeydown: r[2] || (r[2] = se((s) => C.value = "", ["esc"]))
             }, null, 544), [
-              [Q, S.value]
+              [Q, C.value]
             ])
           ]),
-          D(f(J), {
-            options: G.value,
+          D(g(Y), {
+            options: T.value,
             value: $.value,
             "data-settings-filter": "",
-            onPick: u[3] || (u[3] = (s) => $.value = s)
+            onPick: r[3] || (r[3] = (s) => $.value = s)
           }, null, 8, ["options", "value"]),
-          u[4] || (u[4] = l("span", { class: "settings-saved" }, "Changes are saved as you make them", -1))
+          r[4] || (r[4] = u("span", { class: "settings-saved" }, "Changes are saved as you make them", -1))
         ]),
-        f(N) ? f(C) ? (t(), o("p", Ve, v(f(C)), 1)) : f(N) && !f(b).length ? (t(), o("p", Ie, "No module declares a setting.")) : _("", !0) : (t(), x(f(oe), {
+        g(j) ? g(S) ? (n(), o("p", qe, f(g(S)), 1)) : g(j) && !g(b).length ? (n(), o("p", De, "No module declares a setting.")) : _("", !0) : (n(), O(g(le), {
           key: 0,
           shape: "text"
         })),
-        l("div", qe, [
-          l("nav", De, [
-            (t(!0), o(A, null, R(B.value, (s) => (t(), o("button", {
+        u("div", Ge, [
+          u("nav", Je, [
+            (n(!0), o(B, null, x(L.value, (s) => (n(), o("button", {
               key: s,
               type: "button",
-              class: W(["settings-nav-item", { current: s === K.value }]),
+              class: H(["settings-nav-item", { current: s === i.value }]),
               "data-jump": s,
-              onClick: (c) => i.value = s
-            }, v(h(s)), 11, Ge))), 128))
+              onClick: (v) => y.value = s
+            }, f(l(s)), 11, We))), 128))
           ]),
-          l("div", Ke, [
-            (t(!0), o(A, null, R(B.value.filter((s) => s === K.value), (s) => (t(), o("section", {
+          u("div", Ke, [
+            (n(!0), o(B, null, x(L.value.filter((s) => s === i.value), (s) => (n(), o("section", {
               key: s,
               class: "settings-module",
               "data-module": s
             }, [
-              l("h3", Pe, v(h(s)), 1),
-              (t(!0), o(A, null, R(U.value.filter((c) => c.module === s), (c) => (t(), x(Z, {
-                key: c.key,
-                row: c,
+              u("h3", Pe, f(l(s)), 1),
+              (n(!0), o(B, null, x(U.value.filter((v) => v.module === s), (v) => (n(), O(Z, {
+                key: v.key,
+                row: v,
                 rows: F.value,
-                "read-only": k,
+                "read-only": J,
                 save: ee
               }, null, 8, ["row", "rows"]))), 128))
             ], 8, Me))), 128))
@@ -358,7 +367,7 @@ const P = (e, n) => {
       ], 64))
     ]));
   }
-}, ze = /* @__PURE__ */ P(He, [["__scopeId", "data-v-e412288f"]]);
+}, Xe = /* @__PURE__ */ M(He, [["__scopeId", "data-v-9ca5647a"]]);
 export {
-  ze as default
+  Xe as default
 };

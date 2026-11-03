@@ -32,7 +32,7 @@ const kept = (run) => runs.get(run.place) === run;
 const staggered = () => Math.random() * WAKE_SPREAD_MS;
 
 // a tab in front keeps asking, on any monitor; one hidden asks nothing until it is shown again
-export const unseen = () => document.hidden;
+const unseen = () => document.hidden;
 
 function pause(run) {
     const every = interval(run);

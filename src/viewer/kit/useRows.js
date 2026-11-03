@@ -62,9 +62,13 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         loaded.value = true;
     }
 
-    // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again
-    async function act(words) {
+    // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again; a change, from the rows held to
+    // the rows the command will leave, shows at once, and is put back with the reason when the command fails
+    async function act(words, change = null) {
+        const before = rows.value;
+        if (change) rows.value = change(before);
         const result = await context.run(words);
+        if (change && !result.ok) rows.value = before;
         actionFailure.value = result.ok ? "" : result.error;
         answer.value = result.ok ? result.value : null;
         await load();

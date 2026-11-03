@@ -61,7 +61,7 @@ def marks_text(story: Story) -> str:
     return story.run("chat-mark list --environment 1 --oldest").output_text
 
 
-FAULT_SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:FaultSampleModule"
+EXCEPTION_SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:ExceptionSampleModule"
 
 
 @dataclass(frozen=True)
@@ -91,10 +91,10 @@ class FailingCommandSubcommand(Subcommand[FailingCommand, ChatMark]):
         return FailingCommand()
 
 
-class FaultSampleModule(Module):
+class ExceptionSampleModule(Module):
     """A sample module with one command that fails."""
 
-    name = "faultsample"
+    name = "exceptionsample"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.chat"]
     handlers = [FailingCommandHandler]

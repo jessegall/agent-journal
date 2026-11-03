@@ -1,7 +1,7 @@
 import {meta} from "./tables.js";
 
 // the title of a docked item: the one it was docked with, else its declaration's words with {row_id} and {row_title} filled
-export const dockTitle = (item, declaration) =>
+const dockTitle = (item, declaration) =>
     item.title ||
     (declaration?.title || "").replace("{row_id}", String(item.target_id)).replace("{row_title}", item.row_title || "");
 
@@ -16,7 +16,7 @@ const ICON_ONLY = ["pin", "stop"];
 const withLook = (button) => ({...button, iconOnly: ICON_ONLY.includes(button.icon)});
 
 // the buttons of a docked item: the pin while the item leaves by itself; the declaration's own; open when its row has an inspector, unless its body draws the head and unfolds there; then undock
-export function dockButtons(item, declaration) {
+function dockButtons(item, declaration) {
     return [
         ...(leavesByItself(item, declaration) ? [pin(item)] : []),
         ...(declaration?.buttons || []).map((button) => ({...button, action: "declared"})),

@@ -1,11 +1,10 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, RowCards, useRows, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, RowCards, patched, removed, useRows} from "@journal/window-kit";
 import NewTrigger from "./NewTrigger.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 
-const context = useWindow();
-const {rows, failure, loaded} = useRows("trigger list", ["trigger.*"]);
+const {rows, failure, loaded, act} = useRows("trigger list", ["trigger.*"]);
 const drafting = ref(false);
 const openedId = ref(null);
 const refusal = ref("");
@@ -22,12 +21,12 @@ const footOf = (row) => (row.next_at ? `Next at ${new Date(row.next_at).toLocale
 
 async function change(patch) {
     const [[field, value]] = Object.entries(patch);
-    const answer = await context.run(["trigger", "edit", String(openedId.value), ...PATCH_LINES[field](value)]);
+    const answer = await act(["trigger", "edit", String(openedId.value), ...PATCH_LINES[field](value)], patched(openedId.value, patch));
     refusal.value = answer.ok ? "" : answer.error;
 }
 
 async function strike() {
-    const answer = await context.run(["trigger", "strike", String(openedId.value)]);
+    const answer = await act(["trigger", "strike", String(openedId.value)], removed(openedId.value));
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) openedId.value = null;
 }

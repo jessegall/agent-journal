@@ -1,8 +1,8 @@
-from core.modules.tasks.support.task_inspection_json_record import TaskInspectionJsonRecord
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_log import TaskLog
+from core.modules.tasks.support.task_inspection_json_record import TaskInspectionJsonRecord
 
 
 @dataclass(frozen=True)
@@ -11,13 +11,12 @@ class TaskInspection:
     and its log, oldest line first."""
 
     task: Task
-    waits: tuple[Task, ...]
-    logs: tuple[TaskLog, ...]
+    waits: tuple[Mapping[str, object], ...]
+    logs: tuple[Mapping[str, object], ...]
     openers: tuple[str, ...] = ()
 
     def json(self) -> TaskInspectionJsonRecord:
         task = self.task
         return {"id": task.id, "title": task.title, "brief": task.brief, "state": task.state.value, "priority": task.priority, "reason": task.reason, "outcome": task.outcome,
                 "holder_id": task.holder_id, "created_at": task.creation_timestamp().text, "updated_at": task.update_timestamp().text,
-                "openers": list(self.openers), "waits": [{"id": wait.id, "title": wait.title, "state": wait.state.value} for wait in self.waits],
-                "logs": [{"id": log.id, "line": log.line, "created_at": log.creation_timestamp().text} for log in self.logs]}
+                "openers": list(self.openers), "waits": list(self.waits), "logs": list(self.logs)}

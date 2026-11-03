@@ -2,7 +2,7 @@ import base64
 import json
 
 from core.base.actor import Actor
-from server.tick_work import TickWork
+from core.modules.phone.ticks.phone_notices import PhoneNotices
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.phone.support.push_keys import PushKeys
@@ -50,7 +50,7 @@ def ask(story) -> None:
 
 
 def tick(story) -> None:
-    TickWork(lambda: None).run(story.container)
+    PhoneNotices()(story.container)
 
 
 def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_story):

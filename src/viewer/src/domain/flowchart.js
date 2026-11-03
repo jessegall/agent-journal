@@ -6,7 +6,7 @@ const GAP = {across: 48, down: 110, margin: 32, labelSpace: 14};
 const ORDER_SWEEPS = 6;
 
 // a text broken into lines of at most `most` characters, at spaces, a word longer than that on a line of its own
-export function wrapped(text, most) {
+function wrapped(text, most) {
     const lines = [];
     for (const word of String(text).split(/\s+/).filter(Boolean)) {
         const last = lines.at(-1);

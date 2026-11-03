@@ -1,6 +1,6 @@
 <script setup>
 import {reactive, ref} from "vue";
-import {Btn, RowList, Segmented, useRows} from "@journal/window-kit";
+import {Btn, RowList, Segmented, patched, removed, useRows} from "@journal/window-kit";
 
 const KINDS = [
     {key: "api key", label: "API key"},
@@ -34,14 +34,14 @@ function edit(row) {
 }
 
 async function saveEdit(row) {
-    const result = await act(["secret", "update", String(row.id), "--title", edited.title.trim(), "--brief", edited.brief.trim()]);
+    const result = await act(["secret", "update", String(row.id), "--title", edited.title.trim(), "--brief", edited.brief.trim()], patched(row.id, {title: edited.title.trim(), brief: edited.brief.trim()}));
     if (result.ok) editing.value = 0;
 }
 
 async function remove(row) {
     if (asking.value !== row.id) return void (asking.value = row.id);
     asking.value = 0;
-    await act(["secret", "delete", String(row.id)]);
+    await act(["secret", "delete", String(row.id)], removed(row.id));
     loadDeleted();
 }
 
@@ -72,7 +72,7 @@ const isFilled = (row, field) => row.filled.includes(field.name);
 async function fill(row, field) {
     const value = (typed[key(row, field)] || "").trim();
     if (!value) return;
-    const result = await act(["secret", "fill", String(row.id), field.name, value]);
+    const result = await act(["secret", "fill", String(row.id), field.name, value], patched(row.id, {filled: [...row.filled, field.name]}));
     if (result.ok) typed[key(row, field)] = "";
 }
 </script>

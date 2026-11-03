@@ -16,7 +16,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_sample import HookSample
 from core.testing.story import Story
-from server.tick_work import TickWork
+from core.modules.processes.ticks.output_reading import OutputReading
 
 BYTES_LONG = 5000
 BYTES_SHORT = 12
@@ -88,5 +88,5 @@ def tick(story) -> None:
     story.advance(timedelta(minutes=1))
     for process in tuple(story.container.get(ProcessQuery).running().all_rows()):
         story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
-    TickWork(lambda: None).read_running_outputs(story.container)
+    OutputReading().read(story.container)
     story.tick("s-1")

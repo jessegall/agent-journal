@@ -1,12 +1,12 @@
 // Show in chat: one switch per mark family on the chat window, kept on the pane as the window's other options are
 
-export const familyKey = (family) => `show-${family}`;
+const familyKey = (family) => `show-${family}`;
 
 // the part of a window's menu that lists the marks one by one, which the menu keeps behind a fold
 export const MARKS_SECTION = "marks";
 
 // a toggle per family the modules declare, shown until the person hides it
-export function familyOptions(declarations) {
+function familyOptions(declarations) {
     const families = new Map(declarations.map((declaration) => [declaration.family, declaration.family_title]));
     return [...families].map(([family, title]) => ({control: "toggle", key: familyKey(family), label: title, default: true, section: MARKS_SECTION}));
 }
@@ -43,10 +43,6 @@ export const familyPresets = (declarations) => [
     {key: "context", label: "Chat with context", icon: "list", options: options(families(declarations), (family) => family.shown)},
     {key: "every", label: "Every mark", icon: "list", options: options(families(declarations), () => true)},
 ];
-
-// the preset a pane's options match, or ""
-export const presetOfOptions = (declarations, option) =>
-    familyPresets(declarations).find((preset) => Object.entries(preset.options).every(([key, shown]) => (option(key) ?? true) === shown))?.key ?? "";
 
 const groupFamilies = (declarations, group) => families(declarations).filter((family) => family.group === group);
 

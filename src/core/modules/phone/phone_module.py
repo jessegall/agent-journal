@@ -1,4 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.phone.ticks.phone_notices import PhoneNotices
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.phone.support.phone_searcher import PhoneSearcher
@@ -59,3 +62,4 @@ class PhoneModule(Module):
                                  reads=["phone list", "tunnel status"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", at_start=True)]

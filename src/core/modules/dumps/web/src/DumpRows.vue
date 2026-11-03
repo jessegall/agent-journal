@@ -1,16 +1,29 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {ListTools, Skeleton, useListTools, useWindow} from "@journal/window-kit";
 
-// dumps as version 4 drew them: a card for each with its title and brief, its items each with where the agent has got to
-// (new, noted, filed, failed), the note or summary the agent left, and what it filed the item into; one read brings them all
+// dumps as version 4 drew them: the list of dumps with a phase pill each, the open one with its title (renamed while it is filing),
+// a bar of the files settled, what each file became and from which file; one read brings them all
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
+const KINDS = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
+const SETTLED = ["noted", "filed", "failed"];
 const context = useWindow();
 const cards = ref([]);
 const failure = ref("");
 const loaded = ref(false);
 const total = ref(0);
+const chosen = ref(null);
+const renaming = ref(null);
+const draft = ref("");
 const tools = useListTools(cards, {title: (card) => card.title || `Dump ${card.id}`, isOpen: (card) => !card.outcome});
+const shown = computed(() => tools.shown.value);
+const openId = computed(() => chosen.value ?? (shown.value[0] ? shown.value[0].id : null));
+
+const nameOf = (card) => card.title || `Dump ${card.id}`;
+const phaseOf = (card) => (card.outcome ? "Filed" : "Filing");
+const settledOf = (card) => card.items.filter((item) => SETTLED.includes(item.state)).length;
+const madeOf = (card) => card.items.flatMap((item) => item.refs.map((ref) => ({ref, from: item.text})));
+const kindOf = (ref) => KINDS[ref.split(":")[0]] || ref.split(":")[0];
 
 async function load() {
     const answer = await context.read("dump board");
@@ -24,6 +37,19 @@ async function more() {
     const answer = await context.read(`dump board --before ${Math.min(...cards.value.map((card) => card.id))}`);
     if (!answer.ok) return void (failure.value = answer.error);
     cards.value = [...cards.value, ...answer.value.dumps];
+}
+
+function startRename(card) {
+    renaming.value = card.id;
+    draft.value = card.title;
+}
+
+async function rename(card) {
+    const title = draft.value.trim();
+    renaming.value = null;
+    if (!title || title === card.title) return;
+    const answer = await context.run(["dump", "name", String(card.id), title]);
+    if (!answer.ok) failure.value = answer.error;
 }
 
 context.follow(["dump.*", "dump_item.*"], load);
@@ -42,10 +68,27 @@ load();
             <p class="dumps-note">No dumps</p>
         </template>
         <ListTools :tools="tools" />
-        <template v-for="card in tools.shown.value" :key="card.id">
-            <section class="dump" :data-dump="card.id">
-                <h3 class="dump-title">{{ card.title || `Dump ${card.id}` }}</h3>
+        <template v-for="card in shown" :key="card.id">
+            <section v-if="card.id === openId" class="dump" :data-dump="card.id">
+                <header class="dump-head">
+                    <template v-if="renaming === card.id">
+                        <input v-model="draft" class="dump-name" data-dump-name maxlength="80" @keydown.enter="rename(card)" @blur="rename(card)">
+                    </template>
+                    <template v-else>
+                        <h3 class="dump-title">{{ nameOf(card) }}</h3>
+                    </template>
+                    <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
+                    <template v-if="!card.outcome && renaming !== card.id">
+                        <button type="button" class="dump-rename" data-dump-rename @click="startRename(card)">Rename</button>
+                    </template>
+                </header>
                 <p class="dump-brief">{{ card.outcome ? `Closed: ${card.outcome}` : card.brief }}</p>
+                <template v-if="card.items.length">
+                    <div class="dump-progress" data-dump-progress>
+                        <span class="dump-bar"><span class="dump-fill" :style="{width: `${(100 * settledOf(card)) / card.items.length}%`}" /></span>
+                        <span class="dump-count">{{ settledOf(card) }} of {{ card.items.length }} files settled</span>
+                    </div>
+                </template>
                 <template v-for="item in card.items" :key="item.id">
                     <div class="item" :data-item="item.id" :data-state="item.state">
                         <span :class="['item-state', item.state]">{{ STATES[item.state] || item.state }}</span>
@@ -58,7 +101,19 @@ load();
                         </template>
                     </div>
                 </template>
+                <template v-if="madeOf(card).length">
+                    <h4 class="made-title">{{ madeOf(card).length }} things filed</h4>
+                    <div v-for="made in madeOf(card)" :key="`${made.ref}-${made.from}`" class="made" data-made>
+                        <span class="made-kind">{{ kindOf(made.ref) }}</span>
+                        <span class="made-ref">{{ made.ref }}</span>
+                        <span class="made-from">From {{ made.from }}</span>
+                    </div>
+                </template>
             </section>
+            <button v-else type="button" class="dump dump-earlier" :data-dump="card.id" @click="chosen = card.id">
+                <span class="dump-title">{{ nameOf(card) }}</span>
+                <span class="dump-pill" :data-phase="phaseOf(card)">{{ phaseOf(card) }}</span>
+            </button>
         </template>
         <template v-if="cards.length < total">
             <button type="button" class="dumps-more" @click="more">Show more</button>
@@ -83,18 +138,59 @@ load();
     background: var(--surface);
 }
 
+.dump-earlier {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dump-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .dump-title {
     margin: 0;
     font-size: 13px;
     font-weight: 500;
 }
 
+.dump-name {
+    flex: 1;
+    font-size: 13px;
+}
+
+.dump-pill {
+    padding: 1px 8px;
+    border-radius: 10px;
+    color: var(--text-3);
+    font-size: 11px;
+    border: 1px solid var(--border);
+}
+
+.dump-pill[data-phase="Filed"] {
+    color: var(--accent-text);
+}
+
+.dump-rename,
 .dumps-more {
-    align-self: flex-start;
     color: var(--text-3);
     background: none;
     border: 0;
     cursor: pointer;
+}
+
+.dump-rename {
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.dumps-more {
+    align-self: flex-start;
 }
 
 .dump-brief,
@@ -102,6 +198,28 @@ load();
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.dump-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.dump-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+}
+
+.dump-fill {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent-text);
 }
 
 .item {
@@ -131,5 +249,25 @@ load();
 .item-refs {
     color: var(--text-3);
     font-size: 12px;
+}
+
+.made-title {
+    margin: 8px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.made {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.made-kind {
+    color: var(--accent-text);
+}
+
+.made-from {
+    color: var(--text-3);
 }
 </style>
