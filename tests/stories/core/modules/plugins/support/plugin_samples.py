@@ -5,6 +5,7 @@ PROGRAM = """#!/bin/sh
 line=$(cat)
 case "$line" in
   *'"command_starting"'*'rm -rf'*) echo '{"v": 1, "answer": "refuse", "reason": "no deletes here"}' ;;
+  *'"file_edited"'*'"lines"'*'total = 0'*) echo '{"v": 1, "answer": "tell", "tell": "b.py wrote total = 0"}' ;;
   *'"file_edited"'*'a.py'*) echo '{"v": 1, "answer": "tell", "tell": "a.py was judged"}' ;;
   *'"command_starting"'*'cat broken'*) exit 3 ;;
   *'"command_starting"'*'git push'*) echo '{"v": 1, "require_skills": ["sample-rules"]}' ;;

@@ -19,7 +19,7 @@ REPLY_LINE = journal_line("journal message reply 1 done")
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 
 
-def teaching_story(new_story):
+def reply_story(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
@@ -27,7 +27,7 @@ def teaching_story(new_story):
 
 
 def read_story(new_story):
-    story = teaching_story(new_story)
+    story = reply_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.stop())
     return story, story.hook("s-1", READ_MESSAGE)
@@ -80,7 +80,7 @@ def test_a_countdown_comes_before_tool_calls_wait(new_story):
 
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):
-    story = teaching_story(new_story)
+    story = reply_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.stop())
     for _ in range(20):
@@ -93,7 +93,7 @@ def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_t
 
 
 def test_the_chat_is_read_for_the_third_person_em_dashes_shop_talk_and_run_on_paragraphs(new_story):
-    story = teaching_story(new_story)
+    story = reply_story(new_story)
     long_text = "The cart is fixed. The total is right. The tax is right. The shop is right. " * 6
     story.hook("s-1", HookSamples.message_display(f"the user asked — so journal task make ran — done. {long_text}"))
     lines = story.hook("s-1", VIEW_LINE.with_fields(event="post_tool_use")).lines
@@ -105,7 +105,7 @@ def test_the_chat_is_read_for_the_third_person_em_dashes_shop_talk_and_run_on_pa
 
 
 def test_an_edit_of_a_code_file_reminds_of_plain_words_and_a_text_file_does_not(new_story):
-    story = teaching_story(new_story)
+    story = reply_story(new_story)
     story.expect_absent_hook_line("s-1", HookSamples.edit("notes.txt"), "plain words")
     assert any("plain words" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
 
@@ -117,7 +117,7 @@ def test_an_agents_face_on_a_message_answers_it(new_story):
 
 
 def test_a_reply_written_before_its_message_is_marked_read_answers_it(new_story):
-    story = teaching_story(new_story)
+    story = reply_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.stop())
     story.expect_success('message reply 1 "On it" --environment main', "parent_id: 1", actor=story.agent)

@@ -194,10 +194,10 @@ def test_an_upgrade_of_a_claude_only_project_writes_no_codex_file_and_a_restore_
 def test_a_restore_strips_the_journals_blocks_from_a_hooks_file_that_has_no_kept_copy(tmp_path):
     scratch = version_four_project_with_hooks(tmp_path)
     assert upgrade(scratch, "--yes").returncode == 0
-    stray = scratch.project / ".codex" / "hooks.json"
-    stray.parent.mkdir()
-    stray.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": f'sh "{scratch.journal}/hooks/hook.sh" codex "{scratch.project}"'},
+    extra_hooks_file = scratch.project / ".codex" / "hooks.json"
+    extra_hooks_file.parent.mkdir()
+    extra_hooks_file.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": f'sh "{scratch.journal}/hooks/hook.sh" codex "{scratch.project}"'},
                                                             {"type": "command", "command": "echo mine"}]}]}, "kept": 1}))
     assert restore(scratch, "--yes").returncode == 0
-    after = json.loads(stray.read_text())
+    after = json.loads(extra_hooks_file.read_text())
     assert after["kept"] == 1 and "hook.sh" not in json.dumps(after)

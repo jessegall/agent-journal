@@ -14,6 +14,9 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 REMOVAL_SAMPLE = HookSamples.shell("rm -rf build", ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES]))
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 EDIT_SAMPLE = HookSamples.edit("a.py").with_fields(event="post_tool_use")
+LINES_SAMPLE = HookSamples.sample("post_tool_use", {"name": "Edit", "category": "edit", "files": ["b.py"], "shell": None,
+                                                    "diff": {"path": "b.py", "existed": True, "lines_added": 1, "lines_removed": 0},
+                                                    "diff_rows": [{"line_type": "add", "line": 4, "text": "total = 0"}]})
 
 
 def installed_story(new_story):
@@ -39,6 +42,13 @@ def test_a_file_edit_reaches_the_plugin_after_the_reply_and_its_line_reaches_the
     story.expect_absent_hook_line("s-1", EDIT_SAMPLE, "a.py was judged")
     story.run_listeners()
     story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] a.py was judged")
+
+
+def test_a_file_edit_reaches_the_plugin_with_the_lines_the_edit_wrote(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", LINES_SAMPLE)
+    story.run_listeners()
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] b.py wrote total = 0")
 
 
 def test_a_line_in_the_plugins_queue_reaches_the_agent_once(new_story):

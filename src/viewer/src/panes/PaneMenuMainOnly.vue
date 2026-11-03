@@ -1,0 +1,18 @@
+<script setup>
+import Btn from "../kit/Btn.vue";
+import {isMainOnly, mainOnlyOptions} from "../domain/markFamilies.js";
+
+const props = defineProps({option: {type: Object, required: true}, values: {type: Object, default: () => ({})}});
+const emit = defineEmits(["set"]);
+
+const valueOf = (key) => props.values[key];
+
+function choose() {
+    Object.entries(mainOnlyOptions(props.option.declarations, props.option.group, valueOf)).forEach(([key, shown]) => emit("set", key, shown));
+}
+</script>
+
+<template>
+    <span class="pane-menu-group" :data-group="option.group">{{ option.title }}</span>
+    <Btn :data-option="option.key" :aria-pressed="isMainOnly(option.declarations, option.group, valueOf)" @click="choose">{{ option.label }}</Btn>
+</template>

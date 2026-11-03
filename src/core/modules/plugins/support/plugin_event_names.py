@@ -9,7 +9,8 @@ PLAIN_EVENTS = {HookEventName.STOP: "idle", HookEventName.PROMPT: "prompt_submit
 
 class PluginEventNames:
     """Turns a version 5 hook into the version 4 events a plugin hears: a tool's start, each command of its
-    shell line, each file a finished tool wrote, and the plain events by their version 4 names."""
+    shell line, each file a finished tool wrote with the lines it changed, and the plain events by their
+    version 4 names."""
 
     def events(self, hook: AgentHook) -> list[PluginEvent]:
         event, tool = hook.event.event, hook.event.tool
@@ -20,7 +21,7 @@ class PluginEventNames:
         if event is HookEventName.PRE_TOOL_USE:
             return [self.tool_event(hook, tool), *self.command_events(tool)]
         if event is HookEventName.POST_TOOL_USE and tool.is_writing_files():
-            return [PluginEvent("file_edited", {"path": path, "kind": "edit"}) for path in tool.files]
+            return [PluginEvent("file_edited", {"path": path, "kind": "edit", "lines": tool.changed_lines(path)}) for path in tool.files]
         return []
 
     def tool_event(self, hook: AgentHook, tool: Tool) -> PluginEvent:

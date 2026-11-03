@@ -14,8 +14,8 @@ class CodeFingerprint:
     """A hash of the core version and of every Python file in the core's folder and in each module's folder,
     by path, size and change time, so a run can tell that the registry was built from other code; a file that
     appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
-    kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the text, so
-    a request reads the kept one and never the files."""
+    kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the
+    text, so a request reads the kept one and never the files."""
 
     ticked: ClassVar[bool] = False
     kept_texts: ClassVar[dict[tuple[Path, ...], str]] = {}

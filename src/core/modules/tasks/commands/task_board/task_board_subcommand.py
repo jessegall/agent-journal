@@ -1,5 +1,5 @@
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_not_null import IsNotNull
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
 from argparse import ArgumentParser, Namespace
@@ -71,7 +71,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     def cards(self, environment_id: int, state: TaskState | str) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard).filter(environment_id=environment_id)
         if state == DELEGATED:
-            return cards.matching(IsNotNull("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))
+            return cards.matching(HasValue("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))
         cards = cards.filter(state=state)
         return cards if state in FINISHED_STATES else cards.matching(IsNull("delegated_to"))
 

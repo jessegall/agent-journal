@@ -68,17 +68,17 @@ def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(
 def test_resume_types_only_after_its_commit_and_the_line_is_not_said_twice(new_story):
     story = new_story(fixture=UserJoined)
     database = story.container.get(Database)
-    withheld: list[bool] = []
+    transaction_flags: list[bool] = []
 
     class WatchedTyping(FakeTyping):
         def type_line(self, agent_id: int, line: str) -> None:
-            withheld.append(database.has_transaction)
+            transaction_flags.append(database.has_transaction)
             super().type_line(agent_id, line)
 
     story.container.bind(TerminalTyping, WatchedTyping())
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    story.expect_rows(withheld == [False, False])
+    story.expect_rows(transaction_flags == [False, False])
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "the user resumed you", actor=story.user)
     story.expect_absent(f"agent-line list --agent {story.agent.id} --state waiting", "the user resumed you", actor=story.user)
 

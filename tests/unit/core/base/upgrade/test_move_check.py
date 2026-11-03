@@ -48,13 +48,13 @@ def test_moves_that_claim_different_tables_and_read_ids_of_a_dependency_pass():
 
 
 def test_a_move_reading_ids_of_a_module_not_installed_or_not_depended_on_is_named():
-    class Lonely(Module):
-        name = "lonely"
+    class Unlinked(Module):
+        name = "unlinked"
         requires_core = ">=5,<6"
         moves = [move(["solo"], id_modules=["first", "absent"])]
 
-    assert MoveCheck().problems([First, Lonely]) == ("the move of lonely reads ids of absent, which is not installed",
-                                                     "the move of lonely reads ids of first, and lonely does not depend on it")
+    assert MoveCheck().problems([First, Unlinked]) == ("the move of unlinked reads ids of absent, which is not installed",
+                                                       "the move of unlinked reads ids of first, and unlinked does not depend on it")
 
 
 def test_a_move_without_a_name_or_without_tables_it_reads_is_refused():
