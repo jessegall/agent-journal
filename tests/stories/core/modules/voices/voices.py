@@ -70,7 +70,7 @@ def test_show_prints_the_instruction_the_agent_is_given(new_story):
 
 def enabled_story(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_success("setting set journal.core.voices.speaks on --project", actor=story.user)
+    story.expect_success("setting set journal.core.voices.talk-in-voice on --project", actor=story.user)
     return story
 
 

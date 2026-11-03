@@ -4,7 +4,7 @@ from core.base.journal_home import JournalHome
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voice import Voice
-from core.modules.voices.support.voices_settings import AVATAR_KEY, AVATAR_SHOWN_KEY, NAME_KEY, PROFILE_KEY, ENABLED_KEY, TITLE_KEY
+from core.modules.voices.support.voices_settings import AVATAR_KEY, AVATAR_SHOWN_KEY, NAME_KEY, PROFILE_KEY, TALK_IN_VOICE_KEY, TITLE_KEY
 
 GIT_SECONDS = 5
 
@@ -16,8 +16,8 @@ class VoiceChoice:
     def __init__(self, values: SettingValues, home: JournalHome) -> None:
         self.values, self.home = values, home
 
-    def enabled(self) -> bool:
-        return self.values.flag(ENABLED_KEY, None)
+    def talks_in_voice(self) -> bool:
+        return self.values.flag(TALK_IN_VOICE_KEY, None)
 
     def voice(self) -> Voice:
         return BuiltinCatalogue.lookup(self.values.text(PROFILE_KEY, None))

@@ -25,7 +25,8 @@ from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
-from server.listener_work import ListenerWork
+from server.ordinary_listener_work import OrdinaryListenerWork
+from server.urgent_listener_work import UrgentListenerWork
 from server.check_work import CheckWork
 from server.tick_work import TickWork
 from server.viewer.session_file import SessionFile
@@ -70,8 +71,10 @@ def main(argv: list[str]) -> int:
     TimingLog(home).rotate()
     files.rotate_log()
     files.clear_leftover_socket()
-    listener_round = JournalRound(home, "listener thread", ListenerWork())
-    listener_thread = ListenerThread(listener_round.run, listener_round.report)
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork())
+    urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork())
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, woken_too=urgent_thread)
     tick_round = JournalRound(home, "ticker", TickWork(listener_thread.wake))
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
@@ -108,6 +111,7 @@ def main(argv: list[str]) -> int:
         booting_round.report(error)
     listener_thread.wake()
     listener_thread.start()
+    urgent_thread.start()
     ticker.start()
     code_thread.start()
     check_thread.start()
@@ -124,7 +128,7 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, code_thread, ticker, listener_thread)
+        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, code_thread, ticker, listener_thread, urgent_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()
