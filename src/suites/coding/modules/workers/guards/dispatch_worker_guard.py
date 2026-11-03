@@ -18,4 +18,4 @@ class DispatchWorkerGuard(Guard):
 
     def check(self, change: Change[Model]) -> None:
         if self.queries.query(Agent).filter(id=change.actor.id, role=AgentRole.WORKER).exists():
-            raise Refusal("a worker dispatches no workers", "tell the agent that sent you what the task needs")
+            raise Refusal("a worker dispatches no workers", 'journal worker report "<what the task needs>"')

@@ -6,8 +6,7 @@ from core.modules.messages.models.message import Message
 
 @dataclass(frozen=True)
 class RecordWorkerReport(Command[Message]):
-    """Keeps what a worker said as it stopped with every task handed in, as a message of the worker in the chat
-    and a line for its main agent."""
+    """Saves a worker's report and gives its main agent the message number."""
 
     agent_id: int
     environment_id: int

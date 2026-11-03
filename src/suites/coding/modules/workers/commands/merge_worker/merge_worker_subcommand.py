@@ -6,7 +6,7 @@ from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
-from suites.coding.modules.workers.support.worker_step_check import WorkerStepCheck
+from suites.coding.modules.workers.commands.support.worker_step_check import WorkerStepCheck
 
 MERGE_EVENTS = ["worker_merging"]
 

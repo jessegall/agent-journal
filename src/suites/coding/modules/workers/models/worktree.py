@@ -39,5 +39,5 @@ class Worktree(Model):
     def remove(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
 
-    def holds_cut_task(self, task_id: int) -> bool:
+    def has_cut_task(self, task_id: int) -> bool:
         return self.task_id == task_id and self.state is WorktreeState.CUT
