@@ -30,7 +30,7 @@ class NudgeDeclaration:
     interval: Interval | None = None
     longest_characters: int | None = None
     turn_limited: bool = True
-    required_command: str = ""
+    required_command: str | None = None
     plural_text: str = ""
     field_limit_characters: int = LONGEST_FIELD_CHARACTERS
     wakes_agent: bool = False
@@ -54,7 +54,7 @@ class NudgeDeclaration:
 
     def rendered(self, text: str, fields: Mapping[str, object]) -> Nudge:
         rendered = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
-        return Nudge(self.key, self.type, self.cut(rendered), self.interval, self.turn_limited, self.required_command.format(**fields), tuple(fields.items()), self)
+        return Nudge(self.key, self.type, self.cut(rendered), self.interval, self.turn_limited, self.required_command.format(**fields) if self.required_command else "", tuple(fields.items()), self)
 
     def field_text(self, value: object) -> str:
         text = str(value)
