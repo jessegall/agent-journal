@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
+from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -25,10 +26,10 @@ class MarkListener(CommitListener):
         return event.command == command and self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT
 
     def show(self, event: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
-             row_model: str = "", row_id: int | None = None, detail: str = "", key: str = "", ended: bool = True) -> None:
+             row_model: str = "", row_id: int | None = None, detail: str = "", key: str = "", ended: bool = True, outcome: MarkOutcome = MarkOutcome.NONE) -> None:
         environment_id = environment_id or event.environment_id
         if environment_id is None:
             return
         key = key or f"{variant.value}:{event.row_id}:{event.id}"
-        self.bus.run(ShowMark(environment_id, type, variant, key, text, agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended),
+        self.bus.run(ShowMark(environment_id, type, variant, key, text, agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, outcome=outcome),
                      self.actors.actor(self.module_name), cause_id=event.id, environment_id=environment_id)
