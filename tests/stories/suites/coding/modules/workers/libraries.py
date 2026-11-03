@@ -14,6 +14,17 @@ def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_ne
     repository.expect_root_exclude_unchanged()
 
 
+def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_sees_them(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    hooks = repository.folder / ".codex" / "hooks.json"
+    hooks.parent.mkdir(parents=True)
+    hooks.write_text('{"hooks": {}}')
+    worker = dispatched_worker(story)
+    assert (repository.worktree_folder(worker.id) / ".codex" / "hooks.json").read_text() == '{"hooks": {}}'
+    repository.expect_excluded(worker.id, ".codex/hooks.json")
+
+
 def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

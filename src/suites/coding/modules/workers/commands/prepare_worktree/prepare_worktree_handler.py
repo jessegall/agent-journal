@@ -1,3 +1,6 @@
+import shutil
+from pathlib import Path
+
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
@@ -9,14 +12,26 @@ from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
+CODEX_HOOKS_FILE = Path(".codex") / "hooks.json"
+
+
 class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
-    """Places the project folder's library folders in a launch worktree and runs the named environment's
-    worktree commands there."""
+    """Places the project folder's library folders and Codex's hooks in a launch worktree, since Codex reads its
+    hooks from the worktree's own root and git keeps that file out, and runs the named environment's worktree
+    commands there."""
 
     command = PrepareWorktree
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands) -> None:
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
+
+    def place_codex_hooks(self, command: PrepareWorktree) -> None:
+        hooks = Path(command.source) / CODEX_HOOKS_FILE
+        if hooks.is_file():
+            target = Path(command.folder) / CODEX_HOOKS_FILE
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(hooks, target)
+            self.libraries.exclude(command.folder, [str(CODEX_HOOKS_FILE)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
         environment_id = self.environment_names.environment_id(command.environment)
@@ -24,4 +39,5 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         copies = (*self.settings.texts(LIBRARY_COPIES, environment_id), *command.library_copies)
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
+        self.place_codex_hooks(command)
         self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS, environment_id), (*links, *copies))
