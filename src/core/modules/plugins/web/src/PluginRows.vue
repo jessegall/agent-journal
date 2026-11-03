@@ -1,25 +1,37 @@
 <script setup>
-import {ref} from "vue";
-import {Dashboard, Dialog, Btn, Skeleton, useReadLine, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {onMounted, onUnmounted, ref} from "vue";
+import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
+import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
 import PluginInstallPreview from "./PluginInstallPreview.vue";
+import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRecordDialog from "./PluginRecordDialog.vue";
+import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import PluginSettingList from "./PluginSettingList.vue";
 import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
-import PluginServices from "./PluginServices.vue";
 
-// the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
+// the plugins of this project as version 4's page drew them: a bar to install one from a source, a line on what installing means, a card for each plugin with its
+// switch, settings and removing it, with or without its data, and a card to ask the agent to make one; the services read again while the page is open
+const SERVICE_POLL_MILLISECONDS = 5000;
 const context = useWindow();
 const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
 const {rows: boards} = useRows("plugin dashboards", ["plugin.*"]);
 const boardOf = (row) => boards.value.find((board) => board.plugin === row.name);
-const tools = useListTools(rows, {title: (row) => row.title || row.name, isOpen: (row) => row.enabled});
+const {rows: descriptions} = useRows("plugin descriptions", ["plugin.*"]);
+const descriptionOf = (row) => descriptions.value.find((each) => each.plugin === row.name)?.description ?? "";
+const {rows: services, load: loadServices} = useRows("plugin services", ["plugin.*"]);
+const servicesOf = (row) => services.value.filter((service) => service.plugin === row.name);
+let serviceTimer = 0;
+onMounted(() => (serviceTimer = setInterval(loadServices, SERVICE_POLL_MILLISECONDS)));
+onUnmounted(() => clearInterval(serviceTimer));
 const refusal = ref("");
-const open = ref(null);
 const source = ref("");
+const making = ref(false);
+const repository = ref("");
 const wish = ref("");
-const removing = ref("");
+const asked = ref(false);
+const removing = ref(null);
 const settings = ref({});
 
 const switchOver = (row) => run(`plugin ${row.enabled ? "disable" : "enable"} ${row.name}`);
@@ -45,7 +57,7 @@ async function showPreview() {
 async function install() {
     const installed = await run(["plugin", "install", preview.value.source, "--yes"]);
     preview.value = null;
-    if (installed) (source.value = ""), (open.value = null);
+    if (installed) source.value = "";
 }
 
 const latest = ref({});
@@ -82,11 +94,21 @@ async function showBoard(row) {
 }
 
 async function askTheAgent() {
-    if (wish.value.trim() && (await run(["message", "send", `Please make a plugin: ${wish.value.trim()}`]))) (wish.value = ""), (open.value = null);
+    const words = [wish.value.trim(), repository.value.trim() && `Build it in ${repository.value.trim()}.`].filter(Boolean).join(" ");
+    if (!words || !(await run(["message", "send", `Please make a plugin: ${words}`]))) return;
+    repository.value = "";
+    wish.value = "";
+    making.value = false;
+    asked.value = true;
 }
 
-async function remove(row, purge) {
-    if (await run(["plugin", "remove", row.name, ...(purge ? ["--purge"] : [])])) removing.value = "";
+function readGuide() {
+    making.value = false;
+    guide.value = true;
+}
+
+async function remove(purge) {
+    if (await run(["plugin", "remove", removing.value.name, ...(purge ? ["--purge"] : [])])) removing.value = null;
 }
 
 async function toggleSettings(row) {
@@ -105,159 +127,152 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
 </script>
 
 <template>
-    <div class="plugin-tools">
-        <Btn small bordered data-plugin-install @click="open = open === 'install' ? null : 'install'">Install a plugin</Btn>
-        <Btn small bordered data-plugin-make @click="open = open === 'make' ? null : 'make'">Ask the agent to make one</Btn>
-        <Btn small bordered data-plugin-guide-open @click="guide = true">How to make a plugin</Btn>
-    </div>
-    <template v-if="open === 'install'">
-        <form class="plugin-form" data-plugin-install-form @submit.prevent="showPreview">
-            <input v-model="source" placeholder="owner/repo, a link or a folder" aria-label="Where the plugin is">
-            <Btn small kind="primary" type="submit" :disabled="!source.trim()">Preview</Btn>
-        </form>
-    </template>
-    <template v-if="open === 'make'">
-        <form class="plugin-form" data-plugin-make-form @submit.prevent="askTheAgent">
-            <input v-model="wish" placeholder="What should the plugin do?" aria-label="What should the plugin do?">
-            <Btn small kind="primary" type="submit" :disabled="!wish.trim()">Ask</Btn>
-        </form>
-    </template>
-    <template v-if="refusal">
-        <p class="plugin-fault" role="alert" data-plugin-refusal>{{ refusal }}</p>
-    </template>
-    <div class="plugins">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
-        </template>
-        <template v-else-if="!failure && !rows.length">
-            <p class="plugin-note">No plugins installed</p>
-        </template>
-        <template v-else-if="failure">
-            <p class="plugin-note">{{ failure }}</p>
-        </template>
-        <ListTools :tools="tools" />
-        <template v-for="row in tools.shown.value" :key="row.id">
-            <div class="plugin" :data-row="row.id">
-                <span class="plugin-head">
-                    <span class="name">{{ row.title }}</span>
-                    <span class="release">{{ row.release }}</span>
-                    <button type="button" role="switch" :aria-checked="row.enabled" :aria-label="row.enabled ? 'Switch off' : 'Switch on'" :class="['toggle', {on: row.enabled}]" @click="switchOver(row)" />
-                </span>
-                <span class="plugin-source">{{ row.source }}</span>
-                <template v-if="row.failing">
-                    <span class="plugin-fault">{{ row.last_fault || "Failing" }}</span>
+    <section class="plugins" data-plugins data-window-flush>
+        <div class="bar">
+            <form class="install" data-plugin-install-form @submit.prevent="showPreview">
+                <TextInput v-model="source" icon="download" placeholder="Install a plugin from owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">
+                    <template #end>
+                        <Btn kind="primary" small type="submit" :disabled="!source.trim()">Check before installing</Btn>
+                    </template>
+                </TextInput>
+            </form>
+        </div>
+        <div class="body">
+            <p class="lead">
+                A plugin runs as you, with your files and your network. Check before installing shows every command it would run before
+                anything runs, and it installs at that exact commit.
+            </p>
+            <template v-if="refusal">
+                <p class="plugin-fault" role="alert" data-plugin-refusal>{{ refusal }}</p>
+            </template>
+            <template v-if="recordFailure">
+                <p class="plugin-fault" role="alert" data-plugin-record-failure>{{ recordFailure }}</p>
+            </template>
+            <template v-if="asked">
+                <p class="asked" data-plugin-asked>Sent to the agent; its answer comes in the chat.</p>
+            </template>
+            <template v-if="!loaded">
+                <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+                <p class="plugin-fault">{{ failure }}</p>
+            </template>
+            <template v-else-if="!rows.length">
+                <p class="none" data-plugin-none><strong>No plugin is installed</strong> Paste a repository above to see what it would run.</p>
+            </template>
+            <div class="cards">
+                <template v-for="row in rows" :key="row.id">
+                    <PluginCard :plugin="row" :description="descriptionOf(row)" :services="servicesOf(row)" :board="boardOf(row)" @toggle="switchOver(row)" @settings="toggleSettings(row)" @board="showBoard(row)" @record="showRecord(row)" @latest="checkLatest(row)" @remove="removing = row">
+                        <template v-if="latest[row.name]">
+                            <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
+                            <template v-if="latest[row.name].is_newer">
+                                <Btn small kind="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
+                            </template>
+                        </template>
+                        <template v-if="settings[row.name]">
+                            <PluginSettingList :settings="settings[row.name]" @configure="(setting, value) => configure(row, setting, value)" />
+                        </template>
+                    </PluginCard>
                 </template>
-                <span class="plugin-moves">
-                    <Btn small data-plugin-settings @click="toggleSettings(row)">Settings</Btn>
-                    <Btn small data-plugin-record @click="showRecord(row)">What it did</Btn>
-                    <Btn small data-plugin-latest @click="checkLatest(row)">Check for updates</Btn>
-                    <template v-if="boardOf(row)">
-                        <Btn small data-plugin-board @click="showBoard(row)">{{ boardOf(row).title }}</Btn>
-                    </template>
-                    <template v-if="removing === row.name">
-                        <Btn small @click="removing = ''">Keep it</Btn>
-                        <Btn small kind="danger" data-plugin-remove-keep @click="remove(row, false)">Remove, keep its data</Btn>
-                        <Btn small kind="danger" data-plugin-remove-purge @click="remove(row, true)">Remove with its data</Btn>
-                    </template>
-                    <template v-else>
-                        <Btn small data-plugin-remove @click="removing = row.name">Remove</Btn>
-                    </template>
-                </span>
-                <template v-if="latest[row.name]">
-                    <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
-                    <template v-if="latest[row.name].is_newer">
-                        <Btn small kind="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
-                    </template>
-                </template>
-                <template v-if="settings[row.name]">
-                    <PluginSettingList :settings="settings[row.name]" @configure="(setting, value) => configure(row, setting, value)" />
-                </template>
+                <button type="button" class="make" data-plugin-make @click="(making = true), (asked = false)">
+                    <span class="make-mark"><Icon name="plus" :size="16" /></span>
+                    <span class="make-title">Make a plugin</span>
+                    <span class="make-text">Ask the agent to build one for you, or read how plugins are made.</span>
+                </button>
             </div>
+        </div>
+        <template v-if="making">
+            <PluginMakeDialog v-model:repository="repository" v-model:wish="wish" @close="making = false" @guide="readGuide" @ask="askTheAgent" />
         </template>
-    </div>
-    <template v-if="recordFailure">
-        <p class="plugin-fault" role="alert" data-plugin-record-failure>{{ recordFailure }}</p>
-    </template>
-    <template v-if="record">
-        <PluginRecordDialog :record="record" @close="record = null" />
-    </template>
-    <PluginServices />
-    <template v-if="preview">
-        <PluginInstallPreview :preview="preview" @close="preview = null" @install="install" />
-    </template>
-    <template v-if="upgrade">
-        <PluginUpgradeDialog :upgrade="upgrade" @close="upgrade = null" @apply="applyUpgrade" />
-    </template>
-    <template v-if="guide">
-        <PluginGuide @close="guide = false" />
-    </template>
-    <template v-if="board">
-        <Dialog :title="board.title" @close="board = null">
-            <Dashboard :document="board.document" @file="openFile" />
-        </Dialog>
-    </template>
+        <template v-if="removing">
+            <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />
+        </template>
+        <template v-if="record">
+            <PluginRecordDialog :record="record" @close="record = null" />
+        </template>
+        <template v-if="preview">
+            <PluginInstallPreview :preview="preview" @close="preview = null" @install="install" />
+        </template>
+        <template v-if="upgrade">
+            <PluginUpgradeDialog :upgrade="upgrade" @close="upgrade = null" @apply="applyUpgrade" />
+        </template>
+        <template v-if="guide">
+            <PluginGuide @close="guide = false" />
+        </template>
+        <template v-if="board">
+            <Dialog :title="board.title" @close="board = null">
+                <Dashboard :document="board.document" @file="openFile" />
+            </Dialog>
+        </template>
+    </section>
 </template>
 
 <style scoped>
-.plugin-note {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.plugin-tools {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.plugin-form {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.plugin-form input {
-    flex: 1;
-    min-width: 0;
-}
-
-.plugin-moves {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
-}
-
 .plugins {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
-}
-
-.plugin {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
+    height: 100%;
+    overflow: auto;
 }
 
-.plugin-head {
+.bar {
     display: flex;
-    gap: 10px;
+    flex: none;
     align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 22px;
+    border-bottom: 1px solid var(--border);
 }
 
-.name {
-    flex: 1;
+.install {
+    flex: 1 1 360px;
+    max-width: 640px;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 1180px;
+    padding: 22px 24px 40px;
+    box-sizing: border-box;
+}
+
+.lead {
+    max-width: 640px;
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+.asked {
+    margin: 0;
+    color: var(--accent-text);
+    font-size: 12.5px;
+}
+
+.none {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.none strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-2);
+    font-size: 14px;
     font-weight: 500;
 }
 
-.release,
-.plugin-source,
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
 .plugin-note {
     margin: 0;
     color: var(--text-3);
@@ -265,38 +280,81 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
 }
 
 .plugin-fault {
+    margin: 0;
     color: var(--danger);
     font-size: 12px;
 }
 
-.toggle {
-    position: relative;
-    flex: none;
-    width: 30px;
-    height: 17px;
-    border: 0;
-    border-radius: 9px;
-    background: var(--raised);
+.make {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 160px;
+    padding: 10px 12px;
+    border: 1px dashed var(--border-2);
+    border-radius: 14px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 13px;
     cursor: pointer;
+    transition:
+        border-color 0.15s,
+        color 0.15s,
+        background 0.15s;
 }
 
-.toggle::after {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 13px;
-    height: 13px;
+.make:hover {
+    border-color: var(--accent);
+    background: var(--hover);
+    color: var(--text);
+}
+
+.make-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-2);
     border-radius: 50%;
-    background: #fff;
-    content: "";
-    transition: transform 0.15s ease;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
 }
 
-.toggle.on {
-    background: var(--accent);
+.make:hover .make-mark {
+    border-color: var(--accent);
+    color: var(--accent-text);
 }
 
-.toggle.on::after {
-    transform: translateX(13px);
+.make-title {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.make-text {
+    max-width: 240px;
+    color: var(--text-4);
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .install {
+        flex-basis: 100%;
+        max-width: none;
+    }
+
+    .body {
+        padding: 16px 16px 32px;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

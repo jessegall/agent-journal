@@ -9,7 +9,6 @@ import PhoneRows from "../../core/modules/phone/web/src/PhoneRows.vue";
 import ShareRows from "../../core/modules/sharing/web/src/ShareRows.vue";
 import ServerRows from "../../core/modules/mcp/web/src/ServerRows.vue";
 import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vue";
-import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
 import ReviewerSteps from "../../core/modules/reviews/web/src/ReviewerSteps.vue";
@@ -70,7 +69,6 @@ test.each([
     ["the links", ShareRows, {"share list": page([])}],
     ["the servers", ServerRows, {"mcp list": page([]), "mcp suggested": page([])}],
     ["the templates", TemplateCards, {"template list": page([])}],
-    ["the plugins", PluginRows, {"plugin list": page([])}],
     ["the checks", CheckCards, {"check list": page([])}],
     ["the dumps", DumpRows, {"dump board": {ok: true, value: {dumps: [], total: 0}}}],
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],

@@ -13,7 +13,7 @@ from core.modules.plugins.support.plugin_releases import PluginReleases
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 GUIDE = Path("src/core/modules/plugins/web/src/PluginGuide.vue")
-MANIFEST = {"name": "standup", "title": "Standup", "version": "1.2.0", "requires": {"sh": {"check": "command -v sh"}}, "setup": [{"name": "packages", "run": "true"}],
+MANIFEST = {"name": "standup", "title": "Standup", "version": "1.2.0", "description": "Writes the daily standup", "requires": {"sh": {"check": "command -v sh"}}, "setup": [{"name": "packages", "run": "true"}],
             "services": [{"name": "web", "command": ["server.sh", "--quiet"]}], "dashboard": {"name": "daily", "title": "Daily"}}
 PAGES = {"title": "Today", "start": "start", "pages": {"start": {"title": "Today", "view": {"type": "stack", "children": []}}}}
 GIT_LIMIT_SECONDS = 30
@@ -78,6 +78,11 @@ def test_the_latest_of_a_repository_that_cannot_be_read_is_refused(new_story):
     releases = story.container.get(PluginReleases)
     with pytest.raises(Refusal, match="could not be read"):
         releases.latest("standup", "1.0", f"file://{story.home.folder.parent}/nowhere")
+
+
+def test_a_plugins_description_is_read_from_its_manifest(new_story):
+    story = installed_plugin(new_story)
+    story.expect_text("plugin descriptions", "standup: Writes the daily standup")
 
 
 def test_a_dashboard_is_listed_and_says_when_nothing_is_written(new_story):

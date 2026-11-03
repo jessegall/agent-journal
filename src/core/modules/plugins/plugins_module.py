@@ -31,6 +31,7 @@ from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin_subcommand impo
 from core.modules.plugins.commands.plugin_latest.plugin_latest_subcommand import PluginLatestSubcommand
 from core.modules.plugins.commands.plugin_dashboard.plugin_dashboard_subcommand import PluginDashboardSubcommand
 from core.modules.plugins.commands.plugin_dashboards.plugin_dashboards_subcommand import PluginDashboardsSubcommand
+from core.modules.plugins.commands.plugin_descriptions.plugin_descriptions_subcommand import PluginDescriptionsSubcommand
 from core.modules.plugins.commands.propose_plugin.propose_plugin_subcommand import ProposePluginSubcommand
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault_handler import RecordPluginFaultHandler
 from core.modules.plugins.commands.remove_plugin.remove_plugin_handler import RemovePluginHandler
@@ -69,7 +70,7 @@ class PluginsModule(Module):
               ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards"],
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginsTablesMigration]
     handlers = [UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
@@ -82,5 +83,5 @@ class PluginsModule(Module):
     driver_rules = [PluginRule]
     marks = PLUGIN_MARKS
     listeners = [PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
-    subcommands = (PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
+    subcommands = (PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand)

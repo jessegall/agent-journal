@@ -27,7 +27,7 @@ class PluginManifest:
     inside a window, the settings its settings file lists, the tone of each kind of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, and the dashboard it writes."""
+    event reaches, the aliases it ships, the dashboard it writes and what it says it is for."""
 
     name: str
     title: str
@@ -47,6 +47,7 @@ class PluginManifest:
     reaches: Mapping[str, tuple[str, ...]]
     aliases: tuple[ManifestAlias, ...]
     dashboard: ManifestDashboard | None
+    description: str = ""
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -67,7 +68,8 @@ class PluginManifest:
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
-                   cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None))
+                   cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
+                   str(fields["description"]) if "description" in fields else "")
 
     @staticmethod
     def read_dashboard(dashboard: object) -> ManifestDashboard | None:

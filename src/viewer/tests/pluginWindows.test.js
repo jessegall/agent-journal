@@ -14,7 +14,7 @@ function mounted(component, rows, ran = []) {
 
 test("a plugin row shows its title, release and switch, and its button switches it off", async () => {
     const ran = [];
-    const element = mounted(PluginRows, [{id: 1, name: "code-commandments", title: "Code Commandments", release: "v6.26.0", enabled: true}], ran);
+    const element = mounted(PluginRows, [{id: 1, name: "code-commandments", title: "Code Commandments", source: "owner/commandments", release: "v6.26.0", enabled: true}], ran);
     await settled();
     const row = element.querySelector('[data-row="1"]');
     expect(row.textContent).toContain("Code Commandments");

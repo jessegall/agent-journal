@@ -1,9 +1,17 @@
-import {afterEach, expect, test} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import {fileAddress} from "../../core/modules/plugins/web/src/fileAddress.js";
 
-afterEach(() => (document.body.innerHTML = ""));
+beforeEach(() => vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+
+    disconnect() {}
+}));
+afterEach(() => {
+    document.body.innerHTML = "";
+    vi.unstubAllGlobals();
+});
 
 const PLUGIN = {id: 1, name: "sins", title: "Sins", release: "1.0", enabled: true, source: "owner/sins", failing: false};
 
@@ -14,6 +22,8 @@ async function drawn(refuse = false) {
     const window = context({"plugin list": page([PLUGIN])});
     window.read = async (line) => {
         if (line === "plugin dashboards") return page([{id: "sins", plugin: "sins", title: "Sins board"}]);
+        if (line === "plugin descriptions") return page([{id: "sins", plugin: "sins", description: "Judges the code"}]);
+        if (line === "plugin services") return page([{id: "sins a", plugin: "sins", service: "a", running: true, pid: 12}, {id: "sins b", plugin: "sins", service: "b", running: false, pid: null}]);
         if (!Array.isArray(line)) return page([PLUGIN]);
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
         if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
@@ -32,8 +42,6 @@ const type = async (input, text) => {
 
 test("a plugin shows everything it would run, and installs only from there", async () => {
     const {element, ran} = await drawn();
-    element.querySelector("[data-plugin-install]").click();
-    await settle();
     const form = element.querySelector("[data-plugin-install-form]");
     await type(form.querySelector("input"), "owner/repo");
     form.dispatchEvent(new Event("submit", {cancelable: true}));
@@ -51,17 +59,23 @@ test("a dashboard's file row opens the Files window at the row's line, or at the
     expect(fileAddress("http://journal.test/viewer/?page=plugins&line=9", {path: "src/a.py"})).toBe("http://journal.test/viewer/?page=coding.files&file=src%2Fa.py");
 });
 
+const fromMenu = async (element, item) => {
+    document.body.append(element);
+    element.querySelector("[data-plugin-more] button, button[data-plugin-more]").click();
+    await settle();
+    document.querySelector(item).click();
+    await settle();
+};
+
 test("checking for updates says what the source has", async () => {
     const {element} = await drawn();
-    element.querySelector("[data-plugin-latest]").click();
-    await settle();
+    await fromMenu(element, "[data-plugin-latest]");
     expect(element.querySelector("[data-plugin-latest-line]").textContent).toBe("sins: v2 is newer than 1.0");
 });
 
 test("a newer release shows what changes and upgrades only from there", async () => {
     const {element, ran} = await drawn();
-    element.querySelector("[data-plugin-latest]").click();
-    await settle();
+    await fromMenu(element, "[data-plugin-latest]");
     element.querySelector("[data-plugin-upgrade]").click();
     await settle();
     expect(ran).toEqual([["plugin", "upgrade", "sins"]]);
@@ -83,7 +97,9 @@ test("a plugin that declares a dashboard offers it and says when nothing is writ
 
 test("the guide opens with every manifest key", async () => {
     const {element} = await drawn();
-    element.querySelector("[data-plugin-guide-open]").click();
+    element.querySelector("[data-plugin-make]").click();
+    await settle();
+    document.querySelector("[data-plugin-guide-open]").click();
     await settle();
     const guide = document.querySelector("[data-plugin-guide]").textContent;
     for (const key of ["journal-plugin.json", "hears", "holds", "services", "dashboard", "$JOURNAL_PLUGIN_DATA"]) expect(guide).toContain(key);
@@ -91,8 +107,6 @@ test("the guide opens with every manifest key", async () => {
 
 test("a refused install says why", async () => {
     const {element} = await drawn(true);
-    element.querySelector("[data-plugin-install]").click();
-    await settle();
     const form = element.querySelector("[data-plugin-install-form]");
     await type(form.querySelector("input"), "owner/repo");
     form.dispatchEvent(new Event("submit", {cancelable: true}));
@@ -104,19 +118,21 @@ test("the agent is asked to make a plugin by a message", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-plugin-make]").click();
     await settle();
-    const form = element.querySelector("[data-plugin-make-form]");
-    await type(form.querySelector("input"), "count my commits");
-    form.dispatchEvent(new Event("submit", {cancelable: true}));
+    const wish = document.querySelector("[data-plugin-make-form] textarea");
+    wish.value = "count my commits";
+    wish.dispatchEvent(new Event("input"));
+    await settle();
+    document.querySelector("[data-plugin-make-send]").click();
     await settle();
     expect(ran).toContainEqual(["message", "send", "Please make a plugin: count my commits"]);
+    expect(element.querySelector("[data-plugin-asked]")).not.toBeNull();
 });
 
 test("a plugin is removed with or without its data, after asking", async () => {
     const {element, ran} = await drawn();
-    element.querySelector("[data-plugin-remove]").click();
-    await settle();
+    await fromMenu(element, "[data-plugin-remove]");
     expect(ran).toEqual([]);
-    element.querySelector("[data-plugin-remove-purge]").click();
+    document.querySelector("[data-plugin-remove-purge]").click();
     await settle();
     expect(ran).toContainEqual(["plugin", "remove", "sins", "--purge"]);
 });
@@ -164,4 +180,19 @@ test("a plugin's cards read as words, not JSON", async () => {
 test("what a plugin did names the services it keeps running", async () => {
     await recordDrawn({ok: true, value: {name: "sins", outputs: [], fault_count: 0, last_fault: "", services: [{name: "watcher", condition: "always"}]}});
     expect(document.querySelector("[data-plugin-services]").textContent).toContain("watcher");
+});
+
+test("a card says what the plugin is for and which of its services run", async () => {
+    const {element} = await drawn();
+    await settle();
+    expect(element.querySelector("[data-plugin-description]").textContent).toBe("Judges the code");
+    expect(element.querySelector('[data-plugin-service="sins a"]').textContent).toContain("running, process 12");
+    expect(element.querySelector('[data-plugin-service="sins b"]').textContent).toContain("stopped");
+});
+
+test("a page with no plugin says so and still offers to make one", async () => {
+    const window = context({"plugin list": page([]), "plugin dashboards": page([]), "plugin descriptions": page([]), "plugin services": page([])});
+    const element = await mounted(PluginRows, window);
+    expect(element.querySelector("[data-plugin-none]").textContent).toContain("No plugin is installed");
+    expect(element.querySelector("[data-plugin-make]")).not.toBeNull();
 });

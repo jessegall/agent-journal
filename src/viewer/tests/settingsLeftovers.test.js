@@ -1,7 +1,6 @@
 import {expect, test} from "vitest";
 import WorkerModels from "../../suites/coding/modules/workers/web/src/WorkerModels.vue";
 import ProjectWorktrees from "../../suites/coding/modules/workers/web/src/ProjectWorktrees.vue";
-import PluginServices from "../../core/modules/plugins/web/src/PluginServices.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const running = (answers) => {
@@ -46,11 +45,4 @@ test("the worktrees window names each holder and offers removal only of a worktr
     element.querySelector("[data-worktree-confirm]").click();
     await settle();
     expect(window.lines).toEqual([["project-worktree", "remove", "/l"]]);
-});
-
-test("the plugin services list says which run and draws nothing with none", async () => {
-    const element = await mounted(PluginServices, context({"plugin services": page([{id: "a b", plugin: "a", service: "b", running: true, pid: 12}, {id: "a c", plugin: "a", service: "c", running: false, pid: null}])}));
-    expect(element.querySelector('[data-plugin-service="a b"]').textContent).toContain("Running, process 12");
-    expect(element.querySelector('[data-plugin-service="a c"]').textContent).toContain("Stopped");
-    expect((await mounted(PluginServices, context({"plugin services": page([])}))).querySelector("[data-plugin-services]")).toBeNull();
 });
