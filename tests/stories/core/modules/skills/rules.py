@@ -44,6 +44,13 @@ def test_a_read_of_the_due_skill_counts_at_once_with_no_listener_run_after_it(ne
     story.expect_hook_allowed("s-1", EDIT)
 
 
+def test_a_block_names_the_next_due_skill_once_the_first_is_read(new_story):
+    story = notes_due(new_story)
+    story.expect_hook_refusal("s-1", EDIT, "read this first: .claude/skills/journal-notes")
+    read_of(story, ".claude/skills/journal-notes/SKILL.md")
+    story.expect_hook_allowed("s-1", EDIT)
+
+
 def test_a_stop_is_refused_naming_the_unread_skills(new_story):
     story = notes_due(new_story)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "unread skills: journal-notes")
