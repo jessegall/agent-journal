@@ -1,65 +1,65 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-54564e42dcfe")) { const style = document.createElement("style"); style.id = "window-styles-54564e42dcfe"; style.textContent = ".program-add[data-v-baca99fa]{display:inline-flex;gap:4px}.failure[data-v-baca99fa]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.tools[data-v-baca99fa]{margin-bottom:8px}.draft[data-v-baca99fa]{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.draft-foot[data-v-baca99fa]{display:flex;gap:6px;justify-content:flex-end}.removed[data-v-baca99fa]{margin:0 0 8px;color:var(--text-3);font-size:12px}.grow[data-v-baca99fa]{flex:1}.secret[data-v-baca99fa]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-baca99fa]{display:flex;align-items:baseline;gap:10px}.title[data-v-baca99fa]{flex:1;font-weight:600}.kind[data-v-baca99fa],.brief[data-v-baca99fa],.label[data-v-baca99fa]{color:var(--text-3);font-size:12px}.brief[data-v-baca99fa]{margin:0}.field[data-v-baca99fa]{display:flex;flex-direction:column;gap:4px}.field input[data-v-baca99fa]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.programs[data-v-baca99fa]{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}button[data-v-baca99fa]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { reactive as $, ref as E, openBlock as o, createElementBlock as a, Fragment as k, unref as d, toDisplayString as u, createCommentVNode as p, createElementVNode as n, createVNode as f, withCtx as y, createTextVNode as _, withModifiers as V, withDirectives as c, vModelText as b, renderList as I, vModelDynamic as X } from "vue";
-import { useRows as B, Btn as U, Segmented as Z, RowList as w } from "@journal/window-kit";
-const ee = (R, g) => {
-  const h = R.__vccOpts || R;
+if (!document.getElementById("window-styles-3f63469c497d")) { const style = document.createElement("style"); style.id = "window-styles-3f63469c497d"; style.textContent = ".program-add[data-v-9cf71978]{display:inline-flex;gap:4px}.failure[data-v-9cf71978]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.tools[data-v-9cf71978]{margin-bottom:8px}.draft[data-v-9cf71978]{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.draft-foot[data-v-9cf71978]{display:flex;gap:6px;justify-content:flex-end}.removed[data-v-9cf71978]{margin:0 0 8px;color:var(--text-3);font-size:12px}.grow[data-v-9cf71978]{flex:1}.secret[data-v-9cf71978]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-9cf71978]{display:flex;align-items:baseline;gap:10px}.title[data-v-9cf71978]{flex:1;font-weight:600}.kind[data-v-9cf71978],.brief[data-v-9cf71978],.label[data-v-9cf71978]{color:var(--text-3);font-size:12px}.brief[data-v-9cf71978]{margin:0}.field[data-v-9cf71978]{display:flex;flex-direction:column;gap:4px}.field input[data-v-9cf71978]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.programs[data-v-9cf71978]{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}button[data-v-9cf71978]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { reactive as $, ref as E, openBlock as o, createElementBlock as a, Fragment as k, unref as d, toDisplayString as c, createCommentVNode as f, createElementVNode as n, createVNode as p, withCtx as y, createTextVNode as _, withModifiers as V, withDirectives as m, vModelText as b, renderList as I, vModelDynamic as Z } from "vue";
+import { useRows as B, Btn as h, Segmented as w, RowList as ee, patched as O, removed as te } from "@journal/window-kit";
+const ie = (R, g) => {
+  const U = R.__vccOpts || R;
   for (const [T, P] of g)
-    h[T] = P;
-  return h;
-}, te = {
+    U[T] = P;
+  return U;
+}, le = {
   key: 0,
   class: "failure"
-}, ie = { class: "tools" }, le = { class: "draft-foot" }, ne = ["onClick"], se = ["data-row"], oe = ["onSubmit"], ae = { class: "draft-foot" }, de = { class: "head" }, re = { class: "title" }, ue = { class: "kind" }, ce = ["onClick"], me = ["onClick"], pe = ["onClick"], fe = {
+}, ne = { class: "tools" }, se = { class: "draft-foot" }, oe = ["onClick"], ae = ["data-row"], de = ["onSubmit"], re = { class: "draft-foot" }, ue = { class: "head" }, ce = { class: "title" }, me = { class: "kind" }, fe = ["onClick"], pe = ["onClick"], be = ["onClick"], ve = {
   key: 0,
   class: "brief"
-}, be = ["onSubmit"], ve = ["for"], ke = ["id", "onUpdate:modelValue", "type", "placeholder"], ye = ["data-secret-field-remove", "onClick"], _e = ["onSubmit"], ge = ["onUpdate:modelValue"], Se = { class: "programs" }, Ce = ["onClick"], $e = ["onClick"], Ve = ["onSubmit"], Ue = ["onUpdate:modelValue"], he = {
+}, ke = ["onSubmit"], ye = ["for"], _e = ["id", "onUpdate:modelValue", "type", "placeholder"], ge = ["data-secret-field-remove", "onClick"], Se = ["onSubmit"], Ce = ["onUpdate:modelValue"], $e = { class: "programs" }, Ve = ["onClick"], he = ["onClick"], Ue = ["onSubmit"], Ae = ["onUpdate:modelValue"], Ne = {
   __name: "SecretRows",
   setup(R) {
     const g = [
       { key: "api key", label: "API key" },
       { key: "login", label: "Login" },
       { key: "custom", label: "Custom" }
-    ], { rows: h, failure: T, loaded: P, act: r, actionFailure: L } = B("secret list", ["secret.*"]), { rows: O, load: M } = B("secret list --deleted", ["secret.*"]), A = $({}), N = $({}), F = $({}), S = E(!1), s = $({ kind: g[0].key, title: "", brief: "", field: "" }), x = E(0), m = $({ title: "", brief: "" }), C = E(0);
-    async function K() {
+    ], { rows: U, failure: T, loaded: P, act: r, actionFailure: L } = B("secret list", ["secret.*"]), { rows: K, load: M } = B("secret list --deleted", ["secret.*"]), A = $({}), N = $({}), F = $({}), S = E(!1), s = $({ kind: g[0].key, title: "", brief: "", field: "" }), x = E(0), u = $({ title: "", brief: "" }), C = E(0);
+    async function Y() {
       if (!s.title.trim()) return;
-      const l = s.kind === "custom" && s.field.trim() ? ["--field", s.field.trim()] : [];
-      (await r(["secret", "make", s.title.trim(), "--kind", s.kind, ...l, ...s.brief.trim() ? ["--brief", s.brief.trim()] : []])).ok && (S.value = !1, Object.assign(s, { kind: g[0].key, title: "", brief: "", field: "" }));
+      const i = s.kind === "custom" && s.field.trim() ? ["--field", s.field.trim()] : [];
+      (await r(["secret", "make", s.title.trim(), "--kind", s.kind, ...i, ...s.brief.trim() ? ["--brief", s.brief.trim()] : []])).ok && (S.value = !1, Object.assign(s, { kind: g[0].key, title: "", brief: "", field: "" }));
     }
-    function Y(l) {
-      x.value = l.id, Object.assign(m, { title: l.title, brief: l.brief });
+    function q(i) {
+      x.value = i.id, Object.assign(u, { title: i.title, brief: i.brief });
     }
-    async function q(l) {
-      (await r(["secret", "update", String(l.id), "--title", m.title.trim(), "--brief", m.brief.trim()])).ok && (x.value = 0);
+    async function z(i) {
+      (await r(["secret", "update", String(i.id), "--title", u.title.trim(), "--brief", u.brief.trim()], O(i.id, { title: u.title.trim(), brief: u.brief.trim() }))).ok && (x.value = 0);
     }
-    async function j(l) {
-      if (C.value !== l.id) return void (C.value = l.id);
-      C.value = 0, await r(["secret", "delete", String(l.id)]), M();
+    async function j(i) {
+      if (C.value !== i.id) return void (C.value = i.id);
+      C.value = 0, await r(["secret", "delete", String(i.id)], te(i.id)), M();
     }
-    async function z(l) {
-      await r(["secret", "restore", String(l.id)]), M();
+    async function G(i) {
+      await r(["secret", "restore", String(i.id)]), M();
     }
-    async function G(l) {
-      const e = (A[l.id] || "").trim();
+    async function H(i) {
+      const e = (A[i.id] || "").trim();
       if (!e) return;
-      (await r(["secret", "update", String(l.id), "--add-field", e])).ok && (A[l.id] = "");
+      (await r(["secret", "update", String(i.id), "--add-field", e])).ok && (A[i.id] = "");
     }
-    const H = (l, e) => r(["secret", "update", String(l.id), "--remove-field", e.name]);
-    async function J(l) {
-      const e = (N[l.id] || "").trim();
+    const J = (i, e) => r(["secret", "update", String(i.id), "--remove-field", e.name]);
+    async function Q(i) {
+      const e = (N[i.id] || "").trim();
       if (!e) return;
-      (await r(["secret", "allow", String(l.id), e])).ok && (N[l.id] = "");
+      (await r(["secret", "allow", String(i.id), e])).ok && (N[i.id] = "");
     }
-    const v = (l, e) => `${l.id}:${e.name}`, Q = (l, e) => l.filled.includes(e.name);
-    async function W(l, e) {
-      const t = (F[v(l, e)] || "").trim();
+    const v = (i, e) => `${i.id}:${e.name}`, W = (i, e) => i.filled.includes(e.name);
+    async function X(i, e) {
+      const t = (F[v(i, e)] || "").trim();
       if (!t) return;
-      (await r(["secret", "fill", String(l.id), e.name, t])).ok && (F[v(l, e)] = "");
+      (await r(["secret", "fill", String(i.id), e.name, t], O(i.id, { filled: [...i.filled, e.name] }))).ok && (F[v(i, e)] = "");
     }
-    return (l, e) => (o(), a(k, null, [
-      d(L) ? (o(), a("p", te, u(d(L)), 1)) : p("", !0),
-      n("div", ie, [
-        f(d(U), {
+    return (i, e) => (o(), a(k, null, [
+      d(L) ? (o(), a("p", le, c(d(L)), 1)) : f("", !0),
+      n("div", ne, [
+        p(d(h), {
           small: "",
           bordered: "",
           "data-secret-new": "",
@@ -75,28 +75,28 @@ const ee = (R, g) => {
         key: 1,
         class: "draft",
         "data-secret-draft": "",
-        onSubmit: V(K, ["prevent"])
+        onSubmit: V(Y, ["prevent"])
       }, [
-        f(d(Z), {
+        p(d(w), {
           options: g,
           value: s.kind,
           onPick: e[1] || (e[1] = (t) => s.kind = t)
         }, null, 8, ["value"]),
-        c(n("input", {
+        m(n("input", {
           "onUpdate:modelValue": e[2] || (e[2] = (t) => s.title = t),
           placeholder: "Its purpose",
           "aria-label": "Title"
         }, null, 512), [
           [b, s.title]
         ]),
-        c(n("input", {
+        m(n("input", {
           "onUpdate:modelValue": e[3] || (e[3] = (t) => s.brief = t),
           placeholder: "A note on where it is used; you can leave this empty",
           "aria-label": "Note"
         }, null, 512), [
           [b, s.brief]
         ]),
-        s.kind === "custom" ? c((o(), a("input", {
+        s.kind === "custom" ? m((o(), a("input", {
           key: 0,
           "onUpdate:modelValue": e[4] || (e[4] = (t) => s.field = t),
           placeholder: "The name of its first field",
@@ -104,9 +104,9 @@ const ee = (R, g) => {
           "data-secret-first-field": ""
         }, null, 512)), [
           [b, s.field]
-        ]) : p("", !0),
-        n("div", le, [
-          f(d(U), {
+        ]) : f("", !0),
+        n("div", se, [
+          p(d(h), {
             small: "",
             onClick: e[5] || (e[5] = (t) => S.value = !1)
           }, {
@@ -115,7 +115,7 @@ const ee = (R, g) => {
             ])]),
             _: 1
           }),
-          f(d(U), {
+          p(d(h), {
             small: "",
             kind: "primary",
             type: "submit",
@@ -128,21 +128,21 @@ const ee = (R, g) => {
             _: 1
           }, 8, ["disabled"])
         ])
-      ], 32)) : p("", !0),
-      (o(!0), a(k, null, I(d(O), (t) => (o(), a("p", {
+      ], 32)) : f("", !0),
+      (o(!0), a(k, null, I(d(K), (t) => (o(), a("p", {
         key: t.id,
         class: "removed",
         "data-secret-removed": ""
       }, [
-        _(u(t.title) + " was deleted. ", 1),
+        _(c(t.title) + " was deleted. ", 1),
         n("button", {
           type: "button",
           "data-secret-restore": "",
-          onClick: (i) => z(t)
-        }, "Restore", 8, ne)
+          onClick: (l) => G(t)
+        }, "Restore", 8, oe)
       ]))), 128)),
-      f(d(w), {
-        rows: d(h),
+      p(d(ee), {
+        rows: d(U),
         failure: d(T),
         loaded: d(P),
         empty: "No secrets yet",
@@ -157,31 +157,31 @@ const ee = (R, g) => {
               key: 0,
               class: "draft",
               "data-secret-edit": "",
-              onSubmit: V((i) => q(t), ["prevent"])
+              onSubmit: V((l) => z(t), ["prevent"])
             }, [
-              c(n("input", {
-                "onUpdate:modelValue": e[6] || (e[6] = (i) => m.title = i),
+              m(n("input", {
+                "onUpdate:modelValue": e[6] || (e[6] = (l) => u.title = l),
                 "aria-label": "Title"
               }, null, 512), [
-                [b, m.title]
+                [b, u.title]
               ]),
-              c(n("input", {
-                "onUpdate:modelValue": e[7] || (e[7] = (i) => m.brief = i),
+              m(n("input", {
+                "onUpdate:modelValue": e[7] || (e[7] = (l) => u.brief = l),
                 "aria-label": "Note"
               }, null, 512), [
-                [b, m.brief]
+                [b, u.brief]
               ]),
-              n("div", ae, [
-                f(d(U), {
+              n("div", re, [
+                p(d(h), {
                   small: "",
-                  onClick: e[8] || (e[8] = (i) => x.value = 0)
+                  onClick: e[8] || (e[8] = (l) => x.value = 0)
                 }, {
                   default: y(() => [...e[13] || (e[13] = [
                     _("Cancel", -1)
                   ])]),
                   _: 1
                 }),
-                f(d(U), {
+                p(d(h), {
                   small: "",
                   kind: "primary",
                   type: "submit",
@@ -193,112 +193,112 @@ const ee = (R, g) => {
                   _: 1
                 })
               ])
-            ], 40, oe)) : (o(), a(k, { key: 1 }, [
-              n("div", de, [
-                n("span", re, u(t.title), 1),
-                n("span", ue, u(t.secret_type), 1),
+            ], 40, de)) : (o(), a(k, { key: 1 }, [
+              n("div", ue, [
+                n("span", ce, c(t.title), 1),
+                n("span", me, c(t.secret_type), 1),
                 e[15] || (e[15] = n("span", { class: "grow" }, null, -1)),
                 n("button", {
                   type: "button",
                   "data-secret-edit-open": "",
-                  onClick: (i) => Y(t)
-                }, "Edit", 8, ce),
+                  onClick: (l) => q(t)
+                }, "Edit", 8, fe),
                 C.value === t.id ? (o(), a(k, { key: 0 }, [
                   n("button", {
                     type: "button",
-                    onClick: e[9] || (e[9] = (i) => C.value = 0)
+                    onClick: e[9] || (e[9] = (l) => C.value = 0)
                   }, "Keep it"),
                   n("button", {
                     type: "button",
                     "data-secret-confirm": "",
-                    onClick: (i) => j(t)
-                  }, "Yes, delete", 8, me)
+                    onClick: (l) => j(t)
+                  }, "Yes, delete", 8, pe)
                 ], 64)) : (o(), a("button", {
                   key: 1,
                   type: "button",
                   "data-secret-delete": "",
-                  onClick: (i) => j(t)
-                }, "Delete", 8, pe))
+                  onClick: (l) => j(t)
+                }, "Delete", 8, be))
               ]),
-              t.brief ? (o(), a("p", fe, u(t.brief), 1)) : p("", !0)
+              t.brief ? (o(), a("p", ve, c(t.brief), 1)) : f("", !0)
             ], 64)),
-            (o(!0), a(k, null, I(t.fields, (i) => (o(), a("form", {
-              key: i.name,
+            (o(!0), a(k, null, I(t.fields, (l) => (o(), a("form", {
+              key: l.name,
               class: "field",
-              onSubmit: V((D) => W(t, i), ["prevent"])
+              onSubmit: V((D) => X(t, l), ["prevent"])
             }, [
               n("label", {
-                for: v(t, i)
-              }, u(i.name), 9, ve),
-              c(n("input", {
-                id: v(t, i),
-                "onUpdate:modelValue": (D) => F[v(t, i)] = D,
-                type: i.hidden ? "password" : "text",
+                for: v(t, l)
+              }, c(l.name), 9, ye),
+              m(n("input", {
+                id: v(t, l),
+                "onUpdate:modelValue": (D) => F[v(t, l)] = D,
+                type: l.hidden ? "password" : "text",
                 autocomplete: "off",
-                placeholder: Q(t, i) ? "Filled; type to replace it" : "Type the value"
-              }, null, 8, ke), [
-                [X, F[v(t, i)]]
+                placeholder: W(t, l) ? "Filled; type to replace it" : "Type the value"
+              }, null, 8, _e), [
+                [Z, F[v(t, l)]]
               ]),
               e[16] || (e[16] = n("button", { type: "submit" }, "Save", -1)),
               t.secret_type === "custom" ? (o(), a("button", {
                 key: 0,
                 type: "button",
-                "data-secret-field-remove": i.name,
-                onClick: (D) => H(t, i)
-              }, "Remove", 8, ye)) : p("", !0)
-            ], 40, be))), 128)),
+                "data-secret-field-remove": l.name,
+                onClick: (D) => J(t, l)
+              }, "Remove", 8, ge)) : f("", !0)
+            ], 40, ke))), 128)),
             t.secret_type === "custom" ? (o(), a("form", {
               key: 2,
               class: "field",
               "data-secret-field-add": "",
-              onSubmit: V((i) => G(t), ["prevent"])
+              onSubmit: V((l) => H(t), ["prevent"])
             }, [
-              c(n("input", {
-                "onUpdate:modelValue": (i) => A[t.id] = i,
+              m(n("input", {
+                "onUpdate:modelValue": (l) => A[t.id] = l,
                 placeholder: "Add a field",
                 "aria-label": "Add a field",
                 autocomplete: "off"
-              }, null, 8, ge), [
+              }, null, 8, Ce), [
                 [b, A[t.id]]
               ]),
               e[17] || (e[17] = n("button", { type: "submit" }, "Add", -1))
-            ], 40, _e)) : p("", !0),
-            n("div", Se, [
+            ], 40, Se)) : f("", !0),
+            n("div", $e, [
               e[19] || (e[19] = n("span", { class: "label" }, "Programs", -1)),
-              n("span", null, u(t.programs.length ? t.programs.join(", ") : "None allowed yet"), 1),
-              (o(!0), a(k, null, I(t.proposed, (i) => (o(), a("button", {
-                key: i,
+              n("span", null, c(t.programs.length ? t.programs.join(", ") : "None allowed yet"), 1),
+              (o(!0), a(k, null, I(t.proposed, (l) => (o(), a("button", {
+                key: l,
                 type: "button",
-                onClick: (D) => d(r)(["secret", "allow", String(t.id), i])
-              }, "Allow " + u(i), 9, Ce))), 128)),
-              t.helpers ? p("", !0) : (o(), a("button", {
+                onClick: (D) => d(r)(["secret", "allow", String(t.id), l])
+              }, "Allow " + c(l), 9, Ve))), 128)),
+              t.helpers ? f("", !0) : (o(), a("button", {
                 key: 0,
                 type: "button",
-                onClick: (i) => d(r)(["secret", "allow", String(t.id), "--helpers"])
-              }, "Let helpers use it", 8, $e)),
+                onClick: (l) => d(r)(["secret", "allow", String(t.id), "--helpers"])
+              }, "Let helpers use it", 8, he)),
               n("form", {
                 class: "program-add",
                 "data-secret-program-add": "",
-                onSubmit: V((i) => J(t), ["prevent"])
+                onSubmit: V((l) => Q(t), ["prevent"])
               }, [
-                c(n("input", {
-                  "onUpdate:modelValue": (i) => N[t.id] = i,
+                m(n("input", {
+                  "onUpdate:modelValue": (l) => N[t.id] = l,
                   placeholder: "Allow a program",
                   "aria-label": "Allow a program",
                   autocomplete: "off"
-                }, null, 8, Ue), [
+                }, null, 8, Ae), [
                   [b, N[t.id]]
                 ]),
                 e[18] || (e[18] = n("button", { type: "submit" }, "Allow", -1))
-              ], 40, Ve)
+              ], 40, Ue)
             ])
-          ], 8, se)
+          ], 8, ae)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"])
     ], 64));
   }
-}, Fe = /* @__PURE__ */ ee(he, [["__scopeId", "data-v-baca99fa"]]);
+}, De = /* @__PURE__ */ ie(Ne, [["__scopeId", "data-v-9cf71978"]]);
 export {
-  Fe as default
+  De as default
 };
