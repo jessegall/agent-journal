@@ -7,6 +7,7 @@ import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
+import {environment} from "../state/environment.js";
 
 const props = defineProps({read: {type: Function, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back"]);
@@ -14,9 +15,9 @@ const queue = ref(null);
 const failure = ref("");
 let reading = 0;
 const sections = computed(() => [
-    {kind: "running", heading: "Running", rows: queue.value.running, empty: "No command runs."},
-    {kind: "waiting", heading: "Waiting", rows: queue.value.waiting, empty: "No command waits."},
-    {kind: "recent", heading: "Finished lately", rows: queue.value.recent, empty: "Nothing finished yet."},
+    {kind: "running", heading: "Running", rows: queue.value.running, empty: "Nothing is running."},
+    {kind: "waiting", heading: "Waiting (oldest first)", rows: queue.value.waiting, empty: "No run waits. A run that starts now gets a spot at once."},
+    {kind: "recent", heading: "Finished lately", rows: queue.value.recent, empty: "Nothing ran yet."},
 ]);
 
 async function load() {
@@ -34,10 +35,7 @@ onMounted(load);
     <article class="process-queue" data-test-queue>
         <header class="top">
             <template v-if="backed"><BackButton @back="emit('back')" /></template>
-            <span class="kind">
-                <Icon name="terminal" :size="14" />
-                Process queue
-            </span>
+            <div class="heading"><span class="kind"><Icon name="terminal" :size="14" />Environment {{ environment }}</span><h1>Process queue</h1><p>Commands from workers wait here for a free spot. Reads and edits never wait.</p></div>
             <CloseButton title="Close the process queue" data-resource-close @click="emit('close')" />
         </header>
         <div class="scroll">
@@ -89,6 +87,9 @@ onMounted(load);
     font-size: 13px;
     font-weight: 500;
 }
+.heading { flex: 1; min-width: 0; }
+h1 { margin: 8px 0; font-size: 19px; }
+.heading p { margin: 0; font-size: 12px; color: var(--text-3); line-height: 1.5; }
 .scroll {
     flex: 1;
     overflow: auto;

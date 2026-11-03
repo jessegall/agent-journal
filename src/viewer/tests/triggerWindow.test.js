@@ -107,7 +107,7 @@ test("opening a trigger saves its changes together, pauses it, and ends it only 
     expect(ran).toEqual([]);
     panel().querySelector("[data-trigger-save]").click();
     await settle();
-    expect(ran.at(-1)).toEqual(expect.arrayContaining(["--phrases", "deploy", "release", "ship"]));
+    expect(ran.at(-1)).toEqual(expect.arrayContaining(["--phrases=deploy", "--phrases=release", "--phrases=ship"]));
     expect(panel()).toBeNull();
     element.querySelector('[data-row="1"]').click();
     await settle();

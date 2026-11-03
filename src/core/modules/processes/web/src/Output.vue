@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {AutoScrollPane, EmptyState, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
-const outputId = ref(0);
+const outputId = ref(Number(new URLSearchParams(location.search).get("output")) || 0);
 const run = ref(null);
 const lines = ref([]);
 const isWhole = ref(false);

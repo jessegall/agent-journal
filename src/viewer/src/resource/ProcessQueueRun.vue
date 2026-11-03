@@ -4,6 +4,7 @@ import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import FoldSign from "../kit/FoldSign.vue";
+import {environment} from "../state/environment.js";
 
 const props = defineProps({
     run: {type: Object, required: true},
@@ -20,14 +21,14 @@ const duration = computed(() => {
     if (!start) return "";
     const end = props.run.ended_at ? new Date(props.run.ended_at).getTime() : now.value * 1000;
     const seconds = Math.max(0, Math.floor((end - new Date(start).getTime()) / 1000));
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
-    return `${Math.floor(seconds / 3600)}h ${Math.floor(seconds / 60) % 60}m`;
+    if (seconds < 60) return `${seconds} s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} m ${seconds % 60} s`;
+    return `${Math.floor(seconds / 3600)} h ${Math.floor(seconds / 60) % 60} m`;
 });
 
 async function refresh() {
     if (!expanded.value) return;
-    const answer = await props.read(["output", "peek", String(props.run.id), "--all"]);
+    const answer = await props.read(["output", "peek", String(props.run.id), "--lines", "1-10"]);
     lines.value = answer.ok ? answer.value.lines : [answer.error];
 }
 async function toggle() {
@@ -43,13 +44,13 @@ useResourceEvents(["output.*"], refresh);
             <template v-if="run.section === 'waiting'">
                 <span class="position" data-queue-position>{{ position }}</span>
             </template>
-            <template v-else><span :class="['dot', run.state]" /></template>
-            <code class="command">{{ run.line }}</code>
-            <span class="time" data-queue-time>{{ duration }}</span>
+            <template v-else><span :class="['marker', run.state, {used: run.uses_slot}]">{{ run.section === 'recent' ? (run.state === 'finished' ? '✓' : '×') : '▤' }}</span></template>
+            <code class="command" :title="run.line">{{ run.line }}</code>
+            <span class="time"><small>{{ run.section === 'recent' ? 'ran' : run.section }}</small><span data-queue-time>{{ duration }}</span></span>
         </div>
         <div class="details">
             <span class="kind" data-queue-kind>{{ run.category }}</span>
-            <span class="state" data-queue-state>{{ state }}</span>
+            <span class="state" data-queue-state>{{ run.state === 'failed' ? `Failed, exit ${run.exit_code}` : state }}</span>
             <template v-if="run.worker_id">
                 <button type="button" class="link" data-queue-worker @click="peek('agents', run.worker_id)">
                     Worker {{ run.worker_id }}
@@ -60,13 +61,16 @@ useResourceEvents(["output.*"], refresh);
                 <button type="button" class="link" data-queue-task @click="peek('tasks', run.task_id)">Task {{ run.task_id }}</button>
             </template>
             <template v-if="run.uses_slot"><span class="spot">Takes a spot</span></template>
+        </div>
+        <div class="output-links">
             <button type="button" class="output-toggle" :aria-expanded="expanded" data-queue-output @click="toggle">
                 Output {{ run.id }}
                 <FoldSign :open="expanded" />
             </button>
+            <a class="link" :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open in its own window</a>
         </div>
         <template v-if="expanded">
-            <pre class="output" data-queue-output-body>{{ lines.join("\n") }}</pre>
+            <div class="output"><div class="output-heading">Output {{ run.id }}<span>10 lines from start</span></div><pre data-queue-output-body>{{ lines.join("\n") }}</pre></div>
         </template>
     </div>
 </template>
@@ -93,7 +97,22 @@ useResourceEvents(["output.*"], refresh);
     line-height: 1.6;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
+.time { display: flex; flex-direction: column; gap: 4px; text-align: right; }
+.time small { color: var(--text-4); font-size: 10px; }
+.marker { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border: 1px solid var(--border-2); border-radius: 4px; color: var(--accent); }
+.marker.used { background: var(--accent); color: white; }
+.marker.failed, .marker.orphaned, .marker.stopped { color: var(--danger); }
+.output-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; font-size: 10.5px; color: var(--text-3); }
+.output-links .output-toggle { margin-left: 0; border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px; }
+.output-links a { text-decoration: none; }
+.output-heading { display: flex; justify-content: space-between; color: var(--text-3); font: 11px var(--font-mono, monospace); }
+.output pre { max-height: 176px; overflow: auto; margin-bottom: 0; white-space: pre-wrap; }
+@media (max-width: 520px) { .run-line { flex-wrap: wrap; } .time { flex-direction: row; flex-basis: 100%; margin-left: 30px; text-align: left; } }
 .time {
     flex: none;
     color: var(--text-3);
@@ -169,5 +188,8 @@ useResourceEvents(["output.*"], refresh);
     line-height: 1.6;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    background: #141519;
+    color: #ddd;
+    border-radius: 6px;
 }
 </style>

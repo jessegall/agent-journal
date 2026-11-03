@@ -2,7 +2,7 @@ PROCESS_ROWS_SELECT = "SELECT id, environment_id, agent_id, line, state FROM pro
 
 PROCESS_QUEUE_ROWS_SELECT = """
 SELECT processes.id, processes.environment_id, processes.agent_id, processes.line, processes.category,
-       processes.state, processes.created_at, processes.started_at, processes.ended_at,
+       processes.state, processes.exit_code, processes.created_at, processes.started_at, processes.ended_at,
        processes.is_queued, processes.is_queue_run, processes.slot_assigned,
        agents.role = 'main' AS is_main,
        coalesce(processes.worker_id, CASE WHEN agents.role = 'worker' THEN agents.id END) AS worker_id,

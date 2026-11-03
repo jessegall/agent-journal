@@ -115,11 +115,11 @@ test("the process queue reads its counts and ordered lists together", async () =
     await panel(read);
     expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
     expect(document.body.querySelector("[data-resource-panel]").classList.contains("queue")).toBe(true);
-    expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 / 2");
+    expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
     expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
         "Running 1",
-        "Waiting 2",
+        "Waiting (oldest first) 2",
         "Finished lately 1",
     ]);
     expect(rowsOf("running")[0].textContent).toContain("make package");
@@ -128,7 +128,7 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("build");
     expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);
     expect(rowsOf("waiting").map((row) => row.querySelector("[data-queue-position]").textContent)).toEqual(["1", "2"]);
-    expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1m 5s");
+    expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");
     expect(rowsOf("recent")[0].querySelector("[data-queue-state]").textContent).toBe("Passed");
 });
 
@@ -195,7 +195,7 @@ test("a held empty queue shows the reason and empty messages", async () => {
         },
     }));
     expect(document.body.querySelector("[data-queue-held]").textContent).toBe("Queue paused: Machine maintenance");
-    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("No command waits.");
+    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("No run waits. A run that starts now gets a spot at once.");
     expect(document.body.textContent).toContain("Process queue");
     expect(document.body.textContent).not.toContain("Test queue");
 });

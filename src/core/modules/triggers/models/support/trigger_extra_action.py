@@ -13,6 +13,8 @@ class TriggerExtraAction:
 
     type: TriggerExtraActionType
     target: str
+    folder: str | None = None
+    tell_agent: bool = False
 
     def __post_init__(self) -> None:
         if not self.target.strip():
@@ -20,7 +22,8 @@ class TriggerExtraAction:
 
     @classmethod
     def parsed(cls, raw: Mapping[str, object]) -> "TriggerExtraAction":
-        return cls(TriggerExtraActionType(str(raw["type"])), str(raw["target"]))
+        folder = raw.get("folder")
+        return cls(TriggerExtraActionType(str(raw["type"])), str(raw["target"]), str(folder) if folder else None, raw.get("tell_agent") is True)
 
     def program_arguments(self) -> tuple[str, ...]:
         if self.type is TriggerExtraActionType.WEB:

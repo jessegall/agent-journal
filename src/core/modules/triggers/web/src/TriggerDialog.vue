@@ -61,7 +61,7 @@ function newLine() {
 
 function editLine() {
     const line = ["trigger", "edit", String(held.id), "--text", draft.text.trim(), "--action", draft.action, ...detailFlags()];
-    return draft.kind === "words" ? [...line, "--phrases", ...draft.phrases] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
+    return draft.kind === "words" ? [...line, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
 }
 
 async function ran(line) {

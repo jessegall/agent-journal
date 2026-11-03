@@ -22,16 +22,23 @@ async function save(key, value) {
             <div>
                 <strong data-queue-spots>
                     {{ queue.used_slots }}
-                    <span>/ {{ queue.parallel_limit }}</span>
+                    <span>of {{ queue.parallel_limit }}</span>
                 </strong>
-                <p>Spots in use</p>
+                <p>Runs at once</p>
+                <p>{{ queue.used_slots >= queue.parallel_limit ? 'Every spot is in use.' : `${queue.parallel_limit - queue.used_slots} free.` }}</p>
+                <div class="spots" aria-label="Spots in use"><span v-for="spot in queue.parallel_limit" :key="spot" :class="{used: spot <= queue.used_slots}" /></div>
             </div>
             <div>
                 <strong data-queue-waiting>{{ queue.waiting_count }}</strong>
-                <p>Waiting</p>
+                <p>Runs wait for a spot</p>
+                <p v-if="queue.waiting_count">The oldest starts first.</p>
             </div>
+        </div>
             <div class="limit">
+                <div>
                 <label id="queue-limit-label">Runs at once</label>
+                <p>How many runs of workers go at the same time. The others wait. Lowering it stops no run that is going.</p>
+                </div>
                 <div class="stepper">
                     <button
                         type="button"
@@ -52,7 +59,6 @@ async function save(key, value) {
                     </button>
                 </div>
             </div>
-        </div>
         <div class="main-spots">
             <div>
                 <label id="main-spots-label">Main agent runs take spots</label>
@@ -70,6 +76,7 @@ async function save(key, value) {
                 <span />
             </button>
         </div>
+        <p v-if="!queue.count_main_runs && queue.running.some((run) => run.is_main)" class="main-note">{{ queue.running.filter((run) => run.is_main).length === 1 ? "One more run going is the main agent's. It takes no spot" : `${queue.running.filter((run) => run.is_main).length} more runs going are the main agent's. They take no spots` }} while Main agent runs take spots is off.</p>
         <template v-if="queue.halted">
             <p class="halted" role="status" data-queue-held>Queue paused: {{ queue.halt_reason }}</p>
         </template>
@@ -87,14 +94,13 @@ async function save(key, value) {
     background: var(--surface);
 }
 .counts {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
     gap: 32px;
 }
 strong {
     color: var(--text);
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;
@@ -111,10 +117,17 @@ p {
 }
 .limit {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 8px;
-    margin-left: auto;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
 }
+.limit > div:first-child { flex: 1; }
+.spots { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.spots span { width: 20px; height: 20px; border: 1px solid var(--border-2); border-radius: 4px; }
+.spots .used { background: var(--accent); border-color: var(--accent); }
+.main-note { margin-top: 12px; line-height: 1.5; }
 label {
     color: var(--text-2);
     font-size: 12px;

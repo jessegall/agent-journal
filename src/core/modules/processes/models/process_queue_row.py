@@ -24,6 +24,7 @@ class ProcessQueueRow(ViewModel):
     line: str
     category: CommandCategory
     state: ProcessState
+    exit_code: int | None
     created_at: Timestamp
     started_at: Timestamp | None
     ended_at: Timestamp | None
