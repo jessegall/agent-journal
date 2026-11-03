@@ -18,16 +18,15 @@ DELIVERY_EVENTS = ("worker_clocking_out", "worker_delivering")
 
 
 class WorkerStepCheck:
-    """Asks the plugins that answer a worker's step before its command is sent, outside the write the command
-    makes: the worker, its task, branch and worktree folder and the files it changed; a refusal stops the step
-    with the plugin's reason."""
+    """Checks plugin rules against a worker's changes since its merge base before a handoff or merge."""
 
     def __init__(self, step_check: PluginStepCheck, git: WorktreeGit, queries: Queries, clock: Clock, bus: Bus) -> None:
         self.step_check, self.git, self.queries, self.clock, self.bus = step_check, git, queries, clock, bus
 
     def check(self, worktree: Worktree, events: Sequence[str], hint: str) -> None:
-        data = {"worker": worktree.agent_id, "task": worktree.task_id, "branch": worktree.branch, "worktree": worktree.folder,
-                "files": list(self.git.changed_files(worktree))}
+        changes = self.git.comparison(worktree)
+        data = {"worker": worktree.agent_id, "task": worktree.task_id, "branch": worktree.branch, "base": changes.base,
+                "worktree": worktree.folder, "files": list(changes.files)}
         environment = self.queries.query(Environment).find(worktree.environment_id).name
         for event in events:
             refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.agent_id)

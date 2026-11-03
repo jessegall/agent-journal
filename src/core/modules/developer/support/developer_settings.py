@@ -22,6 +22,8 @@ DEVELOPER_SETTINGS = [
                                                                SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                                                   SettingValue("request-log-size", "Agent calls kept", "How many of the last calls the developer page keeps.",
                                                                SettingType.NUMBER, default=50, scope=SettingScope.PROJECT)]),
+                           SettingValue("mark-motion", "Record chat mark motion", "Records every animation frame of a chat mark as it opens and closes, for the agent to read.",
+                                        SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                            SettingValue("slow-clock-ticks", "Costly clock ticks", "Shows a chat message when one tick costs more than 50 database points.",
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]),
 ]

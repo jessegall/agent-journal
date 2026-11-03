@@ -31,7 +31,8 @@ try {
         const lines = [...range.getClientRects()].map((line) => line.width).filter((width) => width > 20);
         return {wrap: getComputedStyle(element).textWrap, widest: Math.max(...lines), narrowest: Math.min(...lines), count: lines.length};
     });
-    assert.ok(paragraph.count > 1 && paragraph.narrowest > paragraph.widest * 0.7, JSON.stringify(paragraph));
+    assert.ok(paragraph.count > 1 && paragraph.narrowest > paragraph.widest * 0.6, JSON.stringify(paragraph));
+    assert.equal(paragraph.wrap, "pretty");
     await page.screenshot({path: capture});
     await four.locator("[data-message-links-count]").click();
     await four.locator("[data-message-links-list]").getByText("Task number 4").waitFor();

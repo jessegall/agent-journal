@@ -1,5 +1,6 @@
 <script setup>
-import {computed, ref, useAttrs} from "vue";
+import {computed, inject, ref, useAttrs} from "vue";
+import {WINDOW_CONTEXT} from "../../kit/windowContextKey.js";
 import FoldSign from "./FoldSign.vue";
 import Icon from "./Icon.vue";
 import MarkAction from "./MarkAction.vue";
@@ -8,6 +9,7 @@ import TextDisplay from "./TextDisplay.vue";
 import {clock, elapsed, span} from "../format/time.js";
 import {useSharedNow} from "../composables/now.js";
 import {useMarkMotion} from "../composables/markMotion.js";
+import {useMarkRecording} from "../composables/markRecording.js";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({mark: {type: Object, required: true}, open: {type: Boolean, default: undefined}});
@@ -28,6 +30,7 @@ const live = computed(() => opens.value || acts.value || Boolean(attrs.onClick))
 const root = ref(null);
 const top = ref(null);
 const {folded, phase} = useMarkMotion(root, () => wanted.value);
+useMarkRecording(root, wanted, phase, inject(WINDOW_CONTEXT, null));
 
 // a click on the mark's line opens or folds it, or does its action; a click inside what an opened mark shows is that part's own
 function clicked(event) {
@@ -230,6 +233,8 @@ const tint = computed(() => ({
     grid-template-columns: minmax(0, 1fr) auto;
     row-gap: 1px;
     align-items: center;
+    /* the title row stays at the top of a mark held taller than its rows while it closes */
+    align-content: start;
     max-width: 100%;
     padding: 2px 6px;
     border: 1px solid transparent;

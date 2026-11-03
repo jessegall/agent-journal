@@ -1,4 +1,6 @@
 import {createApp, h} from "vue";
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
@@ -111,6 +113,33 @@ const OUTPUT_LINES = ["building package", "package built"];
 const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
 const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: SNAPSHOT});
 
+test("queue arrivals and departures keep their Vue transition classes", async () => {
+    const frame = vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 0);
+    try {
+        let queue = SNAPSHOT;
+        await panel(async () => ({ok: true, value: queue}));
+        expect(document.querySelector("[data-test-queue]").classList.contains("queue-enter-active")).toBe(true);
+        queue = {...SNAPSHOT, running: [RUN, {...SNAPSHOT.waiting[0], section: "running"}], waiting: []};
+        document.querySelector('[aria-label="More runs at once"]').click();
+        await settle();
+        expect(document.querySelector('[data-queue-process="71"].running').classList.contains("queue-run-enter-active")).toBe(true);
+        expect(document.querySelector('[data-queue-process="71"].waiting').classList.contains("queue-run-leave-active")).toBe(true);
+        expect(document.querySelector('[data-queue-process="72"]').classList.contains("queue-run-leave-active")).toBe(true);
+    } finally {
+        frame.mockRestore();
+    }
+});
+
+test("queue motion styles include reordering and respect reduced motion", () => {
+    const inspector = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueInspector.vue"), "utf8");
+    const run = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueRun.vue"), "utf8");
+    expect(inspector).toContain('<TransitionGroup name="queue-run"');
+    expect(run).toContain(".queue-run-move,");
+    expect(run).toContain(".queue-run-leave-active { position: absolute; }");
+    expect(inspector).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
+    expect(run).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
+});
+
 test("the process queue reads its counts and ordered lists together", async () => {
     const read = vi.fn(reader);
     await panel(read);
@@ -221,7 +250,7 @@ test("process events refresh the queue and output events refresh only an open ou
     subscriptions.dispatch({event: "process.update", row_id: 71});
     await settle();
     expect(read).toHaveBeenCalledTimes(2);
-    expect(rowsOf("waiting")).toHaveLength(0);
+    await vi.waitFor(() => expect(rowsOf("waiting")).toHaveLength(0));
     const row = rowsOf("running")[0];
     row.querySelector("[data-queue-output]").click();
     await settle();

@@ -135,19 +135,18 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
     opacity: 0.55;
 }
 
-/* an opened mark grows to the chat's whole width, past the share a folded line keeps */
-.thread-turn.card {
-    interpolate-size: allow-keywords;
-    transition: width 0.2s ease;
-}
-
-.thread-turn.card:has(.mark[data-open]) {
+/* an opened mark grows to the chat's whole width, past the share a folded line keeps; while it moves the mark itself holds its width, so the row around it never animates apart from it */
+.thread-turn.card:has(.mark[data-open]:not(.leaving, .resizing)) {
     width: calc(100% - var(--turn-gutter));
     max-width: calc(100% - var(--turn-gutter));
 }
 
-.thread-turn.card:has(.mark[data-open]) .mark-row,
-.thread-turn.card:has(.mark[data-open]) .mark-row > :deep(.mark) {
+.thread-turn.card:has(.mark.leaving, .mark.resizing) {
+    max-width: calc(100% - var(--turn-gutter));
+}
+
+.thread-turn.card:has(.mark[data-open]:not(.leaving, .resizing)) .mark-row,
+.thread-turn.card:has(.mark[data-open]:not(.leaving, .resizing)) .mark-row > :deep(.mark) {
     flex: 1;
     width: 100%;
     min-width: 0;
