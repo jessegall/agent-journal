@@ -18,7 +18,7 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
-const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : "", waitingForTests.value ? "waiting for its tests" : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
 const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
@@ -60,7 +60,7 @@ readCommand();
             <Icon :class="['agent-chevron', {opened}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity>{{ identity }}</span>
+            <span class="agent-identity" data-agent-identity>{{ identity }}<template v-if="waitingForTests"> · <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button></template></span>
             <template v-if="tasks.length">
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
@@ -216,6 +216,20 @@ readCommand();
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.agent-waiting {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline dotted;
+    cursor: pointer;
+}
+
+.agent-waiting:hover {
+    color: var(--text);
 }
 
 .agent-tasks {

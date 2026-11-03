@@ -13,6 +13,7 @@ import CommentedRow from "./CommentedRow.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 import PlanInspector from "./PlanInspector.vue";
+import TestQueueInspector from "./TestQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 
@@ -26,7 +27,7 @@ const failure = ref("");
 let reading = 0;
 
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue"]);
 const TEXT_KINDS = new Set(["question", "memory"]);
 const commentable = computed(() => kind.value === "doc" || kind.value === "report");
 const textComments = useTextComments(() => (commentable.value && row.value ? {kind: kind.value, id: opened.value.id, title: row.value.title} : {}), (line) => props.read(line));
@@ -69,6 +70,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         </template>
                         <template #plan>
                             <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                        </template>
+                        <template #test-queue>
+                            <TestQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
                         </template>
                         <template #default>
                         <header class="head">
