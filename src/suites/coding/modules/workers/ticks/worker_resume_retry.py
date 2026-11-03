@@ -6,14 +6,13 @@ from core.base.container import Container
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 
 AGENT_UPDATE_EVENT = "agent.update"
-ENDED_FIELD = "ended_at"
 
 
 class WorkerResumeRetry:
@@ -26,12 +25,15 @@ class WorkerResumeRetry:
         waiting = [line for line in queries.query(AgentLine).filter(state=AgentLineState.WAITING).oldest().all_rows() if line.source in RESUMING_SOURCES]
         for agent_id in dict.fromkeys(line.agent_id for line in waiting):
             worker = queries.query(Agent).find(agent_id)
-            if worker.role is AgentRole.WORKER and worker.ended_at is not None and self.may_resume(container, worker, [line for line in waiting if line.agent_id == agent_id]):
+            if self.may_resume(container, worker, [line for line in waiting if line.agent_id == agent_id]):
                 resume.resume(worker, Actor.core())
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:
-        sent_after_end = any(line.creation_timestamp().value > worker.ended_at.value for line in lines)
-        return sent_after_end or not self.ended_by_person(container, worker)
+        ended_at = worker.ended_at
+        if worker.role is not AgentRole.WORKER or ended_at is None:
+            return False
+        line_after_end = any(line.creation_timestamp().value > ended_at.value for line in lines)
+        return line_after_end or not self.ended_by_person(container, worker)
 
     @staticmethod
     def ended_by_person(container: Container, worker: Agent) -> bool:

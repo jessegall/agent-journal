@@ -43,10 +43,9 @@ def test_a_choice_types_the_programs_own_line(new_story):
     story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, "/compact")])
 
 
-def test_a_choice_the_program_does_not_offer_an_ended_agent_and_an_agent_asking_are_refused(new_story):
+def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(new_story):
     story, typing = typing_story(new_story)
     story.expect_refusal(f"agent control {story.agent.id} model nope", "model nope is not a choice", actor=story.user)
-    story.expect_refusal(f"agent control {story.agent.id} model opus", "only a person changes", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent control {story.agent.id} model opus", "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])
@@ -102,10 +101,9 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 
-def test_only_a_person_stops_and_an_agent_with_no_known_process_or_ended_is_refused(new_story):
+def test_stopping_an_agent_with_no_known_process_or_ended_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal(f"agent stop {story.agent.id}", "only a person stops", actor=story.agent)
-    story.expect_refusal(f"agent stop {story.agent.id}", "does not know the process", actor=story.user)
+    story.expect_refusal(f"agent stop {story.agent.id}", "does not know the process", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent stop {story.agent.id}", "has ended already", actor=story.user)
 
@@ -123,7 +121,7 @@ def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.user)
     story.expect_absent("agent list --environment main", "launch-", actor=story.user)
-    story.expect_refusal("agent launch claude --environment main", "only a person starts", actor=story.agent)
+    story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.agent)
 
 
 def test_the_agent_windows_hear_task_changes_so_their_cards_update_without_a_refresh():

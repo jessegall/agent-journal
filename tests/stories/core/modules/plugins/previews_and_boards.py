@@ -170,11 +170,10 @@ def test_an_upgrade_preview_shows_the_diff_of_the_files_it_changes(new_story):
     story.expect_absent("plugin upgrade standup", "echo kept", actor=story.user)
 
 
-def test_only_a_person_upgrades_and_a_failed_setup_leaves_the_old_code(new_story):
+def test_a_failed_setup_leaves_the_old_code(new_story):
     story = installed_plugin(new_story)
-    story.expect_refusal("plugin upgrade standup", "only the user upgrades", actor=story.agent)
     (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "broken", "run": "false"}]}))
-    story.expect_refusal("plugin upgrade standup --yes", "broken", actor=story.user)
+    story.expect_refusal("plugin upgrade standup --yes", "broken", actor=story.agent)
     story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
     story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
 

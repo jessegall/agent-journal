@@ -9,7 +9,6 @@ from core.modules.docking.commands.keep_dock_item.keep_dock_item_subcommand impo
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand import RemoveDockItemSubcommand
 from core.modules.docking.commands.release_dock_item.release_dock_item_subcommand import ReleaseDockItemSubcommand
 from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
-from core.modules.docking.guards.kept_item_guard import KeptItemGuard
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
 from core.modules.docking.guards.dock_capacity_guard import DockCapacityGuard
 from core.modules.docking.guards.dock_title_guard import DockTitleGuard
@@ -43,5 +42,5 @@ class DockingModule(Module):
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
-    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard, KeptItemGuard]
+    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
     seeders = [DockingSeeder]

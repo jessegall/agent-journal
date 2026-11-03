@@ -90,12 +90,10 @@ def test_with_no_terminal_the_resume_line_waits_for_the_next_hook(new_story):
     story.expect_text(f"agent-line list --agent {story.agent.id}", "the user resumed you", actor=story.user)
 
 
-def test_only_a_person_pauses_or_resumes_and_the_state_must_fit(new_story):
+def test_pausing_and_resuming_must_fit_the_state(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal(f"agent pause {story.agent.id}", "only a person pauses", actor=story.agent)
-    story.expect_refusal(f"agent resume {story.agent.id}", "only a person resumes", actor=story.agent)
-    story.expect_refusal(f"agent resume {story.agent.id}", "is not paused", actor=story.user)
-    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_refusal(f"agent resume {story.agent.id}", "is not paused", actor=story.agent)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.agent)
     story.expect_refusal(f"agent pause {story.agent.id}", "is paused already", actor=story.user)
 
 

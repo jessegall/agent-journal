@@ -10,10 +10,7 @@ from core.base.viewer.window_search import WindowSearch
 from core.modules.memories.support.memory_searcher import MemorySearcher
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
-from core.modules.memories.guards.switch_change_guard import SwitchChangeGuard
-from core.modules.memories.guards.type_makers_guard import TypeMakersGuard
 from core.modules.memories.guards.type_availability_guard import TypeAvailabilityGuard
-from core.modules.memories.guards.type_change_guard import TypeChangeGuard
 from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
 from core.modules.memories.listeners.compaction_mark_listener import CompactionMarkListener
 from core.modules.memories.listeners.memory_faded_mark_listener import MemoryFadedMarkListener
@@ -78,7 +75,7 @@ class MemoriesModule(Module):
     migrations = [MemoriesTablesMigration]
     moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
-    guards = [TypeMakersGuard, TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, TypeChangeGuard, SwitchChangeGuard, KeywordScopeGuard]
+    guards = [TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]

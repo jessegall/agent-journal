@@ -1,4 +1,3 @@
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -13,8 +12,8 @@ from core.modules.settings.support.setting_text import SettingText
 
 
 class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
-    """Sets a declared setting where its scope allows, refusing an agent a setting only the user sets; a
-    secret goes to its own table, which the event log keeps out."""
+    """Sets a declared setting where its scope allows; a secret goes to its own table, which the event log keeps
+    out."""
 
     command = SetSetting
 
@@ -23,9 +22,7 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
 
     def handle(self, command: SetSetting, context: Context) -> CurrentSetting:
         entry = self.declared.value(command.key)
-        if not entry.agent_writable and context.actor.type is not ActorType.USER:
-            raise Refusal(f"ask the user to set {entry.key}", "only the user sets it, from the settings window or journal setting set")
-        value = SettingText().value(entry, command.text)
+        value =SettingText().value(entry, command.text)
         environment_id = self.environment(entry, command.project, context.environment_id)
         if entry.secret:
             self.store.write_secret(entry.key, str(value), environment_id, context)

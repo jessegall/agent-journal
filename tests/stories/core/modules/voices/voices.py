@@ -38,10 +38,10 @@ def test_the_user_chooses_a_voice_and_the_list_marks_it(new_story):
     assert story.run("voice list", actor=story.user).output_text.splitlines()[3].startswith("* coach")
 
 
-def test_an_agent_cannot_choose_the_voice_but_may_say_what_to_call_the_user(new_story):
+def test_an_agent_chooses_the_voice_and_says_what_to_call_the_user(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_refusal("voice choose homie", "ask the user to set journal.core.voices.profile", actor=story.agent)
-    story.expect_success("voice address --title Madam --name Ada", "the agent calls you Madam Ada", actor=story.agent)
+    story.expect_success("voice choose homie", actor=story.agent)
+    story.expect_success("voice address --title Madam --name Ada", "the agent calls you Ada", actor=story.agent)
 
 
 def test_the_voice_is_refused_a_name_the_catalogue_does_not_hold(new_story):

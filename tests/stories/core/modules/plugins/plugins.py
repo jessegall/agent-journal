@@ -26,11 +26,10 @@ def test_an_agent_proposes_a_plugin_and_the_user_installs_it(new_story):
     story.expect_text(f'plugin propose {story.plugin_folder} --why "judges the code"', "proposed sample: the user installs it if they want it", actor=story.agent)
 
 
-def test_installing_enabling_disabling_configuring_and_removing_are_the_users_alone(new_story):
+def test_an_agent_installs_disables_enables_configures_and_removes_a_plugin(new_story):
     story = plugin_story(new_story)
-    story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
-    for line in (f"plugin install {story.plugin_folder} --yes", "plugin enable sample", "plugin disable sample", "plugin configure sample level 2", "plugin remove sample"):
-        story.expect_refusal(line, "only the user", actor=story.agent)
+    for line in (f"plugin install {story.plugin_folder} --yes", "plugin disable sample", "plugin enable sample", "plugin configure sample level 2", "plugin remove sample"):
+        story.expect_success(line, actor=story.agent)
 
 
 def test_the_user_configures_a_setting_of_its_type_and_a_wrong_value_is_refused(new_story):

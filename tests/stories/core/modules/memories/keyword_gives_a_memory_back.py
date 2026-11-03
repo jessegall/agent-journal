@@ -27,5 +27,4 @@ def test_one_hook_gives_back_at_most_the_keyword_limit(new_story):
     story = new_story(fixture=BuilderStarted)
     for number in range(1, 5):
         story.run(f'memory make "Cart fact {number}" --type fact --keywords cart --environment main', actor=story.agent)
-    reply = story.hook("s-1", CART_EDIT)
-    story.expect_rows(sum("applies now" in line for line in reply.lines) == 3)
+    story.expect_hook_allowed("s-1", CART_EDIT, "memory:1, 2, 3 applies now")

@@ -1,11 +1,9 @@
 from core.base.change.logged_event import LoggedEvent
+from core.modules.agents.models.agent import AGENTS_TABLE
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkType
 from core.modules.drivers.models.enums.dispatch_mark_variant import DispatchMarkVariant
 from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
-
-
-AGENTS_TABLE = "agents"
 
 
 class DispatchMarkListener(MarkListener):

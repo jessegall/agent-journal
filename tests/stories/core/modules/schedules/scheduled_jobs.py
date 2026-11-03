@@ -53,9 +53,9 @@ def test_stopping_tells_the_agent_to_delete_it_and_it_stays_until_it_has(new_sto
     story.expect_refusal("scheduled-job stop 1", "has ended already", actor=story.user)
 
 
-def test_only_a_person_stops_a_job(new_story):
+def test_an_agent_stops_a_job(new_story):
     story = scheduled(new_story)
-    story.expect_refusal("scheduled-job stop 1", "only a person stops", actor=story.agent)
+    story.expect_success("scheduled-job stop 1", actor=story.agent)
 
 
 def test_an_agents_end_ends_its_jobs(new_story):

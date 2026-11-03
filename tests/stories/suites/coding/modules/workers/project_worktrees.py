@@ -45,10 +45,10 @@ def test_removing_a_worktree_holds_no_write_lock(new_story, monkeypatch):
     story.expect_rows(transaction_flags == [False])
 
 
-def test_an_agent_cannot_remove_a_worktree(new_story):
+def test_an_agent_removes_a_worktree(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     folder = unfinished_worktree(story, repository_environment(story))
-    story.expect_refusal(f"project-worktree remove {folder} --environment main", "only a person removes a worktree", actor=story.agent)
+    story.expect_success(f"project-worktree remove {folder} --environment main", actor=story.agent)
 
 
 def test_the_main_checkout_stays(new_story):

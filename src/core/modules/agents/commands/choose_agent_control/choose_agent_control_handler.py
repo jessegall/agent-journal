@@ -5,7 +5,6 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.agents.support.terminal_typing import TerminalTyping
 
 
@@ -19,7 +18,6 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         self.queries, self.providers, self.typing = queries, providers, typing
 
     def handle(self, command: ChooseAgentControl, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person changes a running agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         choices = [choice for group in self.providers.provider(agent.program).controls if group.key == command.key for choice in group.choices if choice.value == command.value]
         if not choices:

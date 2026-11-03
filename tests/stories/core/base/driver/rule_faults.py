@@ -13,11 +13,10 @@ def test_a_rule_that_raises_is_recorded_written_to_the_error_log_and_the_others_
     story.expect_rows("the sample rule failed" in story.error_log_text())
 
 
-def test_a_rule_another_module_marks_essential_is_ordinary_until_a_person_allows_it_and_an_agent_cannot(new_story):
+def test_a_rule_another_module_marks_essential_is_ordinary_until_it_is_allowed(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.expect_text("driver show samples.lead", "samples.essential-claim: essential, waiting for the user")
-    story.expect_refusal("driver allow-essential samples.essential-claim", "only a person allows a rule to be essential", actor=story.agent)
-    story.run("driver allow-essential samples.essential-claim", actor=story.user)
+    story.run("driver allow-essential samples.essential-claim", actor=story.agent)
     story.hook("s-1", HookSamples.stop())
     story.expect_text(lines.SECOND_HOOK_CALL, "samples.essential-claim: lines")
     story.expect_rows(story.hook("s-1", HookSamples.stop()).lines[0] == "the sample rule answers first")

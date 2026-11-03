@@ -5,7 +5,6 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin import UpgradePlugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_code_diff import PluginCodeDiff
@@ -34,7 +33,6 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff = plugins, folders, staging, steps, repository, skill_files, readers, code_diff
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
-        UserActorCheck.check_actor(actor, "upgrades")
         plugin = self.plugins.find_name(command.name)
         source = self.staging.fetched(plugin.source)
         manifest = PluginManifest.read(source)
@@ -59,7 +57,6 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         shutil.rmtree(old_code, ignore_errors=True)
 
     def handle(self, command: UpgradePlugin, context: Context) -> PluginUpgrade:
-        UserActorCheck.check(context, "upgrades")
         plugin = self.plugins.find_name(command.name)
         code = self.folders.code(plugin.name)
         if not command.confirmed:

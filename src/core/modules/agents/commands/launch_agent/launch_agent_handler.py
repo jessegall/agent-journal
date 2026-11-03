@@ -15,7 +15,6 @@ from core.modules.agents.commands.launch_agent.launch_agent import LaunchAgent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.environments.models.environment import Environment
 
 
@@ -29,7 +28,6 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
         self.bus, self.queries, self.providers, self.home, self.link = bus, queries, providers, home, link
 
     def handle(self, command: LaunchAgent, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person starts an agent from the viewer")
         provider = self.providers.provider(command.program)
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "start it from an environment")

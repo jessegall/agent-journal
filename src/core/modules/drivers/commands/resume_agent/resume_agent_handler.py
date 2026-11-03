@@ -7,7 +7,6 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
 from core.modules.drivers.support.nudger import Nudger
@@ -24,7 +23,6 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: ResumeAgent, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person resumes an agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")

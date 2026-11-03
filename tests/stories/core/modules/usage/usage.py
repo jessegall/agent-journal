@@ -47,6 +47,13 @@ def test_an_agent_that_reported_nothing_says_so_the_plan_comes_from_the_newest_r
     story.expect_text("usage show --environment main", "cost of the open sessions: $1.73", actor=story.user)
 
 
+def test_a_worker_shows_the_context_and_cost_the_launcher_kept_from_its_output(new_story):
+    story = new_story(fixture=UserJoined)
+    helper = story.new_row_id(HELPER_START.format(parent=story.agent.id))
+    save_status_file(story, "s-2", {"session_id": "s-2", "context_window": {"used_percentage": 20}, "cost": {"total_cost_usd": 1.5}})
+    story.expect_text("usage agents --environment main --json", f'"id": {helper}', '"context_percent": 20', '"cost_dollars": 1.5', actor=story.user)
+
+
 def test_with_no_report_at_all_the_plan_says_nothing_is_reported_yet(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_text("usage show --environment main", f"agent {story.agent.id}  s-1  claude  nothing reported yet", "plan: no limits reported yet",

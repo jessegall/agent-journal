@@ -26,9 +26,9 @@ def test_a_project_setting_set_for_an_environment_is_refused_with_the_flag_to_us
     story.expect_success(f"setting set {ADDRESS} https://tunnel.example.org --project", actor=story.user)
 
 
-def test_an_agent_is_refused_a_setting_only_the_user_sets_and_may_set_its_own(new_story):
+def test_an_agent_sets_any_setting(new_story):
     story = settings_story(new_story)
-    story.expect_refusal(f"setting set {ADDRESS} https://tunnel.example.org --project", f"ask the user to set {ADDRESS}", actor=story.agent)
+    story.expect_success(f"setting set {ADDRESS} https://tunnel.example.org --project", actor=story.agent)
     story.expect_success("setting set good.limit 70 --environment main", actor=story.agent)
 
 

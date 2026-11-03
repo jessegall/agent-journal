@@ -8,7 +8,6 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.install_plugin.install_plugin import InstallPlugin
 from core.modules.plugins.commands.support.plugin_install import PluginInstall
-from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_setting import PluginSetting
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -26,8 +25,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     requires are found and runs its setup
     steps there, before the install's transaction opens so a step may write to the journal itself, a
     failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
-    it switched on with the settings its installed command answers. Only the person installs, and a name
-    installed already is refused."""
+    it switched on with the settings its installed command answers. A name installed already is refused."""
 
     command = InstallPlugin
 
@@ -36,7 +34,6 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers, self.staging = plugins, folders, skill_files, steps, repository, readers, staging
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
-        UserActorCheck.check_actor(actor, "installs")
         self.staging.fetched(command.source)
         manifest = self.uninstalled(command)
         if not command.confirmed:
@@ -52,7 +49,6 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             raise
 
     def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
-        UserActorCheck.check(context, "installs")
         manifest = self.uninstalled(command)
         if not command.confirmed:
             self.staging.cleared(command.source)

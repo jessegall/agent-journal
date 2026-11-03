@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.query.conditions.among import Among
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
@@ -8,7 +8,6 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
 
-AGENTS_TABLE = "agents"
 DELIVERY_MOVE = "worker_worktree.deliver"
 MOVE_TEXTS = {
     "worker_worktree.cut": (WorkerMarkVariant.STARTED, "started {tasks}"),

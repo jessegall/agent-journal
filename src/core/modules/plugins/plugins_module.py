@@ -64,7 +64,7 @@ class PluginsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes"]
-    skills = [SkillDeclaration("journal-plugins", "See what plugins do and propose one for the user to install; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
+    skills = [SkillDeclaration("journal-plugins", "See what plugins do, install and upgrade them or propose one to the user; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginSetting, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]

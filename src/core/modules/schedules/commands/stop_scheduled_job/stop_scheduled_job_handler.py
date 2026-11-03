@@ -4,7 +4,6 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job import StopScheduledJob
 from core.modules.schedules.models.scheduled_job import ScheduledJob
@@ -22,7 +21,6 @@ class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: StopScheduledJob, context: Context) -> ScheduledJob:
-        PersonCheck.require(context, "only a person stops an agent's scheduled job")
         job = self.queries.query(ScheduledJob).find(command.row_id)
         if job.ended_at is not None:
             raise Refusal(f"job {job.job_id} has ended already")

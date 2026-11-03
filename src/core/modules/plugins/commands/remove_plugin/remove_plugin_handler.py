@@ -4,7 +4,6 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.remove_plugin.remove_plugin import RemovePlugin
-from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_readers import PluginReaders
@@ -21,7 +20,6 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
         self.plugins, self.folders, self.skill_files, self.repository, self.readers = plugins, folders, skill_files, repository, readers
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
-        UserActorCheck.check(context, "removes")
         plugin = self.plugins.find_name(command.name)
         self.readers.withdraw(plugin.name, context)
         self.repository.delete(plugin, context)

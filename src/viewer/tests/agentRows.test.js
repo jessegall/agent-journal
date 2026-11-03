@@ -215,6 +215,16 @@ test("a worker's card shows its completed tasks per hour", async () => {
     expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
 });
 
+test("a worker's opened card shows its context and cost", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks: [], context_percent: 20, cost_dollars: 1.5}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    document.body.append(element);
+    cardOf(element, 4).click();
+    await settle();
+    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").textContent.trim()).toBe("Context 20% · $1.50");
+});
+
 test("the running list has no show more button", async () => {
     const element = await drawn();
     expect(element.querySelector("[data-row-list-more]")).toBeNull();

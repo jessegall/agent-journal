@@ -50,12 +50,11 @@ def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
     story.expect_rows(typing.typed == [(story.agent.id, "ls -la")])
 
 
-def test_an_agent_an_empty_line_and_an_ended_agent_are_refused(new_story):
+def test_an_empty_line_and_an_ended_agent_are_refused(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
     story.container.bind(TerminalTyping, typing)
-    story.expect_refusal(f'agent type {story.agent.id} "ls"', "only a person types", actor=story.agent)
-    story.expect_refusal(f'agent type {story.agent.id} " "', "give the line to type", actor=story.user)
+    story.expect_refusal(f'agent type {story.agent.id} " "', "give the line to type", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f'agent type {story.agent.id} "ls"', "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])

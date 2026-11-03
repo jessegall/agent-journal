@@ -43,10 +43,10 @@ def test_a_release_that_cannot_be_read_is_refused_with_its_address(new_story, tm
     story.expect_refusal("update check", f"the release at {(tmp_path / 'release').as_uri()} could not be read", actor=story.agent)
 
 
-def test_only_the_user_installs_a_release(new_story, tmp_path):
+def test_an_agent_installs_a_release(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    story.expect_refusal("update install", "only the user installs a release, with the Install button on the Updates window", actor=story.agent)
-    story.expect_rows(installed_marker(story) == "")
+    story.expect_success("update install", actor=story.agent)
+    story.expect_rows(installed_marker(story) != "")
 
 
 def test_the_updates_window_checks_and_lists_the_installed_releases(new_story, tmp_path):

@@ -3,6 +3,7 @@ from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.base.agent_role import AgentRole
 
+AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
 
 

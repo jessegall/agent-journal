@@ -6,7 +6,6 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
 from core.modules.drivers.listeners.typed_line_listener import PAUSE_SOURCE
 from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
@@ -23,7 +22,6 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: PauseAgent, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person pauses an agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended")

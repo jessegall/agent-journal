@@ -52,7 +52,7 @@ type Starter interface {
 }
 
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
-// terminal log under the journal's folder.
+// terminal log under the journal's folder and read for its status file.
 type ProcessStarter struct {
 	Home   string
 	Inputs *TerminalInputs
@@ -85,7 +85,7 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 		defer close(stop)
 		defer log.Close()
 		defer starter.Inputs.Close(start.AgentID)
-		_ = RunInTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher))
+		_ = RunInTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher, NewProgramStatus(starter.Home)))
 	}()
 	return nil
 }

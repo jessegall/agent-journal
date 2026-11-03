@@ -10,7 +10,6 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.person_check import PersonCheck
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 
 
@@ -25,7 +24,6 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
         self.queries, self.providers, self.repository, self.bus = queries, providers, repository, bus
 
     def prepare(self, command: StopAgent, actor: Actor) -> None:
-        PersonCheck.require_actor(actor, "only a person stops an agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already")
@@ -35,6 +33,5 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
         LeftoverProcess.stop(agent.pid, self.providers.provider(agent.program).executable)
 
     def handle(self, command: StopAgent, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person stops an agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp), context)

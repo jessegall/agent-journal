@@ -1,7 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
-from core.modules.agents.support.person_check import PersonCheck
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree import RemoveProjectWorktree
 from suites.coding.modules.workers.support.project_worktrees import ProjectWorktrees
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -18,7 +17,6 @@ class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
         self.worktrees, self.git = worktrees, git
 
     def handle(self, command: RemoveProjectWorktree, context: Context) -> str:
-        PersonCheck.require(context, "only a person removes a worktree")
         worktree = next((row for row in self.worktrees.listed(context.environment_id) if row.folder == command.folder), None)
         if worktree is None:
             raise Refusal(f"no worktree at {command.folder}", "journal project-worktree list shows the worktrees")

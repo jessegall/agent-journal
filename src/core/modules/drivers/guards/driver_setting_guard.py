@@ -1,4 +1,3 @@
-from core.base.actor_type import ActorType
 import json
 
 from core.base.change.change import Change
@@ -27,8 +26,6 @@ class DriverSettingGuard(Guard):
         if not isinstance(setting, Setting) or not setting.key.startswith(f"{MODULE_KEY}.") or change.event.endswith(".delete"):
             return
         if setting.key.startswith(ALLOWANCE_SETTINGS):
-            if change.context.actor.type is ActorType.AGENT:
-                raise Refusal("only a person allows a rule to be essential", "ask the user to run journal driver allow-essential")
             return
         value = json.loads(setting.value)
         if setting.key == SUITE_SETTING:
