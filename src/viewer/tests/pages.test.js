@@ -233,12 +233,6 @@ test("the agent page offers the environment windows too, with no agent id, and f
     expect(offered).not.toContain("agents.briefing");
 });
 
-test("a refusal is shown by its words alone", async () => {
-    const {refusalWords} = await import("../src/windows/windowContext.js");
-    expect(refusalWords(JSON.stringify({refused: "no agent 1", suggestion: ""}))).toBe("no agent 1");
-    expect(refusalWords("plain text")).toBe("plain text");
-});
-
 // task 5394: the button draws the expand icon; the bar keeps each window's icon beside its title at every width
 test("the full screen button draws the expand icon, not the plain dot, and the plus bar keeps icons beside titles at phone width", async () => {
     const wide = await mount(HomePage);

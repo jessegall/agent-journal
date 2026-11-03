@@ -17,13 +17,6 @@ const FIGURE_PORT = {
 };
 // modules a frame window imports by their address, which no file of this repository imports
 const PUBLIC_MODULES = ["src/viewer/kit/frameBridgeClient.js"];
-// exported functions that only a test uses, whose own file uses them too; each needs its test to go through the function that calls it, and
-// then to stop being exported: task 6004 is not done until this list is empty
-const PENDING_REMOVAL = new Set([
-    "src/viewer/src/chat/arrival.js: arrive", "src/viewer/src/chat/fittedBubble.js: fittedWidth", "src/viewer/src/chat/markButtons.js: buttonLine",
-    "src/viewer/src/windows/colorScheme.js: applyColorScheme", "src/viewer/src/windows/layoutPresets.js: cellsOf", "src/viewer/src/windows/legacyLayouts.js: renamedLayout",
-    "src/viewer/src/windows/paneLayout.js: tabKey", "src/viewer/src/windows/windowContext.js: refusalWords",
-]);
 const IMPORT =/import\s*([^;'"]*?)\s*from\s*["'][^"']+["']|export\s*\{([^}]*)\}\s*from\s*["'][^"']+["']/g;
 
 const isTest = (path) => /(^|\/)tests?\//.test(path) || /\.test\.js$/.test(path);
@@ -94,8 +87,7 @@ test("every exported function of the viewer and of the windows is imported or ca
             if (![...(uses.get(name) || [])].some((other) => other !== file)) unused.push(`${mine}: ${name}`);
         }
     }
-    expect(unused.filter((entry) => !PENDING_REMOVAL.has(entry)), "remove these, or stop exporting the ones their own file uses").toEqual([]);
-    expect([...PENDING_REMOVAL].filter((entry) => !unused.includes(entry)), "these are used or gone now: take them off PENDING_REMOVAL").toEqual([]);
+    expect(unused, "remove these, or stop exporting the ones their own file uses").toEqual([]);
 });
 
 test("the figure port is listed with the task that uses it", () => {

@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, watch} from "vue";
 const WIDE_BLOCKS = "img,pre,table";
 
 // how wide a bubble needs to be: its longest line and its padding, none when nothing was measured
-export function fittedWidth(lines, padding) {
+function fittedWidth(lines, padding) {
     if (!lines.length) return 0;
     return Math.ceil(Math.max(...lines.map((line) => line.right)) - Math.min(...lines.map((line) => line.left)) + padding);
 }

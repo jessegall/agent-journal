@@ -54,7 +54,7 @@ export function windowContext({window, environment, agent, visible, permissions,
 }
 
 // the words of a refusal the journal printed as JSON, else the text as it came
-export function refusalWords(text) {
+function refusalWords(text) {
     try {
         const refusal = JSON.parse(text);
         if (typeof refusal.refused === "string") return [refusal.refused, refusal.suggestion].filter(Boolean).join(": ");

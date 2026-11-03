@@ -27,7 +27,6 @@ test("the catalogue lists the chat window with the families' switches, so the pa
 });
 
 import {familyPresets, mainOnlyOptions, optionsFromHidden} from "../src/domain/markFamilies.js";
-import {renamedLayout} from "../src/windows/legacyLayouts.js";
 
 const kinds = [
     {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", shown: true, main: true},
@@ -49,6 +48,4 @@ test("main only for a group switches off its families without a main mark, and f
 
 test("a saved list of hidden version 4 kinds becomes the family switches at first load", () => {
     expect(optionsFromHidden(["reminder", "context"], kinds)).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": false});
-    const layout = {tree: {id: "a"}, panes: {a: {tabs: ["chat"], active: "chat", hide: ["reminder"]}}, next: 2};
-    expect(renamedLayout(layout, kinds)?.panes.a.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
 });

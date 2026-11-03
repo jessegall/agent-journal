@@ -7,7 +7,7 @@ const CHAT_WINDOW = "messages.chat";
 const SAVED_TEXT = "Saved layout";
 
 // a shape's cells for the thumbnail, one per pane: its box, the module of its active window, and whether it is the chat
-export const cellsOf = (shape) => thumbnail(shape).map((cell) => ({box: cell.box, view: cell.view, module: cell.view.split(".")[0], accent: cell.view === CHAT_WINDOW}));
+const cellsOf = (shape) => thumbnail(shape).map((cell) => ({box: cell.box, view: cell.view, module: cell.view.split(".")[0], accent: cell.view === CHAT_WINDOW}));
 
 // the layouts a person can switch a page to: the suite's presets whose windows are all offered and available, then the
 // person's own saved layouts, which keep any window; applying one arranges the live layout so panes holding the same

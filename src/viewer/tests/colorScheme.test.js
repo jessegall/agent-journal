@@ -1,30 +1,55 @@
-import {expect, test} from "vitest";
-import {applyColorScheme, colorScheme, nextColorScheme, pageTitle, SCHEMES} from "../src/windows/colorScheme.js";
+import {afterEach, expect, test, vi} from "vitest";
+import {nextTick} from "vue";
+import {chooseColorScheme, colorScheme, followColorScheme, nextColorScheme, pageTitle, SCHEMES} from "../src/windows/colorScheme.js";
 
 const sheet = () => ({cssRules: [{media: {mediaText: "(prefers-color-scheme: light)"}}, {media: {mediaText: "(max-width: 600px)"}}, {}]});
-const root = () => ({style: {colorScheme: ""}});
+const page = document.documentElement;
 
-test("a chosen scheme forces the light rules on or off and leaves other media alone", () => {
+let stop = null;
+
+function following(styles) {
+    vi.spyOn(document, "styleSheets", "get").mockReturnValue(styles);
+    chooseColorScheme("system");
+    stop = followColorScheme();
+}
+
+async function choose(key) {
+    chooseColorScheme(key);
+    await nextTick();
+}
+
+afterEach(() => {
+    stop?.();
+    stop = null;
+    vi.restoreAllMocks();
+    chooseColorScheme("system");
+    page.style.colorScheme = "";
+});
+
+test("a chosen scheme forces the light rules on or off and leaves other media alone", async () => {
     const styles = [sheet()];
-    const page = root();
-    applyColorScheme("light", styles, page);
+    following(styles);
+    await choose("light");
     expect(styles[0].cssRules[0].media.mediaText).toBe("all");
     expect(styles[0].cssRules[1].media.mediaText).toBe("(max-width: 600px)");
     expect(page.style.colorScheme).toBe("light");
-    applyColorScheme("dark", styles, page);
+    await choose("dark");
     expect(styles[0].cssRules[0].media.mediaText).toBe("not all");
 });
 
-test("a stylesheet of another origin that refuses to show its rules is passed over", () => {
+test("a stylesheet of another origin that refuses to show its rules is passed over", async () => {
     const foreign = {get cssRules() { throw new DOMException("Cannot access rules", "SecurityError"); }};
-    expect(() => applyColorScheme("light", [foreign, sheet()], root())).not.toThrow();
+    const styles = [foreign, sheet()];
+    following(styles);
+    await choose("light");
+    expect(styles[1].cssRules[0].media.mediaText).toBe("all");
 });
 
-test("following the system gives the rules back what they asked", () => {
+test("following the system gives the rules back what they asked", async () => {
     const styles = [sheet()];
-    const page = root();
-    applyColorScheme("dark", styles, page);
-    applyColorScheme("system", styles, page);
+    following(styles);
+    await choose("dark");
+    await choose("system");
     expect(styles[0].cssRules[0].media.mediaText).toBe("(prefers-color-scheme: light)");
     expect(page.style.colorScheme).toBe("");
 });
