@@ -2,11 +2,18 @@
 
 export const familyKey = (family) => `show-${family}`;
 
+// the part of a window's menu that lists the marks one by one, which the menu keeps behind a fold
+export const MARKS_SECTION = "marks";
+
 // a toggle per family the modules declare, shown until the person hides it
 export function familyOptions(declarations) {
     const families = new Map(declarations.map((declaration) => [declaration.family, declaration.family_title]));
-    return [...families].map(([family, title]) => ({control: "toggle", key: familyKey(family), label: title, default: true}));
+    return [...families].map(([family, title]) => ({control: "toggle", key: familyKey(family), label: title, default: true, section: MARKS_SECTION}));
 }
+
+// the names a group of marks goes by in the menu; a group not named here shows its own word with a capital
+const GROUP_TITLES = {agent: "The agent", reminders: "Reminders", work: "Work", journal: "The journal"};
+const groupTitle = (group) => GROUP_TITLES[group] ?? `${group.slice(0, 1).toUpperCase()}${group.slice(1)}`;
 
 // the marks whose family the pane has not switched off; `option` reads a pane option by its key, undefined when never set
 export const shownMarks = (marks, declarationOf, option) =>
@@ -57,7 +64,7 @@ export function groupOptions(declarations) {
     const groups = new Map();
     for (const declaration of declarations) groups.set(declaration.group, [...(groups.get(declaration.group) ?? []), declaration]);
     return [...groups].flatMap(([group, own]) => [
-        {control: "main", key: `main-only-${group}`, label: "Only its main marks", title: own[0].group_label || group, group, declarations: own},
+        {control: "main", key: `main-only-${group}`, label: "Only its main marks", title: groupTitle(group), group, declarations: own, section: MARKS_SECTION},
         ...familyOptions(own),
     ]);
 }

@@ -1,5 +1,5 @@
 <script setup>
-import Btn from "../kit/Btn.vue";
+import MenuItem from "../kit/MenuItem.vue";
 
 const props = defineProps({option: {type: Object, required: true}, values: {type: Object, default: () => ({})}});
 const emit = defineEmits(["set"]);
@@ -8,7 +8,5 @@ const isOn = () => Boolean(props.values[props.option.key] ?? props.option.defaul
 </script>
 
 <template>
-    <Btn :data-option="option.key" :aria-pressed="isOn()" @click="emit('set', option.key, !isOn())">
-        {{ option.label }}
-    </Btn>
+    <MenuItem :data-option="option.key" :checked="isOn()" :aria-pressed="isOn()" @click="emit('set', option.key, !isOn())">{{ option.label }}</MenuItem>
 </template>

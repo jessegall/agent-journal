@@ -4,6 +4,6 @@ from core.base.chat.mark_group import MarkGroup
 from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkType
 from core.modules.drivers.models.enums.dispatch_mark_variant import DispatchMarkVariant
 
-DISPATCHES_FAMILY = MarkFamily("drivers.dispatches", "Subagents", "subagent", MarkGroup.AGENT)
+DISPATCHES_FAMILY = MarkFamily("drivers.dispatches", "Subagent dispatches", "subagent", MarkGroup.AGENT)
 
 DISPATCH_MARKS = [MarkDeclaration(DispatchMarkType.DISPATCH, DispatchMarkVariant, DISPATCHES_FAMILY, "Subagent updates", "subagent", process=True, group_label="{count} subagent updates")]
