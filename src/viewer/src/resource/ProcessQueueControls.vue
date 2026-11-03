@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import ProcessQueueBand from "./ProcessQueueBand.vue";
 const props = defineProps({queue: {type: Object, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["saved"]);
 const saving = ref(false);
@@ -17,7 +18,7 @@ async function save(key, value) {
 </script>
 <template>
     <div data-queue-controls>
-        <h2 class="band"><Icon name="gauge" :size="12" />Now</h2>
+        <ProcessQueueBand icon="gauge">Now</ProcessQueueBand>
         <div class="counts">
             <div><strong data-queue-spots>{{ queue.used_slots }} <span>of {{ queue.parallel_limit }}</span></strong>
                 <p>Commands running. {{ queue.used_slots >= queue.parallel_limit ? 'Every place is taken.' : `${queue.parallel_limit - queue.used_slots} ${queue.parallel_limit - queue.used_slots === 1 ? 'place' : 'places'} free.` }}</p>
@@ -37,8 +38,6 @@ async function save(key, value) {
     </div>
 </template>
 <style scoped>
-.band { display:flex; align-items:center; gap:7px; height:28px; margin:0; padding:0 14px; background:var(--side); border-bottom:1px solid var(--border); color:var(--text-2); font-size:11.5px; font-weight:500; letter-spacing:.03em; }
-.band svg { color:var(--text-3); }
 .counts { display:grid; grid-template-columns:1.3fr 1fr; }
 .counts > div { padding:12px 14px; min-width:0; }
 .counts > div + div { border-left:1px solid var(--border); }

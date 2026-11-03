@@ -47,6 +47,7 @@ try {
     assert.equal(await page.locator("[data-queue-main-spots]").getAttribute("aria-checked"), "true");
     await page.setViewportSize({width: 390, height: 844});
     await page.waitForFunction(() => document.querySelector("[data-resource-panel]").getBoundingClientRect().width <= 390, null, {timeout: 5000});
+    await page.locator('[data-queue-row="recent"]').first().getByRole("button", {expanded: false}).click();
     await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true});
     assert.deepEqual(errors, []);
 } finally {

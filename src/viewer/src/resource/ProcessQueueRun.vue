@@ -23,14 +23,14 @@ async function refresh() {
     const answer = await props.read(["output", "peek", String(props.run.id), "--lines", "1-10"]);
     lines.value = answer.ok ? answer.value.lines : [answer.error];
 }
-watch(() => props.expanded, refresh);
+watch(() => props.expanded, refresh, {immediate: true});
 useResourceEvents(["output.*"], refresh);
 </script>
 <template>
     <div class="run" :data-queue-row="run.section" :data-queue-process="run.id">
         <div class="toggle" role="button" tabindex="0" :aria-expanded="expanded" @click="emit('toggle')" @keydown.enter.prevent="emit('toggle')" @keydown.space.prevent="emit('toggle')">
             <div class="run-line"><span class="leading"><template v-if="run.section === 'waiting'"><span data-queue-position>{{ position }}</span></template><template v-else><span :class="['dot', {ring: run.section === 'running' && !run.uses_slot, passed: run.section === 'recent' && run.state === 'finished', failed: run.section === 'recent' && run.state !== 'finished'}]" :title="run.section === 'running' && !run.uses_slot ? 'Running, not counted in the limit' : run.section === 'recent' ? (run.state === 'finished' ? 'Passed' : 'Failed') : 'Running'" /></template></span>
-                <code class="command">{{ run.line }}</code><span class="time" data-queue-time>{{ duration }}</span><Icon class="chevron" :class="{open: expanded}" name="chevronRight" direction="down" :size="12" />
+                <code class="command">{{ run.line }}</code><span class="time" data-queue-time>{{ duration }}</span><Icon class="chevron" :class="{open: expanded}" name="chevronRight" facing="down" :size="12" />
             </div>
             <div class="details"><span data-queue-kind>{{ kind }}</span><template v-if="run.worker_id"><span class="separator">·</span><button type="button" class="link" data-queue-worker @click.stop="peek('agents', run.worker_id)">Worker {{ run.worker_id }}</button></template><template v-else-if="run.is_main"><span class="separator">·</span><span>Main agent</span></template><template v-if="run.task_id"><span class="separator">·</span><button type="button" class="link" data-queue-task @click.stop="peek('tasks', run.task_id)">Task {{ run.task_id }}</button></template><template v-if="run.state === 'failed'"><span class="separator">·</span><span class="failed">Failed, exit {{ run.exit_code }}</span></template></div>
         </div>

@@ -192,6 +192,11 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 }
 
 .veil.fades { background: rgba(0, 0, 0, .45); }
+.veil.fades .panel { box-shadow: -20px 0 50px rgba(0, 0, 0, .4); }
+@media (prefers-color-scheme: light) {
+    .veil.fades { background: rgba(20, 22, 30, .32); }
+    .veil.fades .panel { box-shadow: -20px 0 50px rgba(20, 22, 30, .16); }
+}
 .side-enter-active.fades { transition: opacity 220ms ease; }
 .side-leave-active.fades { transition: opacity 160ms ease; }
 .side-enter-from.fades, .side-leave-to.fades { opacity: 0; }

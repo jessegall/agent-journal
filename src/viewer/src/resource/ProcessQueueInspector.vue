@@ -7,6 +7,7 @@ import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
+import ProcessQueueBand from "./ProcessQueueBand.vue";
 
 const props = defineProps({read: {type: Function, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back"]);
@@ -17,7 +18,7 @@ let reading = 0;
 const items = computed(() => {
     if (!queue.value) return [];
     const sections = [
-        {kind: "running", heading: "Running", icon: "play", rows: queue.value.running, empty: "Nothing is running."},
+        {kind: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "Nothing is running."},
         {kind: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "Nothing waits. A command that starts now gets a place at once."},
         {kind: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "Nothing has run yet."},
     ];
@@ -57,7 +58,7 @@ onMounted(load);
                     <template v-for="item in items" :key="item.key">
                         <ProcessQueueRun v-if="item.run" :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" />
                         <p v-else-if="item.empty" class="empty" :data-queue-empty="item.section.kind">{{ item.section.empty }}</p>
-                        <h2 v-else class="band" :data-queue-heading="item.section.kind"><Icon :name="item.section.icon" :size="12" />{{ item.section.heading }}<span>{{ item.section.rows.length }}</span></h2>
+                        <ProcessQueueBand v-else :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.kind">{{ item.section.heading }}</ProcessQueueBand>
                     </template>
                 </TransitionGroup>
             </template>
@@ -74,9 +75,6 @@ h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-
 .lead { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; line-height: 1.5; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .queue-list { position: relative; border-top: 1px solid var(--border); }
-.band { display: flex; align-items: center; gap: 7px; height: 28px; margin: 0; padding: 0 14px; background: var(--side); border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 11.5px; font-weight: 500; letter-spacing: .03em; }
-.band svg { color: var(--text-3); }
-.band span { margin-left: auto; color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
 .empty { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
 .failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
 .queue-move { transition: transform 320ms cubic-bezier(.2,.9,.25,1); }
