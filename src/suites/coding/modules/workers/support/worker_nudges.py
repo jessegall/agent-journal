@@ -35,7 +35,7 @@ WORKER_TASK_AFTER_REASSIGNED = NudgeDeclaration("workers.task_after_taken", Nudg
 WORKER_REPORT = NudgeDeclaration("workers.report", NudgeType.STEERING, 'worker:{worker} reports in message:{message}: journal message read {message}', turn_limited=False, wakes_agent=True)
 WORKER_REUSE = NudgeDeclaration("workers.reuse", NudgeType.REFUSAL, 'worker:{worker} changed these files: journal worker send {worker} "<job>", or add --fresh if it needs a new one', turn_limited=False)
 WORKER_ENDED_WITH_TASKS = NudgeDeclaration("workers.ended_with_tasks", NudgeType.STEERING, 'worker:{worker} ended with {tasks} left: journal worker send {worker} "<job>", or journal worker release {worker}', turn_limited=False, wakes_agent=True)
-WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: settle the markers there, then journal worker deliver', turn_limited=False)
+WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: settle the markers there, then journal worker deliver', turn_limited=False, path_fields=["lines"])
 WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING, 'proof:{proof} of task:{task} is short: read journal proof show {proof}, fix it, then journal worker deliver', turn_limited=False)
 WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERING, 'worker:{worker} blocked task:{task}: journal task show {task}', turn_limited=False)
 

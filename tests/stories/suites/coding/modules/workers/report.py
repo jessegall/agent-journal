@@ -11,12 +11,12 @@ def stop_with_text(text: str):
     return stop.with_raw({**stop.body["raw"], "last_assistant_message": text})
 
 
-def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_in_the_chat_and_to_its_main_agent(new_story):
+def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_to_its_main_agent_and_not_in_the_chat(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
-    story.expect_text("message feed --json", REPORT, f'"worker_id": {worker.id}')
+    story.expect_absent("message feed --json", REPORT)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} reports in message:1: journal message read 1")
     story.expect_text("message read 1", REPORT, actor=story.agent)
 
@@ -58,3 +58,12 @@ def test_the_dispatch_refusal_names_the_command_that_tells_the_main_agent(new_st
 def test_a_main_agent_cannot_send_a_workers_report(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.expect_refusal('worker report "The cart needs a tax rate"', "only a worker reports to its main agent", actor=story.agent)
+
+
+def test_a_workers_report_stays_out_of_the_chat_and_the_main_agent_reads_it(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
+    story.expect_absent("message feed --environment-id 1", "The cart needs a tax rate", actor=story.user)
+    story.expect_text("message show 1", "The cart needs a tax rate", actor=story.agent)

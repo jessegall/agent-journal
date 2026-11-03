@@ -2,8 +2,10 @@ package launch
 
 import (
 	"io"
+	"os/exec"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -14,10 +16,11 @@ const keyPause = 80 * time.Millisecond
 // TerminalInputs keeps the input of each running program by its agent row, so a line typed in the viewer reaches the
 // program's pseudo terminal beside what the person types at the keyboard, with when each last came.
 type TerminalInputs struct {
-	mutex   sync.Mutex
-	writers map[int]*io.PipeWriter
-	keyedAt map[int]time.Time
-	typedAt map[int]time.Time
+	mutex    sync.Mutex
+	writers  map[int]*io.PipeWriter
+	keyedAt  map[int]time.Time
+	typedAt  map[int]time.Time
+	programs map[int]*exec.Cmd
 }
 
 // keyboardReader notes when keys come from the keyboard.
@@ -36,7 +39,7 @@ func (reader keyboardReader) Read(buffer []byte) (int, error) {
 
 // NewTerminalInputs makes the inputs of no program yet.
 func NewTerminalInputs() *TerminalInputs {
-	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}}
+	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}}
 }
 
 // Open keeps an input for the agent, fed by the source as well, and returns what the program's terminal reads.
@@ -65,6 +68,25 @@ func (inputs *TerminalInputs) Close(agentID int) {
 		_ = writer.Close()
 		delete(inputs.writers, agentID)
 	}
+	delete(inputs.programs, agentID)
+}
+
+// Track keeps the agent's running program, so a request can stop it.
+func (inputs *TerminalInputs) Track(agentID int, program *exec.Cmd) {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	inputs.programs[agentID] = program
+}
+
+// StopProgram ends the agent's running program and says whether it had one.
+func (inputs *TerminalInputs) StopProgram(agentID int) bool {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	program, ok := inputs.programs[agentID]
+	if !ok || program.Process == nil {
+		return false
+	}
+	return program.Process.Signal(syscall.SIGTERM) == nil
 }
 
 // TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one.

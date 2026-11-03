@@ -7,7 +7,6 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
@@ -34,7 +33,5 @@ class ReaderSampleReadyListener(SaveListener):
         if sample.ended_at is None:
             return
         reader = self.queries.query(Reader).find(request.reader_id)
-        worker_ids = {self.queries.query(Process).find(part.process_id).agent_id for part in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows()}
-        for worker_id in worker_ids:
-            if self.queries.query(Agent).find(worker_id).role is AgentRole.WORKER:
-                self.nudger.send(worker_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, change.context, output=sample.id, reader=reader.name)
+        if self.queries.query(Agent).find(sample.agent_id).role is AgentRole.WORKER:
+            self.nudger.send(sample.agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, change.context, output=sample.id, reader=reader.name)

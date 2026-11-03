@@ -1,7 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.modules.drivers.support.main_agent_line import MainAgentLine
+from core.base.query.queries import Queries
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
@@ -17,13 +19,14 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
 
     command = SendReadersNotice
 
-    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, main_line: MainAgentLine) -> None:
-        self.readers, self.judge, self.main_line = readers, judge, main_line
+    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, queries: Queries, nudger: Nudger) -> None:
+        self.readers, self.judge, self.queries, self.nudger = readers, judge, queries, nudger
 
     def handle(self, command: SendReadersNotice, context: Context) -> None:
         count = sum(self.has_missing_fields(reader) for reader in self.readers.all_rows())
         if count:
-            self.main_line.send(command.environment_id, READERS_MISSING_FIELDS.nudge(count=count).text, SOURCE, context)
+            for agent in MainAgentFinder.rows(self.queries, command.environment_id):
+                self.nudger.send(agent.id, READERS_MISSING_FIELDS, SOURCE, context, count=count)
 
     def has_missing_fields(self, reader: Reader) -> bool:
         categories = {CommandCategory.CHECK, *(part.category for part in self.judge.samples(reader))}

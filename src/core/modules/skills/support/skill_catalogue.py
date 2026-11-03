@@ -10,7 +10,7 @@ PLUGIN_KEY = "plugin"
 
 
 class SkillCatalogue:
-    """Lists declared skills and published plugin skills."""
+    """Lists declared skills and published plugin skills; a file a publish removes while it is listed is no skill."""
 
     def __init__(self, registry: Registry, home: JournalHome, providers: Providers) -> None:
         self.registry, self.home, self.providers = registry, home, providers
@@ -22,7 +22,10 @@ class SkillCatalogue:
         entries: list[SkillEntry] = []
         paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
         for path in [paths[name] for name in sorted(paths)]:
-            text = path.read_text()
+            try:
+                text = path.read_text()
+            except FileNotFoundError:
+                continue
             fields = self.front_matter(text)
             if PLUGIN_KEY in fields:
                 entries.append(SkillEntry(path.parent.name, f"plugin:{fields[PLUGIN_KEY]}", fields["description"] if "description" in fields else "", (), (), (),

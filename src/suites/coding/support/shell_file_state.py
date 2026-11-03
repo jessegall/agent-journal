@@ -17,11 +17,14 @@ class ShellFileState:
     def read(cls, path: Path, budget: ShellReadBudget) -> "ShellFileState | None":
         try:
             descriptor = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
-        except FileNotFoundError:
+        except (FileNotFoundError, NotADirectoryError):
             return cls(False, ())
+        file_stat = os.fstat(descriptor)
+        if not stat.S_ISREG(file_stat.st_mode):
+            os.close(descriptor)
+            return None
         with os.fdopen(descriptor, "rb", buffering=0) as handle:
-            file_stat = os.fstat(handle.fileno())
-            if not stat.S_ISREG(file_stat.st_mode) or file_stat.st_size > budget.remaining_bytes:
+            if file_stat.st_size > budget.remaining_bytes:
                 return None
             content = handle.read(budget.remaining_bytes)
             budget.consume_bytes(len(content))
