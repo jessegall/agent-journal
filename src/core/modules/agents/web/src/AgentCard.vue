@@ -9,6 +9,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
+const MILLISECONDS_PER_HOUR = 3600000;
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const now = useNow();
 const title = computed(() => {
@@ -29,6 +30,13 @@ const usage = computed(() => {
 });
 const completedCount = computed(() => tasks.value.filter((task) => task.state === "completed").length);
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
+// a worker's pace: the tasks it completed per hour of its run, up to its end
+const tasksPerHour = computed(() => {
+    const started = Date.parse(props.row.process_started_at || props.row.created_at);
+    const ended = props.row.ended_at ? Date.parse(props.row.ended_at) : now.value;
+    const hours = (ended - started) / MILLISECONDS_PER_HOUR;
+    return props.row.role === "worker" && hours > 0 && completedCount.value ? `${(completedCount.value / hours).toFixed(1)}/h` : "";
+});
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);
 const FOLDED_STATES = new Set(["completed"]);
@@ -60,13 +68,23 @@ readCommand();
             <Icon :class="['agent-chevron', {opened}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity>{{ identity }}<template v-if="waitingForTests"> · <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button></template></span>
+            <span class="agent-identity" data-agent-identity>{{ identity }}</span>
             <template v-if="tasks.length">
+                <template v-if="tasksPerHour">
+                    <span class="agent-tasks" data-agent-pace>{{ tasksPerHour }}</span>
+                </template>
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
         </span>
         <template v-if="showsCommand">
-            <span class="agent-command" data-agent-command><RunningCommand :text="waitingForTests ? 'waiting for its tests' : runningCommand" idle="thinking" /></span>
+            <span class="agent-command" data-agent-command>
+                <template v-if="waitingForTests">
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button>
+                </template>
+                <template v-else>
+                    <RunningCommand :text="runningCommand" idle="thinking" />
+                </template>
+            </span>
         </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>
@@ -74,7 +92,7 @@ readCommand();
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                     <Btn small bordered data-agent-inspect @click="peekRef(`agents:${row.id}`)">Inspect</Btn>
                 </span>
-                <InnerTabs :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <template v-if="tab?.key === 'tasks'">
                         <template v-for="section in sections" :key="section.state">
@@ -281,13 +299,24 @@ readCommand();
     cursor: default;
 }
 
+.agent-tabs {
+    margin: 0 -22px -6px -27px;
+    padding: 0 22px 0 27px;
+    border-bottom: 1px solid var(--border);
+}
+
 .agent-tab-body {
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
     max-height: 320px;
+    margin: 0 -22px -11px -27px;
     overflow-y: auto;
+}
+
+.agent-tab-body[data-agent-tab-body="tasks"] {
+    padding: 8px 22px 8px 27px;
 }
 
 .agent-tab-body:not([data-agent-tab-body="tasks"]) {

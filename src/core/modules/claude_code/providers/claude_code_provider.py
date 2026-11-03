@@ -15,6 +15,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
+from core.base.provider.transcript_author import TranscriptAuthor
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
@@ -123,7 +124,7 @@ class ClaudeCodeProvider(Provider):
                 continue
             text = "\n".join(self.message_texts(message.get("content")))
             if text.strip():
-                rows.append(TranscriptRow(len(rows) + 1, str(author), str(author), text))
+                rows.append(TranscriptAuthor.row(len(rows) + 1, author, text))
         return rows
 
     @staticmethod

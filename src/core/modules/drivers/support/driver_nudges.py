@@ -18,4 +18,5 @@ LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.NUDGE, "that res
 AGENT_RESUMED = NudgeDeclaration("drivers.resumed", NudgeType.NUDGE, "the user resumed you: carry on where you stopped")
 REQUIRED_COMMAND_COUNTDOWN = NudgeDeclaration("drivers.required_command_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, required_command="")
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or journal required-command skip {required_command} --reason "<why>"')
-DRIVER_NUDGES = [AGENT_RESUMED, REQUIRED_COMMAND_COUNTDOWN, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]
+SUBAGENT_REUSE = NudgeDeclaration("drivers.subagent_reuse", NudgeType.REFUSAL, 'an ended subagent knows these files: send it the job, SendMessage to {agent}, and start no new one', turn_limited=False)
+DRIVER_NUDGES = [SUBAGENT_REUSE, AGENT_RESUMED, REQUIRED_COMMAND_COUNTDOWN, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]
