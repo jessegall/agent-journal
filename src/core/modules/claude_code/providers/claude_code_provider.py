@@ -107,8 +107,11 @@ class ClaudeCodeProvider(Provider):
         return HelperOutcome(report, results[-1].session or session, report if results[-1].is_error else None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        path = self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl"
-        return path if path.is_file() else None
+        projects = self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects"
+        path = projects / ClaudeFolderName.folder_name(project) / f"{session}.jsonl"
+        if path.is_file():
+            return path
+        return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
     def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
         rows: list[TranscriptRow] = []
