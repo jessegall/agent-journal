@@ -76,6 +76,14 @@ class GitRepository:
         parents = self.git("log", "-1", "--format=%P", f"refs/heads/{branch}").stdout.split()
         assert len(parents) == 2, f"the last commit of {branch} is no merge: its parents are {parents}"
 
+    def expect_merge_commits_after(self, branch: str, commit: str, count: int) -> None:
+        merges = self.git("rev-list", "--merges", "--count", f"{commit}..refs/heads/{branch}").stdout.strip()
+        assert merges == str(count), f"{branch} holds {merges} merge commits after {commit}, not {count}"
+
+    def expect_no_stash(self) -> None:
+        stashes = self.git("stash", "list").stdout
+        assert stashes == "", f"a stash was left: {stashes}"
+
     def expect_no_folder(self, worker_id: int) -> None:
         assert not self.worktree_folder(worker_id).exists(), f"the worktree folder of worker {worker_id} is still there"
 

@@ -72,6 +72,52 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
+def test_a_moved_base_is_rebased_under_the_uncommitted_changes_of_the_worker_and_they_are_put_back(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.changed(worker.id, "extra.py", "EXTRA = 1\n")
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("tax.py", "TAX = 21\n", "The tax")
+    tax_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, "state: completed")
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    repository.expect_file(ENVIRONMENT_BRANCH, "tax.py", "TAX = 21\n")
+    repository.expect_file(ENVIRONMENT_BRANCH, "extra.py", "EXTRA = 1\n")
+    repository.expect_merge_commits_after(ENVIRONMENT_BRANCH, tax_tip, 1)
+    repository.expect_no_stash()
+
+
+def test_a_clash_of_committed_work_with_a_moved_base_leaves_the_uncommitted_changes_in_the_worktree_and_no_stash(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.changed(worker.id, "extra.py", "EXTRA = 1\n")
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
+    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "cart.py").read_text()
+    assert (repository.worktree_folder(worker.id) / "extra.py").read_text() == "EXTRA = 1\n"
+    repository.expect_no_stash()
+
+
+def test_uncommitted_changes_that_clash_with_a_moved_base_go_back_to_the_worker_with_conflict_markers(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("tax.py", "TAX = 1\n", "The first tax")
+    worker = checked_worker(story, repository)
+    repository.changed(worker.id, "tax.py", "TAX = 5\n")
+    repository.committed("tax.py", "TAX = 2\n", "Another tax")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_text(f"worker merge {worker.id}", "clashed on tax.py", actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
+    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "tax.py").read_text()
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+    repository.expect_no_stash()
+
+
 def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_base_branch(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

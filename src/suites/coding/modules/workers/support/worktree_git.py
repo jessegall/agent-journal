@@ -53,6 +53,30 @@ class WorktreeGit:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
 
+    def rebase(self, worktree: Worktree) -> bool:
+        """Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
+        stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were."""
+        stash = self.stash(worktree)
+        rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+        if not rebased:
+            self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+        if stash:
+            self.unstash(worktree, stash)
+        return rebased
+
+    def stash(self, worktree: Worktree) -> str:
+        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
+            return ""
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "push", "--include-untracked", "--message", f"journal merge of {worktree.branch}")
+        return self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "stash@{0}").stdout.strip()
+
+    def unstash(self, worktree: Worktree, stash: str) -> None:
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash)
+        entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
+        for entry in (line.split() for line in entries):
+            if entry[0] == stash:
+                self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
+
     def use_branch_file(self, worktree: Worktree, path: str) -> None:
         if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--theirs", "--", path).returncode == 0:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)

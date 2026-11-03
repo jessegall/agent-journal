@@ -21,7 +21,8 @@ from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOUR
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
-    4.5."""
+    4.5. A moved base is rebased under the worker's uncommitted changes first; only a clash that stays goes
+    back to the worker."""
 
     command = MergeWorker
 
@@ -39,8 +40,12 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
                           f"worker {worktree.agent_id} changes them too: commit or stash them, then merge again")
-        self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
-        conflicts = self.git.sync(worktree) if self.git.tip(environment.folder, worktree.base_branch) != worktree.base_commit else ()
+        moved = self.git.tip(environment.folder, worktree.base_branch) != worktree.base_commit
+        rebased = moved and self.git.rebase(worktree)
+        conflicts = self.git.conflict_files(worktree) if rebased else ()
+        if not conflicts:
+            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+            conflicts = self.git.sync(worktree) if moved and not rebased else ()
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.agent_id}")
