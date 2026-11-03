@@ -4,6 +4,52 @@ from pathlib import Path
 from core.base.provider.program_hooks import ProgramHooks
 from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
 
+
+def test_partition_splits_a_mixed_block_per_entry_and_keeps_noncommand_entries():
+    journal_entry = {"type": "command", "command": "/p/.journal/bin/journal-hook sample /p"}
+    project_entry = {"type": "command", "command": "check"}
+    prompt_entry = {"type": "prompt", "prompt": "Review this"}
+    block = {"matcher": "Shell", "description": "Checks", "hooks": [journal_entry, project_entry, prompt_entry]}
+    kept, commands = ProgramHooks.partitioned({"BeforeTool": [block]})
+    assert kept == {"BeforeTool": [{**block, "hooks": [journal_entry, prompt_entry]}]}
+    assert commands == [("BeforeTool", "Shell", project_entry)]
+    assert block["hooks"] == [journal_entry, project_entry, prompt_entry]
+
+
+def test_partition_keeps_event_block_and_entry_order():
+    first = {"type": "command", "command": "first"}
+    second = {"type": "command", "command": "second"}
+    third = {"type": "command", "command": "third"}
+    fourth = {"type": "command", "command": "fourth"}
+    kept, commands = ProgramHooks.partitioned({
+        "Start": [{"matcher": "startup", "hooks": [first, second]}, {"hooks": [third]}],
+        "BeforeTool": [{"matcher": "Shell", "hooks": [fourth]}],
+    })
+    assert kept == {}
+    assert commands == [("Start", "startup", first), ("Start", "startup", second), ("Start", "", third), ("BeforeTool", "Shell", fourth)]
+
+
+def test_partition_and_store_keep_settings_beside_hooks(tmp_path):
+    path = tmp_path / "settings.json"
+    settings = {"permissions": {"allow": ["Shell(ls)"]}, "hooks": {"Start": [{"hooks": [{"type": "command", "command": "check"}]}]}}
+    ProgramHooks.store(path, settings)
+    loaded = ProgramHooks.read(path)
+    kept, commands = ProgramHooks.partitioned(loaded["hooks"])
+    ProgramHooks.store(path, {**loaded, "hooks": kept})
+    assert ProgramHooks.read(path) == {"permissions": settings["permissions"], "hooks": {}}
+    assert len(commands) == 1
+
+
+def test_partition_handles_empty_and_missing_settings_files(tmp_path):
+    path = tmp_path / "nested" / "settings.json"
+    assert ProgramHooks.read(path) == {}
+    assert ProgramHooks.partitioned(None) == ({}, [])
+    assert ProgramHooks.partitioned({}) == ({}, [])
+    ProgramHooks.store(path, {})
+    path.write_text("")
+    assert ProgramHooks.read(path) == {}
+
+
 OWN_BLOCK = {"matcher": "Bash", "hooks": [{"type": "command", "command": "my-linter"}]}
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}
 

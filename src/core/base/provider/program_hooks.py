@@ -34,8 +34,7 @@ class ProgramHooks:
         for event in self.events:
             hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.timeout_seconds,
                                                                      **self.entry_fields}]})
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps({**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
+        self.store(self.path, {**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")
@@ -43,8 +42,48 @@ class ProgramHooks:
                                                 for event in self.events)
 
     def settings(self) -> dict[object, object]:
-        loaded: object = json.loads(self.path.read_text() or "{}") if self.path.is_file() else {}
+        return self.read(self.path)
+
+    @staticmethod
+    def read(path: Path) -> dict[object, object]:
+        loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
         return dict(loaded) if is_mapping(loaded) else {}
+
+    @staticmethod
+    def store(path: Path, settings: Mapping[object, object]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(dict(settings), indent=2) + "\n")
+
+    @staticmethod
+    def partitioned(stored_hooks: object) -> tuple[dict[str, list[object]], list[tuple[str, str, Mapping[str, object]]]]:
+        if not is_mapping(stored_hooks):
+            return {}, []
+        kept: dict[str, list[object]] = {}
+        commands: list[tuple[str, str, Mapping[str, object]]] = []
+        for event, blocks in stored_hooks.items():
+            if not is_list(blocks):
+                continue
+            for block in blocks:
+                kept_blocks, block_commands = ProgramHooks._partitioned_block(str(event), block)
+                if kept_blocks:
+                    kept.setdefault(str(event), []).extend(kept_blocks)
+                commands.extend(block_commands)
+        return kept, commands
+
+    @staticmethod
+    def _partitioned_block(event: str, block: object) -> tuple[list[object], list[tuple[str, str, Mapping[str, object]]]]:
+        if not is_mapping(block) or not is_list(entries := block.get("hooks")):
+            return [block], []
+        kept_entries: list[object] = []
+        commands: list[tuple[str, str, Mapping[str, object]]] = []
+        for entry in entries:
+            if not is_mapping(entry) or entry.get("type") != "command" or ProgramHooks.is_journals(entry):
+                kept_entries.append(entry)
+                continue
+            commands.append((event, str(block.get("matcher", "")), {str(key): value for key, value in entry.items()}))
+        if not kept_entries:
+            return [], commands
+        return [{**block, "hooks": kept_entries}], commands
 
     @staticmethod
     def without_journals(stored_hooks: object) -> dict[str, list[object]]:

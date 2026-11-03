@@ -78,5 +78,4 @@ class HookSwitch:
             return False
 
     def settings(self, path: Path) -> dict[object, object]:
-        loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
-        return dict(loaded) if is_mapping(loaded) else {}
+        return ProgramHooks.read(path)
