@@ -2,6 +2,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import AgentFileEdits from "../../core/modules/agents/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
+import Output from "../../core/modules/processes/web/src/Output.vue";
 
 const FOOT = 1000;
 const row = (id, fields = {}) => ({id, author: "worker", row_type: "assistant", text: `row ${id}`, at: `2026-11-03T05:00:0${id}.000Z`, ...fields});
@@ -42,6 +43,23 @@ const scrolledTo = async (pane, top) => {
     await settle();
 };
 const newest = (element) => element.querySelector("[data-scroll-newest]");
+
+test("the output window opens at the foot and follows a new line", async () => {
+    const run = {id: 3, line: "make", state: "finished"};
+    const held = {lines: ["one"]};
+    const window = context({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
+    window.follow = (patterns, heard) => (held.heard = heard);
+    const element = await mounted(Output, window);
+    const pane = paneOf(element);
+    expect(pane.querySelector("[data-output-text]").textContent).toBe("one");
+    expect(pane.scrollTop).toBe(FOOT);
+    pane.scrollTop = FOOT - 10;
+    held.lines = ["one", "two"];
+    await held.heard({event: "output.update"});
+    await settle();
+    expect(pane.querySelector("[data-output-text]").textContent).toBe("one\ntwo");
+    expect(pane.scrollTop).toBe(FOOT);
+});
 
 test("the transcript tab says who wrote each row and when", async () => {
     const {window} = feed("agent transcript 7", [row(1, {author: "journal", row_type: "user"}), row(2)]);

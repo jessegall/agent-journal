@@ -15,6 +15,7 @@ from core.base.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -149,5 +150,5 @@ class ProcessesModule(Module):
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
+               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
     seeders = [ProcessesSeeder]

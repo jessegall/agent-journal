@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {EmptyState, usePoll, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, usePoll, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const outputId = ref(0);
@@ -46,7 +46,9 @@ usePoll(load, isRunning);
                     <button class="watch" type="button" @click="context.run(`output watch ${outputId}`)">Watch</button>
                 </template>
             </div>
-            <pre class="text">{{ lines.join("\n") }}</pre>
+            <AutoScrollPane :row-count="lines.length">
+                <pre class="text" data-output-text>{{ lines.join("\n") }}</pre>
+            </AutoScrollPane>
         </div>
     </template>
 </template>
@@ -56,6 +58,7 @@ usePoll(load, isRunning);
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
 }
 
 .bar {
@@ -82,10 +85,8 @@ button {
 }
 
 .text {
-    flex: 1;
     margin: 0;
     padding: 0 12px 12px;
-    overflow: auto;
     font-size: 12px;
     line-height: 1.5;
     white-space: pre-wrap;

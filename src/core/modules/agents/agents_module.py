@@ -34,6 +34,7 @@ from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcomma
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
+from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
 from core.base.viewer.choice_option import ChoiceOption
@@ -72,7 +73,7 @@ class AgentsModule(Module):
                                           ToggleOption("every", "Show every agent")]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, reads=CARD_READS,
                                  events=CARD_EVENTS, tabs=CARD_TABS),
-               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT,
+               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [MenuAnswerMarkListener]
     marks = AGENT_MARKS
