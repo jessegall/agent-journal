@@ -17,6 +17,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
+TEST_ABSENCE_PATTERN = re.compile(r"^(?:=+ )?no tests ran\b", re.MULTILINE)
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
 SAMPLE_PARTS = 50
@@ -59,9 +60,11 @@ class ReaderJudge:
     def misses_with_lines(self, reader: Reader, category: CommandCategory, text: str, lines: Sequence[str]) -> tuple[str, ...]:
         if not text.strip():
             return ()
+        count = self.run.count(reader, text, 0)
+        if category is CommandCategory.TEST_RUN and count == 0 and TEST_ABSENCE_PATTERN.search(text):
+            return ()
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)
-        count = self.run.count(reader, text, 0)
         checks = {"--lines picked none": bool(lines) or total < FEW_LINES,
                   "--lines picked nearly all": total < WIDTH_LINE_COUNT or len(lines) * WIDE_SHARE < total * (WIDE_SHARE - 1)}
         if reader.summary_pattern:

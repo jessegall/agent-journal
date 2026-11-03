@@ -52,6 +52,13 @@ def test_a_check_reader_needs_no_progress_even_when_its_output_prints_a_count():
     assert judge().misses(reader(), CommandCategory.CHECK, "done 2/4\n") == ()
 
 
+def test_no_tests_ran_is_not_a_sample_result_but_a_real_test_result_still_is():
+    counted = reader(count_pattern=r"collected ([0-9]+)")
+    assert judge().misses(counted, CommandCategory.TEST_RUN, "collected 0 items\nno tests ran in 1s\n") == ()
+    assert "--summary found nothing" in judge().misses(counted, CommandCategory.TEST_RUN, "collected 2 items\nno tests ran in 1s\n")
+    assert "--summary found nothing" in judge().misses(counted, CommandCategory.BUILD, "no tests ran in 1s\n")
+
+
 def test_a_test_reader_requires_progress_and_a_build_reader_requires_its_other_fields():
     assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == ("--count", "--progress or --step with --count")
     assert judge().fields_missing(reader(title="", lines_pattern="", summary_pattern=""), CommandCategory.BUILD) == ("--title", "--lines or --script", "--summary")
