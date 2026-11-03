@@ -11,7 +11,7 @@ from core.base.upgrade.version_four_source import VersionFourSource
 
 TABLE = "settings"
 LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout", "viewer.layout", "viewer.inspector_layout", "viewer.worker_layout")
-RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.worker-limit",
+RENAMED = {"viewer.tour_seen": "journal.core.viewer.tour-completed", "memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.worker-limit",
            "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
            "workers.command_kinds": "journal.suites.coding.worker-command-types", "profiles.model.claude": "journal.core.profiles.model-claude",
            "profiles.model.codex": "journal.core.profiles.model-codex", "voices.profile": "journal.core.voices.profile", "voices.title": "journal.core.voices.title",
@@ -24,7 +24,6 @@ DROPPED_REASONS = {
     "plans.test_commands": TEST_COMMAND_REASON,
     "workers.test_command": TEST_COMMAND_REASON,
     "workers.test_command_proof": "this test argument must be combined with the project test command in journal proof make --test",
-    "viewer.tour_seen": "the new viewer stores its tour progress in each browser, so the project flag cannot set that state",
     "workers.builder_may_queue": "version 5 has no separate builder queue permission; workers receive task queues through dispatch and send",
     "workers.mode": "the mode was chosen per person; version 5 chooses a driver for each environment with journal driver choose",
 }

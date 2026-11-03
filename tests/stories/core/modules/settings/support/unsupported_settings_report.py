@@ -12,7 +12,6 @@ EXPLANATION_TERMS = {
     "features.templates": ("modules", "suite"),
     "features.triggers": ("modules", "suite"),
     "plans.test_commands": ("proof", "--test"),
-    "viewer.tour_seen": ("browser", "tour"),
     "workers.builder_may_queue": ("queue", "permission"),
     "workers.mode": ("person", "environment", "driver choose"),
     "workers.test_command": ("proof", "--test"),

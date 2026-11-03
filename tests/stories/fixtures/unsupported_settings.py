@@ -11,7 +11,6 @@ UNSUPPORTED_SETTINGS = (
     ("features.templates", True),
     ("features.triggers", True),
     ("plans.test_commands", "journal suite, journal vitest"),
-    ("viewer.tour_seen", True),
     ("workers.builder_may_queue", False),
     ("workers.mode", "builder"),
     ("workers.test_command", "./scripts/test.sh"),
