@@ -3,6 +3,8 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
+from core.base.journal_home import JournalHome
+from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -26,8 +28,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     cli_name = "usage"
     name = "agents"
 
-    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames) -> None:
-        self.queries, self.files, self.environment_names = queries, files, environment_names
+    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames, providers: Providers, home: JournalHome) -> None:
+        self.queries, self.files, self.environment_names, self.providers, self.home = queries, files, environment_names, providers, home
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -46,7 +48,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
-                          card.dispatch_instruction)
+                          card.dispatch_instruction, status.effort or self.providers.provider(card.program).session_effort(self.home, card.session))
 
     @staticmethod
     def waiting_state(card: AgentCard) -> str:

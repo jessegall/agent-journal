@@ -21,7 +21,7 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 // a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
 const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
-const identity = computed(() => [props.row.program, props.facts?.model, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 // a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);

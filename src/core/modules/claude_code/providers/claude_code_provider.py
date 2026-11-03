@@ -89,9 +89,12 @@ class ClaudeCodeProvider(Provider):
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
-        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--dangerously-skip-permissions",
+        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", SESSION_EFFORT, "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, launch.variables, launch.session.session)
+
+    def session_effort(self, home: JournalHome, session: str) -> str:
+        return SESSION_EFFORT
 
     def new_session_arguments(self, session: str) -> Sequence[str]:
         return ["--session-id", session]

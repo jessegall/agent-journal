@@ -199,6 +199,12 @@ def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
     story.expect_text("usage agents --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)
 
 
+def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.session_start())
+    story.expect_text("usage agents --environment main --json", '"effort": "high"', actor=story.user)
+
+
 def test_a_subagents_facts_carry_its_profile_given_name_and_instruction(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     dispatch = {"subagent_type": "journal-researcher", "model": "sonnet", "description": "Madame Curie, reader of the cart", "prompt": "Read the cart"}

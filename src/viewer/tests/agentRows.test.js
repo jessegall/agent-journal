@@ -211,6 +211,13 @@ test("an open worker's card keeps its tabs", async () => {
     expect(element.querySelector("[data-inner-tabs]")).not.toBeNull();
 });
 
+test("an agent's card shows its effort beside its model", async () => {
+    const worker = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
+    const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {model: "gpt-6.1-sol", effort: "medium"}})}, context(lines));
+    expect(element.textContent).toContain("gpt-6.1-sol · medium");
+});
+
 test("a worker that stopped with tasks left shows under Running as waiting, not closed", async () => {
     const stopped = {id: 4, session: "s-4", program: "codex", role: "worker", ended_at: "2026-11-03T13:35:28Z"};
     const facts = [{id: 4, tasks: [{id: 11, title: "Fix the cart", state: "open"}]}];

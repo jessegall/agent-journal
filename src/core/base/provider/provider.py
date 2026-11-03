@@ -103,6 +103,9 @@ class Provider(ABC):
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None
 
+    def session_effort(self, home: JournalHome, session: str) -> str:
+        return ""
+
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
 
