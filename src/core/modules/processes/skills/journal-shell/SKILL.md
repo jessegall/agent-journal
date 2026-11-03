@@ -21,13 +21,50 @@ Every shell command you run goes through the journal's runner.
 
 ## Readers
 
-- A worker writes no reader; it asks the main agent to write one.
+Only a main agent, a person or a module saves, removes or chooses a reader. A worker asks the main agent;
+`journal reader draft <request> --save` is also refused for a worker.
 
-- A reader picks the lines that matter from one kind of output:
-  `journal reader add <name> --commands "pytest*" --lines "<pattern>"`.
-- A reader says what a run is doing with `--title`, how far it is with `--progress` and how it ended with `--summary`.
-- `journal reader list` names them. Adding a reader under a name that exists replaces it.
-- A pipe or a redirect hides the output from its reader, so run a test or a build without them.
+A reader selects useful output with `--lines <pattern>` or `--script <path>`. Every reader needs `--title`
+and `--summary <pattern>` too. The other requirements depend on the command:
+
+- A test run always needs a reader with `--count <pattern>` and either `--progress <pattern>` or
+  `--step <pattern>` with `--count`. A progress pattern captures a percent, or done and total as two numbers.
+- A build always needs a reader. It needs progress only when its output prints a percent or a done/total count.
+- A check needs a reader after a run of that command moved to the background.
+- Reading, searching, journal commands, help, version and listing commands need no reader. Each part of a
+  command chain is judged separately.
+
+`--count` captures the total in one number group. Without a group it counts matching lines. An optional
+`--count-command <line>` lists tests before a queued worker run gets a spot, when `worker-run-most-tests` is
+above zero. `{part}` is replaced with that part's command, not the whole chain; alias environment variables
+are not included, so put any variables the listing needs in its command. Counts of test parts are added.
+A failed listing, a listing cut off after 120 seconds, or one with no number leaves the count unknown and
+the run goes on. A known count above the limit stops the run before it gets a spot.
+
+When the main agent receives a reader request:
+
+1. Run `journal reader draft <request>`. It tries saved readers, then stock readers, then patterns on the
+   sample. Read what each field found and the complete `journal reader add` line it prints.
+2. If the draft fits, run `journal reader draft <request> --save`. If a field could not be filled, edit
+   that field in the printed `journal reader add` line and run it. A save always uses the normal writer
+   check and output proof. `--save` refuses an incomplete draft.
+3. If the command needs no reader, run `journal reader-request waive <request> --reason "<why>"`.
+
+A saved proper reader completes matching requests and frees the worker and its waiting run. Adding a
+reader whose commands do not match leaves the request open and says so. `journal reader list` shows the
+saved readers. Adding under an existing name changes the fields given; `--commands` replaces the whole
+command list, so keep the old patterns when adding a command.
+
+Without a kept sample, one worker run becomes the sample while the worker waits. The worker may read or
+stop during the wait, and cannot skip its block. The default wait is 25 minutes, set by
+`reader-block-minutes`; after it the run starts without a reader. With no main agent running there is no
+wait. `readers-forced` defaults to on; off removes reader requests and blocks. At session start a main
+agent gets a count of readers lacking required fields without a block. Full judgement happens when a
+worker first needs each reader, so existing project readers are not changed on upgrade.
+
+A pipe or redirect hides output from its reader. Run tests and builds without them and read output by its
+number. An ended sample can be read with `journal output read <output> --reader <name>` after saving its
+reader.
 
 ## Aliases
 
