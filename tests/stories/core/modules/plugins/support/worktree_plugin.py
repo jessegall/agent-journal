@@ -3,12 +3,14 @@ import sys
 from pathlib import Path
 
 PROGRAM = '''import json
+import os
 import sys
 from pathlib import Path
 
 event = json.load(sys.stdin)
 data = event["data"]
 if event["event"] == "worker_delivering":
+    (Path(os.environ["JOURNAL_PLUGIN_DATA"]) / "delivery.json").write_text(json.dumps(data))
     root = Path(data["worktree"])
     assert data["base"]
     paths = data["files"]

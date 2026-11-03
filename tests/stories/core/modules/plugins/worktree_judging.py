@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from core.testing.hook_samples import HookSamples
@@ -6,6 +8,7 @@ from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 SIN = "def total(items=[]):\n    return len(items)\n"
 
@@ -55,3 +58,25 @@ def test_a_main_checkout_sin_does_not_hold_a_clean_workers_handoff(worktree_stor
     story.repository.uncommitted("main_only.py", SIN)
     story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success("worker next", actor=story.worker)
+
+
+def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):
+    story = worktree_story
+    story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
+    story.repository.checkout(ENVIRONMENT_BRANCH)
+    story.repository.committed("main_only.py", SIN, "Main adds a function")
+    story.expect_success(f'worker send {story.worker.id} "Continue the worker changes"', actor=story.agent)
+    story.expect_rows((story.worktree / "main_only.py").read_text() == SIN)
+    story.expect_success("worker next", actor=story.worker)
+    data = json.loads((story.home.folder / "plugin-data/worktree-judge/delivery.json").read_text())
+    assert data["base"] == story.repository.tip(ENVIRONMENT_BRANCH)
+    assert data["files"] == ["cart.py"]
+
+
+def test_a_resumed_workers_new_sin_still_holds_its_handoff(worktree_story):
+    story = worktree_story
+    story.repository.checkout(ENVIRONMENT_BRANCH)
+    story.repository.committed("main_only.py", SIN, "Main adds a function")
+    story.expect_success(f'worker send {story.worker.id} "Add the worker function"', actor=story.agent)
+    story.repository.changed(story.worker.id, "cart.py", SIN)
+    story.expect_refusal("worker next", f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
