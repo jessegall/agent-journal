@@ -348,7 +348,7 @@ readCommand();
 }
 
 /* what a tab holds, a transcript or a file feed, takes the whole body */
-.agent-card.open .agent-tab-body > :deep(*) {
+.agent-card.open .agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) {
     flex: 1;
     min-height: 0;
 }
