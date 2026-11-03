@@ -30,8 +30,8 @@ SHIPPED_PROFILES = (
                   f"You review one plan. Read its goal, its phases and its tasks with journal plan outline <n>, and the code they would change. Say whether the plan reaches its goal and does nothing more, what is missing or wrong, and which task should change and how. {READER_RULES}{READ_COMMANDS}{PLAN_REVIEW_COMMANDS}"),
     AgentProfile("journal-senior", "A worker for a job that needs judgement: a design inside the code, a hard fault, a change across many files. Writes, on Opus.",
                  "Read, Grep, Glob, Edit, Write, Bash",
-                  f"You are a senior worker on one bounded job that needs judgement. Weigh the ways to do it against the code as it is, choose the one that fits it, and say in your report why. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", WORKER, "opus"),
+                  f"You are a senior worker on one bounded job that needs judgement. Weigh the ways to do it against the code as it is, choose the one that fits it, and say in your report why. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", WORKER, "opus", "gpt-6.1-sol"),
     AgentProfile("journal-medior", "A worker for a job whose shape is defined: a change the brief spells out, tests to write, a rename. Writes, on Sonnet.",
                  "Read, Grep, Glob, Edit, Write, Bash",
-                  f"You are a medium worker on one bounded job whose shape the brief defines. Do what it says and no more; where it leaves a choice undecided, take the plainest one and name it in your report. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", WORKER, "sonnet"),
+                  f"You are a medium worker on one bounded job whose shape the brief defines. Do what it says and no more; where it leaves a choice undecided, take the plainest one and name it in your report. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", WORKER, "sonnet", "gpt-6.1-terra"),
 )
