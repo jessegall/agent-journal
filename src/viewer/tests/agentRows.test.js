@@ -6,6 +6,8 @@ import {h} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import Agents from "../../core/modules/agents/web/src/agents.js";
+import Subagents from "../../core/modules/agents/web/src/subagents.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
@@ -43,7 +45,12 @@ const answers = {
 };
 const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
-    ...context({...answers, "agent list": page(agents), "agent running": page(agents.filter((row) => !row.ended_at)), "usage agents --closed": page(facts)}),
+    ...context({
+        "agent list --show running": page(agents.filter((row) => !row.ended_at)),
+        "agent list --show closed": page(agents.filter((row) => row.ended_at)),
+        "agent list --show all": page(agents),
+        ...answers, "usage agents --closed": page(facts),
+    }),
     tabs: TABS,
     option: (key) => ({value: {...DEFAULT_OPTIONS, ...options}[key]}),
 });
@@ -334,8 +341,16 @@ test("an agent with no tasks has no tasks control", async () => {
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();
 });
 
-test("the agents window searches the session, program, role, profile and name", async () => {
-    const element = await drawn();
+test("the agents window sends searches to its list read", async () => {
+    const held = window();
+    const read = held.read;
+    held.read = async (line) => {
+        if (line.includes('--search "codex"')) return page([AGENTS[2]]);
+        if (line.includes('--search "curie"')) return page([AGENTS[1]]);
+        if (line.includes('--search "nobody"')) return page([]);
+        return read(line);
+    };
+    const element = await mounted(AgentRows, held, {line: "agent list", empty: "No agents yet"});
     await pickButton(element, "All");
     const search = element.querySelector("[data-search-input]");
     search.value = "codex";
@@ -374,18 +389,17 @@ test("a switch saved off hides no agent, and no line speaks of hidden agents", a
     expect(element.textContent).not.toContain("Hidden");
 });
 
-test("agents are ordered by number, by state and by last active", async () => {
+test.each([["agents", Agents], ["helpers", Subagents]])("the %s window keeps the server's age order regardless of state or saved order", async (name, component) => {
     const rows = [
-        {id: 5, session: "s-5", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T10:00:00Z"},
-        {id: 6, session: "s-6", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T09:00:00Z"},
-        {id: 7, session: "s-7", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T11:00:00Z"},
+        {id: 5, session: "oldest", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T09:00:00Z", updated_at: "2026-11-01T12:00:00Z"},
+        {id: 6, session: "middle", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z"},
+        {id: 7, session: "newest", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T11:00:00Z", updated_at: "2026-11-01T11:00:00Z"},
     ];
     const facts = [{...FACTS[0], id: 5, state: "blocked"}, {...FACTS[0], id: 6}, {...FACTS[0], id: 7}];
-    const drawnIn = (order) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list": page(rows), "agent running": page(rows), "usage agents --closed": page(facts)}),
-        option: (key) => ({value: {...DEFAULT_OPTIONS, order}[key]}),
-    });
-    expect(listed(await drawnIn("number"))).toEqual([6, 7, 5]);
-    expect(listed(await drawnIn("state"))).toEqual([7, 6, 5]);
-    expect(listed(await drawnIn("active"))).toEqual([7, 6, 5]);
+    const window = context({"agent cards": page(rows), "agent list": page(rows), "agent running": page(rows), "usage agents --closed": page(facts)});
+    window.option = () => ({value: "state"});
+    const element = await mounted(component, window);
+    expect(listed(element)).toEqual([5, 6, 7]);
+    expect(window.reads.filter((line) => line.startsWith("agent cards"))).toHaveLength(1);
+    expect(window.reads).not.toContain("agent running");
 });

@@ -7,4 +7,4 @@ const TEXTS = {
     all: {title: "No agents yet", hint: "The workers and subagents the main agent sends show here."},
 };
 
-export default {render: () => h(AgentRows, {line: "agent list", empty: "No agents yet", texts: TEXTS, only: (row) => row.role !== "main"})};
+export default {render: () => h(AgentRows, {line: "agent cards --helpers", empty: "No agents yet", texts: TEXTS})};
