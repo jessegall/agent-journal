@@ -19,6 +19,8 @@ class ManagedHooks:
         self.path = home.managed_hooks_file
 
     def all(self) -> list[ManagedHook]:
+        if not self.path.is_file():
+            return []
         with self._locked():
             return self._read()
 

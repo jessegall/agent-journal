@@ -20,4 +20,6 @@ class ManageProgramHandler(Handler[ManageProgram, int]):
     def handle(self, command: ManageProgram, context: Context) -> int:
         provider = self.providers.provider(command.program)
         manager = HookManager(self.home.project_folder, self.managed)
+        if not manager.unmanaged(type(provider), Path(command.folder)):
+            return len(self.managed.all())
         return len(manager.import_hooks(type(provider), Path(command.folder)))
