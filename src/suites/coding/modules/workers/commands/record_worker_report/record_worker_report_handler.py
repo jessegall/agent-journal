@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report import RecordWorkerReport
@@ -16,10 +16,10 @@ class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
 
     command = RecordWorkerReport
 
-    def __init__(self, repository: Repository) -> None:
-        self.repository = repository
+    def __init__(self, repository: Repository, nudger: Nudger) -> None:
+        self.repository, self.nudger = repository, nudger
 
     def handle(self, command: RecordWorkerReport, context: Context) -> Message:
         message = self.repository.save(Message(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=MessageType.AGENT, text=command.text), context)
-        self.repository.save(AgentLine(agent_id=command.main_agent_id, creator_id=context.actor.id, text=WORKER_REPORT.nudge(worker=command.agent_id, job=command.text).text, source=SOURCE), context)
+        self.nudger.say(command.main_agent_id, WORKER_REPORT, SOURCE, context, worker=command.agent_id, job=command.text)
         return message

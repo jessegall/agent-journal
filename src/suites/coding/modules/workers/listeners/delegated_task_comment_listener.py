@@ -3,12 +3,11 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.base.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
@@ -24,8 +23,8 @@ class DelegatedTaskCommentListener(SaveListener):
     name = "workers.delegated-task-comment"
     event = "link.create"
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, nudger: Nudger) -> None:
+        self.queries, self.nudger = queries, nudger
 
     def handle(self, change: Change[Model]) -> None:
         link = change.new_row
@@ -35,8 +34,7 @@ class DelegatedTaskCommentListener(SaveListener):
         if worker_id is None or self.queries.query(ActorRecord).find(change.actor.id).type is not ActorType.USER:
             return
         message = self.queries.query(Message).find(link.source_id)
-        self.repository.save(AgentLine(agent_id=worker_id, creator_id=change.actor.id, text=WORKER_TASK_COMMENT.nudge(job=message.text).text, source=WORKER_JOB_SOURCE), change.context)
+        self.nudger.say(worker_id, WORKER_TASK_COMMENT, WORKER_JOB_SOURCE, change.context, job=message.text)
         parent_id = self.queries.query(Agent).find(worker_id).parent_id
         if parent_id is not None:
-            copy_line = WORKER_COMMENT_COPY.nudge(worker=worker_id, message=message.id).text
-            self.repository.save(AgentLine(agent_id=parent_id, creator_id=change.actor.id, text=copy_line, source=SOURCE), change.context)
+            self.nudger.say(parent_id, WORKER_COMMENT_COPY, SOURCE, change.context, worker=worker_id, message=message.id)

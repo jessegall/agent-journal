@@ -7,7 +7,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -35,8 +35,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     command = RecordWorkerTest
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, bus: Bus) -> None:
-        self.queries, self.repository, self.main_agent_line, self.tasks, self.bus = queries, repository, main_agent_line, tasks, bus
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, bus: Bus, nudger: Nudger) -> None:
+        self.queries, self.repository, self.main_agent_line, self.tasks, self.bus, self.nudger = queries, repository, main_agent_line, tasks, bus, nudger
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.queries.query(Proof).find(command.proof_id)
@@ -71,8 +71,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             return
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
         self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        line = WORKER_NEXT_TASK.nudge(task=following.id, job=f"{following.title}\n{following.brief}").text
-        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=WORKER_JOB_SOURCE), context)
+        self.nudger.say(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id, job=f"{following.title}\n{following.brief}")
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):
@@ -82,4 +81,4 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         lines = "; ".join(f"{row.test_command} ({row.shortfall})" for row in failed)
-        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=WORKER_TESTS_FAILED.nudge(lines=lines).text, source=MERGE_CONFLICT_SOURCE), context)
+        self.nudger.say(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, lines=lines)
