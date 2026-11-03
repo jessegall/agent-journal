@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
-	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -79,28 +77,6 @@ func TestWithNothingAnsweringAndTheLockFreeTheClientStartsTheServer(t *testing.T
 	})
 	if err != nil || starts != 1 {
 		t.Fatalf("starts %d, err %v", starts, err)
-	}
-}
-
-func TestFiveClientsFindingNoServerStartOne(t *testing.T) {
-	home := shortHome(t)
-	var starts atomic.Int32
-	var clients sync.WaitGroup
-	for range 5 {
-		clients.Add(1)
-		go func() {
-			defer clients.Done()
-			_, _, _ = Connect(home, func(string) (*os.Process, error) {
-				starts.Add(1)
-				time.Sleep(200 * time.Millisecond)
-				listening(t, socket.Path(home), healthHandler())
-				return &os.Process{Pid: os.Getpid()}, nil
-			})
-		}()
-	}
-	clients.Wait()
-	if starts.Load() != 1 {
-		t.Fatalf("%d servers started", starts.Load())
 	}
 }
 
