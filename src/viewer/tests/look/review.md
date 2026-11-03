@@ -15,7 +15,7 @@ Each line is one difference found, its screenshot pair in this folder and what w
 | 9 | Settings | No list of sections beside the settings to jump to one | settings-v4.png, settings-v5.png | fixed |
 | 10 | Settings | A flag drew as a bordered button; version 4 draws a filled switch | settings-v4.png, settings-v5.png | fixed |
 | 11 | Settings | Sections sat close together; spacing now follows version 4's calm gaps | settings-v4.png, settings-v5.png | fixed |
-| 12 | Chat: messages, marks, notices, composer, docked cards | Earlier differences of report 1147 | messages, marks, notices, composer and docked pairs | fixed |
+| 12 | Chat: messages, marks, pins, composer, docked cards | Earlier differences of report 1147 | messages, marks, pins, composer and docked pairs | fixed |
 | 13 | Bars at the top, side panels | Earlier differences of report 1147 | top-bars and side-panels pairs | fixed |
 
 Not compared one by one: the module windows other than chat, tasks and settings. Version 5 draws them with the same kit as the chat and settings.
@@ -39,12 +39,12 @@ Not compared one by one: the module windows other than chat, tasks and settings.
 | 26 | Triggers | Card shows its age beside the number | windows/triggers-v4.png, windows/triggers-v5.png | fixed, except the New trigger button |
 | 27 | Tasks (agent) | Version 5 names the window Tasks now; on a page of its own it needs an agent and says so | windows/workers-v4.png, windows/workers-v5.png | open: needs an agent |
 | 28 | Every window as a page | A window page had no gutter around its content | windows/*-v5.png | fixed |
-| 29 | Chat notices | The strip had padding around it; version 4 runs it flush with the chat's sides and top | bottom-v5.png | fixed |
+| 29 | Chat pins | The strip had padding around it; version 4 runs it flush with the chat's sides and top | bottom-v5.png | fixed |
 | 30 | Bars and headers | An icon button stretched to the height of its bar; now a fixed 24 pixel square, centred | bottom-v5.png | fixed |
 | 31 | Agent tasks window | Named To-do list; now Tasks, with its empty text saying tasks | windows/workers-v5.png | fixed |
 | 32 | Every list and window | A blank while the first read was out; now one shared skeleton shaped like what is coming, fading into the content | not a still | fixed |
 
-Memories, notices, dumps, processes and sharing have no window of their own in version 5 (they draw in the chat, the settings and the activity panel), so there is no page of theirs to pair.
+Memories, pins, dumps, processes and sharing have no window of their own in version 5 (they draw in the chat, the settings and the activity panel), so there is no page of theirs to pair.
 Lines marked open differ from version 4 in content or toolbar that these windows do not draw yet.
 
 ## The status bars (task 5490), pair bars-v4.png, bars-v5.png

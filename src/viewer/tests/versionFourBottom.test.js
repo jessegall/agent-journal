@@ -54,9 +54,9 @@ test("an icon button is a fixed small square, centred in its row", () => {
     expect(read("../src/kit/Btn.vue")).toMatch(/\.btn\.icon \{[^}]*flex: none;[^}]*align-self: center;[^}]*width: 24px;[^}]*height: 24px;/);
 });
 
-// task 5489: the pinned notices run edge to edge under the tab bar, out past the pane's padding
-test("the notices strip runs flush with the chat's sides, with no gap to the history below", () => {
-    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/\.notices \{[^}]*margin: 0 -12px -8px;/);
+// task 5489: the pins run edge to edge under the tab bar, out past the pane's padding
+test("the pins strip runs flush with the chat's sides, with no gap to the history below", () => {
+    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/\.pins \{[^}]*margin: 0 -12px -8px;/);
 });
 
 // task 5489: one shared skeleton, shaped like what is loading, in every list and every window that is still loading
@@ -88,7 +88,7 @@ test("a window drawn as a page of its own keeps a gutter around its content", ()
     expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 16px 20px;/);
 });
 
-// task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the notices
+// task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the pins
 test("the docks at the foot of the chat scroll inside a share of its height", () => {
     const chat = read("../../core/modules/messages/web/src/Chat.vue");
     expect(chat).toMatch(/<div data-figure-chat-foot class="chat-foot">/);

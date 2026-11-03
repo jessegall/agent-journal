@@ -15,13 +15,13 @@ def window_story(new_story) -> WindowStory:
 
 def test_the_points_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
     window = window_story(new_story)
-    window.expect_declared_window("workers.points", "component", "agent")
+    window.expect_declared_window("workers.points", "component", "pane", "one-agent")
     window.expect_window_allowed("workers.points", "worker-worktree points --agent 2")
 
 
 def test_the_todos_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
     window = window_story(new_story)
-    window.expect_declared_window("workers.todos", "component", "agent")
+    window.expect_declared_window("workers.todos", "component", "pane", "one-agent")
     window.expect_window_allowed("workers.todos", "todo-item list --agent 2 --oldest")
 
 

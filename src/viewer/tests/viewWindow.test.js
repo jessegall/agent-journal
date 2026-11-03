@@ -44,7 +44,7 @@ test("a window on a page of its own opens a row in the panel, as Home does", asy
     vi.unstubAllGlobals();
 });
 
-const terminal = {...board, name: "coding.terminal", title: "Terminal", place: "agent", line: "agent terminal"};
+const terminal = {...board, name: "coding.terminal", title: "Terminal", shows: "one-agent", line: "agent terminal"};
 
 async function pageOf(answer) {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => answer})));

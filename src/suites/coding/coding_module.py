@@ -8,6 +8,7 @@ from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
@@ -61,10 +62,10 @@ class CodingModule(Module):
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
-               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, place=WindowPlace.AGENT, auto_scroll=AutoScroll.BOTTOM, reads=FILE_EDIT_READS,
+               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, shows=WindowShows.ONE_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),
-               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, place=WindowPlace.AGENT, auto_scroll=AutoScroll.BOTTOM,
+               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, shows=WindowShows.ONE_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.create"],
                                  options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]

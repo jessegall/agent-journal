@@ -20,7 +20,7 @@ const ACTS = {
         ...(RUNNING.includes(r.state) ? [act("pause", "Pause"), act("finish", "Finish")] : []),
         ...(isClosed(r) ? [] : [act("abandon", "Abandon", {danger: true})]),
     ],
-    notices: (r) => (isClosed(r) ? [] : [act("close", "Close")]),
+    pins: (r) => (isClosed(r) ? [] : [act("close", "Close")]),
     checks: (r) => (r.progress ? [act("stop", "Stop", {danger: true})] : [act("run", "Run now")]),
     shares: (r) => [...(!r.approved && !r.stopped_at ? [act("approve", "Accept")] : []), ...(r.stopped_at ? [] : [act("stop", "Stop sharing", {danger: true})])],
     memories: (r) => (r.removed_at ? [] : [act("weigh", "Weigh", {asks: true, field: "weight"}), act("remove", "Remove", {danger: true})]),

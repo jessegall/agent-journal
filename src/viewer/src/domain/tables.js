@@ -103,7 +103,7 @@ export const TABLES = {
         takes_comments: true,
         created_in_viewer: true,
     }),
-    notices: kind("Notice", "band", "One line pinned to the chat while it matters", {filters: OPEN_AND_CLOSED}),
+    pins: kind("Pin", "band", "One line pinned to the chat while it matters", {filters: OPEN_AND_CLOSED}),
     reactions: kind("Reaction", "smile", "A face on a message", {nested: true, typed_as_title: true}),
     plugins: kind("Plugin", "plug", "A repository installed into the journal: it hears the bus, answers, and may run services of its own", {scope: "project"}),
     environments: kind("Environment", "branch", "One line of work with its own record: messages, tasks, facts, plans, settings", {scope: "project"}),

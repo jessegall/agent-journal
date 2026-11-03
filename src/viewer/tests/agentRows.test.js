@@ -22,6 +22,8 @@ const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
     {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
+// the pane menu's options as the window declares them: every state and kind shown, by number, `every` off
+const DEFAULT_OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, subagent: true, order: "number", every: false};
 const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
@@ -34,8 +36,12 @@ const answers = {
     "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}]),
     "file-edit list --agent 3": page([EDIT]),
 };
-const window = (facts = FACTS) => ({...context({...answers, "usage agents --closed": page(facts)}), tabs: TABS});
-const drawn = (facts) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts));
+const window = (facts = FACTS, options = {}) => ({
+    ...context({...answers, "usage agents --closed": page(facts)}),
+    tabs: TABS,
+    option: (key) => ({value: {...DEFAULT_OPTIONS, ...options}[key]}),
+});
+const drawn = (facts, options) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
 const pick = async (element, label) => {
@@ -224,4 +230,56 @@ test("an age reads a row's ISO time as well as epoch seconds", () => {
     const hourAgo = new Date(Date.now() - 3_600_000);
     expect(ago(hourAgo.toISOString())).toBe("1h ago");
     expect(age(hourAgo.getTime() / 1000)).toBe("1h");
+});
+
+const listed = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
+
+test("switching off a state hides the agents in it and the window says how many it hides", async () => {
+    const element = await drawn(FACTS, {waiting: false});
+    expect(listed(element)).toEqual([2]);
+    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 blocked");
+});
+
+test("switching off the working state hides the working agent", async () => {
+    const element = await drawn(FACTS, {working: false});
+    expect(listed(element)).toEqual([3]);
+    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 working");
+});
+
+test("switching off the not running state hides an ended agent under All", async () => {
+    const element = await drawn(FACTS, {stopped: false});
+    await pick(element, "All");
+    expect(listed(element)).toEqual([2, 3]);
+    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 not running");
+});
+
+test("switching off a kind hides the agents of it", async () => {
+    const element = await drawn(FACTS, {subagent: false});
+    expect(listed(element)).toEqual([2]);
+    expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 helper");
+    const environments = await drawn(FACTS, {environment: false});
+    expect(listed(environments)).toEqual([3]);
+    expect(environments.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 environment agent");
+});
+
+test("show every agent overrides the switches that are off", async () => {
+    const element = await drawn(FACTS, {working: false, subagent: false, every: true});
+    expect(listed(element)).toEqual([2, 3]);
+    expect(element.querySelector("[data-agents-hidden]")).toBeNull();
+});
+
+test("agents are ordered by number, by state and by last active", async () => {
+    const rows = [
+        {id: 5, session: "s-5", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T10:00:00Z"},
+        {id: 6, session: "s-6", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T09:00:00Z"},
+        {id: 7, session: "s-7", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T11:00:00Z"},
+    ];
+    const facts = [{...FACTS[0], id: 5, state: "blocked"}, {...FACTS[0], id: 6}, {...FACTS[0], id: 7}];
+    const drawnIn = (order) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
+        ...context({"agent list": page(rows), "agent running": page(rows), "usage agents --closed": page(facts)}),
+        option: (key) => ({value: {...DEFAULT_OPTIONS, order}[key]}),
+    });
+    expect(listed(await drawnIn("number"))).toEqual([6, 7, 5]);
+    expect(listed(await drawnIn("state"))).toEqual([7, 6, 5]);
+    expect(listed(await drawnIn("active"))).toEqual([7, 6, 5]);
 });

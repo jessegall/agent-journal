@@ -255,7 +255,7 @@ test("the pane menu splits a pane with several tabs and moves its tab to another
 
 test("an agent window's pane menu picks which agent it follows, and any other window has no such choice", async () => {
     const shellRead = async (line) => (line[0] === "usage" && line[1] === "show" ? {ok: true, value: {agents: [{id: 7, role: "main"}, {id: 9, role: "worker"}, {id: 11, role: "worker", ended_at: "2026-11-01"}], windows: []}} : {ok: false, error: "no"});
-    const {store, element} = await stage(SHAPE, {extra: (name) => (name === "a.tasks" ? {place: "agent"} : {}), stageProps: {agent: 7, shellRead}});
+    const {store, element} = await stage(SHAPE, {extra: (name) => (name === "a.tasks" ? {shows: "one-agent"} : {}), stageProps: {agent: 7, shellRead}});
     const own = holder(store, "a.tasks");
     element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
     await settled();

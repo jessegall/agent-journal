@@ -1,7 +1,6 @@
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-NEXT_TASK = NudgeDeclaration("plans.next_task", NudgeType.INSTRUCTION, "task:{task} is in hand{place}", longest_characters=1600, turn_limited=False)
 PLAN_FINISHED = NudgeDeclaration("plans.plan_finished", NudgeType.INSTRUCTION, "plan {plan} done: run the final suite; merging to main and releasing wait for the user's word", turn_limited=False)
 PHASE_FINISHED = NudgeDeclaration("plans.phase_finished", NudgeType.NUDGE, "plan {plan}: phase {phase} done", turn_limited=False)
 CHECKPOINT_FINISHED = NudgeDeclaration("plans.checkpoint_finished", NudgeType.INSTRUCTION, "plan {plan}: phase {phase} done, a checkpoint: tell the user and wait for their word", turn_limited=False)
@@ -11,4 +10,4 @@ PLAN_CANCELLED = NudgeDeclaration("plans.plan_cancelled", NudgeType.INSTRUCTION,
 PLAN_BLOCKED = NudgeDeclaration("plans.plan_blocked", NudgeType.INSTRUCTION, "plan:{plan} is blocked", turn_limited=False)
 UNLINKED_TASKS = NudgeDeclaration("plans.unlinked_tasks", NudgeType.NUDGE, "plan {plan}: {count} open tasks, none blocked; set what each waits on: journal task block <n> --on task:<m>", turn_limited=False)
 
-PLAN_NUDGES = [UNLINKED_TASKS, NEXT_TASK, PLAN_FINISHED, PHASE_FINISHED, CHECKPOINT_FINISHED, PLAN_STALLED, PLAN_APPROVED, PLAN_CANCELLED, PLAN_BLOCKED]
+PLAN_NUDGES = [UNLINKED_TASKS, PLAN_FINISHED, PHASE_FINISHED, CHECKPOINT_FINISHED, PLAN_STALLED, PLAN_APPROVED, PLAN_CANCELLED, PLAN_BLOCKED]

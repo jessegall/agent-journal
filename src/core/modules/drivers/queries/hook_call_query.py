@@ -11,6 +11,7 @@ from core.base.query.query import Query
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
+DRIVERS_MODULE = "journal.core.drivers"
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 IDLE_LIMIT_SECONDS = 30
@@ -40,7 +41,7 @@ class HookCallQuery(Query[HookCall]):
         if not calls:
             return False
         is_silent = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
-        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED)
+        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED) or bool(calls[0].metadata.module_part(DRIVERS_MODULE).get("interrupted"))
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()

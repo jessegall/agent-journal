@@ -10,9 +10,9 @@ function fold(folded) {
     remember(MINIMISED, folded);
 }
 
-export function usePins(notices) {
-    const pins = computed(() => notices());
-    const visible = computed(() => (minimised.value ? [] : notices()));
+export function usePins(rows) {
+    const pins = computed(() => rows());
+    const visible = computed(() => (minimised.value ? [] : rows()));
     const toggle = () => fold(!minimised.value);
     const since = Date.now() / 1000;
     watch(

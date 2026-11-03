@@ -80,7 +80,7 @@ test("a window no installed module has keeps its place in the bar and shows its 
     expect(element.textContent).toContain("No installed module has this window.");
 });
 
-test("a phone opened from a notice's link shows the window that holds the row", async () => {
+test("a phone opened from a pin's link shows the window that holds the row", async () => {
     vi.stubGlobal("location", {...window.location, hash: "#open=plans%3A4"});
     const element = await phone();
     expect(shown(element)).toEqual(["plans.plans"]);

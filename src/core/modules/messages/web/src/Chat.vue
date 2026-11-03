@@ -8,7 +8,7 @@ const {rows: messages, failure, loaded, load, older, context} = useRows("message
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
+const {rows: pins, act: runOnPin} = useRows("pin list", ["pin.*"]);
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;
@@ -24,7 +24,7 @@ watch(messages, () => {
     if (kept.length !== outgoing.value.length) outgoing.value = kept;
 });
 const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value), markDeclaration)));
-const {visible: pinned} = usePins(() => notices.value);
+const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 const figureVoice = computed(() => {
@@ -330,23 +330,34 @@ const flushWhenHidden = () => document.hidden && comeIn.flush();
 document.addEventListener("visibilitychange", flushWhenHidden);
 onUnmounted(() => document.removeEventListener("visibilitychange", flushWhenHidden));
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
-const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
+const linkOf = (pin) => (pin.link.startsWith("http") ? pin.link : `#open=${pin.link}`);
+// a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal
+const isCommand = (pin) => pin.link.startsWith("!");
+async function runCommand(pin) {
+    const main = await context.read("agent main");
+    if (main.ok && main.value.id) await runOnPin(["agent", "type", String(main.value.id), pin.link]);
+}
 </script>
 
 <template>
     <div ref="chat" class="chat" data-figure-world>
-        <div data-notices class="notices">
-            <template v-for="notice in pinned" :key="notice.id">
-                <div class="notice">
-                    <span class="notice-dot" />
-                    <span class="notice-text">{{ notice.title }}</span>
-                    <a class="notice-link" :href="linkOf(notice)" :target="notice.link.startsWith('http') ? '_blank' : undefined">{{ notice.label }}</a>
-                    <button type="button" class="notice-close" data-notice-close aria-label="Close" @click="closeNotice(['notice', 'close', String(notice.id)])">
+        <div data-pins class="pins">
+            <template v-for="pin in pinned" :key="pin.id">
+                <div class="pin">
+                    <span class="pin-dot" />
+                    <span class="pin-text">{{ pin.title }}</span>
+                    <template v-if="isCommand(pin)">
+                        <button type="button" class="pin-link" data-pin-run :title="pin.link" @click="runCommand(pin)">{{ pin.label }}</button>
+                    </template>
+                    <template v-else>
+                        <a class="pin-link" :href="linkOf(pin)" :target="pin.link.startsWith('http') ? '_blank' : undefined">{{ pin.label }}</a>
+                    </template>
+                    <button type="button" class="pin-close" data-pin-close aria-label="Close" @click="runOnPin(['pin', 'close', String(pin.id)])">
                         <Icon name="close" :size="12" />
                     </button>
                 </div>
             </template>
-            <PinsToggle :notices="notices" />
+            <PinsToggle :pin-rows="pins" />
         </div>
         <div ref="scroller" class="history" data-figure-scroll @scroll="followScroll">
             <template v-if="paging">
@@ -467,16 +478,16 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     color: var(--text-3);
 }
 
-.notices {
+.pins {
     position: relative;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides, and with no gap to the history below */
+    /* version 4's pins run edge to edge under the tab bar: out past the pane's padding on the sides, and with no gap to the history below */
     margin: 0 -12px -8px;
 }
 
-.notice {
+.pin {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -486,7 +497,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     font-size: 13px;
 }
 
-.notice-dot {
+.pin-dot {
     flex: none;
     width: 6px;
     height: 6px;
@@ -494,7 +505,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     background: var(--accent);
 }
 
-.notice-text {
+.pin-text {
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -502,7 +513,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     white-space: nowrap;
 }
 
-.notice-link {
+.pin-link {
     flex: none;
     padding: 2px 10px;
     border: 1px solid var(--border-2);
@@ -511,7 +522,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     font-size: 12px;
 }
 
-.notice-close {
+.pin-close {
     flex: none;
     border: 0;
     background: none;

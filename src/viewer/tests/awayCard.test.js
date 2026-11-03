@@ -24,7 +24,7 @@ function drawn(rows) {
     return element;
 }
 
-test("coming back after five minutes lists the notices since", async () => {
+test("coming back after five minutes lists the pins since", async () => {
     vi.useFakeTimers({now: new Date("2026-11-01T10:00:00Z")});
     const element = drawn([{id: 1, title: "Ready to review", created_at: "2026-11-01T10:03:00Z"}, {id: 2, title: "Older", created_at: "2026-11-01T09:00:00Z"}]);
     setHidden(true);

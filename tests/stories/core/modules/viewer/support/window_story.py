@@ -40,11 +40,11 @@ class WindowStory:
             return
         raise AssertionError(f"{window} {line!r} was not refused")
 
-    def expect_declared_window(self, name: str, loading: str, place: str) -> None:
+    def expect_declared_window(self, name: str, loading: str, place: str, shows: str = "environment") -> None:
         registry = Registry.read(self.story.container.get(Database))
         assert registry.has_window(name), f"no installed module declares the window {name}"
         window = registry.window(name)
-        assert (window.loading, window.place, window.shipped) == (loading, place, True), f"{name} is declared as {window}"
+        assert (window.loading, window.place, window.shows, window.shipped) == (loading, place, shows, True), f"{name} is declared as {window}"
 
     def expect_row_count(self, table: str, count: int) -> None:
         counted = self.story.container.get(Database).rows(Statement(f"SELECT count(*) FROM {table}"))[0][0]

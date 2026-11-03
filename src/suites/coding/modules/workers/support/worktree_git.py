@@ -53,6 +53,30 @@ class WorktreeGit:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
 
+    def rebase(self, worktree: Worktree) -> bool:
+        """Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
+        stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were."""
+        stash = self.stash(worktree)
+        rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+        if not rebased:
+            self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+        if stash:
+            self.unstash(worktree, stash)
+        return rebased
+
+    def stash(self, worktree: Worktree) -> str:
+        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
+            return ""
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "push", "--include-untracked", "--message", f"journal merge of {worktree.branch}")
+        return self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "stash@{0}").stdout.strip()
+
+    def unstash(self, worktree: Worktree, stash: str) -> None:
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash)
+        entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
+        for entry in (line.split() for line in entries):
+            if entry[0] == stash:
+                self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
+
     def use_branch_file(self, worktree: Worktree, path: str) -> None:
         if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--theirs", "--", path).returncode == 0:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)
@@ -86,6 +110,14 @@ class WorktreeGit:
             return True
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
         return False
+
+    def keep_tip(self, folder: str, path: str, name: str) -> None:
+        tip = self.checked(path, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
+        self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/worker-tips/{name}", tip)
+
+    def remove_orphan(self, folder: str, path: str) -> None:
+        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", path)
+        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def folders(self, folder: str) -> list[tuple[str, str | None]]:
         blocks = self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "list", "--porcelain").stdout.strip().split("\n\n")

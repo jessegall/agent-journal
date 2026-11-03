@@ -75,9 +75,9 @@ export function happened(r) {
     return isClosed(r) ? `${kind.title} closed` : `${kind.title} created`;
 }
 
-// The notices the user missed while away: open ones made since a moment, newest first.
+// The pins the user missed while away: open ones made since a moment, newest first.
 export function missed(since) {
-    return rows("notices")
+    return rows("pins")
         .filter((n) => !isClosed(n) && createdAt(n) * 1000 >= since && unseen(n))
         .sort((a, b) => createdAt(b) - createdAt(a));
 }

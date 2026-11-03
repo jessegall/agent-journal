@@ -8,8 +8,8 @@ def window_story(new_story) -> WindowStory:
 
 def test_the_modules_sync_passes_the_window_check_with_both_windows_declared(new_story):
     window = window_story(new_story)
-    window.expect_declared_window("questions.questions", "component", "environment")
-    window.expect_declared_window("questions.waiting", "component", "environment")
+    window.expect_declared_window("questions.questions", "component", "pane")
+    window.expect_declared_window("questions.waiting", "component", "pane")
 
 
 def test_the_questions_window_reads_and_runs_only_its_declared_lines(new_story):
