@@ -6,7 +6,7 @@ import pytest
 from core.base.driver.foreign_answer import ForeignAnswer
 from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_name import HookEventName
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 
 CLAUDE_PROVIDER = SimpleNamespace(refusals={HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.STOP: RefusalStyle.BLOCK})
 CODEX_PROVIDER = SimpleNamespace(refusals={HookEventName.STOP: RefusalStyle.BLOCK})

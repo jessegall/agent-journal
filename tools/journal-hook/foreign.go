@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"os/exec"
 	"sync"
 	"time"
@@ -14,6 +15,35 @@ import (
 const managedOutputLimit = 1 << 20
 
 type ForeignRun = event.ForeignRun
+
+func refuses(run ForeignRun) bool {
+	if run.TimedOut {
+		return false
+	}
+	if run.ExitCode == 2 {
+		return true
+	}
+	if run.ExitCode != 0 {
+		return false
+	}
+	return nativeRefusal(run.Stdout)
+}
+
+func answerWithoutServer(stdout, stderr io.Writer, hookEvent string, runs []ForeignRun) (int, bool) {
+	for _, run := range runs {
+		if !refuses(run) {
+			continue
+		}
+		io.WriteString(stdout, run.Stdout)
+		io.WriteString(stderr, run.Stderr)
+		return run.ExitCode, true
+	}
+	if holdsStop(hookEvent) {
+		io.WriteString(stdout, heldStop())
+		return 0, true
+	}
+	return 0, false
+}
 
 type cappedBuffer struct {
 	buffer bytes.Buffer

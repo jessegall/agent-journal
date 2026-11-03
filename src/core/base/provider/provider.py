@@ -19,7 +19,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_author import AGENT_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow

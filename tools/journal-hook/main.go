@@ -70,9 +70,10 @@ func main() {
 		limit:       limit,
 		timing:      requestTiming,
 	}, nil, time.Now(), StopWindow, RetryPause)
-	if status != http.StatusOK && holdsStop(prepared.Event) {
-		fmt.Fprint(os.Stdout, heldStop())
-		os.Exit(0)
+	if status != http.StatusOK {
+		if code, handled := answerWithoutServer(os.Stdout, os.Stderr, prepared.Event, prepared.Foreign); handled {
+			os.Exit(code)
+		}
 	}
 	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))
 }

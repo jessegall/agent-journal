@@ -22,7 +22,7 @@ from core.base.provider.program_model import ProgramModel
 from core.base.provider.control_choice import ControlChoice
 from core.base.provider.control_group import ControlGroup
 from core.base.provider.provider import Provider
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.transcript_row import TranscriptRow

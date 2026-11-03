@@ -19,7 +19,7 @@ from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail

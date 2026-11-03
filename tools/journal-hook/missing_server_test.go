@@ -1,11 +1,57 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestMissingServerKeepsTheFirstManagedRefusal(t *testing.T) {
+	for _, run := range []ForeignRun{
+		{ExitCode: 2, Stdout: "native output", Stderr: "reason"},
+		{Stdout: `{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"unsafe"}}`},
+		{Stdout: `{"decision":"block","reason":"unfinished"}`},
+	} {
+		var stdout, stderr bytes.Buffer
+		code, handled := answerWithoutServer(&stdout, &stderr, "stop", []ForeignRun{{Stdout: `{"hookSpecificOutput":{"permissionDecision":"allow"}}`}, run, {ExitCode: 2, Stderr: "later"}})
+		if !handled || code != run.ExitCode || stdout.String() != run.Stdout || stderr.String() != run.Stderr {
+			t.Fatalf("native refusal changed: %d %t %q %q", code, handled, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestMissingServerLeavesAnAllowingToolHookToTheExistingAnswer(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code, handled := answerWithoutServer(&stdout, &stderr, "pre_tool_use", []ForeignRun{{Stdout: `{"hookSpecificOutput":{"permissionDecision":"allow"}}`}})
+	if handled || code != 0 || stdout.Len() != 0 || stderr.Len() != 0 {
+		t.Fatal("an allowing hook replaced the existing unchecked answer")
+	}
+}
+
+func TestMissingServerStillHoldsAStopWithoutAManagedRefusal(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code, handled := answerWithoutServer(&stdout, &stderr, "stop", []ForeignRun{{Stdout: `{"hookSpecificOutput":{"permissionDecision":"allow"}}`}})
+	if !handled || code != 0 || stdout.String() != heldStop() || stderr.Len() != 0 {
+		t.Fatal("the stop was not held")
+	}
+}
+
+func TestManagedRefusalExcludesFailedOrTimedOutRuns(t *testing.T) {
+	for _, run := range []ForeignRun{
+		{ExitCode: 2, TimedOut: true},
+		{ExitCode: -1, Stdout: `{"decision":"block"}`},
+		{ExitCode: 7, Stdout: `{"hookSpecificOutput":{"permissionDecision":"deny"}}`},
+		{Stdout: "invalid JSON"},
+		{Stdout: `{"hookSpecificOutput":{"permissionDecision":"ask"}}`},
+		{Stdout: `{"systemMessage":"notice"}`},
+	} {
+		if refuses(run) {
+			t.Fatalf("non-refusal counted: %#v", run)
+		}
+	}
+}
 
 // journalWithProgram is a project whose journal program only notes that it ran.
 func journalWithProgram(t *testing.T) (root, ranFile string) {

@@ -1,16 +1,12 @@
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_name import HookEventName
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
+from core.base.driver.hook_answer_program import HookAnswerProgram
 from core.base.type_guards import is_mapping
-
-if TYPE_CHECKING:
-    from core.base.provider.provider import Provider
-
 
 @dataclass(frozen=True)
 class ForeignAnswer:
@@ -21,7 +17,7 @@ class ForeignAnswer:
     terminal: str = ""
 
     @classmethod
-    def read(cls, provider: "Provider", event: HookEventName, run: ForeignRun) -> "ForeignAnswer":
+    def read(cls, provider: HookAnswerProgram, event: HookEventName, run: ForeignRun) -> "ForeignAnswer":
         if run.timed_out:
             return cls(run.id, terminal=f"{run.id}: hook timed out")
         if run.exit_code == 2:
@@ -36,10 +32,10 @@ class ForeignAnswer:
             return cls(run.id, terminal=f"{run.id}: hook returned invalid JSON")
         if not is_mapping(data):
             return cls(run.id, terminal=f"{run.id}: hook answer must be an object")
-        return cls.from_fields(provider, event, run.id, data)
+        return cls.decoded(provider, event, run.id, data)
 
     @classmethod
-    def from_fields(cls, provider: "Provider", event: HookEventName, name: str, data: Mapping[str, object]) -> "ForeignAnswer":
+    def decoded(cls, provider: HookAnswerProgram, event: HookEventName, name: str, data: Mapping[str, object]) -> "ForeignAnswer":
         output = data.get("hookSpecificOutput", {})
         if not is_mapping(output):
             output = {}

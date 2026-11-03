@@ -10,7 +10,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.provider import Provider
-from core.base.provider.refusal_style import RefusalStyle
+from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_row import TranscriptRow
 
 HOOK_FILE = Path(".sample/hooks.json")
