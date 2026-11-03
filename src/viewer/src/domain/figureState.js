@@ -123,11 +123,15 @@ export {actOver, frameIn, closeAt, canSwitch, goesOnFacing, stretchedAs, stretch
 // how a card's process ended, as its mark reports it
 const outcomeOf = (card) => card.outcome;
 
+// the commandments plugin's mark for a file: one mark for each file, kept up in place, in the warn tone while it holds sins and the good tone once repented
+const SIN_MARKS = "plugin:code-commandments:sins:";
+const isSinMark = (card) => card.type === "plugins.card" && card.key.startsWith(SIN_MARKS);
+
 // One-off beats, each fired by a chat mark and played once before the held state resumes; the first rule a mark matches names its beat
 const BEATS = [
     // a sin the commandments plugin found in the agent's change, and one it found repented, as its marks in the chat say
-    {beat: "sin_committed", matches: (card) => card.type === "plugins.card" && card.key.endsWith(":sin-found")},
-    {beat: "sin_fixed", matches: (card) => card.type === "plugins.card" && card.key.endsWith(":sin-resolved")},
+    {beat: "sin_committed", matches: (card) => isSinMark(card) && card.variant !== "good"},
+    {beat: "sin_fixed", matches: (card) => isSinMark(card) && card.variant === "good"},
     {beat: "committed", matches: (card) => card.type === "workers.worker" && card.variant === "merged"},
     {beat: "reported", matches: (card) => card.type === "workers.worker" && card.variant === "delivered"},
     {beat: "refused", matches: (card) => card.type === "workers.worker" && card.variant === "released"},
@@ -225,6 +229,17 @@ export const cardsOfMarks = (marks) =>
             guesses: {test: title.includes("test"), build: title.includes("build"), upload: title.includes("upload")},
         };
     });
+
+// A mark kept up in place keeps the time it was made, so a change of its variant would pass unseen: each card as of when its variant last changed,
+// `known` holding key to {variant, time}, filled in here; a card first seen keeps its own time, and one seen changing takes `now`
+export function cardsMoved(cards, known, now) {
+    return cards.map((card) => {
+        const was = known.get(card.key);
+        const time = !was ? card.time : was.variant === card.variant ? was.time : now;
+        known.set(card.key, {variant: card.variant, time});
+        return {...card, time};
+    });
+}
 
 export function cardsAfter(agent, known, since) {
     const cards = (agent?.data?.cards || []).filter((card) => card.key && !known.has(card.key));

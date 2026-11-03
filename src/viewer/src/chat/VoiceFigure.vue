@@ -37,6 +37,7 @@ import {
     readingsAfter,
     writtenFacesAfter,
     testResultsAfter,
+    cardsMoved,
     cardsOfMarks,
     justCompacted,
     waitingSinceAt,
@@ -153,7 +154,8 @@ const canvas = ref(null);
 const voice = computed(() => props.voice);
 const failure = ref("");
 // the chat's marks as the figure reads them, and its messages
-const cards = computed(() => cardsOfMarks(props.marks));
+const moves = new Map();
+const cards = computed(() => cardsMoved(cardsOfMarks(props.marks), moves, Date.now() / 1000));
 const chatMessages = computed(() => messagesOfRows(props.messages));
 // what waits on the user: an open question, which the figure waits by
 const counts = computed(() => ({question: props.asking ? 1 : 0, waiting: 0, suggestion: 0}));
@@ -568,6 +570,11 @@ function endAct(shown) {
     }
     if (shown.departure) {
         body.leaving = false;
+        // called back while its exit played, it stays, and its entrance comes next
+        if (props.here) {
+            playing = {name: "", started: 0, shown: null, index: 0, closing: null};
+            return step();
+        }
         body.here = false;
         emit("gone");
         return;
@@ -1456,7 +1463,7 @@ let nextBoxAt = 0;
 // it ends, or once the build's lifetime is over since it was due (pile.js SEQUENCES build), the run then waiting the build's cooldown
 function grantUnit() {
     const inHand = parcels.value.some((each) => each.state !== "piled");
-    units = unitsAfter(units, buildRunAt(lead.value?.data?.cards || [], shellRun(), now.value), memory.reacted, now.value, Math.random);
+    units = unitsAfter(units, buildRunAt(demoRun ? [] : lead.value?.data?.cards || [], shellRun(), now.value), memory.reacted, now.value, Math.random);
     if (inHand) return;
     const starting = Boolean(units?.granted) && now.value >= nextBoxAt;
     if (starting && !making) {

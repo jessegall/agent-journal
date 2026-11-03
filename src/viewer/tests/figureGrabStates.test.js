@@ -266,6 +266,28 @@ test("a departure already pending when a landing ends continues scheduling the e
     expect(requestAnimationFrame).toHaveBeenCalled();
 });
 
+test("called back while its exit plays, the figure stays and enters again, and only one left out says it has gone", async () => {
+    const gone = vi.fn();
+    app.unmount();
+    document.body.insertAdjacentHTML("beforeend", '<div id="figure-again"></div>');
+    app = createApp({render: () => h(VoiceFigure, {voice: "butler", here: here.value, onGone: gone})});
+    app.mount(document.querySelector("#figure-again"));
+    await nextTick();
+    const figure = app._instance.subTree.component.setupState;
+    figure.player = view.player;
+    figure.clips = view.clips;
+    const exit = {clip: figure.clips.find((clip) => clip.name === "exit"), facing: 0, once: true, departure: true};
+    figure.body.here = true;
+    figure.body.leaving = true;
+    figure.endAct(exit);
+    expect([figure.body.here, figure.body.leaving, gone.mock.calls.length]).toEqual([true, false, 0]);
+    here.value = false;
+    await nextTick();
+    figure.body.leaving = true;
+    figure.endAct(exit);
+    expect([figure.body.here, figure.body.leaving, gone.mock.calls.length]).toEqual([false, false, 1]);
+});
+
 test("a hide deferred through a seated drop can leave even while the previous seat stay is active", async () => {
     seated("sit");
     view.body.airborne = {x: 406, y: 300, posture: "sit"};

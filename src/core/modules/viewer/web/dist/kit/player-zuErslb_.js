@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-C7ANXsiQ.js";
-import { bf as Q, aL as V, c6 as M } from "./index-DLkr0Iql.js";
-import { t as X } from "./VoiceFigure-D82mFzwM.js";
+import { Stage as U, SIDES as j, reachSide as q } from "./figure-C4l9esOH.js";
+import { bg as Q, aM as V, c7 as R } from "./index-BjA4AIPI.js";
+import { t as X } from "./VoiceFigure-DJz_HtAz.js";
 const Y = 4, Z = (u) => u * u * (3 - 2 * u);
 class tt {
   constructor(t, s) {
@@ -25,27 +25,27 @@ class tt {
   // already there and nothing eases; `ticker` is text scrolling across the visor in place of the eyes (visorPixels.js tickerPixels); and the
   // figure `grabbed` by the pointer startled (figure.js startledHeld); and which mirrored telephone placement a seated call uses,
   // `phoneWay` (figure.js seatedCall); an `airborne` figure no longer plants its feet while leaving a seat
-  show(t, s, e, { posture: n, eyes: a = null, stride: i = null, sky: r = null, throws: m = null, leanWay: d = 0, walkWay: f = 0, at: w = null, target: c = null, open: v = 1, screen: g = null, tilt: b = 0, ticker: p = null, grabbed: S = !1, phoneWay: $ = 1, airborne: A = !1 }) {
-    var B, I, P, T, F, k, D, L;
+  show(t, s, e, { posture: n, eyes: a = null, stride: i = null, sky: r = null, throws: m = null, leanWay: d = 0, walkWay: f = 0, at: w = null, target: c = null, open: g = 1, screen: v = null, tilt: b = 0, ticker: p = null, grabbed: S = !1, phoneWay: $ = 1, airborne: A = !1 }) {
+    var B, I, P, T, F, M, k, D;
     ["walk", "run"].includes(t.name) && i !== null && (s = (i % 1 + 1) % 1 * t.frames);
-    const o = performance.now(), R = `${t.name}/${n}/${e}`;
+    const o = performance.now(), _ = `${t.name}/${n}/${e}`;
     if ((!this.shape.startsWith(`${t.name}/${n}/`) || A && ((B = this.blend) != null && B.plant || (I = this.blend) != null && I.floor)) && this.moves) {
-      const J = [this.shape.split("/")[0], t.name].some((K) => ["walk", "run"].includes(K));
+      const K = [this.shape.split("/")[0], t.name].some((L) => ["walk", "run"].includes(L));
       this.blend = {
         from: this.moves,
         began: o,
         plant: !A && (Q(this.posture, n) || !!((P = this.blend) != null && P.plant) && V[n].drop === 0),
-        floor: !A && this.posture === "stand" && n === "stand" && J
+        floor: !A && this.posture === "stand" && n === "stand" && K
       };
     }
-    const O = this.facing ?? (this.shape ? Number(this.shape.split("/")[2]) : null), C = X(O === null ? null : { facing: O, speed: ((T = this.turn) == null ? void 0 : T.speed) ?? 0 }, e, (o - (this.drewAt ?? o)) / 1e3, M);
-    this.facing = C.facing, this.turn = C.settled ? null : C, this.drewAt = o, this.shape = R, this.posture = n, e = this.facing;
-    const _ = this.blend ? Math.min((o - this.blend.began) / 1e3 / M, 1) : 1, l = this.blend ? { from: this.blend.from, previous: this.moves, k: Z(_), settled: !1, plant: this.blend.plant, floor: this.blend.floor } : null, E = JSON.stringify([t.name, s, e, n, i, this.canvas.width, this.canvas.height, a, r, m, d, f, w, c, v, g, b, p, S, $]), h = (F = this.figure) == null ? void 0 : F.propTransitions;
+    const O = this.facing ?? (this.shape ? Number(this.shape.split("/")[2]) : null), C = X(O === null ? null : { facing: O, speed: ((T = this.turn) == null ? void 0 : T.speed) ?? 0 }, e, (o - (this.drewAt ?? o)) / 1e3, R);
+    this.facing = C.facing, this.turn = C.settled ? null : C, this.drewAt = o, this.shape = _, this.posture = n, e = this.facing;
+    const z = this.blend ? Math.min((o - this.blend.began) / 1e3 / R, 1) : 1, l = this.blend ? { from: this.blend.from, previous: this.moves, k: Z(z), settled: !1, plant: this.blend.plant, floor: this.blend.floor } : null, E = JSON.stringify([t.name, s, e, n, i, this.canvas.width, this.canvas.height, a, r, m, d, f, w, c, g, v, b, p, S, $]), h = (F = this.figure) == null ? void 0 : F.propTransitions;
     if (E === this.shown && !l && !(h != null && h.active)) return;
-    const z = a || i !== null || r || m || d || f || w || c || v < 1 || g || b || p || S || $ !== 1 || l || this.turn || (h == null ? void 0 : h.present) || (h == null ? void 0 : h.active) || ((k = this.propClips) == null ? void 0 : k.has(t.name)) || !Number.isInteger(s), { frame: G, moves: H } = z ? this.liveOf(t, s, e, { posture: n, eyes: a, stride: i ?? 0, blend: l, sky: r, throws: m, leanWay: d, walkWay: f, at: w, target: c, open: v, screen: g, tilt: b, ticker: p, grabbed: S, phoneWay: $, time: o / 1e3 }) : this.frameOf(t, s, e, n);
-    (L = (D = this.figure) == null ? void 0 : D.propTransitions) != null && L.present && (this.propClips ?? (this.propClips = /* @__PURE__ */ new Set())).add(t.name);
+    const G = a || i !== null || r || m || d || f || w || c || g < 1 || v || b || p || S || $ !== 1 || l || this.turn || (h == null ? void 0 : h.present) || (h == null ? void 0 : h.active) || ((M = this.propClips) == null ? void 0 : M.has(t.name)) || !Number.isInteger(s), { frame: H, moves: J } = G ? this.liveOf(t, s, e, { posture: n, eyes: a, stride: i ?? 0, blend: l, sky: r, throws: m, leanWay: d, walkWay: f, at: w, target: c, open: g, screen: v, tilt: b, ticker: p, grabbed: S, phoneWay: $, time: o / 1e3 }) : this.frameOf(t, s, e, n);
+    (D = (k = this.figure) == null ? void 0 : k.propTransitions) != null && D.present && (this.propClips ?? (this.propClips = /* @__PURE__ */ new Set())).add(t.name);
     const N = this.canvas.getContext("2d");
-    N.clearRect(0, 0, this.canvas.width, this.canvas.height), N.drawImage(G, 0, 0), this.moves = H, l != null && l.settled && (this.blend = null), this.shown = l ? "" : E;
+    N.clearRect(0, 0, this.canvas.width, this.canvas.height), N.drawImage(H, 0, 0), this.moves = J, l != null && l.settled && (this.blend = null), this.shown = l ? "" : E;
   }
   // the way the figure leans out rummaging toward `way`, 1 the picture's right, -1 its left: that way, or the other when that hand is busy
   reachWay(t) {

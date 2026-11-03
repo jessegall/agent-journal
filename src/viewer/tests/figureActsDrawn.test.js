@@ -114,6 +114,9 @@ test("the demo's window event asks for a box until it is told to stop, and the f
     window.dispatchEvent(new CustomEvent("figure-demo", {detail: {parcel: true}}));
     expect(view.shellRun()).toMatchObject({card: "demo"});
     expect(view.units).toMatchObject({card: "demo", granted: true});
+    // a real build going on in the chat does not take the demo's run from it, which would set the box's cooldown going
+    view.grantUnit();
+    expect(view.units).toMatchObject({card: "demo", granted: true});
     window.dispatchEvent(new CustomEvent("figure-demo", {detail: {parcel: false}}));
     expect(view.demoRun).toBe(null);
 });

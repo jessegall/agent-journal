@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
-import {COMPACTING_SECONDS, beatsAfter, cardsOfMarks, facesAfter, justCompacted, processEndsAfter, readingsAfter, testResultsAfter, writtenFacesAfter} from "../src/domain/figureState.js";
+import {COMPACTING_SECONDS, beatsAfter, cardsMoved, cardsOfMarks, facesAfter, justCompacted, processEndsAfter, readingsAfter, testResultsAfter, writtenFacesAfter} from "../src/domain/figureState.js";
 import {messagesOfRows} from "../src/figure/chatRows.js";
 import {attachmentRead} from "../src/figure/looks.js";
 import {buildRuns} from "../src/figure/parcels.js";
@@ -23,14 +23,24 @@ test("each mark the journal writes in the chat is its own moment, and nothing el
         mark("workers.worker", "delivered"),
         mark("workers.worker", "released"),
         mark("workers.worker", "started"),
-        mark("plugins.card", "warn", {key: "plugin:code-commandments:sin-found"}),
-        mark("plugins.card", "good", {key: "plugin:code-commandments:sin-resolved"}),
+        mark("plugins.card", "warn", {key: "plugin:code-commandments:sins:src/a.py"}),
+        mark("plugins.card", "good", {key: "plugin:code-commandments:sins:src/b.py"}),
         mark("plugins.card", "good", {key: "plugin:other:note"}),
     ];
     expect(beatsAfter({data: {cards: cardsOfMarks(marks)}}, 0).map((fire) => fire.beat).sort()).toEqual(
         ["answered", "check_passed", "committed", "fact_filed", "fact_filed", "failed", "question_asked", "refused", "reported", "sin_committed", "sin_fixed", "task_finished"],
     );
     expect(beatsAfter({data: {cards: cardsOfMarks(marks)}}, 10), "what the last look saw is no moment again").toEqual([]);
+});
+
+test("a file's sins repented in its one mark is a moment when its tone changes, once, though the mark keeps the time it was made", () => {
+    const sin = (variant) => cardsOfMarks([mark("plugins.card", variant, {key: "plugin:code-commandments:sins:src/a.py"})]);
+    const known = new Map();
+    const beats = (cards, seen) => beatsAfter({data: {cards}}, seen).map((fire) => fire.beat);
+    expect(beats(cardsMoved(sin("warn"), known, 50), 5), "first seen, it keeps its own time").toEqual(["sin_committed"]);
+    expect(beats(cardsMoved(sin("warn"), known, 60), 50), "unchanged, it is no moment again").toEqual([]);
+    expect(beats(cardsMoved(sin("good"), known, 70), 60)).toEqual(["sin_fixed"]);
+    expect(beats(cardsMoved(sin("good"), known, 80), 70), "and seen once").toEqual([]);
 });
 
 test("what the user last said is the moment heard, once", () => {

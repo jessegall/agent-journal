@@ -7,11 +7,11 @@
 
 // The weight of each kind of look: the image attached to a message of the user's that the agent is reading, the strongest of all while it
 // lasts (attachmentRead), the user's new message, the pointer tickling it, a finished run's mark or its docked
-// bar it waits to light the visor for, the UFO or the crane carrying a box, the bubble it reads or holds its glass to, the agent's new
+// bar it waits to light the visor for, the bubble it reads or holds its glass to, the agent's new
 // message in the chat, the sin's mark it kneels to, the composer while the user types in it, at full weight while the keystrokes are fresh
 // and at half of it after a pause in them (composerLook), the box it builds or pushes, a picture it admires, a progress bar it chose to
 // watch, and its own idle glances
-export const LOOKS = {attachment: 10, said: 9, pointer: 8, run: 7, carrier: 6, confession: 6, reading: 5, message: 4, typing: 3.5, work: 3, typing_pause: 1.75, picture: 2, bar: 2, glance: 1};
+export const LOOKS = {attachment: 10, said: 9, pointer: 8, run: 7, confession: 6, reading: 5, message: 4, typing: 3.5, work: 3, typing_pause: 1.75, picture: 2, bar: 2, glance: 1};
 
 // How strongly an act keeps its own head: hardly at all walking or standing, somewhat through a gesture that moves it, almost wholly
 // where the act's head is part of what it does, as climbing the ladder, under the parachute, rummaging or thinking, and `alone` wholly,

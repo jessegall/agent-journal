@@ -4272,7 +4272,7 @@ export const TYPING_SECONDS = 5;
 // walk does the moment there is nowhere left to go and a fall the moment its feet meet the ground; a beat, a reaction, a jump or a
 // landing never is. A clip that names `marks` has the page draw its mark drifting up from the head in the frames it names, from one to
 // the next of each pair: the Z of sleep, the notes of a whistled tune. A clip that `cuts` in takes over at once from whatever plays, as the
-// figure stops what it does to watch the UFO or swats at a tickle. Every clip declares its `head`, how strongly it keeps its own head
+// figure swats at a tickle. Every clip declares its `head`, how strongly it keeps its own head
 // against a look (looks.js HEAD); one that holds it, as climbing the ladder, pushing a parcel or thinking, is never turned toward the viewer
 // for a look in the eyes either. A clip that `holds` plays on whatever comes, never cut off, as the eagerness for a
 // run's end does. A clip that names `least` plays at least that many seconds before anything else may
