@@ -233,6 +233,8 @@ const tint = computed(() => ({
     grid-template-columns: minmax(0, 1fr) auto;
     row-gap: 1px;
     align-items: center;
+    /* the title row stays at the top of a mark held taller than its rows while it closes */
+    align-content: start;
     max-width: 100%;
     padding: 2px 6px;
     border: 1px solid transparent;

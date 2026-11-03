@@ -11,7 +11,9 @@ def test_clicking_a_chat_mark_in_the_viewer_records_its_frames(new_story):
     story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.mark-motion true --project", actor=story.user)
-    end_run(story, start_process(story, "make build", category=CommandCategory.BUILD), "compiled the cart\nlinked the cart\n")
+    process = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.run(f'output title {process.id} "make build of the cart"', actor=story.agent)
+    end_run(story, process, "compiled the cart\nlinked the cart\n")
     story.run_listeners()
     with server_story(story) as server:
         expect_browser(server, "markRecording.browser.mjs", [])
