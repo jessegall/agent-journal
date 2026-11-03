@@ -1,5 +1,6 @@
 import fcntl
 import hashlib
+import inspect
 import json
 import pickle
 import shutil
@@ -22,8 +23,9 @@ STATE_FILE = "story-state.pickle"
 
 class TemplateDatabases:
     """One migrated and synced database per set of modules, and one more per fixture built on it, each made once
-    for all the workers of a run, under a lock in a folder they share, and copied for every story that starts
-    from it."""
+    under a lock in a folder shared by the workers of a run and by later runs, and copied for every story that
+    starts from it. A template's name holds the text of the files its fixtures are written in, so a changed fixture
+    gets a new one."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -42,7 +44,7 @@ class TemplateDatabases:
         return template
 
     def shared_template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template:
-        name = hashlib.sha1(repr((modules, fixture.__module__, fixture.__qualname__) if fixture else [modules]).encode()).hexdigest()[:16]
+        name = hashlib.sha1(repr(self.template_key(modules, fixture)).encode()).hexdigest()[:16]
         folder = self.folder / name
         with self.locked(self.folder / f"{name}.lock"):
             if not (folder / STATE_FILE).is_file():
@@ -50,6 +52,16 @@ class TemplateDatabases:
                 built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
                 (folder / STATE_FILE).write_bytes(pickle.dumps(built.state))
             return Template(JournalHome(folder), pickle.loads((folder / STATE_FILE).read_bytes()))
+
+    @staticmethod
+    def template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]:
+        key: list[object] = [modules]
+        current = fixture
+        while current is not None:
+            source = inspect.getsourcefile(current)
+            key += [current.__module__, current.__qualname__, Path(source).read_text() if source else ""]
+            current = current.parent
+        return key
 
     @staticmethod
     @contextmanager

@@ -1,3 +1,6 @@
+from dataclasses import replace
+from core.modules.processes.models.reader import Reader
+from core.base.query.queries import Queries
 import stat
 import pytest
 from unittest.mock import patch
@@ -147,3 +150,10 @@ def test_a_script_reader_runs_once_when_the_output_ends(new_story, tmp_path):
         bus.run(EndProcess(process.id, 0, BYTES_LONG, 2), story.agent, environment_id=1)
         assert reader_mock.call_count == 1
     assert story.container.get(OutputFolder).reader_lines(process.id) == ["2:FAILED a"]
+
+
+def test_a_summary_pattern_with_a_group_inside_a_group_says_each_word_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    stock = story.container.get(Queries).query(Reader).filter(name="pytest").page(1, 1).rows[0]
+    reader = replace(stock, summary_pattern="([0-9]+ (passed|failed).*)")
+    assert story.container.get(ReaderRun).summary(reader, "13 passed in 2.94s\n") == "13 passed in 2.94s"

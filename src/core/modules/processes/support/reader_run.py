@@ -57,7 +57,12 @@ class ReaderRun:
         if not hits:
             return ""
         last = hits[-1]
-        return " ".join(group for group in last.groups() if group) if last.groups() else last.group(0)
+        return " ".join(last.string[start:end] for start, end in self.outer_spans(last)) if last.groups() else last.group(0)
+
+    @staticmethod
+    def outer_spans(hit: re.Match[str]) -> list[tuple[int, int]]:
+        spans = [hit.span(number) for number in range(1, hit.re.groups + 1) if hit.group(number)]
+        return [span for span in spans if not any(other != span and other[0] <= span[0] and span[1] <= other[1] for other in spans)]
 
     def script_lines(self, reader: Reader, text: str, stage: str) -> list[str]:
         try:
