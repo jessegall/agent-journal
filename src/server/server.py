@@ -105,6 +105,7 @@ def main(argv: list[str]) -> int:
         booting_round.run()
     except Exception as error:
         booting_round.report(error)
+    listener_thread.wake()
     listener_thread.start()
     ticker.start()
     code_thread.start()
