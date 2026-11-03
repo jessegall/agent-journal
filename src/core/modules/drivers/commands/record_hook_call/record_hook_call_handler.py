@@ -72,7 +72,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         call = self.repository.save(HookCall(agent_id=agent.id, environment_id=agent.environment_id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
-                                             writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
+                                             writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
+                                             lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "resumed": command.event.is_resume, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)

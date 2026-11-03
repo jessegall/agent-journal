@@ -10,6 +10,7 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
+WINDOW_SEARCH_LINE = "window search"
 PERSON_LINES = ("window allow", "window trust", "setting make", "setting edit", "setting delete", "viewer-layout save")
 
 
@@ -44,6 +45,10 @@ class WindowLines:
         if parsed.line in WINDOW_SETTING_LINES:
             if parsed.arguments.window != window_name:
                 raise WindowRefusal(f"{window_name} may use only its own settings")
+            return
+        if parsed.line == WINDOW_SEARCH_LINE:
+            if parsed.arguments.window != window_name:
+                raise WindowRefusal(f"{window_name} may use only its own search")
             return
         declared = window.reads if parsed.is_read else window.runs
         if parsed.line not in declared and not any(button.allows(argv) for button in self.registry.button_lines(window_name)):

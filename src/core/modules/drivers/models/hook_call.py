@@ -20,6 +20,8 @@ class HookCall(Model):
     tool: str = ""
     summary: str = ""
     writes_files: bool = False
+    lines_added: int = 0
+    lines_removed: int = 0
     suite: str = ""
     driver: str = ""
     answer: HookAnswer = HookAnswer.ALLOWED

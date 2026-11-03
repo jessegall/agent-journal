@@ -26,6 +26,7 @@ from core.modules.viewer.commands.save_window_setting.save_window_setting_subcom
 from core.modules.viewer.commands.allow_window.allow_window_subcommand import AllowWindowSubcommand
 from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions_handler import PruneWindowPermissionsHandler
 from core.modules.viewer.commands.window_permissions.window_permissions_subcommand import WindowPermissionsSubcommand
+from core.modules.viewer.commands.window_search.window_search_subcommand import WindowSearchSubcommand
 from core.modules.viewer.commands.window_setting.window_setting_subcommand import WindowSettingSubcommand
 from core.modules.viewer.commands.trust_window.trust_window_handler import TrustWindowHandler
 from core.modules.viewer.commands.trust_window.trust_window_subcommand import TrustWindowSubcommand
@@ -56,7 +57,7 @@ class ViewerModule(Module):
     migrations = [ViewerTablesMigration, PersonPresetsMigration]
     handlers = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]
     subcommands = [SaveViewerLayoutSubcommand, SavePersonPresetSubcommand, RenamePersonPresetSubcommand, RemovePersonPresetSubcommand, PersonPresetListSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,
-                   SaveWindowSettingSubcommand, WindowSettingSubcommand]
+                   SaveWindowSettingSubcommand, WindowSettingSubcommand, WindowSearchSubcommand]
     guards = [PermissionOwnerGuard, LayoutOwnerGuard, PersonPresetOwnerGuard]
     listeners = [PermissionPrunerListener]
     windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, reads=SHELL_READS, runs=SHELL_RUNS)]

@@ -9,6 +9,7 @@ from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_size import WindowSize
+from core.base.viewer.window_search import WindowSearch
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -25,7 +26,7 @@ class WindowDeclaration:
     size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs
     inside it, the read line its tab counts with and the read lines a share link may use, each
     written as the line and, after a space, the argument that names an id of the shared row or of a
-    row it includes."""
+    row it includes, and the search its bar offers."""
 
     name: str
     title: str
@@ -46,6 +47,7 @@ class WindowDeclaration:
     group: str = ""
     auto_scroll: AutoScroll = AutoScroll.NONE
     tabs: Sequence[WindowTab] = ()
+    search: WindowSearch | None = None
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -71,4 +73,6 @@ class WindowDeclaration:
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}
         problems += [f"{self.name} follows {pattern} but reads no {pattern.split('.', 1)[0]}" for pattern in self.events
                      if provided.matches(pattern) and pattern.split(".", 1)[0] not in read_models]
+        if self.search is not None:
+            problems += self.search.problems(self.name)
         return problems

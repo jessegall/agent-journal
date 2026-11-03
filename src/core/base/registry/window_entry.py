@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -7,7 +7,8 @@ class WindowEntry:
     """A registered window: its name, the module that declares it, its title, entry file, loading and place, whose work it shows,
     the agent roles it is for, the read lines, commands and events it may use, whether the journal ships its
     module, why it is unavailable when its kit does not fit this viewer (empty when it does), and its icon,
-    float size, pane menu options, count line and the read lines a share link may use."""
+    float size, pane menu options, count line, the read lines a share link may use and its search, empty when
+    it declares none."""
 
     name: str
     module: str
@@ -30,4 +31,5 @@ class WindowEntry:
     group: str = ""
     auto_scroll: str = ""
     tabs: Sequence[Mapping[str, str]] = ()
+    search: Mapping[str, object] = field(default_factory=dict)
     shows: str = "environment"

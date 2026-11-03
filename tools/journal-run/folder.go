@@ -53,6 +53,12 @@ func (folder Folder) Status(position int) (int, bool) {
 	return folder.number(fmt.Sprintf("%d.status", position))
 }
 
+// Started says the shell began the part: it writes the part's started file just before it runs it.
+func (folder Folder) Started(position int) bool {
+	_, err := os.Stat(filepath.Join(folder.Path, fmt.Sprintf("%d.started", position)))
+	return err == nil
+}
+
 func (folder Folder) End() (int, bool) { return folder.number("end") }
 
 // MoveAsked says the journal wants the run in the background now, because a message waits for its agent.

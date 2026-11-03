@@ -63,6 +63,7 @@
         "NotebookEdit": "edit",
         "Read": "read",
         "Task": "agent",
+        "ToolSearch": "search",
         "Write": "write"
       }
     },
