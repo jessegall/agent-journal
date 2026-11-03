@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.models.message import Message
@@ -252,6 +253,16 @@ def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
     story.expect_success('task cancel 2 --reason "not needed"', actor=story.agent)
     story.expect_success(f'worker release {worker.id} "not needed"', actor=story.agent)
     story.expect_text("task show 2", "state: cancelled", actor=story.agent)
+
+
+def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_success("task depend 2 --on 1", actor=story.agent)
+    tasks = story.container.get(TaskQuery)
+    assert tasks.next_delegated(worker.id) is None
+    story.expect_success("task test 1", actor=worker)
+    assert tasks.next_delegated(worker.id).id == 2
+    story.expect_success("task start 2", actor=worker)
 
 
 def test_the_assigner_leaves_a_delegated_task_alone(new_story):
