@@ -1,7 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {EmptyState, ListTools, useListTools, useWindow} from "@journal/window-kit";
-import {ago} from "./ago.js";
+import {ago, EmptyState, ListTools, useListTools, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const reviews = ref([]);

@@ -1,5 +1,6 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
+import {useNow} from "../composables/now.js";
 import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
@@ -11,12 +12,10 @@ import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domai
 
 // the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
 const props = defineProps({items: {type: Array, required: true}, folded: Boolean});
-const now = ref(Date.now() / 1000);
+const now = useNow(500);
 const held = ref(new Set());
 const grouped = ref(false);
 const opened = ref(false);
-const tick = setInterval(() => (now.value = Date.now() / 1000), 500);
-onUnmounted(() => clearInterval(tick));
 
 const docked = computed(() => dockedItems(props.items, now.value, held.value));
 const runs = computed(() => keptRuns(docked.value.filter((item) => isRunItem(item, dockDeclaration)), now.value));

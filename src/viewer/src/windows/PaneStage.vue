@@ -7,6 +7,9 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
+import {coalesced} from "../composables/coalesced.js";
+import {useSharedNow} from "../composables/now.js";
+import {usageRead} from "../../kit/useUsage.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
@@ -98,8 +101,12 @@ const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && 
 const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || "agent-journal");
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
 let activityTimer = null;
-let factsTimer = null;
-const FACT_SECONDS = 5;
+let usageTimer = null;
+let branchTimer = null;
+// the bars follow events; what no event announces, the usage files of the agent programs and the checkout's branch, is read on a slow clock
+const EVENT_READ_GAP_MS = 2000;
+const USAGE_SECONDS = 30;
+const BRANCH_SECONDS = 60;
 async function readActivity() {
     const answer = activityOpen.value && props.shellRead ? await props.shellRead(["event", "list", "--limit", "30"]) : null;
     if (answer?.ok) events.value = rowsOf(answer);
@@ -117,7 +124,8 @@ async function readActiveEnvironments() {
     activeEnvironments.value = answer?.ok ? answer.value.environment_ids : [];
 }
 const facts = ref(NO_FACTS);
-const now = ref(Date.now());
+const clock = useSharedNow();
+const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
@@ -131,7 +139,7 @@ async function readBranch() {
     branch.value = answer?.ok ? answer.value.branch : "";
 }
 async function readUsage() {
-    const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
+    const answer = props.shellRead ? await usageRead(props.environment, () => props.shellRead(["usage", "show"])) : null;
     if (!answer?.ok) return;
     usage.value = answer.value;
     agentRow.value = answer.value.agents.find((row) => row.role === "main") ?? null;
@@ -162,14 +170,18 @@ async function readPhones() {
     const answer = await props.shellRead(["phone", "list"]);
     if (answer.ok) pairedPhones.value = answer.value.rows.filter((row) => row.state === "paired");
 }
-async function readFacts() {
+async function readBars() {
+    const answer = props.shellRead ? await props.shellRead(["usage", "bars"]) : null;
+    if (answer?.ok) facts.value = answer.value;
+}
+const askBars = coalesced(readBars, EVENT_READ_GAP_MS);
+const askUsage = coalesced(readUsage, EVENT_READ_GAP_MS);
+function readFacts() {
     if (!props.shellRead) return;
     readUsage();
     readBranch();
     readPhones();
-    const answer = await props.shellRead(["usage", "bars"]);
-    now.value = Date.now();
-    if (answer.ok) facts.value = answer.value;
+    readBars();
 }
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 const phone = computed(() => props.face === "phone");
@@ -197,13 +209,20 @@ onMounted(() => {
     readActiveEnvironments();
     props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
     readFacts();
-    factsTimer = setInterval(readFacts, FACT_SECONDS * 1000);
+    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*"], askBars);
+    props.subscriptions.follow("stage:usage", ["agent.*"], askUsage);
+    props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
+    usageTimer = setInterval(readUsage, USAGE_SECONDS * 1000);
+    branchTimer = setInterval(readBranch, BRANCH_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
     clearInterval(activityTimer);
-    clearInterval(factsTimer);
+    clearInterval(usageTimer);
+    clearInterval(branchTimer);
+    askBars.cancel();
+    askUsage.cancel();
     window.removeEventListener("resize", measure);
     navigator.serviceWorker?.removeEventListener("message", heardWorker);
 });

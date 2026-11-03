@@ -1,8 +1,7 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
 import {Btn, RowList, Segmented, Switch, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
 
-const POLL_MS = 10000;
 const ENDS = [
     {key: "1d", label: "1 day"},
     {key: "7d", label: "7 days"},
@@ -12,10 +11,7 @@ const ENDS = [
 
 // the links of this project: a new one with what it opens, the ones an agent asks for, and the open ones with their views and comments
 const context = useWindow();
-const {rows, failure, loaded, load} = useRows("share list", []);
-let timer = 0;
-onMounted(() => (timer = setInterval(load, POLL_MS)));
-onUnmounted(() => clearInterval(timer));
+const {rows, failure, loaded, load} = useRows("share list", ["share_link.*", "share_comment.*"]);
 const waiting = computed(() => rows.value.filter((row) => row.state === "waiting"));
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
 const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});

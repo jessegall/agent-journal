@@ -5,6 +5,7 @@ import SidebarPages from "../shell/SidebarPages.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import {usageRead} from "../../kit/useUsage.js";
 import {useViewTab} from "../composables/viewTabs.js";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
@@ -27,7 +28,7 @@ const environments = ref([]);
 const mainAgent = ref(null);
 const agentAsked = ref(false);
 onMounted(async () => {
-    const usage = await shellLine(["usage", "show"]);
+    const usage = await usageRead(props.environment, () => shellLine(["usage", "show"]));
     mainAgent.value = usage.ok ? (usage.value.agents.find((row) => row.role === "main")?.id ?? null) : null;
     agentAsked.value = true;
     if (!props.standalone) return;

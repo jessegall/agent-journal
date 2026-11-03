@@ -3,7 +3,10 @@ import {computed, nextTick, ref, watch} from "vue";
 import {FoldSign, Icon, useNow, usePoll, useWindow} from "@journal/window-kit";
 
 // the card of a docked process, as version 4's watched output drew it: in the head a mark for where the run stands, its command, how far it has come
-// and how long it has run; along the foot a thin bar; opened, its terminal output in a scrolling box that follows the end; read again every two seconds while the run is going
+// and how long it has run; along the foot a thin bar; opened, its terminal output in a scrolling box that follows the end; while the run is going it is read every two seconds when opened and every five when closed,
+// and at once when its row changes
+const OPENED_MILLISECONDS = 2000;
+const CLOSED_MILLISECONDS = 5000;
 const TONES = {running: "var(--tone-work)", good: "var(--tone-good)", bad: "var(--tone-bad)", stopped: "var(--text-3)"};
 const ICONS = {running: "terminal", good: "tick", bad: "cross", stopped: "stop"};
 const STANDINGS = {running: "running", background: "running", finished: "good", failed: "bad", stopped: "stopped", orphaned: "stopped"};
@@ -49,7 +52,8 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-usePoll(load, isRunning);
+context.follow(["process.*"], (event) => event.row_id === item.value?.target_id && load());
+usePoll(load, isRunning, () => (opened.value ? OPENED_MILLISECONDS : CLOSED_MILLISECONDS));
 </script>
 
 <template>

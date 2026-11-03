@@ -79,11 +79,12 @@ test("a window's fade ends without holding a stacking context, so a dropdown in 
     expect(host).toContain("animation: window-fade 0.25s ease backwards;");
 });
 
-test("the bars read the journal again every few seconds, so they follow the state as it changes", async () => {
+test("the bars follow events rather than read on a short clock", async () => {
     const {readFileSync} = await import("node:fs");
     const {resolve} = await import("node:path");
     const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(stage).toMatch(/setInterval\(readFacts, FACT_SECONDS \* 1000\)/);
+    expect(stage).toContain('follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*"], askBars)');
+    expect(stage).not.toContain("setInterval(readFacts");
 });
 
 test("the agent bar names the task the agent is working in, and nothing when it has none", () => {

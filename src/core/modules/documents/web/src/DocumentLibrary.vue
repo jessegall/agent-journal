@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
-import {age, grouped, searched, sorted} from "./libraryGroups.js";
+import {age, Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, useWindow} from "@journal/window-kit";
+import {grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
     {key: "doc", label: "Documents"},
