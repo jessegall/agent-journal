@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-BynTMELK.js";
-import { be as Q, aK as V, c5 as M } from "./index-CE7vMnEk.js";
-import { t as X } from "./VoiceFigure-BwDpldN_.js";
+import { Stage as U, SIDES as j, reachSide as q } from "./figure-C7ANXsiQ.js";
+import { bf as Q, aL as V, c6 as M } from "./index-DLkr0Iql.js";
+import { t as X } from "./VoiceFigure-D82mFzwM.js";
 const Y = 4, Z = (u) => u * u * (3 - 2 * u);
 class tt {
   constructor(t, s) {
@@ -26,11 +26,11 @@ class tt {
   // figure `grabbed` by the pointer startled (figure.js startledHeld); and which mirrored telephone placement a seated call uses,
   // `phoneWay` (figure.js seatedCall); an `airborne` figure no longer plants its feet while leaving a seat
   show(t, s, e, { posture: n, eyes: a = null, stride: i = null, sky: r = null, throws: m = null, leanWay: d = 0, walkWay: f = 0, at: w = null, target: c = null, open: v = 1, screen: g = null, tilt: b = 0, ticker: p = null, grabbed: S = !1, phoneWay: $ = 1, airborne: A = !1 }) {
-    var B, I, P, T, F, k, D, K;
+    var B, I, P, T, F, k, D, L;
     ["walk", "run"].includes(t.name) && i !== null && (s = (i % 1 + 1) % 1 * t.frames);
     const o = performance.now(), R = `${t.name}/${n}/${e}`;
     if ((!this.shape.startsWith(`${t.name}/${n}/`) || A && ((B = this.blend) != null && B.plant || (I = this.blend) != null && I.floor)) && this.moves) {
-      const J = [this.shape.split("/")[0], t.name].some((L) => ["walk", "run"].includes(L));
+      const J = [this.shape.split("/")[0], t.name].some((K) => ["walk", "run"].includes(K));
       this.blend = {
         from: this.moves,
         began: o,
@@ -43,7 +43,7 @@ class tt {
     const _ = this.blend ? Math.min((o - this.blend.began) / 1e3 / M, 1) : 1, l = this.blend ? { from: this.blend.from, previous: this.moves, k: Z(_), settled: !1, plant: this.blend.plant, floor: this.blend.floor } : null, E = JSON.stringify([t.name, s, e, n, i, this.canvas.width, this.canvas.height, a, r, m, d, f, w, c, v, g, b, p, S, $]), h = (F = this.figure) == null ? void 0 : F.propTransitions;
     if (E === this.shown && !l && !(h != null && h.active)) return;
     const z = a || i !== null || r || m || d || f || w || c || v < 1 || g || b || p || S || $ !== 1 || l || this.turn || (h == null ? void 0 : h.present) || (h == null ? void 0 : h.active) || ((k = this.propClips) == null ? void 0 : k.has(t.name)) || !Number.isInteger(s), { frame: G, moves: H } = z ? this.liveOf(t, s, e, { posture: n, eyes: a, stride: i ?? 0, blend: l, sky: r, throws: m, leanWay: d, walkWay: f, at: w, target: c, open: v, screen: g, tilt: b, ticker: p, grabbed: S, phoneWay: $, time: o / 1e3 }) : this.frameOf(t, s, e, n);
-    (K = (D = this.figure) == null ? void 0 : D.propTransitions) != null && K.present && (this.propClips ?? (this.propClips = /* @__PURE__ */ new Set())).add(t.name);
+    (L = (D = this.figure) == null ? void 0 : D.propTransitions) != null && L.present && (this.propClips ?? (this.propClips = /* @__PURE__ */ new Set())).add(t.name);
     const N = this.canvas.getContext("2d");
     N.clearRect(0, 0, this.canvas.width, this.canvas.height), N.drawImage(G, 0, 0), this.moves = H, l != null && l.settled && (this.blend = null), this.shown = l ? "" : E;
   }

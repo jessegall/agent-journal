@@ -118,6 +118,22 @@ test("the demo's window event asks for a box until it is told to stop, and the f
     expect(view.demoRun).toBe(null);
 });
 
+test("the demo's window event holds a state with the clip it is played as, until it is let go", async () => {
+    const view = await figure();
+    window.dispatchEvent(new CustomEvent("figure-demo", {detail: {held: {state: "compacting", clip: "vacuum"}}}));
+    expect(view.doings.state).toBe("compacting");
+    expect(view.variant).toEqual({state: "compacting", clip: "vacuum"});
+    window.dispatchEvent(new CustomEvent("figure-demo", {detail: {held: null}}));
+    expect(view.doings.state).not.toBe("compacting");
+});
+
+test("the demo's parachute comes after a time off the top of the chat", async () => {
+    const view = await figure();
+    window.dispatchEvent(new CustomEvent("figure-demo", {detail: {clip: "chute"}}));
+    expect(view.flight).toMatchObject({hops: [], back: 0});
+    expect(view.beats.some((beat) => beat.clip === "chute")).toBe(false);
+});
+
 test("the work committed, every parcel goes, whatever the figure was building", async () => {
     const view = await figure();
     view.parcels = [{id: 1, along: 10, up: 0, state: "piled"}, {id: 2, along: 40, up: 0, state: "building"}];

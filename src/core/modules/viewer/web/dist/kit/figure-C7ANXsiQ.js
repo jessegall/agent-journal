@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-import { aR as vo, A as Q, V as ht, p as f0, a as p0, W as pc, c6 as m0, c7 as ju, aK as Vl, c8 as g0, c9 as _0, ca as Wn, aw as x0, cb as y0, aQ as v0, bL as M0, cc as w0, b7 as Ms, cd as b0, ce as S0, cf as E0, c5 as ea, cg as T0 } from "./index-CE7vMnEk.js";
-import { H as rt, g as ap, G as Va, F as A0, h as R0, R as Kr } from "./VoiceFigure-BwDpldN_.js";
+import { aS as vo, A as Q, V as ht, p as f0, a as p0, W as pc, c7 as m0, c8 as ju, aL as Vl, c9 as g0, ca as _0, cb as Wn, ax as x0, cc as y0, aR as v0, bM as M0, cd as w0, b8 as Ms, ce as b0, cf as S0, cg as E0, c6 as ea, ch as T0 } from "./index-DLkr0Iql.js";
+import { H as rt, g as ap, G as Va, F as A0, h as R0, R as Kr } from "./VoiceFigure-D82mFzwM.js";
 const me = {
   at: [0.5, -1.25],
   tip: 10,

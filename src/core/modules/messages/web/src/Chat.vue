@@ -427,8 +427,8 @@ async function runCommand(pin) {
         <template v-if="context.option('floors').value">
             <FigureFloors />
         </template>
-        <div data-figure-chat-foot :data-figure-docked-bars="dockedRows.size ? '' : null" class="chat-foot">
-            <DockStack :items="docked" :folded="short || !docksOpen" />
+        <div data-figure-chat-foot class="chat-foot">
+            <DockStack :items="docked" :folded="short || !docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <template v-if="dumping">
