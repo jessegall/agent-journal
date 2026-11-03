@@ -58,3 +58,17 @@ def test_a_worker_that_has_delivered_nothing_is_not_named(new_story):
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_rows(f"worker:{worker.id} delivered" not in story.run(f"agent-line list --agent {story.agent.id}").output_text)
+
+
+def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.tick(MAIN_SESSION)
+    lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    assert "journal proof check 1" in lines
+    assert f"journal worker merge {worker.id}" not in lines
+    story.expect_success("proof check 1", actor=story.agent)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker merge {worker.id}")
