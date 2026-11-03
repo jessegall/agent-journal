@@ -8,7 +8,7 @@ from core.modules.tasks.support.task_nudges import WAIT_DESCRIPTION
 
 
 WAIT_TERMS = re.compile(r"\b(wait(s|ing)?\s+(for|on|until)|blocked\s+(on|by|until))\b", re.I)
-DESCRIBED_LINE = re.compile(r"(?:^|-- '|&& |; )journal (task log|task block|message send|message reply)\b")
+DESCRIBING_COMMANDS = ("task log", "task block", "message send", "message reply")
 BLOCK_FLAGS = ("--on", "--until")
 
 
@@ -22,6 +22,7 @@ class WaitDescriptionRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or not DESCRIBED_LINE.search(shell.line) or not WAIT_TERMS.search(shell.line) or any(flag in shell.line for flag in BLOCK_FLAGS):
+        described = shell.journal_parts(*DESCRIBING_COMMANDS) if shell is not None else ()
+        if not any(WAIT_TERMS.search(part.text) and not set(BLOCK_FLAGS) & set(part.arguments) for part in described):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(WAIT_DESCRIPTION.nudge())

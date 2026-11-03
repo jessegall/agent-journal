@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
@@ -10,6 +11,7 @@ from core.base.type_guards import is_list
 
 READ_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
 WATCHED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK)
+JOURNAL_PROGRAM = "journal"
 
 
 @dataclass(frozen=True)
@@ -63,3 +65,17 @@ class ShellLine:
 
     def has_category(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)
+
+    def journal_parts(self, *commands: str) -> tuple[Part, ...]:
+        command_terms = tuple(tuple(command.split()) for command in commands)
+        return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and any(part.arguments[:len(terms)] == terms for terms in command_terms))
+
+    def journal_numbers(self, *commands: str) -> tuple[int, ...]:
+        firsts = (next((word for word in part.arguments if word.isdigit()), "") for part in self.journal_parts(*commands))
+        return tuple(int(number) for number in firsts if number)
+
+    def runs(self, command: str) -> bool:
+        return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)
+
+    def part_matches(self, pattern: str) -> bool:
+        return any(re.search(pattern, part.text) for part in self.parts)

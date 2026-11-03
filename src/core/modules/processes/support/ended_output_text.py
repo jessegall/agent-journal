@@ -45,7 +45,7 @@ class EndedOutputText:
     def reader_nudges(self, process: Process) -> tuple[Nudge, ...]:
         kept = self.outputs.process(process.id).page(1, 1).rows
         output = kept[0] if kept else None
-        if output is None or output.reader_id is None or not output.line_count or self.parts.process(process.id).count() > 1:
+        if output is None or output.reader_id is None or not output.line_count:
             return ()
         reader = self.readers.find(output.reader_id)
         if reader.type is not ReaderType.PATTERN:

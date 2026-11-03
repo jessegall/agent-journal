@@ -5,10 +5,13 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
+const runnerProgram = "journal-run"
+
 // Line reads a shell line into the prepared object's shell line: each command a part with its program, subcommand,
 // arguments, classification and the files it reads and writes, and how it joins the next. A line no shell can read has
-// no parts and says why in parse_error.
+// no parts and says why in parse_error. The runner's line, which a hook after the tool sees, is read as the line it runs.
 func (classifier *Classifier) Line(line string) event.ShellLine {
+	line = lineOfRunner(line)
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}}
 	commands, redirects, err := shell.Split(line)
 	if err != nil {
@@ -21,6 +24,15 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 	}
 	prepared.IsJournalOnly = isJournalOnly(commands)
 	return prepared
+}
+
+// lineOfRunner is the line journal-run runs, from its last word after --, or the line itself when it is no runner's.
+func lineOfRunner(line string) string {
+	tokens := shell.Tokens(line)
+	if len(tokens) < 3 || baseName(tokens[0]) != runnerProgram || tokens[len(tokens)-2] != "--" {
+		return line
+	}
+	return tokens[len(tokens)-1]
 }
 
 func (classifier *Classifier) part(command shell.Command, classification Classification) event.Part {

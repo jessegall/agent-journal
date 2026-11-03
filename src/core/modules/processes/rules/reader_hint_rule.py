@@ -1,5 +1,3 @@
-import re
-
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -8,8 +6,6 @@ from core.base.query.queries import Queries
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.process_nudges import READER_HINT
-
-FULL_READ_LINE = re.compile(r"(?:^|-- '|&& |; )journal output read (\d+) --all\b")
 
 
 class ReaderHintRule(DriverRule):
@@ -24,8 +20,9 @@ class ReaderHintRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        line = FULL_READ_LINE.search(shell.line) if shell is not None else None
-        kept = self.queries.query(Output).filter(process_id=int(line.group(1))).page(1, 1).rows if line is not None else ()
+        full_reads = [part for part in shell.journal_parts("output read") if "--all" in part.arguments] if shell is not None else []
+        numbers = [int(term) for part in full_reads for term in part.arguments if term.isdigit()]
+        kept = self.queries.query(Output).filter(process_id=numbers[0]).page(1, 1).rows if numbers else ()
         if not kept or kept[0].reader_id is None or not kept[0].reader_lines:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(READER_HINT.nudge(reader=self.queries.query(Reader).find(kept[0].reader_id).name, output=kept[0].process_id))

@@ -25,7 +25,7 @@ class ReaderStep:
         reader = self.readers.find(output.reader_id)
         if reader.type is ReaderType.SCRIPT:
             return self.script_advance(process, output, reader, is_final)
-        raw = self.folder.bytes_after(process.id, output.read_offset)
+        raw = self.folder.reader_bytes_after(process.id, output.reader_position, output.read_offset)
         ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
         if not ready_bytes:
             return None
@@ -39,7 +39,7 @@ class ReaderStep:
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         if not is_final:
             return None
-        text = self.folder.all_output(process.id)
+        text = self.folder.reader_text(process.id, output.reader_position)
         steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
         return ReaderAdvance(self.run.lines(reader, text, process.state.value), len(text.encode()), text.count("\n"), self.run.summary(reader, text), output.progress, replaces=True,
                              steps_passed=steps.passed, steps_failed=steps.failed)

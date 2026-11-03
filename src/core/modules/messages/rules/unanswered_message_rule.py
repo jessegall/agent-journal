@@ -1,4 +1,3 @@
-import re
 
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
@@ -18,7 +17,6 @@ from core.modules.messages.support.block_conditions.messages_answered import Mes
 
 ALLOWED_TOOL_CALL_COUNT = 10
 COUNTDOWN_CALL_COUNT = 3
-ANSWER_LINE = re.compile(r"""(?:^|[\s/'"])journal (?:message|task make) """)
 
 
 class UnansweredMessageRule(DriverRule):
@@ -37,7 +35,7 @@ class UnansweredMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unanswered = self.unanswered(hook.environment_id)
         tool = hook.event.tool
-        if not unanswered or (tool is not None and tool.shell is not None and ANSWER_LINE.search(tool.shell.line)):
+        if not unanswered or (tool is not None and tool.shell is not None and tool.shell.journal_parts("message", "task make")):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
         first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)

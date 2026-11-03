@@ -34,8 +34,8 @@ class RequiredCommandRule(DriverRule):
         required_commands = tuple(self.queries.query(RequiredCommand).filter(agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
         if not required_commands:
             return RuleAnswer.allowed()
-        command = str(hook.event.tool_input().get("command", ""))
-        completed_commands = [required_command for required_command in required_commands if RanCommand.matches_line(required_command.required_command, command)]
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        completed_commands = [required_command for required_command in required_commands if shell is not None and shell.runs(required_command.required_command)]
         open_commands = [required_command for required_command in required_commands if required_command not in completed_commands]
         for required_command in open_commands:
             if self.tool_uses(required_command) >= TOOL_USES_GIVEN:

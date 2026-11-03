@@ -109,6 +109,15 @@ func TestAnAliasIsClassifiedByTheCommandUnderIt(t *testing.T) {
 	}
 }
 
+func TestARunnerLineIsReadAsTheLineItRuns(t *testing.T) {
+	classifier := NewClassifier(LoadTable(""))
+	wrapped := `JOURNAL_AGENT_SESSION=s-1 '/work/.journal/bin/journal-run' --process 7 --limit 15 --queue -- 'cat notes; journal message read 12'`
+	line := classifier.Line(wrapped)
+	if line.Line != "cat notes; journal message read 12" || len(line.Parts) != 2 || line.Parts[1].Program != "journal" {
+		t.Fatalf("read as %q with %d parts", line.Line, len(line.Parts))
+	}
+}
+
 func TestGoWithAFolderFlagIsStillATestRun(t *testing.T) {
 	classifier := NewClassifier(LoadTable(""))
 	if category := classifier.Classify("go -C tools/journal-run test . -run Report").Category; category != "test run" {

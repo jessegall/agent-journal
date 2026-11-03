@@ -325,11 +325,11 @@ def test_a_comment_read_names_its_text_once_and_the_other_links_under_it(new_sto
     assert not any("report:1" in line for line in lines[2:])
 
 
-def test_a_message_read_through_the_runners_rewritten_line_is_marked_read(new_story):
+def test_a_message_read_as_one_part_of_a_chain_is_marked_read(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    rewritten = "JOURNAL_AGENT_SESSION=s-1 .journal/bin/journal-run --process 1 --limit 0 -- 'journal message read 1'"
-    story.hook("s-1", HookSamples.shell(rewritten, ShellPart("journal-run", CommandCategory.UNKNOWN, ["--process", "1"])).with_fields(event="post_tool_use"))
+    line = "cat notes && journal message read 1"
+    story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"])).with_fields(event="post_tool_use"))
     story.expect_text("message show 1", "read_at: 2026", actor=story.user)
 
 
