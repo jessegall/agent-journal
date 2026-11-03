@@ -3,6 +3,7 @@ from core.base.private.private_folder import PrivateFolder
 from core.base.private.server_keys import ServerKeys
 from core.base.provider.hook_manager import HookManager
 from core.base.provider.hook_trust import HookTrust
+from core.base.provider.hook_effect import HookEffect
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_hooks import ProgramHooks
@@ -28,7 +29,9 @@ def test_a_sweep_preserves_the_journal_entries_existing_trust_at_their_new_posit
     config.write_text("model = 'sample'\n" + "".join(
         CodexTrust.state_table(f"{hooks.path}:{name}:0:0", {"trusted_hash": "removed-project-hook"}) +
         CodexTrust.state_table(f"{hooks.path}:{name}:1:0", {"trusted_hash": f"sha256:{name}"}) for name in names))
-    HookManager(project, ManagedHooks(home)).import_hooks(CodexProvider, project)
+    managed = HookManager(project, ManagedHooks(home)).import_hooks(CodexProvider, project)
+    assert next(hook for hook in managed if hook.event == "PreToolUse").effects == tuple([HookEffect.ADDS_LINES])
+    assert next(hook for hook in managed if hook.event == "Stop").effects == tuple([HookEffect.CAN_REFUSE])
     assert provider.hook_trust(project) is HookTrust.READY
     states = provider.trust_record().states()
     for name in names:

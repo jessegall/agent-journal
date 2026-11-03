@@ -2,6 +2,7 @@ from pathlib import Path
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.driver.driver_rule import DriverRule
 from core.base.journal_home import JournalHome
 from core.base.provider.hook_manager import HookManager
 from core.base.provider.managed_hooks import ManagedHooks
@@ -19,7 +20,8 @@ class ManageProgramHandler(Handler[ManageProgram, int]):
 
     def handle(self, command: ManageProgram, context: Context) -> int:
         provider = self.providers.provider(command.program)
-        manager = HookManager(self.home.project_folder, self.managed)
+        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
+        manager = HookManager(self.home.project_folder, self.managed, rules)
         if not manager.unmanaged(type(provider), Path(command.folder)):
             return len(self.managed.all())
         return len(manager.import_hooks(type(provider), Path(command.folder)))

@@ -6,6 +6,7 @@ from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome
 from core.base.provider.hook_manager import HookManager
+from core.base.driver.driver_rule import DriverRule
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -46,7 +47,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
         self.place_codex_hooks(command)
-        manager = HookManager(self.home.project_folder, self.managed)
+        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
+        manager = HookManager(self.home.project_folder, self.managed, rules)
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
         self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))

@@ -1,8 +1,9 @@
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from core.base.provider.managed_state import ManagedState
+from core.base.provider.hook_effect import HookEffect
 
 DEFAULT_TIMEOUT_SECONDS = 30
 
@@ -21,6 +22,7 @@ class ManagedHook:
     tracked: bool
     fields: Mapping[str, object] = field(default_factory=dict)
     state: ManagedState = ManagedState.ENABLED
+    effects: Sequence[HookEffect] = ()
 
     @classmethod
     def found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool) -> "ManagedHook":

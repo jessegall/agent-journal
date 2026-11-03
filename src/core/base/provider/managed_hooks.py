@@ -10,6 +10,7 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState
+from core.base.provider.hook_effect import HookEffect
 
 
 class ManagedHooks:
@@ -66,12 +67,13 @@ class ManagedHooks:
         if not self.path.is_file():
             return []
         stored = json.loads(self.path.read_text())
-        return [ManagedHook(**{**hook, "state": ManagedState(hook["state"])}) for hook in stored["hooks"]]
+        return [ManagedHook(**{**{key: value for key, value in hook.items() if key != "clash"}, "state": ManagedState(hook["state"]),
+                              "effects": tuple(HookEffect(value) for value in hook.get("clash", []))}) for hook in stored["hooks"]]
 
     def _write(self, hooks: Sequence[ManagedHook]) -> None:
         with tempfile.NamedTemporaryFile(mode="w", dir=self.path.parent, delete=False) as writing:
             try:
-                json.dump({"version": 1, "hooks": [asdict(hook) for hook in hooks]}, writing, indent=2)
+                json.dump({"version": 1, "hooks": [{"clash" if key == "effects" else key: value for key, value in asdict(hook).items()} for hook in hooks]}, writing, indent=2)
                 writing.write("\n")
                 writing.flush()
                 os.fsync(writing.fileno())

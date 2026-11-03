@@ -1,8 +1,11 @@
 import os
+from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from core.base.git.hook_files_git import HookFilesGit
+from core.base.provider.hook_tool_rule import HookToolRule
+from core.base.provider.hook_effect import HookEffect
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
@@ -13,9 +16,10 @@ from core.base.type_guards import is_list, is_mapping
 class HookManager:
     """Moves project command hooks into the managed store and restores their source files."""
 
-    def __init__(self, root: Path, managed: ManagedHooks) -> None:
+    def __init__(self, root: Path, managed: ManagedHooks, rules: Sequence[type[HookToolRule]] = ()) -> None:
         self.root = root
         self.managed = managed
+        self.rules = rules
 
     def import_hooks(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
         for name in provider.hook_files:
@@ -61,7 +65,8 @@ class HookManager:
             return []
         tracked = HookFilesGit(folder).tracks(name)
         source = os.path.relpath(folder / name, self.root)
-        return [ManagedHook.found(provider.name, event, matcher, entry, source, tracked) for event, matcher, entry in commands]
+        hooks = [ManagedHook.found(provider.name, event, matcher, entry, source, tracked) for event, matcher, entry in commands]
+        return [replace(hook, effects=tuple(HookEffect.detected(hook, provider, event, self.rules))) if (event := provider.hook_events.get(hook.event)) is not None else hook for hook in hooks]
 
     @staticmethod
     def _restored_blocks(hook: ManagedHook, blocks: list[object]) -> list[object]:

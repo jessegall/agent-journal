@@ -5,6 +5,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.tool_type import ToolType
 from core.base.agent_role import AgentRole
 from core.base.scope.scopes import WholeScopes
 
@@ -24,6 +25,7 @@ class DriverRule:
     overlay_proof: ClassVar[bool] = False
     start_line_rule: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()
+    tools: ClassVar[Sequence[ToolType]] = ()
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         raise NotImplementedError

@@ -12,6 +12,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
+from core.base.driver.tool_type import ToolType
 from core.modules.drivers.support.tool_use_count import ToolUseCount
 
 COUNTDOWN_USES = 3
@@ -28,6 +29,7 @@ class AgentBlockRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
+    tools = tuple(ToolType)
 
     def __init__(self, queries: Queries, conditions: BlockConditions, container: Container) -> None:
         self.queries, self.conditions, self.container = queries, conditions, container

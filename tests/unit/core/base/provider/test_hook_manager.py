@@ -5,6 +5,9 @@ from unittest.mock import patch
 import pytest
 
 from core.base.journal_home import JournalHome
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.refusal_style import RefusalStyle
+from core.base.provider.hook_effect import HookEffect
 from core.base.provider.hook_manager import HookManager
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.managed_state import ManagedState
@@ -108,3 +111,12 @@ def test_a_stripped_tracked_file_stays_out_of_commits_until_hooks_are_returned(m
     assert (manager.root / HOOK_FILE).read_bytes() == original
     flag = subprocess.run([*git, "ls-files", "-v", "--", str(HOOK_FILE)], check=True, capture_output=True, timeout=10)
     assert flag.stdout.startswith(b"H ")
+
+
+def test_sweeping_stores_the_programs_clash_labels(manager: HookManager, monkeypatch):
+    monkeypatch.setattr(SampleProgram, "refusals", {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY})
+    monkeypatch.setattr(SampleProgram, "line_events", [HookEventName.PRE_TOOL_USE])
+    hooks = manager.import_hooks(SampleProgram, manager.root)
+    assert all(hook.effects == (HookEffect.CAN_REFUSE, HookEffect.ADDS_LINES) for hook in hooks)
+    assert manager.managed.all() == hooks
+    assert ProgramHooks.read(manager.managed.path)["hooks"][0]["clash"] == ["can_refuse", "adds_lines"]

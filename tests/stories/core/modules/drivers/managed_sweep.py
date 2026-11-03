@@ -1,6 +1,7 @@
 import pytest
 
 from core.base.provider.managed_hooks import ManagedHooks
+from core.base.provider.hook_effect import HookEffect
 from core.base.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -17,6 +18,7 @@ def test_session_start_imports_a_hook_added_after_launch(new_story, program, nam
     story.hook("s-1", sample)
     hooks = story.container.get(ManagedHooks).all()
     assert len(hooks) == 1 and hooks[0].command == "added-check" and hooks[0].program == program
+    assert HookEffect.OVERLAPS in hooks[0].effects
     assert ProgramHooks.read(folder / name) == {"hooks": {}}
 
 
