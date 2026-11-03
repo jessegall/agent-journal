@@ -3,8 +3,10 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
+from core.base.provider.managed_state import ManagedState
 from install.hook_switch import HookSwitch
 from install.hook_writer import HookWriter
+from install.restore_version_four import RestoreVersionFour
 
 FILES = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json")
 
@@ -82,3 +84,31 @@ def test_upgrade_with_only_shared_claude_settings_installs_a_runner_before_impor
     assert (tmp_path / FILES[1]).is_file()
     assert (tmp_path / ".journal/version-4/hooks" / FILES[0]).read_bytes() == original
     assert not (tmp_path / FILES[2]).exists()
+
+
+def test_version_four_restore_returns_disabled_hooks_and_keeps_new_hooks(tmp_path):
+    project_hooks(tmp_path)
+    old_runner = f'sh "{tmp_path}/.journal/hooks/hook.sh"'
+    HookWriter(tmp_path).write(old_runner)
+    binary_runner(tmp_path)
+    HookSwitch(tmp_path).switch()
+    home = JournalHome(tmp_path / ".journal")
+    store = ManagedHooks(home)
+    hook = store.all()[0]
+    store.changed(hook.id, ManagedState.DISABLED, hook.timeout)
+    path = tmp_path / FILES[1]
+    settings = ProgramHooks.read(path)
+    settings["hooks"]["PreToolUse"].append({"matcher": "Bash", "hooks": [{"type": "command", "command": "new-check"}]})
+    ProgramHooks.store(path, settings)
+    backup = tmp_path / "backup.db"
+    backup.write_bytes(b"version four")
+    RestoreVersionFour(home).restore(backup, [])
+    assert store.all() == []
+    for index, name in enumerate(FILES):
+        entries = ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"])[1]
+        assert f"project-check-{index}" in [entry[2]["command"] for entry in entries]
+    commands = [entry[2]["command"] for entry in ProgramHooks.partitioned(ProgramHooks.read(path)["hooks"])[1]]
+    assert "new-check" in commands
+    all_commands = [entry["command"] for blocks in ProgramHooks.read(path)["hooks"].values() for block in blocks for entry in block["hooks"]]
+    assert any(old_runner in command for command in all_commands)
+    assert not any(str(tmp_path / ".journal/bin/journal-hook") in command for command in all_commands)
