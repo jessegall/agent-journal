@@ -37,6 +37,16 @@ def test_running_the_brief_command_releases_the_block(new_story):
     story.expect_hook_allowed("s-1", EDIT)
 
 
+def test_two_unread_tasks_hold_two_blocks_so_reading_one_leaves_the_other(new_story):
+    story = new_story(fixture=BuilderWithUnreadTask)
+    story.run('task make "Second" --brief "A second job" --environment main', actor=story.user)
+    story.run("task start 2", actor=story.agent)
+    story.run("task brief 2", actor=story.agent)
+    story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
+    story.run("task brief 1", actor=story.agent)
+    story.expect_hook_allowed("s-1", EDIT)
+
+
 def test_a_task_already_read_in_this_window_raises_no_block(new_story):
     story = new_story(fixture=BuilderWithReadTask)
     briefs_required(story)
