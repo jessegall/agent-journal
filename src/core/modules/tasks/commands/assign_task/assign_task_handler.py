@@ -37,6 +37,9 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
             raise Refusal(f"task {task.id} is {task.state.value}: only an open or started task moves")
         if task.holder_id == agent.id:
             raise Refusal(f"task {task.id} is with agent {agent.id}: nothing to move")
-        if task.delegated_to == task.holder_id and task.holder_id is not None and self.tasks.next_delegated(task.holder_id) is None:
+        if self.is_workers_last(task):
             raise Refusal(f"task {task.id} is the last of worker {task.holder_id}", f"journal worker release {task.holder_id} \"<why>\" takes it back")
         return self.repository.save(replace(task.release(context.timestamp, context.actor, f"assigned to agent {agent.id}"), delegated_to=delegated_to), context)
+
+    def is_workers_last(self, task: Task) -> bool:
+        return task.delegated_to == task.holder_id and task.holder_id is not None and self.tasks.next_delegated(task.holder_id) is None
