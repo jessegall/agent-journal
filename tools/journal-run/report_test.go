@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestEachPartThatRanAndTheEndOfTheChainAreReportedThroughTheClient(t *testing.T) {
@@ -16,6 +17,29 @@ func TestEachPartThatRanAndTheEndOfTheChainAreReportedThroughTheClient(t *testin
 	}
 	if strings.Contains(reported, "--position 3") {
 		t.Errorf("a skipped part was reported: %q", reported)
+	}
+}
+
+func TestEachPartStartIsReportedBeforeItsEnd(t *testing.T) {
+	client := newClient()
+	run(t, options(t, "echo one && echo two"), client)
+	want := []string{"process part-start 4 --position 1", "process part-end 4 --position 1 --exit-code 0", "process part-start 4 --position 2", "process part-end 4 --position 2 --exit-code 0"}
+	got := client.reported()
+	if len(got) < len(want) || strings.Join(got[:len(want)], "\n") != strings.Join(want, "\n") {
+		t.Errorf("reported %q, which does not open with %q", got, want)
+	}
+}
+
+func TestAPartThatStillRunsIsReportedStartedWhileItRuns(t *testing.T) {
+	client := newClient()
+	setup := options(t, "echo one && sleep 5")
+	go func() {
+		var output strings.Builder
+		Run(setup, client, &output)
+	}()
+	waitFor(t, 5*time.Second, "the start of the second part", func() bool { return strings.Contains(strings.Join(client.reported(), "\n"), "process part-start 4 --position 2") })
+	if strings.Contains(strings.Join(client.reported(), "\n"), "process part-end 4 --position 2") {
+		t.Errorf("the part that still runs was reported ended: %q", client.reported())
 	}
 }
 
