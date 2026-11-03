@@ -110,6 +110,7 @@ const tint = computed(() => ({
             phase,
             {
                 open: isOpen,
+                folding: owned && wanted,
                 live,
                 failed,
                 stopping: mark.stopping,
@@ -323,9 +324,16 @@ const tint = computed(() => ({
 .mark.leaving .head :deep(.md),
 .mark.resizing .head,
 .mark.resizing .head :deep(.md),
-.mark.entering .head,
-.mark.entering .head :deep(.md) {
+.mark.entering:not([data-open]) .head,
+.mark.entering:not([data-open]) .head :deep(.md) {
     white-space: nowrap;
+}
+
+/* a mark that closes keeps its title as it was while its contents fade out, so nothing jumps before the resize; and a mark that opens lets its
+   title wrap once it has its size, as the box was measured for it */
+.mark.leaving.folding .head,
+.mark.leaving.folding .head :deep(.md) {
+    white-space: normal;
 }
 
 .mark.entering > :not(.top, .mact, .bar) {
