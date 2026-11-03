@@ -80,6 +80,7 @@ class ClaudeCodeProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
+        self.peer_readers: dict[Path, ClaudePeerNotes] = {}
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
@@ -163,7 +164,7 @@ class ClaudeCodeProvider(Provider):
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
 
     def peer_notes(self, path: Path) -> Sequence[PeerNote]:
-        return ClaudePeerNotes(path).notes()
+        return self.peer_readers.setdefault(path, ClaudePeerNotes(path)).notes()
 
     def state_file(self) -> Path:
         return self.folders.folder(CONFIG_VARIABLE, "") / ".claude.json"
