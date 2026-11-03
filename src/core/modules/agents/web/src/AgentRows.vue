@@ -13,7 +13,7 @@ const props = defineProps({line: {type: String, required: true}, empty: {type: S
 const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
-// the tests of proofs that wait in the journal's test queue, counted on the button that opens the queue inspector
+// Proof tests waiting in the process queue, counted on the button that opens the inspector.
 const {rows: proofs} = useRows("proof list --limit 50", ["proof.*"]);
 const WAITING = new Set(["queued", "running"]);
 const waiting = computed(() => proofs.value.filter((proof) => WAITING.has(proof.state)).length);
@@ -90,7 +90,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
         <div class="agents-bar">
             <SearchBar v-model="words" class="agents-search" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
-                <Btn small bordered title="Open the test queue" data-agents-queue @click="peekRef('test_queue:0')">Test queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
+                <Btn small bordered title="Open the process queue" data-agents-queue @click="peekRef('test_queue:0')">Process queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
             </SearchBar>
         </div>
         <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">

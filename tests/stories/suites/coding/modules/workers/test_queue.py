@@ -1,3 +1,5 @@
+import json
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -35,10 +37,13 @@ def ended(story, process_id: int, code: int) -> None:
 
 
 def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story, monkeypatch):
-    story, _, _, started = queued_story(new_story, monkeypatch)
+    story, _, worker, started = queued_story(new_story, monkeypatch)
     assert len(started) == 1
     story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
     assert "queued" in marks_text(story), marks_text(story)
+    queue = json.loads(story.run("queue list --environment-id 1 --json").output_text)
+    story.expect_rows(queue["total"] == 1, queue["rows"][0]["worker_id"] == worker.id,
+                      queue["rows"][0]["output_id"] == started[0])
 
 
 def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(new_story, monkeypatch):

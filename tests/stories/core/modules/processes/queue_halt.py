@@ -13,7 +13,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 HALT = 'queue halt "a deploy is going"'
-REMINDER = "the test queue is halted"
+REMINDER = "the process queue is halted"
 REMINDER_SECONDS = 5 * 60
 
 

@@ -23,7 +23,7 @@ class SkillWriteSubcommand(ReadSubcommand[tuple[str, ...]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
-        results = [f"{'written' if self.files.write(skill) else 'unchanged'}: {skill.folder}" for skill in self.registry.skills]
+        results = [f"{'written' if changed else 'unchanged'}: {folder}" for folder, changed in self.files.write_all(self.registry.skills).items()]
         return (*results, *(f"removed: {folder}" for folder in self.files.clear(self.registry.skills)))
 
     def write_output(self, value: object, output: Output) -> None:

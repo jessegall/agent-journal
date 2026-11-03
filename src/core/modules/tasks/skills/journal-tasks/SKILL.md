@@ -32,6 +32,9 @@ the most urgent open task. With other tasks still in hand it starts a critical t
 A wait is a block the journal can see, never words in a log line. A blocked task is not handed out.
 
 - `journal task block <n> --on task:<m>`, or `--on question:<m>` or `--on plan:<m>`: it opens once that row ends.
+- `journal task block <n> --on worker:<m>`: it opens when the worker is merged, released or ended. Pending tests,
+  required corrections and queued tasks keep it blocked. A crashed worker is detected on a tick, and one that
+  never starts is retired after the configured idle time.
 - `journal task block <n> --until '<command>' --every <minutes>`: it opens once the command passes.
 - `journal task block <n> --reason "<what it waits on>"`, and `journal task unblock <n>` when that has arrived.
 - `journal task depend <n> --on <m>` makes a task wait on another without blocking it now;

@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+import pytest
+
 from core.base.caller.caller_request import CallerRequest
 from core.base.change.event_log import EventLog
 from core.base.query.queries import Queries
@@ -21,10 +23,16 @@ QUESTION_LINE = 'question ask "Which cart?" --options "the old" "the new" --envi
 DOC_LINE = 'doc make "Cart rules" --abstract "How the cart counts" --body "Cents" --environment main'
 
 
-def test_a_subagents_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_own(new_story):
+@pytest.fixture
+def subagent_task(new_story):
     story = new_story(fixture=SubagentStarted)
     story.run(TASK_LINE, actor=story.subagent)
     story.run_listeners()
+    return story
+
+
+def test_a_subagents_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_own(subagent_task):
+    story = subagent_task
     story.expect_absent(MAIN_CHAT, MADE)
     mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
     assert mark.agent_id == story.subagent.id
@@ -104,10 +112,8 @@ def test_the_commands_of_the_main_agent_leave_out_a_helpers_and_the_helpers_page
     story.expect_text(f"process feed --agent-id {story.subagent.id}", "make build")
 
 
-def test_a_helper_reads_only_its_own_rows_and_a_person_reads_them_all(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.run(TASK_LINE, actor=story.subagent)
-    story.run_listeners()
+def test_a_helper_reads_only_its_own_rows_and_a_person_reads_them_all(subagent_task):
+    story = subagent_task
     story.expect_absent("chat-mark list", MADE, actor=story.agent)
     story.expect_text("chat-mark list", MADE, actor=story.subagent)
     story.expect_text("chat-mark list", MADE)

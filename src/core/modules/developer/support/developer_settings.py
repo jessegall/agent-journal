@@ -14,7 +14,7 @@ SLOW_TICKS_SETTING = f"{TOOLS_SETTING}.slow-clock-ticks"
 DEVELOPER_SETTINGS = [
     SettingGroup("tools", "Developer tools", "Tools for working on the journal itself; switching this off turns off every one inside it.", toggleable=True, enabled=False,
                  children=[SettingGroup("hooks", "Agent tool calls", "Shows details of each agent tool call in the terminal.", toggleable=True,
-                                        children=[SettingValue("terminal-durations", "Call times", "Shows how long each call took and what it cost.",
+                                        children=[SettingValue("terminal-durations", "Call costs", "Shows the database points each call cost.",
                                                                SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
                                                   SettingValue("terminal-nudges", "Nudges in the terminal", "Shows in the terminal every line the journal sends the agent.",
                                                                SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
@@ -22,6 +22,6 @@ DEVELOPER_SETTINGS = [
                                                                SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                                                   SettingValue("request-log-size", "Agent calls kept", "How many of the last calls the developer page keeps.",
                                                                SettingType.NUMBER, default=50, scope=SettingScope.PROJECT)]),
-                           SettingValue("slow-clock-ticks", "Slow clock ticks", "Shows a chat message when one tick of the server clock takes over a quarter of a second.",
+                           SettingValue("slow-clock-ticks", "Costly clock ticks", "Shows a chat message when one tick costs more than 50 database points.",
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]),
 ]

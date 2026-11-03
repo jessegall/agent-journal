@@ -12,6 +12,7 @@ import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import TestQueueInspector from "./TestQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
+import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -81,13 +82,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             <template v-if="route.stack.length > 1">
                                 <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
                             </template>
-                            <div class="names">
-                                <p class="kind">{{ kind }} {{ opened.id }}<template v-if="row?.state"> · {{ row.state }}</template></p>
-                                <h2 data-resource-title>{{ title }}</h2>
-                                <template v-if="row?.abstract">
-                                    <p class="abstract">{{ row.abstract }}</p>
-                                </template>
-                            </div>
+                            <ResourceHeading :label="`${kind} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`" :title="title" :abstract="row?.abstract" />
                             <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                         </header>
                         <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
@@ -209,24 +204,19 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     color: var(--text);
 }
 
-.names {
-    flex: 1;
-    min-width: 0;
-}
-
-.kind {
+:deep(.resource-kind) {
     margin: 0 0 2px;
     color: var(--text-3);
     font-size: 11.5px;
 }
 
-h2 {
+:deep(.resource-title) {
     margin: 0 0 4px;
     font-size: 16px;
     font-weight: 600;
 }
 
-.abstract {
+:deep(.resource-abstract) {
     margin: 0;
     color: var(--text-2);
     font-size: 12.5px;

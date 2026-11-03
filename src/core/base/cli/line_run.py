@@ -11,6 +11,8 @@ from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.performance_tools import PerformanceTools
+from core.base.performance.route_cost_tool import RouteCostTool
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.caller.caller import Caller
 from core.base.timing import Timing
@@ -40,9 +42,14 @@ class LineRun:
         except StaleRegistryError as error:
             stream.write(f"{error}\n")
             return USAGE_CODE
+        tools = container.get(PerformanceTools)
+        start_points = tools.begin()
         try:
             return container.get(Console).requested_run(argv, request, stream)
         finally:
+            cost = tools.cost(start_points)
+            if cost is not None:
+                tools.run(RouteCostTool, "/cli", cost)
             container.get(Database).close()
 
     def run_as(self, argv: list[str], checked_caller: Callable[[Container], Caller], stream: TextIO) -> int:
