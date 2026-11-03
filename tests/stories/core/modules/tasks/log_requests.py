@@ -30,7 +30,7 @@ def test_a_builder_that_logs_its_task_counts_its_writes_from_the_log(new_story):
     story.expect_absent_hook_line("s-1", CART_EDIT, "log task 1 due:")
 
 
-def test_a_builder_is_read_only_more_past_the_hold_count_until_it_logs(new_story):
+def test_a_builder_is_readonly_more_past_the_hold_count_until_it_logs(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     edits(story, UNLOGGED_WRITES_CEILING - 1)
     story.expect_hook_refusal("s-1", CART_EDIT, "log task 1 due: 0 writes")

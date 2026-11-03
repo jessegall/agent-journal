@@ -68,7 +68,7 @@ class ShellLine:
         return self.has_file_redirect or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.parts)
 
     @property
-    def is_read_only(self) -> bool:
+    def is_readonly(self) -> bool:
         return bool(self.parts) and all(part.classification.category.reads_files for part in self.parts) and not self.has_part_writing_files
 
     @property

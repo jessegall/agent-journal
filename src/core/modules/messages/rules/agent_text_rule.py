@@ -10,15 +10,15 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
 JOURNAL_LINE = "[journal] "
-USER_ACT_LINES = ("[journal] new message", "[journal] question:", "[journal] the user")
-SEVERAL_MESSAGES_TEXT = " new messages"
+USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
+MANY_MESSAGES_TEXT = " new messages"
 SHORT_CHARACTERS = 240
 
 
 class AgentTextRule(DriverRule):
-    """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless it already
-    replied by command in this turn, or the turn only answered a journal line with few words and no write; a line
-    that says the user acted, by a message or a question, is answered as the user is."""
+    """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless it
+    already replied by command in this turn, or the turn only answered a journal line with few words and
+    no write; a line that says the user acted, by a message or a question, is answered as the user is."""
 
     name = "messages.agent-text"
     hook = HookEventName.MESSAGE_DISPLAY
@@ -48,5 +48,5 @@ class AgentTextRule(DriverRule):
         calls = self.queries.query(HookCall).filter(agent_id=prompt.agent_id, writes_files=True).newest().limited(1)
         return not calls or calls[0].id < prompt.id
 
-    def is_user_act(self, line: str) -> bool:
-        return line.startswith(USER_ACT_LINES) or SEVERAL_MESSAGES_TEXT in line
+    def is_user_act(self, prompt_text: str) -> bool:
+        return prompt_text.startswith(USER_ACTION_PREFIXES) or MANY_MESSAGES_TEXT in prompt_text

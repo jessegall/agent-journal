@@ -33,11 +33,9 @@ class SequenceRowTriggerListener(CommitListener):
             self.bus.run(MoveSequenceRun(START, sequence.id), Actor(agent_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
 
     def acting_agent_id(self, event: LoggedEvent) -> int | None:
-        if event.environment_id is None:
-            return None
         if self.queries.query(ActorRecord).find(event.actor_id).type is ActorType.AGENT:
             return event.actor_id
-        agents = MainAgentFinder.rows(self.queries, event.environment_id)
+        agents = MainAgentFinder.rows(self.queries, event.environment_id) if event.environment_id is not None else ()
         return agents[0].id if agents else None
 
     @staticmethod

@@ -16,15 +16,14 @@ START_LIMIT_SECONDS = 10
 
 
 class HookSwitch:
-    """Moves the hooks of the agent programs from version 4 to version 5 when a project is
-    upgraded, and back when it is restored. The settings files that exist are kept as they
-    were in .journal/version-4/hooks and version 5's hooks are written in their place, calling
-    the hook binary when .journal/bin/journal-hook starts, else the fallback hook of the project;
-    the rest of each file stays. A restore takes version 5's hook entries out of the files as
-    they are now and puts version 4's back from the kept ones, so a setting added since stays.
-    A project with no such file is left without hooks. A restore also sets the file that tells the hook binary to
-    call version 4's port, and an upgrade takes it away. It runs inside the steps CodeReplacement
-    holds the server lock for."""
+    """Moves the hooks of the agent programs from version 4 to version 5 when a project is upgraded, and
+    back when it is restored. The settings files that exist are kept as they were in
+    .journal/version-4/hooks and version 5's hooks are written in their place, calling the hook binary
+    when .journal/bin/journal-hook starts, else the fallback hook of the project; the rest of each file
+    stays. A restore takes version 5's hook entries out of the files as they are now and puts version
+    4's back from the kept ones, so a setting added since stays. A project with no such file is left
+    without hooks. A restore also sets the file that tells the hook binary to call version 4's port, and
+    an upgrade takes it away. It runs inside the steps CodeReplacement holds the server lock for."""
 
     def __init__(self, root: Path) -> None:
         self.root = root

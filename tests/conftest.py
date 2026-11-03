@@ -10,6 +10,9 @@ REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
 REAL_PROGRAMS = ("claude", "codex")
 TYPE_CHECK_MARK = "type_check"
+INSTALL_MARK = "install_job"
+INSTALL_FOLDER = "install"
+SEPARATE_JOBS = (TYPE_CHECK_MARK, INSTALL_MARK)
 os.environ.pop("JOURNAL_AGENT_SESSION", None)
 
 
@@ -24,14 +27,26 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", f"{REAL_PROGRAM_MARK}: the story starts a real agent program and runs only with {REAL_PROGRAM_FLAG}")
     config.addinivalue_line("markers", f"{TYPE_CHECK_MARK}: the strict type check, a gate of its own: python3 -m pytest -m {TYPE_CHECK_MARK}")
+    config.addinivalue_line("markers", f"{INSTALL_MARK}: runs the real install or upgrade, a gate of its own: python3 -m pytest -m {INSTALL_MARK} tests")
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     wanted = config.getoption(REAL_PROGRAM_FLAG)
-    type_check_wanted = config.getoption("markexpr") == TYPE_CHECK_MARK
-    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and (type_check_wanted or item.get_closest_marker(TYPE_CHECK_MARK) is None)]
+    for item in items:
+        if INSTALL_FOLDER in item.path.parts[item.path.parts.index("tests"):]:
+            item.add_marker(INSTALL_MARK)
+    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and is_in_this_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
     items[:] = kept
+
+
+def is_in_this_job(item: pytest.Item, config: pytest.Config) -> bool:
+    """A test of a separate job runs when its job is asked for by its mark, or its file or job folder is named."""
+    job = next((mark for mark in SEPARATE_JOBS if item.get_closest_marker(mark) is not None), None)
+    if job is None or config.getoption("markexpr") == job:
+        return True
+    targets = [Path(argument.split("::")[0]).resolve() for argument in config.args]
+    return any(target == item.path or (target.name == INSTALL_FOLDER and target in item.path.parents) for target in targets)
 
 
 def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: pytest.Config) -> None:
