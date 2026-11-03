@@ -44,7 +44,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         docked = list(docked_items.oldest().all_rows())
         if len(docked) < capacity:
             return
-        leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None)
+        leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None) or next((item for item in docked if not item.kept and not self.leave_time.is_running(item)), None)
         if leaving is None:
             raise Refusal(limit_text, f"every item is pinned or still running: pin fewer, or raise {MOST_ITEMS_SETTING}")
         self.repository.save(leaving.undock(context.timestamp, context.actor), context)
