@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -263,6 +264,18 @@ def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(ne
     story.expect_success("task test 1", actor=worker)
     assert tasks.next_delegated(worker.id).id == 2
     story.expect_success("task start 2", actor=worker)
+
+
+def test_a_plan_hands_out_only_its_tasks_that_no_worker_was_given(new_story):
+    story, _, _ = delegated_story(new_story)
+    plan_id = story.new_row_id('plan make "Cart" --brief "The cart counts" --environment main', actor=story.agent)
+    phase_id = story.new_row_id(f'phase make --plan {plan_id} "First" --goal "It counts"', actor=story.agent)
+    story.expect_success(f"phase place 2 --phase {phase_id}", actor=story.agent)
+    plans = story.container.get(NextPlanTasks)
+    assert plans.following(plan_id) is None
+    free_id = story.new_row_id('task make "Fix the till" --environment main', actor=story.agent)
+    story.expect_success(f"phase place {free_id} --phase {phase_id}", actor=story.agent)
+    assert plans.following(plan_id) == free_id
 
 
 def test_the_assigner_leaves_a_delegated_task_alone(new_story):
