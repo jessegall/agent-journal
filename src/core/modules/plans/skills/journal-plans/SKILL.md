@@ -12,6 +12,8 @@ and then it is followed.
 - `journal phase make --plan <n> "<title>" --goal "<what is true when done>"` adds a phase; `--checkpoint` where the
   user should review before the plan goes on. `journal phase move <phase> --to <place>` reorders one.
 - `journal phase place <task> --phase <phase>` puts a task at the end of a phase.
+- `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
+  or an ended plan refuses the command and leaves no new task.
 - `journal plan ready <n>` when every phase has its tasks. Only the user approves; `journal plan start <n>` begins it.
 - `journal plan outline <n>` lists its phases and tasks, `journal plan progress <n>` its counts,
   `journal plan inspect <n>` both, and `journal plan list` every plan.
