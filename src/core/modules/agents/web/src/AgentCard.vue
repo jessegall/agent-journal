@@ -98,7 +98,7 @@ readCommand();
                     <span class="agent-stopped" data-agent-stopped>{{ waitTarget ? `Waiting: ${waitTarget}` : "Waiting" }}</span>
                 </template>
                 <template v-else-if="waitingForTests">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the process queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
                 </template>
                 <template v-else>
                     <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />

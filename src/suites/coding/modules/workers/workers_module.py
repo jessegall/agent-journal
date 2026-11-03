@@ -16,6 +16,8 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.processes.support.queue_run_workers import QueueRunWorkers
+from suites.coding.modules.workers.bindings.worker_queue_run_workers import WorkerQueueRunWorkers
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -124,7 +126,7 @@ class WorkersModule(Module):
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    bindings = [(TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets)]
+    bindings = [(TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets), (QueueRunWorkers, WorkerQueueRunWorkers)]
     listeners = [ReassignedTaskListener, DelegatedTaskCommentListener, WorkerLimitListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,

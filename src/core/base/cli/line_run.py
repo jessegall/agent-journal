@@ -11,7 +11,6 @@ from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.performance.performance_state import PerformanceState
 from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.base.registry.stale_registry_error import StaleRegistryError
@@ -35,8 +34,7 @@ class LineRun:
         if argv[:2] == SYNC_ARGV:
             container = opened_container(self.home)
             try:
-                with container.get(PerformanceState).reload():
-                    return container.get(ModuleSyncLine).run(argv, stream)
+                return container.get(ModuleSyncLine).run(argv, stream)
             finally:
                 container.get(Database).close()
         try:

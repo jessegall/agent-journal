@@ -8,7 +8,7 @@ from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 
 class RunQueueHaltedRule(DriverRule):
-    """While a command has halted the test queue, the main agent is reminded on any hook, the clock's tick included,
+    """While the process queue is halted, the main agent is reminded on hooks and clock ticks,
     and the nudge's interval keeps it to once in five minutes. A restart's own hold is not reminded of."""
 
     name = "processes.run-queue-halted"
