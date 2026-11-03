@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.command.bus import Bus
 from core.base.driver.tool_type import ToolType
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
@@ -30,18 +32,18 @@ def ended_subagent_story(new_story, profile: str = "Explore"):
     return story
 
 
-def test_a_new_subagent_on_files_an_ended_one_read_is_refused_naming_it(new_story):
-    story = ended_subagent_story(new_story)
+def test_a_new_subagent_on_files_an_ended_one_read_is_refused_naming_it(ended_explorer):
+    story = ended_explorer
     story.expect_hook_refusal("s-1", reader("Now check cart.py again"), "SendMessage to s-sub")
 
 
-def test_a_new_subagent_on_other_files_goes_out(new_story):
-    story = ended_subagent_story(new_story)
+def test_a_new_subagent_on_other_files_goes_out(ended_explorer):
+    story = ended_explorer
     story.expect_hook_allowed("s-1", reader("Read src/till.py and report"))
 
 
-def test_a_new_subagent_of_another_profile_goes_out(new_story):
-    story = ended_subagent_story(new_story)
+def test_a_new_subagent_of_another_profile_goes_out(ended_explorer):
+    story = ended_explorer
     story.expect_hook_allowed("s-1", reader("Check src/cart.py", "researcher"))
 
 
@@ -79,3 +81,8 @@ def test_a_long_read_of_a_file_is_named_too(new_story):
     long = read.with_raw({"tool_response": {"type": "text", "file": {"filePath": "a.py", "content": "line\n" * 500}}})
     assert any("that result was 500 lines" in line for line in story.hook("s-1", long).lines)
     story.expect_absent_hook_line("s-1", read.with_raw({"tool_response": {"type": "text", "file": {"content": "line\n"}}}), "that result was")
+
+
+@pytest.fixture
+def ended_explorer(new_story):
+    return ended_subagent_story(new_story)

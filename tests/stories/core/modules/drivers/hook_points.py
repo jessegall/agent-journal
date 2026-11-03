@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
@@ -25,12 +27,8 @@ def filled(story) -> None:
         story.run(f'memory make fact "Fact {number}" --project', actor=story.user)
 
 
-def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    filled(story)
-    story.hook("s-1", HookSamples.prompt("Carry on"))
-    database = story.container.get(Database)
-    over = {}
+def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
+    story, database, over = filled_hook_points
     for name, sample in SAMPLES.items():
         start = database.tally.points()
         story.hook("s-1", sample)
@@ -40,12 +38,8 @@ def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_
     assert not over, "\n".join(f"{name}: {line}" for name, line in over.items())
 
 
-def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    filled(story)
-    story.hook("s-1", HookSamples.prompt("Carry on"))
-    database = story.container.get(Database)
-    over = {}
+def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(filled_hook_points):
+    story, database, over = filled_hook_points
     measured = 0
     for read in sorted({read for window in story.container.get(Registry).windows for read in window.reads}):
         for line in (read, f"{read} 1", f"{read} --agent {story.agent.id}"):
@@ -60,3 +54,13 @@ def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_
             break
     assert measured > READS_MEASURED, f"only {measured} reads ran"
     assert not over, "\n".join(f"{line}: {text}" for line, text in over.items())
+
+
+@pytest.fixture
+def filled_hook_points(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    filled(story)
+    story.hook("s-1", HookSamples.prompt("Carry on"))
+    database = story.container.get(Database)
+    over = {}
+    return story, database, over

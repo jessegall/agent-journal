@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
@@ -9,11 +11,8 @@ def dock_count(story) -> int:
     return story.container.get(Database).rows(Statement("SELECT count(*) FROM docks"))[0][0]
 
 
-def test_an_item_goes_through_undock_and_dock(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    story.run_listeners()
-    dock_id = 1
-    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
+def test_an_item_goes_through_undock_and_dock(task_dock):
+    story, dock_id, item_id = task_dock
     story.expect_text(f"dock-item undock {item_id}", "state: undocked")
     story.expect_text(f"dock-item dock {item_id}", "state: docked")
 
@@ -24,11 +23,8 @@ def test_a_second_dock_for_one_environment_is_refused(new_story):
     story.expect_refusal("dock make --environment main", "exists already")
 
 
-def test_deleting_a_dock_deletes_its_items(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    story.run_listeners()
-    dock_id = 1
-    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
+def test_deleting_a_dock_deletes_its_items(task_dock):
+    story, dock_id, item_id = task_dock
     story.expect_success(f"dock delete {dock_id}")
     story.expect_refusal(f"dock-item show {item_id}", "no dock-item")
 
@@ -72,3 +68,12 @@ def test_the_migration_makes_the_dock_of_every_environment_that_has_none(new_sto
     for sql in ExistingEnvironmentDocksMigration.statements:
         database.update(Statement(sql))
     assert database.rows(Statement("SELECT count(*) FROM docks"))[0][0] == 2
+
+
+@pytest.fixture
+def task_dock(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run_listeners()
+    dock_id = 1
+    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
+    return story, dock_id, item_id

@@ -1,12 +1,21 @@
+import pytest
+
+from core.testing.story_fixture import StoryFixture
+
 from tests.stories.core.support.fixtures import UserJoined
 
 TRANSCRIPTION_LINE = 'transcription make "Cart meeting" --text "Ada: the cart rounds twice." --environment main'
 
 
+class CartTranscription(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.expect_success(TRANSCRIPTION_LINE, actor=story.user)
+
+
 def transcribed(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_success(TRANSCRIPTION_LINE, actor=story.user)
-    return story
+    return new_story(fixture=CartTranscription)
 
 
 def test_a_pasted_transcription_makes_a_task_linked_to_it_and_tells_the_agent(new_story):
@@ -23,9 +32,8 @@ def test_a_persons_edit_tells_the_agent_again_and_keeps_the_unfinished_task(new_
     assert story.run("agent-line list", actor=story.user).output_text.count("transcription:1 has new text") == 2
 
 
-def test_an_edit_after_the_task_is_closed_makes_a_new_one(new_story):
-    story = transcribed(new_story)
-    story.run("task start 1", actor=story.agent)
+def test_an_edit_after_the_task_is_closed_makes_a_new_one(transcription_task):
+    story = transcription_task
     story.run('task close 1 --outcome "summarized"', actor=story.agent)
     story.expect_success('transcription edit 1 --text "Ada: one more thing."', actor=story.user)
     assert story.run("task list --environment main", actor=story.user).output_text.count("Summarize transcript") == 2
@@ -59,9 +67,8 @@ def test_starting_a_transcription_task_starts_the_sequence_for_a_transcript(new_
     story.expect_text("sequence next", "ran its last step", actor=story.agent)
 
 
-def test_a_second_transcription_uses_the_same_sequence(new_story):
-    story = transcribed(new_story)
-    story.run("task start 1", actor=story.agent)
+def test_a_second_transcription_uses_the_same_sequence(transcription_task):
+    story = transcription_task
     story.run("sequence abandon --why done --sure", actor=story.agent)
     story.run('task close 1 --outcome "summarized"', actor=story.agent)
     story.expect_success('transcription make "Second" --text "Ada: more." --environment main', actor=story.user)
@@ -91,3 +98,10 @@ def test_a_server_without_transcripts_is_refused(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('mcp add payments "https://mcp.payments.example/sse"', actor=story.user)
     story.expect_refusal("transcription fetch payments --environment main", "payments has no transcriptions to fetch", actor=story.user)
+
+
+@pytest.fixture
+def transcription_task(new_story):
+    story = transcribed(new_story)
+    story.run("task start 1", actor=story.agent)
+    return story

@@ -1,3 +1,5 @@
+import pytest
+
 import json
 from datetime import timedelta
 
@@ -39,10 +41,8 @@ def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
     assert "Three" in board_text and "Two" in board_text and "One" not in board_text
 
 
-def test_a_limit_sets_the_page_of_every_group_of_the_whole_board(new_story):
-    story = new_story(fixture=UserJoined)
-    for number in (1, 2, 3):
-        story.run(f'task make "Task {number}" --environment main', actor=story.user)
+def test_a_limit_sets_the_page_of_every_group_of_the_whole_board(three_board_tasks):
+    story, number = three_board_tasks
     for number in (1, 2):
         story.expect_success(f'task cancel {number} --reason "not needed"', actor=story.user)
     groups = json.loads(story.run("task board --environment main --limit 1 --json", actor=story.user).output_text)["groups"]
@@ -51,10 +51,8 @@ def test_a_limit_sets_the_page_of_every_group_of_the_whole_board(new_story):
     assert len(rows["cancelled"]["rows"]) == 1 and rows["cancelled"]["total"] == 2
 
 
-def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_closed_last_and_pages_by_that_time(new_story):
-    story = new_story(fixture=UserJoined)
-    for number in (1, 2, 3):
-        story.run(f'task make "Task {number}" --environment main', actor=story.user)
+def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_closed_last_and_pages_by_that_time(three_board_tasks):
+    story, number = three_board_tasks
     for number in (2, 3, 1):
         story.advance(timedelta(seconds=1))
         story.expect_success(f'task cancel {number} --reason "not needed"', actor=story.user)
@@ -69,3 +67,11 @@ def test_delegated_tasks_come_after_blocked_and_before_open(new_story):
     story = new_story(fixture=UserJoined)
     states = [group["state"] for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]]
     assert states.index("blocked") < states.index("delegated") < states.index("open"), states
+
+
+@pytest.fixture
+def three_board_tasks(new_story):
+    story = new_story(fixture=UserJoined)
+    for number in (1, 2, 3):
+        story.run(f'task make "Task {number}" --environment main', actor=story.user)
+    return story, number
