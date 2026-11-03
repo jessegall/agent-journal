@@ -1,4 +1,8 @@
+import pytest
+
 from tests.stories.core.base.upgrade.support.released_journal import prepare_release
+
+pytestmark = pytest.mark.install_job
 
 
 def test_a_clean_release_upgrade_runs_installed_commands_without_manual_module_sync(new_story):

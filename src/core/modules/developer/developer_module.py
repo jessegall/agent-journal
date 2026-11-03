@@ -11,22 +11,26 @@ from core.modules.developer.commands.hook_requests.hook_requests_subcommand impo
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.module.module import Module
-from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS
+from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
+from core.modules.developer.models.hook_request import HookRequest
+from core.modules.developer.migrations.m001_hook_requests import HookRequestsMigration
 
 
 class DeveloperModule(Module):
     """Adds the developer settings: one switch and the groups inside it, for working on the journal itself."""
 
-    move_reason = "it owns no tables"
+    move_reason = "request history is temporary diagnostic data"
     name = "journal.core.developer"
     seed_reason = "its settings are the person's own choice"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.settings"]
     settings = DEVELOPER_SETTINGS
+    migrations = [HookRequestsMigration]
+    views = [HookRequest]
     handlers = [ResetHookNumbersHandler]
     bindings = [(RouteCostTool, DeveloperRouteCostTool)]
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
-               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["developer hook-requests"])]
+    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
+               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests"])]

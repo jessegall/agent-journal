@@ -4,7 +4,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_answer import RuleAnswer
 
-RULE_FAILED = NudgeDeclaration("drivers.rule_failed", NudgeType.INFO, "{text}")
+RULE_FAILED = NudgeDeclaration("drivers.rule_failed", NudgeType.NOTICE, "{text}")
 RAISED = "raised"
 SILENCED = "silenced"
 

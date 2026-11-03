@@ -37,6 +37,7 @@ class WindowEntry:
     search: Mapping[str, object] = field(default_factory=dict[str, object])
     shows: str = "environment"
     skeleton: Sequence[Mapping[str, object]] = ()
+    required_settings: Sequence[str] = ()
 
     def listing(self, fingerprint: str) -> WindowListing:
         document = self.loading == WindowLoading.DOCUMENT

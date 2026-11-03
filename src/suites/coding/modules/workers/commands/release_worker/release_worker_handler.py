@@ -20,8 +20,7 @@ WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
-    """Opens the worker's task again, abandons its worktree and removes the folder; a branch with commits is
-    kept."""
+    """Releases tasks still assigned to the worker and removes its worktree, keeping a branch with commits."""
 
     command = ReleaseWorker
 
@@ -34,7 +33,8 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
             raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worker-worktree list shows the worktrees")
         abandoned = self.repository.save(worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.queries.query(Task).find(worktree.task_id)
-        self.repository.save(replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
+        if task.delegated_to == worktree.agent_id:
+            self.repository.save(replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.save(replace(delegated, delegated_to=None), context)
         unmerged = self.git.remove(self.queries.query(Environment).find(abandoned.environment_id).folder, abandoned)

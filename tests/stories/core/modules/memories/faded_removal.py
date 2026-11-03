@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
@@ -5,6 +7,8 @@ from tests.stories.core.modules.memories.fading_at_compaction import compacted
 from tests.stories.core.modules.memories.support.faded_removal import expect_removed, expect_unchanged, repair_zero_weights, prepare_zero_weight_fact
 from tests.stories.core.modules.memories.support.round_checks import expect_round, expect_faded_mark_count
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+
+pytestmark = pytest.mark.browser_job
 
 
 def test_a_fact_faded_to_zero_is_removed_and_rules_and_other_scopes_stay_unchanged(new_story):

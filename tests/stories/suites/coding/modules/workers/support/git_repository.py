@@ -1,7 +1,10 @@
+import atexit
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
+from typing import ClassVar
 
 
 GIT_TIMEOUT_SECONDS = 30
@@ -14,22 +17,33 @@ STORY_GIT_CONFIG = ("-c", "user.name=Story", "-c", "user.email=story@example.com
 
 
 class GitRepository:
-    """A git repository made in a story's own folder, with main checked out and the environment's branch version-5
-    one commit ahead of it, and the checks a story makes of its branches, worktrees and folders."""
+    """A git repository made in a story's own folder, with main checked out and the environment's branch
+    version-5 one commit ahead of it, and the checks a story makes of its branches, worktrees and
+    folders. The sample is made once per test process and copied for each story."""
+
+    source_folder: ClassVar[Path | None] = None
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
 
     @classmethod
     def sample(cls, folder: Path) -> "GitRepository":
-        folder.mkdir(parents=True, exist_ok=True)
-        repository = cls(folder)
-        repository.git("init", "--initial-branch", CHECKOUT_BRANCH)
-        repository.committed(".gitignore", ".journal\n", "The first commit")
-        repository.git("checkout", "-b", ENVIRONMENT_BRANCH)
-        repository.committed("cart.py", "TOTAL = 0\n", "The cart")
-        repository.git("checkout", CHECKOUT_BRANCH)
-        return repository
+        shutil.copytree(cls.sample_source(), folder, dirs_exist_ok=True, symlinks=True)
+        return cls(folder)
+
+    @classmethod
+    def sample_source(cls) -> Path:
+        if cls.source_folder is None:
+            source = Path(tempfile.mkdtemp(prefix="story-sample-repository-"))
+            atexit.register(shutil.rmtree, source, ignore_errors=True)
+            repository = cls(source)
+            repository.git("init", "--initial-branch", CHECKOUT_BRANCH)
+            repository.committed(".gitignore", ".journal\n", "The first commit")
+            repository.git("checkout", "-b", ENVIRONMENT_BRANCH)
+            repository.committed("cart.py", "TOTAL = 0\n", "The cart")
+            repository.git("checkout", CHECKOUT_BRANCH)
+            cls.source_folder = source
+        return cls.source_folder
 
     def git(self, *arguments: str, folder: Path | None = None) -> subprocess.CompletedProcess[str]:
         return subprocess.run(["git", *STORY_GIT_CONFIG, "-C", str(folder or self.folder), *arguments], env=GIT_ENVIRONMENT, capture_output=True, text=True,

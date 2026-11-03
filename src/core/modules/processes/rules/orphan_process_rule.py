@@ -9,7 +9,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.support.run_folder_ends import RunFolderEnds
+from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 
 
 TICK_INTERVAL_SECONDS = 150
@@ -42,7 +42,7 @@ class OrphanProcessRule(DriverRule):
         if ended:
             return answer.running(*ended)
         last_sign = self.folder.heartbeat(process.id) or process.created_at
-        pid_missing = self.folder.pid(process.id) is not None and not self.folder.has_runner_process(process.id)
+        pid_missing = self.folder.pid(process.id) is not None and not self.folder.has_leader_process(process.id)
         limit_seconds = PID_MISSING_SECONDS if pid_missing else self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id)
         if restarted or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= limit_seconds:
             return answer

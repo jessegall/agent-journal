@@ -44,7 +44,7 @@ export class WindowCatalogue {
     }
 
     heard(event) {
-        return event.event === "registry.sync" ? this.load() : Promise.resolve();
+        return event.event === "registry.sync" || event.event.startsWith("setting.") ? this.load() : Promise.resolve();
     }
 
     get offered() {

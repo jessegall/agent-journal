@@ -2,8 +2,12 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.refusal import Refusal
 from core.modules.plans.commands.place_phase.place_phase import PlacePhase
+from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.positions import Positions
 
 
@@ -17,6 +21,10 @@ class PlacePhaseHandler(Handler[PlacePhase, PhaseTask]):
         self.queries, self.repository, self.positions = queries, repository, positions
 
     def handle(self, command: PlacePhase, context: Context) -> PhaseTask:
+        phase = self.queries.query(Phase).find(command.phase_id)
+        plan = self.queries.query(Plan).find(phase.plan_id)
+        if plan.state in (PlanState.COMPLETED, PlanState.CANCELLED):
+            raise Refusal(f"plan {plan.id} is {plan.state}, so no task can be placed in its phases")
         current = self.queries.query(PhaseTask).filter(task_id=command.task_id).page(1, 1).rows
         if current and current[0].phase_id == command.phase_id:
             return current[0]

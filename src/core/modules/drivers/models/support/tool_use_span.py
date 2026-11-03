@@ -1,0 +1,17 @@
+from dataclasses import dataclass
+
+from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
+from core.modules.drivers.models.support.tool_use_count import ToolUseCount
+
+
+@dataclass(frozen=True)
+class ToolUseSpan:
+    """A span of tools the agent has used."""
+
+    unit = "tool uses"
+
+    count: int
+
+    def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
+        return ToolUseCount.after_timestamp(queries, agent_id, start) >= self.count

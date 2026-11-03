@@ -16,5 +16,5 @@ class WorkerStoppedMarkListener(WorkerStopMarkListener):
             return
         worker = self.queries.query(Agent).find(event.row_id)
         count = len(self.unfinished.rows(worker.id)) if worker.role is AgentRole.WORKER else 0
-        if count and not self.unfinished.has_run_going(worker.id):
+        if count and not self.unfinished.has_running_process(worker.id):
             self.show_stop(event, worker, WorkerMarkVariant.ENDED_EARLY, f"stopped with {count} tasks left")
