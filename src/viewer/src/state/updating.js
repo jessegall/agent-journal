@@ -1,7 +1,6 @@
 import {reactive} from "vue";
 import {transport} from "../api/transport.js";
-import {reloadWhenFree} from "../platform/busyField.js";
-import {reloadIfNewBuild} from "../windows/staleBuild.js";
+import {reloadForNewStart, reloadIfNewBuild} from "../windows/staleBuild.js";
 
 const ASK_EVERY_MS = 2000;
 export const LATE_AFTER_MS = 30000;
@@ -23,17 +22,6 @@ async function stateOfServer() {
     } catch {
         return {restarting: true, updating: updating.external};
     }
-}
-
-// when the server last asked had started: a later start may run other code after an install, and this page holds its windows from before
-let knownStart = "";
-
-export function reloadForNewStart(startedAt, reload = () => reloadWhenFree(window)) {
-    if (!startedAt) return false;
-    const isNew = Boolean(knownStart) && knownStart !== startedAt;
-    knownStart = startedAt;
-    if (isNew) reload();
-    return isNew;
 }
 
 function arrived() {

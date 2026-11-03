@@ -55,12 +55,14 @@ const isSubagent = computed(() => props.row.role === "subagent");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
+const waitTarget = ref("");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value));
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
     runningCommand.value = answer.ok ? answer.value.tool : "";
     noCommandNote.value = answer.ok ? answer.value.note : "";
+    waitTarget.value = answer.ok ? answer.value.wait_target ?? "" : "";
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
 onUnmounted(() => stopFollowing?.());
@@ -93,7 +95,7 @@ readCommand();
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
                 <template v-if="stoppedWithWork">
-                    <span class="agent-stopped" data-agent-stopped>Waiting: started again when there is more to do</span>
+                    <span class="agent-stopped" data-agent-stopped>{{ waitTarget ? `Waiting: ${waitTarget}` : "Waiting" }}</span>
                 </template>
                 <template v-else-if="waitingForTests">
                     <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>

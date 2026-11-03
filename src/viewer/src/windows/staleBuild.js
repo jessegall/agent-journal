@@ -15,6 +15,17 @@ export async function reloadIfNewBuild(page = document, ask = fetch, reload = ()
     return true;
 }
 
+// when the server last asked had started: a later start may run other code after an install, and this page holds its windows from before
+let knownStart = "";
+
+export function reloadForNewStart(startedAt, reload = () => reloadWhenFree(window)) {
+    if (!startedAt) return false;
+    const isNew = Boolean(knownStart) && knownStart !== startedAt;
+    knownStart = startedAt;
+    if (isNew) reload();
+    return isNew;
+}
+
 // a window file newer than the kit this page holds in memory names an export the old kit lacks: only a new page load fixes that
 export const isStaleBuild = (error) => /does not provide an export/.test(String(error?.message ?? ""));
 

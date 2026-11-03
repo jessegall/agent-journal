@@ -27,7 +27,7 @@ const TABS = [
 const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, subagent: true, order: "number", every: false};
 const drawn = async () => {
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}])}),
+        ...context({"agent list": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
         tabs: TABS,
         option: (key) => ({value: OPTIONS[key]}),
     });
@@ -105,11 +105,11 @@ test("starting a search closes the open card and lists every match", async () =>
 
 test("a clicked card inside the open one, such as a tab, does not close it", async () => {
     const element = await drawn();
-    cardOf(element, 3).click();
+    cardOf(element, 4).click();
     await settle();
     element.querySelector("[data-tab=transcript]").click();
     await settle();
-    expect(cards(element)).toEqual([3]);
+    expect(cards(element)).toEqual([4]);
     expect(element.querySelector("[data-agent-tab-body]").textContent).toContain("Read the cart");
 });
 
