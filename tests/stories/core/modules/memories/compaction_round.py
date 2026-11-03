@@ -1,8 +1,12 @@
+import pytest
+
 from tests.stories.core.modules.memories.fading_at_compaction import compacted
 from tests.stories.core.modules.memories.support.round_checks import expect_browser_round, expect_faded_mark_count, expect_round
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.server_client import server_story
 from tests.stories.fixtures.permanent_memory_type import PermanentMemoryType
+
+pytestmark = pytest.mark.browser_job
 
 
 def test_the_round_and_browser_count_only_memories_changed_by_this_compaction(new_story):
