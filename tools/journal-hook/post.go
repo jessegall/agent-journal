@@ -23,9 +23,9 @@ import (
 // How long the hook waits for the journal's server to take the connection, as hook.sh's curl --connect-timeout 1.
 const connectLimit = time.Second
 
-// socketSwitchName is the file version 5's install writes in the journal's folder, so hooks go to version 5's socket
-// instead of version 4's port.
-const socketSwitchName = "hooks-on-socket"
+// versionFourSwitchName is the file a restore to version 4 writes in the journal's folder, so hooks go to version 4's
+// port instead of version 5's socket; a project with no such file is on version 5.
+const versionFourSwitchName = "hooks-on-version-4"
 
 // restartMarkName is the file a server writes in the journal's folder when it stops for new code; the next server
 // removes it once it takes requests.
@@ -234,14 +234,14 @@ func posted(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	return response.StatusCode, answer
 }
 
-// onSocket says whether version 5's install has set the switch that sends hooks to its socket.
+// onSocket says whether hooks go to version 5's socket, which they do unless a restore to version 4 set its switch.
 func (outgoing delivery) onSocket() bool {
-	_, err := os.Stat(filepath.Join(outgoing.root, ".journal", socketSwitchName))
-	return err == nil
+	_, err := os.Stat(filepath.Join(outgoing.root, ".journal", versionFourSwitchName))
+	return err != nil
 }
 
-// destination is the address the hook is posted to and the transport that reaches it: /hook on version 5's socket
-// once the switch is set, else version 4's port; there is none when version 4 has written no port.
+// destination is the address the hook is posted to and the transport that reaches it: /hook on version 5's socket,
+// else version 4's port once a restore set the switch; there is none when version 4 has written no port.
 func destination(outgoing delivery) (string, http.RoundTripper, bool) {
 	if outgoing.onSocket() {
 		address := "http://journal/hook?program=" + url.QueryEscape(outgoing.program)
