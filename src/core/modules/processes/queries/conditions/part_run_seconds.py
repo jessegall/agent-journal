@@ -4,7 +4,7 @@ from core.base.database.statement import Statement
 
 
 @dataclass(frozen=True)
-class PartRanSeconds:
+class PartRunSeconds:
     """Matches process parts that ran at least this many seconds, from their start to their end."""
 
     seconds: int

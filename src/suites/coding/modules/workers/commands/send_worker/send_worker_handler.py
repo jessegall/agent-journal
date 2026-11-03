@@ -40,4 +40,4 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
         self.repository.save(Message(environment_id=worktree.environment_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=f"worker {command.worker_id}"), context)
-        return self.nudger.say_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
+        return self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)

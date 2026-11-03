@@ -72,5 +72,5 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             self.repository.save(task.moved(TaskLifecycle.retest), context)
         line = (f"{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers in those files,"
                 f" then deliver again with journal worker deliver")
-        self.nudger.say_text(worktree.agent_id, line, MERGE_CONFLICT_SOURCE, context)
+        self.nudger.send_text(worktree.agent_id, line, MERGE_CONFLICT_SOURCE, context)
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

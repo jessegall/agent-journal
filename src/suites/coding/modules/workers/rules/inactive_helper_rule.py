@@ -30,7 +30,7 @@ class InactiveHelperRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         minutes = self.settings.number(QUIET_HELPER_MINUTES, hook.environment_id)
-        if self.hook_history.answered_within(self.name, hook, minutes * MINUTE_SECONDS):
+        if self.hook_history.has_recent_answer(self.name, hook, minutes * MINUTE_SECONDS):
             return RuleAnswer.allowed()
         quiet = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, minutes)]
         return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=minutes) for helper in quiet))

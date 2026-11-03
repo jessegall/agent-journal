@@ -37,12 +37,12 @@ class TypedLineListener(CommitListener):
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, event.timestamp):
             return
         actor = Actor(event.actor_id, ActorType.USER)
-        if self.typed_since_last_hook(line):
+        if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
         else:
             self.typing.type_line(line, actor, event.environment_id)
 
-    def typed_since_last_hook(self, line: AgentLine) -> bool:
+    def has_entered_repeat(self, line: AgentLine) -> bool:
         entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)
         hook = self.hook_calls.newest_agent_hook(line.agent_id)
         return (entered_lines if hook is None else entered_lines.matching(Greater("created_at", hook.creation_timestamp().text))).exists()

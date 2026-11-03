@@ -1058,6 +1058,7 @@
         "coding.terminal"
     ],
     "command_verbs": [
+        "Claim",
         "Abandon",
         "Accept",
         "Add",

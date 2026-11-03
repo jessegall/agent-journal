@@ -31,5 +31,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
             self.repository.save(self.queries.query(Task).find(proof.task_id).moved(TaskLifecycle.retest), context)
         line = (f"point {proof.point} of task {proof.task_id} is short: {command.shortfall}. Fix it, show it again with journal proof make {proof.point}"
                 f" \"<text>\" and deliver again with journal worker deliver")
-        self.nudger.say_text(worktree.agent_id, line, SOURCE, context)
+        self.nudger.send_text(worktree.agent_id, line, SOURCE, context)
         return proof

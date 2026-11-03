@@ -35,4 +35,4 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
 
     def notify_agents(self, message: Message, emoji: str, context: Context) -> None:
         for agent in tuple(MainAgentFinder.rows(self.queries, message.environment_id)):
-            self.nudger.say(agent.id, MESSAGE_REACTION, REACTION_SOURCE, context, emoji=emoji, message=message.id)
+            self.nudger.send(agent.id, MESSAGE_REACTION, REACTION_SOURCE, context, emoji=emoji, message=message.id)

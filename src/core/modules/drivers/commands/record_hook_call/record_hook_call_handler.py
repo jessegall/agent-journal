@@ -95,7 +95,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:
-            self.nudger.say_text(agent_id, text, rule, context)
+            self.nudger.send_text(agent_id, text, rule, context)
         return HookReply("", [], call_id)
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:

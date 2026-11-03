@@ -51,10 +51,10 @@ class EndedWorkerListener(SaveListener):
         resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).count()
         person_actor = self.queries.query(ActorRecord).find(change.actor.id).type is ActorType.USER
         if delegated and not help_requested and not person_actor and resume_count < RESUME_LIMIT_COUNT:
-            self.nudger.say(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, change.context)
+            self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, change.context)
             return
         tasks = ", ".join(f"task:{task.id}" for task in (*started, *self.queued_tasks(new.id)))
-        self.nudger.say(new.parent_id, WORKER_ENDED_WITH_TASKS, SOURCE, change.context, worker=new.id, tasks=tasks)
+        self.nudger.send(new.parent_id, WORKER_ENDED_WITH_TASKS, SOURCE, change.context, worker=new.id, tasks=tasks)
 
     def queued_tasks(self, worker_id: int) -> tuple[Task, ...]:
         return tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.OPEN).all_rows())

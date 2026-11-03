@@ -71,7 +71,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             return
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
         self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        self.nudger.say(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, text=f"your tests passed. Your next task, task:{following.id}: {following.title}\n{following.brief}")
+        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, text=f"your tests passed. Your next task, task:{following.id}: {following.title}\n{following.brief}")
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):
@@ -81,4 +81,4 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         outputs = ", ".join(str(row.process_id) for row in failed)
-        self.nudger.say(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
+        self.nudger.send(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)

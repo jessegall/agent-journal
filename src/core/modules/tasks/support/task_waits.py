@@ -31,7 +31,7 @@ class TaskWaits:
 
     def notify_agents(self, task: Task, context: Context) -> None:
         for agent in tuple(MainAgentFinder.rows(self.queries, task.environment_id)):
-            self.nudger.say(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
+            self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))

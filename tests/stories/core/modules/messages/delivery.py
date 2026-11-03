@@ -161,7 +161,7 @@ def test_a_message_sent_after_the_agent_went_on_from_an_interrupt_is_not_typed(n
     assert typing.typed == []
 
 
-class TypingTheAgentAnswersAtOnce(KeptTyping):
+class PromptDuringTerminalLine(KeptTyping):
     """Keeps what would be typed, and the agent's own turn starts the moment the line is typed: its hook comes
     before the listener that typed the line has finished."""
 
@@ -177,7 +177,7 @@ class TypingTheAgentAnswersAtOnce(KeptTyping):
 
 def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_not_again_after_the_message_is_read(new_story):
     story = delivery_story(new_story)
-    typing = TypingTheAgentAnswersAtOnce(story)
+    typing = PromptDuringTerminalLine(story)
     story.container.bind(TerminalTyping, typing)
     hook_agent(story, story.hook("s-1", HookSamples.stop()))
     story.run('message send "Are you there" --environment main', actor=story.user)
@@ -187,7 +187,7 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     assert [line for _, line in typing.typed] == ["[journal] new message 1"]
 
 
-class TypingWithHookInBetween(KeptTyping):
+class HookDuringTerminalLine(KeptTyping):
     """Keeps what would be typed, and a hook of the agent comes while the line is being typed; keeps what it gave."""
 
     def __init__(self, story) -> None:
@@ -202,7 +202,7 @@ class TypingWithHookInBetween(KeptTyping):
 
 def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
     story = delivery_story(new_story)
-    typing = TypingWithHookInBetween(story)
+    typing = HookDuringTerminalLine(story)
     story.container.bind(TerminalTyping, typing)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     story.run('message send "Are you there" --environment main', actor=story.user)

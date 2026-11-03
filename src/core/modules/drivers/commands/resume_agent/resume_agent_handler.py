@@ -29,5 +29,5 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")
         resumed = self.repository.save(replace(agent, paused_at=None), context)
-        self.nudger.say(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
+        self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed

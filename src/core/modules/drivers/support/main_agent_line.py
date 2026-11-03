@@ -12,4 +12,4 @@ class MainAgentLine:
 
     def send(self, environment_id: int, text: str, source: str, context: Context) -> None:
         for agent in MainAgentFinder.rows(self.queries, environment_id):
-            self.nudger.say_text(agent.id, text, source, context)
+            self.nudger.send_text(agent.id, text, source, context)
