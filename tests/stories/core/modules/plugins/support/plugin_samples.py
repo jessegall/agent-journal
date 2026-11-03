@@ -11,7 +11,7 @@ case "$line" in
   *'"command_starting"'*'git push'*) echo '{"v": 1, "require_skills": ["sample-rules"]}' ;;
   *'"command_starting"'*'git status'*) echo '{"v": 1, "cards": [{"kind": "state", "key": "branch", "label": "Branch is clean"}]}' ;;
   *'"command_starting"'*'git diff'*) echo '{"v": 1, "cards": [{"kind": "state", "key": "branch", "label": "Branch has changes", "tone": "warn"}]}' ;;
-  *'"command_starting"'*'git log'*) printf '%s\\n' '{"v": 1, "commands": ["notice make \\"Release notes\\" --link https://example.org/notes --environment main"]}' ;;
+  *'"command_starting"'*'git log'*) printf '%s\\n' '{"v": 1, "commands": ["pin make \\"Release notes\\" --link https://example.org/notes --environment main"]}' ;;
 esac
 """
 SETTINGS = [{"key": "level", "title": "Level", "kind": "number", "default": 1, "help": "How strict it is"}]

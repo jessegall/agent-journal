@@ -56,7 +56,7 @@ function windowContext(answers) {
 }
 
 async function mountedChat(answers = {}) {
-    const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item list": [REPORT_DOCK], "notice list": [], ...answers});
+    const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item list": [REPORT_DOCK], "pin list": [], ...answers});
     const element = document.createElement("div");
     document.body.append(element);
     createApp({setup: () => () => h(Chat), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
@@ -84,7 +84,7 @@ afterEach(() => {
 
 test("each difference of report 1147 has a screenshot pair of version 4 and version 5 and says what version 5 does better or the same", () => {
     expect(PAIRS.map((pair) => pair.report).sort()).toEqual(
-        ["Docks at the bottom and borderless buttons", "The settings page", "The sidebar and the breadcrumb", "The bars at the top", "The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pinned notices", "The chat: the composer", "The chat: the composer", "The side panels", "The side panels"].sort(),
+        ["Docks at the bottom and borderless buttons", "The settings page", "The sidebar and the breadcrumb", "The bars at the top", "The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pins", "The chat: the composer", "The chat: the composer", "The side panels", "The side panels"].sort(),
     );
     for (const pair of PAIRS) {
         expect(existsSync(`${LOOK}${pair.version4}`), pair.version4).toBe(true);
@@ -195,13 +195,13 @@ test("docked cards fold when the chat is scrolled up, open at its foot, and a ha
     expect(folded()).toBe(true);
 });
 
-test("pinned notices: a strip above the chat holds each notice with its text, a button with its link and a close cross", async () => {
-    const notice = {id: 1, title: "Version 5 demo seeded", link: "http://127.0.0.1:8431/", label: "Open the demo", closed_at: null};
-    const element = await mountedChat({"notice list": [notice]});
-    const strip = element.querySelector("[data-notices]");
+test("pins: a strip above the chat holds each pin with its text, a button with its link and a close cross", async () => {
+    const pin = {id: 1, title: "Version 5 demo seeded", link: "http://127.0.0.1:8431/", label: "Open the demo", closed_at: null};
+    const element = await mountedChat({"pin list": [pin]});
+    const strip = element.querySelector("[data-pins]");
     expect(strip?.textContent).toContain("Version 5 demo seeded");
     expect(strip?.querySelector("a, button")?.textContent).toContain("Open the demo");
-    expect(strip?.querySelector("[data-notice-close]")).not.toBeNull();
+    expect(strip?.querySelector("[data-pin-close]")).not.toBeNull();
 });
 
 test("composer: a tall box that says Message the agent, with an attach button and Dump files", async () => {

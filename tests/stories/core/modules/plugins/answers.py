@@ -48,4 +48,4 @@ def test_the_commands_in_a_plugins_answer_run_after_the_reply_as_the_plugins_mod
     story = installed_story(new_story)
     story.hook("s-1", LOG_SAMPLE)
     story.run_listeners()
-    story.expect_text("notice list --environment main", "Release notes", actor=story.user)
+    story.expect_text("pin list --environment main", "Release notes", actor=story.user)

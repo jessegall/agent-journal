@@ -2,8 +2,8 @@
 import Icon from "../kit/Icon.vue";
 import {usePins} from "./pins.js";
 
-const props = defineProps({notices: {type: Array, required: true}, inline: Boolean});
-const {pins, minimised, toggle} = usePins(() => props.notices);
+const props = defineProps({pinRows: {type: Array, required: true}, inline: Boolean});
+const {pins, minimised, toggle} = usePins(() => props.pinRows);
 </script>
 
 <template>

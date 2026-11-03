@@ -49,7 +49,7 @@ test("a reply shows a band with what it answers on top of its bubble, or says it
 });
 
 test("the chat's pinned links shrink to a corner and come back", async () => {
-    const element = await mounted(Chat, context({"message feed": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
+    const element = await mounted(Chat, context({"message feed": page([]), "pin list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
     expect(element.textContent).toContain("Ready to review");
     element.querySelector(".pins-toggle").click();
     await settle();

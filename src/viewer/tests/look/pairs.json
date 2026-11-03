@@ -21,11 +21,11 @@
         "version5Does": "Same: a bordered card with the row's icon, title, a line of its text, and open, dock and close buttons. Better: the card counts down its own leaving time and holds while the pointer is on it."
     },
     {
-        "name": "notices",
-        "report": "The chat: pinned notices",
-        "version4": "notices-v4.png",
-        "version5": "notices-v5.png",
-        "version5Does": "Same: a strip above the chat with a dot, the text, a button with the link and a close cross. Better: a notice belongs to the notices module, so a module without notices shows no strip."
+        "name": "pins",
+        "report": "The chat: pins",
+        "version4": "pins-v4.png",
+        "version5": "pins-v5.png",
+        "version5Does": "Same: a strip above the chat with a dot, the text, a button with the link and a close cross. Better: a pin belongs to the pins module, so a module without pins shows no strip."
     },
     {
         "name": "composer",
