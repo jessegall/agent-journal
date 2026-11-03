@@ -6,6 +6,7 @@ import time
 from socketserver import BaseRequestHandler, ThreadingMixIn, UnixStreamServer
 from typing import Any
 from server.client_disconnected import client_disconnected
+from server.handover_descriptors import QUEUED_CONNECTIONS
 from server.server_context import ServerContext
 
 
@@ -14,18 +15,23 @@ DRAIN_POLL_SECONDS = 0.05
 class JournalServer(ThreadingMixIn, UnixStreamServer):
     """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to
     its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once. A client
-    that left before its answer is no error."""
+    that left before its answer is no error. It binds its socket, or takes the listening socket of the server
+    it replaces, with the connections that wait in it."""
 
     daemon_threads = True
+    request_queue_size = QUEUED_CONNECTIONS
 
-    def __init__(self, path: str, handler: type[BaseRequestHandler], context: ServerContext) -> None:
+    def __init__(self, path: str, handler: type[BaseRequestHandler], context: ServerContext, inherited_socket: socket.socket | None = None) -> None:
         self.context = context
         self.wake_sender, self.wake_receiver = socket.socketpair()
         self.stopping, self.stopped = threading.Event(), threading.Event()
         self.request_threads: set[threading.Thread] = set()
         self.idle_connections: dict[threading.Thread, socket.socket] = {}
         self.thread_lock = threading.Lock()
-        super().__init__(path, handler)
+        super().__init__(path, handler, bind_and_activate=inherited_socket is None)
+        if inherited_socket is not None:
+            self.socket.close()
+            self.socket = inherited_socket
 
     def serve_requests(self) -> None:
         try:
