@@ -11,7 +11,7 @@ const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Work
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const MILLISECONDS_PER_HOUR = 3600000;
-const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, open: Boolean});
+const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
 const title = computed(() => {
@@ -19,14 +19,12 @@ const title = computed(() => {
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
-// a worker with tasks in testing and none started waits for its proofs' tests, which bring it its next task or a failure
-const waitingForTests = computed(() => !props.row.ended_at && tasks.value.some((task) => task.state === "testing") && !tasks.value.some((task) => task.state === "started"));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 // a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role === "worker" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
-const dotState = computed(() => (stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
+const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
@@ -56,7 +54,7 @@ const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
 const waitTarget = ref("");
-const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value));
+const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value || props.waitReason));
 async function readCommand() {
     if (!showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`);
@@ -94,11 +92,11 @@ readCommand();
         </span>
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
-                <template v-if="stoppedWithWork">
-                    <span class="agent-stopped" data-agent-stopped>{{ waitTarget ? `Waiting: ${waitTarget}` : "Waiting" }}</span>
+                <template v-if="waitReason">
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the process queue" @click.stop="peekRef('test_queue:0')">Waiting: {{ waitReason }}</button>
                 </template>
-                <template v-else-if="waitingForTests">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the process queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
+                <template v-else-if="stoppedWithWork">
+                    <span class="agent-stopped" data-agent-stopped>{{ waitTarget ? `Waiting: ${waitTarget}` : "Waiting" }}</span>
                 </template>
                 <template v-else>
                     <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />

@@ -262,9 +262,17 @@ test("an ended subagent and the main agent show no command line", async () => {
 test("a waiting worker's command line says it waits for its tests", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];
-    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker waits": page([{agent_id: 4, reason: "tests in the queue"}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
-    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Waiting: tests"));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Waiting: tests in the queue"));
+});
+
+test.each(["main agent's merge", "main agent's proof check", "tests in the queue", "a job from the main agent"])("a worker card shows the server's waiting reason: %s", async (reason) => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: "2026-11-03T13:35:28Z"};
+    const lines = {"agent list": page([worker]), "agent running": page([]), "usage agents --closed": page([{id: 4, tasks: []}]), "worker waits": page([{agent_id: 4, reason}])};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-waiting]")?.textContent).toBe(`Waiting: ${reason}`));
+    expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
 });
 
 test("a worker's card shows its completed tasks per hour", async () => {

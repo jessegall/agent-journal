@@ -13,6 +13,8 @@ const props = defineProps({line: {type: String, required: true}, empty: {type: S
 const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
+const {rows: workerWaits} = useRows("worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]);
+const waitReasonOf = (row) => workerWaits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
 // Proof tests waiting in the process queue, counted on the button that opens the inspector.
 const {rows: proofs} = useRows("proof list --limit 50", ["proof.*"]);
 const WAITING = new Set(["queued", "running"]);
@@ -57,7 +59,7 @@ const leaveStyle = (row) => ({animationDuration: `${LINGER_MS}ms`, animationDela
 
 // a worker runs one turn at a time: stopped with tasks left it is not finished, so it stays with the running ones
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
-const hasWorkLeft = (row) => row.role === "worker" && (factsOf(row)?.tasks ?? []).some((task) => UNFINISHED_STATES.has(task.state));
+const hasWorkLeft = (row) => row.role === "worker" && (Boolean(waitReasonOf(row)) || (factsOf(row)?.tasks ?? []).some((task) => UNFINISHED_STATES.has(task.state)));
 const isRunning = (row) => !row.ended_at || hasWorkLeft(row);
 const kept = (row) => show.value === "all" || (show.value === "running") === isRunning(row) || (show.value === "running" && lingering.value.has(row.id));
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
@@ -96,7 +98,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
         <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id" @mouseenter="hold(row)" @mouseleave="release(row)">
-                    <AgentCard :row="row" :facts="factsOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
+                    <AgentCard :row="row" :facts="factsOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                     <template v-if="lingeringFor(row)">
                         <span class="agent-leave" data-agent-leave aria-hidden="true"><i :style="leaveStyle(row)" /></span>
                     </template>

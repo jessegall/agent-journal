@@ -5,3 +5,26 @@ WORKER_POINTS_SELECT = (
     " FROM worker_worktrees"
     " JOIN tasks ON tasks.id = worker_worktrees.task_id"
 )
+
+WORKER_WAITS_SELECT = """
+SELECT worktree.agent_id, worktree.environment_id,
+       CASE
+           WHEN EXISTS (SELECT 1 FROM tasks WHERE tasks.holder_id = worktree.agent_id AND tasks.state = 'started')
+               THEN CASE WHEN agents.ended_at IS NOT NULL THEN 'next turn' ELSE '' END
+           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running'))
+               THEN 'tests in the queue'
+           WHEN worktree.state = 'delivered' AND EXISTS (
+               SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'shown')
+               THEN 'main agent''s proof check'
+           WHEN worktree.state = 'delivered' THEN 'main agent''s merge'
+           WHEN worktree.state = 'cut' AND NOT EXISTS (
+               SELECT 1 FROM tasks WHERE tasks.delegated_to = worktree.agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
+               THEN 'a job from the main agent'
+           WHEN agents.ended_at IS NOT NULL THEN 'next turn'
+           ELSE ''
+       END AS reason
+FROM worker_worktrees AS worktree
+JOIN agents ON agents.id = worktree.agent_id
+WHERE worktree.removed_at IS NULL
+  AND worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.agent_id = worktree.agent_id)
+"""
