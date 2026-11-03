@@ -40,7 +40,7 @@ class TypedLineListener(CommitListener):
         if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
         else:
-            self.typing.type_line(line, actor, event.environment_id)
+            self.typing.enter_line(line, actor, event.environment_id)
 
     def has_entered_repeat(self, line: AgentLine) -> bool:
         entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)

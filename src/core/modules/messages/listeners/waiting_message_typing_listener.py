@@ -35,5 +35,5 @@ class WaitingMessageTypingListener(CommitListener):
             self.lines.drop(line, event)
             return
         actor = Actor(event.actor_id, ActorType.USER)
-        if self.typing.type_line(line, actor, event.environment_id) and self.queries.query(Message).find(message.id).delivered_at is None:
+        if self.typing.enter_line(line, actor, event.environment_id) and self.queries.query(Message).find(message.id).delivered_at is None:
             self.bus.run(RecordMessageDelivery(message.id), actor, environment_id=event.environment_id)

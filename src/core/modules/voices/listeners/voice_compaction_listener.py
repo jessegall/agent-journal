@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.voices.support.voice_lines import VoiceLines
-from core.modules.voices.support.voice_nudges import TALK_LIKE
+from core.modules.voices.support.voice_nudges import VOICE_LINE
 
 
 class VoiceCompactionListener(SaveListener):
@@ -22,4 +22,4 @@ class VoiceCompactionListener(SaveListener):
     def handle(self, change: Change[Model]) -> None:
         call = change.new_row
         if isinstance(call, HookCall) and call.hook == HookEventName.COMPACT and self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
-            self.lines.tell(call.agent_id, TALK_LIKE, change)
+            self.lines.tell(call.agent_id, VOICE_LINE, change)

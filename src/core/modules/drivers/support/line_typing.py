@@ -19,7 +19,7 @@ class LineTyping:
     def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus) -> None:
         self.queries, self.typing, self.bus = queries, typing, bus
 
-    def type_line(self, line: AgentLine, actor: Actor, environment_id: int | None) -> bool:
+    def enter_line(self, line: AgentLine, actor: Actor, environment_id: int | None) -> bool:
         try:
             self.bus.run(ClaimAgentLine(line.id), actor, environment_id=environment_id)
         except Refusal:
