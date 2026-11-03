@@ -85,7 +85,8 @@ test("the cover is one card over the page, and offers a reload once it is late",
     expect(element.querySelector("[data-server-cover]")).toBeNull();
     serverGone();
     await nextTick();
-    expect(element.querySelector("[data-server-cover]").textContent).toContain("The journal is restarting");
+    expect(element.querySelector("[data-server-cover]").textContent).toContain("Restarting the journal");
+    expect(element.querySelector("[data-server-cover]").textContent).toContain("This takes a few seconds");
     expect(element.querySelector("[data-server-cover-reload]")).toBeNull();
     await vi.advanceTimersByTimeAsync(LATE_AFTER_MS);
     expect(updating.late).toBe(true);

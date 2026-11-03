@@ -7,8 +7,9 @@ import {updating} from "../state/updating.js";
 // version 4's cover: the page blurred behind one centred card while the server is away; it closes by itself when the server answers
 const title = computed(() => {
     if (updating.late) return "The journal is not answering";
-    return updating.external ? "Updating the journal" : "The journal is restarting";
+    return updating.external ? "Updating the journal" : "Restarting the journal";
 });
+const step = computed(() => (updating.external ? "This can take a minute" : "This takes a few seconds"));
 const reload = () => window.location.reload();
 </script>
 
@@ -22,7 +23,7 @@ const reload = () => window.location.reload();
                     <Btn small kind="primary" data-server-cover-reload @click="reload">Reload</Btn>
                 </template>
                 <template v-else>
-                    <p class="step">This page comes back by itself</p>
+                    <p class="step">{{ step }}</p>
                 </template>
             </div>
         </div>
