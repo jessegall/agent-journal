@@ -143,7 +143,7 @@ def test_a_record_made_starts_a_sequence(new_story):
 
 def test_a_record_a_subagent_makes_starts_the_sequence_on_that_subagent_and_not_the_main_agent(new_story):
     story = triggered_story(new_story, {"trigger_type": "row", "event": "plan.create"})
-    helper_id = story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main")
+    helper_id = story.new_row_id(f"agent start s-2 claude subagent --parent {story.agent.id} --environment main")
     story.run('plan make "The rebuild" --environment main', actor=Actor(helper_id, ActorType.AGENT))
     story.run_listeners()
     story.expect_text(f"sequence-run list --agent {helper_id}", "1")

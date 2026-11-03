@@ -24,9 +24,9 @@ class RunEndRecovery:
                 for command in self.commands(container, folder, process):
                     bus.run(command, Actor.core(), environment_id=process.environment_id)
 
-    def commands(self, container: Container, folder: OutputFolder, process: Process) -> list[Command]:
+    def commands(self, container: Container, folder: OutputFolder, process: Process) -> list[Command[object]]:
         ended = container.get(RunFolderEnds).commands(process)
         last_sign = folder.heartbeat(process.id) or process.created_at
-        if ended or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= RUNNER_MISSING_SECONDS:
+        if ended or last_sign is None or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= RUNNER_MISSING_SECONDS:
             return ended
         return [OrphanProcess(process.id)]

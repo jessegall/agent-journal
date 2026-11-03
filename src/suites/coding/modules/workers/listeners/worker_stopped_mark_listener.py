@@ -1,10 +1,8 @@
 from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
-
-ENDED_FIELD = "ended_at"
 
 
 class WorkerStoppedMarkListener(WorkerStopMarkListener):
