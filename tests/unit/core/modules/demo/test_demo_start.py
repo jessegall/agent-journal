@@ -18,4 +18,4 @@ def test_a_demo_starts_with_a_server_and_a_login_link_on_a_port_of_its_own(tmp_p
         os.kill(session.pid, signal.SIGTERM)
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline and scratch.home.socket("server").exists():
-            time.sleep(0.1)
+            continue
