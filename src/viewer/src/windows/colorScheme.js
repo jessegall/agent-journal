@@ -36,7 +36,7 @@ function rulesOf(sheet) {
 const lightRules = (sheets) => [...sheets].flatMap((sheet) => rulesOf(sheet).filter((rule) => rule.media && (original.has(rule) || FOLLOWS_SYSTEM.test(rule.media.mediaText))));
 
 // a chosen scheme forces the stylesheet's light rules on or off, by rewriting what they ask of the browser; following the system gives them back their own
-export function applyColorScheme(key, sheets = document.styleSheets, root = document.documentElement) {
+function applyColorScheme(key, sheets = document.styleSheets, root = document.documentElement) {
     root.style.colorScheme = FORCED[key] ? key : "";
     for (const rule of lightRules(sheets)) {
         if (!original.has(rule)) original.set(rule, rule.media.mediaText);

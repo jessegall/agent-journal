@@ -10,7 +10,11 @@ from pathlib import Path
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from core.base.container import Container
 from core.base.journal_home import JournalHome
+from core.base.periodic_checks import PeriodicChecks
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
 from core.base.timestamp import Timestamp
 from core.base.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
@@ -27,8 +31,7 @@ from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.urgent_listener_work import UrgentListenerWork
-from server.check_work import CheckWork
-from server.tick_work import TickWork
+from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
@@ -74,31 +77,29 @@ def main(argv: list[str]) -> int:
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork())
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork())
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, woken_too=urgent_thread)
-    tick_round = JournalRound(home, "ticker", TickWork(listener_thread.wake))
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, urgent_thread=urgent_thread)
+    ticker = Ticker(home, Ticker.declared_by(finder), listener_thread.wake)
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
-    ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
-    def check_code() -> None:
+    ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}"), TICK_PERIOD_SECONDS, "ticker")
+    tunnel = ServerTunnel(home)
+    plugin_services = ServerPluginServices(home)
+    backup = ServerBackup(home)
+
+    def check_code(container: Container) -> None:
         code_version.check()
         code_fingerprint.refreshed(finder.modules())
 
-    code_thread = ListenerThread(check_code, lambda error: files.log_line(f"the code files could not be read: {error}"), CODE_CHECK_SECONDS, "code check")
-    check_round = JournalRound(home, "checks", CheckWork())
-    check_thread = ListenerThread(check_round.run, check_round.report, CHECK_PERIOD_SECONDS, "checks")
-    tunnel = ServerTunnel(home)
-    tunnel_thread = ListenerThread(lambda: tunnel.follow(viewer.port), lambda error: files.log_line(f"the tunnel could not be opened: {error}"), TUNNEL_CHECK_SECONDS, "tunnel")
-    plugin_services = ServerPluginServices(home)
-    services_thread = ListenerThread(plugin_services.follow, lambda error: files.log_line(f"the plugin services could not be kept: {error}"), SERVICES_CHECK_SECONDS,
-                                     "plugin services")
-    health_thread = ListenerThread(plugin_services.check_health, lambda error: files.log_line(f"the plugin services' health could not be checked: {error}"),
-                                   HEALTH_CHECK_SECONDS, "plugin health")
-    backup = ServerBackup(home)
-    backup_thread = ListenerThread(backup.follow, lambda error: files.log_line(f"the database could not be copied: {error}"), BACKUP_CHECK_SECONDS, "database copies")
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
+    ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
+    ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
+    ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", at_start=True))
+    ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", at_start=True))
+    ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
+    ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", at_start=True))
+    server =JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
     files.restrict_socket()
     files.write_pid()
     files.log_line(f"listening on {files.socket}")
@@ -112,23 +113,14 @@ def main(argv: list[str]) -> int:
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
-    ticker.start()
-    code_thread.start()
-    check_thread.start()
+    ticker_thread.start()
     viewer.start()
-    tunnel_thread.wake()
-    tunnel_thread.start()
-    services_thread.wake()
-    services_thread.start()
-    health_thread.start()
-    backup_thread.wake()
-    backup_thread.start()
     files.clear_restart()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, code_thread, ticker, listener_thread, urgent_thread)
+        threads = (ticker_thread, listener_thread, urgent_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()
@@ -137,6 +129,7 @@ def main(argv: list[str]) -> int:
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
         for thread in threads:
             thread.join(deadline - time.monotonic())
+        ticker.join(deadline - time.monotonic())
         hook_database.close()
         files.remove_server_files()
         server.server_close()

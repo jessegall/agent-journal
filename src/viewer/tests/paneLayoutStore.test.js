@@ -1,8 +1,10 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
-import {paneLayout, SAVE_DELAY_MS, tabKey} from "../src/windows/paneLayout.js";
+import {paneLayout, SAVE_DELAY_MS} from "../src/windows/paneLayout.js";
 import {arranged, fresh} from "../src/domain/panes.js";
 
 const KEY = {environment: "main", person: 7, suite: "coding", page: "home", driver: "coding.builder"};
+const COPY_KEY = "journal.layout.main.7.coding.home.coding.builder";
+const OTHER_PERSON_COPY_KEY = "journal.layout.main.8.coding.home.coding.builder";
 const CHAT = {name: "messages.chat", title: "Chat", options: [{key: "hide"}]};
 const TASKS = {name: "tasks.tasks", title: "Tasks", options: []};
 const shapeOf = (...windows) => ({tabs: windows, active: windows[0]});
@@ -36,12 +38,15 @@ function store({copies = {}, stored = server(), shape = null, windows = [CHAT, T
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-test("the tab key names the environment, the person, the suite, page and driver", () => {
-    expect(tabKey(KEY)).toBe("journal.layout.main.7.coding.home.coding.builder");
+test("the tab copy is kept under the environment, the person, the suite, page and driver", async () => {
+    const {layouts, copies} = store({shape: shapeOf("messages.chat")});
+    await layouts.load(KEY);
+    layouts.replace(layoutOf("tasks.tasks"));
+    expect(Object.keys(copies)).toEqual([COPY_KEY]);
 });
 
 test("two people on one browser each load their own tab copy", async () => {
-    const copies = {[tabKey(KEY)]: layoutOf("tasks.tasks"), [tabKey({...KEY, person: 8})]: layoutOf("messages.chat")};
+    const copies = {[COPY_KEY]: layoutOf("tasks.tasks"), [OTHER_PERSON_COPY_KEY]: layoutOf("messages.chat")};
     const first = store({copies});
     await first.layouts.load(KEY);
     const second = store({copies});
@@ -52,7 +57,7 @@ test("two people on one browser each load their own tab copy", async () => {
 test("the browser tab's copy comes first, then the person's saved layout, then the suite's", async () => {
     const copy = layoutOf("tasks.tasks");
     const saved = layoutOf("messages.chat", "tasks.tasks");
-    const first = store({copies: {[tabKey(KEY)]: copy}, stored: server(saved), shape: shapeOf("messages.chat")});
+    const first = store({copies: {[COPY_KEY]: copy}, stored: server(saved), shape: shapeOf("messages.chat")});
     await first.layouts.load(KEY);
     expect(firstPane(first.layouts.layout.value).tabs).toEqual(["tasks.tasks"]);
     const second = store({stored: server(saved), shape: shapeOf("messages.chat")});
@@ -70,7 +75,7 @@ test("a suite with no layout for the page starts from one empty pane", async () 
 });
 
 test("a corrupt tab copy and a badly shaped saved layout are passed over for the next source", async () => {
-    const {layouts} = store({copies: {[tabKey(KEY)]: {tree: {}}}, stored: server({panes: 3}), shape: shapeOf("messages.chat")});
+    const {layouts} = store({copies: {[COPY_KEY]: {tree: {}}}, stored: server({panes: 3}), shape: shapeOf("messages.chat")});
     await layouts.load(KEY);
     expect(firstPane(layouts.layout.value).tabs).toEqual(["messages.chat"]);
 });
@@ -81,7 +86,7 @@ test("a change is copied to the tab at once and saved half a second later, once 
     const changed = layoutOf("tasks.tasks", "messages.chat");
     layouts.replace(changed);
     layouts.replace(changed);
-    expect(firstPane(copies[tabKey(KEY)]).tabs).toEqual(["tasks.tasks", "messages.chat"]);
+    expect(firstPane(copies[COPY_KEY]).tabs).toEqual(["tasks.tasks", "messages.chat"]);
     expect(stored.saves).toEqual([]);
     await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
     expect(stored.saves.map(([key, layout]) => [key, firstPane(layout).tabs])).toEqual([[KEY, ["tasks.tasks", "messages.chat"]]]);
@@ -112,9 +117,9 @@ test("a placed tab keeps its window's title, and an option key no window of the 
     await layouts.load(KEY);
     const layout = layouts.layout.value;
     const id = Object.keys(layout.panes)[0];
-    layouts.replace({...layout, panes: {[id]: {...layout.panes[id], options: {hide: ["fault"], flush: true}}}});
+    layouts.replace({...layout, panes: {[id]: {...layout.panes[id], options: {hide: ["exception"], flush: true}}}});
     expect(firstPane(layouts.layout.value).titles).toEqual({"messages.chat": "Chat"});
-    expect(firstPane(layouts.layout.value).options).toEqual({hide: ["fault"]});
+    expect(firstPane(layouts.layout.value).options).toEqual({hide: ["exception"]});
 });
 
 test("of two tabs saving one layout, the second's save over a newer version loads that version instead", async () => {
@@ -138,7 +143,7 @@ test("a save the server refuses keeps the tab copy and shows the refusal", async
     layouts.replace(layoutOf("tasks.tasks"));
     await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
     expect(layouts.refusal.value).toBe("only a person keeps a layout");
-    expect(firstPane(copies[tabKey(KEY)]).tabs).toEqual(["tasks.tasks"]);
+    expect(firstPane(copies[COPY_KEY]).tabs).toEqual(["tasks.tasks"]);
 });
 
 test("switching builder, orchestrator and worker mid-save flushes each pending save to its own key and never writes one layout into another", async () => {

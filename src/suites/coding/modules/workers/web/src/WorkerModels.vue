@@ -1,11 +1,11 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, useRows} from "@journal/window-kit";
+import {RowList, patched, useRows} from "@journal/window-kit";
 
 const ALLOWED_MODELS = "journal.suites.coding.workers.allowed-models";
 
 // each program's models, ticked when a worker may run on them; a program keeps at least one
-const {rows, failure, loaded, load, context} = useRows("worker models", ["setting.*"]);
+const {rows, failure, loaded, act} = useRows("worker models", ["setting.*"]);
 const refusal = ref("");
 const isLast = (row) => row.allowed && rows.value.filter((other) => other.program === row.program && other.allowed).length === 1;
 const programStart = computed(() => new Set(rows.value.filter((row, index) => rows.value[index - 1]?.program !== row.program).map((row) => row.id)));
@@ -13,9 +13,8 @@ const programStart = computed(() => new Set(rows.value.filter((row, index) => ro
 async function toggle(row) {
     if (isLast(row)) return;
     const allowed = rows.value.filter((other) => (other.id === row.id ? !other.allowed : other.allowed)).map((other) => other.id);
-    const answer = await context.run(["setting", "set", ALLOWED_MODELS, allowed.join(","), "--project"]);
+    const answer = await act(["setting", "set", ALLOWED_MODELS, allowed.join(","), "--project"], patched(row.id, {allowed: !row.allowed}));
     refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) load();
 }
 </script>
 

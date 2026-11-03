@@ -10,3 +10,6 @@ class TaskState(StrEnum):
     TESTING = "testing"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+
+UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)

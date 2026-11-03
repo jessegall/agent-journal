@@ -62,6 +62,7 @@ class ClaudeCodeProvider(Provider):
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
+    monitor_tool = ToolType.MONITOR
     tool_categories = {"Bash": ToolType.SHELL, "Monitor": ToolType.MONITOR, "Edit": ToolType.EDIT, "MultiEdit": ToolType.EDIT,
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Grep": ToolType.SEARCH,
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
@@ -78,6 +79,7 @@ class ClaudeCodeProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
+        self.peer_readers: dict[Path, ClaudePeerNotes] = {}
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
@@ -120,7 +122,7 @@ class ClaudeCodeProvider(Provider):
         if author not in TRANSCRIPT_AUTHORS or not is_mapping(message):
             return None
         text = "\n".join(self.message_texts(message.get("content")))
-        return TranscriptAuthor.row(position, author, text) if text.strip() else None
+        return TranscriptAuthor.row(position, author, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
 
     @staticmethod
     def message_texts(content: object) -> list[str]:
@@ -161,7 +163,7 @@ class ClaudeCodeProvider(Provider):
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
 
     def peer_notes(self, path: Path) -> Sequence[PeerNote]:
-        return ClaudePeerNotes(path).notes()
+        return self.peer_readers.setdefault(path, ClaudePeerNotes(path)).notes()
 
     def state_file(self) -> Path:
         return self.folders.folder(CONFIG_VARIABLE, "") / ".claude.json"

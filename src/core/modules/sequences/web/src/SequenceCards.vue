@@ -1,14 +1,13 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, RowCards, useRows, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, RowCards, removed, useRows} from "@journal/window-kit";
 import NewSequence from "./NewSequence.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
 import SequenceTriggers from "./SequenceTriggers.vue";
 import {startWords} from "./sequenceTriggers.js";
 
-const context = useWindow();
-const {rows, failure, loaded} = useRows("sequence list", ["sequence.*"]);
+const {rows, failure, loaded, act} = useRows("sequence list", ["sequence.*"]);
 const {rows: runs} = useRows("sequence-run list", ["sequence_run.*", "sequence.*"]);
 const drafting = ref(false);
 const openedId = ref(null);
@@ -27,7 +26,7 @@ function open(row) {
 
 async function remove() {
     if (!deleting.value) return void (deleting.value = true);
-    const answer = await context.run(["sequence", "delete", String(openedId.value)]);
+    const answer = await act(["sequence", "delete", String(openedId.value)], removed(openedId.value));
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) openedId.value = null;
 }

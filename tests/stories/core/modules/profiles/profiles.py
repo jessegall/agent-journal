@@ -29,6 +29,17 @@ def test_the_journal_writes_its_own_profiles_at_every_start_and_keeps_a_saved_on
     assert names == {*(profile.name for profile in SHIPPED_PROFILES), "critic"}
 
 
+def test_a_saved_profile_that_names_no_model_leaves_the_model_out_of_its_files(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    (story.home.project_folder / ".codex").mkdir(parents=True, exist_ok=True)
+    story.expect_success(SAVE_PROFILE, actor=story.user)
+    claude_file = (agents_folder(story) / "critic.md").read_text()
+    codex_file = (story.home.project_folder / ".codex" / "agents" / "critic.toml").read_text()
+    story.expect_rows("model:" not in claude_file, "codex-model:" not in claude_file, "model =" not in codex_file)
+    story.expect_success(SAVE_PROFILE + " --model haiku", actor=story.user)
+    story.expect_rows("model: haiku" in (agents_folder(story) / "critic.md").read_text())
+
+
 def test_a_module_sync_writes_the_journals_own_profiles(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run_listeners()

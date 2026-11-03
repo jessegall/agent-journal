@@ -1,14 +1,15 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.chat.support.chat_marks import CHAT_MARKS
-from core.base.fault_sink import FaultSink
-from core.modules.chat.commands.record_journal_fault.record_journal_fault_handler import RecordJournalFaultHandler
-from core.modules.chat.listeners.journal_fault_mark_listener import JournalFaultMarkListener
+from core.base.exception_sink import ExceptionSink
+from core.modules.chat.commands.record_journal_exception.record_journal_exception_handler import RecordJournalExceptionHandler
+from core.modules.chat.listeners.journal_exception_mark_listener import JournalExceptionMarkListener
 from core.modules.chat.listeners.upgrade_mark_listener import UpgradeMarkListener
-from core.modules.chat.migrations.m002_journal_faults import JournalFaultTableMigration
+from core.modules.chat.migrations.m002_journal_exceptions import JournalExceptionTableMigration
 from core.modules.chat.migrations.m003_chat_mark_key_index import ChatMarkKeyIndexMigration
-from core.modules.chat.models.journal_fault import JournalFault
-from core.modules.chat.support.chat_fault_sink import ChatFaultSink
+from core.modules.chat.migrations.m004_journal_exceptions_renamed import JournalExceptionRenameMigration
+from core.modules.chat.models.journal_exception import JournalException
+from core.modules.chat.support.chat_exception_sink import ChatExceptionSink
 from core.modules.chat.commands.show_mark.show_mark_handler import ShowMarkHandler
 from core.modules.chat.guards.agent_chat_guard import AgentChatGuard
 from core.modules.chat.guards.mark_type_guard import MarkTypeGuard
@@ -25,10 +26,10 @@ class ChatModule(Module):
     move_reason = "version 4 kept its chat as messages, which the messages module moves"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
-    models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalFault, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ChatMarkTableMigration, JournalFaultTableMigration, ChatMarkKeyIndexMigration]
-    handlers = [ShowMarkHandler, RecordJournalFaultHandler]
+    models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalException, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [ChatMarkTableMigration, JournalExceptionTableMigration, ChatMarkKeyIndexMigration, JournalExceptionRenameMigration]
+    handlers = [ShowMarkHandler, RecordJournalExceptionHandler]
     guards = [MarkTypeGuard, AgentChatGuard]
     marks = CHAT_MARKS
-    listeners = [JournalFaultMarkListener, UpgradeMarkListener]
-    bindings = [(FaultSink, ChatFaultSink)]
+    listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
+    bindings = [(ExceptionSink, ChatExceptionSink)]

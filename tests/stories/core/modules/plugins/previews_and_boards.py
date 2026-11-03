@@ -159,6 +159,17 @@ def test_an_upgrade_shows_what_changes_applies_only_with_yes_and_stays_on(new_st
     story.expect_rows("1.3.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
 
 
+def test_an_upgrade_preview_shows_the_diff_of_the_files_it_changes(new_story):
+    story = installed_plugin(new_story)
+    (story.folder / "hello.sh").write_text("echo old\necho kept\n")
+    story.run("plugin upgrade standup --yes", actor=story.user)
+    (story.folder / "hello.sh").write_text("echo new\necho kept\n")
+    (story.folder / "extra.txt").write_text("a new file\n")
+    (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "packages", "run": "true"}]}))
+    story.expect_text("plugin upgrade standup", "-echo old", "+echo new", "+a new file", actor=story.user)
+    story.expect_absent("plugin upgrade standup", "echo kept", actor=story.user)
+
+
 def test_only_a_person_upgrades_and_a_failed_setup_leaves_the_old_code(new_story):
     story = installed_plugin(new_story)
     story.expect_refusal("plugin upgrade standup", "only the user upgrades", actor=story.agent)

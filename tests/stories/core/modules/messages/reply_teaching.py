@@ -17,6 +17,7 @@ def journal_line(line):
 READ_MESSAGE = journal_line("journal message read 1").with_fields(event="post_tool_use")
 REPLY_LINE = journal_line("journal message reply 1 done")
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
+CHAINED_LINE = HookSamples.shell("ls && ls && ls", ShellPart("ls", CommandCategory.READ, []), ShellPart("ls", CommandCategory.READ, []), ShellPart("ls", CommandCategory.READ, []))
 
 
 def reply_story(new_story):
@@ -77,6 +78,22 @@ def test_a_countdown_comes_before_tool_calls_wait(new_story):
     for _ in range(7):
         story.hook("s-1", VIEW_LINE)
     assert any("tool calls wait after" in line for line in story.hook("s-1", VIEW_LINE).lines)
+
+
+def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(new_story):
+    story, _ = read_story(new_story)
+    for _ in range(7):
+        story.hook("s-1", CHAINED_LINE)
+    assert "reply to message 1; tool calls wait after 3 more" in story.hook("s-1", CHAINED_LINE).lines
+    assert "reply to message 1; tool calls wait after 2 more" in story.hook("s-1", VIEW_LINE).lines
+
+
+def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(new_story):
+    story, _ = read_story(new_story)
+    for _ in range(9):
+        story.hook("s-1", CHAINED_LINE)
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "answer message 1 first")
 
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):

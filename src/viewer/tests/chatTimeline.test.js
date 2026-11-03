@@ -15,7 +15,7 @@ test("rows the journal sends carry their time as text and still stand oldest fir
 
 const DECLARATIONS = {
     reminder: {family: "memories.reminders", family_title: "Reminders", grouping: "family", group_label: "{count} rules and reminders recalled"},
-    fault: {family: "chat.faults", family_title: "Faults", grouping: "family", group_label: "{family}: {count} updates"},
+    exception: {family: "chat.exceptions", family_title: "Exceptions", grouping: "family", group_label: "{family}: {count} updates"},
     compaction: {family: "memories.context", family_title: "Context", grouping: "never", group_label: ""},
     command: {family: "processes.commands", family_title: "Commands", grouping: "family", group_label: "", process: true},
     question: {family: "questions.questions", family_title: "Questions", grouping: "family", group_label: "", card: true},
@@ -33,8 +33,8 @@ test("three marks of a family standing together fold into one, under the label t
 });
 
 test("the group label names the family where it asks for it", () => {
-    const [group] = foldedMarks([markItem(1, "fault"), markItem(2, "fault"), markItem(3, "fault")], declarationOf);
-    expect(group.label).toBe("Faults: 3 updates");
+    const [group] = foldedMarks([markItem(1, "exception"), markItem(2, "exception"), markItem(3, "exception")], declarationOf);
+    expect(group.label).toBe("Exceptions: 3 updates");
 });
 
 test("two marks stay single, as version 4 folded only from three", () => {
@@ -47,7 +47,7 @@ test("a message between marks splits them, so neither side reaches three", () =>
 });
 
 test("another family between marks splits them too", () => {
-    const items = [markItem(1, "reminder"), markItem(2, "reminder"), markItem(3, "fault"), markItem(4, "reminder")];
+    const items = [markItem(1, "reminder"), markItem(2, "reminder"), markItem(3, "exception"), markItem(4, "reminder")];
     expect(shape(foldedMarks(items, declarationOf))).toEqual(["mark:1", "mark:2", "mark:3", "mark:4"]);
 });
 

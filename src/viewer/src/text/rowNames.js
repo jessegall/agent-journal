@@ -8,6 +8,10 @@ const NAMED = new RegExp(`\\b(${WORD_PATTERN}) (?:#?(\\d+)(?::(\\d+(?:-\\d+)?|se
 // a word and a list of numbers, as in "messages 62830, 62833 and 62837": each number its own chip of the singular word
 const LISTED = new RegExp(`\\b(${WORD_PATTERN}) (\\d+(?:(?:,? (?:and|or) |, )\\d+)+)\\b`, "gi");
 
+// a row name written alone in backticks, which the links transformer already made code, is a chip too
+const CODED = new RegExp(`<code>((?:${NAMED.source}|${LISTED.source}))</code>`, "gi");
+const uncoded = (text) => text.replace(CODED, "$1");
+
 const pill = (word, id) => `<a class="row-pill" href="#" data-peek="${tableOfWord(word)}:${id}">${word} <span class="row-pill-num">${id}</span></a>`;
 
 const listed = (text) => text.replace(LISTED, (whole, word, numbers) => numbers.replace(/\d+/g, (id) => pill(word.replace(/s$/i, ""), id)));
@@ -24,7 +28,7 @@ const chips = (text) =>
 register((text, context) =>
     context.rowNames === false
         ? text
-        : text
+        : uncoded(text)
               .split(SKIPPED)
               .map((part, i) => (i % 2 ? part : chips(part)))
               .join("")

@@ -1,19 +1,26 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h, nextTick, ref} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import LayoutThumb from "../src/kit/LayoutThumb.vue";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
-import {cellsOf} from "../src/windows/layoutPresets.js";
+import {useLayoutPresets} from "../src/windows/layoutPresets.js";
 
 const entry = (name) => ({name, title: name, icon: "window", options: [], line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true});
 const SHAPE = {direction: "row", share: 0.5, first: {windows: ["messages.chat"], active: "messages.chat"}, second: {windows: ["thirdparty.board"], active: "thirdparty.board"}};
 
 afterEach(() => vi.unstubAllGlobals());
 
+async function savedPresets(shape) {
+    const shellLine = async (line) => ({ok: true, value: {rows: line[0] === "person-preset" ? [{id: 1, name: "Mine", shape: JSON.stringify(shape)}] : []}});
+    const presets = useLayoutPresets({environment: "main", page: "home", shellLine, catalogue: {window: () => null}, store: {layout: ref(null)}});
+    await presets.load();
+    return presets.presets.value;
+}
+
 test("the thumbnail draws a cell per active window, the chat in the accent and a third party's window in the neutral colour", async () => {
-    const cells = cellsOf({dir: "row", r: 0.5, a: {tabs: ["messages.chat", "tasks.tasks"], active: "messages.chat"}, b: {tabs: ["thirdparty.board"], active: "thirdparty.board"}});
+    const [{cells}] = await savedPresets({dir: "row", r: 0.5, a: {tabs: ["messages.chat", "tasks.tasks"], active: "messages.chat"}, b: {tabs: ["thirdparty.board"], active: "thirdparty.board"}});
     const element = document.createElement("div");
     createApp(() => h(LayoutThumb, {cells})).mount(element);
     await nextTick();

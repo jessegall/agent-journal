@@ -2,9 +2,9 @@
 import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkGroup, MarkHost, MessageCard, SwitchCase, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, shownMarks, useRows, patched, removed, SHORT_CHAT, dockOpening, openInChat} from "@journal/window-kit";
 
-const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
+const {rows: messages, failure, loaded, load, older, act, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
@@ -190,15 +190,18 @@ function startComment(message) {
     commenting.value = message;
     focusComposer();
 }
+// a face shows at once, put on or taken off as the command will leave it, and goes back with the reason if the server refuses
 async function reactTo(message, face) {
-    const result = await context.run(["message", "react", String(message.id), face]);
+    const faces = JSON.parse(message.reactions || "[]");
+    const had = faces.some((held) => held.actor_type === "user" && held.emoji === face);
+    const left = had ? faces.filter((held) => !(held.actor_type === "user" && held.emoji === face)) : [...faces, {emoji: face, actor_type: "user"}];
+    const result = await act(["message", "react", String(message.id), face], patched(message.id, {reactions: JSON.stringify(left)}));
     sendFailure.value = result.ok ? "" : result.error;
 }
 
 async function removeMessage(message) {
-    const result = await context.run(["message", "delete", String(message.id)]);
+    const result = await act(["message", "delete", String(message.id)], removed(message.id));
     sendFailure.value = result.ok ? "" : result.error;
-    load();
 }
 // the arrow up in an empty box brings back the newest message of yours the agent has not read, to change it; the arrow down or escape leaves it
 const lastOwn = () => messages.value.find((row) => ["user", "comment"].includes(row.type));

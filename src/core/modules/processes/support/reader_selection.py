@@ -1,13 +1,9 @@
 from collections.abc import Sequence
 from fnmatch import fnmatchcase
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import READ_CATEGORIES, WATCHED_CATEGORIES
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.part_reader import PartReader
-
-UNREAD_CATEGORIES = (CommandCategory.JOURNAL, *READ_CATEGORIES)
 
 
 class ReaderSelection:
@@ -18,7 +14,7 @@ class ReaderSelection:
 
     @staticmethod
     def choose(readers: Sequence[Reader], parts: Sequence[ProcessPart]) -> PartReader | None:
-        for part in sorted(parts, key=lambda part: (part.category not in WATCHED_CATEGORIES, part.position)):
+        for part in sorted(parts, key=lambda part: (not part.category.is_watched, part.position)):
             matching = sorted((reader for reader in readers if ReaderSelection.reads(reader, part)), key=lambda reader: (not reader.is_default, -reader.id))
             if matching:
                 return PartReader(matching[0], part)
@@ -26,4 +22,4 @@ class ReaderSelection:
 
     @staticmethod
     def reads(reader: Reader, part: ProcessPart) -> bool:
-        return part.category not in UNREAD_CATEGORIES and any(fnmatchcase(part.text, pattern.strip()) for pattern in reader.commands.split(","))
+        return not part.category.is_read_only and any(fnmatchcase(part.text, pattern.strip()) for pattern in reader.commands.split(","))

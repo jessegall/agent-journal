@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {Btn, RowList, added, removed, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded, act, actionFailure} = useRows("reminder list", ["reminder.*"]);
 const draft = reactive({text: "", at: "", minutes: "", once: false});
@@ -20,7 +20,8 @@ function when(row) {
 
 async function make() {
     const line = ["reminder", "make", draft.text.trim(), ...(draft.at ? ["--at", new Date(draft.at).toISOString()] : []), ...(Number(draft.minutes) ? ["--every-minutes", String(draft.minutes)] : []), ...(draft.once ? ["--once"] : [])];
-    const result = await act(line);
+    const pending = {id: `making-${Date.now()}`, text: draft.text.trim(), ended_at: null, due_at: draft.at ? new Date(draft.at).toISOString() : null, interval_seconds: Number(draft.minutes) * 60 || 0, single_use: draft.once};
+    const result = await act(line, added(pending));
     if (result.ok) Object.assign(draft, {text: "", at: "", minutes: "", once: false});
 }
 </script>
@@ -42,7 +43,7 @@ async function make() {
                 <div class="row" :data-reminder="row.id">
                     <span class="text">{{ row.text }}</span>
                     <span class="note">{{ when(row) }}</span>
-                    <Btn small data-reminder-remove @click="act(['reminder', 'delete', String(row.id)])">Remove</Btn>
+                    <Btn small data-reminder-remove @click="act(['reminder', 'delete', String(row.id)], removed(row.id))">Remove</Btn>
                 </div>
             </template>
         </RowList>

@@ -14,5 +14,5 @@ class VoiceLines:
         self.nudger, self.choice = nudger, choice
 
     def deliver(self, agent_id: int, template: str, change: Change[Model]) -> None:
-        if self.choice.talks_in_voice():
+        if self.choice.is_voiced():
             self.nudger.send_text(agent_id, template.format(voice=self.choice.instruction()), SOURCE, change.context)

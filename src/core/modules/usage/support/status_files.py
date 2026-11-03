@@ -14,10 +14,10 @@ ENDED_KEPT_SECONDS = 30 * 24 * 3600
 
 class StatusFiles:
     """The status files the hook program keeps of each session's status line, read for usage: one session's
-    report, and the plan's windows, which belong to the account, from the newest file of an open session that
-    names them, else from plan.json, where a session that ended left the windows it named. The file of a session
-    that ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan of open sessions
-    does not read it."""
+    report, and the plan's windows. The windows belong to the account: they come from the newest file of an
+    open session that names them, else from plan.json, where a session that ended left what it named. The file
+    of a session that ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan
+    of open sessions does not read it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.status_folder
@@ -36,7 +36,7 @@ class StatusFiles:
         path = self.folder / f"{session}.json"
         if not path.is_file():
             return
-        if self.reported(path).windows and (not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime):
+        if self.holds_newest_windows(path):
             shutil.copy2(path, self.plan_file)
         self.ended_folder.mkdir(exist_ok=True)
         self.prune_ended()
@@ -47,6 +47,11 @@ class StatusFiles:
         for path in self.ended_folder.glob("*.json"):
             if path.stat().st_mtime < oldest:
                 path.unlink(missing_ok=True)
+
+    def holds_newest_windows(self, path: Path) -> bool:
+        if not self.reported(path).windows:
+            return False
+        return not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime
 
     @staticmethod
     def reported(path: Path) -> SessionStatus:

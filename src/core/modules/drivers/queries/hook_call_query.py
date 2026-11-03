@@ -1,6 +1,8 @@
+from collections.abc import Sequence
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
@@ -48,6 +50,13 @@ class HookCallQuery(Query[HookCall]):
 
     def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
+
+    def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
+        """How many tools the agent used after each start, all counted in one query over the newest start's range."""
+        sums = ", ".join("coalesce(sum(created_at > ?), 0)" for _ in starts)
+        parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
+        row = self.database.rows(Statement(f"SELECT {sums} FROM hook_calls WHERE agent_id = ? AND hook = ? AND created_at > ?", parameters))[0]
+        return [int(count) for count in row]
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
         calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().limited(1)

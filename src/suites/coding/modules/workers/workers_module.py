@@ -8,6 +8,11 @@ from suites.coding.modules.workers.migrations.m005_proof_tests import ProofTests
 from suites.coding.modules.workers.migrations.m004_proofs_per_task import ProofsPerTaskMigration
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.tasks.support.task_takers import TaskTakers
+from suites.coding.modules.workers.support.worker_task_takers import WorkerTaskTakers
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -37,6 +42,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker_handler impo
 from suites.coding.modules.workers.commands.send_worker.send_worker_subcommand import SendWorkerSubcommand
 from suites.coding.modules.workers.listeners.ended_worker_job_listener import EndedWorkerJobListener
 from suites.coding.modules.workers.listeners.delegated_task_comment_listener import DelegatedTaskCommentListener
+from suites.coding.modules.workers.listeners.worker_limit_listener import WorkerLimitListener
 from suites.coding.modules.workers.listeners.reassigned_task_listener import ReassignedTaskListener
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
 from suites.coding.modules.workers.listeners.worker_job_resume_listener import WorkerJobResumeListener
@@ -109,8 +115,10 @@ class WorkersModule(Module):
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    listeners = [ReassignedTaskListener, DelegatedTaskCommentListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
-    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
+    bindings = [(TaskTakers, WorkerTaskTakers)]
+    listeners = [ReassignedTaskListener, DelegatedTaskCommentListener, WorkerLimitListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
+    tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
+    windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),

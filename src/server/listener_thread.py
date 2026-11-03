@@ -11,8 +11,8 @@ class ListenerThread:
     next round runs. A stop signals the thread at once and never waits long for a round that is running."""
 
     def __init__(self, round_runner: Callable[[], None], error_reporter: Callable[[Exception], None], period_seconds: float = LISTENER_PERIOD_SECONDS,
-                 name: str = "listeners", woken_too: "ListenerThread | None" = None) -> None:
-        self.round_runner, self.error_reporter, self.period_seconds, self.woken_too = round_runner, error_reporter, period_seconds, woken_too
+                 name: str = "listeners", urgent_thread: "ListenerThread | None" = None) -> None:
+        self.round_runner, self.error_reporter, self.period_seconds, self.urgent_thread = round_runner, error_reporter, period_seconds, urgent_thread
         self.wake_event, self.stop_event = threading.Event(), threading.Event()
         self.thread = threading.Thread(target=self.loop, name=name, daemon=True)
 
@@ -21,8 +21,8 @@ class ListenerThread:
 
     def wake(self) -> None:
         self.wake_event.set()
-        if self.woken_too is not None:
-            self.woken_too.wake()
+        if self.urgent_thread is not None:
+            self.urgent_thread.wake()
 
     def loop(self) -> None:
         while not self.stop_event.is_set():

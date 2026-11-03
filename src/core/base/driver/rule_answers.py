@@ -60,15 +60,15 @@ class RuleAnswers:
 
     @property
     def rule_lines(self) -> list[tuple[str, str]]:
-        first_rule: dict[tuple[str, str], str] = {}
+        first_rule: dict[str, str] = {}
         for rule in self.answered:
             for nudge in rule.answer.line_nudges if rule.answer is not None else ():
-                first_rule.setdefault((nudge.key, nudge.text), rule.name)
-        return [(name, text) for (key, text), name in first_rule.items() if (key, text) not in self.skipped_lines]
+                first_rule.setdefault(nudge.key, rule.name)
+        return [(first_rule[nudge.key], nudge.text) for nudge in self.delivered_nudges]
 
     @property
     def line_nudges(self) -> list[Nudge]:
-        return [nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges]
+        return Nudge.collapsed(nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges)
 
     @property
     def delivered_nudges(self) -> list[Nudge]:

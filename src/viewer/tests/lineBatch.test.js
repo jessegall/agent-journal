@@ -30,6 +30,23 @@ test("a line asked alone goes to the single route as before", async () => {
     expect(sent[0].url).not.toContain("/api/lines");
 });
 
+const refusing = (error) => async () => ({ok: true, json: async () => ({code: 1, value: null, error})});
+
+test("the words of a refused line read as words, with what to do about it", async () => {
+    vi.stubGlobal("fetch", refusing(JSON.stringify({guard: "", refused: "too long", skip_flag: "", suggestion: "say it shorter"})));
+    expect((await lineResult("a.b", ["usage", "show"], "main")).error).toBe("too long: say it shorter");
+});
+
+test("a refusal with no suggestion is its words alone", async () => {
+    vi.stubGlobal("fetch", refusing(JSON.stringify({refused: "no agent 1", suggestion: ""})));
+    expect((await lineResult("a.b", ["agent", "show", "1"], "main")).error).toBe("no agent 1");
+});
+
+test("a refusal printed as plain text is shown as it came", async () => {
+    vi.stubGlobal("fetch", refusing("plain words"));
+    expect((await lineResult("a.b", ["usage", "show"], "main")).error).toBe("plain words");
+});
+
 test("a line whose request was cancelled before it went answers cancelled and the others still go", async () => {
     const sent = [];
     vi.stubGlobal("fetch", answering(sent));

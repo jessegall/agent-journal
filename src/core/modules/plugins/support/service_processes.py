@@ -4,11 +4,12 @@ from core.base.leftover_process import STOP_LIMIT_SECONDS
 
 
 class ServiceProcesses:
-    """The plugin services this journal started, by plugin and service name, and when the condition of each
-    one that did not start was checked."""
+    """The plugin services this journal started, by plugin and service name, the digest of the plugin's files each
+    was started with, and when the condition of each one that did not start was checked."""
 
     def __init__(self) -> None:
         self.running: dict[tuple[str, str], ChildProcess] = {}
+        self.digests: dict[tuple[str, str], str] = {}
         self.skipped: dict[tuple[str, str], Timestamp] = {}
 
     def close(self) -> None:

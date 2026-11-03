@@ -1,9 +1,9 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {Btn, RowList, removed, useRows} from "@journal/window-kit";
 
-// the worktrees of this repository and who holds each; removing one asks first, keeps its branch and says why when it is refused
-const {rows, failure, loaded, load, context} = useRows("project-worktree list", []);
+// the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says why when it is refused
+const {rows, failure, loaded, act} = useRows("project-worktree list", []);
 const asking = ref("");
 const refusal = ref({});
 
@@ -18,10 +18,9 @@ const isHeld = (row) => row.is_checkout || row.worker_id !== null || row.agent_c
 
 async function remove(row) {
     if (asking.value !== row.id) return void (asking.value = row.id);
-    const answer = await context.run(["project-worktree", "remove", row.folder]);
-    refusal.value = {...refusal.value, [row.id]: answer.ok ? "" : answer.error};
     asking.value = "";
-    if (answer.ok) load();
+    const answer = await act(["project-worktree", "remove", row.folder], removed(row.id));
+    refusal.value = {...refusal.value, [row.id]: answer.ok ? "" : answer.error};
 }
 </script>
 

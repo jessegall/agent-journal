@@ -1,3 +1,4 @@
+from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -21,7 +22,7 @@ class DeveloperModule(Module):
     dependencies = ["journal.core.settings"]
     settings = DEVELOPER_SETTINGS
     handlers = [ResetHookNumbersHandler]
-    performance_tools = [SlowTickTool]
+    performance_tools = [SlowTickTool, ReaderTimeTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand]
     windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
                WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["developer hook-requests"])]

@@ -12,8 +12,6 @@ from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 
-BACKGROUND_CATEGORIES = frozenset((CommandCategory.TEST_RUN, CommandCategory.BUILD))
-
 
 class ForegroundLimit:
     """How a shell line is run: no limit to move at for a line of journal commands, in the
@@ -32,7 +30,7 @@ class ForegroundLimit:
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}
         categories.update(category for category in [declared] if category is not None)
-        is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell)
+        is_long = any(category.is_long_running for category in categories) or self.has_moved_run(environment_id, shell)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared)
 

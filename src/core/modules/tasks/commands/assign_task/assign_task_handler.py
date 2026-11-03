@@ -11,6 +11,7 @@ from core.modules.tasks.commands.assign_task.assign_task import AssignTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.support.task_takers import TaskTakers
 
 
 class AssignTaskHandler(Handler[AssignTask, Task]):
@@ -20,14 +21,15 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
 
     command = AssignTask
 
-    def __init__(self, queries: Queries, tasks: TaskQuery, repository: Repository) -> None:
-        self.queries, self.tasks, self.repository = queries, tasks, repository
+    def __init__(self, queries: Queries, tasks: TaskQuery, repository: Repository, takers: TaskTakers) -> None:
+        self.queries, self.tasks, self.repository, self.takers = queries, tasks, repository, takers
 
     def handle(self, command: AssignTask, context: Context) -> Task:
         task = self.queries.query(Task).find(command.task_id)
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended", "journal agent list shows who is running")
+        self.takers.check(agent)
         delegated_to = None if agent.role is AgentRole.MAIN else agent.id
         if task.state is TaskState.OPEN:
             return self.repository.save(replace(task, delegated_to=delegated_to), context)

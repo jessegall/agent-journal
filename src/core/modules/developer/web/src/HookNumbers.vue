@@ -37,7 +37,7 @@ usePoll(load, () => true);
         <template v-else>
             <table class="numbers-table">
                 <thead>
-                    <tr><th>Hook</th><th>Count</th><th>Average</th><th>Slowest</th><th>Points</th></tr>
+                    <tr><th>Hook, reader or route</th><th>Count</th><th>Average</th><th>Slowest</th><th>Points</th></tr>
                 </thead>
                 <tbody>
                     <template v-for="row in rows" :key="row.id">

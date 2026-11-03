@@ -16,7 +16,7 @@ const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATUS);
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 
-export async function answered(response, fallback, failed = failure) {
+async function answered(response, fallback, failed = failure) {
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw Object.assign(failed(response.status, body.error || fallback), {blocked: Boolean(body.blocked), details: body});
     return body;

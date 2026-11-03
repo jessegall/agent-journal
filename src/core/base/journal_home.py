@@ -57,6 +57,14 @@ class JournalHome:
         return self.folder / "viewer-port"
 
     @property
+    def restart_mark(self) -> Path:
+        return self.folder / "server-restarting"
+
+    @property
+    def run_queue_halt_file(self) -> Path:
+        return self.folder / "run-queue-halted"
+
+    @property
     def pending_files(self) -> Path:
         return self.folder / "files" / "pending"
 

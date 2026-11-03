@@ -10,8 +10,8 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -95,6 +95,24 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2: journal task show 2")
+
+
+def test_a_task_is_not_assigned_to_a_subagent_and_the_refusal_names_who_takes_one(new_story):
+    story = new_story(fixture=SubagentStarted)
+    story.expect_success('task make "Fix the cart" --environment main')
+    story.expect_refusal(f"task assign 1 --to {story.subagent.id}", "is a subagent and takes no task", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.subagent.id}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
+    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+
+
+def test_a_task_is_not_assigned_to_a_worker_whose_work_is_delivered(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    worker = delivered_worker(story, repository)
+    story.expect_refusal(f"task assign 2 --to {worker.id}", "is a worker and takes no task", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {worker.id}", "a worker with a cut worktree take a task", actor=story.agent)
+    story.expect_absent("task show 2", "delegated_to", actor=story.agent)
 
 
 def test_a_workers_last_task_goes_back_with_the_worker(new_story):

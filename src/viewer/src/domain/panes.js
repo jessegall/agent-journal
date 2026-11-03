@@ -93,7 +93,7 @@ function folded(tree, id) {
     return {...box, y: side.first ? box.y : box.y + box.h, h: 0};
 }
 
-export const centre = (box) => ({x: box.x + box.w / 2, y: box.y + box.h / 2, w: 0, h: 0});
+const centre = (box) => ({x: box.x + box.w / 2, y: box.y + box.h / 2, w: 0, h: 0});
 
 const EDGES = {
     right: (box) => ({...box, x: box.x + box.w, w: 0}),
@@ -195,10 +195,6 @@ export function broughtBack(layout, id) {
     next.away = elsewhere(layout).filter((x) => x.id !== id);
     next.floats.push(f);
     return next;
-}
-
-export function forgotten(layout, id) {
-    return {...kept(layout, layout.tree, layout.panes, layout.next), away: elsewhere(layout).filter((x) => x.id !== id)};
 }
 
 function appended(layout, view) {

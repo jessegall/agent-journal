@@ -11,6 +11,7 @@ class PluginUpgrade:
     version: str
     changes: Sequence[str]
     applied: bool
+    diff: Sequence[str] = ()
 
     def json(self) -> Mapping[str, object]:
-        return {"name": self.name, "installed": self.installed, "version": self.version, "changes": list(self.changes), "applied": self.applied}
+        return {"name": self.name, "installed": self.installed, "version": self.version, "changes": list(self.changes), "applied": self.applied, "diff": list(self.diff)}

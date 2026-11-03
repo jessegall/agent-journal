@@ -1,16 +1,11 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.driver.command_category import CommandCategory
 from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, mappings, text, texts
-from core.base.driver.shell_line import READ_CATEGORIES, ShellLine
+from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
-
-WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
-READ_TOOL_TYPES = (ToolType.READ, ToolType.SEARCH)
-BLOCK_EXEMPT_CATEGORIES = (*READ_CATEGORIES, CommandCategory.JOURNAL)
 
 
 @dataclass(frozen=True)
@@ -52,19 +47,19 @@ class Tool:
 
     @property
     def is_reading(self) -> bool:
-        if self.category in READ_TOOL_TYPES:
+        if self.category.reads_files:
             return True
         return self.shell is not None and self.shell.is_reading
 
     @property
     def block_exempt(self) -> bool:
-        if self.category in READ_TOOL_TYPES:
+        if self.category.reads_files:
             return True
         if self.shell is None or self.shell.has_file_redirects or not self.shell.parts:
             return False
-        return all(part.classification.category in BLOCK_EXEMPT_CATEGORIES for part in self.shell.parts)
+        return all(part.classification.category.is_read_only for part in self.shell.parts)
 
     def is_writing_files(self) -> bool:
-        if self.category in WRITING_CATEGORIES:
+        if self.category.writes_files:
             return True
         return self.shell is not None and self.shell.has_writes

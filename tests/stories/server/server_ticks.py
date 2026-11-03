@@ -1,55 +1,37 @@
-from datetime import timedelta
-
-from core.base.driver.hook_route import HookRoute
-from server.journal_round import JournalRound
-from server.tick_work import TickWork
+from core.base.module.module_finder import ModuleFinder
+from core.modules.processes.ticks.output_reading import OutputReading
+from server.ticker import Ticker
 from tests.stories.core.base.driver.support.fixtures import LeadLocked
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.fixtures import UserJoined
 
 
-def test_a_tick_round_reaches_each_open_agents_rules_and_a_silenced_history_rule_keeps_its_history(new_story):
+def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenced_history_rule_keeps_its_history(new_story):
     story = new_story(SAMPLES, fixture=LeadLocked)
-    JournalRound(story.home, "ticker", TickWork(lambda: None)).run()
+    agent_ticks = next(handler for handler in Ticker.declared_by(ModuleFinder(story.home)) if handler.label == "agent ticks")
+    ticker = Ticker(story.home, [agent_ticks], lambda: None, lambda: 0.0)
+    ticker.tick()
+    ticker.join(5.0)
     story.expect_text(f"rule-history list --agent {story.agent.id}", "samples.return-line", "silenced")
     story.expect_absent(f"hook-call list --agent {story.agent.id}", "tick")
 
 
-def test_a_fault_in_reading_the_outputs_does_not_stop_the_minute_work(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStarted)
-    work, ticks = TickWork(lambda: None), []
-    route = story.container.get(HookRoute)
-    route.answer = lambda event: ticks.append(event)
-
-    def broken(_container) -> None:
-        raise ValueError("a bad output")
-
-    monkeypatch.setattr(work, "read_running_outputs", broken)
-    work.run(story.container)
-    assert ticks
-
-
-def test_the_minute_work_waits_for_the_minute_while_the_clock_ticks(new_story):
-    story = new_story(fixture=BuilderStarted)
-    work, ticks = TickWork(lambda: None), []
-    route = story.container.get(HookRoute)
-    original = route.answer
-    route.answer = lambda event: (ticks.append(event), original(event))[1]
-    work.run(story.container)
-    first = len(ticks)
-    work.run(story.container)
-    assert first > 0 and len(ticks) == first
-    story.advance(timedelta(seconds=61))
-    work.run(story.container)
-    assert len(ticks) > first
+def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
+    story = new_story(fixture=UserJoined)
+    intervals = {handler.label: (handler.interval.seconds, handler.at_start) for handler in Ticker.declared_by(ModuleFinder(story.home))}
+    assert intervals["read running outputs"] == (1, False)
+    assert intervals["agent ticks"] == (60, True)
+    assert intervals["hook pruning"] == (24 * 60 * 60, True)
+    assert intervals["phone notices"] == (60, True)
 
 
 def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_story):
     story = new_story(fixture=BuilderWithUser)
-    work = TickWork(lambda: None, iter([0.0, 0.4, 1.0, 1.4]).__next__)
-    work.run(story.container)
+    reading = OutputReading(iter([0.0, 0.4, 1.0, 1.4]).__next__)
+    reading(story.container)
     assert "over its limit" not in story.run("message list --environment main").output_text
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
-    work.run(story.container)
+    reading(story.container)
     assert "A tick of the journal's clock took 400 ms" in story.run("message list --environment main").output_text

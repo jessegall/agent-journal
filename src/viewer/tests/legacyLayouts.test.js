@@ -1,5 +1,7 @@
-import {expect, test} from "vitest";
-import {moveLegacyLayouts, renamedLayout} from "../src/windows/legacyLayouts.js";
+import {afterEach, expect, test, vi} from "vitest";
+import {moveLegacyLayouts} from "../src/windows/legacyLayouts.js";
+
+afterEach(() => vi.unstubAllGlobals());
 
 const OLD = {
     tree: {dir: "row", r: 0.6, a: {id: 1}, b: {id: 2}},
@@ -8,8 +10,15 @@ const OLD = {
     floats: [{id: 3, view: "terminal", x: 10, y: 10, w: 300, h: 200}],
 };
 
-test("a version 4 layout has every tab, float and active view named by its window", () => {
-    const layout = renamedLayout(OLD);
+async function movedLayout(layout) {
+    const {lines, shellLine} = journal({layout: JSON.stringify(layout)});
+    await moveLegacyLayouts(shellLine, "main");
+    const [save] = saves(lines);
+    return save ? JSON.parse(save[save.indexOf("--layout") + 1]) : null;
+}
+
+test("a version 4 layout has every tab, float and active view named by its window", async () => {
+    const layout = await movedLayout(OLD);
     expect(layout.panes[1]).toEqual({tabs: ["messages.chat"], active: "messages.chat", width: "full"});
     expect(layout.panes[2].tabs).toEqual(["tasks.tasks", "plans.plans"]);
     expect(layout.panes[2].active).toBe("plans.plans");
@@ -17,9 +26,20 @@ test("a version 4 layout has every tab, float and active view named by its windo
     expect(layout.tree).toEqual(OLD.tree);
 });
 
-test("a layout that is not valid is skipped", () => {
-    expect(renamedLayout({tree: null, panes: {}})).toBeNull();
-    expect(renamedLayout({...OLD, next: "x"})).toBeNull();
+test("a layout that is not valid is skipped", async () => {
+    expect(await movedLayout({tree: null, panes: {}})).toBeNull();
+    expect(await movedLayout({...OLD, next: "x"})).toBeNull();
+});
+
+test("a chat pane's hidden version 4 kinds become the chat window's family switches", async () => {
+    const kinds = [
+        {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", shown: true, main: true},
+        {type: "reminder", family: "memories.reminders", family_title: "Reminders", group: "reminders", shown: false, main: false},
+        {type: "compaction", family: "memories.context", family_title: "Context", group: "agent", shown: true, main: true},
+    ];
+    vi.stubGlobal("fetch", async () => ({ok: true, json: async () => ({marks: kinds})}));
+    const layout = {tree: {id: "a"}, panes: {a: {tabs: ["chat"], active: "chat", hide: ["reminder"]}}, next: 2};
+    expect((await movedLayout(layout)).panes.a.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
 });
 
 function journal(settings, saved = {}) {

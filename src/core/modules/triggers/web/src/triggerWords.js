@@ -15,7 +15,7 @@ export const doesOf = (value) => DOES.find((option) => option.value === value) |
 
 const quoted = (word) => `“${word}”`;
 
-export function wordsText(words) {
+function wordsText(words) {
     const quotes = words.slice(0, 3).map(quoted);
     const more = words.length - 3;
     if (more > 0) return `${quotes.join(", ")} or ${more} other ${more === 1 ? "phrase" : "phrases"}`;

@@ -5,7 +5,7 @@ import {LayoutStore} from "./layoutStore.js";
 export const SAVE_DELAY_MS = 500;
 const FOLD_MS = 380;
 
-export const tabKey = ({environment, person, suite, page, driver}) => `journal.layout.${environment}.${person}.${suite}.${page}.${driver}`;
+const tabKey =({environment, person, suite, page, driver}) => `journal.layout.${environment}.${person}.${suite}.${page}.${driver}`;
 
 // the browser tab's own copy of a layout, so a reload keeps what this tab showed while another tab saves its own
 export const sessionTab = {

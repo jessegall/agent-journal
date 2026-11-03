@@ -49,6 +49,7 @@ class CodexProvider(Provider):
     tool_categories = {"Bash": ToolType.SHELL, "apply_patch": ToolType.EDIT, "write_file": ToolType.NEW_FILE,
                        "read_file": ToolType.READ, "collaborationspawn_agent": ToolType.AGENT,
                        "request_user_input": ToolType.QUESTION}
+    monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
     hook_file = HookFile(Path(".codex/hooks.json"), {"additionalContextLimit": 0})
     session_variable = "CODEX_THREAD_ID"
@@ -109,7 +110,7 @@ class CodexProvider(Provider):
         if role not in TRANSCRIPT_AUTHORS or not is_list(content):
             return None
         text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
-        return TranscriptAuthor.row(position, role, text) if text.strip() else None
+        return TranscriptAuthor.row(position, role, text, fields.get("timestamp") if is_mapping(fields) else "") if text.strip() else None
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)

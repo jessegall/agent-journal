@@ -6,7 +6,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_nudges import TASK_NAME
@@ -14,7 +14,6 @@ from core.modules.tasks.support.task_nudges import TASK_NAME
 
 TASK_MOVES = ("task start", "task close", "task cancel", "task block", "task release")
 TASK_NUMBER = re.compile(r"\btasks? (\d+)\b", re.I)
-UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
 
 
 class TaskNameRule(DriverRule):

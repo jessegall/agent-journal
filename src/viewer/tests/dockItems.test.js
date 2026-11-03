@@ -1,6 +1,8 @@
 import {expect, test} from "vitest";
 import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../src/domain/dockItems.js";
-import {dockButtons} from "../src/domain/dockLook.js";
+import {dockLook} from "../src/domain/dockLook.js";
+
+const dockButtons = (item, declaration) => dockLook(item, declaration).buttons;
 
 const item = (id, extra = {}) => ({id, type: "run", state: "docked", kept: false, leaves_at: null, target_model: "tasks", target_id: id, ...extra});
 

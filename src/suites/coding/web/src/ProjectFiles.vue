@@ -10,6 +10,7 @@ const rows = ref(null);
 const failure = ref("");
 const chosen = ref(null);
 const refusal = ref("");
+const targetLine = ref(0);
 const crumbs = computed(() => (folder.value ? folder.value.split("/") : []));
 const crumbPath = (index) => crumbs.value.slice(0, index + 1).join("/");
 const lines = computed(() => (chosen.value?.text ?? "").split("\n"));
@@ -24,12 +25,17 @@ async function load() {
     rows.value = answer.ok ? answer.value.rows : [];
 }
 
-async function open(row) {
+function scrolledTo(element, number) {
+    if (element && number === targetLine.value) element.scrollIntoView?.({block: "center"});
+}
+
+async function open(row, lineNumber = 0) {
     if (row.folder) {
         words.value = "";
         folder.value = row.id;
         return;
     }
+    targetLine.value = lineNumber;
     const answer = await context.read(`project-file show ${JSON.stringify(row.id)}`);
     refusal.value = answer.ok ? "" : answer.error;
     chosen.value = answer.ok ? answer.value : null;
@@ -37,9 +43,9 @@ async function open(row) {
 
 watch([folder, words], load, {immediate: true});
 
-// an address can name a file to open, as a plugin's dashboard does
-const named = new URLSearchParams(window.location.search).get("file");
-if (named) open({id: named, folder: false});
+// an address can name a file to open, and the line to show first, as a plugin's dashboard does
+const address = new URLSearchParams(window.location.search);
+if (address.get("file")) open({id: address.get("file"), folder: false}, Number(address.get("line")) || 0);
 </script>
 
 <template>
@@ -78,7 +84,7 @@ if (named) open({id: named, folder: false});
                     <template v-if="chosen.cut">
                         <p class="files-note">Only the start of this file is shown.</p>
                     </template>
-                    <pre class="files-text" data-file-text><template v-for="(line, index) in lines" :key="index"><span class="files-line"><span class="files-number">{{ index + 1 }}</span>{{ line }}
+                    <pre class="files-text" data-file-text><template v-for="(line, index) in lines" :key="index"><span :ref="(element) => scrolledTo(element, index + 1)" :class="['files-line', {target: index + 1 === targetLine}]" :data-file-line="index + 1"><span class="files-number">{{ index + 1 }}</span>{{ line }}
 </span></template></pre>
                 </template>
                 <template v-else>
@@ -174,6 +180,10 @@ if (named) open({id: named, folder: false});
 .files-line {
     display: block;
     white-space: pre;
+}
+
+.files-line.target {
+    background: var(--hover);
 }
 
 .files-number {
