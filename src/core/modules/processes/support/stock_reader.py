@@ -26,7 +26,9 @@ STOCK_READERS = (
     StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Running tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", "",
                   r"^\s*(Test Files|Tests)\s+[0-9]", r"^\s*FAIL |^\s*Tests\s+[0-9]+ failed", r"^\s*Tests\s+(?:([0-9]+ failed)\s*\|\s*)?([0-9]+ passed)",
                   count=r"^\S+\.(?:test|spec)\.\w+ > ", count_command='$(printf %s "{part}" | sed "s/ run / list /")'),
-    StockReader("dotnet-test", "dotnet test*", "Running tests", r"Failed |error |Passed!|Failed!|Total tests", "", r"Passed!|Total tests", r"Failed |Failed!|error "),
+    StockReader("dotnet-test", "dotnet test*", "Running tests", r"Failed |error |Passed!|Failed!|Total tests", "", r"Passed!|Total tests", r"Failed |Failed!|error ",
+                  r"(Failed: +[0-9]+, Passed: +[0-9]+)"),
     StockReader("phpunit", "*phpunit*,*pest*,artisan test*", "Running tests", r"FAILURES!|ERRORS!|Tests: |FAIL |Failed asserting|OK \(", r"\( *([0-9]+)%\)",
-                  r"OK \(|Tests: ", r"FAILURES!|ERRORS!|FAIL |Failed asserting|Tests: "),
+                  r"OK \(|Tests: ", r"FAILURES!|ERRORS!|FAIL |Failed asserting|Tests: ",
+                  r"(OK \([0-9]+ tests?|Tests: +[0-9]+)"),
 )

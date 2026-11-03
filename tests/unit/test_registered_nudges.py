@@ -17,7 +17,7 @@ ALLOWED_PLACEHOLDERS = frozenset({
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "items",
 })
 # whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
-FOREIGN_TEMPLATES = frozenset({"REMINDER_LINE", "REMINDER_BLOCK", "PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
+FOREIGN_TEMPLATES = frozenset({"REMINDER_LINE", "REMINDER_BLOCK", "PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE", "MANAGED_HOOK_REFUSAL"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]

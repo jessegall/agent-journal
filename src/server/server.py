@@ -11,6 +11,7 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.base.container import Container
+from core.base.journal_container import opened_container
 from core.base.journal_home import JournalHome
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
@@ -108,7 +109,7 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
-    for starting_round in (JournalRound(home, "code sync", CodeSyncWork()), JournalRound(home, "booting", BootingWork())):
+    for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
         try:
             starting_round.run()
         except Exception as error:

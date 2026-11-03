@@ -47,6 +47,17 @@ def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(ne
     assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
 
 
+def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_story):
+    story = new_story(fixture=ThreeTasks)
+    database = story.container.get(Database)
+    database.connection.execute("UPDATE registry SET fingerprint = 'older code', entries = json_set(entries, '$.bindings.\"core.gone:Interface\"', 'core.gone:Gone')")
+    database.connection.commit()
+    with ServerProcess(story.home) as server:
+        server.expect_health()
+    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
+    assert "core.gone" not in RegistryTable(database).row()["entries"]
+
+
 def test_a_hook_on_code_newer_than_the_registry_goes_through_unchecked_and_a_stop_is_held(new_story):
     story = new_story(fixture=ThreeTasks)
     database = story.container.get(Database)

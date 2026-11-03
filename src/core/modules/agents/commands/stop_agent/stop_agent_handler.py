@@ -10,12 +10,11 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 
 
 STOPPED_ANSWER = b"stopped\n"
-ANSWER_BYTES = 16
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):

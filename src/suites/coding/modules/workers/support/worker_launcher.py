@@ -2,14 +2,13 @@ from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import RecordWorkerLaunchFailure
 
 FAILED_ANSWER = b"failed\n"
 RUNNING_ANSWER = b"running\n"
-ANSWER_BYTES = 16
 LAUNCH_VARIABLE = "JOURNAL_LAUNCH"
 
 

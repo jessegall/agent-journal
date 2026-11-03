@@ -1,9 +1,11 @@
 import json
 import shlex
 import subprocess
+import time
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.performance.performance_state import PerformanceState
 from core.base.timing import Timing
 from core.base.timing_log import TimingLog
 from server.server_files import ServerFiles, socket_path
@@ -43,6 +45,12 @@ class ClientBinary:
 
     def expect_server_pid(self, pid: object) -> None:
         assert self.server_pid() == pid
+
+    def wait_for_finished_start(self) -> None:
+        state, deadline = PerformanceState(self.home), time.monotonic() + RUN_TIMEOUT_SECONDS
+        while not state.can_measure and time.monotonic() < deadline:
+            request_answer(socket_path(self.home), "GET", "/health")
+        assert state.can_measure
 
     def expect_timing_names(self, line: str, names: list[str]) -> None:
         log_lines = [json.loads(raw) for raw in TimingLog(self.home).path.read_text().splitlines()]

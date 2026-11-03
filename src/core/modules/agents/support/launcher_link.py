@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
 
 ANSWER_LIMIT_SECONDS = 5
+ANSWER_BYTES = 16
 
 
 class LauncherLink:

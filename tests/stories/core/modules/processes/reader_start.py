@@ -12,7 +12,7 @@ def test_a_main_agent_gets_one_reader_count_after_its_session_start_without_a_bl
     reply = story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     listed = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
-    story.expect_rows(listed.count(f"3 {NOTICE}") == 1, not reply.refusal,
+    story.expect_rows(listed.count(f"1 {NOTICE}") == 1, not reply.refusal,
                       not story.container.get(Queries).query(AgentBlock).exists())
 
 
