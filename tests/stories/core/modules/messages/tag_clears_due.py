@@ -15,14 +15,14 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 
-def image_due_under_a_memory_mark(new_story):
+def start_story_with_image_block(new_story):
     story = new_story(fixture=BuilderWithUser)
     bus = story.container.get(Bus)
     pending = story.home.pending_files / "0123456789abcdef"
     pending.mkdir(parents=True)
     (pending / "cart.png").write_bytes(b"image")
     environment = story.row(Agent, story.agent.id).environment_id
-    message = bus.run(SendMessage("Look at the cart", files=("0123456789abcdef/cart.png",)), story.user, environment_id=environment)
+    message = bus.run(SendMessage("Look at the cart", files=tuple(["0123456789abcdef/cart.png"])), story.user, environment_id=environment)
     read = f"journal message read {message.id}"
     story.expect_hook_allowed("s-1", HookSamples.shell(read, ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", str(message.id)])).with_fields(event="post_tool_use"), "has an image")
     bus.run(OpenMemoryMark(story.agent.id, 50), Actor.core())
@@ -41,6 +41,6 @@ def expect_tag_settles(story, message, line, *parts):
 
 
 def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_story):
-    story, message = image_due_under_a_memory_mark(new_story)
+    story, message = start_story_with_image_block(new_story)
     line = f'cat notes && journal message tag {message.id} "cart.png" "The cart total is wrong"'
     expect_tag_settles(story, message, line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "tag", str(message.id), "cart.png", "The cart total is wrong"]))
