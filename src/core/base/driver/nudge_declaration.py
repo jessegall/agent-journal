@@ -35,13 +35,13 @@ class NudgeDeclaration:
         return self.text != BARE_TEMPLATE and not self.required_command
 
     def nudge(self, **fields: object) -> Nudge:
-        return self.worded(self.text, fields)
+        return self.rendered(self.text, fields)
 
     def merged(self, nudges: Sequence[Nudge]) -> Nudge:
         values = {name: ", ".join(dict.fromkeys(str(dict(nudge.fields)[name]) for nudge in nudges)) for name, _ in nudges[0].fields}
-        return self.worded(self.many_text or self.text, values)
+        return self.rendered(self.many_text or self.text, values)
 
-    def worded(self, text: str, fields: Mapping[str, object]) -> Nudge:
+    def rendered(self, text: str, fields: Mapping[str, object]) -> Nudge:
         words = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
         return Nudge(self.key, self.type, self.cut(words), self.interval, self.turn_limited, self.required_command.format(**fields), tuple(fields.items()), self)
 
