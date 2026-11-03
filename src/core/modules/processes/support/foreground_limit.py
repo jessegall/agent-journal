@@ -18,14 +18,15 @@ class ForegroundLimit:
     """How a shell line is run: no limit to move at for a line of journal commands, in the
     background at once for an alias marked so, a test run, a build or a command whose last run
     went past the limit, else the seconds the settings give, fewer while the user waits on a
-    message; a line that runs an alias is a shell line, read by the alias's reader."""
+    message; a line that runs an alias is judged by the command under the alias, as the hook
+    classified it, and read by the alias's reader."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries
 
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         alias_runs = self.background.alias_runs(shell)
-        if shell.is_journal_line and not alias_runs:
+        if shell.is_journal_line and (not alias_runs or shell.all_parts_in_category(CommandCategory.JOURNAL)):
             return ForegroundRun(0, False)
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}

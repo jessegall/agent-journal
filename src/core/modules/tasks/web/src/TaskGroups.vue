@@ -115,7 +115,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
-    <div class="tasks">
+    <div class="tasks" data-window-flush>
         <template v-if="!loaded">
             <Skeleton shape="rows" />
         </template>
@@ -204,6 +204,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     display: flex;
     flex-direction: column;
     gap: 14px;
+    padding: 0 12px 8px;
 }
 
 .tasks-tools {
@@ -213,7 +214,9 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     display: flex;
     gap: 8px;
     align-items: center;
-    padding: 0 0 8px;
+    margin: 0 -12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
     background: var(--bg);
 }
 
@@ -242,11 +245,6 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 .tasks-search {
     flex: 1;
     min-width: 0;
-    padding: 6px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
 }
 
 .tasks-group-head {

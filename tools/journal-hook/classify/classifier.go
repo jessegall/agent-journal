@@ -1,12 +1,16 @@
 package classify
 
 import (
+	"encoding/json"
 	"maps"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"unicode"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/internal/pyre"
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
@@ -20,6 +24,7 @@ var quotedPath = regexp.MustCompile(`['"]([^'"\s]*/[^'"\s]*)['"]`)
 type Classifier struct {
 	table       *Table
 	projectFile string
+	aliasLines  map[string]string
 }
 
 func NewClassifier(table *Table) *Classifier {
@@ -36,6 +41,31 @@ func (classifier *Classifier) loaded() *Table {
 		classifier.table = LoadTable(classifier.projectFile)
 	}
 	return classifier.table
+}
+
+// aliasFileName is the file in the journal's runtime folder that names the shell line of each alias.
+const aliasFileName = "aliases.json"
+
+// aliasLine is the shell line of the alias a journal command runs: journal <alias> [arguments]. The file is read at
+// the first journal command, so a hook that classifies none never loads it.
+func (classifier *Classifier) aliasLine(text string) (string, bool) {
+	items := strings.FieldsFunc(text, pyre.IsSpace)
+	if len(items) < 2 || !journalPrograms[baseName(items[0])] {
+		return "", false
+	}
+	if classifier.aliasLines == nil {
+		classifier.aliasLines = readAliasLines(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasFileName))
+	}
+	line, exists := classifier.aliasLines[items[1]]
+	return line, exists
+}
+
+func readAliasLines(path string) map[string]string {
+	lines := map[string]string{}
+	if text, err := os.ReadFile(path); err == nil {
+		_ = json.Unmarshal(text, &lines)
+	}
+	return lines
 }
 
 // tokens are a command's words with its wrappers taken off.

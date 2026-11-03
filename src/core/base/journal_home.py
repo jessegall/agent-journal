@@ -31,6 +31,10 @@ class JournalHome:
         return self.folder / "runtime" / "newest-release.json"
 
     @property
+    def alias_file(self) -> Path:
+        return self.folder / "runtime" / "aliases.json"
+
+    @property
     def hook_wait_file(self) -> Path:
         return self.folder / "runtime" / "hook-wait-seconds"
 

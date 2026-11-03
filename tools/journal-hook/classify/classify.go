@@ -51,6 +51,9 @@ func (classifier *Classifier) ClassifyLine(line string) Classification {
 }
 
 func (classifier *Classifier) classifyCommand(text string) Classification {
+	if line, exists := classifier.aliasLine(text); exists && !isJournalAlias(line, text) {
+		return classifier.ClassifyLine(line)
+	}
 	if isSubshell(text) || groupPattern.MatchString(text) {
 		content := []rune(pyre.Strip(text))
 		return classifier.ClassifyLine(string(content[1 : len(content)-1]))
@@ -176,6 +179,11 @@ func remoteLines(tokens []string) []string {
 		}
 	}
 	return []string{strings.Join(tokens[min(position+1, len(tokens)):], " ")}
+}
+
+// isJournalAlias says an alias's line runs the same journal command again, which would never end.
+func isJournalAlias(line, text string) bool {
+	return strings.HasPrefix(strings.TrimSpace(text), strings.TrimSpace(line))
 }
 
 // isJournal is Chain.is_journal: a part whose first word is the journal's own command.

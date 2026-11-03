@@ -37,6 +37,13 @@ def test_a_read_of_the_due_skill_passes_and_the_next_tool_is_not_refused(new_sto
     story.expect_hook_allowed("s-1", EDIT)
 
 
+def test_a_read_of_the_due_skill_counts_at_once_with_no_listener_run_after_it(new_story):
+    story = notes_due(new_story)
+    path = str(story.home.project_folder / ".claude/skills/journal-notes/SKILL.md")
+    story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": [path]}))
+    story.expect_hook_allowed("s-1", EDIT)
+
+
 def test_a_stop_is_refused_naming_the_unread_skills(new_story):
     story = notes_due(new_story)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "unread skills: journal-notes")
