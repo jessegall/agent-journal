@@ -72,7 +72,11 @@ class WindowDeclaration:
         problems += [f"{self.name} shares {line}, which is not one of its reads" for line in shared_lines if line not in self.reads]
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}
         problems += [f"{self.name} follows {pattern} but reads no {pattern.split('.', 1)[0]}" for pattern in self.events
-                     if provided.matches(pattern) and pattern.split(".", 1)[0] not in read_models]
+                     if provided.matches(pattern) and not self.reads_model(pattern.split(".", 1)[0], read_models)]
         if self.search is not None:
             problems += self.search.problems(self.name)
         return problems
+
+    @staticmethod
+    def reads_model(model: str, read_models: set[str]) -> bool:
+        return any(model == read or model.startswith(f"{read}_") for read in read_models)

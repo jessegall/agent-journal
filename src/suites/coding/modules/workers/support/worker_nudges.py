@@ -19,7 +19,7 @@ WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL,
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTION, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False, required_command="")
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.INSTRUCTION, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next, or journal worker deliver on your last task', longest_characters=AUTHORED_LINE_CHARACTERS, turn_limited=False)
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next, or journal worker deliver on your last task', longest_characters=AUTHORED_LINE_CHARACTERS, turn_limited=False, required_command="")
 WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.INSTRUCTION, 'you ended with tasks left: go on with journal worker next, deliver after the last, and stop only then')
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.INSTRUCTION, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False)
 WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.INSTRUCTION, '{text}', longest_characters=AUTHORED_LINE_CHARACTERS, turn_limited=False)
