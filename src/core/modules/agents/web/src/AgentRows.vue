@@ -81,10 +81,18 @@ const hidden = computed(() => hiddenSummary(entries.value, view.value).join(", "
 // a search or a view switch that holds agents back is what makes an empty list mean nothing matches; the tab alone does not
 const searching = computed(() => Boolean(words.value.trim()) || Boolean(hidden.value));
 const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
+
+// one card is open at a time and takes the whole window: the others are held back, counted on a band at the foot, until it closes or a search starts
+const openId = ref(null);
+const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
+const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
+const heldBack = computed(() => shown.value.length - visible.value.length);
+const toggle = (row) => (openId.value = openId.value === row.id ? null : row.id);
+watch(words, (typed) => typed.trim() && (openId.value = null));
 </script>
 
 <template>
-    <div class="agents" data-window-flush>
+    <div :class="['agents', {focused: openRow}]" data-window-flush>
         <div class="agents-bar">
             <SearchBar v-model="words" class="agents-search" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
@@ -94,16 +102,19 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
         <template v-if="hidden">
             <p class="agents-hidden" data-agents-hidden>Hidden: {{ hidden }}</p>
         </template>
-        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id" @mouseenter="hold(row)" @mouseleave="release(row)">
-                    <AgentCard :row="row" :facts="factsOf(row)" />
+                    <AgentCard :row="row" :facts="factsOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                     <template v-if="lingeringFor(row)">
                         <span class="agent-leave" data-agent-leave aria-hidden="true"><i :style="leaveStyle(row)" /></span>
                     </template>
                 </div>
             </template>
         </RowList>
+        <template v-if="openRow && heldBack">
+            <button type="button" class="agents-held" data-agents-held @click="openId = null">{{ heldBack }} more</button>
+        </template>
     </div>
 </template>
 
@@ -124,9 +135,44 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
     padding: 0;
 }
 
+/* with a card open the list, its row and the card stretch down to the band at the foot */
+.agents.focused :deep(.row-list) {
+    flex: 1;
+    min-height: 0;
+}
+
+.agents.focused :deep(.row-list-row) {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+}
+
+.agents.focused .agent-row {
+    display: flex;
+    min-height: 0;
+}
+
 .agent-row {
     position: relative;
     flex: 1;
+}
+
+.agents-held {
+    flex: none;
+    padding: 7px 12px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.agents-held:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .agent-leave {
