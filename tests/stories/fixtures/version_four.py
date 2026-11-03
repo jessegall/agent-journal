@@ -136,6 +136,7 @@ ROWS = (
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "What did the early session ask?", "[]", "", "", STAMP, "agent:s-early")),
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "What did the session with no row ask?", "[]", "", "", STAMP, "agent:s-gone")),
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (2, "What did the session ask later elsewhere?", "[]", "", "", JANUARY_2036, "agent:s-gone")),
+    ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "Which colour did version 3 ask?", "[]", "", "", STAMP, "user:1")),
     ("shares", "(environment_id, token, expires_at, approved, comments, views, created_at, creator)", (1, SHARE_TOKEN, JANUARY_2036, 1, 0, 3, STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("shares:1", "plans:3", "shares", STAMP, USER)),
     ("shares", "(environment_id, token, expires_at, approved, comments, views, stopped_at, created_at, creator)", (1, "stopped-token", JANUARY_2036, 1, 0, 0, STAMP, STAMP, USER)),

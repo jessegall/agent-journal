@@ -130,6 +130,18 @@ def test_the_sweep_leaves_a_worktree_outside_the_worktree_folder(new_story):
     story.expect_rows(separate_folder.exists())
 
 
+def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    tip = orphan_worktree(repository, 9)
+    folder = repository.worktree_folder(9)
+    (folder / "unfinished.txt").write_text("not committed")
+    BootingWork().run(story.container)
+    story.run_listeners()
+    story.expect_rows((folder / "unfinished.txt").exists())
+    story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
+
+
 def test_a_start_of_the_journal_sweeps_the_worktrees_no_worker_holds(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

@@ -121,7 +121,7 @@ class WorktreeGit:
         self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/worker-tips/{name}", tip)
 
     def remove_orphan(self, folder: str, path: str) -> None:
-        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", path)
+        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def folders(self, folder: str) -> list[tuple[str, str | None]]:

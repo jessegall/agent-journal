@@ -14,7 +14,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...]]):
     """Removes each worktree git knows under the environment's worktree folder that has no worker row left,
     after keeping its tip as a ref under refs/worker-tips, so its commits stay reachable; one a worker holds
-    stays."""
+    stays, and so does one with changes not committed, which git refuses to remove."""
 
     command = RemoveOrphanWorktrees
     transactional = False

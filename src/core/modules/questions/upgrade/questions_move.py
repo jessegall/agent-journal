@@ -21,7 +21,8 @@ TABLE = "questions"
 
 
 class QuestionsMove(VersionFourMove):
-    """Carries version 4's questions, with their answers, to the agents whose sessions wrote them."""
+    """Carries version 4's questions, with their answers, to the agents whose sessions wrote them; one a person's
+    row signed, which version 3's questions are, goes to the environment's newest main agent."""
 
     name = "questions"
     reads = [TABLE]
@@ -32,7 +33,7 @@ class QuestionsMove(VersionFourMove):
         sessions, documents = ActorTable(target), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
-            agent_id = sessions.agent_actor_id(session) if actor_type == AGENT else None
+            agent_id = sessions.agent_actor_id(session) if actor_type == AGENT else sessions.newest_main_agent_id(row["environment_id"])
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that asked it did not move")
                 continue

@@ -6,6 +6,7 @@ from core.base.database.statement import Statement
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
+NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
 class ActorTable:
@@ -26,4 +27,8 @@ class ActorTable:
 
     def agent_actor_id(self, session: str) -> int | None:
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
+        return int(rows[0]["id"]) if rows else None
+
+    def newest_main_agent_id(self, environment_id: int) -> int | None:
+        rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))
         return int(rows[0]["id"]) if rows else None
