@@ -8,6 +8,7 @@ from datetime import timedelta
 from tests.stories.core.modules.processes.background import NOTHING
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, start_process
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 ORPHAN_LINE = "process 1 was lost: its shell is gone"
@@ -85,6 +86,53 @@ def test_a_pid_gone_to_another_program_is_not_killed(reused_process_pid):
     story.expect_success('process show 1', 'state: orphaned', actor=story.agent)
     time.sleep(0.2)
     assert second.poll() is None, 'another program with the pid was killed'
+
+
+def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make build")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    folder = story.container.get(OutputFolder)
+    folder.write_pid(process.id, ended_program.pid)
+    folder.write_output(process.id, 1, "done\n")
+    folder.write_status(process.id, 1, 0)
+    folder.write_end(process.id, 0)
+    RunEndRecovery()(story.container)
+    story.expect_success("process show 1", "state: finished", "exit_code: 0", actor=story.agent)
+    story.expect_text("process-part list --process 1", "finished")
+
+
+def test_a_run_whose_runner_is_alive_is_left_to_report_its_own_end(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make build")
+    second = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, second.pid)
+        folder.write_end(process.id, 0)
+        RunEndRecovery()(story.container)
+        story.expect_absent("process show 1", "state: finished", actor=story.agent)
+    finally:
+        second.kill()
+        second.wait()
+
+
+def test_a_run_whose_runner_died_with_no_end_is_lost_with_no_tick_of_its_agent(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    folder = story.container.get(OutputFolder)
+    folder.write_pid(process.id, ended_program.pid)
+    folder.beat(process.id, story.clock.timestamp())
+    RunEndRecovery()(story.container)
+    story.expect_success("process show 1", "state: background", actor=story.agent)
+    story.advance(timedelta(seconds=11))
+    RunEndRecovery()(story.container)
+    story.expect_success("process show 1", "state: orphaned", actor=story.agent)
+
+
 
 
 def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):

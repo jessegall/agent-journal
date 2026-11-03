@@ -13,5 +13,5 @@ class WorkerMarkVariant(StrEnum):
     DELIVERED = "delivered"
     MERGED = "merged"
     RELEASED = "released"
-    STOPPED = "stopped"
+    ENDED_EARLY = "ended early"
     HELP_REQUEST = "help request"
