@@ -22,9 +22,9 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_settings import PluginSettings
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
 DELIVERY_LIMIT_MS = 60_000
-MODULE_NAME = "journal.core.plugins"
 
 
 class PluginDeliveryListener(CommitListener):

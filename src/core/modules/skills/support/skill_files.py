@@ -6,9 +6,9 @@ from core.base.journal_home import JournalHome
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.base.skill.skill_digest import SkillDigest
+from core.base.module.skill_check import FOLDER_PREFIX
 
 PROGRAM_FOLDERS = (".claude/skills", ".agents/skills")
-FOLDER_PREFIX = "journal"
 
 
 class SkillFiles:

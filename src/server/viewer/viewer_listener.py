@@ -5,9 +5,9 @@ from http.server import ThreadingHTTPServer
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_handler import ViewerRequestHandler
 from server.viewer.viewer_routes import ViewerRoutes
+from server.listener_thread import STOP_LIMIT_SECONDS
 
 VIEWER_ADDRESS = "127.0.0.1"
-STOP_LIMIT_SECONDS = 1.5
 STOP_POLL_SECONDS = 0.05
 PORT_WAIT_SECONDS = 10.0
 PORT_POLL_SECONDS = 0.1

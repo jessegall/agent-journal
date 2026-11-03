@@ -18,8 +18,8 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
-MODULE_NAME = "journal.core.plugins"
 MOST_COMMAND_LINES = 20
 TONES = {tone.value: tone for tone in PluginCardTone}
 

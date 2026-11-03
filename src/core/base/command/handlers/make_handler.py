@@ -6,9 +6,9 @@ from core.base.command.make_command import MakeCommand
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.repository.repository import Repository
+from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 CREATOR_COLUMN = "creator_id"
-ENVIRONMENT_COLUMN = "environment_id"
 
 
 class MakeHandler(Handler[MakeCommand[Model], Model]):

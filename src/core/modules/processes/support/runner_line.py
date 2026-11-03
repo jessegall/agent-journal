@@ -2,8 +2,7 @@ import shlex
 from pathlib import Path
 
 from core.modules.processes.support.foreground_run import ForegroundRun
-
-SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
+from core.base.caller.caller_request import SESSION_VARIABLE
 
 
 class RunnerLine:

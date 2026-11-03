@@ -1,6 +1,6 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -32,8 +32,6 @@ from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
 
-BUILT = ["make", "edit", "show", "list", "delete"]
-
 
 class SecretsModule(Module):
     """Adds secrets: keys and logins the agent gives to programs without seeing them, their values in a file
@@ -46,7 +44,7 @@ class SecretsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
     seeders = [SecretsSeeder]
-    models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=BUILT)]
+    models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [SecretsTableMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]

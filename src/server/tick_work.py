@@ -13,7 +13,7 @@ from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from core.base.timestamp import SECONDS_PER_MINUTE, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
@@ -26,7 +26,6 @@ from core.modules.processes.support.grown_outputs import GrownOutputs
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)
-MINUTE_SECONDS = 60
 MAIN_ACTOR = "agent"
 THREAD_NAME = "ticker"
 
@@ -54,13 +53,13 @@ class TickWork(RoundWork):
             container.get(ErrorLog).reported([THREAD_NAME], error)
         read_seconds = self.seconds() - started
         clock_time = container.get(Clock).timestamp()
-        if self.minute_at is None or self.minute_at.elapsed_seconds(clock_time) >= MINUTE_SECONDS:
+        if self.minute_at is None or self.minute_at.elapsed_seconds(clock_time) >= SECONDS_PER_MINUTE:
             self.minute_at = clock_time
             self.run_minute(container, clock_time)
         self.warn_slow_tick(container, read_seconds, clock_time)
 
     def warn_slow_tick(self, container: Container, tick_seconds: float, clock_time: Timestamp) -> None:
-        recently_warned = self.warned_at is not None and self.warned_at.elapsed_seconds(clock_time) < MINUTE_SECONDS
+        recently_warned = self.warned_at is not None and self.warned_at.elapsed_seconds(clock_time) < SECONDS_PER_MINUTE
         if not recently_warned and container.get(PerformanceTools).run(SlowTickTool, tick_seconds):
             self.warned_at = clock_time
 
@@ -87,4 +86,4 @@ class TickWork(RoundWork):
     def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:
         seconds = clock_time.value.timestamp()
         actor = MAIN_ACTOR if agent.role == AgentRole.MAIN else f"{agent.role}:{agent.id}"
-        return HookEvent.tick(agent.program, agent.session, f"tick-{agent.id}-{int(seconds // MINUTE_SECONDS)}", int(seconds * 1000), actor, environment)
+        return HookEvent.tick(agent.program, agent.session, f"tick-{agent.id}-{int(seconds // SECONDS_PER_MINUTE)}", int(seconds * 1000), actor, environment)

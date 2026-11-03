@@ -12,11 +12,10 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
+from core.modules.messages.rules.message_delivery_rule import LISTED_MESSAGES
 
 ALLOWED_TOOL_CALL_COUNT = 20
 COUNTDOWN_CALL_COUNT = 5
-
-LISTED_MESSAGES = 5
 
 
 class UnreadMessageWriteRule(DriverRule):

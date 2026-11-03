@@ -8,10 +8,10 @@ from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY, Tas
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 
 
-TITLE_LIMIT_CHARACTERS = 80
+TASK_TITLE_LIMIT_CHARACTERS = 80
 def check_title(cli_name: str, title: str) -> None:
-    if not 1 <= len(title) <= TITLE_LIMIT_CHARACTERS:
-        raise Refusal(f"a {cli_name}'s title is 1 to {TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
+    if not 1 <= len(title) <= TASK_TITLE_LIMIT_CHARACTERS:
+        raise Refusal(f"a {cli_name}'s title is 1 to {TASK_TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
 @dataclass(frozen=True, kw_only=True)
 class Task(Model):
     """One unit of work; its state moves only as TaskLifecycle allows."""

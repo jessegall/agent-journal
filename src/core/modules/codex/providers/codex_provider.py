@@ -18,7 +18,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
-from core.base.provider.transcript_author import TranscriptAuthor
+from core.base.provider.transcript_author import TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_list, is_mapping
@@ -28,7 +28,6 @@ from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
-TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 
 class CodexProvider(Provider):

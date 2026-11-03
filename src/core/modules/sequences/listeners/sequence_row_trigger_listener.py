@@ -4,15 +4,13 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
-from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
+from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-
-START = "start"
-EMPTY_TRIGGERS = "[]"
+from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
 
 
 class SequenceRowTriggerListener(CommitListener):

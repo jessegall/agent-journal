@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.caller.caller_request import CallerRequest
+from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_chain import ProcessChain
 from core.base.cli.usage_error import UsageError
@@ -13,7 +13,6 @@ from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.queries.environment_query import EnvironmentQuery
 
-SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 LOGIN_VARIABLE = "USER"
 
 

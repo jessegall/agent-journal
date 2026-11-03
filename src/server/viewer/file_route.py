@@ -4,10 +4,10 @@ from server.viewer.file_answer import FileAnswer
 from urllib.parse import unquote
 import mimetypes
 import secrets
+from server.viewer.module_files import UNKNOWN_TYPE
 
 TOKEN_BYTES = 8
 LIMIT_BYTES = 64 * 1024 * 1024
-UNKNOWN_TYPE = "application/octet-stream"
 
 
 class FileRoute:

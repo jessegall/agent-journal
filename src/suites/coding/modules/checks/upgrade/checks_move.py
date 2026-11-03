@@ -9,7 +9,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 from datetime import datetime, timezone
 from functools import partial
-from suites.coding.modules.checks.models.check import TITLE_LIMIT_CHARACTERS
+from suites.coding.modules.checks.models.check import CHECK_TITLE_LIMIT_CHARACTERS
 from suites.coding.modules.checks.upgrade.check_task import CheckTask
 import re
 import sqlite3
@@ -34,7 +34,7 @@ class ChecksMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
-            if not row["command"] or not row["command"].strip() or not row["title"] or len(row["title"]) > TITLE_LIMIT_CHARACTERS:
+            if not row["command"] or not row["command"].strip() or not row["title"] or len(row["title"]) > CHECK_TITLE_LIMIT_CHARACTERS:
                 report.skip(TABLE, row["id"], "it has no command, or its title is empty or over 200 characters")
                 continue
             if row["wait_target"]:

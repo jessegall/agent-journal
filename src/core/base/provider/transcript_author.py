@@ -1,5 +1,7 @@
 from core.base.provider.transcript_row import TranscriptRow
 
+TRANSCRIPT_AUTHORS = ("user", "assistant")
+
 JOURNAL_AUTHOR = "journal"
 MONITOR_AUTHOR = "monitor"
 USER_AUTHOR = "user"

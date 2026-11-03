@@ -5,8 +5,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.processes.support.background_commands import JOURNAL
 
-JOURNAL = "journal"
 OUTPUT_STATUS_COMMAND = ["output", "status"]
 
 

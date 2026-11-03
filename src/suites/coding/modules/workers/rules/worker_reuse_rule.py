@@ -12,8 +12,8 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
-DISPATCH_ARGUMENTS = ("worker", "dispatch")
 NEW_WORKER_FLAG = "--fresh"
 
 

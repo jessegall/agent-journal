@@ -6,8 +6,7 @@ from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults impor
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.service_fault import ServiceFault
-
-MODULE_NAME = "journal.core.plugins"
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
 
 class ServiceFaults:
