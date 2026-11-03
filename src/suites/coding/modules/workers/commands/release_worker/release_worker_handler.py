@@ -27,11 +27,11 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worker-worktree list shows the worktrees")
+        abandoned = self.repository.save(worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.queries.query(Task).find(worktree.task_id)
         self.repository.save(replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id).all_rows()):
             self.repository.save(replace(delegated, delegated_to=None), context)
-        abandoned = self.repository.save(worktree.moved(WorktreeLifecycle.abandon), context)
         unmerged = self.git.remove(self.queries.query(Environment).find(abandoned.environment_id).folder, abandoned)
         removed = self.repository.save(abandoned.remove(context.timestamp, context.actor), context)
         return ReleaseOutcome(removed, removed.branch if unmerged else "")

@@ -132,6 +132,12 @@ func restartMarkRecent(root string) bool {
 	return err == nil && time.Since(info.ModTime()) < RestartMarkLimit
 }
 
+// serverStartMarkName is the file whose age says a hook started a server moments ago, and ServerStartPause how long
+// no other hook starts one after it, longer than a server takes to boot and take its lock.
+const serverStartMarkName = "server-starting"
+
+var ServerStartPause = 10 * time.Second
+
 // startMissingServer starts the journal's server when its socket is gone, as any journal command does, without
 // waiting for it: this hook goes on unchecked and the next finds a server, also while the agent runs no command.
 func startMissingServer(root string) {
@@ -139,6 +145,11 @@ func startMissingServer(root string) {
 	if _, err := os.Stat(filepath.Join(home, "server.sock")); err == nil {
 		return
 	}
+	marker := filepath.Join(home, serverStartMarkName)
+	if file, err := os.Stat(marker); err == nil && time.Since(file.ModTime()) < ServerStartPause {
+		return
+	}
+	_ = os.WriteFile(marker, nil, 0o600)
 	command := exec.Command(filepath.Join(home, "bin", "journal"), "environment", "list")
 	command.Env = append(os.Environ(), "JOURNAL_HOME="+home)
 	if command.Start() == nil {

@@ -20,7 +20,7 @@ class ReassignedTaskListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         old, new = change.old_row, change.new_row
-        if not isinstance(old, Task) or not isinstance(new, Task) or old.holder_id is None or new.delegated_to in (None, old.holder_id):
+        if not isinstance(old, Task) or not isinstance(new, Task) or old.holder_id is None or new.delegated_to == old.holder_id:
             return
         worktree = self.worktrees.worker_worktree(old.holder_id)
         if worktree is None or worktree.task_id != old.id or worktree.state is not WorktreeState.CUT:
