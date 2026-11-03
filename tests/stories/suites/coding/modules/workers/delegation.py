@@ -6,12 +6,13 @@ from core.modules.messages.models.message import Message
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
@@ -34,6 +35,20 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story.run("worker next", actor=worker)
     story.run_listeners()
     assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
+
+
+def judge_sample(*arguments: str):
+    return HookSamples.shell(f"journal sins {' '.join(arguments)}", ShellPart("journal", CommandCategory.JOURNAL, ["sins", *arguments], subcommand="sins"))
+
+
+def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(new_story):
+    story, _, worker = delegated_story(new_story)
+    session = worker_session(story, worker)
+    story.expect_hook_refusal(session, judge_sample("src"), "a worker judges only its own changes")
+    story.expect_hook_refusal(session, judge_sample(), "a worker judges only its own changes")
+    story.expect_hook_allowed(session, judge_sample("--changes"))
+    story.expect_hook_allowed(session, judge_sample("--branch"))
+    story.expect_hook_allowed("s-1", judge_sample("src"))
 
 
 def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
