@@ -8,6 +8,9 @@ import (
 // DefaultCapCharacters is how much of a part's output the agent sees uncapped, as version 4's command output cap.
 const DefaultCapCharacters = 400
 
+// ReadCapCharacters bounds the output returned directly by commands that only read.
+const ReadCapCharacters = 16000
+
 // Shown is what the agent sees of a part's output: all of it up to the cap, or uncapped when the cap is lifted for a
 // line of journal commands; past the cap, the tail that fits half the cap, from the start of a line, and one line
 // naming the output and how to read it.
