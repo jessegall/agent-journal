@@ -262,15 +262,15 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       ], 10, Ue);
     };
   }
-}, rt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-9d301130"]]), ct = { class: "agents-bar" }, gt = {
+}, rt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-9d301130"]]), ct = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
-}, vt = ["data-agent-row", "onMouseenter", "onMouseleave"], pt = {
+}, gt = ["data-agent-row", "onMouseenter", "onMouseleave"], vt = {
   key: 0,
   class: "agent-leave",
   "data-agent-leave": "",
   "aria-hidden": "true"
-}, de = 1e4, ft = 250, mt = {
+}, de = 1e4, pt = 250, ft = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) }, only: { type: Function, default: () => !0 } },
   setup(u) {
@@ -285,7 +285,7 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       for (const [n, c] of s)
         A.value.has(n) ? s.set(n, { ...c, leavesAt: c.leavesAt + (e - J) }) : e >= c.leavesAt && s.delete(n);
       J = e, ae.value = e, (s.size !== m.value.size || [...s].some(([n, c]) => c !== m.value.get(n))) && (m.value = s);
-    }, ft);
+    }, pt);
     ke(() => clearInterval(ne)), fe(L, (e) => {
       const s = new Set(e.map((c) => c.id)), n = new Map(m.value);
       for (const [c, le] of F)
@@ -306,36 +306,33 @@ const Le = { class: "file-feed" }, We = 5, Be = {
     return fe(S, (e) => e.trim() && (D.value = null)), (e, s) => (d(), r("div", {
       class: ue(["agents", { focused: h.value }])
     }, [
-      v("div", ct, [
-        p(o(Ee), {
-          modelValue: S.value,
-          "onUpdate:modelValue": s[2] || (s[2] = (n) => S.value = n),
-          class: "agents-search",
-          "data-agents-search": ""
-        }, {
-          default: I(() => [
-            p(o(Me), {
-              options: W,
-              value: b.value,
-              onPick: s[0] || (s[0] = (n) => b.value = n)
-            }, null, 8, ["value"]),
-            p(o(qe), {
-              small: "",
-              bordered: "",
-              title: "Open the process queue",
-              "data-agents-queue": "",
-              onClick: s[1] || (s[1] = (n) => o(re)("test_queue:0"))
-            }, {
-              default: I(() => [
-                s[4] || (s[4] = ye("Process queue ", -1)),
-                v("span", gt, f(te.value), 1)
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        }, 8, ["modelValue"])
-      ]),
+      p(o(Ee), {
+        modelValue: S.value,
+        "onUpdate:modelValue": s[2] || (s[2] = (n) => S.value = n),
+        "data-agents-search": ""
+      }, {
+        default: I(() => [
+          p(o(Me), {
+            options: W,
+            value: b.value,
+            onPick: s[0] || (s[0] = (n) => b.value = n)
+          }, null, 8, ["value"]),
+          p(o(qe), {
+            small: "",
+            bordered: "",
+            title: "Open the process queue",
+            "data-agents-queue": "",
+            onClick: s[1] || (s[1] = (n) => o(re)("test_queue:0"))
+          }, {
+            default: I(() => [
+              s[4] || (s[4] = ye("Process queue ", -1)),
+              v("span", ct, f(te.value), 1)
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["modelValue"]),
       p(o(he), {
         rows: $.value,
         failure: o(B),
@@ -359,12 +356,12 @@ const Le = { class: "file-feed" }, We = 5, Be = {
               open: n.id === D.value,
               onToggle: (c) => ge(n)
             }, null, 8, ["row", "facts", "open", "onToggle"]),
-            Q(n) ? (d(), r("span", pt, [
+            Q(n) ? (d(), r("span", vt, [
               v("i", {
                 style: be(se(n))
               }, null, 4)
             ])) : T("", !0)
-          ], 40, vt)
+          ], 40, gt)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded", "more", "older", "empty", "hint", "searching"]),
@@ -377,7 +374,7 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       }, f(C.value) + " more", 1)) : T("", !0)
     ], 2));
   }
-}, _t = /* @__PURE__ */ ce(mt, [["__scopeId", "data-v-123b7d53"]]);
+}, ht = /* @__PURE__ */ ce(ft, [["__scopeId", "data-v-37d76850"]]);
 export {
-  _t as A
+  ht as A
 };

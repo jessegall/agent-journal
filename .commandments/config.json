@@ -195,18 +195,19 @@
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
         "naming_NoTypeWordInsideNameDetector",
-        "ArchitectureWorkersWorkerLaunchFunnelDetector"
+        "ArchitectureWorkersWorkerLaunchFunnelDetector",
+        "WindowSearchBarDetector"
     ],
     "parallel": 2,
     "configure": {
-        "naming_PoeticMethodNameDetector": [
+        "naming_LongDocstringLineDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "naming_LongDocstringLineDetector": [
+        "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"

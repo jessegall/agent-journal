@@ -62,7 +62,7 @@ test("the page lists each profile with its description, kind, models and use, un
 
 test("the find box keeps the profiles holding every word, and says when none matches", async () => {
     await drawn();
-    const find = host.querySelector("[data-profile-find]");
+    const find = host.querySelector("[data-profile-find] input");
     await type(find, "worker luna");
     expect(host.querySelectorAll("[data-profile]")).toHaveLength(1);
     expect(host.querySelector('[data-profile="builder"]')).not.toBeNull();

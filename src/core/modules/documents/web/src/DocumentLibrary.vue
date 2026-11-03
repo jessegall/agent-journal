@@ -98,13 +98,12 @@ load();
 
 <template>
     <div class="library">
-        <div class="library-bar">
-            <SearchBar v-model="words" class="library-search" />
+        <SearchBar v-model="words" class="library-bar">
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
             <Segmented :options="STATES" :value="state" data-library-state @pick="state = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />
             <Btn small bordered data-library-new @click="drafting = !drafting">New {{ label.toLowerCase() }}</Btn>
-        </div>
+        </SearchBar>
         <template v-if="drafting">
             <form class="library-draft" data-library-draft @submit.prevent="create">
                 <input v-model="draft.title" placeholder="Title" aria-label="Title">
@@ -182,16 +181,7 @@ load();
 }
 
 .library-bar {
-    display: flex;
     gap: 10px;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.library-search {
-    flex: 1;
-    min-width: 0;
 }
 
 .library-body {

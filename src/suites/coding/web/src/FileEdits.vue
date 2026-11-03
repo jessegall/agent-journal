@@ -12,7 +12,7 @@ const shown = computed(() => {
 
 <template>
     <WindowRoom>
-        <SearchBar v-model="filter" class="filter" data-edits-filter />
+        <SearchBar v-model="filter" data-edits-filter />
         <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="filter ? null : older" empty="No edits yet" hint="The files an agent changes show here as it works." :searching="Boolean(filter)" matches="No file matches">
             <template #default="{row}">
                 <span class="main">{{ row.path }}</span>
@@ -25,20 +25,6 @@ const shown = computed(() => {
 </template>
 
 <style scoped>
-.filter {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 8px;
-    padding: 5px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-}
-
 .main {
     flex: 1;
 }
