@@ -18,5 +18,8 @@ class CodeCopy:
         return self.home.folder / "src"
 
     def make(self) -> None:
+        self.write(self.folder())
+
+    def write(self, folder: Path) -> None:
         ConflictFiles(self.source).check()
-        shutil.copytree(self.source, self.folder(), ignore=shutil.ignore_patterns(*IGNORED), dirs_exist_ok=True)
+        shutil.copytree(self.source, folder, ignore=shutil.ignore_patterns(*IGNORED), dirs_exist_ok=True)
