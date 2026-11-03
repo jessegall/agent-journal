@@ -46,8 +46,12 @@ def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
     assert TRIGGER_TEXT in prompt_lines(story)
 
 
-def test_an_agents_trigger_shows_in_the_main_chat_with_its_enable_button(new_story):
+def test_an_agents_trigger_shows_in_the_main_chat_until_it_is_removed(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main", "waits for you")
+    story.expect_success("trigger strike 1 --environment main", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main", "Trigger removed")
+    story.expect_absent("chat-mark main --environment main", "waits for you")
