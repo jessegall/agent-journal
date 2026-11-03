@@ -36,6 +36,16 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
 
 
+def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    story.run('worker dispatch 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
+    story.run_listeners()
+    assert "Noah Webster started task 1" in marks_text(story), marks_text(story)
+    story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
+
+
 def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_agent(new_story):
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

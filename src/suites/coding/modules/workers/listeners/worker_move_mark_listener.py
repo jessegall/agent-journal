@@ -20,8 +20,8 @@ MOVE_TEXTS = {
 
 
 class WorkerMoveMarkListener(MarkListener):
-    """Each move of a worker shows as a mark in the chat naming the task, with the program and the task's title and
-    brief shown on opening it, and a click that opens the worker."""
+    """Each move of a worker shows as a mark in the chat naming the worker and the task, with the program, the model,
+    the tasks still queued and the task's title and brief shown on opening it, and a click that opens the worker."""
 
     name = "workers.move-mark"
     event = "worker_worktree.*"
@@ -34,7 +34,13 @@ class WorkerMoveMarkListener(MarkListener):
         agent = self.queries.query(Agent).find(worktree.agent_id)
         task = self.queries.query(Task).find(worktree.task_id)
         variant, move = MOVE_TEXTS[event.event]
-        self.show(event, WorkerMarkType.WORKER, variant, f"Worker {agent.id} {move.format(tasks=self.tasks_text(event.event, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        name = agent.given_name or f"Worker {agent.id}"
+        self.show(event, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.event, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(agent)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+
+    def queue_text(self, agent: Agent) -> str:
+        queued = self.queries.query(Task).filter(delegated_to=agent.id, state=TaskState.OPEN).oldest().all_rows()
+        names = ", ".join(f"task {row.id}" for row in queued)
+        return f"\n\nQueued: {names}" if names else ""
 
     def tasks_text(self, move: str, worktree: Worktree, task: Task) -> str:
         if move != DELIVERY_MOVE:
