@@ -204,3 +204,43 @@ def test_agent_running_lists_every_running_agent_and_no_ended_one(new_story):
     story.expect_text("agent running --environment main", "main", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     story.expect_absent("agent running --environment main", "main", actor=story.agent)
+
+
+def ended_helper(story, session: str, windows: bool) -> None:
+    helper = story.new_row_id(f"agent start {session} claude worker --parent {story.agent.id} --environment main")
+    if windows:
+        full_status(story, session, 10, 0.1)
+    else:
+        save_status_file(story, session, {"cost": {"total_cost_usd": 0.1}})
+    story.expect_success(f"agent end {helper}", actor=story.user)
+    story.run_listeners()
+
+
+def test_the_status_file_of_an_ended_session_is_removed_and_its_plan_windows_stay_in_plan_json(new_story):
+    story = new_story(fixture=UserJoined)
+    ended_helper(story, "s-2", windows=True)
+    assert not (story.home.status_folder / "s-2.json").exists() and (story.home.status_folder / "plan.json").is_file()
+
+
+def test_the_status_file_of_a_session_with_no_plan_windows_is_removed_and_leaves_plan_json_as_it_was(new_story):
+    story = new_story(fixture=UserJoined)
+    ended_helper(story, "s-2", windows=True)
+    ended_helper(story, "s-3", windows=False)
+    assert not (story.home.status_folder / "s-3.json").exists()
+    story.expect_text("usage show --environment main", "plan: 5 hours 30% used", actor=story.user)
+
+
+def test_the_plan_windows_are_still_shown_after_many_ended_sessions(new_story):
+    story = new_story(fixture=UserJoined)
+    for number in range(2, 12):
+        ended_helper(story, f"s-{number}", windows=True)
+    assert sorted(path.name for path in story.home.status_folder.glob("*.json")) == ["plan.json"]
+    story.expect_text("usage show --environment main", "plan: 5 hours 30% used, starts again 2026-11-01 15:00 UTC; 7 days 65% used", actor=story.user)
+
+
+def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(new_story):
+    story = new_story(fixture=UserJoined)
+    ended_helper(story, "s-2", windows=True)
+    save_status_file(story, "s-1", {"rate_limits": {"seven_day": {"used_percentage": 17, "resets_at": SEVEN_DAYS_RESET}}})
+    story.expect_text("usage show --environment main", "plan: 7 days 17% used", actor=story.user)
+    assert (story.home.status_folder / "s-1.json").is_file()
