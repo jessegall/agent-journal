@@ -11,6 +11,8 @@ WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.NUDGE, 'wo
 
 WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.NUDGE, 'worker:{worker} delivered {tasks}, unmerged: journal worker merge {worker}, or journal worker release {worker}', interval=Interval(Seconds(600)), turn_limited=False)
 
+SMALL_BATCH = NudgeDeclaration("workers.small_batch", NudgeType.NUDGE, 'batch of {count}: queue more tasks on a worker, a long batch runs on and bothers you less', turn_limited=False)
+
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: journal worker send {worker} \"<job>\", or wait for its delivery", turn_limited=False)
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTION, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False, required_command="")
 
@@ -21,4 +23,4 @@ WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.INSTRUCTION, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False)
 WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.INSTRUCTION, 'the user commented: {job}', turn_limited=False)
 WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INSTRUCTION, 'your tests passed. Your next task, task:{task}: {job}', turn_limited=False)
-WORKER_NUDGES = [WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_NUDGES = [WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
