@@ -86,6 +86,7 @@ def test_a_paused_trigger_rests_and_goes_on_again(new_story):
     story = new_story(fixture=BuilderStarted)
     made(story)
     story.expect_success("trigger pause 1", "trigger 1 paused", actor=story.agent)
+    story.expect_text("trigger list --json", '"text": "Never force push"', '"paused_at": "', actor=story.agent)
     story.expect_hook_allowed("s-1", GIT_CHAIN)
     story.expect_success("trigger pause 1 --off", "trigger 1 goes on", actor=story.agent)
     story.expect_hook_refusal("s-1", GIT_CHAIN, "Never force push")
