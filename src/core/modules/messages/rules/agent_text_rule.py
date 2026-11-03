@@ -10,13 +10,15 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
 JOURNAL_LINE = "[journal] "
-MESSAGE_LINE = "[journal] new message"
+USER_ACT_LINES = ("[journal] new message", "[journal] question:", "[journal] the user")
+SEVERAL_MESSAGES_WORDS = " new messages"
 SHORT_CHARACTERS = 240
 
 
 class AgentTextRule(DriverRule):
     """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless it already
-    replied by command in this turn, or the turn only answered a journal line with few words and no write."""
+    replied by command in this turn, or the turn only answered a journal line with few words and no write; a line
+    that says the user acted, by a message or a question, is answered as the user is."""
 
     name = "messages.agent-text"
     hook = HookEventName.MESSAGE_DISPLAY
@@ -41,7 +43,10 @@ class AgentTextRule(DriverRule):
         return bool(newest) and newest[0].parent_id is not None and newest[0].creation_timestamp().value >= prompt.creation_timestamp().value
 
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
-        if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or prompt.summary.startswith(MESSAGE_LINE):
+        if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_act(prompt.summary):
             return False
         calls = self.queries.query(HookCall).filter(agent_id=prompt.agent_id, writes_files=True).newest().limited(1)
         return not calls or calls[0].id < prompt.id
+
+    def is_user_act(self, line: str) -> bool:
+        return line.startswith(USER_ACT_LINES) or SEVERAL_MESSAGES_WORDS in line
