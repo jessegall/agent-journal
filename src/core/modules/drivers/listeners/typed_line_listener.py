@@ -47,6 +47,6 @@ class TypedLineListener(CommitListener):
             self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
 
     def typed_since_last_hook(self, line: AgentLine) -> bool:
-        typed = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)
+        entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)
         hook = self.hook_calls.newest_agent_hook(line.agent_id)
-        return (typed if hook is None else typed.matching(Greater("created_at", hook.created_at.text))).exists()
+        return (entered_lines if hook is None else entered_lines.matching(Greater("created_at", hook.creation_timestamp().text))).exists()

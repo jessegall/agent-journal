@@ -56,8 +56,9 @@ class ShellLine:
 
     @property
     def watched_category(self) -> CommandCategory:
-        run = next((part for part in self.parts if part.classification.category in WATCHED_CATEGORIES), None)
-        return (run or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN
+        watched_part = next((part for part in self.parts if part.classification.category in WATCHED_CATEGORIES), None)
+        program_part = next((part for part in self.parts if part.classification.category is not CommandCategory.JOURNAL), None)
+        return (watched_part or program_part or self.parts[0]).classification.category if self.parts else CommandCategory.UNKNOWN
 
     @property
     def has_full_test_run(self) -> bool:

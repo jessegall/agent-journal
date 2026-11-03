@@ -1,5 +1,5 @@
 from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import ShellLine
+from core.base.driver.shell_line import READ_CATEGORIES, ShellLine
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
@@ -16,8 +16,8 @@ BACKGROUND_CATEGORIES = frozenset((CommandCategory.TEST_RUN, CommandCategory.BUI
 
 class ForegroundLimit:
     """How a shell line is run: no limit to move at for a line of journal commands, in the
-    background at once for an alias marked so, a test run, a build or a command whose last run
-    went past the limit, else the seconds the settings give, fewer while the user waits on a
+    background at once for an alias marked so, a test run, a build or a part that went past the
+    limit in an earlier run, else the seconds the settings give, fewer while the user waits on a
     message; a line that runs an alias is judged by the command under the alias, as the hook
     classified it, and read by the alias's reader."""
 
@@ -31,12 +31,14 @@ class ForegroundLimit:
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}
         categories.update(category for category in [declared] if category is not None)
-        is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell.line)
+        is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared)
 
-    def has_moved_run(self, environment_id: int, line: str) -> bool:
-        return self.processes.environment(environment_id).line(line).moved().exists()
+    def has_moved_run(self, environment_id: int, shell: ShellLine) -> bool:
+        writing_parts = tuple(part.text for part in shell.parts if part.classification.category not in READ_CATEGORIES)
+        commands = writing_parts or tuple(part.text for part in shell.parts)
+        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands)).moved().exists()
 
     def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()
