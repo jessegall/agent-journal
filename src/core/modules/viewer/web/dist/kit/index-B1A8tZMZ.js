@@ -8123,7 +8123,7 @@ const Rw = ["title"], Bw = {
       ], 2)) : C("", !0);
     };
   }
-}, h2 = /* @__PURE__ */ G(d2, [["__scopeId", "data-v-ebb6316f"]]), f2 = {
+}, h2 = /* @__PURE__ */ G(d2, [["__scopeId", "data-v-ed426b4f"]]), f2 = {
   started: "In progress",
   testing: "Testing",
   paused: "Paused",
@@ -8690,6 +8690,15 @@ const rk = { class: "top" }, ik = {
         })
       ]),
       i.value ? (c(), h("p", lk, b(i.value), 1)) : o.value ? (c(), h(K, { key: 2 }, [
+        P(h2, {
+          ref_key: "footer",
+          ref: d,
+          kind: "task",
+          id: e.id,
+          row: o.value,
+          read: e.read,
+          onDone: M
+        }, null, 8, ["id", "row", "read"]),
         P(Y2, {
           stacked: "",
           open: z(f).open.value,
@@ -8764,15 +8773,6 @@ const rk = { class: "top" }, ik = {
       ], 64)) : (c(), h("div", ck, [
         P(rn)
       ])),
-      P(h2, {
-        ref_key: "footer",
-        ref: d,
-        kind: "task",
-        id: e.id,
-        row: o.value,
-        read: e.read,
-        onDone: M
-      }, null, 8, ["id", "row", "read"]),
       u.value ? (c(), V(wa, {
         key: 3,
         anchor: u.value,
@@ -8801,7 +8801,7 @@ const rk = { class: "top" }, ik = {
       }, 8, ["anchor"])) : C("", !0)
     ], 2));
   }
-}, G4 = /* @__PURE__ */ G(wk, [["__scopeId", "data-v-b1e89192"]]);
+}, G4 = /* @__PURE__ */ G(wk, [["__scopeId", "data-v-4a2c8ba4"]]);
 function kk(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
@@ -9898,7 +9898,7 @@ const $k = /* @__PURE__ */ kk(xk), Mk = ["width", "height", "viewBox"], Sk = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Y4 = /* @__PURE__ */ G(Ak, [["__scopeId", "data-v-47e67f04"]]), J4 = Vi(() => import("./VoiceFigure-BCBWFQrv.js").then((e) => e.V)), Z4 = "1.0.0", X4 = "3.5";
+}, Y4 = /* @__PURE__ */ G(Ak, [["__scopeId", "data-v-47e67f04"]]), J4 = Vi(() => import("./VoiceFigure-BChwLnrr.js").then((e) => e.V)), Z4 = "1.0.0", X4 = "3.5";
 export {
   Al as $,
   Se as A,
