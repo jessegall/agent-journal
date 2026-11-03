@@ -17,9 +17,7 @@ CODEX_HOOKS_FILE = Path(".codex") / "hooks.json"
 
 
 class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
-    """Places the project folder's library folders and Codex's hooks in a launch worktree, since Codex reads its
-    hooks from the worktree's own root and git keeps that file out, and runs the named environment's worktree
-    commands there."""
+    """Prepares a worktree's libraries, hooks and skills before running its setup commands."""
 
     command = PrepareWorktree
 

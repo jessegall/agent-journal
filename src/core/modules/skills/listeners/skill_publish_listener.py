@@ -7,8 +7,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 
 
 class SkillPublishListener(CommitListener):
-    """As the journal starts or an update changes its modules, removes every skill folder the journal gave out
-    and writes each declared skill again, so the latest text is always there; a person's own skill stays."""
+    """Replaces generated journal skills when modules change, the server starts or an upgrade finishes."""
 
     name = "skills.publish"
     event = f"{FILE_PUBLISHING_EVENTS}|{UPGRADE_FINISHED_EVENT}"

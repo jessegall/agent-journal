@@ -4,7 +4,6 @@ from pathlib import Path
 
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
-from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILL_FILE
@@ -15,12 +14,10 @@ from core.modules.skills.support.skill_projects import SkillProjects
 
 
 class SkillFiles:
-    """The skill folders of the agent programs in the project: each skill's text in its own folder of each
-    program, written only when it changed, and the journal's own folders no module declares any more cleared.
-    """
+    """Publishes skills in each program's folder and selects paths for agent reminders."""
 
-    def __init__(self, home: JournalHome, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue) -> None:
-        self.home, self.projects, self.providers, self.catalogue = home, projects, providers, catalogue
+    def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue) -> None:
+        self.projects, self.providers, self.catalogue = projects, providers, catalogue
 
     def for_agent(self, folder: str, hook: AgentHook) -> Path:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)

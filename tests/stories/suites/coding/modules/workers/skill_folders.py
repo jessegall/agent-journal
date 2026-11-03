@@ -2,6 +2,7 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
@@ -73,7 +74,7 @@ def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktre
     story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program="codex"), f"read this first: {expected}")
 
 
-def test_upgrading_removes_old_codex_journal_skills_and_preserves_other_skills(new_story):
+def test_skill_write_removes_old_codex_journal_skills_and_preserves_other_skills(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     for skill in ("journal", "journal-tasks", "my-skill"):
         path = story.home.project_folder / ".codex/skills" / skill / "SKILL.md"
@@ -83,3 +84,14 @@ def test_upgrading_removes_old_codex_journal_skills_and_preserves_other_skills(n
     story.expect_rows(not (story.home.project_folder / ".codex/skills/journal").exists(),
                       not (story.home.project_folder / ".codex/skills/journal-tasks").exists(),
                       (story.home.project_folder / ".codex/skills/my-skill/SKILL.md").read_text() == "old")
+
+
+def test_a_completed_upgrade_removes_the_version_four_codex_skill_folders(new_story):
+    def old_skills(home):
+        path = home.parent / ".codex/skills/journal-tasks/SKILL.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("version four")
+
+    story = upgraded_story(new_story, prepare=old_skills)
+    story.run_listeners()
+    story.expect_rows(not (story.home.project_folder / ".codex/skills/journal-tasks").exists())

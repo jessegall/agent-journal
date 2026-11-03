@@ -10,9 +10,7 @@ from core.modules.skills.support.skill_projects import SkillProjects
 
 
 class PluginSkillFiles:
-    """A plugin's skills in the agent programs' skill folders: each folder of its skills folder published
-    while it is on, with plugin: <name> added to the front matter, and taken away when it is switched off or
-    removed."""
+    """Publishes enabled plugin skills in project and worktree program folders."""
 
     def __init__(self, projects: SkillProjects, providers: Providers) -> None:
         self.projects, self.providers = projects, providers

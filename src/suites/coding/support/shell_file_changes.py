@@ -17,9 +17,7 @@ ROW_LIMIT_ROWS = 600
 
 
 class ShellFileChanges:
-    """Compare a command's pre and post file states. Each hook reads at most 64 KiB and 2048 lines across
-    32 files. Larger files and commands with no pre state have no line counts or rows recorded. At most
-    64 commands keep a pre state; a post hook consumes it once."""
+    """Compares command snapshots within fixed file, byte, line and pending command limits."""
 
     def __init__(self) -> None:
         self.pending: OrderedDict[tuple[int, str], dict[str, ShellFileState]] = OrderedDict()
