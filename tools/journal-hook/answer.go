@@ -11,12 +11,14 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
-// Reply is the server's HookReply: a refusal's reason, or the lines for the agent.
+// Reply is the server's HookReply: a refusal's reason, or the lines for the agent. A hook call id says the journal's
+// rules ran, the rule that reads the project hooks among them.
 type Reply struct {
 	Refusal      string         `json:"refusal"`
 	Lines        []string       `json:"lines"`
 	UpdatedInput map[string]any `json:"updated_input"`
 	Terminal     string         `json:"terminal"`
+	HookCallID   *int64         `json:"hook_call_id"`
 }
 
 func nativeRefusal(stdout string) bool {
@@ -32,20 +34,71 @@ func nativeRefusal(stdout string) bool {
 	return answer.Decision == "block" || answer.HookSpecificOutput.PermissionDecision == "deny"
 }
 
+// isAnswerObject says a project hook's stdout is a JSON object, the only form a program reads as an answer.
+func isAnswerObject(stdout string) bool {
+	var object map[string]any
+	return json.Unmarshal([]byte(stdout), &object) == nil && object != nil
+}
+
+// nativeReply reads a project hook's own answer on stdout into a reply.
+func nativeReply(style, stdout string) Reply {
+	var answer struct {
+		Decision           string `json:"decision"`
+		Reason             string `json:"reason"`
+		SystemMessage      string `json:"systemMessage"`
+		HookSpecificOutput struct {
+			PermissionDecision       string         `json:"permissionDecision"`
+			PermissionDecisionReason string         `json:"permissionDecisionReason"`
+			AdditionalContext        string         `json:"additionalContext"`
+			UpdatedInput             map[string]any `json:"updatedInput"`
+		} `json:"hookSpecificOutput"`
+	}
+	if json.Unmarshal([]byte(stdout), &answer) != nil {
+		return Reply{}
+	}
+	reply := Reply{UpdatedInput: answer.HookSpecificOutput.UpdatedInput, Terminal: answer.SystemMessage}
+	if text := answer.HookSpecificOutput.AdditionalContext; text != "" {
+		reply.Lines = strings.Split(text, "\n")
+	}
+	if style == "deny" && answer.HookSpecificOutput.PermissionDecision == "deny" {
+		reply.Refusal = withDefault(answer.HookSpecificOutput.PermissionDecisionReason, refusedWithoutReason)
+	}
+	if style == "block" && answer.Decision == "block" {
+		reply.Refusal = withDefault(answer.Reason, refusedWithoutReason)
+	}
+	return reply
+}
+
 // Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
 // answer goes through, and the agent is lineAnswer so on an event whose answer takes lines.
-func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration) int {
+func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration, runs ...ForeignRun) int {
 	reply := Reply{Lines: []string{missedLine(limit)}}
 	if status == restartTimedOut {
 		reply = restartTimedOutReply(event)
 	}
-	if status == http.StatusOK && json.Unmarshal(answer, &reply) != nil {
-		return 0
+	if status == http.StatusOK {
+		reply = Reply{}
+		json.Unmarshal(answer, &reply)
+	}
+	if reply.HookCallID == nil {
+		reply = withForeign(reply, foreignReply(program, event, runs))
 	}
 	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
 	io.WriteString(stdout, stdoutText)
 	io.WriteString(stderr, stderrText)
 	return code
+}
+
+// withForeign adds the project hooks' reply to the journal's, for a reply the journal's rules did not make: a project
+// hook's refusal stands, so a fault in the journal never lets it go.
+func withForeign(reply, foreign Reply) Reply {
+	reply.Refusal = joined(foreign.Refusal, reply.Refusal)
+	if len(reply.UpdatedInput) == 0 {
+		reply.UpdatedInput = foreign.UpdatedInput
+	}
+	reply.Lines = append(reply.Lines, foreign.Lines...)
+	reply.Terminal = joined(reply.Terminal, foreign.Terminal)
+	return reply
 }
 
 // ProgramAnswer is the reply in the program's own answer: what goes to stdout and to stderr, and the exit code. hookName is the
@@ -112,6 +165,9 @@ func refused(style, hookName, reason string) (string, string, int) {
 func joined(first, second string) string {
 	if second == "" {
 		return first
+	}
+	if first == "" {
+		return second
 	}
 	return first + "\n" + second
 }

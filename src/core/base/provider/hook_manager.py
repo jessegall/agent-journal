@@ -14,7 +14,10 @@ from core.base.type_guards import is_list, is_mapping
 
 
 class HookManager:
-    """Moves project command hooks into the managed store and restores their source files."""
+    """Moves project command hooks into the managed store and restores their source files.
+
+    A tracked file is marked before it is stripped, so a failed mark leaves it whole for the next sweep;
+    a hook whose worktree is gone restores to nothing."""
 
     def __init__(self, root: Path, managed: ManagedHooks, rules: Sequence[type[HookToolRule]] = ()) -> None:
         self.root = root
@@ -32,12 +35,12 @@ class HookManager:
             if not commands:
                 continue
             detected = self._detected(provider, folder, name, commands)
+            if any(hook.tracked for hook in detected) and not HookFilesGit(folder).skip_worktree(name):
+                continue
             self.managed.added(detected)
             stripped = {**settings, "hooks": kept}
             ProgramHooks.store(path, stripped)
             provider.hooks_rewritten(path, settings.get("hooks"), kept)
-            if any(hook.tracked for hook in detected):
-                HookFilesGit(folder).skip_worktree(name)
         return self.managed.all()
 
     def unmanaged(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
@@ -51,6 +54,8 @@ class HookManager:
         hooks = self.managed.all()
         for hook in hooks:
             path = self.root / hook.source
+            if not path.parent.is_dir():
+                continue
             settings = ProgramHooks.read(path)
             stored_hooks = settings.get("hooks")
             events = dict(stored_hooks) if is_mapping(stored_hooks) else {}
@@ -58,7 +63,7 @@ class HookManager:
             events[hook.event] = self._restored_blocks(hook, blocks if is_list(blocks) else [])
             ProgramHooks.store(path, {**settings, "hooks": events})
             if hook.tracked:
-                HookFilesGit(self.root).clear_skip_worktree(hook.source)
+                HookFilesGit(path.parent).clear_skip_worktree(path.name)
         self.managed.emptied()
         return hooks
 

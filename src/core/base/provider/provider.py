@@ -39,6 +39,7 @@ class Provider(ABC):
     matchers: ClassVar[Mapping[str, str]] = {}
     subagent_events: ClassVar[Sequence[str]]
     line_events: ClassVar[Sequence[HookEventName]]
+    plain_output_events: ClassVar[Sequence[HookEventName]] = ()
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     monitor_tool: ClassVar[ToolType | None] = None

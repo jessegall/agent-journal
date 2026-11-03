@@ -19,6 +19,7 @@ type Program struct {
 	Matchers       map[string]string         `json:"matchers"`
 	SubagentEvents []string                  `json:"subagent_events"`
 	LineEvents     []string                  `json:"line_events"`
+	PlainOutput    []string                  `json:"plain_output_events"`
 	Refusals       map[string]string         `json:"refusals"`
 	ToolCategories map[string]string         `json:"tool_categories"`
 	Decoder        string                    `json:"decoder"`
@@ -52,6 +53,11 @@ func LoadTable(projectFile string) Table {
 // AcceptsLines says whether the program reads lines in its answer to the event.
 func (program Program) AcceptsLines(event string) bool {
 	return contains(program.LineEvents, event)
+}
+
+// TakesPlainOutput says the program adds a hook's plain text output on this event to the agent's context.
+func (program Program) TakesPlainOutput(event string) bool {
+	return contains(program.PlainOutput, event)
 }
 
 // IsSubagentEvent says whether a subagent's hook of this name still reaches the journal.

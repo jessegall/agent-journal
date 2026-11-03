@@ -8,8 +8,22 @@ from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.refusal_style import RefusalStyle
 
-CLAUDE_PROVIDER = SimpleNamespace(refusals={HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.STOP: RefusalStyle.BLOCK})
-CODEX_PROVIDER = SimpleNamespace(refusals={HookEventName.STOP: RefusalStyle.BLOCK})
+PLAIN_OUTPUT_EVENTS = (HookEventName.SESSION_START, HookEventName.PROMPT)
+CLAUDE_PROVIDER = SimpleNamespace(refusals={HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.STOP: RefusalStyle.BLOCK}, plain_output_events=PLAIN_OUTPUT_EVENTS)
+CODEX_PROVIDER = SimpleNamespace(refusals={HookEventName.STOP: RefusalStyle.BLOCK}, plain_output_events=PLAIN_OUTPUT_EVENTS)
+
+
+@pytest.mark.parametrize("provider", [CLAUDE_PROVIDER, CODEX_PROVIDER])
+@pytest.mark.parametrize("event", PLAIN_OUTPUT_EVENTS)
+def test_plain_text_output_is_a_line_on_the_events_a_program_takes_it_on(provider, event):
+    answer = ForeignAnswer.read(provider, event, ForeignRun("check", 0, "read the notes\nand the plan\n", "", 1, False))
+    assert answer.lines == ("read the notes", "and the plan")
+
+
+@pytest.mark.parametrize("provider", [CLAUDE_PROVIDER, CODEX_PROVIDER])
+def test_plain_text_output_on_a_tool_event_says_so_in_the_terminal(provider):
+    answer = ForeignAnswer.read(provider, HookEventName.PRE_TOOL_USE, ForeignRun("check", 0, "read the notes", "", 1, False))
+    assert answer.lines == () and answer.terminal == "check: hook answer must be a JSON object"
 
 
 @pytest.mark.parametrize("provider", [CLAUDE_PROVIDER, CODEX_PROVIDER])

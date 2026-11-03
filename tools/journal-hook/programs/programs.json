@@ -34,6 +34,10 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "plain_output_events": [
+        "session_start",
+        "prompt"
+      ],
       "matchers": {
         "PostToolUse": "tool_name",
         "PostToolUseFailure": "tool_name",
@@ -94,6 +98,10 @@
         "prompt",
         "pre_tool_use",
         "post_tool_use"
+      ],
+      "plain_output_events": [
+        "session_start",
+        "prompt"
       ],
       "matchers": {
         "PostToolUse": "tool_name",

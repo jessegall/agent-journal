@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed
 from tests.stories.core.support import story_lines as lines
@@ -18,6 +20,31 @@ def test_a_plan_moves_from_draft_to_completed(new_story):
     story.expect_success('plan block 1 --reason "waits on a decision"', "state: blocked", actor=story.agent)
     story.expect_success("plan unblock 1", "state: started", actor=story.agent)
     story.expect_success("plan close 1", "state: completed", "closed_at: 2026-10-31T09:00:00.000000+00:00", actor=story.agent)
+
+
+@pytest.fixture
+def ready_plan_task(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success(lines.NEW_PLAN, actor=story.agent)
+    phase = story.new_row_id('phase make --plan 1 "First" --goal "The first part is done"', actor=story.agent)
+    task = story.new_row_id(f'task make "Planned work" --brief "Do the work" --phase {phase} --environment main', actor=story.agent)
+    story.expect_success("plan ready 1", actor=story.agent)
+    return story, task
+
+
+def test_starting_a_task_of_an_approved_plan_starts_the_plan(ready_plan_task):
+    story, task = ready_plan_task
+    story.expect_success("plan approve 1", "state: approved")
+    story.expect_success(f"task start {task}", actor=story.agent)
+    story.run_listeners()
+    story.expect_success("plan show 1", "state: started")
+
+
+def test_starting_a_task_of_a_plan_not_yet_approved_leaves_the_plan_as_it_is(ready_plan_task):
+    story, task = ready_plan_task
+    story.expect_success(f"task start {task}", actor=story.agent)
+    story.run_listeners()
+    story.expect_success("plan show 1", "state: ready")
 
 
 def test_a_plan_is_cancelled_with_its_reason(new_story):

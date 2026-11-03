@@ -16,6 +16,8 @@ def test_session_start_imports_a_hook_added_after_launch(new_story, program, nam
         "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "added-check"}]}]}})
     sample = HookSamples.session_start().with_fields(program=program).with_raw({"cwd": str(folder)})
     story.hook("s-1", sample)
+    assert ProgramHooks.read(folder / name) != {"hooks": {}}
+    story.run_listeners()
     hooks = story.container.get(ManagedHooks).all()
     assert len(hooks) == 1 and hooks[0].command == "added-check" and hooks[0].program == program
     assert HookEffect.OVERLAPS in hooks[0].effects

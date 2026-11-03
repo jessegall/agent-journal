@@ -29,10 +29,12 @@ class ForeignAnswer:
         try:
             data = json.loads(run.stdout)
         except json.JSONDecodeError:
-            return cls(run.id, terminal=f"{run.id}: hook returned invalid JSON")
-        if not is_mapping(data):
-            return cls(run.id, terminal=f"{run.id}: hook answer must be an object")
-        return cls.decoded(provider, event, run.id, data)
+            data = None
+        if is_mapping(data):
+            return cls.decoded(provider, event, run.id, data)
+        if event in provider.plain_output_events:
+            return cls(run.id, lines=tuple(run.stdout.strip().splitlines()))
+        return cls(run.id, terminal=f"{run.id}: hook answer must be a JSON object")
 
     @classmethod
     def decoded(cls, provider: HookAnswerProgram, event: HookEventName, name: str, data: Mapping[str, object]) -> "ForeignAnswer":

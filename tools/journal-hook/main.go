@@ -38,7 +38,7 @@ func main() {
 	folder, _ := os.Getwd()
 	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), started)
 	if skip {
-		os.Exit(0)
+		os.Exit(projectHooksOnly(program, root, os.Stdin, os.Stdout, os.Stderr))
 	}
 	requestTiming.Stamp("go_context")
 	body, err := io.ReadAll(os.Stdin)
@@ -48,7 +48,7 @@ func main() {
 	requestTiming.Stamp("go_stdin")
 	prepared, skip, err := preparedHook(program, root, body, context)
 	if skip || err != nil {
-		os.Exit(0)
+		os.Exit(foreignAnswered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Foreign))
 	}
 	requestTiming.Stamp("go_prepared")
 	object, err := json.Marshal(prepared)
@@ -75,7 +75,7 @@ func main() {
 			os.Exit(code)
 		}
 	}
-	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))
+	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit, prepared.Foreign...))
 }
 
 func preparedHook(program, root string, body []byte, context programs.Context) (event.HookEvent, bool, error) {

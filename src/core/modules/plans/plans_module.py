@@ -2,6 +2,8 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
+from core.modules.plans.commands.start_plan.start_plan import StartPlan
+from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
@@ -57,7 +59,7 @@ from core.modules.plans.support.block_conditions.plan_approved import PlanApprov
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 
-PLAN_COMMANDS = (BlockPlan, CancelPlan, ClosePlan)
+PLAN_COMMANDS = (BlockPlan, CancelPlan, ClosePlan, StartPlan)
 
 
 class PlansModule(Module):
@@ -77,7 +79,7 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener)
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener)
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]

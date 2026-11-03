@@ -38,7 +38,14 @@ class HookCall(Model):
 
     @property
     def terminal(self) -> str:
-        value = self.metadata.module_part(DRIVERS_MODULE).get("terminal", "")
+        return self.driver_text("terminal")
+
+    @property
+    def folder(self) -> str:
+        return self.driver_text("folder")
+
+    def driver_text(self, key: str) -> str:
+        value = self.metadata.module_part(DRIVERS_MODULE).get(key, "")
         return value if isinstance(value, str) else ""
 
     @property
