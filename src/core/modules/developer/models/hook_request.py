@@ -2,6 +2,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.base.type_guards import is_mapping
 from core.base.model.view_model import ViewModel
 from core.modules.developer.models.support.views import HOOK_REQUEST_ROWS_SELECT
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
@@ -36,11 +37,13 @@ class HookRequest(ViewModel):
 
     @property
     def headers(self) -> Mapping[str, str]:
-        return json.loads(self.headers_json)
+        decoded: object = json.loads(self.headers_json)
+        return {str(name): str(value) for name, value in decoded.items()} if is_mapping(decoded) else {}
 
     @property
     def body(self) -> object:
-        return json.loads(self.body_json)
+        decoded: object = json.loads(self.body_json)
+        return decoded
 
     def json(self) -> dict[str, object]:
         value = super().json()

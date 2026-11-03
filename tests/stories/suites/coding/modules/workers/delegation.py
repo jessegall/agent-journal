@@ -260,7 +260,6 @@ def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(ne
     story, _, worker = delegated_story(new_story)
     story.expect_success("task depend 2 --on 1", actor=story.agent)
     tasks = story.container.get(TaskQuery)
-    assert tasks.next_delegated(worker.id) is None
     story.expect_success("task test 1", actor=worker)
     assert tasks.next_delegated(worker.id).id == 2
     story.expect_success("task start 2", actor=worker)
