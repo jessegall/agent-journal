@@ -21,6 +21,7 @@ from core.base.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.booting_work import BootingWork
+from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
@@ -107,11 +108,11 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
-    booting_round = JournalRound(home, "booting", BootingWork())
-    try:
-        booting_round.run()
-    except Exception as error:
-        booting_round.report(error)
+    for starting_round in (JournalRound(home, "code sync", CodeSyncWork()), JournalRound(home, "booting", BootingWork())):
+        try:
+            starting_round.run()
+        except Exception as error:
+            starting_round.report(error)
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()

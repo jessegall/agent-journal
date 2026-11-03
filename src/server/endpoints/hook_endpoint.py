@@ -11,6 +11,9 @@ from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
 from core.base.provider.providers import Providers
 from core.base.journal_container import synced_database_container
+from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.module_finder import ModuleFinder
+from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
@@ -57,6 +60,7 @@ class HookEndpoint:
     def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
+            container.get(Registry).require_current(container.get(CodeFingerprint).text(container.get(ModuleFinder).modules()))
         except StaleRegistryError as error:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
