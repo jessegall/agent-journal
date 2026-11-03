@@ -7,8 +7,8 @@ from core.modules.skills.support.skill_files import SkillFiles
 
 
 class SkillPublishListener(CommitListener):
-    """As the journal starts or an update changes its modules, removes the skill folders no module declares
-    and republishes every declared skill."""
+    """As the journal starts or an update changes its modules, removes every skill folder the journal gave out
+    and writes each declared skill again, so the latest text is always there; a person's own skill stays."""
 
     name = "skills.publish"
     event = "*.*"
@@ -19,6 +19,6 @@ class SkillPublishListener(CommitListener):
     def handle(self, event: LoggedEvent) -> None:
         if event.event not in FILE_PUBLISHING_EVENTS:
             return
-        self.files.clear(self.registry.skills)
+        self.files.remove_all()
         for skill in self.registry.skills:
             self.files.write(skill)

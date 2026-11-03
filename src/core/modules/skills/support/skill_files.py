@@ -40,6 +40,12 @@ class SkillFiles:
             changed = True
         return changed
 
+    def remove_all(self) -> None:
+        for program_folder in PROGRAM_FOLDERS:
+            for folder in (self.home.project_folder / program_folder).glob(f"{FOLDER_PREFIX}*"):
+                if folder.is_dir():
+                    shutil.rmtree(folder)
+
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
         for program_folder in PROGRAM_FOLDERS:
