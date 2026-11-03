@@ -114,18 +114,14 @@ class ClaudeCodeProvider(Provider):
             return path
         return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
-    def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
-        rows: list[TranscriptRow] = []
-        for line in path.read_text().splitlines():
-            fields: object = json.loads(line) if line.strip() else {}
-            message = fields.get("message") if is_mapping(fields) else None
-            author = fields.get("type") if is_mapping(fields) else None
-            if author not in TRANSCRIPT_AUTHORS or not is_mapping(message):
-                continue
-            text = "\n".join(self.message_texts(message.get("content")))
-            if text.strip():
-                rows.append(TranscriptAuthor.row(len(rows) + 1, author, text))
-        return rows
+    def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
+        fields: object = json.loads(line) if line.strip() else {}
+        message = fields.get("message") if is_mapping(fields) else None
+        author = fields.get("type") if is_mapping(fields) else None
+        if author not in TRANSCRIPT_AUTHORS or not is_mapping(message):
+            return None
+        text = "\n".join(self.message_texts(message.get("content")))
+        return TranscriptAuthor.row(position, author, text) if text.strip() else None
 
     @staticmethod
     def message_texts(content: object) -> list[str]:

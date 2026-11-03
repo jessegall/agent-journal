@@ -33,7 +33,7 @@ class UnreadMessageWriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         delivered = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(Greater("delivered_at", "")).oldest()
-        first = delivered.page(1, 1).rows
+        first = delivered.limited(1)
         first_delivered_at = first[0].delivered_at if first else None
         if first_delivered_at is None:
             return RuleAnswer.allowed()

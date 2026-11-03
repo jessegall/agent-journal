@@ -46,14 +46,15 @@ class FitnessMeasures:
         return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload), arrivals_hourly, answers_hourly, self.waiting_messages(agent))
 
     def message_wait(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
-        waiting = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
+        waiting = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
         minutes = waiting[0].creation_timestamp().elapsed_seconds(current_time) / 60 if waiting else 0.0
         return FitnessMeasure("message_wait", "Oldest message waiting, minutes", round(minutes, 1), MESSAGE_WAIT_PASS_MINUTES, self.minutes_score(minutes), MESSAGE_WEIGHT)
 
     def wait_share(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
         begin = current_time.value - timedelta(minutes=WAIT_WINDOW_MINUTES)
         seconds = 0.0
-        for wait in self.queries.query(Wait).filter(agent_id=agent.id).all_rows():
+        waits = self.queries.query(Wait).filter(agent_id=agent.id)
+        for wait in (*waits.matching(IsNull("ended_at")).all_rows(), *waits.matching(Greater("ended_at", Timestamp(begin).text)).all_rows()):
             end = wait.ended_at.value if wait.ended_at else current_time.value
             seconds += max(0.0, (end - max(wait.opened_at.value, begin)).total_seconds())
         share = min(1.0, seconds / (WAIT_WINDOW_MINUTES * 60))

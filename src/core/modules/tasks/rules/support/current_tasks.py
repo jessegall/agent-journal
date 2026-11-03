@@ -16,8 +16,8 @@ class CurrentTasks:
         return list(self.tasks.holder(agent_id).started().descending("started_at").all_rows())
 
     def current(self, agent_id: int) -> CurrentTask | None:
-        current = self.tasks.holder(agent_id).started().descending("started_at").page(1, 1).rows
+        current = self.tasks.holder(agent_id).started().descending("started_at").limited(1)
         if not current:
             return None
-        logs = self.queries.query(TaskLog).filter(task_id=current[0].id).newest().page(1, 1).rows
+        logs = self.queries.query(TaskLog).filter(task_id=current[0].id).newest().limited(1)
         return CurrentTask(current[0], logs[0] if logs else None)

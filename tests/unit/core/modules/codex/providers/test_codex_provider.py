@@ -63,6 +63,16 @@ def test_a_sessions_rollout_is_found_under_the_codex_home(provider, tmp_path, mo
     assert (provider.transcript(FOLDER, "t-1"), provider.transcript(FOLDER, "t-9")) == (rollout, None)
 
 
+def test_the_context_percent_is_read_from_the_end_of_a_rollout_longer_than_the_tail(provider, tmp_path, monkeypatch):
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex"))
+    rollout = tmp_path / "codex" / "sessions" / "2026" / "10" / "31" / "rollout-2026-10-31T09-00-00-t-1.jsonl"
+    rollout.parent.mkdir(parents=True)
+    count = {"payload": {"type": "token_count", "info": {"last_token_usage": {"total_tokens": 50}, "model_context_window": 100}}}
+    filler = json.dumps({"payload": {"role": "user", "content": [{"text": "x" * 1000}]}})
+    rollout.write_text(json.dumps(count) + "\n" + "\n".join([filler] * 400) + "\n" + json.dumps({**count, "payload": {**count["payload"], "info": {**count["payload"]["info"], "last_token_usage": {"total_tokens": 70}}}}) + "\n")
+    assert provider.context_percent(JournalHome(tmp_path / ".journal"), "t-1") == 70
+
+
 def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared(provider):
     pairs = [(json.loads(body)["hook_event_name"], json.loads(prepared)["event"]) for path in sorted(RECORDED.glob("*.jsonl"))
              for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True)]

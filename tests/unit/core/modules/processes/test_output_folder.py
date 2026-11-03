@@ -34,6 +34,31 @@ def test_the_output_of_the_parts_is_counted_in_bytes_and_lines(tmp_path):
     assert (processes.output(4, 1), processes.sizes(4)) == ("one\ntwo\n", (13, 3))
 
 
+def test_the_last_lines_are_read_from_the_end_in_windows_that_grow_until_they_hold_them(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "a", ["a"])
+    processes.write_output(4, 1, "".join(f"line {number} {'x' * 60}\n" for number in range(1, 1001)))
+    assert [line[:9] for line in processes.last_lines(4, 3)] == ["line 998 ", "line 999 ", "line 1000"]
+    assert len(processes.last_lines(4, 500)) == 500 and processes.last_lines(4, 500)[0].startswith("line 501 ")
+    assert len(processes.last_lines(4, 5000)) == 1000
+
+
+def test_numbered_lines_are_counted_across_the_parts_and_stop_at_the_last_wanted(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "a && b", ["a", "b"])
+    processes.write_output(4, 1, "one\ntwo\n")
+    processes.write_output(4, 2, "three\nfour")
+    assert processes.numbered_lines(4, 2, 3) == [(2, "two"), (3, "three")]
+    assert processes.numbered_lines(4, 4, 9) == [(4, "four")]
+
+
+def test_a_carriage_return_breaks_a_line_as_it_does_in_the_whole_text(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "a", ["a"])
+    processes.write_output(4, 1, "10%\r20%\r\ndone\n")
+    assert [line for _, line in processes.numbered_lines(4, 1, 9)] == "10%\r20%\r\ndone\n".splitlines()
+
+
 def test_the_heartbeat_is_the_time_of_the_last_beat_and_a_removed_folder_is_gone(tmp_path):
     processes = folder(tmp_path)
     assert processes.heartbeat(4) is None

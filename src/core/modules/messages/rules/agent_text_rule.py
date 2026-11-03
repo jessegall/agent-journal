@@ -31,17 +31,17 @@ class AgentTextRule(DriverRule):
         text = raw.get("delta")
         if raw.get("final") is not True or not isinstance(text, str) or not text.strip():
             return RuleAnswer.allowed()
-        prompts = self.queries.query(HookCall).filter(agent_id=hook.agent_id, hook=HookEventName.PROMPT.value).newest().page(1, 1).rows
+        prompts = self.queries.query(HookCall).filter(agent_id=hook.agent_id, hook=HookEventName.PROMPT.value).newest().limited(1)
         if prompts and (self.has_reply(hook.agent_id, prompts[0]) or self.is_acknowledgement(text.strip(), prompts[0])):
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(SendMessage(text.strip()))
 
     def has_reply(self, agent_id: int, prompt: HookCall) -> bool:
-        newest = self.queries.query(Message).filter(creator_id=agent_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        newest = self.queries.query(Message).filter(creator_id=agent_id, type=MessageType.AGENT).newest().limited(1)
         return bool(newest) and newest[0].parent_id is not None and newest[0].creation_timestamp().value >= prompt.creation_timestamp().value
 
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
         if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or prompt.summary.startswith(MESSAGE_LINE):
             return False
-        calls = self.queries.query(HookCall).filter(agent_id=prompt.agent_id, writes_files=True).newest().page(1, 1).rows
+        calls = self.queries.query(HookCall).filter(agent_id=prompt.agent_id, writes_files=True).newest().limited(1)
         return not calls or calls[0].id < prompt.id
