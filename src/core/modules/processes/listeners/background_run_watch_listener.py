@@ -19,9 +19,9 @@ from core.modules.processes.support.process_nudges import REQUIRED_MONITOR, REQU
 
 class BackgroundRunWatchListener(SaveListener):
     """A run moved to the background is watched by the agent that started it, so it hears how the run goes. A
-    main agent whose program has a way to watch a run is held until it watches a run it started itself: it sets a
-    Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool. A worker is
-    never held: it hears of the end on its next hook, or is started again if it has stopped."""
+    main agent whose program has a way to watch a run is held until it watches a run it started itself: it
+    sets a Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool. A
+    worker is never held: it hears of the end on its next hook, or is started again if it has stopped."""
 
     name = "processes.background-run-watch"
     event = "process.*"

@@ -18,7 +18,8 @@ class AliasShellAliases(ShellAliases):
     """The shell line of the alias a command line's first word names, with the caller's variables and the
     alias's own over them, to run in the caller's folder; a line that starts in the journal's own folder is
     given that folder's whole path, since a worker's worktree has none of its own; a journal command of the
-    same name always wins, so an alias version 4 had under a name version 5 now uses is never run in its place."""
+    same name always wins, so an alias version 4 had under a name version 5 now uses is never run in its
+    place."""
 
     def __init__(self, aliases: AliasQuery, workers: AliasWorkers, names: AliasNames, home: JournalHome) -> None:
         self.aliases, self.workers, self.names, self.home = aliases, workers, names, home

@@ -13,9 +13,9 @@ LAUNCH_VARIABLE = "JOURNAL_LAUNCH"
 class WorkerLauncher:
     """Hands the running launcher a worker's program, folder and agent row to start, and says what it did: a
     worker whose program still runs is not started again, and its line waits for its next hook or for the
-    program to end. The worker's session goes along as its launch name, so a program that picks its own session,
-    as Codex does, is bound to this row by its first hook. A launcher older than this journal answers nothing,
-    which counts as started; no launcher at all counts as failed."""
+    program to end. The worker's session goes along as its launch name, so a program that picks its own
+    session, as Codex does, is bound to this row by its first hook. A launcher older than this journal answers
+    nothing, which counts as started; no launcher at all counts as failed."""
 
     def __init__(self, link: LauncherLink) -> None:
         self.link = link

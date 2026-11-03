@@ -21,10 +21,11 @@ COSTLY_LISTENER_POINTS = 500
 
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
-    run left undone is done by the next. It claims each event it listens to before handling it, so a second runner
-    never handles the same one, and moves over the events it does not hear in one write; an event that fails is given back to be tried again, and one that fails three
-    times is skipped. Listeners a person waits on run first and again after each other listener that handled
-    events, and the server runs them on a thread of their own; a costly one is noted with its points."""
+    run left undone is done by the next. It claims each event it listens to before handling it, so a second
+    runner never handles the same one, and moves over the events it does not hear in one write; an event that
+    fails is given back to be tried again, and one that fails three times is skipped. Listeners a person waits
+    on run first and again after each other listener that handled events, and the server runs them on a thread
+    of their own; a costly one is noted with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  exceptions: ExceptionSink, scopes: Scopes) -> None:
