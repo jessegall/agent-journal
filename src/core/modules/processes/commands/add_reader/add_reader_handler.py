@@ -9,6 +9,7 @@ from core.modules.processes.commands.add_reader.add_reader import AddReader
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.support.reader_judge import ReaderJudge
 
 
 class AddReaderHandler(Handler[AddReader, Reader]):
@@ -16,21 +17,27 @@ class AddReaderHandler(Handler[AddReader, Reader]):
 
     command = AddReader
 
-    def __init__(self, readers: ReaderQuery, repository: Repository) -> None:
-        self.readers, self.repository = readers, repository
+    def __init__(self, readers: ReaderQuery, repository: Repository, judge: ReaderJudge) -> None:
+        self.readers, self.repository, self.judge = readers, repository, judge
 
     def handle(self, command: AddReader, context: Context) -> Reader:
         self.check_patterns(command)
         existing = self.readers.with_name(command.name).page(1, 1).rows
         if existing:
-            return self.repository.save(self.changed(existing[0], command), context)
+            return self.save(self.changed(existing[0], command), context)
         if not command.commands or not (command.lines or command.script):
             raise Refusal(f"reader {command.name} needs --commands and --lines or --script", "journal reader add <name> --commands <pattern> --lines <pattern>")
         reader_type = ReaderType.SCRIPT if command.script else ReaderType.PATTERN
-        return self.repository.save(Reader(creator_id=context.actor.id, name=command.name, type=reader_type, commands=command.commands, lines_pattern=command.lines,
+        return self.save(Reader(creator_id=context.actor.id, name=command.name, type=reader_type, commands=command.commands, lines_pattern=command.lines,
                                            script=command.script, progress_pattern=command.progress, finished_pattern=command.finished, failed_pattern=command.failed,
                                            summary_pattern=command.summary, topic_pattern=command.topic, title=command.title, subject=command.subject, step_pattern=command.step,
                                            count_pattern=command.count, count_command=command.count_command), context)
+
+    def save(self, reader: Reader, context: Context) -> Reader:
+        judgement = self.judge.tested(reader)
+        if judgement.missed:
+            raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
+        return self.repository.save(replace(reader, proved_on=judgement.output_id), context)
 
     @staticmethod
     def check_patterns(command: AddReader) -> None:
