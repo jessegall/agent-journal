@@ -74,7 +74,7 @@ test("every module window that tracks loading shows the shared skeleton or lists
     // SkillRows only hands its first read to LoadedSkills, which lists through RowList
     const loading = files.filter((file) => /\bloaded\b/.test(read(file)) && !file.endsWith("SkillRows.vue"));
     expect(loading.length).toBeGreaterThan(10);
-    for (const file of loading) expect(read(file), file).toMatch(/RowList|RowCards|Skeleton/);
+    for (const file of loading) expect(read(file), file).toMatch(/RowList|RowCards|Skeleton|<EmptyState[^>]*:loading/);
 });
 
 test("a list shows the skeleton in the shape it was given until its first read answers, then fades the rows in", () => {

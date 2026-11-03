@@ -383,7 +383,7 @@ async function runCommand(pin) {
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Write to the agent below; what it answers shows here.">
                 <template #default="{row}">
                     <SwitchCase :value="row.kind">
                         <template #day>

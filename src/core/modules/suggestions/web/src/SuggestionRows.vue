@@ -9,7 +9,7 @@ const answerText = (row) => (row.answer ? `Answer: ${row.answer}` : "Answer: non
 
 <template>
     <ListTools :tools="tools" />
-    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No suggestions yet">
+    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No suggestions yet" hint="A suggestion the journal makes, such as a server to install, shows here for you to accept or decline." :searching="tools.filtering.value">
         <template #default="{row}">
             <div class="suggestion" :data-row="row.id">
                 <button type="button" class="title" :data-suggestion-open="row.id" @click="peekRef(`suggestions:${row.id}`)">{{ row.title }}</button>

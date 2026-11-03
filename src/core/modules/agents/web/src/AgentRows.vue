@@ -8,7 +8,8 @@ const SHOWS = [
     {key: "closed", label: "Closed"},
     {key: "all", label: "All"},
 ];
-const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, only: {type: Function, default: () => true}});
+// `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
+const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}, only: {type: Function, default: () => true}});
 const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
 const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
@@ -77,7 +78,9 @@ const entryOf = (row) => ({key: String(row.id), kind: KIND_OF[row.role] ?? row.r
 const entries = computed(() => searched.value.map(entryOf));
 const shown = computed(() => ordered(entries.value.filter((entry) => !hiddenBy(entry, view.value)), options.order.value ?? "number").map((entry) => entry.row));
 const hidden = computed(() => hiddenSummary(entries.value, view.value).join(", "));
-const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches" : props.empty));
+// a search or a view switch that holds agents back is what makes an empty list mean nothing matches; the tab alone does not
+const searching = computed(() => Boolean(words.value.trim()) || Boolean(hidden.value));
+const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
 </script>
 
 <template>
@@ -91,7 +94,7 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
         <template v-if="hidden">
             <p class="agents-hidden" data-agents-hidden>Hidden: {{ hidden }}</p>
         </template>
-        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText">
+        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id" @mouseenter="hold(row)" @mouseleave="release(row)">
                     <AgentCard :row="row" :facts="factsOf(row)" />

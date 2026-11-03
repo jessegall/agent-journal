@@ -6,7 +6,7 @@ const {rows, failure, loaded} = useRows(props.line, ["hook_call.create"]);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">
         <template #default="{row}">
             <span class="author">{{ row.author }}</span>
             <span class="text">{{ row.text }}</span>

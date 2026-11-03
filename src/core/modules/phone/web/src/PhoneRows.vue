@@ -41,7 +41,7 @@ readTunnel();
             </ul>
         </div>
         <ListTools :tools="tools" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired">
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired" hint="A phone you pair with this journal shows here." :searching="tools.filtering.value">
             <template #default="{row}">
                 <span class="phones-name">{{ row.name }}</span>
                 <Btn small @click="act(['phone', 'unpair', String(row.id)])">Unpair</Btn>

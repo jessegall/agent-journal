@@ -25,7 +25,7 @@ async function toggle(row) {
         <template v-if="refusal">
             <p class="worker-models-refusal" role="alert">{{ refusal }}</p>
         </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No agent programs">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No agent programs" hint="An agent program a module offers shows here with its models.">
             <template #default="{row}">
                 <div class="worker-model" :data-worker-model="row.id">
                     <span class="worker-model-program">{{ programStart.has(row.id) ? row.title : "" }}</span>
