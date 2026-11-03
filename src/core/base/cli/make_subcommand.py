@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 import dataclasses
 from dataclasses import field, fields
-from typing import get_type_hints
+from typing import TypeVar, get_type_hints
 from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.base.command.make_command import MakeCommand
@@ -10,13 +10,16 @@ from core.base.model.table import Table
 from core.base.cli.subcommand_columns import generic_base, argument_columns, flag_columns, switch_columns, copied_default, parser_argument
 
 
-class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
+M = TypeVar("M", bound=Model)
+
+
+class MakeSubcommand(Subcommand[MakeCommand[M], M]):
     """The `make` subcommand the core builds for a model: the model's required fields as arguments, its
     optional fields as flags, run as a make command of that model."""
 
     name = "make"
 
-    def __init__(self, table: Table[Model]) -> None:
+    def __init__(self, table: Table[M]) -> None:
         self.table = table
         self.cli_name = table.model.cli_name
         self.command_class = creation_command(table)
@@ -27,13 +30,13 @@ class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
         for column in flag_columns(self.table):
             parser_argument(parser, f"--{column.replace('_', '-')}", self.table.types[column])
 
-    def command(self, arguments: Namespace, caller: Caller) -> MakeCommand[Model]:
+    def command(self, arguments: Namespace, caller: Caller) -> MakeCommand[M]:
         columns = (*argument_columns(self.table), *flag_columns(self.table))
         values = {column: getattr(arguments, column) for column in columns if getattr(arguments, column) is not None}
         return self.command_class(**values)
 
 
-def creation_command(table: Table[Model]) -> type[MakeCommand[Model]]:
+def creation_command(table: Table[M]) -> type[MakeCommand[M]]:
     hints = get_type_hints(table.model)
     model_fields = {model_field.name: model_field for model_field in fields(table.model)}
     command_fields = [(column, hints[column]) for column in argument_columns(table)]

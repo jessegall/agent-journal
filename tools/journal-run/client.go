@@ -39,7 +39,7 @@ func (client JournalClient) Restarting() bool {
 }
 
 func (client JournalClient) Run(arguments ...string) error {
-	command := exec.Command("journal", arguments...)
-	command.Env = append(os.Environ(), "JOURNAL_HOME="+client.Home)
+	command := exec.Command(filepath.Join(client.Home, "bin", "journal"), arguments...)
+	command.Env = journalEnvironment(client.Home)
 	return command.Run()
 }

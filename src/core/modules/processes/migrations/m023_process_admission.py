@@ -4,7 +4,7 @@ from core.base.database.migration import Migration
 class ProcessAdmissionMigration(Migration):
     """Keeps the admission time and spot ownership on each process."""
 
-    number = 22
+    number = 23
     statements = [
         "ALTER TABLE processes ADD COLUMN started_at TEXT",
         "ALTER TABLE processes ADD COLUMN slot_assigned INTEGER NOT NULL DEFAULT 0",

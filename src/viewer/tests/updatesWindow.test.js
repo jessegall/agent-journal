@@ -50,3 +50,16 @@ test("notes that cannot be read say why and the rest of the window stays", async
     expect(element.querySelector("[data-update-notes-failure]").textContent).toBe("could not be read");
     expect(element.textContent).toContain("up to date");
 });
+
+test("an unavailable release shows the reason and finishes checking", async () => {
+    const window = context({
+        "release list": page([]),
+        "update check": {ok: false, error: "No installable release was found at the release address."},
+        "update notes": {ok: true, value: {notes: [], is_last_page: true}},
+    });
+    const element = await mounted(UpdatesPanel, window);
+    expect(element.textContent).toContain("No installable release was found");
+    expect(element.textContent).toContain("Release unavailable");
+    expect(element.textContent).not.toContain("Checking for a newer release");
+    expect(element.querySelector("[data-update-install]")).toBeNull();
+});

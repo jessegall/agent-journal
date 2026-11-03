@@ -97,7 +97,7 @@ test("the waiting status of an agent opens the test queue", async () => {
     const facts = [{id: 21, model: "sonnet", tasks: [{id: 11, title: "Fix", state: "testing"}], state: "", profile: "", given_name: ""}];
     const element = await mounted(
         {render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})},
-        context({"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page(facts)})
+        context({"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page(facts), "worker waits": page([{agent_id: 21, reason: "tests"}])})
     );
     document.body.append(element);
     element.querySelector("[data-agent-waiting]").click();

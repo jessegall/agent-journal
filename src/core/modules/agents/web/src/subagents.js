@@ -1,7 +1,6 @@
 import {h} from "vue";
 import AgentRows from "./AgentRows.vue";
 
-const isHelper = (row) => row.role !== "main";
 const TEXTS = {
     running: {title: "No helpers running", hint: "A helper shows here while it works: a worker the agent sends, a subagent it starts, or a reviewer."},
     closed: {title: "No helper has ended yet", hint: "A helper that finished or was stopped shows here."},
@@ -9,4 +8,4 @@ const TEXTS = {
 };
 
 // every agent working for the main one, whatever its role, each as the agents window's card
-export default {render: () => h(AgentRows, {line: "agent list", empty: "No helpers yet", texts: TEXTS, only: isHelper})};
+export default {render: () => h(AgentRows, {line: "agent cards --helpers", empty: "No helpers yet", texts: TEXTS})};

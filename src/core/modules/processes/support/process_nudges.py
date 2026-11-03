@@ -2,7 +2,21 @@ from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
+from core.base.driver.count_down import CountDown
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
+READERS_MISSING_FIELDS = NudgeDeclaration("processes.readers_missing_fields", NudgeType.STEERING, "{count} readers need required fields; use journal reader draft <request> when a worker asks")
+
+WORKER_TEST_LIMIT_SOURCE = "processes.worker-test-limit"
+TEST_LIMIT_STOP = NudgeDeclaration("processes.run_over_test_limit", NudgeType.STEERING, "output {output} stopped: {count} tests, worker limit {limit}; run only tests for this task", longest_characters=240, wakes_agent=True)
+TEST_LIMIT_REFUSAL = NudgeDeclaration("processes.test_run_over_limit", NudgeType.REFUSAL, "last run had {count} tests, limit {limit}: {command}; run only tests for this task", longest_characters=320)
+
+READER_REQUEST_REMINDER = Seconds(600)
+READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: worker {worker} needs a reader for {command}; sample {output}: journal reader draft {request}", interval=Interval(READER_REQUEST_REMINDER), longest_characters=320, turn_limited=False)
+READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", ToolUseSpan(5))
+READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs the reader of {command}: journal reader-request waive {request} --reason "<why>", or journal agent-block skip {block} --reason "<why>"', longest_characters=400)
+
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads {command}: the main agent writes it. Stop; you are started again when it exists", longest_characters=240)
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}')
@@ -35,4 +49,4 @@ READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.STEERING, "rea
 SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.STEERING, "outputs {outputs} share one title: give each its own with journal output title <n> \"<what it does>\"", interval=Interval(Seconds(600)))
 RUN_QUEUE_HALTED = NudgeDeclaration("processes.run_queue_halted", NudgeType.STEERING, "the process queue is halted, so no queued run starts: journal queue resume when it may go on", interval=Interval(Seconds(300)), turn_limited=False)
 LARGE_OUTPUT_READ = NudgeDeclaration("processes.large_output_read", NudgeType.STEERING, "output {output} has {lines} lines: read it with --summary, --tail K or --lines A-B", interval=Interval(Seconds(604800)))
-PROCESS_NUDGES = [LARGE_OUTPUT_READ, RUN_QUEUE_HALTED, REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND, MONITOR_COMMAND_NOTE, WORKER_RUN_WATCHED, MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]
+PROCESS_NUDGES = [READERS_MISSING_FIELDS, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL, READER_REQUEST, READER_REQUEST_COUNTDOWN.declaration, READER_REQUEST_REFUSAL, READER_BLOCK, LARGE_OUTPUT_READ, RUN_QUEUE_HALTED, REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND, MONITOR_COMMAND_NOTE, WORKER_RUN_WATCHED, MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]

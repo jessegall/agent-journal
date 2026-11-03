@@ -62,7 +62,11 @@ const props = defineProps({
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
 const isAgentWindow = (name) => props.catalogue.window(name)?.shows === "one-agent";
 // an agent window follows the page's main agent unless its pane was set to another
-const agentOf = (name, pane = null) => (isAgentWindow(name) ? (pane?.options?.agent ?? props.agent) : null);
+function agentOf(name, pane = null) {
+    const mainAgent = props.catalogue.dropdown(name) ? agentRow.value?.id ?? null : null;
+    if (isAgentWindow(name)) return pane?.options?.agent ?? props.agent ?? mainAgent;
+    return mainAgent;
+}
 const followable = computed(() => usage.value.agents.filter((row) => row.id !== props.agent && !row.ended_at));
 const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";

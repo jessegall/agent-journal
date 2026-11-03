@@ -1,3 +1,8 @@
+---
+name: journal-flowcharts
+description: Draw a flowchart in the chat when the user asks for a diagram or a process with branches is easier to see than to read.
+---
+
 # Flowcharts
 
 A flowchart shows in the chat as a card the user opens into a chart they can zoom and pan.

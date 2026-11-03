@@ -14,6 +14,7 @@ def queue_page(story, flags=""):
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD, is_queued=True)
     second = start_process(story, "python check_cart.py", category=CommandCategory.CHECK, is_queued=True)

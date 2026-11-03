@@ -1,3 +1,13 @@
+from core.base.module.module_actors import ModuleActors
+from core.base.command.bus import Bus
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.reader_demands import ReaderDemands
+from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.enums.reader_type import ReaderType
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker
+from tests.stories.core.modules.processes.support.process_samples import moved_run
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
@@ -96,3 +106,51 @@ def test_a_quick_reader_can_omit_fields_when_matching_output_exists(new_story):
     process = start_process(story, "quick-report", category=CommandCategory.UNKNOWN)
     end_run(story, process, "done\n")
     story.expect_success('reader add quick --commands "quick-report" --lines "done"', f"proved_on: {process.id}", actor=story.agent)
+
+
+def test_each_part_of_a_chain_is_judged_alone(new_story):
+    story = new_story(fixture=ForcedReaders)
+    worker = reader_worker(story)
+    parts = (PartSpec("custom-tests a", "custom-tests", category=CommandCategory.TEST_RUN),
+             PartSpec("custom-build run", "custom-build", category=CommandCategory.BUILD),
+             PartSpec("ls", "ls", category=CommandCategory.READ))
+    story.container.get(Bus).run(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts, is_queued=True), worker, environment_id=1)
+    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 2)
+
+
+def test_a_read_a_search_and_a_journal_command_never_need_a_reader(new_story):
+    story = new_story(fixture=BuilderStarted)
+    demands = story.container.get(ReaderDemands)
+    for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.JOURNAL):
+        story.expect_rows(not demands.needs_reader(1, PartSpec("read", "read", category=category)))
+
+
+def test_a_quick_check_needs_no_reader_until_a_run_of_it_moved_to_the_background(new_story):
+    story = new_story(fixture=BuilderStarted)
+    demands = story.container.get(ReaderDemands)
+    part = PartSpec("custom-check src", "custom-check", category=CommandCategory.CHECK)
+    story.expect_rows(not demands.needs_reader(1, part))
+    moved_run(story, part.text, CommandCategory.CHECK)
+    story.expect_rows(demands.needs_reader(1, part))
+
+
+def test_a_help_or_version_line_of_a_test_tool_needs_no_reader(new_story):
+    story = new_story(fixture=BuilderStarted)
+    for flag in ("--help", "--version", "--collect-only", "--list-tests"):
+        story.expect_rows(not story.container.get(ReaderDemands).needs_reader(1, PartSpec(f"pytest {flag}", "pytest", category=CommandCategory.TEST_RUN)))
+
+
+def test_a_test_reader_with_no_count_is_not_proper_and_a_build_reader_with_none_is(new_story):
+    story = new_story(fixture=BuilderStarted)
+    reader = Reader(creator_id=story.agent.id, name="proper", type=ReaderType.PATTERN, commands="custom*", title="Building", lines_pattern="done", summary_pattern="done")
+    demands = story.container.get(ReaderDemands)
+    story.expect_rows("--count" in demands.reason(PartSpec("custom test", "custom", category=CommandCategory.TEST_RUN), reader))
+    story.expect_rows(not demands.reason(PartSpec("custom build", "custom", category=CommandCategory.BUILD), reader))
+
+
+def test_a_run_the_journal_started_is_never_held(new_story):
+    story = new_story(fixture=ForcedReaders)
+    worker = reader_worker(story)
+    actor = story.container.get(ModuleActors).actor("journal.core.processes")
+    story.container.get(Bus).run(StartProcess.single_part(worker.id, "module-build run", "/work/main", CommandCategory.BUILD, 30), actor, environment_id=1)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())

@@ -17,5 +17,6 @@ class RunnerLine:
         background = " --background" if run.background else ""
         background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
         background += " --queue" if run.queued else ""
+        background += f" --count {shlex.quote(run.count_line)}" if run.count_line else ""
         background += " --only-reads" if run.read_command else ""
         return f"{SESSION_VARIABLE}={shlex.quote(session)} {RUNNER_VARIABLE}={process_id} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

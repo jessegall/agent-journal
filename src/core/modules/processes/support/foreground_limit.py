@@ -5,7 +5,6 @@ from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
-from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.foreground_run import ForegroundRun
@@ -31,13 +30,9 @@ class ForegroundLimit:
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}
         categories.update(category for category in [declared] if category is not None)
-        is_long = any(category.is_long_running for category in categories) or self.has_moved_run(environment_id, shell)
+        is_long = any(category.is_long_running for category in categories) or any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.parts)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands)
-
-    def has_moved_run(self, environment_id: int, shell: ShellLine) -> bool:
-        commands = tuple(part.text for part in shell.parts)
-        return bool(commands) and self.processes.environment(environment_id).with_part(Among("text", commands), PartRunSeconds(self.seconds_allowed(environment_id))).moved().exists()
 
     def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()

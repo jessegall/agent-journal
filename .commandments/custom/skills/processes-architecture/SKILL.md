@@ -12,6 +12,9 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 
 ## When it fires
 
+- **`slot-written-outside-the-queue`** - a call to `OutputFolder.write_slot` outside `RunSlots` bypasses
+  admission. Only `RunSlots` grants a slot after the parts and their reader requests are saved.
+
 - **`shell-input-rewritten-outside-the-runner-rule`** - a rule other than `RunnerRewriteRule` calls `RuleAnswer.rewritten`.
   Only that rule gives a shell line a new input; the others answer with lines or a refusal.
 - **`process-folder-layout-outside-output-folder`** - Python names `heartbeat`, `run.sh`, `<n>.out` or `<n>.status`
@@ -24,3 +27,9 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   program's rewritten input carries is in its row of the program table.
 - **`reader-judged-outside-one-place`** - Reader findings become messages outside `EndedOutputText`.
   `ReaderJudge` produces findings; `EndedOutputText` turns them into declarations from `process_nudges`.
+
+- **`reader-saved-outside-add-reader`** - a reader definition is persisted outside `AddReaderHandler`.
+  Save definitions through `AddReader` so writer checks and output proof always run. Unsaved readers used
+  to judge draft patterns are ordinary values and do not bypass a save.
+- **`reader-demand-from-whole-line`** - reader demand or drafting reads `runner_text` or `display_text`.
+  Judge the command and sample of each part separately, including every part of a chain.

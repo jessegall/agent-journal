@@ -49,7 +49,10 @@ class EndedOutputText:
         reader = self.readers.find(output.reader_id)
         if reader.type is not ReaderType.PATTERN:
             return ()
-        missed = self.judge.misses(reader, process.category, self.judge.output_text(process.id, output.reader_position))
+        parts = self.parts.process(process.id)
+        if output.reader_position:
+            parts = parts.filter(position=output.reader_position)
+        missed = tuple(dict.fromkeys(miss for part in parts.all_rows() for miss in self.judge.misses_read_output(reader, part.category, output)))
         if "--lines picked none" in missed:
             return tuple([READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id)])
         matches = [READER_WIDTH.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if "--lines picked nearly all" in missed else []

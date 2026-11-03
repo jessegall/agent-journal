@@ -33,7 +33,7 @@ class Agent(Model):
     ended_at: Timestamp | None = None
 
     def ended(self, timestamp: Timestamp) -> "Agent":
-        return self.changed(ended_at=timestamp, paused_at=None)
+        return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role is AgentRole.WORKER else None)
 
     @property
     def terminal_id(self) -> int:

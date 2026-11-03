@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
@@ -36,6 +37,7 @@ class StartProcess(Command[Process]):
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
         folder = hook.event.raw.get("cwd")
-        parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, run.category or part.classification.category, command.command, command.named_reader_id)
+        parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, run.category or part.classification.category, command.command, command.named_reader_id,
+                              part.arguments[0] if part.program == "journal" and part.arguments else " ".join(value for value in (Path(part.program).name, part.subcommand) if value))
                       for part, command in zip(shell.parts, run.part_commands, strict=True))
         return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, run.queued)

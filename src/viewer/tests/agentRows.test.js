@@ -6,6 +6,8 @@ import {h} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import Agents from "../../core/modules/agents/web/src/agents.js";
+import Subagents from "../../core/modules/agents/web/src/subagents.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
@@ -43,7 +45,12 @@ const answers = {
 };
 const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
-    ...context({...answers, "agent list": page(agents), "agent running": page(agents.filter((row) => !row.ended_at)), "usage agents --closed": page(facts)}),
+    ...context({
+        "agent list --show running": page(agents.filter((row) => !row.ended_at)),
+        "agent list --show closed": page(agents.filter((row) => row.ended_at)),
+        "agent list --show all": page(agents),
+        ...answers, "usage agents --closed": page(facts),
+    }),
     tabs: TABS,
     option: (key) => ({value: {...DEFAULT_OPTIONS, ...options}[key]}),
 });
@@ -158,10 +165,11 @@ test("the Completed section of the Tasks tab is folded until a click opens it", 
     expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
 });
 
-test("a worker with a task in testing and none started says it waits for its tests", async () => {
+test("a task in testing does not invent a waiting reason without the server's reason", async () => {
     const element = await drawn([{...FACTS[0], tasks: [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}]}]);
     expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("waiting");
-    expect(cardOf(element, 2).querySelector(".agent-dot").dataset.state).toBe("waiting");
+    expect(cardOf(element, 2).querySelector(".agent-dot").dataset.state).toBe("running");
+    expect(cardOf(element, 2).querySelector("[data-agent-waiting]")).toBeNull();
 });
 
 test("a worker with a started task does not say it waits for its tests", async () => {
@@ -262,9 +270,34 @@ test("an ended subagent and the main agent show no command line", async () => {
 test("a waiting worker's command line says it waits for its tests", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];
-    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker waits": page([{agent_id: 4, reason: "tests"}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Waiting: tests"));
+});
+
+test.each(["merge", "proof check", "tests", "a job"])("a worker card shows the server's waiting reason: %s", async (reason) => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: "2026-11-03T13:35:28Z"};
+    const lines = {"agent list": page([worker]), "agent running": page([]), "usage agents --closed": page([{id: 4, tasks: []}]), "worker waits": page([{agent_id: 4, reason}])};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-waiting]")?.textContent).toBe(`Waiting: ${reason}`));
+    expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
+});
+
+test("one read supplies every worker's short reason without commands or paths", async () => {
+    const reasons = ["tests", "proof check", "merge", "a job"];
+    const workers = reasons.map((reason, index) => ({id: index + 1, session: `worker-${index}`, program: "claude", role: "worker", ended_at: null}));
+    const lines = {"agent list": page(workers), "agent running": page(workers), "usage agents --closed": page([]),
+        "worker waits": page(reasons.map((reason, index) => ({agent_id: index + 1, reason}))),
+        "usage tool": {ok: true, value: {tool: "pytest /tmp/private_tests.py", wait_target: "/tmp/private_tests.py and another command"}}};
+    const window = context(lines);
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window);
+    await vi.waitFor(() => expect(element.querySelectorAll("[data-agent-waiting]")).toHaveLength(4));
+    expect([...element.querySelectorAll("[data-agent-waiting]")].map((line) => line.textContent)).toEqual(reasons.map((reason) => `Waiting: ${reason}`));
+    expect(window.reads.filter((line) => line === "worker waits")).toHaveLength(1);
+    for (const line of element.querySelectorAll("[data-agent-command]")) {
+        expect(line.textContent).not.toContain("pytest");
+        expect(line.textContent).not.toContain("/tmp/");
+    }
 });
 
 test("a worker's card shows its completed tasks per hour", async () => {
@@ -274,6 +307,18 @@ test("a worker's card shows its completed tasks per hour", async () => {
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
+});
+
+test("worker totals and pace use its current worktree instead of session history", async () => {
+    const started = new Date(Date.now() - 1.5 * 3600000).toISOString();
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null,
+        created_at: new Date(Date.now() - 24 * 3600000).toISOString(), process_started_at: new Date(Date.now() - 3600000).toISOString()};
+    const tasks = [{id: 11, title: "Old task", state: "completed"}, {id: 12, title: "Old total", state: "completed"}, {id: 13, title: "Current job", state: "started"}];
+    const progress = {agent_id: 4, started_at: started, finished_at: null, completed_count: 1, task_count: 2};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker progress": page([progress])};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    expect(cardOf(element, 4).querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 2 tasks");
+    expect(cardOf(element, 4).querySelector("[data-agent-pace]").textContent.trim()).toBe("1/h");
 });
 
 test("a worker's opened card shows its context and cost", async () => {
@@ -296,8 +341,16 @@ test("an agent with no tasks has no tasks control", async () => {
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();
 });
 
-test("the agents window searches the session, program, role, profile and name", async () => {
-    const element = await drawn();
+test("the agents window sends searches to its list read", async () => {
+    const held = window();
+    const read = held.read;
+    held.read = async (line) => {
+        if (line.includes('--search "codex"')) return page([AGENTS[2]]);
+        if (line.includes('--search "curie"')) return page([AGENTS[1]]);
+        if (line.includes('--search "nobody"')) return page([]);
+        return read(line);
+    };
+    const element = await mounted(AgentRows, held, {line: "agent list", empty: "No agents yet"});
     await pickButton(element, "All");
     const search = element.querySelector("[data-search-input]");
     search.value = "codex";
@@ -336,18 +389,17 @@ test("a switch saved off hides no agent, and no line speaks of hidden agents", a
     expect(element.textContent).not.toContain("Hidden");
 });
 
-test("agents are ordered by number, by state and by last active", async () => {
+test.each([["agents", Agents], ["helpers", Subagents]])("the %s window keeps the server's age order regardless of state or saved order", async (name, component) => {
     const rows = [
-        {id: 5, session: "s-5", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T10:00:00Z"},
-        {id: 6, session: "s-6", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T09:00:00Z"},
-        {id: 7, session: "s-7", program: "claude", role: "worker", ended_at: null, updated_at: "2026-11-01T11:00:00Z"},
+        {id: 5, session: "oldest", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T09:00:00Z", updated_at: "2026-11-01T12:00:00Z"},
+        {id: 6, session: "middle", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z"},
+        {id: 7, session: "newest", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T11:00:00Z", updated_at: "2026-11-01T11:00:00Z"},
     ];
     const facts = [{...FACTS[0], id: 5, state: "blocked"}, {...FACTS[0], id: 6}, {...FACTS[0], id: 7}];
-    const drawnIn = (order) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list": page(rows), "agent running": page(rows), "usage agents --closed": page(facts)}),
-        option: (key) => ({value: {...DEFAULT_OPTIONS, order}[key]}),
-    });
-    expect(listed(await drawnIn("number"))).toEqual([6, 7, 5]);
-    expect(listed(await drawnIn("state"))).toEqual([7, 6, 5]);
-    expect(listed(await drawnIn("active"))).toEqual([7, 6, 5]);
+    const window = context({"agent cards": page(rows), "agent list": page(rows), "agent running": page(rows), "usage agents --closed": page(facts)});
+    window.option = () => ({value: "state"});
+    const element = await mounted(component, window);
+    expect(listed(element)).toEqual([5, 6, 7]);
+    expect(window.reads.filter((line) => line.startsWith("agent cards"))).toHaveLength(1);
+    expect(window.reads).not.toContain("agent running");
 });

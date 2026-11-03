@@ -1,7 +1,6 @@
 import os
 import signal
 import subprocess
-import time
 from pathlib import Path
 
 import pytest
@@ -12,6 +11,7 @@ from tests.stories.tunnels.tunler.support.real_tunler import real_client
 SCRIPT = "#!/bin/sh\nsleep 300 &\ntrap 'kill $!; exit 0' TERM\nwait\n"
 PORT = 8000
 SUBDOMAIN = "cart-team"
+STOP_LIMIT_SECONDS = 5
 
 
 def running_tunlers(program: Path) -> list[int]:
@@ -41,7 +41,7 @@ def test_a_server_killed_with_its_tunler_up_finds_one_tunler_after_it_starts_aga
     assert running_tunlers(program) == [leftover]
     second = real_client(home)
     second.start(PORT, SUBDOMAIN)
-    time.sleep(0.3)
+    first.process.wait(STOP_LIMIT_SECONDS)
     assert running_tunlers(program) == [second.process.pid] and leftover != second.process.pid
     second.stop()
     assert running_tunlers(program) == [] and not (home.folder / "tunnel.pid").exists()

@@ -4,7 +4,7 @@ OPEN_DEPENDENCIES_SELECT = (
     " JOIN tasks ON tasks.id = task_dependencies.dependency_id"
     " JOIN tasks AS dependent ON dependent.id = task_dependencies.task_id"
     " WHERE tasks.closed_at IS NULL"
-    " AND NOT (tasks.state = 'testing' AND tasks.delegated_to IS NOT NULL AND tasks.delegated_to = dependent.delegated_to)"
+    " AND NOT (tasks.state IN ('started', 'testing') AND tasks.delegated_to IS NOT NULL AND tasks.delegated_to = dependent.delegated_to)"
 )
 
 TASK_CARDS_SELECT = "SELECT id, environment_id, title, state, priority, reason, closed_at, delegated_to FROM tasks"

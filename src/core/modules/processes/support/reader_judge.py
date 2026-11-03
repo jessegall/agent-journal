@@ -1,9 +1,11 @@
 import re
 from dataclasses import replace
 from itertools import islice
+from collections.abc import Sequence
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.colour_codes import ColourCodes
@@ -36,14 +38,20 @@ class ReaderJudge:
         return ReaderJudgement(missed=missed, output_id=output_id)
 
     def fields_missing(self, reader: Reader, category: CommandCategory) -> tuple[str, ...]:
-        wanted = {"--title": reader.title, "--lines or --script": reader.lines_pattern or reader.script, "--summary": reader.summary_pattern}
+        wanted = [("--title", bool(reader.title)), ("--lines or --script", bool(reader.lines_pattern or reader.script)),
+                  ("--summary", bool(reader.summary_pattern))]
         if category is CommandCategory.TEST_RUN:
-            wanted["--count"] = reader.count_pattern
-            wanted["--progress or --step with --count"] = reader.progress_pattern or (reader.step_pattern and reader.count_pattern)
-        return tuple(flag for flag, value in wanted.items() if not value)
+            wanted.extend([("--count", bool(reader.count_pattern)),
+                           ("--progress or --step with --count", bool(reader.progress_pattern) or reader.has_counted_steps())])
+        return tuple(flag for flag, value in wanted if not value)
 
     def misses(self, reader: Reader, category: CommandCategory, text: str) -> tuple[str, ...]:
-        lines = self.run.lines(reader, text, "finished")
+        return self.misses_with_lines(reader, category, text, self.run.lines(reader, text, "finished"))
+
+    def misses_read_output(self, reader: Reader, category: CommandCategory, output: Output) -> tuple[str, ...]:
+        return self.misses_with_lines(reader, category, self.output_text(output.process_id, output.reader_position), self.folder.reader_lines(output.process_id))
+
+    def misses_with_lines(self, reader: Reader, category: CommandCategory, text: str, lines: Sequence[str]) -> tuple[str, ...]:
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)
         count = self.run.count(reader, text, 0)
