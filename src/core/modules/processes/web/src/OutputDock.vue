@@ -25,6 +25,8 @@ const isRunning = () => standing.value === "running";
 const ended = computed(() => standing.value === "good" || standing.value === "bad");
 const fraction = computed(() => Number(run.value?.progress ?? 0) / 100);
 const width = computed(() => (ended.value ? "100%" : `${Math.round(fraction.value * 100)}%`));
+// when the run began, in seconds, which tells the figure one bar's run from the next
+const began = computed(() => (run.value?.created_at ? Date.parse(run.value.created_at) / 1000 : 0));
 const steps = computed(() => {
     if (!run.value?.steps_passed && !run.value?.steps_failed) return "";
     return run.value.steps_failed ? `${run.value.steps_passed} passed, ${run.value.steps_failed} failed` : `${run.value.steps_passed} passed`;
@@ -72,7 +74,7 @@ usePoll(load, isRunning, () => (opened.value ? OPENED_MILLISECONDS : CLOSED_MILL
                     <span class="output-dock-figure">{{ ranFor }}</span>
                 </template>
                 <template v-if="fraction > 0 || ended">
-                    <div class="output-dock-bar"><div class="output-dock-fill" :style="{width, background: TONES[standing]}" /></div>
+                    <div class="output-dock-bar" :data-figure-bar="ended ? standing : ''" :data-figure-began="began"><div class="output-dock-fill" :style="{width, background: TONES[standing]}" :data-figure-progress="ended ? null : ''" /></div>
                 </template>
             </Teleport>
         </template>

@@ -38,7 +38,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 </script>
 
 <template>
-    <ChatDock :label="look.title" :folded="folded">
+    <ChatDock :label="look.title" :folded="folded" :data-figure-closing="leaving ? '' : null">
         <template #edge>
             <template v-if="leaving">
                 <DockLeave :ends-at="item.leaves_at" />

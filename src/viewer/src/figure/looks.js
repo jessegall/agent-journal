@@ -7,11 +7,11 @@
 
 // The weight of each kind of look: the image attached to a message of the user's that the agent is reading, the strongest of all while it
 // lasts (attachmentRead), the user's new message, the pointer tickling it, a finished run's mark or its docked
-// bar it waits to light the visor for, the UFO or the crane carrying a box, the bubble it reads or holds its glass to, the agent's new
+// bar it waits to light the visor for, the bubble it reads or holds its glass to, the agent's new
 // message in the chat, the sin's mark it kneels to, the composer while the user types in it, at full weight while the keystrokes are fresh
 // and at half of it after a pause in them (composerLook), the box it builds or pushes, a picture it admires, a progress bar it chose to
 // watch, and its own idle glances
-export const LOOKS = {attachment: 10, said: 9, pointer: 8, run: 7, carrier: 6, confession: 6, reading: 5, message: 4, typing: 3.5, work: 3, typing_pause: 1.75, picture: 2, bar: 2, glance: 1};
+export const LOOKS = {attachment: 10, said: 9, pointer: 8, run: 7, confession: 6, reading: 5, message: 4, typing: 3.5, work: 3, typing_pause: 1.75, picture: 2, bar: 2, glance: 1};
 
 // How strongly an act keeps its own head: hardly at all walking or standing, somewhat through a gesture that moves it, almost wholly
 // where the act's head is part of what it does, as climbing the ladder, under the parachute, rummaging or thinking, and `alone` wholly,
@@ -25,19 +25,9 @@ export const SWITCH_SECONDS = 2;
 // seconds
 export const LINGER_SECONDS = 2;
 
-// how long the image of a message the agent reads is a look after the read began, in seconds
-export const ATTACHMENT_SECONDS = 3;
-
-// The message whose attached file the agent read in the last ATTACHMENT_SECONDS before `now`, from the timeline `entries` the viewer holds
-// (a ToolStarting whose call read a path under .journal/files/message/<n>/), or 0 when it read none
-export function attachmentRead(entries, now) {
-    const reads = entries
-        .filter((entry) => entry.entry_type === "ToolStarting" && now - Date.parse(entry.created_at) / 1000 <= ATTACHMENT_SECONDS)
-        .flatMap((entry) => (entry.data?.call?.read_paths || []).map((path) => ({path, at: Date.parse(entry.created_at)})))
-        .map(({path, at}) => ({message: Number(/\/files\/message\/(\d+)\//.exec(path)?.[1] ?? 0), at}))
-        .filter(({message}) => message);
-    return reads.sort((a, b) => b.at - a.at)[0]?.message ?? 0;
-}
+// The message whose attached file the agent reads now, from the tool line the chat shows (a path under .journal/files/message/<n>/), or 0 when
+// it reads none
+export const attachmentRead = (running) => Number(/\/files\/message\/(\d+)\//.exec(running)?.[1] ?? 0);
 
 // how long a new message is a look after it comes into the chat, in seconds
 export const MESSAGE_SECONDS = 4;

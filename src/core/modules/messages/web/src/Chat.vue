@@ -48,24 +48,38 @@ const figureVoice = computed(() => {
 });
 const runningTool = ref("");
 const waitingFor = ref("");
+const thinking = ref(false);
+const asking = ref(false);
 const heardAt = ref(Date.now() / 1000);
-// a face the user puts on a message already in the chat is answered by the figure; faces on messages that page in are not
-const userFaceKeys = (row) => JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").map((face) => face.emoji);
-const facedAt = ref(0);
+// a face put on a message already in the chat is answered by the figure; faces on messages that page in are not
+const facesOf = (row) => JSON.parse(row.reactions || "[]").map((face) => `${face.actor_type}:${face.emoji}`);
+const FACES_KEPT = 20;
+const newFaces = ref([]);
 let seenFaces = new Map();
 // watched by the faces themselves, so a row changed in place is seen too
-const faceSignature = computed(() => messages.value.map((row) => `${row.id}:${userFaceKeys(row).join("")}`).join("|"));
+const faceSignature = computed(() => messages.value.map((row) => `${row.id}:${facesOf(row).join("")}`).join("|"));
 watch(faceSignature, () => {
     const rows = messages.value;
-    const next = new Map(rows.map((row) => [row.id, userFaceKeys(row)]));
-    if (rows.some((row) => seenFaces.has(row.id) && userFaceKeys(row).some((emoji) => !seenFaces.get(row.id).includes(emoji)))) facedAt.value = Date.now() / 1000;
-    seenFaces = next;
+    const landed = rows.filter((row) => seenFaces.has(row.id)).flatMap((row) => facesOf(row).filter((face) => !seenFaces.get(row.id).includes(face)).map((face) => {
+        const [author, emoji] = face.split(":");
+        return {author, emoji, message_id: row.id, created_at: new Date().toISOString()};
+    }));
+    if (landed.length) newFaces.value = [...newFaces.value, ...landed].slice(-FACES_KEPT);
+    seenFaces = new Map(rows.map((row) => [row.id, facesOf(row)]));
+}, {immediate: true});
+// the figure stays on the page until its exit has played once it should go, and is put on the page only when it should be there
+const figureHere = computed(() => Boolean(figureVoice.value));
+const shownVoice = ref("");
+watch(figureVoice, (chosen) => {
+    if (chosen) shownVoice.value = chosen;
 }, {immediate: true});
 async function readTool() {
     heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
     runningTool.value = answer.ok ? answer.value.tool : "";
     waitingFor.value = answer.ok ? answer.value.wait_target : "";
+    thinking.value = answer.ok ? Boolean(answer.value.thinking) : false;
+    asking.value = answer.ok ? Boolean(answer.value.asking) : false;
 }
 context.follow(["hook_call.*", "dock_item.*", "process_part.*"], readTool);
 readTool();
@@ -417,7 +431,7 @@ async function runCommand(pin) {
             <FigureFloors />
         </template>
         <div data-figure-chat-foot class="chat-foot">
-            <DockStack :items="docked" :folded="short || !docksOpen" />
+            <DockStack :items="docked" :folded="short || !docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <template v-if="dumping">
@@ -430,8 +444,8 @@ async function runCommand(pin) {
             </p>
         </template>
         <form data-figure-home :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
-            <template v-if="figureVoice">
-                <VoiceFigure :voice="figureVoice" :running="runningTool" :heard-at="heardAt" :faced-at="facedAt" />
+            <template v-if="shownVoice">
+                <VoiceFigure :voice="shownVoice" :here="figureHere" :running="runningTool" :heard-at="heardAt" :thinking="thinking" :waiting-for="waitingFor" :asking="asking" :marks="allMarks" :messages="messages" :faces="newFaces" @gone="shownVoice = ''" />
             </template>
             <template v-if="attached.length">
                 <ul class="attached" data-attached>

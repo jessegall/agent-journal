@@ -104,7 +104,7 @@ const CARRIED_UP_WITHIN = 56;
 export const FLUNG = {speed: 1500, rising: 200, share: 0.6};
 
 // the speed a figure is thrown up at, in pixels a second (up is less than 0), off a bubble that rose `risen` pixels in its burst (FLUNG)
-export const throwSpeed = (risen) => -Math.sqrt(2 * GRAVITY * FLUNG.share * risen);
+const throwSpeed = (risen) => -Math.sqrt(2 * GRAVITY * FLUNG.share * risen);
 
 export const floorNamed = (floors, id) => floors.find((floor) => floor.id === id) ?? null;
 

@@ -19,7 +19,7 @@ const TO_GLB = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
 const FROM_GLB = TO_GLB.clone().invert();
 const support = (moves, bone) => TO_GLB.clone().multiply(moves.get(bone)).multiply(FROM_GLB);
 
-export function headphoneProgress(u) {
+function headphoneProgress(u) {
     return u == null ? 0 : span(u, 0.1, 0.34) * (1 - span(u, 0.68, 0.92));
 }
 
@@ -77,7 +77,7 @@ export function headphoneContacts(state) {
 
 // Free cups yield forward and down from an approaching arm or chin. Their orientation and shape stay rigid, and the neck loop
 // follows the shifted cup anchors. The authored hand-held music path already clears the body and retains its exact contact points.
-export function fittedHeadphonesAt(headphones, u, moves) {
+function fittedHeadphonesAt(headphones, u, moves) {
     const state = headphonesAt(u, moves);
     if (!headphones?.colliders) return state;
     const free = u == null ? 1 : (1 - headphoneGrip(u)) * (1 - headphoneProgress(u));

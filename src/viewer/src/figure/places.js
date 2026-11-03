@@ -166,7 +166,7 @@ export const STEADY = 5;
 // that came or went under it: it goes straight up or down where it is, then walks. It lands after a hop unless it `hangs` there, from a
 // bubble's corner or on a rope swing's seat. It walks
 // at `pace` times its walking speed, which the trip keeps.
-export function tripBetween(from, to, size, {straight = false, hangs = false, pace = 1, pressing = false, sprinting = false, random = Math.random, memory = null, now = 0, room = 0, pogo = false} = {}) {
+function tripBetween(from, to, size, {straight = false, hangs = false, pace = 1, pressing = false, sprinting = false, random = Math.random, memory = null, now = 0, room = 0, pogo = false} = {}) {
     if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return null;
     if (pressing || sprinting) pace = Math.max(pace, SPRINT);
     const running = pace > 1;
@@ -196,7 +196,7 @@ export function tripBetween(from, to, size, {straight = false, hangs = false, pa
 const pogoLeg = (to, size) => ({x: to.x, y: to.y, ms: (ACTS.pogo.frames / ACTS.pogo.fps) * 1000, lead: 0, easing: "linear", hopping: true, pogo: true, size, clip: "pogo"});
 
 // The posture a clip is drawn in at a place of `posture`: that one when the clip can be drawn in it, else the first the clip can
-export const postureOf = (clip, posture) => (clip.postures.includes(posture) ? posture : clip.postures[0]);
+const postureOf = (clip, posture) => (clip.postures.includes(posture) ? posture : clip.postures[0]);
 
 // The posture the clip on screen is drawn in at a place of `posture`: on the move only while the figure `moves`, so its legs stop walking
 // the moment it stops, whatever the clip over them still has to play
@@ -259,7 +259,7 @@ export const SEATED_LEGS = 0.24;
 // The part of a figure's picture across which its body is drawn on `spot`, as shares of the picture's width: standing, its body (BODY);
 // seated, its body and its legs out the way it faces, as far across as it is turned from the viewer; lounging, sitting composed or
 // hanging, the whole picture, as those reach as wide as it
-export function bodyAcross(spot) {
+function bodyAcross(spot) {
     if (spot.posture === "stand") return {left: BODY.left, right: BODY.right};
     if (spot.posture !== "sit") return {left: 0, right: 1};
     const legs = 0.5 + SEATED_LEGS * Math.sin(((spot.face ?? 0) * Math.PI) / 180);
@@ -268,7 +268,7 @@ export function bodyAcross(spot) {
 
 // A spot moved across, as little as it takes, so the figure's body on it (bodyAcross) is inside its world's left and right: further left
 // near the right side, further right near the left
-export function keptAcross(spot, {size}, world = worldBox()) {
+function keptAcross(spot, {size}, world = worldBox()) {
     const across = bodyAcross(spot);
     return {...spot, x: Math.min(Math.max(spot.x, world.left + (0.5 - across.left) * size), world.right - (across.right - 0.5) * size)};
 }
@@ -354,7 +354,7 @@ export function asideOf(figure, near, bounds) {
 
 // The spot of those inside the figure's world that hides the fewest controls and words, none where it can, or null when none is inside
 // it; of spots alike, the one nearest `near`, where the figure stands now, so it does not wander between equally good places
-export function freeSpot(spots, figure, near) {
+function freeSpot(spots, figure, near) {
     const world = worldBox();
     const away = (spot) => (near ? Math.hypot(spot.x - near.x, spot.y - near.y) : 0);
     const ranked = spots
@@ -425,7 +425,7 @@ export function seatedFacing(clip, face) {
 export const SEAT_POSE = {every: [8, 20], seconds: 1.2, turns: [-20, -10, 0, 10, 20]};
 
 // the ways a figure on a seat facing `face` may sit, in degrees
-export const seatFacings = (face) => [...new Set([face, ...SEAT_POSE.turns.map((turn) => (turn + 360) % 360)])];
+const seatFacings = (face) => [...new Set([face, ...SEAT_POSE.turns.map((turn) => (turn + 360) % 360)])];
 
 // The pose `pose` ({face, from, to, since, next}) of a figure seated facing `face` at `now`: kept until its time is up, then the next,
 // drawn with `random`, from the way it sits now; a new seat starts from the way it faces
@@ -468,7 +468,7 @@ export function besidePile(spot, pile, {size}) {
 const PILE_GAP = 7;
 
 // The box the boxes on the pile take on the page (parcels.js PILED, marked by chat/CodeParcel.vue), or null with none piled
-export function pileBox() {
+function pileBox() {
     const boxes = [...document.querySelectorAll(PILED)].map((each) => each.getBoundingClientRect()).filter((box) => box.width && box.height);
     if (!boxes.length) return null;
     return {left: Math.min(...boxes.map((box) => box.left)), right: Math.max(...boxes.map((box) => box.right)), top: Math.min(...boxes.map((box) => box.top)), bottom: Math.max(...boxes.map((box) => box.bottom))};
@@ -492,7 +492,7 @@ const PILE_FOOT = 4;
 
 // The edge at home the figure rests, sits and strolls on (groundEdge), with the pile's corner cut off when the pile stands on it: the free
 // part of it beside the pile, PILE_GAP clear of the boxes, as the corner is the pile's
-export function freeEdge() {
+function freeEdge() {
     const ground = groundEdge();
     const pile = pileBox();
     const {left, width, top} = ground.edge;
@@ -591,22 +591,6 @@ export function nearestTell(mark, bar, head) {
     const points = [mark && {x: (mark.left + mark.right) / 2, y: (mark.top + mark.bottom) / 2}, bar && {x: Math.min(Math.max(head.x, bar.left), bar.right), y: (bar.top + bar.bottom) / 2}].filter(Boolean);
     const away = (point) => Math.hypot(point.x - head.x, point.y - head.y);
     return points.length ? points.reduce((near, point) => (away(point) < away(near) ? point : near)) : null;
-}
-
-// whether the figure says whom it calls at `u` of its call (acts.js phone_call): from the talk's start until the handset is down
-export const callSays = (u) => u >= ACTS.phone_call.talk[0] && u < ACTS.phone_call.hang[1];
-
-// The call's talk held longer so its words, `seconds` of them scrolling across the visor, have all passed before it begins to hang up
-// (timeline.js stretchedFrame): the talk played round again as many more times as that takes, none when the talk is long enough as it is;
-// the talk's frames are where the act's own time is in it, its last frame at 1 (figure.js onceTime)
-export function callStretch(seconds) {
-    const act = ACTS.phone_call;
-    const [from, to] = act.talk.map((u) => u * (act.frames - 1));
-    // the words start on the act's own clock as the talk does (VoiceFigure callTicker), and it begins to hang up as the talk ends, each round
-    // played again putting that off by a round
-    const [start, hang] = [act.talk[0] * act.frames, act.hang[0] * (act.frames - 1)];
-    const rounds = Math.max(Math.ceil((seconds * act.fps - (hang - start)) / (to - from)), 0);
-    return {from, to, extra: rounds * (to - from)};
 }
 
 // How near a picture in a message is for the figure to admire it (figure/admire.js), in pixels from the middle of its head on the page:

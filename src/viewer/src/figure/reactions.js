@@ -1,13 +1,9 @@
-import {HELD, WORKING, eggFor} from "../domain/figureState.js";
-import {CALL_COOLDOWN, LIFETIME, alive, draw, hasMoment} from "./pile.js";
+import {HELD, WORKING} from "../domain/figureState.js";
+import {LIFETIME, alive, draw, hasMoment} from "./pile.js";
 import {lookAngles, lookWay, upFor} from "./look.js";
 
 // What the figure does about what happens around it, and when. Which animation plays is drawn from the one pile (pile.js); here are the
 // moments it is drawn for, and how what is drawn is played, so the figure is a creature that notices things now and then, not a status icon.
-
-// the carrier that comes this time to take the work away (pile.js carrier), the UFO or the claw crane, and the side the crane rolls in from
-export const carrierOf = (random) => draw({moment: "carrier"}, random).name;
-export const craneFrom = (random) => draw({moment: "crane_from"}, random).name;
 
 // the clip a held clip is played as for this stretch of it (pile.js held:), itself when it is played one way only, and idle when it has
 // ways to be played but none may play now, as when every search waits its cooldown; `scene` says what the variants' conditions read:
@@ -217,18 +213,11 @@ export function thinkingAct(memory, now, random) {
 // the moments answered by an act put together from the pile's parts, by moment
 const COMPOSED = {pondering: thinkingAct};
 
-// What the figure does about a moment: the egg of `voice` that belongs to it, else its reaction when the roll says so, as a beat the body
-// plays once ({beat: {clip, card, mark}}), `card` being the chat mark it turns to and `mark` the one that set it off, as the call says whom
-// it calls (figureState.js callLines), or a look its eyes take on ({look: mood}); null for nothing.
-// `memory` holds when each reaction last played (`reacted`), the eggs played so far (`played`) and the acts since the last shenanigan
-// (`tally`), and is filled in here; `has(clip)`
+// What the figure does about a moment: its reaction when the roll says so, as a beat the body plays once ({beat: {clip, card, mark}}), `card`
+// being the chat mark it turns to and `mark` the one that set it off, or a look its eyes take on ({look: mood}); null for nothing.
+// `memory` holds when each reaction last played (`reacted`) and the acts since the last shenanigan (`tally`), and is filled in here; `has(clip)`
 // says whether the figure has a clip.
 export function answerTo(moment, voice, memory, now, random, has) {
-    const egg = eggFor(voice, moment, memory.played);
-    if (egg && has(egg.clip)) {
-        memory.played.push(egg);
-        return {beat: {clip: egg.clip, card: ""}};
-    }
     if (COMPOSED[moment.beat]) {
         const composed = COMPOSED[moment.beat](memory.reacted, now, random);
         return composed && has(composed) ? {beat: {clip: composed, card: "", ...(moment.during && {during: moment.during})}} : null;
@@ -269,29 +258,9 @@ export function playedFrom(beats, name) {
     return at < 0 ? beats : [...beats.slice(0, at), ...beats.slice(at + 1)];
 }
 
-// The queue with a worker given work, by the chat mark `card` that says so, joined to the telephone call already waiting or playing in
-// `beats`, which then names every worker it gathered, one after another; null when no call is there to join
-export function joinedCall(beats, card) {
-    const at = beats.findIndex((beat) => beat.clip === "phone_call");
-    if (at < 0) return null;
-    const call = beats[at];
-    const marks = call.marks ?? [call.mark];
-    if (marks.includes(card)) return beats;
-    return beats.map((beat, index) => (index === at ? {...call, marks: [...marks, card]} : beat));
-}
-
 // whether the figure looks at the running bar now, in the stretch `choice` (runWait.js barWatchAt) and with `shown` on screen: only in a stretch it watches,
 // and never while an act played once, an entrance, an exit or any other, is on screen
 export const watchesBar = (choice, shown) => Boolean(choice?.watches) && !shown.once;
-
-// The telephone call to the workers given work while the last call's cooldown ran, `held` their chat marks, once that cooldown is over
-// at `now` and the call may join `beats`, as its beat, noted in `reacted` as the call's time; null while it runs or when no worker waits
-export function heldCall(held, beats, reacted, now) {
-    const call = {clip: "phone_call", card: "", mark: held[0], marks: [...held]};
-    if (!held.length || now - (reacted.get("messaged") ?? -Infinity) < CALL_COOLDOWN || !queues(beats, call)) return null;
-    reacted.set("messaged", now);
-    return call;
-}
 
 // how long a moment stays worth acting on, in seconds: the figure acts on what just happened, never late
 export const FRESH_SECONDS = 10;
@@ -320,7 +289,7 @@ export const LOOK_TURN_SPEED = 2 * Math.PI;
 
 // The look on the page, {point, toward, amount, at}, `at` milliseconds `now` with `point` to look at or null, about `center`, the point on
 // the page the head turns about: it eases in over LOOK_EASE_MS once there is something to look at, as far as `blend` (looks.js headBlend),
-// and back out over as long from the last place looked at once there is not, as the UFO goes or the bar ends, so the head never snaps,
+// and back out over as long from the last place looked at once there is not, as the bar ends, so the head never snaps,
 // `amount` how far into it the figure is, 0 to 1. The look is kept as `toward`, its way from `center` on the page, so the figure walking never swings it, and turns toward `point`
 // no faster than LOOK_TURN_SPEED: with `head`, {depth, above, tip}, the head looking at the page from `depth` pixels before it, its eyes
 // `above` its pivot and tipping no further than `tip` (figure.js LOOK_REACH, eyesAboveOf, HEAD_TIP), the head's own turn (look.js), else
@@ -372,7 +341,7 @@ function readingGazeAfter(previous, point, center, elapsedMs, head) {
 // looking at the page from `depth` pixels before it, its eyes `above` the pivot, tipping no further than `tip` degrees {down, up}: the
 // head's turn (look.js lookAngles), as far as it tips, turned toward the target's the short way round by at most `largest` radians,
 // wherever on the page that falls
-export function lookTurned(previous, target, center, largest, {depth, above, tip}) {
+function lookTurned(previous, target, center, largest, {depth, above, tip}) {
     const tipped = (point) => {
         const {yaw, pitch} = lookAngles(point.x - center.x, depth, center.y - point.y, above);
         return {yaw, pitch: Math.min(Math.max(pitch, (-tip.up * Math.PI) / 180), (tip.down * Math.PI) / 180)};

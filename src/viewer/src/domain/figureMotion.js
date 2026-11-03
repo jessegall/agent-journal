@@ -99,7 +99,7 @@ export function pogoAt(leg, from, elapsed) {
 // the share of a pogo leg's act (acts.js pogo) its fall from the throw's top onto the leg's end takes, from where it lets the stick go
 // until it lands: as long against the rise as the square root of its height against the rise's, as under one gravity, and over by the
 // act's end however the leg's end moved, so it always lands within the act
-export function pogoFall(leg, from) {
+function pogoFall(leg, from) {
     const {spring, over} = ACTS.pogo;
     const past = over * leg.size;
     const rise = Math.max(from.y - leg.y, 0) + past;

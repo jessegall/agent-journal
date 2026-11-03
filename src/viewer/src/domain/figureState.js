@@ -1,9 +1,8 @@
-import {stateOf} from "./agentState.js";
 import {createdAt, refOf, seconds} from "./row.js";
 import {EVERY_VOICE_FACES, VOICE_FACES} from "../figure/pile.js";
 import {ChatMark} from "./chatMark.js";
 
-// What the figure does, read from the same agent row and work rows as the status bar, so the two never disagree.
+// What the figure does, read from what the chat reads: the tool in hand and the chat's marks and messages.
 // Each held state names the clip the figure loops while it is true; a state with no clip of its own idles. The walk is never held: it plays only while the figure moves.
 export const HELD = {
     idle: "idle",
@@ -43,41 +42,13 @@ export const TOOL_STATES = {
     Bash: "running",
 };
 
-// What a shell line says it does (the agent row's tool_work): a test run or a build is built as a parcel; a search, a grep, a find or the
-// journal's own, is searching as the search tools are; any other command, moving files, reading or git alike, is plain running, which
-// plays neither the parcel nor the laptop
-const SHELL_STATES = {testing: "testing", building: "building", searching: "searching"};
-
-const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
-
 // An idle or waiting agent's figure plays, its idle moves and showpieces, until no tool has been used for this many seconds, and then
 // falls asleep: an agent in a wait runs commands between its looks, so it sleeps only once it has run none for a while.
 export const ASLEEP_AFTER = 120;
 
-// A tool's pose stays this many seconds after it finishes, so a tool that runs for a moment is still seen.
-export const TOOL_LINGERS = 3;
-
-// How long a wait on the user lasts before the figure makes its one pointed nudge, in seconds.
-export const POINTED_AFTER = 180;
-
-// The held state at `now` (seconds), with when it began; `waitingSince` is when the oldest thing waiting on the user arrived, as its badges
-// count it, or 0 when nothing waits
-export function figureStateOf(agent, waitingSince, now = Date.now() / 1000) {
-    const bar = stateOf(agent, now);
-    const since = agent?.part_started_at || seconds(agent?.heard_at) || now;
-    // quiet a long while: no tool in flight and no hook heard since, which every tool use sends
-    const dozing = !agent?.tool_running && now - (seconds(agent?.heard_at) || now) >= ASLEEP_AFTER;
-    if (BAR_STATES[bar] === "waiting") return {state: dozing ? "asleep" : "waiting", since};
-    if (BAR_STATES[bar]) return {state: BAR_STATES[bar], since};
-    // the pose says what the agent does, so it waits on the user only while it does nothing else; where it stands says what waits
-    if (bar === "idle" && (waitingSince || agent?.awaiting)) return {state: "asking", since: waitingSince || since};
-    if (bar === "idle") return {state: dozing ? "asleep" : "idle", since};
-    const tool = agent?.tool;
-    const doing = agent.tool_work ? (SHELL_STATES[agent.tool_work] ?? "running") : TOOL_STATES[tool];
-    const inFlight = Boolean(tool) && (agent.tool_running || now - since < TOOL_LINGERS) && doing;
-    // between tools the agent is quiet, standing as it does idle, until the server says it is thinking (agent_activity thinking_at)
-    return {state: inFlight || (agent.thinking_at ? "thinking" : "quiet"), since};
-}
+// A compaction is known once it is done, by its chat mark: the figure plays it for this many seconds after that mark
+export const COMPACTING_SECONDS = 20;
+export const justCompacted = (cards, now) => cards.some((card) => card.type === "memories.compaction" && now - card.time < COMPACTING_SECONDS);
 
 export const clipOf = (state) => HELD[state] || HELD.idle;
 
@@ -87,7 +58,7 @@ export const waitingSinceAt = (counts, since, now) => (counts.question + counts.
 
 // What the figure plays now, by clip name, with the way it faces: its fall, under a parachute when it comes down on one, its run up the
 // bubbles while it is `flying`, its entrance or exit, the landing, the leg of a trip it is on, its hang
-// while it hangs, the clip it watches the UFO with while it is `watching` one, its eagerness for the bar under it to end while it is `eager`, a beat until it is done, pointing once it stands at a tab while the agent waits
+// while it hangs, its eagerness for the bar under it to end while it is `eager`, a beat until it is done, pointing once it stands at a tab while the agent waits
 // on the user, else what its body is doing,
 // drawn in its place. `scene` says where things stand, `doing` being the clip of the stretch it is in and `doingFacing` the way it faces for
 // it, as toward a parcel it pushes, else the viewer, and `readingFacing` the way it turns standing to read a bubble beside it (reactions.js
@@ -127,7 +98,6 @@ function wantedClip(scene, canDraw) {
     if (place.posture === "hang") return {clip: `hang_${place.grip}`, facing: place.face};
     // eager for a run's end it waits for nothing but that end
     if (scene.eager) return {clip: "eager", facing: 0};
-    if (scene.watching) return {clip: scene.watching, facing: 0};
     // a beat to play on its chat mark waits while the figure is on its way there
     if (beat && !(beat.onto && trip)) return {clip: beat.clip, facing: beat.facing, once: true, ...(beat.holds && {holds: true}), ...(beat.stretch && {stretch: beat.stretch})};
     // standing at the tab of what waits on the user it points up at it; anywhere else it waits turned toward the compose box
@@ -150,67 +120,45 @@ function legClip(trip, doing, canDraw) {
 
 export {actOver, frameIn, closeAt, canSwitch, goesOnFacing, stretchedAs, stretchedFrame} from "../figure/timeline.js";
 
-// A worker's chat mark of the agent giving it a task, the one it names: its dispatch, the worker's process card, unless the dispatch failed;
-// or its next job, a mark known by its words alone, a queue's next task among them; a mark that names no task, a message to it, its start
-// again and the mark's updates give it none (features/workers worker_process_card and worker_moment_cards)
-const NEXT_JOB = /: sent its next job/;
-// how a card's process ended, as it reports it, or as its colour said on a card from before cards reported their outcome
-const outcomeOf = (card) => card.outcome || {good: "passed", bad: "failed"}[card.tone] || "";
-// a worker's process card, whatever it says, is the main agent's own act of giving work; the moment marks of what the worker later
-// became (reported, finished, merged) are the worker's and ring nothing
-const givenWork = (card) => Boolean(card.task) && ((card.process && card.processName === "worker" && outcomeOf(card) !== "failed") || (card.shows === "workers" && NEXT_JOB.test(card.label)));
+// how a card's process ended, as its mark reports it
+const outcomeOf = (card) => card.outcome;
 
-// One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
-// the first rule a card matches names its beat
+// the commandments plugin's mark for a file: one mark for each file, kept up in place, in the warn tone while it holds sins and the good tone once repented
+const SIN_MARKS = "plugin:code-commandments:sins:";
+const isSinMark = (card) => card.type === "plugins.card" && card.markKey.startsWith(SIN_MARKS);
+
+// One-off beats, each fired by a chat mark and played once before the held state resumes; the first rule a mark matches names its beat
 const BEATS = [
-    // a sin the commandments plugin found in the agent's change, and one it found repented, as its cards in the chat say
-    {beat: "sin_committed", matches: (card) => card.pluginCard === "sin-found"},
-    {beat: "sin_fixed", matches: (card) => card.pluginCard === "sin-resolved"},
-    {beat: "committed", matches: (card) => card.shows === "commits"},
-    {beat: "failed", matches: (card) => card.shows === "checks" && outcomeOf(card) === "failed"},
-    {beat: "refused", matches: (card) => card.shows === "workers" && outcomeOf(card) === "failed" && !card.process},
-    {beat: "question_asked", matches: (card) => card.kind === "question"},
-    {beat: "answered", matches: (card) => card.shows === "questions"},
-    {beat: "task_finished", matches: (card) => card.shows === "task_moves" && /^Completed /.test(card.label)},
-    {beat: "messaged", matches: givenWork},
-    {beat: "fact_filed", matches: (card) => ["memories", "reminders"].includes(card.shows) && /^(Memory|Reminder) \d+ recorded/.test(card.label)},
-    {beat: "check_passed", matches: (card) => card.shows === "checks" && outcomeOf(card) === "passed"},
+    // a sin the commandments plugin found in the agent's change, and one it found repented, as its marks in the chat say
+    {beat: "sin_committed", matches: (card) => isSinMark(card) && card.variant !== "good"},
+    {beat: "sin_fixed", matches: (card) => isSinMark(card) && card.variant === "good"},
+    {beat: "committed", matches: (card) => card.type === "workers.worker" && card.variant === "merged"},
+    {beat: "reported", matches: (card) => card.type === "workers.worker" && card.variant === "delivered"},
+    {beat: "refused", matches: (card) => card.type === "workers.worker" && card.variant === "released"},
+    {beat: "failed", matches: (card) => card.type === "workers.tests" && card.variant === "failed"},
+    {beat: "check_passed", matches: (card) => card.type === "workers.tests" && card.variant === "passed"},
+    {beat: "question_asked", matches: (card) => card.type === "questions.question" && card.variant === "open"},
+    {beat: "answered", matches: (card) => card.type === "questions.answer"},
+    {beat: "task_finished", matches: (card) => card.type === "tasks.task" && card.variant === "closed"},
+    {beat: "fact_filed", matches: (card) => ["memories.memory", "memories.reminder"].includes(card.type) && card.variant === "made"},
 ];
-
-// the beat for what the agent says in the chat, by the message's kind: a report
-const SAYINGS = {report: "reported"};
-
-// the messages of the agent's session, or of none, as the system's cards and a worker's reports are; never those of a worker's or a
-// subagent's own session, which move their own card in the chat and not this agent's figure
-export const isMain = (message) => (message.thread || "main") === "main";
-const ofSession = (agent, message) => isMain(message) && [undefined, null, "", agent.session].includes(message.session);
-
-// The beats for what the agent has said in the chat since `seenAt` (seconds), oldest first, each turned to its message
-export const sayingsAfter = (agent, messages, seenAt) =>
-    agent
-        ? messages
-              .filter((m) => m.author === "agent" && SAYINGS[m.data?.kind] && ofSession(agent, m) && createdAt(m) > seenAt)
-              .map((m) => ({beat: SAYINGS[m.data.kind], time: createdAt(m), card: refOf(m)}))
-              .sort((a, b) => a.time - b.time)
-        : [];
 
 // The beats for the user's messages the agent has read since `seenAt` (seconds), oldest first, each turned to its message
 export const readingsAfter = (messages, seenAt) =>
     messages
-        .filter((m) => m.author === "user" && isMain(m) && seconds(m.read_at) > seenAt)
+        .filter((m) => m.author === "user" && seconds(m.read_at) > seenAt)
         .map((m) => ({beat: "read_message", time: seconds(m.read_at), card: refOf(m)}))
         .sort((a, b) => a.time - b.time);
 
 // the moment a face on a message is, by who put it there: the user's is aimed at the figure, the agent's is the figure's own to play out
 const FACE_MOMENTS = {user: "reacted", agent: "agent_reacted"};
 
-// The beats for faces the user or the agent has put on messages since `seenAt` (seconds), oldest first; `reactions` are the journal's
-// reaction rows. The card is the message the face is on.
-export function facesAfter(reactions, seenAt, messages = []) {
-    const others = new Set(messages.filter((m) => !isMain(m)).map((m) => m.id));
-    return reactions
-        .filter((row) => FACE_MOMENTS[row.author] && !others.has(row.message_id) && createdAt(row) > seenAt)
-        .map((row) => ({beat: `${FACE_MOMENTS[row.author]}:${row.emoji}`, time: createdAt(row), card: `messages:${row.message_id}`}))
+// The beats for faces the user or the agent has put on messages since `seenAt` (seconds), oldest first; `faces` are the faces Chat.vue saw
+// land, each {author, emoji, message_id, created_at}. The card is the message the face is on.
+export function facesAfter(faces, seenAt) {
+    return faces
+        .filter((row) => FACE_MOMENTS[row.author] && createdAt(row) > seenAt)
+        .map((row) => ({beat: `${FACE_MOMENTS[row.author]}:${row.emoji}`, time: createdAt(row), card: `message:${row.message_id}`}))
         .sort((a, b) => a.time - b.time);
 }
 
@@ -219,10 +167,9 @@ const ACTED_FACES = [...new Set([...Object.values(VOICE_FACES).flatMap((faces) =
 
 // The beats for faces the agent wrote in its own messages since `seenAt` (seconds), oldest first: a face written counts as one the agent put
 // on a message, so it plays the same act; the first acted face in a message is the one played. The card is the message it is in.
-export function writtenFacesAfter(agent, messages, seenAt) {
-    if (!agent) return [];
+export function writtenFacesAfter(messages, seenAt) {
     return messages
-        .filter((m) => m.author === "agent" && !m.data?.kind && ofSession(agent, m) && createdAt(m) > seenAt)
+        .filter((m) => m.author === "agent" && createdAt(m) > seenAt)
         .map((m) => ({m, face: ACTED_FACES.map((face) => [face, m.text.indexOf(face)]).filter(([, at]) => at >= 0).sort((a, b) => a[1] - b[1])[0]?.[0]}))
         .filter(({face}) => face)
         .map(({m, face}) => ({beat: `agent_reacted:${face}`, time: createdAt(m), card: refOf(m)}))
@@ -266,37 +213,34 @@ export function processEndsAfter(agent, known) {
     return ended.map((card) => ({tone: outcomeOf(card) === "passed" ? "good" : "bad", time: Number(card.time), card: card.key}));
 }
 
-// The agent's row with the system's cards for its session, or for no session, among its own, as messages carry them
-export const withSystemCards = (agent, messages) =>
-    agent && {
-        ...agent,
-        data: {
-            ...(agent.data || {}),
-            cards: [
-                ...(agent.data?.cards || []),
-                ...messages
-                    .filter((m) => m.author === "system" && ofSession(agent, m))
-                    .map((m) => ({
-                        key: refOf(m),
-                        time: createdAt(m),
-                        shows: m.data.shows || "",
-                        outcome: m.data.outcome || "",
-                        tone: m.data.tone,
-                        kind: m.data.kind,
-                        pluginCard: m.data.card || "",
-                        label: m.text,
-                        process: m.data.card_type === "process",
-                        processName: m.data.process || "",
-                        sentTo: m.data.recipient || "",
-                        row: m.data.row || "",
-                        task: m.data.task || 0,
-                        active: Boolean(m.data.active),
-                        watch: m.data.output ? {figure: m.data.figure || "", ending: m.data.ending || ""} : null,
-                        guesses: {test: Boolean(m.data.is_test), build: Boolean(m.data.is_build), upload: Boolean(m.data.is_upload)},
-                    })),
-            ],
-        },
-    };
+// The chat's mark rows as the figure reads them: each its key as the page marks it (markLook.js), the journal's own key, when it was made, its type and variant, how it stands and how it ended, whether
+// it follows a run and what its title says it is about (chatMark.js)
+export const cardsOfMarks = (marks) =>
+    marks.map((mark) => {
+        const title = mark.text.toLowerCase();
+        return {
+            key: `chat_mark:${mark.id}`,
+            markKey: mark.key,
+            time: createdAt(mark),
+            type: mark.type,
+            variant: mark.variant,
+            outcome: mark.outcome,
+            process: mark.type === "processes.command",
+            active: !mark.ended_at,
+            guesses: {test: title.includes("test"), build: title.includes("build"), upload: title.includes("upload")},
+        };
+    });
+
+// A mark kept up in place keeps the time it was made, so a change of its variant would pass unseen: each card as of when its variant last changed,
+// `known` holding key to {variant, time}, filled in here; a card first seen keeps its own time, and one seen changing takes `now`
+export function cardsMoved(cards, known, now) {
+    return cards.map((card) => {
+        const was = known.get(card.key);
+        const time = !was ? card.time : was.variant === card.variant ? was.time : now;
+        known.set(card.key, {variant: card.variant, time});
+        return {...card, time};
+    });
+}
 
 export function cardsAfter(agent, known, since) {
     const cards = (agent?.data?.cards || []).filter((card) => card.key && !known.has(card.key));
@@ -312,42 +256,4 @@ export function beatsAfter(agent, seenAt) {
         .filter((fire) => fire.beat);
     const heard = Number(agent?.data?.person_at || 0);
     return [...fired, ...(heard > seenAt ? [{beat: "heard", time: heard}] : [])].sort((a, b) => a.time - b.time);
-}
-
-// The figure's easter eggs. Each belongs to one true moment read from the agent's row, as the status bar reads it - a beat that fired,
-// or a held state that has lasted long enough - and never plays at random or on a timer of its own.
-export const EGGS = [
-    // the squire runs after a literal bug across the pane when a check goes red
-    {clip: "squire_chase", voice: "squire", beat: "failed"},
-    // each voice makes its one pointed nudge when the user has kept it waiting a long while
-    {clip: "pointed", state: "asking", lasted: POINTED_AFTER},
-];
-
-// A moment is a beat that fired ({beat, at}) or a held state ({state, since, lasted}); `at` or `since` tells one occurrence from the next
-const occurrenceOf = (moment) => moment.time ?? moment.since;
-const belongs = (egg, voice, moment) =>
-    (!egg.voice || egg.voice === voice) &&
-    (egg.beat ? egg.beat === moment.beat : egg.state === moment.state && moment.lasted >= egg.lasted);
-
-// The egg this moment plays, or null: one belongs to it, it has not played for this occurrence, and it is not the egg played last.
-// `played` lists the eggs played so far, oldest first, each as {clip, occurrence}.
-export function eggFor(voice, moment, played) {
-    const egg = EGGS.find((each) => belongs(each, voice, moment));
-    if (!egg || played.at(-1)?.clip === egg.clip) return null;
-    return played.some((each) => each.clip === egg.clip && each.occurrence === occurrenceOf(moment))
-        ? null
-        : {clip: egg.clip, occurrence: occurrenceOf(moment)};
-}
-
-// What the figure says on the telephone, the lines its visor scrolls (figure/visorPixels.js tickerAt), from the chat marks `cards` of the
-// work it gave, in the order they came: each worker by its number, then each task given to it by its number, as its marks name them, before
-// the next worker; a mark of no worker, or one that names no task, says nothing, so no worker is ever named without a task.
-export function callLines(cards) {
-    const given = new Map();
-    for (const card of cards) {
-        const [table, id] = String(card.row).split(":");
-        if (table !== "workers" || !card.task) continue;
-        given.set(id, (given.get(id) ?? new Set()).add(card.task));
-    }
-    return [...given].flatMap(([id, tasks]) => [`Worker ${id}`, ...[...tasks].map((task) => `Task ${task}!`)]);
 }

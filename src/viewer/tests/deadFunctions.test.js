@@ -8,7 +8,7 @@ const FOLDERS = ["src/viewer", "src/core/modules", "src/suites", "src/tunnels"];
 const CHECKED = ["src/viewer/src", "src/viewer/kit", "src/core/modules", "src/suites", "src/tunnels"];
 const SKIPPED = new Set(["node_modules", "dist", ".vite"]);
 const EXTENSIONS = [".js", ".vue", ".ts", ".mjs", ".html"];
-// the figure's port from version 4, by file, with the task that wires each into the chat; their exported functions are not yet used
+// the figure's port from version 4, by file, with the task that wired each into the chat; some of their exported functions are used only by their tests
 const FIGURE_PORT = {
     "src/viewer/src/figure/": 5661,
     "src/viewer/src/domain/figureState.js": 5661,
