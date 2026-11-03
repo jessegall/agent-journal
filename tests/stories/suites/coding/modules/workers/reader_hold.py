@@ -6,8 +6,6 @@ from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.modules.processes.support.process_samples import end_run
-from core.modules.processes.support.process_marks import PROCESS_MARKS
-from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -192,7 +190,7 @@ def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, output.title == "Building")
 
 
-def test_the_main_agent_gets_one_line_and_one_mark_for_two_workers_on_one_command(requested_reader_story):
+def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_command(requested_reader_story):
     story = requested_reader_story
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30, is_queued=True), second, environment_id=1)
@@ -200,7 +198,7 @@ def test_the_main_agent_gets_one_line_and_one_mark_for_two_workers_on_one_comman
     story.expect_rows(sum("reader request" in line for line in reply.lines) == 1)
     story.run_listeners()
     marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").all_rows())
-    story.expect_rows(len(marks) == 1)
+    story.expect_rows(not marks)
     repeated_reply = story.hook("s-1", HookSamples.prompt("continue again"))
     story.expect_rows(not any("reader request" in line for line in repeated_reply.lines))
 
@@ -243,8 +241,7 @@ def test_waive_frees_the_worker_and_starts_its_run_with_no_reader(kept_reader_sa
     story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
     story.expect_rows(story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0].reader_id is None)
     story.run_listeners()
-    mark = story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").page(1, 1).rows[0]
-    story.expect_rows("read this build by hand" in mark.lines)
+    story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").exists())
 
 
 def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_story):
@@ -257,18 +254,29 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
     story.expect_rows(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)
 
 
-def test_the_request_mark_shows_the_first_and_last_sample_lines(requested_reader_story):
+def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
     story = requested_reader_story
     request = story.container.get(ReaderRequestQuery).find(1)
     story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "first line\n" + "middle\n" * 30 + "last line\n")
     worker = reader_worker(story)
     story.container.get(Bus).run(EndProcess(request.sample_process_id, 0, 5000, 32), worker, environment_id=1)
     story.run_listeners()
-    mark = story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").page(1, 1).rows[0]
-    story.expect_rows("first line" in mark.lines, "last line" in mark.lines)
-    declaration = next(mark for mark in PROCESS_MARKS if mark.type is ProcessMarkType.READER_REQUEST)
-    story.expect_rows(declaration.buttons[0].label == "Draft reader", declaration.buttons[0].runs == "reader draft {row_id}")
-    story.expect_rows(mark.target_model == "reader_request", mark.target_id == request.id)
+    story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").exists())
+
+
+@pytest.mark.parametrize("text", [
+    "bringing up nodes...\n\n\n0 stories used a real Claude Code or Codex\nno tests ran in 1.52s\n" * 4,
+    "================ test session starts ================\ncollected 0 items\n\n================ no tests ran in 0.02s ================\n",
+])
+def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_worker_run(new_story, text):
+    story = new_story(fixture=ForcedReaders)
+    install_runner(story)
+    process = worker_run(story, "python3 -m pytest tests/empty.py", CommandCategory.TEST_RUN)
+    end_run(story, process, text, exit_code=5)
+    following = worker_run(story, "python3 -m pytest tests/next.py", CommandCategory.TEST_RUN)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(story.container.get(OutputFolder).has_slot(following.id))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
 def test_a_reader_that_stops_matching_on_a_worker_run_asks_the_main_agent_and_holds_the_next_run(new_story):

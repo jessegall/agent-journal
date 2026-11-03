@@ -31,6 +31,7 @@ onMounted(load);
 </script>
 
 <template>
+    <Transition name="queue" appear>
     <article class="process-queue" data-test-queue>
         <header class="top">
             <template v-if="backed"><BackButton @back="emit('back')" /></template>
@@ -49,9 +50,9 @@ onMounted(load);
                             {{ section.heading }}
                             <span>{{ section.rows.length }}</span>
                         </h2>
-                        <template v-for="(run, index) in section.rows" :key="run.id">
-                            <ProcessQueueRun :run="run" :environment="queue.environment_name" :position="index + 1" :read="read" />
-                        </template>
+                        <TransitionGroup name="queue-run" tag="div" class="runs">
+                            <ProcessQueueRun v-for="(run, index) in section.rows" :key="run.id" :run="run" :environment="queue.environment_name" :position="index + 1" :read="read" />
+                        </TransitionGroup>
                         <template v-if="!section.rows.length">
                             <p class="note" :data-queue-empty="section.kind">{{ section.empty }}</p>
                         </template>
@@ -61,6 +62,7 @@ onMounted(load);
             <template v-else-if="!failure"><Skeleton /></template>
         </div>
     </article>
+    </Transition>
 </template>
 
 <style scoped>
@@ -69,6 +71,15 @@ onMounted(load);
     flex: 1;
     flex-direction: column;
     min-height: 0;
+}
+.queue-enter-active,
+.queue-leave-active { transition: opacity 180ms ease; }
+.queue-enter-from,
+.queue-leave-to { opacity: 0; }
+.runs { position: relative; }
+@media (prefers-reduced-motion: reduce) {
+    .queue-enter-active,
+    .queue-leave-active { transition: none; }
 }
 .top {
     display: flex;

@@ -77,11 +77,26 @@ useResourceEvents(["output.*"], refresh);
 
 <style scoped>
 .run {
+    box-sizing: border-box;
+    width: 100%;
     margin-bottom: 8px;
     padding: 13px 14px;
     border: 1px solid var(--border);
     border-radius: 9px;
     background: var(--surface);
+}
+.queue-run-move,
+.queue-run-enter-active,
+.queue-run-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
+.queue-run-enter-from,
+.queue-run-leave-to { opacity: 0; transform: translateY(6px); }
+.queue-run-leave-active { position: absolute; }
+@media (prefers-reduced-motion: reduce) {
+    .queue-run-move,
+    .queue-run-enter-active,
+    .queue-run-leave-active { transition: none; }
+    .queue-run-enter-from,
+    .queue-run-leave-to { transform: none; }
 }
 .run-line {
     display: flex;
