@@ -41,7 +41,7 @@ def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1 is still started")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
     assert "you ended with tasks left" not in story.run(f"agent-line list --agent {worker.id}").output_text
 
 
@@ -54,7 +54,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     story.expect_success(f"agent stop {worker.id}", f"stopped agent {worker.id}", actor=user)
     assert f"delegated_to: {worker.id}" not in story.run(lines.TASK_DETAILS).output_text
     assert "you ended with tasks left" not in story.run(f"agent-line list --agent {worker.id}").output_text
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1 is still started")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
 
 
 def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_which_its_main_agent_hears_of(new_story):
@@ -82,7 +82,7 @@ def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_age
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"task 2 is still queued for worker {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:2 left")
 
 
 def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_story):
@@ -105,7 +105,21 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"task 1 is still started under worker {worker.id}: journal worker send {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1 left: journal worker send {worker.id}")
+
+
+def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2 3")
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1, task:2, task:3 left")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", "is still queued")
 
 
 def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_told_to_carry_on(new_story):

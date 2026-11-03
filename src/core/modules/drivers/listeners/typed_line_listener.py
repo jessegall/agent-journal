@@ -28,6 +28,7 @@ class TypedLineListener(CommitListener):
 
     name = "drivers.typed-line"
     event = "agent_line.create"
+    run_order = -1
 
     def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus, hook_calls: HookCallQuery) -> None:
         self.queries, self.typing, self.bus, self.hook_calls = queries, typing, bus, hook_calls

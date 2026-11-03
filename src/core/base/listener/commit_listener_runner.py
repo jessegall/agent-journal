@@ -1,3 +1,5 @@
+import time
+
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
@@ -13,11 +15,14 @@ from core.base.listener.commit_listener_error import CommitListenerError
 
 FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
+SLOW_LISTENER_SECONDS = 2.0
+
+
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
     run left undone is done by the next. It claims each event before handling it, so a second runner never
     handles the same one; an event that fails is given back to be tried again, and one that fails three
-    times is skipped."""
+    times is skipped. Listeners a person waits on run again after each other listener, and a slow one is noted."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  faults: FaultSink) -> None:
@@ -28,13 +33,25 @@ class CommitListenerRunner:
             self.faults.flush()
         except Exception as failure:
             self.errors.noted(f"waiting faults could not be recorded: {type(failure).__name__}: {failure}")
-        entries = tuple(entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT)
+        entries = sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order)
+        urgent_entries = [entry for entry in entries if self.run_order(entry) < 0]
         for _ in range(CHAIN_LIMIT_ROUNDS):
             if not self.cursors.has_unhandled_events():
                 return
-            progress = [self.run_listener(entry) for entry in entries]
+            progress = [self.run_entry(entry, urgent_entries) for entry in entries]
             if not any(progress):
                 return
+
+    def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
+        ran = self.run_listener(entry)
+        for listener in urgent_entries:
+            self.run_listener(listener)
+        return ran
+
+    @staticmethod
+    def run_order(entry: ListenerEntry) -> int:
+        listener_class = entry.path.loaded()
+        return listener_class.run_order if issubclass(listener_class, CommitListener) else 0
 
     def run_listener(self, entry: ListenerEntry) -> bool:
         position = self.cursors.position(entry.name)
@@ -52,8 +69,11 @@ class CommitListenerRunner:
         listener_class = entry.path.loaded()
         if not issubclass(listener_class, CommitListener):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
+        started = time.monotonic()
         try:
             self.container.get(listener_class).handle(event)
+            if time.monotonic() - started >= SLOW_LISTENER_SECONDS:
+                self.errors.noted(f"listener {entry.name} took {time.monotonic() - started:.1f} seconds on event {event.id} {event.event}")
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)

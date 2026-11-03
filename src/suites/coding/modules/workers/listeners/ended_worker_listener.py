@@ -17,7 +17,7 @@ from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_UNFINISHED_TASKS
 
 SOURCE = "workers.ended-worker"
 RESUME_LIMIT_COUNT = 3
@@ -25,8 +25,9 @@ RESUME_LIMIT_COUNT = 3
 
 class EndedWorkerListener(SaveListener):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
-    agent hears nothing before its last delivery; one that ended while its tests wait gets its next task from them. A worker a person ended holds no delegated task or is ended by that
-    person; that one, one that reported being stuck and one that keeps ending leave its main agent a line."""
+    agent hears nothing before its last delivery; one that ended while its tests wait gets its next task from
+    them. A worker a person ended holds no delegated task or is ended by that person; that one, one that reported
+    being stuck and one that keeps ending leave its main agent one line naming all its tasks."""
 
     name = "workers.ended-worker"
     event = "agent.update"
@@ -52,12 +53,8 @@ class EndedWorkerListener(SaveListener):
         if delegated and not help_requested and not person_actor and resume_count < RESUME_LIMIT_COUNT:
             self.repository.save(AgentLine(agent_id=new.id, creator_id=change.actor.id, text=WORKER_UNFINISHED_TASKS.nudge().text, source=UNFINISHED_TASKS_SOURCE), change.context)
             return
-        for task in self.queued_tasks(new.id):
-            line = f"task {task.id} is still queued for worker {new.id}: journal worker send {new.id} \"<job>\" to carry on, or journal worker release {new.id} \"<why>\""
-            self.repository.save(AgentLine(agent_id=new.parent_id, creator_id=change.actor.id, text=line, source=SOURCE), change.context)
-        for task in started:
-            line = f"task {task.id} is still started under worker {new.id}: journal worker send {new.id} \"<job>\" to carry on, or journal worker release {new.id} \"<why>\""
-            self.repository.save(AgentLine(agent_id=new.parent_id, creator_id=change.actor.id, text=line, source=SOURCE), change.context)
+        tasks = ", ".join(f"task:{task.id}" for task in (*started, *self.queued_tasks(new.id)))
+        self.repository.save(AgentLine(agent_id=new.parent_id, creator_id=change.actor.id, text=WORKER_ENDED_WITH_TASKS.nudge(worker=new.id, tasks=tasks).text, source=SOURCE), change.context)
 
     def queued_tasks(self, worker_id: int) -> tuple[Task, ...]:
         return tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.OPEN).all_rows())
