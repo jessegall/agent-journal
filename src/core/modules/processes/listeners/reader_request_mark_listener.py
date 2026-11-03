@@ -34,8 +34,8 @@ class ReaderRequestMarkListener(CommitListener):
         variant = ProcessMarkVariant.FINISHED if completed else ProcessMarkVariant.RUNNING
         outcome = MarkOutcome.WARNED if request.skip_reason else MarkOutcome.PASSED
         self.bus.run(ShowMark(request.environment_id, ProcessMarkType.READER_REQUEST, variant, f"reader-request:{request.id}",
-                              f"Reader: {request.command[:COMMAND_CHARACTERS]}", detail=self.detail(request), row_model="process",
-                              row_id=request.sample_process_id, outcome=outcome if completed else MarkOutcome.RUNNING, ended=completed),
+                              f"Reader: {request.command[:COMMAND_CHARACTERS]}", detail=self.detail(request), row_model="reader_request",
+                              row_id=request.id, outcome=outcome if completed else MarkOutcome.RUNNING, ended=completed),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=request.environment_id)
 
     def detail(self, request: ReaderRequest) -> str:

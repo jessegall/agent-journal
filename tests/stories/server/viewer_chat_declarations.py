@@ -42,8 +42,8 @@ def test_the_viewer_reads_reader_request_sample_lines_and_its_button(new_story):
         value = story.viewer_line_value(cookie, {"window": "messages.chat", "line": ["chat-mark", "main"], "environment": "main"})
         saved = next(row for row in value["rows"] if row["id"] == mark.id)
         assert "first sample" in saved["lines"] and "last sample" in saved["lines"]
-        story.expect_viewer_status("/api/marks", 200, cookie, text='"runs": "output read {row_id} --tail 20"')
-        story.expect_viewer_line(cookie, {"window": "messages.chat", "line": ["output", "read", str(process.id), "--tail", "20"], "environment": "main"}, 200, "last sample")
+        story.expect_viewer_status("/api/marks", 200, cookie, text='"runs": "reader draft {row_id}"')
+        story.expect_viewer_line(cookie, {"window": "messages.chat", "line": ["reader", "draft", "1"], "environment": "main"}, 200, "could not fill")
 @pytest.fixture
 def declarations_server(new_story):
     with server_story(new_story(f'{PATH}:GoodModule', fixture=UserJoined)) as story:

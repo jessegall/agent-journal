@@ -10,7 +10,7 @@ TEST_LIMIT_STOP = NudgeDeclaration("processes.run_over_test_limit", NudgeType.ST
 TEST_LIMIT_REFUSAL = NudgeDeclaration("processes.test_run_over_limit", NudgeType.REFUSAL, "last run had {count} tests, limit {limit}: {command}; run only tests for this task", longest_characters=320)
 
 READER_REQUEST_REMINDER = Seconds(600)
-READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: worker {worker} needs a reader for {command}; sample {output}: journal output read {output}", interval=Interval(READER_REQUEST_REMINDER), longest_characters=320, turn_limited=False)
+READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: worker {worker} needs a reader for {command}; sample {output}: journal reader draft {request}", interval=Interval(READER_REQUEST_REMINDER), longest_characters=320, turn_limited=False)
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", ToolUseSpan(5))
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs the reader of {command}: journal reader-request waive {request} --reason "<why>", or journal agent-block skip {block} --reason "<why>"', longest_characters=400)
 

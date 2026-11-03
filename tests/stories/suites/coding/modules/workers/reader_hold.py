@@ -267,8 +267,8 @@ def test_the_request_mark_shows_the_first_and_last_sample_lines(requested_reader
     mark = story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").page(1, 1).rows[0]
     story.expect_rows("first line" in mark.lines, "last line" in mark.lines)
     declaration = next(mark for mark in PROCESS_MARKS if mark.type is ProcessMarkType.READER_REQUEST)
-    story.expect_rows(declaration.buttons[0].label == "Read sample", declaration.buttons[0].runs == "output read {row_id} --tail 20")
-    story.expect_rows(mark.target_model == "process", mark.target_id == request.sample_process_id)
+    story.expect_rows(declaration.buttons[0].label == "Draft reader", declaration.buttons[0].runs == "reader draft {row_id}")
+    story.expect_rows(mark.target_model == "reader_request", mark.target_id == request.id)
 
 
 def test_a_reader_that_stops_matching_on_a_worker_run_asks_the_main_agent_and_holds_the_next_run(new_story):

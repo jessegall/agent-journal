@@ -33,3 +33,6 @@ class Reader(Model):
     proved_on: int | None = None
     is_default: bool = False
     plugin_name: str = ""
+
+    def has_counted_steps(self) -> bool:
+        return bool(self.step_pattern and self.count_pattern)
