@@ -19,7 +19,9 @@ class ProcessSetting(Enum):
                                   SettingType.NUMBER, default=90)
     RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many runs of workers go at the same time on this machine; the others wait in a queue. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
-    OUTPUTS_KEPT_COUNT = SettingValue("outputs-kept", "Outputs kept", "How many outputs are kept before the oldest are removed.", SettingType.NUMBER, default=40)
+    MAIN_RUNS_TAKE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
+                                        SettingType.FLAG, default=False)
+    OUTPUTS_KEPT_COUNT =SettingValue("outputs-kept", "Outputs kept", "How many outputs are kept before the oldest are removed.", SettingType.NUMBER, default=40)
     OUTPUTS_KEPT_MINUTES = SettingValue("outputs-kept-minutes", "Minutes an output is kept", "How long an output that ended is kept, whatever the number of outputs.", SettingType.NUMBER, default=30)
     SHORT_OUTPUT_BYTES = SettingValue("short-output", "Short output bytes", "Below how many bytes an output is shown whole and not kept.", SettingType.NUMBER,
                                       default=200)
