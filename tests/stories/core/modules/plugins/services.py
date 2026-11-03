@@ -5,6 +5,8 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.plugin_services import PluginServices
@@ -50,6 +52,20 @@ def test_a_service_that_ended_is_started_again_by_the_next_follow(new_story):
         first.wait(5)
         story.services.follow(story.processes)
         story.expect_rows(story.processes.running[("served", "answers")].running(), story.processes.running[("served", "answers")].pid != first.pid)
+    finally:
+        story.processes.close()
+
+
+def test_a_service_is_started_again_once_the_files_of_its_plugin_changed(new_story):
+    story = served_story(new_story)
+    try:
+        first = story.processes.running[("served", "answers")]
+        story.services.follow(story.processes)
+        story.expect_rows(story.processes.running[("served", "answers")].pid == first.pid)
+        story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = 'upgraded' WHERE name = 'served'"))
+        story.services.follow(story.processes)
+        second = story.processes.running[("served", "answers")]
+        story.expect_rows(second.pid != first.pid, second.running(), not first.running())
     finally:
         story.processes.close()
 

@@ -8,6 +8,7 @@ from core.base.repository.repository import Repository
 from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin import UpgradePlugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.plugin_code_diff import PluginCodeDiff
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
@@ -23,13 +24,14 @@ OLD_SUFFIX = ".old"
 
 class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     """Fetches a plugin's source and, once confirmed, sets the new code up beside the old and swaps them
-    before the transaction opens, so a failing step leaves the old one in place; running services keep the old
-    code until the journal restarts."""
+    before the transaction opens, so a failing step leaves the old one in place; the preview also shows the diff of
+    the files, and a running service is started again by the server's next round of services, which sees the
+    plugin's new digest."""
 
     command = UpgradePlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders) -> None:
-        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers = plugins, folders, staging, steps, repository, skill_files, readers
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders, code_diff: PluginCodeDiff) -> None:
+        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff = plugins, folders, staging, steps, repository, skill_files, readers, code_diff
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         UserActorCheck.check_actor(actor, "upgrades")
@@ -61,9 +63,11 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         plugin = self.plugins.find_name(command.name)
         code = self.folders.code(plugin.name)
         if not command.confirmed:
-            old, offered = PluginManifest.read(code), PluginManifest.read(self.staging.folder(plugin.source))
+            offered_folder = self.staging.folder(plugin.source)
+            old, offered = PluginManifest.read(code), PluginManifest.read(offered_folder)
+            diff = self.code_diff.lines(code, offered_folder)
             self.staging.cleared(plugin.source)
-            return PluginUpgrade(plugin.name, plugin.release, offered.version, self.changes(old, offered), False)
+            return PluginUpgrade(plugin.name, plugin.release, offered.version, self.changes(old, offered), False, diff)
         self.staging.cleared(plugin.source)
         manifest = PluginManifest.read(code)
         self.skill_files.publish(code, manifest)

@@ -48,8 +48,10 @@ class PluginServices:
             for service in manifest.services:
                 key = (plugin.name, service.name)
                 wanted.add(key)
+                if key in processes.running and processes.digests.get(key, plugin.files_digest) != plugin.files_digest:
+                    processes.running.pop(key).stop_group(STOP_LIMIT_SECONDS)
                 if self.is_checkable(processes, key):
-                    faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest))
+                    faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
             processes.running.pop(key).stop_group(STOP_LIMIT_SECONDS)
         return faults
@@ -57,7 +59,7 @@ class PluginServices:
     def is_checkable(self, processes: ServiceProcesses, key: tuple[str, str]) -> bool:
         return key not in processes.skipped or self.clock.timestamp().value - processes.skipped[key].value > CONDITION_RECHECK
 
-    def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest) -> list[str]:
+    def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str) -> list[str]:
         process = processes.running.get(key)
         if process is not None and (process.running() or service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
             return []
@@ -80,6 +82,7 @@ class PluginServices:
         processes.running[key] = ChildProcess(subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
                                                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
         pid_file.write_text(str(processes.running[key].pid))
+        processes.digests[key] = digest
         if service.answers:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])
         return []
@@ -110,7 +113,7 @@ class PluginServices:
                 if self.is_healthy(path, manifest.health):
                     continue
                 processes.running.pop((plugin.name, service.name)).stop_group(STOP_LIMIT_SECONDS)
-                self.keep(processes, (plugin.name, service.name), folder, service, manifest)
+                self.keep(processes, (plugin.name, service.name), folder, service, manifest, plugin.files_digest)
                 misses.append(ServiceFault(plugin, f"its service {service.name} missed its health check"))
         return misses
 
