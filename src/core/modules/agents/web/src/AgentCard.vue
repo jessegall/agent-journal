@@ -260,6 +260,8 @@ readCommand();
     display: flex;
     min-width: 0;
     padding-left: 15px;
+    color: var(--text-3);
+    font-size: 10.5px;
 }
 
 .agent-identity {

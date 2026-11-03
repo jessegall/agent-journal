@@ -262,7 +262,7 @@ const Le = { class: "file-feed" }, We = 5, Be = {
       ], 10, Ue);
     };
   }
-}, rt = /* @__PURE__ */ re(ut, [["__scopeId", "data-v-9a1664bc"]]), ct = { class: "agents-bar" }, gt = {
+}, rt = /* @__PURE__ */ re(ut, [["__scopeId", "data-v-9313c261"]]), ct = { class: "agents-bar" }, gt = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, vt = ["data-agent-row", "onMouseenter", "onMouseleave"], pt = {
