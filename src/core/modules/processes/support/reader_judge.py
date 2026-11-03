@@ -28,10 +28,14 @@ class ReaderJudge:
         self.run, self.folder, self.parts = run, folder, parts
 
     def judged(self, reader: Reader, category: CommandCategory) -> ReaderJudgement:
-        return replace(self.tested(reader), missing=self.fields_missing(reader, category))
+        samples = tuple(part for part in self.samples(reader) if part.category is category)
+        return replace(self.tested_samples(reader, samples), missing=self.fields_missing(reader, category))
 
     def tested(self, reader: Reader) -> ReaderJudgement:
-        samples = self.samples(reader)
+        return self.tested_samples(reader, self.samples(reader))
+
+    def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderJudgement:
+        samples = tuple(islice(parts, SAMPLE_OUTPUTS))
         missed = tuple(f"on output {part.process_id}: {', '.join(misses)}" for part in samples
                        if (misses := self.misses(reader, part.category, self.output_text(part.process_id, part.position))))
         output_id = samples[0].process_id if samples and not missed else None
@@ -72,7 +76,7 @@ class ReaderJudge:
     def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:
         parts = self.parts.with_kept_output().newest().all_rows()
         matching = (part for part in parts if ReaderSelection.reads(reader, part))
-        return tuple(islice(matching, SAMPLE_OUTPUTS))
+        return tuple(matching)
 
     def output_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))
