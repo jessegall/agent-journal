@@ -220,6 +220,24 @@ def test_a_line_that_could_not_be_typed_goes_to_the_next_hook(new_story):
     assert any("new message 1" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
 
 
+class BrokenTyping(TerminalTyping):
+    """Fails with a fault that is no refusal."""
+
+    def __init__(self) -> None:
+        pass
+
+    def type_line(self, agent_id: int, line: str) -> None:
+        raise OSError("the launcher's socket broke")
+
+
+def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
+    story = idle_lead_story(new_story)
+    story.container.bind(TerminalTyping, BrokenTyping())
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    assert any("new message 1" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
+
+
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(new_story):
     story = idle_lead_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))

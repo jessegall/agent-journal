@@ -1,14 +1,8 @@
-from dataclasses import replace
-
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
-from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -22,7 +16,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE, WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 LINE_SOURCE = "workers"
 
@@ -35,8 +30,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     command = RecordWorkerTest
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, bus: Bus, nudger: Nudger) -> None:
-        self.queries, self.repository, self.main_agent_line, self.tasks, self.bus, self.nudger = queries, repository, main_agent_line, tasks, bus, nudger
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger) -> None:
+        self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.queries.query(Proof).find(command.proof_id)
@@ -69,9 +64,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return
-        self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
-        self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, text=f"your tests passed. Your next task, task:{following.id}: {following.title}\n{following.brief}")
+        self.advance.start(worktree, following, "your tests passed", context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):

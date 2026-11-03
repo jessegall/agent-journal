@@ -21,8 +21,8 @@ class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
     run left undone is done by the next. It claims each event before handling it, so a second runner never
     handles the same one; an event that fails is given back to be tried again, and one that fails three
-    times is skipped. Listeners a person waits on run again after each other listener, and a costly one is noted
-    with its points."""
+    times is skipped. Listeners a person waits on run again after each other listener that handled events, and a
+    costly one is noted with its points."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  faults: FaultSink) -> None:
@@ -44,8 +44,9 @@ class CommitListenerRunner:
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
         ran = self.run_listener(entry)
-        for listener in urgent_entries:
-            self.run_listener(listener)
+        if ran:
+            for listener in urgent_entries:
+                self.run_listener(listener)
         return ran
 
     @staticmethod

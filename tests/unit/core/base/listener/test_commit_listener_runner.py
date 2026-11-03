@@ -145,6 +145,19 @@ def test_a_listener_a_person_waits_on_goes_first_and_again_after_each_other_list
     assert HANDLED == ["urgent 1", "slow 1", "urgent 2", "slow 2"]
 
 
+def test_a_listener_with_nothing_to_handle_does_not_run_the_urgent_listeners_again(tmp_path, monkeypatch):
+    container = container_with(tmp_path, UrgentCounter, PausedItemCounter)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    listeners_read: list[str] = []
+    position = ListenerCursorTable.position
+    monkeypatch.setattr(ListenerCursorTable, "position", lambda table, name: (listeners_read.append(name), position(table, name))[1])
+    urgent, counter = sorted((entry for entry in runner.registry.listeners), key=runner.run_order)
+    runner.run_entry(counter, [urgent])
+    assert listeners_read == [PausedItemCounter.name]
+
+
 def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp_path):
     container = container_with(tmp_path, FailingListener)
     container.get(CommitListenerRunner).run()

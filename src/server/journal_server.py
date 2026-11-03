@@ -5,7 +5,7 @@ import threading
 import time
 from socketserver import BaseRequestHandler, ThreadingMixIn, UnixStreamServer
 from typing import Any
-from server.client_left import client_left
+from server.client_disconnected import client_disconnected
 from server.server_context import ServerContext
 
 
@@ -39,7 +39,7 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
             self.stopped.set()
 
     def handle_error(self, request: Any, client_address: Any) -> None:
-        if not client_left(sys.exception()):
+        if not client_disconnected(sys.exception()):
             super().handle_error(request, client_address)
 
     def process_request(self, request: Any, client_address: Any) -> None:

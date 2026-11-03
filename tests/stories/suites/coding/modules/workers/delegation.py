@@ -34,17 +34,40 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented: On task 1", "use the new cart")
+    story.expect_text(f"agent-line list --agent {worker.id}", "the user commented on task:1: journal task comments 1")
+    story.expect_text("task comments 1", "use the new cart", actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
 
 
-def test_a_long_comment_reaches_the_worker_whole(new_story):
+def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
     story, _, worker = delegated_story(new_story)
-    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    comment = "use the new cart and " * 10 + "the end of the comment"
-    story.expect_success(f'task comment 1 "{comment}" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {worker.id} --limit 5", "the end of the comment")
+    story.expect_text(f"task assign 2 --to {story.agent.id}", f"task:2", actor=story.agent)
+    story.expect_text("task show 2", f"delegated_to: {story.agent.id}", "state: open", actor=story.agent)
+    story.expect_text(f"task assign 2 --to {worker.id}", "task:2", actor=story.agent)
+    story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
+
+
+def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
+    story.expect_text("task show 1", "state: open", f"delegated_to: {story.agent.id}", "reason: assigned to agent", actor=story.agent)
+    story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it. Your next task is task:2: journal task show 2")
+
+
+def test_a_workers_last_task_goes_back_with_the_worker(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.agent.id}", f"task 1 is the last of worker {worker.id}", actor=story.agent)
+
+
+def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)
+    story.run('task cancel 2 --reason "no"', actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open or started task moves", actor=story.agent)
 
 
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker(new_story):

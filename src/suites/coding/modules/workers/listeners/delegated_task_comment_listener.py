@@ -34,7 +34,7 @@ class DelegatedTaskCommentListener(SaveListener):
         if worker_id is None or self.queries.query(ActorRecord).find(change.actor.id).type is not ActorType.USER:
             return
         message = self.queries.query(Message).find(link.source_id)
-        self.nudger.send(worker_id, WORKER_TASK_COMMENT, WORKER_JOB_SOURCE, change.context, text=f"the user commented: {message.text}")
+        self.nudger.send(worker_id, WORKER_TASK_COMMENT, WORKER_JOB_SOURCE, change.context, task=link.target_id)
         parent_id = self.queries.query(Agent).find(worker_id).parent_id
         if parent_id is not None:
             self.nudger.send(parent_id, WORKER_COMMENT_COPY, SOURCE, change.context, worker=worker_id, message=message.id)

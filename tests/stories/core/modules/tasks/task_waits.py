@@ -187,6 +187,24 @@ def test_an_agent_at_work_is_not_typed_that_its_task_opened_and_hears_it_by_its_
     assert any("task:1 is open again" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
 
 
+def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(new_story):
+    story = new_story(fixture=TwoTasks)
+    entered = kept_typing(story)
+    story.run("task block 1 --on task:2")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.run('task cancel 2 --reason "no"')
+    story.run_listeners()
+    story.expect_rows(entered == [])
+    story.run('task cancel 1 --reason "no"')
+    stop = HookSamples.stop().with_fields(accepts_lines=False)
+    story.hook("s-1", stop)
+    story.run_listeners()
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended")])
+    story.hook("s-1", stop)
+    story.run_listeners()
+    story.expect_rows(len(entered) == 1)
+
+
 def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):
     story = new_story(fixture=TwoTasks)
     story.run("task block 1 --on task:2")

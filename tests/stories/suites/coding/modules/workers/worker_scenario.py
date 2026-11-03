@@ -79,7 +79,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.run_listeners()
     ended(story, started[1], 0)
     expect_states(story, task1="completed", task2="started", task3="open")
-    story.expect_text(f"agent-line list --agent {worker.id}", "Your next task, task:2: Add the tax")
+    story.expect_text(f"agent-line list --agent {worker.id}", "Your next task is task:2: journal task show 2")
 
     # the second task
     proved(story, repository, worker, "tax.py", "TAX = 1\n")

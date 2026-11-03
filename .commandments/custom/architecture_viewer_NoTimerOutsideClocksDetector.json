@@ -13,7 +13,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/sync/stream\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/composables/barLine\\.js|src/viewer/src/windows/FrameContent\\.vue|src/viewer/src/windows/PaneStage\\.vue|src/viewer/src/chat/MarkBody\\.vue|src/core/modules/plugins/web/src/PluginServices\\.vue)$"
+                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/sync/stream\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/composables/barLine\\.js)$"
             }
         ]
     },

@@ -5,11 +5,15 @@
         "select": "call",
         "where": [
             {
-                "name": "filter"
+                "nameIn": [
+                    "filter",
+                    "Equal",
+                    "Among"
+                ]
             },
             {
-                "argument": {
-                    "name": "role"
+                "descendant": {
+                    "name": "MAIN"
                 }
             }
         ],
@@ -24,7 +28,7 @@
     },
     "sin": {
         "name": "main-agent-query-by-hand",
-        "description": "Agents are filtered by role by hand, so the question of which agent is the running main agent has more than one answer.",
+        "description": "Agents are filtered for the main role by hand, so the question of which agent is the running main agent has more than one answer.",
         "rule": "Ask MainAgentFinder.rows or MainAgentFinder.newest.",
         "skill": "plain-code-words"
     }
