@@ -1,7 +1,13 @@
 from datetime import timedelta
 import pytest
 from core.testing.shell_part import ShellPart
+from core.modules.chat.models.chat_mark import ChatMark
+from core.modules.processes.models.reader_request import ReaderRequest
+from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.core.modules.processes.support.process_samples import ended_run
+from tests.stories.core.modules.processes.support.process_samples import end_run
+from core.modules.processes.support.process_marks import PROCESS_MARKS
+from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -35,6 +41,21 @@ def kept_reader_sample(new_story):
     return story
 
 
+@pytest.fixture
+def requested_reader_story(new_story):
+    story = new_story(fixture=ForcedReaders)
+    install_runner(story)
+    worker_run(story)
+    return story
+
+
+@pytest.fixture
+def notified_reader_story(requested_reader_story):
+    requested_reader_story.hook("s-1", HookSamples.prompt("write the reader"))
+    requested_reader_story.advance(timedelta(seconds=1))
+    return requested_reader_story
+
+
 def test_a_worker_may_not_add_remove_or_choose_a_reader_even_with_skip_guard(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('reader add owned --commands "custom-build*" --lines "done"', actor=story.agent)
@@ -55,6 +76,7 @@ def test_a_main_agent_a_person_and_a_module_can_add_readers(new_story):
 
 def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_story):
     story = new_story(fixture=BuilderStarted)
+    story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.agent)
     story.run('reader add poor --commands "poor-build*" --lines "never printed" --summary "never printed"', actor=story.agent)
     worker = Actor(story.new_row_id("agent start s-8 claude worker --environment main"), ActorType.AGENT)
     bus = story.container.get(Bus)
@@ -168,3 +190,97 @@ def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
     reader = story.new_row_id('reader add running --commands "running-build*" --title Building --lines done --summary done', actor=story.agent)
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, output.title == "Building")
+
+
+def test_the_main_agent_gets_one_line_and_one_mark_for_two_workers_on_one_command(requested_reader_story):
+    story = requested_reader_story
+    second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
+    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30, is_queued=True), second, environment_id=1)
+    reply = story.hook("s-1", HookSamples.prompt("continue"))
+    story.expect_rows(sum("reader request" in line for line in reply.lines) == 1)
+    story.run_listeners()
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").all_rows())
+    story.expect_rows(len(marks) == 1)
+    again = story.hook("s-1", HookSamples.prompt("continue again"))
+    story.expect_rows(not any("reader request" in line for line in again.lines))
+
+
+def test_the_main_agent_is_held_after_five_tool_uses_with_a_countdown(notified_reader_story):
+    story = notified_reader_story
+    hooks = [story.hook("s-1", HookSamples.edit(f"src/cart{number}.py")) for number in range(5)]
+    story.expect_rows(not any(reply.refusal for reply in hooks))
+    story.expect_rows(any("due: 0 tool uses" in line for line in hooks[-1].lines))
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/blocked.py"), "reader request")
+
+
+def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader_story):
+    story = notified_reader_story
+    blocks = story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, closed_at=None).all_rows()
+    block = next(block for block in blocks if block.nudge_key.startswith("processes.reader_request"))
+    story.run(f'agent-block skip {block.id} --reason "finish another change"', actor=story.agent)
+    story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    story.advance(timedelta(minutes=11))
+    reply = story.hook("s-1", HookSamples.prompt("continue"))
+    assert any("reader request" in line for line in reply.lines), reply
+    story.expect_rows(story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, closed_at=None).exists())
+
+
+def test_with_no_main_agent_the_worker_is_not_held_and_the_next_main_agent_is_told(new_story):
+    story = new_story(fixture=ForcedReaders)
+    story.run(f"agent end {story.agent.id}", actor=story.agent)
+    worker_run(story, "next-build run")
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    reply = story.hook("s-next", HookSamples.session_start())
+    story.expect_rows(any("reader request" in line for line in reply.lines))
+
+
+def test_waive_frees_the_worker_and_starts_its_run_with_no_reader(kept_reader_sample):
+    story = kept_reader_sample
+    process = worker_run(story)
+    story.expect_success('reader-request waive 1 --reason "read this build by hand"', actor=story.agent)
+    request = story.container.get(ReaderRequestQuery).find(1)
+    story.expect_rows(request.completed_at is not None, request.skip_reason == "read this build by hand")
+    story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0].reader_id is None)
+    story.run_listeners()
+    mark = story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").page(1, 1).rows[0]
+    story.expect_rows("read this build by hand" in mark.lines)
+
+
+def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_story):
+    story = requested_reader_story
+    reply = story.tick("s-1")
+    story.expect_rows(not reply.lines)
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source="processes.reader-request.1").all_rows())
+    story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "reader request 1" in lines[0].text)
+    story.tick("s-1")
+    story.expect_rows(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)
+
+
+def test_the_request_mark_shows_the_first_and_last_sample_lines(requested_reader_story):
+    story = requested_reader_story
+    request = story.container.get(ReaderRequestQuery).find(1)
+    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "first line\n" + "middle\n" * 30 + "last line\n")
+    worker = reader_worker(story)
+    story.container.get(Bus).run(EndProcess(request.sample_process_id, 0, 5000, 32), worker, environment_id=1)
+    story.run_listeners()
+    mark = story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").page(1, 1).rows[0]
+    story.expect_rows("first line" in mark.lines, "last line" in mark.lines)
+    declaration = next(mark for mark in PROCESS_MARKS if mark.type is ProcessMarkType.READER_REQUEST)
+    story.expect_rows(declaration.buttons[0].label == "Read sample", declaration.buttons[0].runs == "output read {row_id} --tail 20")
+    story.expect_rows(mark.target_model == "process", mark.target_id == request.sample_process_id)
+
+
+def test_a_reader_that_stops_matching_on_a_worker_run_asks_the_main_agent_and_holds_the_next_run(new_story):
+    story = new_story(fixture=ForcedReaders)
+    story.run('reader add changing --commands "changing-build*" --title Building --lines done --summary done', actor=story.agent)
+    first = worker_run(story, "changing-build first")
+    end_run(story, first, "done\n")
+    second = worker_run(story, "changing-build second")
+    end_run(story, second, "new output\n" * 8)
+    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
+    story.expect_rows("changing" in request.reason, request.sample_process_id == second.id)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    following = worker_run(story, "changing-build following")
+    story.expect_rows(not story.container.get(OutputFolder).has_slot(following.id))
+    story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))

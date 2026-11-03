@@ -41,16 +41,31 @@ class ReaderRequests:
         reason = self.demands.reason(spec, reader)
         if not reason:
             return None
-        key = spec.command_key or Path(spec.program).name
+        key = self.command_key(spec)
+        sample = next((part for part in self.parts.with_kept_output().newest().all_rows() if fnmatchcase(part.command or part.text, f"{key}*")), None)
+        return self.open_request(process, spec, reason, sample.process_id if sample else process.id, context)
+
+    def after_run(self, process: Process, spec: PartSpec, reader: Reader, context: Context) -> None:
+        if not self.demands.needs_reader(process.environment_id, spec):
+            return
+        reason = self.demands.reason(spec, reader)
+        if reason:
+            self.open_request(process, spec, reason, process.id, context)
+
+    @staticmethod
+    def command_key(spec: PartSpec) -> str:
+        return spec.command_key or Path(spec.program).name
+
+    def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
+        key = self.command_key(spec)
         existing = self.requests.open().filter(environment_id=process.environment_id, command_key=key).page(1, 1).rows
         if existing:
             return existing[0].id
         command = spec.command or spec.text
-        sample = next((part for part in self.parts.with_kept_output().newest().all_rows() if fnmatchcase(part.command or part.text, f"{key}*")), None)
         current_time = self.clock.timestamp()
         minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)
         expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries, process.environment_id) else current_time
         request = self.repository.save(ReaderRequest(environment_id=process.environment_id, creator_id=process.agent_id, command_key=key,
                                                      command=command, category=spec.category, reason=reason, expires_at=expires_at,
-                                                     sample_process_id=sample.process_id if sample else process.id), context)
+                                                     sample_process_id=sample_process_id), context)
         return request.id

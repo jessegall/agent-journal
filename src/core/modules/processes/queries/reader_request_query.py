@@ -19,6 +19,9 @@ class ReaderRequestQuery(Query[ReaderRequest]):
     def open(self) -> Self:
         return self.filter(completed_at=None)
 
+    def environment(self, environment_id: int) -> Self:
+        return self.filter(environment_id=environment_id)
+
     def has_active_requests(self, agent_id: int, current_time: Timestamp) -> bool:
         processes = Select("processes").matching(Equal("agent_id", agent_id))
         parts = Select("process_parts").matching(SubqueryMatch("process_id", processes.column("id")))
