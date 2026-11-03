@@ -58,6 +58,14 @@ def test_whole_word_and_pattern_matching(new_story):
     story.expect_hook_refusal("s-1", GIT_CHAIN, "Never force push")
 
 
+def test_a_pattern_that_could_stall_a_hook_is_refused_when_saved(new_story):
+    story = new_story(fixture=BuilderStarted)
+    made(story)
+    story.expect_refusal("""trigger edit 1 --phrases "(a+)+$" --match-mode pattern""", "may not repeat a repeat", actor=story.agent)
+    story.expect_refusal(f"""trigger edit 1 --phrases "{'a' * 201}" --match-mode pattern""", "at most 200 characters", actor=story.agent)
+    story.expect_success("""trigger edit 1 --phrases "(a+)+$" --match-mode part""", actor=story.agent)
+
+
 def test_a_condition_that_does_not_pass_keeps_it_quiet(new_story):
     story = new_story(fixture=BuilderStarted)
     made(story, """--conditions '[{"type": "agent", "value": "helper"}]'""")

@@ -47,6 +47,8 @@ class Trigger(Model):
             raise Refusal(f"a trigger's text is 1 to {TEXT_LIMIT_CHARACTERS} characters, not {len(self.text)}", "say it shorter")
         if not self.phrases and self.next_at is None:
             raise Refusal("a trigger has a phrase or a time", "give phrases, or schedule it")
+        if any(self.match_mode.refuses(phrase) for phrase in self.phrases):
+            raise Refusal("a trigger's pattern is at most 200 characters and may not repeat a repeat, such as (a+)+", "write a simpler pattern")
         try:
             self.parsed_conditions()
             self.parsed_extra_actions()
