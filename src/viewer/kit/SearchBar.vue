@@ -53,7 +53,7 @@ defineExpose({focus: () => field.value?.focus()});
                 <button type="button" class="search-bar-menu" data-search-menu aria-label="Options" title="Options" :aria-expanded="Boolean(anchor)" @click="toggleMenu"><Icon name="caret" :size="12" /></button>
             </template>
         </div>
-        <template v-if="declared.button">
+        <template v-if="declared.button?.title">
             <button type="button" class="search-bar-button" data-search-button @click="emit('pick', declared.button.click)">{{ declared.button.title }}</button>
         </template>
         <slot />

@@ -39,13 +39,13 @@ onMounted(async () => {
         <div class="part">
             <h3>Branches</h3>
             <template v-if="branches.failure.value">
-                <EmptyState :title="branches.failure.value" />
+                <EmptyState>{{ branches.failure.value }}</EmptyState>
             </template>
             <template v-else-if="!branches.loaded.value">
                 <Skeleton shape="rows" />
             </template>
             <template v-else-if="!branches.rows.value.length">
-                <EmptyState title="This project has no branches yet." />
+                <EmptyState>This project has no branches yet.</EmptyState>
             </template>
             <template v-for="branch in branches.rows.value" :key="branch.name">
                 <div :class="['row', {current: branch.current}]" data-git-branch>
@@ -62,13 +62,13 @@ onMounted(async () => {
         <div class="part">
             <h3>Recent commits</h3>
             <template v-if="commits.failure.value">
-                <EmptyState :title="commits.failure.value" />
+                <EmptyState>{{ commits.failure.value }}</EmptyState>
             </template>
             <template v-else-if="!commits.loaded.value">
                 <Skeleton shape="rows" />
             </template>
             <template v-else-if="!commits.rows.value.length">
-                <EmptyState title="The current branch has no commits yet." />
+                <EmptyState>The current branch has no commits yet.</EmptyState>
             </template>
             <template v-for="commit in commits.rows.value" :key="commit.sha">
                 <div class="row" data-git-commit>
@@ -84,16 +84,16 @@ onMounted(async () => {
         <div class="part">
             <h3>Open pull requests</h3>
             <template v-if="pullsFailure">
-                <EmptyState :title="pullsFailure" />
+                <EmptyState>{{ pullsFailure }}</EmptyState>
             </template>
             <template v-else-if="!pulls">
                 <Skeleton shape="rows" />
             </template>
             <template v-else-if="!pulls.available">
-                <EmptyState title="The pull requests are read through gh, which is not installed or not signed in here." />
+                <EmptyState>The pull requests are read through gh, which is not installed or not signed in here.</EmptyState>
             </template>
             <template v-else-if="!pulls.rows.length">
-                <EmptyState title="No pull request is open." />
+                <EmptyState>No pull request is open.</EmptyState>
             </template>
             <template v-else>
                 <template v-for="pull in pulls.rows" :key="pull.number">

@@ -53,6 +53,11 @@ test("a window that declares no search keeps the placeholder it gives", async ()
     expect(host.querySelector("[data-search-button]")).toBeNull();
 });
 
+test("the empty button a window with no button declares draws no button", async () => {
+    await bar({}, {placeholder: "Filter files", context: [], button: {}});
+    expect(host.querySelector("[data-search-button]")).toBeNull();
+});
+
 test("the declared standalone button stands beside the field and sends its click key", async () => {
     const picked = await bar(SEARCH);
     const button = host.querySelector("[data-search-button]");

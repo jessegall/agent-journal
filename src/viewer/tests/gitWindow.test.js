@@ -32,6 +32,7 @@ test("no gh and a read that fails each say so", async () => {
     expect(element.textContent).toContain("could not read this repository");
     expect(element.textContent).toContain("no commits yet");
     expect(element.textContent).toContain("read through gh");
+    expect(element.querySelector(".empty-state.titled")).toBeNull();
 });
 
 test("the words for distance, checks and review are plain", () => {
