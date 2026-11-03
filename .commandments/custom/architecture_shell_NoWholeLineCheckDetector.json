@@ -8,9 +8,8 @@
                 "nameMatches": "^(line|_source_line)$"
             },
             {
-                "descendant": {
-                    "name": "shell"
-                }
+                "of": "receiver",
+                "typeLike": "*ShellLine"
             },
             {
                 "fileMatches": "(^|/)src/(core|suites)/"
@@ -21,7 +20,8 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/core/base/driver/shell_line\\.py$"
+                "of": "receiver",
+                "is": "self-reference"
             }
         ]
     },

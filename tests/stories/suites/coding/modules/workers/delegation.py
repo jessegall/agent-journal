@@ -87,6 +87,16 @@ def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
     story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
 
 
+def test_a_task_a_worker_releases_leaves_its_queue_and_it_goes_on_with_its_next(new_story):
+    story, _, worker = delegated_story(new_story)
+    story.expect_success('task release 1 --reason "it needs a fixture I cannot make"', actor=worker)
+    story.expect_text("task show 1", "state: open", actor=story.agent)
+    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+    story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
+    story.expect_absent(f"agent-line list --agent {worker.id}", "was taken from you")
+
+
 def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
