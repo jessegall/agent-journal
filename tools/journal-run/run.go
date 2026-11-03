@@ -68,6 +68,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 // when the line execs.
 func start(options Options, folder Folder) (*exec.Cmd, error) {
 	command := exec.Command("/bin/sh", "-c", `"$1" "$2"; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path)
+	command.Env = journalEnvironment(options.Home)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := command.Start(); err != nil {
 		return nil, err
