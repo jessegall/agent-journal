@@ -24,8 +24,11 @@ class HookManager:
             kept, commands = ProgramHooks.partitioned(settings.get("hooks"))
             if not commands:
                 continue
-            self.managed.added(self._detected(provider, folder, name, commands))
+            detected = self._detected(provider, folder, name, commands)
+            self.managed.added(detected)
             ProgramHooks.store(path, {**settings, "hooks": kept})
+            if any(hook.tracked for hook in detected):
+                HookFilesGit(folder).skip_worktree(name)
         return self.managed.all()
 
     def unmanaged(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
@@ -45,6 +48,8 @@ class HookManager:
             blocks = events.get(hook.event)
             events[hook.event] = self._restored_blocks(hook, blocks if is_list(blocks) else [])
             ProgramHooks.store(path, {**settings, "hooks": events})
+            if hook.tracked:
+                HookFilesGit(self.root).clear_skip_worktree(hook.source)
         self.managed.emptied()
         return hooks
 

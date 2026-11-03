@@ -17,6 +17,8 @@ happened to be on; these rules keep that fault from coming back.
 - **`git-outside-worktree-git`** - a subprocess call runs `git` outside `WorktreeGit`
   (`src/suites/coding/modules/workers/support/worktree_git.py`). Add the step to `WorktreeGit`, with its time
   limit, and call that method from the handler.
+  Core's `HookFilesGit` separately reads tracked hook settings with `ls-files` and changes only their
+  `skip-worktree` index marks with `update-index`; it never moves a checkout or commits files.
 - **`checkout-head-read`** - the module writes `--abbrev-ref`, `checkout` or `switch`. Read the branch from the
   worktree row (`base_branch`, `branch`); the merge refuses, with nothing moved, while the checkout is on another
   branch, and the main agent is reminded each hour.

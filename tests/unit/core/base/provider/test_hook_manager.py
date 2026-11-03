@@ -86,3 +86,25 @@ def test_a_failed_managed_write_leaves_the_original_source_file(manager: HookMan
         with pytest.raises(OSError, match="write failed"):
             manager.import_hooks(SampleProgram, manager.root)
     assert ProgramHooks.read(manager.root / HOOK_FILE) == SETTINGS
+
+
+def test_a_stripped_tracked_file_stays_out_of_commits_until_hooks_are_returned(manager: HookManager):
+    git = ["git", "-C", str(manager.root), "-c", "user.name=Hook test", "-c", "user.email=hooks@example.test"]
+    other = manager.root / "other.txt"
+    other.write_text("before")
+    subprocess.run([*git, "add", "other.txt"], check=True, capture_output=True, timeout=10)
+    subprocess.run([*git, "commit", "-m", "Initial settings"], check=True, capture_output=True, timeout=10)
+    original = (manager.root / HOOK_FILE).read_bytes()
+    manager.import_hooks(SampleProgram, manager.root)
+    status = subprocess.run([*git, "status", "--porcelain", "--untracked-files=no"], check=True, capture_output=True, timeout=10)
+    assert status.stdout == b""
+    flag = subprocess.run([*git, "ls-files", "-v", "--", str(HOOK_FILE)], check=True, capture_output=True, timeout=10)
+    assert flag.stdout.startswith(b"S ")
+    other.write_text("after")
+    subprocess.run([*git, "commit", "-am", "Other change"], check=True, capture_output=True, timeout=10)
+    committed = subprocess.run([*git, "show", f"HEAD:{HOOK_FILE}"], check=True, capture_output=True, timeout=10)
+    assert committed.stdout == original
+    manager.restore()
+    assert (manager.root / HOOK_FILE).read_bytes() == original
+    flag = subprocess.run([*git, "ls-files", "-v", "--", str(HOOK_FILE)], check=True, capture_output=True, timeout=10)
+    assert flag.stdout.startswith(b"H ")
