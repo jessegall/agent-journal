@@ -61,7 +61,7 @@ func Connect(home string, start ServerStarter) (*http.Client, *os.Process, error
 		if Healthy(client) {
 			return client, started, nil
 		}
-		if started == nil && !InMaintenance(home) && LockIsFree(filepath.Join(home, "server.lock")) && tookStartMark(home) {
+		if started == nil && !InMaintenance(home) && LockIsFree(filepath.Join(home, "server.lock")) {
 			process, err := start(home)
 			if err != nil {
 				return nil, nil, err
@@ -73,22 +73,6 @@ func Connect(home string, start ServerStarter) (*http.Client, *os.Process, error
 		}
 		time.Sleep(PollInterval)
 	}
-}
-
-// tookStartMark makes the file that says this client starts the server, so of the clients that find no server one
-// starts it; the server removes the file once it holds its lock, and a file older than StartLimit is of a start that
-// failed.
-func tookStartMark(home string) bool {
-	path := filepath.Join(home, "server-starting")
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
-	if err == nil {
-		_ = file.Close()
-		return true
-	}
-	if mark, statErr := os.Stat(path); statErr == nil && time.Since(mark.ModTime()) > StartLimit {
-		_ = os.Remove(path)
-	}
-	return false
 }
 
 // StartServer runs the server detached: its own session, a clean environment, the project folder as its working
