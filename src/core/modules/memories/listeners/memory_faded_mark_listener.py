@@ -24,7 +24,7 @@ class MemoryFadedMarkListener(MemoryMarkListener):
         call = self.queries.query(HookCall).find(event.row_id)
         if not call.is_compaction:
             return
-        changes = [change for change in self.events.child_events(event.id) if change.event == "memory.update" and change.command == FadeMemories.label()]
+        changes = [change for change in self.events.child_events(event.id) if change.event in ("memory.update", "memory.remove") and change.command == FadeMemories.label()]
         if changes:
             shown = sum(change.data["weight"][1] != LOWEST_WEIGHT for change in changes)
             self.show_memory(event, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(changes)} still shown", agent_id=call.agent_id, row_model="",

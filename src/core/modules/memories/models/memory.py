@@ -10,6 +10,7 @@ from core.modules.memories.models.enums.memory_state import MemoryState
 LOWEST_WEIGHT = 0
 HIGHEST_WEIGHT = 10
 TEXT_LIMIT_CHARACTERS = 400
+FADING_REMOVAL_REASON = "faded to weight 0"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -42,8 +43,11 @@ class Memory(Model):
         if not 1 <= len(self.text) <= TEXT_LIMIT_CHARACTERS:
             raise Refusal(f"a memory is 1 to {TEXT_LIMIT_CHARACTERS} characters, not {len(self.text)}", "say it in one or two plain sentences")
 
-    def faded(self) -> "Memory":
-        return self.changed(weight=max(LOWEST_WEIGHT, self.weight - 1))
+    def faded(self, timestamp: Timestamp, actor: Actor) -> "Memory":
+        memory = self.changed(weight=max(LOWEST_WEIGHT, self.weight - 1))
+        if memory.weight == LOWEST_WEIGHT:
+            return memory.remove(timestamp, actor, FADING_REMOVAL_REASON)
+        return memory
 
     def weighed(self, weight: int) -> "Memory":
         return self.changed(weight=weight)
