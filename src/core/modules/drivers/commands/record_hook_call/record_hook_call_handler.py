@@ -115,7 +115,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool
         if tool is not None and tool.shell is not None:
-            return ProjectPaths.relative_line(tool.shell.line, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.line[:SUMMARY_CHARACTERS]
+            return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][:SUMMARY_CHARACTERS]
         return (command.event.prompt or "").split("\n", 1)[0][:SUMMARY_CHARACTERS]

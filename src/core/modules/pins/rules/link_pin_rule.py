@@ -25,5 +25,5 @@ class LinkPinRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.category in FILE_TOOLS:
             return RuleAnswer.allowed()
-        line = tool.shell.line if tool.shell is not None else ""
+        line = "\n".join(tool.shell.part_texts) if tool.shell is not None else ""
         return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, line, self.check.joined_text(hook.event.raw.get("tool_response"))))

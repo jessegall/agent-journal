@@ -107,7 +107,7 @@ class RemovalRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and shell.line.startswith("rm -rf"):
+        if shell is not None and shell.has_part_matching("^rm -rf"):
             return RuleAnswer.refused(sample_nudge("the lead removes no folder"))
         return RuleAnswer.allowed()
 
@@ -124,7 +124,7 @@ class ShellRewrite(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is not None and self.settings.project_value("samples.rewrite") is True:
-            return RuleAnswer.rewritten({"command": f"sample-run -- {shell.line}"})
+            return RuleAnswer.rewritten({"command": f"sample-run -- {shell.runner_text}"})
         return RuleAnswer.allowed()
 
 
@@ -163,7 +163,7 @@ class NumberedRewrite(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.event.tool is None or hook.event.tool.shell is None or self.settings.project_value("samples.rewrite-after") is not True:
             return RuleAnswer.allowed()
-        line = hook.event.tool.shell.line
+        line = hook.event.tool.shell.runner_text
         return RuleAnswer.allowed().running(SampleNumber()).rewriting_after_commands(lambda results: {"command": f"sample-run --process {results[0]} -- {line}"})
 
 
