@@ -14,7 +14,7 @@ def test_saved_words_can_start_with_dashes(new_story):
 
 def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path):
     story = install_runner(new_story(fixture=AgentsEnableTriggers))
-    story.expect_success(f'''trigger make cart "Mind the cart" --extra-actions '[{{"type":"run","target":"pwd","folder":"{tmp_path}","tell_agent":true}}]' ''', actor=story.agent)
+    story.expect_success(f'''trigger make cart "Mind the cart" --extra-actions '[{{"type":"run","target":"pwd","folder":"{tmp_path}","notify_agent":true}}]' ''', actor=story.agent)
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
     process = next(story.container.get(Queries).query(Process).all_rows())

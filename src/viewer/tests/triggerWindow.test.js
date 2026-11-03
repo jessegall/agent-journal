@@ -118,3 +118,22 @@ test("opening a trigger saves its changes together, pauses it, and ends it only 
     await settle();
     expect(ran).toContainEqual(["trigger", "strike", "1"]);
 });
+
+test("a command saves its chosen folder and printed-output switch with dashed words", async () => {
+    const {element, ran} = await drawn([{...TRIGGER, name: "Command check", extra_actions: '[{"type":"run","target":"pwd"}]'}]);
+    element.querySelector('[data-row="1"]').click();
+    await settle();
+    typed(panel().querySelector("[data-trigger-folder]"), "/work/chosen folder");
+    panel().querySelector("[data-trigger-printed]").click();
+    const word = panel().querySelector("[data-trigger-word]");
+    typed(word, "--force");
+    word.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    panel().querySelector('[data-trigger-match="pattern"]').click();
+    await settle();
+    expect(panel().querySelector("[data-trigger-pattern-limit]").textContent).toContain("no time limit");
+    panel().querySelector("[data-trigger-save]").click();
+    await settle();
+    const line = ran.at(-1);
+    expect(line).toContain("--phrases=--force");
+    expect(JSON.parse(line[line.indexOf("--extra-actions") + 1])).toEqual([{type: "run", target: "pwd", folder: "/work/chosen folder", notify_agent: true}]);
+});

@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.environments.models.environment import Environment
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
@@ -42,6 +43,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         recent = [row.inspector_json(main_spots) for row in query.filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(10)]
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
+            "environment_name": self.queries.query(Environment).find(environment_id).name,
             "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id),
             "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key,
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,

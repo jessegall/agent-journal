@@ -33,8 +33,8 @@ from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerR
 from core.modules.triggers.support.skeletons import TRIGGERS_TRIGGERS_SKELETON
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
-from core.modules.triggers.commands.start_trigger_action_handler import StartTriggerActionHandler
-from core.modules.triggers.commands.deliver_trigger_output_handler import DeliverTriggerOutputHandler
+from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
+from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
 from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
 
 BUILT = ["make", "show", "list", "delete"]

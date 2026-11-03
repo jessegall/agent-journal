@@ -31,6 +31,7 @@ const RUN = {
 };
 const SNAPSHOT = {
     environment_id: 1,
+    environment_name: "main",
     parallel_limit: 2,
     limit_setting: "journal.core.processes.run-batch-size",
     count_main_runs: false,
@@ -133,12 +134,15 @@ test("the process queue reads its counts and ordered lists together", async () =
 });
 
 test("output opens under a process and collapses again", async () => {
-    await panel(reader);
+    const read = vi.fn(reader);
+    await panel(read);
     const row = rowsOf("recent")[0];
     row.querySelector("[data-queue-output]").click();
     await settle();
     expect(row.querySelector("[data-queue-output-body]").textContent).toBe(OUTPUT_LINES.join("\n"));
     expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("true");
+    expect(read).toHaveBeenCalledWith(["output", "peek", "66", "--lines", "1-10"]);
+    expect(row.querySelector('a[target="_blank"]').getAttribute("href")).toContain("page=processes.output&output=66");
     row.querySelector("[data-queue-output]").click();
     await settle();
     expect(row.querySelector("[data-queue-output-body]")).toBeNull();

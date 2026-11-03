@@ -26,12 +26,12 @@ async function save(key, value) {
                 </strong>
                 <p>Runs at once</p>
                 <p>{{ queue.used_slots >= queue.parallel_limit ? 'Every spot is in use.' : `${queue.parallel_limit - queue.used_slots} free.` }}</p>
-                <div class="spots" aria-label="Spots in use"><span v-for="spot in queue.parallel_limit" :key="spot" :class="{used: spot <= queue.used_slots}" /></div>
+                <div class="spots" aria-label="Spots in use"><template v-for="spot in queue.parallel_limit" :key="spot"><span :class="{used: spot <= queue.used_slots}" /></template></div>
             </div>
             <div>
                 <strong data-queue-waiting>{{ queue.waiting_count }}</strong>
                 <p>Runs wait for a spot</p>
-                <p v-if="queue.waiting_count">The oldest starts first.</p>
+                <template v-if="queue.waiting_count"><p>The oldest starts first.</p></template>
             </div>
         </div>
             <div class="limit">
@@ -76,7 +76,7 @@ async function save(key, value) {
                 <span />
             </button>
         </div>
-        <p v-if="!queue.count_main_runs && queue.running.some((run) => run.is_main)" class="main-note">{{ queue.running.filter((run) => run.is_main).length === 1 ? "One more run going is the main agent's. It takes no spot" : `${queue.running.filter((run) => run.is_main).length} more runs going are the main agent's. They take no spots` }} while Main agent runs take spots is off.</p>
+        <template v-if="!queue.count_main_runs && queue.running.some((run) => run.is_main)"><p class="main-note">{{ queue.running.filter((run) => run.is_main).length === 1 ? "One more run going is the main agent's. It takes no spot" : `${queue.running.filter((run) => run.is_main).length} more runs going are the main agent's. They take no spots` }} while Main agent runs take spots is off.</p></template>
         <template v-if="queue.halted">
             <p class="halted" role="status" data-queue-held>Queue paused: {{ queue.halt_reason }}</p>
         </template>
@@ -193,7 +193,7 @@ button:disabled {
     opacity: 0.45;
     cursor: default;
 }
-.held {
+.halted {
     margin-top: 16px;
     color: var(--tone-warn, var(--text-2));
 }

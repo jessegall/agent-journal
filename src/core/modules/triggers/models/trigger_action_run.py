@@ -13,5 +13,5 @@ class TriggerActionRun(Model):
     creator_id: int
     trigger_id: int
     process_id: int
-    tell_agent: bool
+    notify_agent: bool
     delivered_at: Timestamp | None = None

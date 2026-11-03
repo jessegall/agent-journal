@@ -6,7 +6,7 @@ from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.triggers.commands.deliver_trigger_output import DeliverTriggerOutput
+from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output import DeliverTriggerOutput
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 
 OUTPUT_LIMIT_CHARACTERS = 12000
@@ -21,7 +21,7 @@ class DeliverTriggerOutputHandler(Handler[DeliverTriggerOutput, TriggerActionRun
     def handle(self, command: DeliverTriggerOutput, context: Context) -> TriggerActionRun:
         run = self.queries.query(TriggerActionRun).find(command.action_run_id)
         process = self.queries.query(Process).find(run.process_id)
-        if run.delivered_at is not None or not run.tell_agent or process.state in RUNNING_STATES:
+        if run.delivered_at is not None or not run.notify_agent or process.state in RUNNING_STATES:
             return run
         lines = self.folder.numbered_lines(process.id, 1, 200)
         text = "\n".join(line for _, line in lines)[:OUTPUT_LIMIT_CHARACTERS]

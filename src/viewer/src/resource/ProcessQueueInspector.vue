@@ -7,7 +7,6 @@ import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
-import {environment} from "../state/environment.js";
 
 const props = defineProps({read: {type: Function, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back"]);
@@ -35,7 +34,7 @@ onMounted(load);
     <article class="process-queue" data-test-queue>
         <header class="top">
             <template v-if="backed"><BackButton @back="emit('back')" /></template>
-            <div class="heading"><span class="kind"><Icon name="terminal" :size="14" />Environment {{ environment }}</span><h1>Process queue</h1><p>Commands from workers wait here for a free spot. Reads and edits never wait.</p></div>
+            <div class="heading"><span class="kind"><Icon name="terminal" :size="14" />Environment {{ queue?.environment_name }}</span><h1>Process queue</h1><p>Commands from workers wait here for a free spot. Reads and edits never wait.</p></div>
             <CloseButton title="Close the process queue" data-resource-close @click="emit('close')" />
         </header>
         <div class="scroll">
@@ -51,7 +50,7 @@ onMounted(load);
                             <span>{{ section.rows.length }}</span>
                         </h2>
                         <template v-for="(run, index) in section.rows" :key="run.id">
-                            <ProcessQueueRun :run="run" :position="index + 1" :read="read" />
+                            <ProcessQueueRun :run="run" :environment="queue.environment_name" :position="index + 1" :read="read" />
                         </template>
                         <template v-if="!section.rows.length">
                             <p class="note" :data-queue-empty="section.kind">{{ section.empty }}</p>

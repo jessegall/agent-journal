@@ -7,7 +7,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
-from core.modules.triggers.commands.start_trigger_action import StartTriggerAction
+from core.modules.triggers.commands.start_trigger_action.start_trigger_action import StartTriggerAction
 from core.modules.triggers.models.support.trigger_extra_action import TriggerExtraAction
 
 

@@ -11,13 +11,20 @@ try {
     const panel = page.locator("[data-resource-panel]");
     await page.locator("[data-queue-controls]").waitFor();
     assert.equal(Math.round((await panel.boundingBox()).width), 660);
-    assert.match(await page.locator('[data-queue-row="running"]').innerText(), /make package/);
+    assert.match(await page.locator('[data-queue-row="running"]').innerText(), /make package/, await panel.innerText());
     assert.match(await page.locator('[data-queue-row="running"] [data-queue-task]').innerText(), /Task \d+/);
     assert.match(await page.locator('[data-queue-row="waiting"]').innerText(), /make checks/);
     assert.equal(await page.locator("[data-queue-position]").innerText(), "1");
     const recent = page.locator('[data-queue-row="recent"]');
     await recent.locator("[data-queue-output]").click();
     await recent.locator("[data-queue-output-body]").filter({hasText: "package built"}).waitFor();
+    assert.match(await recent.innerText(), /10 lines from start/);
+    const popupPromise = page.waitForEvent("popup");
+    await recent.getByRole("link", {name: "Open in its own window"}).click();
+    const popup = await popupPromise;
+    await popup.getByRole("button", {name: "Whole output", exact: true}).click();
+    await popup.locator("[data-output-text]").filter({hasText: "package built"}).waitFor();
+    await popup.close();
     await page.screenshot({path: capture, fullPage: true});
     const processId = await page.locator('[data-queue-row="running"]').getAttribute("data-queue-process");
     const stopped = await page.evaluate(async (id) => {

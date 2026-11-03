@@ -4,10 +4,10 @@ import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import FoldSign from "../kit/FoldSign.vue";
-import {environment} from "../state/environment.js";
 
 const props = defineProps({
     run: {type: Object, required: true},
+    environment: {type: String, required: true},
     position: {type: Number, required: true},
     read: {type: Function, required: true},
 });
@@ -106,6 +106,7 @@ useResourceEvents(["output.*"], refresh);
 .time small { color: var(--text-4); font-size: 10px; }
 .marker { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border: 1px solid var(--border-2); border-radius: 4px; color: var(--accent); }
 .marker.used { background: var(--accent); color: white; }
+.marker.finished { color: var(--tone-good, #268a60); }
 .marker.failed, .marker.orphaned, .marker.stopped { color: var(--danger); }
 .output-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; font-size: 10.5px; color: var(--text-3); }
 .output-links .output-toggle { margin-left: 0; border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px; }

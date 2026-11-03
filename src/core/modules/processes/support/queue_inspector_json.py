@@ -5,6 +5,7 @@ class QueueInspectorJson(TypedDict):
     """The queue inspector's controls, counts and command lists."""
 
     environment_id: int
+    environment_name: str
     parallel_limit: int
     limit_setting: str
     count_main_runs: bool

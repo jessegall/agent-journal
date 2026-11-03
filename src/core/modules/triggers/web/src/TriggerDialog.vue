@@ -43,6 +43,7 @@ const missing = computed(() => {
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
 const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, kind: "words"});
+const changeExtra = (position, values) => (draft.extra = draft.extra.map((entry, place) => place === position ? {...entry, ...values} : entry));
 watch(() => draft.kind, (kind) => {
     if (kind === "time" && draft.action === "deny") draft.action = "nudge";
 });
@@ -108,7 +109,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
                 <TriggerConditionFields v-model="draft.conditions" />
             </TriggerPart>
             <TriggerPart title="Action" hint="What it does, in order">
-                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.kind === 'time' ? TIME_DOES : DOES" />
+                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.kind === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
             </TriggerPart>
         </div>
         <template #foot>
