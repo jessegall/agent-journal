@@ -3,12 +3,15 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.provider import Provider
 from core.base.type_guards import is_list, is_mapping
 
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 # Longer than the hook program's wait for a restarting server and its last ask, so the program never kills that wait.
 HOOK_TIMEOUT_SECONDS = 90
+JOURNAL_WAIT_CEILING_SECONDS = 25
+TIMEOUT_PADDING_SECONDS = 5
 
 
 @dataclass(frozen=True)
@@ -28,13 +31,17 @@ class ProgramHooks:
     def hooks(cls, provider: type[Provider], folder: Path) -> "ProgramHooks":
         return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider)
 
-    def write(self, runner: str, root: Path) -> None:
+    def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()
         hooks = self.without_journals(settings.get("hooks"))
         for event in self.events:
-            hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.timeout_seconds,
+            hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
                                                                      **self.entry_fields}]})
         self.store(self.path, {**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
+
+    def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
+        longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
+        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS)
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")

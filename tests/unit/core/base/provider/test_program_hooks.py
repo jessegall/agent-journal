@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from core.base.provider.program_hooks import ProgramHooks
+from core.base.provider.managed_hook import ManagedHook
 from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
 
 
@@ -51,6 +52,28 @@ def test_partition_handles_empty_and_missing_settings_files(tmp_path):
 
 
 OWN_BLOCK = {"matcher": "Bash", "hooks": [{"type": "command", "command": "my-linter"}]}
+
+
+def test_events_without_managed_hooks_keep_the_default_timeout(tmp_path):
+    path = tmp_path / "settings.json"
+    ProgramHooks("sample", path, ["BeforeTool", "End"], 90).write("runner", tmp_path)
+    settings = ProgramHooks.read(path)
+    assert {event: blocks[0]["hooks"][0]["timeout"] for event, blocks in settings["hooks"].items()} == {"BeforeTool": 90, "End": 90}
+
+
+def test_a_long_managed_hook_extends_only_its_program_and_event(tmp_path):
+    path = tmp_path / "settings.json"
+    managed = [
+        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "slow", "timeout": 600}, "settings.json", False),
+        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "quick", "timeout": 10}, "settings.json", False),
+        ManagedHook.found("different", "End", "", {"command": "different", "timeout": 600}, "settings.json", False),
+    ]
+    ProgramHooks("sample", path, ["BeforeTool", "End"], 90).write("runner", tmp_path, managed)
+    settings = ProgramHooks.read(path)
+    assert settings["hooks"] == {
+        "BeforeTool": [{"matcher": "", "hooks": [{"type": "command", "command": f'runner sample "{tmp_path}"', "timeout": 630}]}],
+        "End": [{"matcher": "", "hooks": [{"type": "command", "command": f'runner sample "{tmp_path}"', "timeout": 90}]}],
+    }
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}
 
 

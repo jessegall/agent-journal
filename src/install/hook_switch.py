@@ -38,9 +38,11 @@ class HookSwitch:
                 kept.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(self.root / name, kept)
         runner = self.runner()
-        for program in HookWriter(self.root).programs:
+        writer = HookWriter(self.root)
+        managed = writer.managed()
+        for program in writer.programs:
             if program.path.relative_to(self.root) in present:
-                program.write(runner, self.root)
+                program.write(runner, self.root, managed)
         return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
