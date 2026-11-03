@@ -42,8 +42,8 @@ KEPT_REGISTRIES = 8
 @dataclass(frozen=True)
 class Registry:
     """What sync found in every module: which module owns each entry, which handler runs each command, which
-    class answers each subcommand, and every guard and listener with the events it covers. A parse is kept by the
-    text it came from, so a read costs a parse only after a sync changed that text."""
+    class answers each subcommand, and every guard and listener with the events it covers. A parse is kept by
+    the text it came from, so a read costs a parse only after a sync changed that text."""
 
     fingerprint: str
     models: dict[str, ModelEntry]
