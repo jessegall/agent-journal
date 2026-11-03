@@ -4,6 +4,10 @@ from pathlib import Path
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
+from core.base.journal_home import JournalHome
+from core.base.provider.hook_manager import HookManager
+from core.base.provider.managed_hooks import ManagedHooks
+from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.skills.support.skill_files import SkillFiles
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
@@ -21,9 +25,11 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
 
     command = PrepareWorktree
 
-    def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands, skills: SkillFiles) -> None:
+    def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
+                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers) -> None:
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
         self.skills = skills
+        self.home, self.managed, self.providers = home, managed, providers
 
     def place_codex_hooks(self, command: PrepareWorktree) -> None:
         hooks = Path(command.source) / CODEX_HOOKS_FILE
@@ -40,5 +46,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
         self.place_codex_hooks(command)
+        manager = HookManager(self.home.project_folder, self.managed)
+        for provider in self.providers.all():
+            manager.import_hooks(type(provider), Path(command.folder))
         self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))
         self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS, environment_id), (*links, *copies))

@@ -27,7 +27,11 @@ class ManagedHooks:
             hooks = {hook.id: hook for hook in self._read()}
             for hook in detected_hooks:
                 saved_hook = hooks.get(hook.id)
-                hooks[hook.id] = replace(hook, state=saved_hook.state, timeout=saved_hook.timeout) if saved_hook else replace(hook, state=ManagedState.ENABLED)
+                if not saved_hook:
+                    hooks[hook.id] = replace(hook, state=ManagedState.ENABLED)
+                    continue
+                hooks[hook.id] = replace(hook, state=saved_hook.state, timeout=saved_hook.timeout, source=saved_hook.source,
+                                        tracked=hook.tracked if hook.source == saved_hook.source else saved_hook.tracked)
             merged_hooks = list(hooks.values())
             self._write(merged_hooks)
             return merged_hooks
