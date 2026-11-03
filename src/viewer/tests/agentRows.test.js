@@ -182,6 +182,15 @@ test("a waiting worker's command line says it waits for its tests", async () => 
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("waiting for its tests"));
 });
 
+test("a worker's card shows its completed tasks per hour", async () => {
+    const started = new Date(Date.now() - 2 * 3600000).toISOString();
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null, created_at: started};
+    const tasks = [{id: 11, title: "Fix the cart", state: "completed"}, {id: 12, title: "Add the totals", state: "completed"}, {id: 13, title: "Print", state: "started"}];
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1.0/h");
+});
+
 test("the running list has no show more button", async () => {
     const element = await drawn();
     expect(element.querySelector("[data-row-list-more]")).toBeNull();
