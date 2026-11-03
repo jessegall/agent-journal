@@ -5,18 +5,15 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
-from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.support.line_typing import LineTyping
 
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
 IDLE_MESSAGE_SOURCE = "messages.idle"
-TERMINAL_PREFIX = "[journal] "
 TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
 
@@ -30,7 +27,7 @@ class TypedLineListener(CommitListener):
     event = "agent_line.create"
     run_order = -1
 
-    def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus, hook_calls: HookCallQuery) -> None:
+    def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery) -> None:
         self.queries, self.typing, self.bus, self.hook_calls = queries, typing, bus, hook_calls
 
     def handle(self, event: LoggedEvent) -> None:
@@ -40,14 +37,10 @@ class TypedLineListener(CommitListener):
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, event.timestamp):
             return
         actor = Actor(event.actor_id, ActorType.USER)
-        if not self.typed_since_last_hook(line):
-            try:
-                self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
-            except Refusal:
-                return
-        # a hook of the agent may have taken the line while it was typed: it is entered only if it still waits, so the event is never handled twice
-        if self.queries.query(AgentLine).find(line.id).state is AgentLineState.WAITING:
+        if self.typed_since_last_hook(line):
             self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
+        else:
+            self.typing.type_line(line, actor, event.environment_id)
 
     def typed_since_last_hook(self, line: AgentLine) -> bool:
         entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)

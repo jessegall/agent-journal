@@ -4,13 +4,10 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
-from core.modules.drivers.listeners.typed_line_listener import TERMINAL_PREFIX
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
+from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
@@ -25,7 +22,7 @@ class WaitingMessageTypingListener(CommitListener):
     event = "agent_line.create"
     run_order = -1
 
-    def __init__(self, queries: Queries, typing: TerminalTyping, lines: WaitingMessageLines, bus: Bus) -> None:
+    def __init__(self, queries: Queries, typing: LineTyping, lines: WaitingMessageLines, bus: Bus) -> None:
         self.queries, self.typing, self.lines, self.bus = queries, typing, lines, bus
 
     def handle(self, event: LoggedEvent) -> None:
@@ -37,13 +34,6 @@ class WaitingMessageTypingListener(CommitListener):
         if message is None or message.delivered_at is not None or not self.lines.names(line, message):
             self.lines.drop(line, event)
             return
-        try:
-            self.typing.type_line(agent.terminal_id, f"{TERMINAL_PREFIX}{line.text}")
-        except Refusal:
-            return
         actor = Actor(event.actor_id, ActorType.USER)
-        # a hook of the agent may have taken the line while it was typed: it is entered only if it still waits
-        if self.queries.query(AgentLine).find(line.id).state is AgentLineState.WAITING:
-            self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
-        if self.queries.query(Message).find(message.id).delivered_at is None:
+        if self.typing.type_line(line, actor, event.environment_id) and self.queries.query(Message).find(message.id).delivered_at is None:
             self.bus.run(RecordMessageDelivery(message.id), actor, environment_id=event.environment_id)

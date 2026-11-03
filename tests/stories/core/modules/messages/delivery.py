@@ -6,9 +6,12 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.module.module_actors import ModuleActors
+from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.base.driver.command_category import CommandCategory
@@ -16,6 +19,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
+from server.booting_work import BootingWork
 from tests.stories.core.base.driver.support.fixtures import LeadStarted, SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
@@ -181,6 +185,52 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     for _ in range(4):
         story.run_listeners()
     assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+
+
+class TypingWithHookInBetween(KeptTyping):
+    """Keeps what would be typed, and a hook of the agent comes while the line is being typed; keeps what it gave."""
+
+    def __init__(self, story) -> None:
+        super().__init__()
+        self.story = story
+        self.hook_lines: list[str] = []
+
+    def type_line(self, agent_id: int, line: str) -> None:
+        self.hook_lines.extend(self.story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
+        super().type_line(agent_id, line)
+
+
+def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
+    story = delivery_story(new_story)
+    typing = TypingWithHookInBetween(story)
+    story.container.bind(TerminalTyping, typing)
+    agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    assert not any("new message 1" in line for line in typing.hook_lines)
+    story.expect_text(f"agent-line list --agent {agent.id} --state entered", "new message 1", actor=story.user)
+
+
+def test_a_line_that_could_not_be_typed_goes_to_the_next_hook(new_story):
+    story = idle_lead_story(new_story)
+    story.container.bind(TerminalTyping, KeptTyping(working=False))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    assert any("new message 1" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
+
+
+def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(new_story):
+    story = idle_lead_story(new_story)
+    story.container.bind(TerminalTyping, KeptTyping(working=False))
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    line = story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    story.run(f"agent-line claim {line.id}", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state typing", "new message 1", actor=story.user)
+    BootingWork().run(story.container)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "new message 1", actor=story.user)
 
 
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(new_story):
