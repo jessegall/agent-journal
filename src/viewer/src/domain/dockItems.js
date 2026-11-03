@@ -23,5 +23,5 @@ export function keptRuns(runs, now, most = MOST_DOCKED_RUNS) {
     return runs.filter((run) => !cleared.has(run.id));
 }
 
-// whether runs share one compact row: from three at once, and on until one run is left
-export const groupedRuns = (count, wasGrouped) => (count >= GROUP_FROM ? true : count <= 1 ? false : wasGrouped);
+// whether runs share one compact row: from three at once, and on until fewer than two of them are still going (going defaults to all of them)
+export const groupedRuns = (count, wasGrouped, going = count) => (going < 2 ? false : count >= GROUP_FROM ? true : wasGrouped);

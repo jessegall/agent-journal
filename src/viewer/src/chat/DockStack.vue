@@ -9,7 +9,8 @@ import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockFolded} from "../domain/dockFold.js";
 import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
 
-// the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
+// the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it,
+// and from three runs they share one row, which dissolves into single cards once fewer than two are still going
 const props = defineProps({items: {type: Array, required: true}, folded: Boolean});
 const now = ref(Date.now() / 1000);
 const held = ref(new Set());
@@ -21,7 +22,8 @@ onUnmounted(() => clearInterval(tick));
 const docked = computed(() => dockedItems(props.items, now.value, held.value));
 const runs = computed(() => keptRuns(docked.value.filter((item) => isRunItem(item, dockDeclaration)), now.value));
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
-const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value)) && !opened.value);
+const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
+const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value);
 
 // a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
 const byHand = ref({});
