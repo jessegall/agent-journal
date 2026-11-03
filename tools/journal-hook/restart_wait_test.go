@@ -80,6 +80,24 @@ func TestAHookStartsTheServerWhenItsSocketGoesAfterTheFirstAsk(t *testing.T) {
 	}
 }
 
+func TestHooksWaitingThroughOneRestartStartOneServer(t *testing.T) {
+	root, _ := restartingProject(t)
+	home := filepath.Join(root, ".journal")
+	starts := filepath.Join(home, "starts")
+	writeFile(t, filepath.Join(home, "bin", "journal"), "#!/bin/sh\necho start >> "+starts+"\n")
+	if err := os.Chmod(filepath.Join(home, "bin", "journal"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for range 5 {
+		post(sample(root, "pre_tool_use"), unreachable, time.Unix(1793395000, 0))
+	}
+	time.Sleep(500 * time.Millisecond)
+	startLines, err := os.ReadFile(starts)
+	if err != nil || strings.Count(string(startLines), "start") != 1 {
+		t.Fatalf("the servers started: %q, %v", startLines, err)
+	}
+}
+
 func TestAHookIsAnsweredAtOnceWhenTheServerIsBackAndAMarkWasLeft(t *testing.T) {
 	root, _ := restartingProject(t)
 	status, _ := post(sample(root, "pre_tool_use"), answer(http.StatusOK, `{"lines":[]}`), time.Unix(1793395000, 0))

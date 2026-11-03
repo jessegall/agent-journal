@@ -2,6 +2,7 @@ package launch
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"os"
@@ -11,12 +12,17 @@ import (
 )
 
 // TypedAnswer is what the launcher answers once it has typed a line into an agent's terminal, and StartedAnswer and
-// FailedAnswer whether it could start a worker's program.
+// FailedAnswer whether it could start a worker's program; RunningAnswer says one of that worker's runs already, so
+// its waiting line reaches it by its next hook.
 const (
 	TypedAnswer   = "typed"
 	StartedAnswer = "started"
 	FailedAnswer  = "failed"
+	RunningAnswer = "running"
 )
+
+// ErrProgramRunning is the refusal of a second program for an agent whose program still runs.
+var ErrProgramRunning = errors.New("a program of this agent runs already")
 
 // WorkerRequest is what a dispatch hands the launcher: the worker's agent row and session, its environment, the
 // worktree it starts in and the command line that starts its program. A request naming a typed line instead types it
@@ -55,6 +61,9 @@ type ProcessStarter struct {
 
 // Start starts the program and leaves it running.
 func (starter ProcessStarter) Start(start ProgramStart) error {
+	if starter.Inputs.IsOpen(start.AgentID) {
+		return ErrProgramRunning
+	}
 	command := exec.Command(start.Command[0], start.Command[1:]...)
 	command.Dir = start.Folder
 	command.Env = os.Environ()
@@ -121,7 +130,9 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 		variables[name] = value
 	}
 	answer := StartedAnswer
-	if err := starter.Start(ProgramStart{AgentID: request.AgentID, Folder: request.Folder, Command: request.Command, Variables: variables}); err != nil {
+	if err := starter.Start(ProgramStart{AgentID: request.AgentID, Folder: request.Folder, Command: request.Command, Variables: variables}); errors.Is(err, ErrProgramRunning) {
+		answer = RunningAnswer
+	} else if err != nil {
 		answer = FailedAnswer
 	}
 	_, _ = io.WriteString(connection, answer+"\n")

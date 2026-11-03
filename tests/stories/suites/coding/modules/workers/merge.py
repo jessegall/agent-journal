@@ -266,6 +266,19 @@ def test_a_job_the_launcher_could_not_start_stays_waiting(new_story):
     story.expect_text(f"agent-line list --agent {worker.id}", "waiting")
 
 
+def test_a_job_for_a_worker_whose_program_still_runs_waits_for_its_next_hook(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"running\n")
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    launcher.thread.join(10)
+    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_text(f"agent-line list --agent {worker.id} --state waiting", "Add the tax as well")
+
+
 def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_two_minutes(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

@@ -6,6 +6,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
+from core.modules.usage.support.status_files import StatusFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -236,6 +237,13 @@ def test_the_plan_windows_are_still_shown_after_many_ended_sessions(new_story):
         ended_helper(story, f"s-{number}", windows=True)
     assert sorted(path.name for path in story.home.status_folder.glob("*.json")) == ["plan.json"]
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used, starts again 2026-11-01 15:00 UTC; 7 days 65% used", actor=story.user)
+
+
+def test_an_ended_sessions_report_stays_readable_for_its_card(new_story):
+    story = new_story(fixture=UserJoined)
+    ended_helper(story, "s-2", windows=True)
+    assert (story.home.status_folder / "ended" / "s-2.json").is_file()
+    assert story.container.get(StatusFiles).status("s-2").windows
 
 
 def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(new_story):
