@@ -47,6 +47,7 @@ class HookSwitch:
         return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
+        (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)
         (self.root / VERSION_FOUR_SWITCH).touch()
         restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
         for name in [name for name in SETTINGS_FILES if name not in restored and (self.root / name).is_file()]:

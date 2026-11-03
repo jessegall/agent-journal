@@ -7,6 +7,8 @@ import shlex
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -146,8 +148,7 @@ def test_a_record_a_subagent_makes_starts_the_sequence_on_that_subagent_and_not_
     helper_id = story.new_row_id(f"agent start s-2 claude subagent --parent {story.agent.id} --environment main")
     story.run('plan make "The rebuild" --environment main', actor=Actor(helper_id, ActorType.AGENT))
     story.run_listeners()
-    story.expect_text(f"sequence-run list --agent {helper_id}", "1")
-    assert not story.run(f"sequence-run list --agent {story.agent.id}").output_text.strip().startswith("1 ")
+    assert story.container.get(Queries).query(SequenceRun).find(1).agent_id == helper_id
 
 
 def test_a_running_sequence_is_not_started_again(new_story):
