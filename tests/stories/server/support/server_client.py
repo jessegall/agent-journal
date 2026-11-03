@@ -81,6 +81,12 @@ class ServerStory:
         assert isinstance(answer, dict) and isinstance(answer["key"], str), answer
         return answer["key"]
 
+    def expect_viewer_key_environment(self, login_name: str, folder: str, environment: str) -> str:
+        answer = request_answer(self.socket_path, "POST", "/viewer/key", {"variables": {"USER": login_name}, "folder": folder}).json()
+        assert isinstance(answer, dict) and answer.get("environment") == environment, answer
+        assert isinstance(answer["key"], str) and answer["key"], answer
+        return answer["key"]
+
     def expect_viewer_key_refusal(self, body: object, status: int, text: str) -> None:
         answer = request_answer(self.socket_path, "POST", "/viewer/key", body)
         assert answer.status == status and text in answer.text, answer

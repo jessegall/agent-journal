@@ -53,11 +53,15 @@ func (classifier *Classifier) aliasLine(text string) (string, bool) {
 	if len(items) < 2 || !journalPrograms[baseName(items[0])] {
 		return "", false
 	}
+	line, exists := classifier.aliases()[items[1]]
+	return line, exists
+}
+
+func (classifier *Classifier) aliases() map[string]string {
 	if classifier.aliasLines == nil {
 		classifier.aliasLines = readAliasLines(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasFileName))
 	}
-	line, exists := classifier.aliasLines[items[1]]
-	return line, exists
+	return classifier.aliasLines
 }
 
 func readAliasLines(path string) map[string]string {

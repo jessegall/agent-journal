@@ -4,6 +4,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -22,6 +23,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     delegated to it starts now when there are no tests, else once they pass."""
 
     command = StartNextWorkerTask
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus) -> None:
         self.queries, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = queries, worktrees, tasks, task_commit, proof_queue, repository, bus

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from tests.unit.core.base.scope_samples import scopes_with_no_rows
+from tests.unit.core.base.scope_samples import empty_database_scopes
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.change import Change
@@ -63,7 +63,7 @@ CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tz
 
 def listeners() -> Listeners:
     HANDLED.clear()
-    return Listeners(REGISTRY, Container(), ChangeFilter(), scopes_with_no_rows())
+    return Listeners(REGISTRY, Container(), ChangeFilter(), empty_database_scopes())
 
 
 def test_save_listeners_run_in_order_and_an_error_reaches_the_caller():

@@ -16,7 +16,7 @@ class WorkerSkillProjects(SkillProjects):
 
     def projects(self) -> tuple[Path, ...]:
         projects = super().projects()
-        worktrees = (Path(folder) for project in projects if (project / ".git").exists() for folder, branch in self.git.folders(str(project)) if Path(folder).is_dir())
+        worktrees = (Path(folder) for project in projects if (project / ".git").exists() for folder, _ in self.git.folders(str(project)) if Path(folder).is_dir())
         return tuple(dict.fromkeys((*projects, *worktrees)))
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:

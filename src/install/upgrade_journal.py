@@ -68,7 +68,7 @@ class UpgradeJournal:
                 self.preview(version_four, lines)
             if not dry_run and (confirmed or self.agreed()):
                 self.ran = True
-                CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines)])
+                CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines), self.sync_installed_modules])
         except UpgradeFailedError as error:
             return self.kept(UpgradeOutcome(1, "\n".join([*lines, str(error), *self.failure(error)])))
         except (BackupMismatchError, BackupWriteError, ServerWontStopError, StrayVersionFourError) as error:
@@ -103,6 +103,10 @@ class UpgradeJournal:
     def copy_code(self) -> None:
         if self.source is not None:
             InstallJournal(self.home.folder.parent, self.source).copy_code()
+
+    def sync_installed_modules(self) -> None:
+        if self.source is not None:
+            InstallJournal(self.home.folder.parent, self.source).sync()
 
     def preview(self, version_four: Path, lines: list[str]) -> None:
         if self.home.database.exists():

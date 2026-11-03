@@ -12,9 +12,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...]]):
-    """Removes each worktree git knows under the environment's worktree folder that has no worker row left,
-    after keeping its tip as a ref under refs/worker-tips, so its commits stay reachable; one a worker holds
-    stays, and so does one with changes not committed, which git refuses to remove."""
+    """Removes only unoccupied worktrees merged into their own environment's branch."""
 
     command = RemoveOrphanWorktrees
     transactional = False
@@ -26,7 +24,15 @@ class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...
         environment = self.queries.query(Environment).find(command.environment_id)
         occupied = {str(Path(row.folder).resolve()) for row in self.worktrees.matching(IsNull("removed_at")).all_rows()}
         root = (Path(environment.folder) / WORKTREES_FOLDER).resolve()
-        orphans = [folder for folder, _ in self.git.folders(environment.folder) if Path(folder).resolve().is_relative_to(root) and str(Path(folder).resolve()) not in occupied]
-        for folder in orphans:
+        orphans: list[tuple[str, str | None]] = []
+        for folder, branch in self.git.folders(environment.folder):
+            path = Path(folder).resolve()
+            environment_match = path.is_relative_to(root) and path.parent == root / environment.name
+            if not environment_match:
+                continue
+            if str(path) in occupied:
+                continue
+            orphans.append((folder, branch))
+        for folder, _ in orphans:
             self.git.keep_tip(environment.folder, folder, Path(folder).name)
-        return tuple(folder for folder in orphans if self.git.remove_orphan(environment.folder, folder))
+        return tuple(folder for folder, branch in orphans if self.git.remove_orphan(environment.folder, folder, environment.branch, branch))

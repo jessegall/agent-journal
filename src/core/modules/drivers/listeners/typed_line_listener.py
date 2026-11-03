@@ -19,10 +19,10 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 
 class TypedLineListener(CommitListener):
     """Types that an agent was paused or resumed, and, for an agent sitting idle, which sends no hook that
-    could carry it, that a message was edited or that a task it waited on opened. An agent at work gets
-    those by its next hook, as does one with no terminal to type in; a line a hook has taken is typed no
-    more, and the same line is typed once between two hooks of the agent: a repeat is entered without being
-    typed again."""
+    could carry it, a line that wakes it, that a message was edited or that a task it waited on opened. An
+    agent at work gets those by its next hook, as does one with no terminal to type in; a line a hook has
+    taken is typed no more, and the same line is typed once between two hooks of the agent: a repeat is
+    entered without being typed again."""
 
     name = "drivers.typed-line"
     event = "agent_line.create"
@@ -33,7 +33,7 @@ class TypedLineListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         line = self.queries.query(AgentLine).find(event.row_id)
-        if line.source not in TERMINAL_SOURCES or line.state is not AgentLineState.WAITING:
+        if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, event.timestamp):
             return

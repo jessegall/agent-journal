@@ -22,7 +22,7 @@ class GitRepository:
 
     @classmethod
     def sample(cls, folder: Path) -> "GitRepository":
-        folder.mkdir(parents=True)
+        folder.mkdir(parents=True, exist_ok=True)
         repository = cls(folder)
         repository.git("init", "--initial-branch", CHECKOUT_BRANCH)
         repository.committed(".gitignore", ".journal\n", "The first commit")

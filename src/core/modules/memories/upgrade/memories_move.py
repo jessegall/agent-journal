@@ -14,7 +14,7 @@ from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.documents.upgrade.whole_text_documents import WholeTextDocuments
 from core.modules.memories.models.enums.memory_state import MemoryState
-from core.modules.memories.models.memory import TEXT_LIMIT_CHARACTERS
+from core.modules.memories.models.memory import FADING_REMOVAL_REASON, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS
 
 TABLE = "memories"
 TYPE = "fact"
@@ -24,12 +24,7 @@ KEYWORD_LIMITS = (2, 40)
 
 
 class MemoriesMove(VersionFourMove):
-    """Carries only version 4's memory rows, as facts of their environment with their numbers: the text (a
-    long one whole in a document, the memory keeping its start), the weight as it is (0 stays 0), the
-    keywords, a removed memory as removed, and an expiry on a task as the task the memory is tied to. A memory
-    whose end has passed is not moved and is counted; one with an end still to come moves without it and is
-    listed in the report for the person to remove. Version 4's rules and reminders move as rule and reminder
-    memories; a trigger or condition of theirs, which version 5 does not carry, is told."""
+    """Imports version 4 memories, rules and reminders, preserving content and removing zero-weight facts."""
 
     name = "memories"
     reads = ["memories", RULES, REMINDERS]
@@ -82,10 +77,13 @@ class MemoriesMove(VersionFourMove):
     def insert(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, creator_id: int, map: MoveMap, context: MoveContext) -> int:
         created, expiry = row["created_at"] or context.timestamp, VersionFourRef.parsed(row["expiry_row"])
         task_id = map.new_id("tasks", expiry.number) if expiry.table == "tasks" and expiry.number is not None else None
+        faded = row["weight"] == LOWEST_WEIGHT and not row["removed_at"]
+        removed_at = context.timestamp if faded else row["removed_at"]
         memory_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "task_id": task_id, "creator_id": creator_id, "type": TYPE,
-                                        "text": documents.fitting_text(row, row["environment_id"], creator_id, created), "weight": row["weight"], "removed_at": row["removed_at"],
+                                        "text": documents.fitting_text(row, row["environment_id"], creator_id, created), "weight": row["weight"], "removed_at": removed_at,
+                                        "reason": FADING_REMOVAL_REASON if faded else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})
-        if row["removed_at"]:
+        if removed_at:
             rows.set_state(TABLE, memory_id, MemoryState.REMOVED.value)
         self.keep_words(rows, memory_id, creator_id, row["keywords"], created)
         return memory_id

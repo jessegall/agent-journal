@@ -4,7 +4,7 @@ import {Btn, EmptyState, Icon, Skeleton, useRows} from "@journal/window-kit";
 import TriggerDialog from "./TriggerDialog.vue";
 
 // the triggers as slips on one ruled sheet: only a name, a short line and a number; a slip opens the one dialog that holds everything else
-const {rows, failure, loaded} = useRows("trigger list", ["trigger.*"]);
+const {rows, failure, loaded, act} = useRows("trigger list", ["trigger.*"]);
 const drafting = ref(false);
 const openedId = ref(null);
 const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
@@ -36,8 +36,11 @@ const closed = () => {
                         <button type="button" class="slip" :data-row="row.id" @click="openedId = row.id">
                             <span class="slip-name">{{ nameOf(row) }}</span>
                             <span class="slip-line">{{ lineOf(row) }}</span>
-                            <span class="slip-foot"><span>#{{ row.id }}<template v-if="row.paused_at"> · Paused</template></span><Icon class="slip-go" name="arrow" :size="14" /></span>
+                            <span class="slip-foot"><span>#{{ row.id }}<template v-if="row.needs_enabling"> · Waiting for you</template><template v-if="row.paused_at"> · Paused</template></span><Icon class="slip-go" name="arrow" :size="14" /></span>
                         </button>
+                        <template v-if="row.needs_enabling">
+                            <Btn small bordered data-trigger-enable @click="act(`trigger enable ${row.id}`)">Enable trigger</Btn>
+                        </template>
                     </template>
                 </div>
             </template>

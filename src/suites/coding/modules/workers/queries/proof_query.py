@@ -20,5 +20,8 @@ class ProofQuery(Query[Proof]):
     def tests_waiting(self, worktree_id: int) -> bool:
         return self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES)).exists()
 
+    def untested_proofs(self, worktree_id: int) -> Self:
+        return self.waiting_proofs(worktree_id).filter(test_command="")
+
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)

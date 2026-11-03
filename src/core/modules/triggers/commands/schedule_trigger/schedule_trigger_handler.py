@@ -10,6 +10,7 @@ from core.base.timestamp import Timestamp
 from core.modules.triggers.commands.schedule_trigger.schedule_trigger import ScheduleTrigger
 from core.modules.triggers.commands.support.cron_line import CronLine
 from core.modules.triggers.models.trigger import Trigger
+from core.modules.triggers.support.trigger_approval import TriggerApproval
 
 
 class ScheduleTriggerHandler(Handler[ScheduleTrigger, Trigger]):
@@ -18,8 +19,8 @@ class ScheduleTriggerHandler(Handler[ScheduleTrigger, Trigger]):
 
     command = ScheduleTrigger
 
-    def __init__(self, repository: Repository, clock: Clock) -> None:
-        self.repository, self.clock = repository, clock
+    def __init__(self, repository: Repository, clock: Clock, approval: TriggerApproval) -> None:
+        self.repository, self.clock, self.approval = repository, clock, approval
 
     def handle(self, command: ScheduleTrigger, context: Context) -> Trigger:
         if not (command.start_text or command.interval_minutes or command.cron_line):
@@ -28,7 +29,7 @@ class ScheduleTriggerHandler(Handler[ScheduleTrigger, Trigger]):
             raise Refusal("--every is a number of minutes, 1 or more", "journal trigger schedule \"<text>\" --every 30")
         end = Timestamp.parsed(command.end_text) if command.end_text else None
         return self.repository.save(Trigger(creator_id=context.actor.id, text=command.text, next_at=self.first_time(command), interval_minutes=command.interval_minutes,
-                                            cron_line=command.cron_line, end_at=end, fire_limit=command.limit, action=command.action, **asdict(command.details)), context)
+                                            cron_line=command.cron_line, end_at=end, fire_limit=command.limit, action=command.action, needs_enabling=self.approval.needs_user(context.actor, context.environment_id), **asdict(command.details)), context)
 
     def first_time(self, command: ScheduleTrigger) -> Timestamp:
         if command.start_text:

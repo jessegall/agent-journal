@@ -13,7 +13,7 @@ class Nudger:
         self.repository = repository
 
     def send(self, agent_id: int, declaration: NudgeDeclaration, source: str, context: Context, **values: object) -> AgentLine:
-        return self.send_text(agent_id, declaration.nudge(**values).text, source, context)
+        return self.send_text(agent_id, declaration.nudge(**values).text, source, context, declaration.wakes_agent)
 
-    def send_text(self, agent_id: int, text: str, source: str, context: Context) -> AgentLine:
-        return self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=source), context)
+    def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False) -> AgentLine:
+        return self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=source, wakes_agent=wakes_agent), context)

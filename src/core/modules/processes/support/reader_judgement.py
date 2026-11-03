@@ -1,0 +1,17 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ReaderJudgement:
+    """The fields a reader lacks and the results it missed on kept output."""
+
+    missing: tuple[str, ...] = ()
+    missed: tuple[str, ...] = ()
+
+    @property
+    def is_proper(self) -> bool:
+        return not self.missing and not self.missed
+
+    @property
+    def text(self) -> str:
+        return ", ".join((*self.missing, *self.missed))

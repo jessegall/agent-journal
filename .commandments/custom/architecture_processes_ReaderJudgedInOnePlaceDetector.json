@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {"nameIn": ["READER_MISSED", "READER_WIDTH", "READER_SUMMARY_MISSING", "READER_PROGRESS_MISSING"]}
+        ],
+        "reject": [
+            {"fileMatches": "(^|/)src/core/modules/processes/support/(ended_output_text|process_nudges)\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "reader-judged-outside-one-place",
+        "description": "Reader findings become messages outside EndedOutputText.",
+        "rule": "ReaderJudge produces findings; EndedOutputText turns them into reader messages declared in process_nudges.",
+        "skill": "processes-architecture"
+    }
+}

@@ -15,8 +15,8 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 class PluginServicesSubcommand(ReadSubcommand[RowList]):
     """`journal plugin services`: each service of the plugins switched on and whether it runs, by the pid the
-    journal kept for it. A service with a condition the journal never started it under, as a language this project
-    does not have, is left out."""
+    journal kept for it. A service with a condition the journal never started it under, as a language this
+    project does not have, is left out."""
 
     cli_name = "plugin"
     name = "services"

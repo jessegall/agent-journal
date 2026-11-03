@@ -34,5 +34,6 @@ class StartProcess(Command[Process]):
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
         folder = hook.event.raw.get("cwd")
-        parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, run.category or part.classification.category) for part in shell.parts)
+        parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, run.category or part.classification.category, command.command, command.named_reader_id)
+                      for part, command in zip(shell.parts, run.part_commands, strict=True))
         return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", "", run.category or shell.category_of_watched_part, run.seconds, parts, run.reader_id, shell.has_full_test_run, run.queued)

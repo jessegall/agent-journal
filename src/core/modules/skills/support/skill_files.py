@@ -24,6 +24,10 @@ class SkillFiles:
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
         return project / path if hook.role is AgentRole.WORKER else path
 
+    def readable(self, folder: str) -> Path:
+        paths = [project / program_folder / folder / SKILL_FILE for project in self.projects.projects() for program_folder in self.providers.skill_folders()]
+        return next((path for path in paths if path.exists()), paths[0])
+
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:
         projects = self.projects.projects()
         return {skill.folder: any(tuple(self.write(project, skill) for project in projects)) for skill in skills}

@@ -23,8 +23,8 @@ class AgentCallerResolver(CallerResolver):
     variable of its agent program names, in its environment; else the person the login name names, in the
     environment whose folder holds the working folder. A shell of an agent program is never taken for the
     person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
-    agent is refused, never run as anyone else. With no session variable, an agent with an open subagent cannot
-    be told from that subagent, so the command is recorded as the journal's."""
+    agent is refused, never run as anyone else. With no session variable, an agent with an open subagent
+    cannot be told from that subagent, so the command is recorded as the journal's."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers

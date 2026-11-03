@@ -11,3 +11,4 @@ class SessionAnswer:
     type: SessionType
     person_id: int | None
     share: ShareAnswer | None = None
+    tour_completed: bool = False

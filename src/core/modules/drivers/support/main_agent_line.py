@@ -5,11 +5,11 @@ from core.modules.drivers.support.nudger import Nudger
 
 
 class MainAgentLine:
-    """Gives the running main agent of an environment a line at its next hook."""
+    """Gives the running main agent of an environment a line at its next hook, typed to it if it sits idle."""
 
     def __init__(self, queries: Queries, nudger: Nudger) -> None:
         self.queries, self.nudger = queries, nudger
 
     def send(self, environment_id: int, text: str, source: str, context: Context) -> None:
         for agent in MainAgentFinder.rows(self.queries, environment_id):
-            self.nudger.send_text(agent.id, text, source, context)
+            self.nudger.send_text(agent.id, text, source, context, wakes_agent=True)

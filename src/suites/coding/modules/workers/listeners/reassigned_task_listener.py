@@ -27,10 +27,10 @@ class ReassignedTaskListener(SaveListener):
         old, new = change.old_row, change.new_row
         if not isinstance(old, Task) or not isinstance(new, Task) or old.holder_id is None:
             return
-        released_by_worker = new.delegated_to == old.holder_id
-        if released_by_worker and change.context.actor.id != old.holder_id:
+        worker_released = new.delegated_to == old.holder_id
+        if worker_released and change.context.actor.id != old.holder_id:
             return
-        if released_by_worker:
+        if worker_released:
             self.repository.save(replace(new, move=None, delegated_to=None), change.context)
         worktree = self.worktrees.worker_worktree(old.holder_id)
         if worktree is None or worktree.task_id != old.id or worktree.state is not WorktreeState.CUT:
@@ -38,7 +38,7 @@ class ReassignedTaskListener(SaveListener):
         following = self.tasks.next_delegated(old.holder_id)
         if following is None:
             return
-        if released_by_worker:
+        if worker_released:
             self.advance.after_released_task(worktree, following, change.context)
         else:
             self.advance.after_reassigned_task(worktree, old, following, change.context)

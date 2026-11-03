@@ -5,11 +5,13 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 MAIN_SESSION = "s-1"
 
 
-def test_a_main_agent_that_stops_while_delivered_work_waits_for_its_checks_is_refused_once(new_story):
+def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{worker.id} delivered task:1: journal proof check 1")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{worker.id} delivered task:1: journal proof check 1")
+    story.expect_success("proof check 1", actor=story.agent)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
 

@@ -13,3 +13,6 @@ class ShellAliases:
 
     def options(self, name: str) -> AliasOptions | None:
         return None
+
+    def named_line(self, argv: list[str]) -> str | None:
+        return None

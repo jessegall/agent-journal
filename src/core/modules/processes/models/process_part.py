@@ -17,6 +17,7 @@ class ProcessPart(Model):
     position: int
     text: str
     program: str
+    command: str = ""
     piped: bool = False
     category: CommandCategory = CommandCategory.UNKNOWN
     state: PartState = PartState.WAITING

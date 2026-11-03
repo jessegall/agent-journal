@@ -21,7 +21,8 @@ class NudgeDeclaration:
     explains big things), cut in its middle so its ask stays, whether a turn says it only once, as a reminder
     on a clock does not, and the command with {fields} that pays it, which makes the line a required_command.
     Each field is held to its own limit too. Lines of this key in one hook are written as one, each field
-    listing its values, in plural_text when it has one."""
+    listing its values, in plural_text when it has one. A line that wakes its agent is typed to it when
+    idle."""
 
     key: str
     type: NudgeType
@@ -32,6 +33,7 @@ class NudgeDeclaration:
     required_command: str = ""
     plural_text: str = ""
     field_limit_characters: int = LONGEST_FIELD_CHARACTERS
+    wakes_agent: bool = False
 
     @property
     def limit(self) -> int:

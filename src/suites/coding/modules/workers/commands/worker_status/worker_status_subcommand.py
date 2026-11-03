@@ -11,6 +11,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
+from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_status import WorkerStatus
@@ -54,5 +55,5 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         output.write("\n".join(lines), {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
                                       "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output)})
 
-    def page_json(self, page: Page[object], output: Output) -> WorkerStatusPageJson:
+    def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:
         return {"rows": [output.values(row) for row in page.rows], "page": page.number, "size": page.size, "total": page.total}
