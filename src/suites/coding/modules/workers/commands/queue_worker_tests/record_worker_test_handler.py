@@ -56,10 +56,14 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):
             task = self.queries.query(Task).find(task_id)
-            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id):
+            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id and row.test_command):
                 self.repository.save(task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
+        started_task = next(iter(self.tasks.holder(worktree.agent_id).started().page(1, 1).rows), None)
+        if started_task is not None:
+            self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
+            return
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return

@@ -57,7 +57,7 @@ def test_a_worker_runs_an_alias_marked_for_workers(new_story):
     story.expect_success("sins", "judged", actor=worker)
 
 
-def test_a_background_alias_run_ends_with_a_card_and_an_ended_line(new_story):
+def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line_and_no_card(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add judge --commands "journal sins" --lines "sin"', actor=story.agent)
     story.run('alias add sins "echo judged" --reader judge --background', actor=story.agent)
@@ -67,7 +67,7 @@ def test_a_background_alias_run_ends_with_a_card_and_an_ended_line(new_story):
     end_run(story, process, "sin one\nsin two\n")
     story.advance(timedelta(seconds=1))
     story.run_listeners()
-    story.expect_text("chat-mark list --json", "process:1", "ended")
+    story.expect_absent("chat-mark list --json", "process:1")
     assert any("output 1 ended" in line for line in story.hook("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))).lines)
 
 

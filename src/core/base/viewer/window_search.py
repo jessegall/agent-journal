@@ -23,6 +23,4 @@ class WindowSearch:
 
     def problems(self, window: str) -> list[str]:
         problems = [] if self.placeholder else [f"{window} declares a search with no placeholder"]
-        if not issubclass(self.search, WindowSearcher):
-            problems.append(f"{window} searches with {self.search.__name__}, which is no WindowSearcher")
         return problems + [problem for item in self.context for problem in item.problems(window)]

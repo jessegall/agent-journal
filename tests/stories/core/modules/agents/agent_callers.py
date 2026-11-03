@@ -26,6 +26,17 @@ def test_a_session_variable_naming_no_open_agent_is_refused_and_never_runs_as_an
     story.expect_success("task list", "nothing found")
 
 
+def test_a_shell_of_an_agent_program_with_no_runner_session_runs_as_the_agent_its_program_names(new_story):
+    story, agent_id = agent_with_pid(new_story)
+    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-7", "USER": "ada"}), f"creator_id: {agent_id}", "environment_id: 1")
+
+
+def test_a_shell_of_an_agent_program_no_agent_holds_is_never_taken_for_the_person(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.new_row_id('actor make user "ada"')
+    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-9", "USER": "ada"}, "/work/journal/src"), f"creator_id: {CORE_ACTOR_ID}", "environment_id: 1")
+
+
 def test_an_ancestor_process_whose_pid_and_start_match_an_open_agent_names_it(new_story):
     story, agent_id = agent_with_pid(new_story)
     story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, AGENT_START_TIME), ProcessRow(1, 0, AGENT_START_TIME))
