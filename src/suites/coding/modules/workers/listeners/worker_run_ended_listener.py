@@ -27,7 +27,7 @@ class WorkerRunEndedListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         process = change.row
-        if not isinstance(process, Process) or change.move is None or process.moved_at is None or process.state in RUNNING_STATES:
+        if not isinstance(process, Process) or change.move is None or process.state in RUNNING_STATES:
             return
         agent = self.queries.query(Agent).find(process.agent_id)
         worktree = self.worktrees.worker_worktree(agent.id)
