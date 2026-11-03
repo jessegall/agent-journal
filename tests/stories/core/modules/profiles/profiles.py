@@ -53,9 +53,9 @@ def test_a_shipped_profile_takes_its_model_from_the_setting_unless_it_names_its_
     assert "model: opus" in (agents_folder(story) / "journal-senior.md").read_text()
 
 
-def test_a_saved_profile_is_listed_and_only_a_person_saves_one(new_story):
+def test_a_saved_profile_is_listed_whether_a_person_or_an_agent_saved_it(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_refusal(SAVE_PROFILE, "only a person saves a profile", actor=story.agent)
+    story.expect_success(SAVE_PROFILE, "saved critic in .claude/agents/critic.md", actor=story.agent)
     story.expect_success(SAVE_PROFILE, "saved critic in .claude/agents/critic.md", actor=story.user)
     story.expect_text("profile list", "critic  subagent  -  used 0", actor=story.user)
 

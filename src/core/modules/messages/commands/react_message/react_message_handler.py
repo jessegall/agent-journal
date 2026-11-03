@@ -1,17 +1,15 @@
 from core.modules.messages.support.message_nudges import MESSAGE_REACTION
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.react_message.react_message import ReactMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 REACTION_SOURCE = "messages.reaction"
 
@@ -37,5 +35,5 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
 
     def notify_agents(self, message: Message, emoji: str, context: Context) -> None:
         line = MESSAGE_REACTION.nudge(emoji=emoji, message=message.id).text
-        for agent in tuple(self.queries.query(Agent).filter(environment_id=message.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
+        for agent in tuple(MainAgentFinder.rows(self.queries, message.environment_id)):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=line, source=REACTION_SOURCE), context)

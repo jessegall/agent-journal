@@ -11,7 +11,8 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
 from core.modules.transcriptions.models.transcription import Transcription
-from core.modules.transcriptions.support.main_agent_line import MainAgentLine
+from core.modules.drivers.support.main_agent_line import MainAgentLine
+from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
 
 TITLE_CHARACTERS = 80
@@ -36,7 +37,7 @@ class TranscriptionTaskListener(SaveListener):
         if not has_new_text or not row.text.strip():
             return
         task_id = self.unfinished_task_id(row) or self.new_task_id(row, change)
-        self.line.send(row.environment_id, TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, change.context)
+        self.line.send(row.environment_id, TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, change.context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
         linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).all_rows()

@@ -111,6 +111,40 @@ def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
     assert HANDLED == ["pause 1", "counted 1"]
 
 
+class UrgentCounter(CommitListener):
+    """Counts new items before any other listener, and again after each, as a line a person waits on."""
+
+    name = "items.urgent-count"
+    event = "item.create"
+    run_order = -1
+
+    def handle(self, event: LoggedEvent) -> None:
+        HANDLED.append(f"urgent {event.row_id}")
+
+
+class SlowCounter(CommitListener):
+    """Adds an item, which raises an event, while it is the listener at work."""
+
+    name = "items.slow-count"
+    event = "item.create"
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+
+    def handle(self, event: LoggedEvent) -> None:
+        HANDLED.append(f"slow {event.row_id}")
+        if event.row_id == 1:
+            self.bus.run(MakeItem(title="Second"), AGENT)
+
+
+def test_a_listener_a_person_waits_on_goes_first_and_again_after_each_other_listener(tmp_path):
+    container = container_with(tmp_path, SlowCounter, UrgentCounter)
+    container.get(CommitListenerRunner).run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    container.get(CommitListenerRunner).run()
+    assert HANDLED == ["urgent 1", "slow 1", "urgent 2", "slow 2"]
+
+
 def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp_path):
     container = container_with(tmp_path, FailingListener)
     container.get(CommitListenerRunner).run()

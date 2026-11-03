@@ -6,7 +6,6 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -31,8 +30,7 @@ class InactiveHelperRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         minutes = self.settings.number(QUIET_HELPER_MINUTES, hook.environment_id)
-        reminded_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
-        if reminded_at is not None and reminded_at.elapsed_seconds(hook.timestamp) < minutes * MINUTE_SECONDS:
+        if self.hook_history.answered_within(self.name, hook, minutes * MINUTE_SECONDS):
             return RuleAnswer.allowed()
         quiet = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, minutes)]
         return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=minutes) for helper in quiet))

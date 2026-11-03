@@ -1,14 +1,12 @@
 from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
-from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.dumps.models.dump import Dump
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 LINE_SOURCE = "dumps.arrival"
 
@@ -26,5 +24,5 @@ class DumpArrivalListener(SaveListener):
         dump = change.row
         if not isinstance(dump, Dump):
             return
-        for agent in self.queries.query(Agent).filter(environment_id=dump.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows:
+        for agent in MainAgentFinder.rows(self.queries, dump.environment_id):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=change.context.actor.id, text=DUMP_ARRIVED.nudge(dump=dump.id).text, source=LINE_SOURCE), change.context)

@@ -1,10 +1,8 @@
-from core.base.agent_role import AgentRole
 from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent
-from core.base.query.conditions.is_null import IsNull
-from core.modules.agents.models.agent import Agent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 class SkillEventListener(SkillListener):
@@ -18,6 +16,6 @@ class SkillEventListener(SkillListener):
         if event.environment_id is None:
             return
         called = [skill.folder for skill in self.catalogue.skills() if any(EventPattern(pattern).matches(event.event) for pattern in skill.events)]
-        for agent in self.queries.query(Agent).filter(environment_id=event.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows():
+        for agent in MainAgentFinder.rows(self.queries, event.environment_id):
             for folder in called:
                 self.run(event, RequireSkill(agent.id, folder))

@@ -39,7 +39,7 @@ class Rows:
     def environment(self, environment_id: int) -> "Rows":
         return self
 
-    def line(self, line: str) -> "Rows":
+    def with_part(self, *conditions: object) -> "Rows":
         return self
 
     def moved(self) -> "Rows":

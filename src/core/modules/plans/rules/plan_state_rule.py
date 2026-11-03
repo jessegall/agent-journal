@@ -1,5 +1,4 @@
 from core.base.driver.hook_history import HookHistory
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -29,7 +28,7 @@ class PlanStateRule(DriverRule):
         self.plans, self.hook_history, self.queries = plans, hook_history, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        answered_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
+        answered_at = self.hook_history.last_answer(self.name, hook)
         start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
         changed = self.plans.environment(hook.environment_id).matching(Greater("updated_at", start.text)).oldest().all_rows()
         return RuleAnswer.with_nudges(*(nudge for plan in changed for nudge in self.state_nudges(plan)))

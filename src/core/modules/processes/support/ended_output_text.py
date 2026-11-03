@@ -11,6 +11,7 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.shown_runs import ShownRuns
 
 WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
@@ -22,14 +23,16 @@ SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case"
 
 class EndedOutputText:
     """The lines that tell an agent a run of its own ended: what the reader of the run makes of it, else how
-    it ended, and how to read it; and how to read such a run better next time."""
+    it ended, and how to read it; and, for a run shown in the chat, how to read such a run better next time."""
 
-    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery) -> None:
-        self.outputs, self.readers, self.folder, self.parts = outputs, readers, folder, parts
+    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery, shown_runs: ShownRuns) -> None:
+        self.outputs, self.readers, self.folder, self.parts, self.shown_runs = outputs, readers, folder, parts, shown_runs
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
-        note = self.note(process)
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
+        if not self.shown_runs.shows(process):
+            return tuple([ended])
+        note = self.note(process)
         program = self.read_program(process)
         draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if note and program else []
         return (ended, *draft, *self.reader_nudges(process))

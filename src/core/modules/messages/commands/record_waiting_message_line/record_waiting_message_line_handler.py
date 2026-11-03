@@ -1,15 +1,13 @@
-from core.base.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 RETRY_SECONDS = 10
 MOST_WAITING_LINES = 3
@@ -27,7 +25,7 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         self.queries, self.repository, self.hook_calls, self.lines = queries, repository, hook_calls, lines
 
     def handle(self, command: RecordWaitingMessageLine, context: Context) -> AgentLine | None:
-        agent = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
+        agent = MainAgentFinder.newest(self.queries, command.environment_id)
         if agent is None or not self.hook_calls.is_idle(agent.id, context.timestamp):
             return None
         message = self.lines.oldest_unread(command.environment_id)

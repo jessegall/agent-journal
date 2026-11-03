@@ -10,7 +10,6 @@ from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -60,6 +59,6 @@ class RunnerRewriteRule(DriverRule):
         return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.line, hook.event.session)}
 
     def missing(self, hook: AgentHook) -> RuleAnswer:
-        if self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref)) is not None:
+        if self.hook_history.last_answer(self.name, hook) is not None:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(RUNNER_MISSING.nudge(folder=self.runner.path.parent))

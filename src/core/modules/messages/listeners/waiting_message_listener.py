@@ -12,6 +12,7 @@ class WaitingMessageListener(CommitListener):
 
     name = "messages.idle-message"
     event = "message.create"
+    run_order = -2
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus

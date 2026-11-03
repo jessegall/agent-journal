@@ -1,9 +1,7 @@
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
-from core.base.driver.hook_event_name import HookEventName
-from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.tool_use_count import ToolUseCount
 
 
 class ToolUses(BlockCondition):
@@ -12,5 +10,4 @@ class ToolUses(BlockCondition):
     name = "tool-uses"
 
     def is_true(self, check: BlockCheck) -> bool:
-        calls = check.container.get(Queries).query(HookCall).filter(agent_id=check.hook.agent_id, hook=HookEventName.PRE_TOOL_USE).matching(Greater("created_at", check.opened_at.text))
-        return calls.count() >= int(self.text)
+        return ToolUseCount.after_timestamp(check.container.get(Queries), check.hook.agent_id, check.opened_at) >= int(self.text)

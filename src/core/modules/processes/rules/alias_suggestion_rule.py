@@ -13,8 +13,8 @@ SKIPPED_TERMS = ("journal", "git", "ls", "cat", "grep", "sed", "for", "set", "cd
 
 
 class AliasSuggestionRule(DriverRule):
-    """A command line the main agent keeps running, its runs opening on the same words as this one, teaches it
-    to add an alias; only a shell line asks, and it only counts."""
+    """A command the main agent keeps running, as a part of its runs opening on the same words as this one, teaches
+    it to add an alias; only a shell line asks, and it only counts."""
 
     name = "processes.alias-suggestion"
     hook = HookEventName.POST_TOOL_USE
@@ -26,9 +26,9 @@ class AliasSuggestionRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        terms = shell.line.split()[:SHAPE_TERMS] if shell is not None else []
-        if not terms or terms[0] in SKIPPED_TERMS:
+        commands = [part.text.split()[:SHAPE_TERMS] for part in shell.parts if part.text.split()[0] not in SKIPPED_TERMS] if shell is not None else []
+        if not commands:
             return RuleAnswer.allowed()
-        shape = " ".join(terms)
-        count = self.processes.agent(hook.agent_id).matching(Prefix("line", shape)).count()
+        shape = " ".join(commands[0])
+        count = self.processes.agent(hook.agent_id).with_part(Prefix("text", shape)).count()
         return RuleAnswer.with_nudges(ALIAS_SUGGESTION.nudge(shape=shape, count=count)) if count >= OFTEN_RUN_COUNT else RuleAnswer.allowed()
