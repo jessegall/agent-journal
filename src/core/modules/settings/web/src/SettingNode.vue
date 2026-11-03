@@ -89,10 +89,10 @@ function savedSecret() {
     <template v-else>
         <div class="setting-value" :data-setting="row.key">
             <div class="setting-head">
+                <label class="setting-label" :for="row.key">{{ row.title }}</label>
                 <template v-if="isChanged">
                     <span class="setting-dot" data-setting-changed title="Changed from the default" />
                 </template>
-                <label class="setting-label" :for="row.key">{{ row.title }}</label>
                 <template v-if="resettable">
                     <button type="button" class="setting-reset" data-setting-reset :title="`Back to the default: ${defaultWords}`" @click="saveValue(defaultWords)">Reset</button>
                 </template>

@@ -34,7 +34,7 @@ test("the filters keep all, the changed and the switched off", async () => {
 test("a changed setting has a dot and a reset that sets its default", async () => {
     const {element, ran} = await drawn();
     const limit = element.querySelector("[data-setting='shop.limit']");
-    expect(limit.querySelector("[data-setting-changed]")).not.toBeNull();
+    expect(limit.querySelector("[data-setting-changed]").previousElementSibling.classList.contains("setting-label")).toBe(true);
     limit.querySelector("[data-setting-reset]").click();
     await settle();
     expect(ran).toContainEqual(["setting", "set", "shop.limit", "5"]);

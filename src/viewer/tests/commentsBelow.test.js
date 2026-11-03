@@ -51,10 +51,13 @@ test("in a narrow inspector the comments come after the body, under it, not in a
     expect(sideOf(element).textContent).toContain("check the tax");
 });
 
-test("in a wide inspector the comments stay in a sidebar beside the body", async () => {
+// message 101376: the task inspector never gives its comments a sidebar, however wide it is
+test("in a wide inspector the comments still stand under the body", async () => {
     const element = await inspector();
     measure(760);
     await settle();
-    expect(sideOf(element).parentElement.hasAttribute("data-comments-below")).toBe(false);
-    expect(sideOf(element).classList.contains("below")).toBe(false);
+    const row = sideOf(element).parentElement;
+    expect(row.hasAttribute("data-comments-below")).toBe(true);
+    expect(sideOf(element).classList.contains("below")).toBe(true);
+    expect(row.lastElementChild).toBe(sideOf(element));
 });

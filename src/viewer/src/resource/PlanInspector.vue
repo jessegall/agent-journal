@@ -69,7 +69,7 @@ watch(() => props.id, () => {
             <a class="share-link" data-resource-share :href="shareAddress(`plans:${id}`)">Share</a>
             <CloseButton title="Close the plan" data-resource-close @click="emit('close')" />
         </header>
-        <CommentedRow :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
+        <CommentedRow stacked :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
         <div class="scroll">
             <template v-if="failure">
                 <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>

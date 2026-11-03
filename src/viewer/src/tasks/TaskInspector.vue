@@ -20,7 +20,7 @@ import {useTextComments} from "../composables/textComments.js";
 
 // one task as version 4's inspector drew it: where it stands, why it stopped, what it waits on, its brief and log, and what can be done to it
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, lone: Boolean, stepped: Boolean, backed: Boolean, changes: {type: Number, default: 0}});
-const emit = defineEmits(["close", "step", "select", "back", "comments"]);
+const emit = defineEmits(["close", "step", "select", "back"]);
 const task = ref(null);
 const place = ref(null);
 const failure = ref("");
@@ -28,7 +28,6 @@ const refusal = ref("");
 const menu = ref(null);
 const footer = ref(null);
 const textComments = useTextComments(() => (task.value ? {kind: "task", id: props.id, title: task.value.title} : {}), (line) => props.read(line));
-watch(textComments.open, (open) => emit("comments", open));
 let reading = 0;
 
 const iconOf = statusIcon;
@@ -94,7 +93,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <CommentedRow :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
+            <CommentedRow stacked :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
             <div :key="task.id" class="body">
                 <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
                 <h3 class="title" data-resource-title>{{ task.title }}</h3>
