@@ -1,3 +1,14 @@
+from datetime import timedelta
+import pytest
+from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.processes.support.process_samples import ended_run
+
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.support.run_slots import RunSlots
+from core.base.command.context import Context
+from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
+from tests.stories.core.modules.processes.support.reader_hold_fixtures import ForcedReaders, ReaderSampleKept, reader_worker, worker_run
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -14,6 +25,13 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import OUTPUT_ENDED
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+
+
+@pytest.fixture
+def kept_reader_sample(new_story):
+    story = new_story(fixture=ForcedReaders)
+    ended_run(story, "custom-build run", "compile\n" * 8 + "done\n")
+    return story
 
 
 def test_a_worker_may_not_add_remove_or_choose_a_reader_even_with_skip_guard(new_story):
@@ -50,3 +68,68 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
     story.hook("s-8", HookSamples.stop())
     blocks = story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id, closed_at=None).all_rows()
     story.expect_rows(not tuple(blocks))
+
+
+def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
+    story = new_story(fixture=ForcedReaders)
+    worker_run(story)
+    worker = reader_worker(story)
+    requests = story.container.get(ReaderRequestQuery)
+    story.expect_rows(requests.holds(worker.id, story.clock.timestamp()))
+    blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id).all_rows())
+    story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
+    story.expect_hook_refusal("s-reader", HookSamples.shell("touch skip", ShellPart("touch", CommandCategory.EDIT, ["skip"])), "no proper reader")
+
+
+def test_a_held_worker_may_read_and_may_stop(new_story):
+    story = new_story(fixture=ForcedReaders)
+    worker_run(story, "stop-build run")
+    story.expect_hook_allowed("s-reader", HookSamples.shell("cat README.md", ShellPart("cat", CommandCategory.READ, ["README.md"])))
+    story.expect_hook_allowed("s-reader", HookSamples.stop())
+
+
+def test_a_run_waits_in_the_queue_while_a_kept_sample_exists(kept_reader_sample):
+    story = kept_reader_sample
+    process = worker_run(story)
+    story.expect_rows(not story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(story.container.get(Queries).query(type(process)).find(process.id).is_queued)
+
+
+def test_a_run_with_no_sample_runs_as_the_sample_while_its_worker_is_held(new_story):
+    story = new_story(fixture=ForcedReaders)
+    process = worker_run(story, "sample-build run")
+    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
+    story.expect_rows(request.sample_process_id == process.id, story.container.get(OutputFolder).has_slot(process.id))
+
+
+def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_reader(kept_reader_sample):
+    story = kept_reader_sample
+    process = worker_run(story)
+    reader = story.new_row_id('reader add proper --commands "custom-build*" --title Building --lines "done" --summary "done"', actor=story.agent)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).holds(reader_worker(story).id, story.clock.timestamp()))
+    output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
+    story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
+
+
+def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):
+    story = new_story(fixture=ForcedReaders)
+    worker_run(story, "unmatched-build run")
+    story.run('reader add unrelated --commands "another-build*" --title Building --lines done --summary done', actor=story.agent)
+    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1)
+
+
+def test_the_hold_runs_out_and_the_run_starts_with_no_reader(kept_reader_sample):
+    story = kept_reader_sample
+    process = worker_run(story)
+    story.advance(timedelta(minutes=26))
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).holds(reader_worker(story).id, story.clock.timestamp()))
+
+
+def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
+    story = new_story(fixture=ForcedReaders)
+    story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.agent)
+    process = worker_run(story)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())

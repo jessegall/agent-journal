@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from core.base.command.context import Context
+from core.base.clock import Clock
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -12,6 +13,7 @@ from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
+from core.modules.processes.support.run_admission import RunAdmission
 
 
 class RunSlots:
@@ -20,8 +22,9 @@ class RunSlots:
     main-runs-take-slots on, the main agent's running runs, which hold no spot and never wait, count against
     the batch size too."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
+        self.admission, self.clock = admission, clock
 
     def grant(self, environment_id: int, context: Context) -> None:
         if self.halt.is_halted:
@@ -29,7 +32,7 @@ class RunSlots:
         runs = tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
         used_slots = sum(self.folder.has_slot(process.id) for process in runs) + self.main_runs_taking_spots(runs, environment_id)
         room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
-        for waiting in [process for process in runs if process.is_queued][:max(room, 0)]:
+        for waiting in [process for process in runs if process.is_queued and self.admission.may_start(process, self.clock.timestamp())][:max(room, 0)]:
             process = self.queries.query(Process).find(waiting.id)
             if process.is_queued:
                 self.folder.write_slot(process.id)

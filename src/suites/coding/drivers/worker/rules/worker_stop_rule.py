@@ -1,3 +1,5 @@
+from core.base.clock import Clock
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -18,13 +20,16 @@ class WorkerStopRule(DriverRule):
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, requests: ReaderRequestQuery, clock: Clock) -> None:
         self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
+        self.requests, self.clock = requests, clock
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         rows = self.tasks.holder(hook.agent_id).started().page(1, 1).rows
         task = rows[0] if rows else self.tasks.next_delegated(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)
+        if self.requests.holds(hook.agent_id, self.clock.timestamp()):
+            return RuleAnswer.allowed()
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id, reason=row.reason) for row in blocked))

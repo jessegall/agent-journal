@@ -3,6 +3,7 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
+READER_HOLD = NudgeDeclaration("processes.reader_hold", NudgeType.REFUSAL, "no proper reader reads {command}: the main agent writes it. Stop; you are started again when it exists", longest_characters=240)
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}', required_command="")
@@ -35,4 +36,4 @@ READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.STEERING, "rea
 SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.STEERING, "outputs {outputs} share one title: give each its own with journal output title <n> \"<what it does>\"", interval=Interval(Seconds(600)))
 RUN_QUEUE_HALTED = NudgeDeclaration("processes.run_queue_halted", NudgeType.STEERING, "the process queue is halted, so no queued run starts: journal queue resume when it may go on", interval=Interval(Seconds(300)), turn_limited=False)
 LARGE_OUTPUT_READ = NudgeDeclaration("processes.large_output_read", NudgeType.STEERING, "output {output} has {lines} lines: read it with --summary, --tail K or --lines A-B", interval=Interval(Seconds(604800)))
-PROCESS_NUDGES = [LARGE_OUTPUT_READ, RUN_QUEUE_HALTED, REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND, MONITOR_COMMAND_NOTE, WORKER_RUN_WATCHED, MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]
+PROCESS_NUDGES = [READER_HOLD, LARGE_OUTPUT_READ, RUN_QUEUE_HALTED, REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND, MONITOR_COMMAND_NOTE, WORKER_RUN_WATCHED, MONITOR_TOOL_REQUIRED, HAND_MADE_MONITOR, ALIAS_SUGGESTION, READER_HINT, SHARED_TITLE, PIPED_RUN, SILENT_RUN, READER_MISSED, READER_WIDTH, READER_SUMMARY_MISSING, READER_PROGRESS_MISSING, OUTPUT_ENDED, READER_DRAFT, MONITOR_NOTE, PROCESS_MISSING, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, MOVE_BAN, OUTPUT_RUNNING, SLEEP_REFUSED, RUN_NAME]
