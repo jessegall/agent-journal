@@ -43,6 +43,7 @@ class Provider(ABC):
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
     hook_file: ClassVar[HookFile]
+    hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]

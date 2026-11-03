@@ -68,6 +68,7 @@ class ClaudeCodeProvider(Provider):
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
+    hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),

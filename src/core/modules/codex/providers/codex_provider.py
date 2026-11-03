@@ -58,6 +58,7 @@ class CodexProvider(Provider):
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
     hook_file = HookFile(Path(".codex/hooks.json"), {"additionalContextLimit": 0})
+    hook_files = tuple([Path(".codex/hooks.json")])
     session_variable = "CODEX_THREAD_ID"
     markers = ["CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION",
                "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS"]
