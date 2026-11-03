@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.commands.support.required_commands import TOOL_USES_GIVEN
+from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_TOOL_USES
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.messages.commands.send_message.send_message import SendMessage
@@ -26,7 +26,7 @@ def start_story_with_image_block(new_story):
     read = f"journal message read {message.id}"
     story.expect_hook_allowed("s-1", HookSamples.shell(read, ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", str(message.id)])).with_fields(event="post_tool_use"), "has an image")
     bus.run(OpenMemoryMark(story.agent.id, 50), Actor.core())
-    for _ in range(TOOL_USES_GIVEN + 1):
+    for _ in range(REQUIRED_COMMAND_TOOL_USES + 1):
         story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])))
     return story, message
 

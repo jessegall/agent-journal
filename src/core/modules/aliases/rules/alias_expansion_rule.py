@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_workers import AliasWorkers
-from core.modules.aliases.support.alias_nudges import ALIAS_REFUSAL
+from core.modules.aliases.support.alias_nudges import ALIAS_GONE, ALIAS_NOT_FOR_WORKERS, ALIAS_UNEXPANDED
 
 
 class AliasExpansionRule(DriverRule):
@@ -27,11 +27,11 @@ class AliasExpansionRule(DriverRule):
         if shell is None or not shell.alias_names:
             return RuleAnswer.allowed()
         if shell.parse_error:
-            return RuleAnswer.refused(ALIAS_REFUSAL.nudge(text=f"the alias could not be expanded: {shell.parse_error}; fix it with journal alias edit {shell.alias_names[0]}"))
+            return RuleAnswer.refused(ALIAS_UNEXPANDED.nudge())
         for name in shell.alias_names:
             rows = self.aliases.with_name(name).page(1, 1).rows
             if not rows:
-                return RuleAnswer.refused(ALIAS_REFUSAL.nudge(text=f"the alias {name} no longer exists; check journal alias list"))
-            if refusal := self.workers.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
-                return RuleAnswer.refused(ALIAS_REFUSAL.nudge(text=refusal.text))
+                return RuleAnswer.refused(ALIAS_GONE.nudge())
+            if self.workers.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
+                return RuleAnswer.refused(ALIAS_NOT_FOR_WORKERS.nudge())
         return RuleAnswer.allowed()
