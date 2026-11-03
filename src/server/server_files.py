@@ -49,6 +49,9 @@ class ServerFiles:
         self.lock_file = lock_file
         return True
 
+    def keep_lock_descriptor(self, descriptor: int) -> None:
+        self.lock_file = os.fdopen(descriptor, "a")
+
     def acquire_waiting(self, wait_seconds: float) -> bool:
         deadline = time.monotonic() + wait_seconds
         while not self.acquire_lock():
