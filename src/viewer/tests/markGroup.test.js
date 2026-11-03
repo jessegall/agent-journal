@@ -52,7 +52,9 @@ test("a click on the line opens it to each mark, and the next folds it back", as
     await nextTick();
     expect(root.querySelector("[data-mark-group-rows]").textContent).toContain("First rule");
     expect(root.querySelector("[data-mark-group-rows]").textContent).toContain("Second rule");
+    for (let turn = 0; turn < 3; turn += 1) await nextTick();
+    expect(root.querySelector("[data-mark-group-rows]").classList.contains("open")).toBe(true);
     root.querySelector(".mark").click();
-    await nextTick();
+    for (let turn = 0; turn < 3; turn += 1) await nextTick();
     expect(root.querySelector("[data-mark-group-rows]").classList.contains("open")).toBe(false);
 });

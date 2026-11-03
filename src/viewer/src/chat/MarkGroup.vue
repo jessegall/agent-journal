@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import MarkHost from "./MarkHost.vue";
 
@@ -7,7 +7,15 @@ import MarkHost from "./MarkHost.vue";
 const props = defineProps({group: {type: Object, required: true}});
 const opened = ref(false);
 const everOpened = ref(false);
-watch(opened, () => (everOpened.value = true));
+const rowsShown = ref(false);
+const rows = ref(null);
+// the rows are first drawn folded and laid out, so the first opening grows as every later one does and does not arrive at full height in one frame
+watch(opened, async (next) => {
+    everOpened.value = true;
+    await nextTick();
+    void rows.value?.offsetHeight;
+    rowsShown.value = next;
+});
 const look = computed(() => ({
     key: props.group.id,
     icon: props.group.declaration.family_icon || "",
@@ -23,7 +31,7 @@ const look = computed(() => ({
     <div class="thread-turn group" :data-ref="group.id">
         <ChatMark :mark="look" :open="opened" @click="opened = !opened" />
         <template v-if="everOpened">
-            <div :class="['group-rows', {open: opened}]" :inert="!opened" data-mark-group-rows>
+            <div ref="rows" :class="['group-rows', {open: rowsShown}]" :inert="!opened" data-mark-group-rows>
                 <div class="group-fold">
                     <div class="thread-group">
                         <template v-for="mark in group.marks" :key="mark.id">
