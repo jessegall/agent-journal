@@ -4,7 +4,9 @@ import re
 import tarfile
 import tempfile
 import urllib.request
+from http import HTTPStatus
 from pathlib import Path
+from urllib.error import HTTPError
 
 from core.base.clock import Clock
 from core.base.journal_home import JournalHome
@@ -13,6 +15,7 @@ from core.base.timestamp import Timestamp
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.updates.models.support.update_setting import UpdateSetting
 from core.modules.updates.support.published_release import PublishedRelease
+from core.modules.updates.support.missing_release_download_error import MissingReleaseDownloadError
 
 ARCHIVE = "agent-journal.tar.gz"
 CHECKSUMS = "checksums.txt"
@@ -87,4 +90,6 @@ class ReleaseSource:
             with urllib.request.urlopen(address, timeout=LIMIT_SECONDS) as response:
                 return response.read(), response.geturl()
         except (OSError, ValueError) as error:
+            if isinstance(error, HTTPError) and error.code == HTTPStatus.NOT_FOUND and address.endswith(f"/{CHECKSUMS}"):
+                raise MissingReleaseDownloadError.create(address.rsplit("/", 1)[0]) from error
             raise Refusal(f"the release at {address.rsplit('/', 1)[0]} could not be read: {error}", "check the release address in the settings") from error

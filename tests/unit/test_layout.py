@@ -1,6 +1,7 @@
 import ast
 import re
 from pathlib import Path
+from tests.unit.source_tree import source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
@@ -19,7 +20,7 @@ def source_files() -> list[Path]:
 
 
 def top_classes(path: Path) -> list[ast.ClassDef]:
-    return [node for node in ast.parse(path.read_text()).body if isinstance(node, ast.ClassDef)]
+    return [node for node in source_tree(path).body if isinstance(node, ast.ClassDef)]
 
 
 def base_names(node: ast.ClassDef) -> list[str]:
@@ -75,7 +76,7 @@ def test_helper_folder_tests():
 
 def test_script_test_folder():
     wrong = [f"{path.relative_to(ROOT)}" for path in sorted(UNIT_TESTS.rglob("test_*.py")) if path.relative_to(UNIT_TESTS).parts[0] != "scripts"
-             and "scripts" in {name.split(".")[0] for node in ast.walk(ast.parse(path.read_text())) for name in imported_modules(node)}]
+             and "scripts" in {name.split(".")[0] for node in ast.walk(source_tree(path)) for name in imported_modules(node)}]
     assert wrong == [], f"these tests are of code in scripts, and belong under tests/unit/scripts: {wrong}"
 
 

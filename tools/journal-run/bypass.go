@@ -13,6 +13,7 @@ import (
 func Bypass(options Options, stdout io.Writer) int {
 	note(options)
 	command := exec.Command(options.Shell, "-c", options.Line)
+	command.Env = journalEnvironment(options.Home)
 	command.Stdout, command.Stderr = stdout, stdout
 	if err := command.Run(); err != nil {
 		if exit, isExit := err.(*exec.ExitError); isExit {

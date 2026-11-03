@@ -1,6 +1,8 @@
 import json
 import time
+import subprocess
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
@@ -11,7 +13,7 @@ from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMIT_SECONDS
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 DETACHED_CHILD_PROGRAM = """#!/bin/sh
@@ -20,6 +22,25 @@ sleep 6
 """
 LIMIT_MS = 1000
 END_SECONDS = 2.5
+
+
+@pytest.mark.parametrize("failure", [ProcessLookupError, PermissionError])
+def test_a_missing_or_refused_process_group_still_finishes_output(monkeypatch, failure):
+    process = Mock(pid=123)
+    monkeypatch.setattr("core.modules.plugins.support.plugin_program.os.killpg", Mock(side_effect=failure))
+    PluginProgram.stop(process)
+    process.communicate.assert_called_once_with(timeout=STOP_LIMIT_SECONDS)
+
+
+@pytest.mark.parametrize("failure", [ProcessLookupError, PermissionError])
+def test_output_cleanup_stays_bounded_after_a_group_signal_fails(monkeypatch, failure):
+    process = Mock(pid=123)
+    process.communicate.side_effect = subprocess.TimeoutExpired("plugin", STOP_LIMIT_SECONDS)
+    monkeypatch.setattr("core.modules.plugins.support.plugin_program.os.killpg", Mock(side_effect=failure))
+    PluginProgram.stop(process)
+    process.communicate.assert_called_once_with(timeout=STOP_LIMIT_SECONDS)
+    process.stdin.close.assert_called_once()
+    process.stdout.close.assert_called_once()
 
 
 def test_a_late_program_whose_child_keeps_its_output_open_ends_soon_after_its_limit(tmp_path: Path) -> None:

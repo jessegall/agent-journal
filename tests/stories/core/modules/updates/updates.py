@@ -1,6 +1,9 @@
 from datetime import timedelta
 
 import json
+from urllib.error import HTTPError
+
+import pytest
 
 from core.modules.updates.support.release_notes import PAGE_SIZE
 from core.modules.updates.support.release_source import ReleaseSource
@@ -41,6 +44,16 @@ def test_a_release_that_cannot_be_read_is_refused_with_its_address(new_story, tm
     story = released_story(new_story, tmp_path / "release")
     (tmp_path / "release" / "checksums.txt").unlink()
     story.expect_refusal("update check", f"the release at {(tmp_path / 'release').as_uri()} could not be read", actor=story.agent)
+
+
+@pytest.mark.parametrize(("status", "expected"), [(404, "No installable release was found"), (403, "could not be read")])
+def test_missing_release_downloads_and_denied_reads_have_distinct_messages(new_story, tmp_path, monkeypatch, status, expected):
+    def unavailable(address, timeout):
+        raise HTTPError(address, status, "download unavailable", None, None)
+
+    story = released_story(new_story, tmp_path / "release")
+    monkeypatch.setattr("urllib.request.urlopen", unavailable)
+    story.expect_refusal("update check", expected, actor=story.agent)
 
 
 def test_an_agent_installs_a_release(new_story, tmp_path):

@@ -12,7 +12,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
-HIDDEN_WINDOWS = {"questions.question", "viewer.shell", "processes.output"}
+INTERNAL_WINDOWS = {"questions.question", "viewer.shell"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 
@@ -69,5 +69,5 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
         module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
         declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows}
     text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
-    missing = {name for name in declared if f'"{name}"' not in text} - HIDDEN_WINDOWS
+    missing = {name for name in declared if f'"{name}"' not in text} - INTERNAL_WINDOWS
     assert not missing, sorted(missing)

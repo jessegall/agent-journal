@@ -1,3 +1,4 @@
+from core.base.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
@@ -66,3 +67,16 @@ def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story
     window = window_story(new_story)
     window.expect_window_allowed("questions.waiting", "wait waiting")
     window.expect_window_allowed("questions.questions", "question list")
+
+
+def test_the_coding_suite_offers_output_and_keeps_internal_renderers_private(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    names = {window.name for window in story.container.get(SuiteWindows).windows("coding")}
+    assert "processes.output" in names
+    assert not {"questions.question", "viewer.shell"} & names
+
+
+def test_agent_dropdowns_declare_that_they_need_one_agent(new_story):
+    window = window_story(new_story)
+    for name in ("schedules.jobs", "usage.fitness", "usage.load"):
+        window.expect_declared_window(name, "component", "dropdown", "one-agent")

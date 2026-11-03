@@ -2,6 +2,7 @@ import ast
 import os
 from collections import defaultdict
 from pathlib import Path
+from tests.unit.source_tree import source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
@@ -24,7 +25,7 @@ def source_files() -> list[Path]:
 
 def literal_constants(path: Path) -> list[tuple[str, str]]:
     constants: list[tuple[str, str]] = []
-    for node in ast.parse(path.read_text()).body:
+    for node in source_tree(path).body:
         targets = node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(node, ast.AnnAssign) and node.value is not None else []
         for target in targets:
             if isinstance(target, ast.Name) and target.id.isupper() and isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:

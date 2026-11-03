@@ -5,6 +5,7 @@ import typing
 from enum import StrEnum
 from pathlib import Path
 from types import UnionType
+from tests.unit.source_tree import source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_FOLDERS = ["src/core", "src/suites", "src/server", "src/install"]
@@ -59,7 +60,7 @@ def is_text(node: ast.AST) -> bool:
 def raw_comparisons(fields: set[str]) -> list[str]:
     places = []
     for path in source_files():
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(source_tree(path)):
             if isinstance(node, ast.Compare):
                 sides = [node.left, *node.comparators]
                 if any(isinstance(side, ast.Attribute) and side.attr in fields for side in sides) and any(is_text(side) for side in sides):
