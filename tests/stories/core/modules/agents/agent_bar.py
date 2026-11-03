@@ -1,3 +1,4 @@
+from core.modules.agents.agents_module import AgentsModule
 import json
 import subprocess
 
@@ -123,3 +124,8 @@ def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
     story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.user)
     story.expect_absent("agent list --environment main", "launch-", actor=story.user)
     story.expect_refusal("agent launch claude --environment main", "only a person starts", actor=story.agent)
+
+
+def test_the_agent_windows_hear_task_changes_so_their_cards_update_without_a_refresh():
+    declared = {window.name: window for window in AgentsModule.windows}
+    assert "task.*" in declared["agents.agents"].events and "task.*" in declared["agents.subagents"].events

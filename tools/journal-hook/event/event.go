@@ -66,6 +66,7 @@ type Part struct {
 	WritePaths     []string       `json:"write_paths,omitempty"`
 	JoinedBy       string         `json:"joined_by,omitempty"`
 	PipedInto      *int           `json:"piped_into,omitempty"`
+	IsFullTestRun  bool           `json:"is_full_test_run,omitempty"`
 }
 
 type Classification struct {

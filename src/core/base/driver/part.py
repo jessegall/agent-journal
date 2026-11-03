@@ -19,6 +19,7 @@ class Part:
     output_paths: tuple[str, ...]
     next_operator: str
     pipe_target: int | None
+    is_full_test_run: bool = False
 
     @classmethod
     def parsed(cls, data: object) -> "Part":
@@ -28,4 +29,4 @@ class Part:
             raise HookEventError(f"piped_into is a part's number, not {pipe_target!r}")
         return cls(text(fields, "text"), text(fields, "program"), text(fields, "subcommand"), texts(fields, "arguments"),
                    Classification.parsed(fields.get("classification")), texts(fields, "read_paths"), texts(fields, "write_paths"),
-                   text(fields, "joined_by"), pipe_target)
+                   text(fields, "joined_by"), pipe_target, fields.get("is_full_test_run") is True)
