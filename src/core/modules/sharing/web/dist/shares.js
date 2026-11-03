@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a7fa17e05d9e")) { const style = document.createElement("style"); style.id = "window-styles-a7fa17e05d9e"; style.textContent = ".shares[data-v-b72f325d]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-b72f325d],.shares-waiting[data-v-b72f325d],.shares-opens[data-v-b72f325d],.shares-open[data-v-b72f325d]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-b72f325d],.shares-waiting[data-v-b72f325d],.shares-opens[data-v-b72f325d]{align-items:flex-start}.shares-target[data-v-b72f325d]{width:100%;min-width:0}.shares-option[data-v-b72f325d],.shares-row[data-v-b72f325d]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-b72f325d]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-b72f325d]{flex:1;min-width:0}.shares-link[data-v-b72f325d],.shares-comment[data-v-b72f325d]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-b72f325d],.shares-failure[data-v-b72f325d]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-1a9ba39085d5")) { const style = document.createElement("style"); style.id = "window-styles-1a9ba39085d5"; style.textContent = ".shares[data-v-06346b38]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-06346b38],.shares-waiting[data-v-06346b38],.shares-opens[data-v-06346b38],.shares-open[data-v-06346b38]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-06346b38],.shares-waiting[data-v-06346b38],.shares-opens[data-v-06346b38]{align-items:flex-start}.shares-target[data-v-06346b38]{width:100%;min-width:0}.shares-option[data-v-06346b38],.shares-row[data-v-06346b38]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-06346b38]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-06346b38]{flex:1;min-width:0}.shares-link[data-v-06346b38],.shares-comment[data-v-06346b38]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-06346b38],.shares-failure[data-v-06346b38]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { computed as U, ref as v, openBlock as t, createElementBlock as o, createElementVNode as n, withModifiers as G, withDirectives as W, vModelText as O, createVNode as i, unref as l, createCommentVNode as d, Fragment as _, renderList as E, toDisplayString as r, withCtx as c, createTextVNode as h, createBlock as F } from "vue";
 import { useWindow as H, useRows as J, useListTools as Q, Segmented as X, Switch as Z, Btn as m, ListTools as ee, RowList as se } from "@journal/window-kit";
 const ae = (x, N) => {
@@ -184,7 +184,7 @@ const ae = (x, N) => {
         failure: l(V),
         loaded: l(I),
         empty: "No link is open",
-        hint: "A link you share a row with shows here until you close it.",
+        hint: "A link you share an item with shows here until you close it.",
         searching: l(R).filtering.value
       }, {
         default: c(({ row: s }) => [
@@ -267,7 +267,7 @@ const ae = (x, N) => {
       ], 64)) : d("", !0)
     ]));
   }
-}, Se = /* @__PURE__ */ ae(ge, [["__scopeId", "data-v-b72f325d"]]);
+}, Se = /* @__PURE__ */ ae(ge, [["__scopeId", "data-v-06346b38"]]);
 export {
   Se as default
 };
