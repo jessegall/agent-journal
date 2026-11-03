@@ -13,6 +13,13 @@ const runnerProgram = "journal-run"
 func (classifier *Classifier) Line(line string) event.ShellLine {
 	line = lineOfRunner(line)
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}}
+	expanded, aliases, expansionError := classifier.expandAliases(line)
+	prepared.Line, prepared.Aliases = expanded, aliases
+	if expansionError != nil {
+		prepared.ParseError = expansionError.Error()
+		return prepared
+	}
+	line = expanded
 	commands, redirects, err := shell.Split(line)
 	if err != nil {
 		prepared.ParseError = err.Error()

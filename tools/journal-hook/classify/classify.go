@@ -52,7 +52,11 @@ func (classifier *Classifier) ClassifyLine(line string) Classification {
 
 func (classifier *Classifier) classifyCommand(text string) Classification {
 	if line, exists := classifier.aliasLine(text); exists && !isJournalAlias(line, text) {
-		return classifier.ClassifyLine(line)
+		expanded, _, err := classifier.expandAliases(text)
+		if err != nil {
+			return newClassification()
+		}
+		return classifier.ClassifyLine(expanded)
 	}
 	if isSubshell(text) || groupPattern.MatchString(text) {
 		content := []rune(pyre.Strip(text))
@@ -135,13 +139,22 @@ func (classifier *Classifier) innerClassifications(text string) []Classification
 }
 
 func scriptLines(tokens []string) []string {
-	for index, token := range tokens {
-		if token != "-c" {
-			continue
-		}
-		return tokens[index+1 : min(index+2, len(tokens))]
+	if position := scriptArgument(tokens); position >= 0 {
+		return tokens[position : position+1]
 	}
 	return nil
+}
+
+func scriptArgument(tokens []string) int {
+	for index, token := range tokens {
+		if !strings.HasPrefix(token, "-") || strings.HasPrefix(token, "--") || !strings.Contains(token[1:], "c") {
+			continue
+		}
+		if index+1 < len(tokens) {
+			return index + 1
+		}
+	}
+	return -1
 }
 
 func joinedLines(tokens []string) []string {
