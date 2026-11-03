@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
-from core.base.page import Page
+from core.base.page import Page, is_page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -33,5 +33,5 @@ class ActiveAgentListSubcommand(ReadSubcommand[Page[Agent]]):
         return self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at")).oldest().page(1, ACTIVE_AGENTS_LIMIT_COUNT)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, Page):
+        if is_page(value):
             output.page(value)
