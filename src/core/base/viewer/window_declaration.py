@@ -50,6 +50,7 @@ class WindowDeclaration:
     tabs: Sequence[WindowTab] = ()
     search: WindowSearch | None = None
     skeleton: Sequence[SkeletonPart] = ()
+    required_settings: Sequence[str] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)

@@ -227,6 +227,6 @@ h2 {
     flex: 1;
     min-width: 0;
     overflow: auto;
-    padding: 14px 16px;
+    padding: 0;
 }
 </style>

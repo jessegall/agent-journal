@@ -63,8 +63,8 @@ usePoll(load, isRunning, () => (opened.value ? OPENED_MILLISECONDS : CLOSED_MILL
         <template v-if="head?.value ?? head">
             <Teleport :to="head?.value ?? head">
                 <span class="output-dock-state" :data-state="standing" :style="{'--tone': TONES[standing]}"><Icon :name="ICONS[standing]" /></span>
-                <button type="button" class="output-dock-label" data-output-toggle :aria-expanded="opened" :title="run?.line" @click="opened = !opened">
-                    <span class="output-dock-title">{{ run?.title || run?.line }}</span>
+                <button type="button" class="output-dock-label" data-output-toggle :aria-expanded="opened" :title="run?.title" @click="opened = !opened">
+                    <span class="output-dock-title">{{ run?.title }}</span>
                     <FoldSign :open="opened" />
                 </button>
                 <template v-if="steps">

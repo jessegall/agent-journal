@@ -6,6 +6,7 @@ from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from core.base.registry.window_listing import WindowListing
 
@@ -27,6 +28,8 @@ class WindowsRoute:
                 raise UnknownEnvironmentError(refusal.reason) from refusal
             suite = container.get(SuiteChoice).suite(environment_id)
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
+            settings = container.get(SettingValues)
+            windows = [window for window in windows if all(settings.flag(key, environment_id) for key in window.required_settings)]
         finally:
             container.get(Database).close()
         return [window.listing(registry.module_fingerprints[window.module]) for window in windows]

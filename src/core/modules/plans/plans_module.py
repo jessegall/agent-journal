@@ -11,6 +11,8 @@ from core.modules.plans.listeners.finished_plan_listener import FinishedPlanList
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
 from core.modules.plans.commands.make_phase.make_phase_handler import MakePhaseHandler
+from core.modules.plans.commands.make_planned_task.make_planned_task_handler import MakePlannedTaskHandler
+from core.modules.plans.commands.make_planned_task.make_task_subcommand import MakeTaskSubcommand
 from core.modules.plans.commands.move_phase.move_phase_handler import MovePhaseHandler
 from core.modules.plans.commands.place_phase.place_phase_handler import PlacePhaseHandler
 from core.modules.plans.commands.make_phase.make_phase_subcommand import MakePhaseSubcommand
@@ -68,10 +70,10 @@ class PlansModule(Module):
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase"))]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration]
-    handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
+    handlers = (MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
     subcommands = (CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
-                   PlacePhaseSubcommand, PlanProgressSubcommand)
+                   PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand)
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,

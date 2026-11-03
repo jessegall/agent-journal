@@ -35,7 +35,11 @@ watch(() => props.windows, (windows) => windows.length && (lastWindows.value = w
 watch(() => props.environments, (environments) => environments.length && (lastEnvironments.value = environments), {immediate: true});
 // the windows in their groups, each in the order the suite lists them
 const inGroup = (group) => shownWindows.value.filter((window) => (window.group || "") === group);
-const sections = computed(() => [{key: "environment", title: "Environment", windows: inGroup("")}, {key: "project", title: "Project", windows: inGroup("project")}]);
+const sections = computed(() => [
+    {key: "environment", title: "Environment", windows: inGroup("")},
+    {key: "project", title: "Project", windows: inGroup("project")},
+    ...inGroup("developer").length ? [{key: "developer", title: "Developer", windows: inGroup("developer")}] : [],
+]);
 
 // each page has its own address, which a click follows
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;

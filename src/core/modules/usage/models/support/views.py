@@ -14,3 +14,8 @@ AGENT_CARDS_SELECT = (
     " FROM agents"
     " LEFT JOIN subagent_dispatches AS dispatch ON dispatch.id = (SELECT min(subagent_dispatches.id) FROM subagent_dispatches WHERE subagent_dispatches.subagent_id = agents.id)"
 )
+
+AGENT_LISTING_SELECT = (
+    "SELECT agent_cards.*, agents.parent_id, agents.created_at, agents.updated_at, agents.process_started_at"
+    " FROM agent_cards JOIN agents ON agents.id = agent_cards.id"
+)
