@@ -132,7 +132,7 @@ test("a run past a minute takes it off the card in time for its anticipation, an
     // a run past a minute but not two: eager as the pile draws it, the same way off the card
     expect(eagerFor(bar(0.95), null, () => 0, EAGER.after + 30).eager.run).toBe(0);
     // the run ends: the check on the visor once the head has faced its mark
-    const mark = (active) => ({type: "processes.command", variant: active ? "running" : "finished", key: "process:9", text: "Running tests", outcome: active ? "running" : "passed", ended_at: active ? null : new Date(11000).toISOString(), created_at: new Date(10000).toISOString()});
+    const mark = (active) => ({id: 9, type: "processes.command", variant: active ? "running" : "finished", key: "process:9", text: "Running tests", outcome: active ? "running" : "passed", ended_at: active ? null : new Date(11000).toISOString(), created_at: new Date(10000).toISOString()});
     const known = new Map();
     processEndsAfter({data: {cards: cardsOfMarks([mark(true)])}}, known);
     const ends = processEndsAfter({data: {cards: cardsOfMarks([mark(false)])}}, known);

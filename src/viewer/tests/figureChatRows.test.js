@@ -6,7 +6,8 @@ import {attachmentRead} from "../src/figure/looks.js";
 import {buildRuns} from "../src/figure/parcels.js";
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const mark = (type, variant, fields = {}) => ({type, variant, key: `${type}:${variant}`, text: "", outcome: "none", ended_at: null, created_at: at(10), ...fields});
+let marks = 0;
+const mark = (type, variant, fields = {}) => ({id: ++marks, type, variant, key: `${type}:${variant}`, text: "", outcome: "none", ended_at: null, created_at: at(10), ...fields});
 
 test("each mark the journal writes in the chat is its own moment, and nothing else is", () => {
     const marks = [
@@ -34,13 +35,18 @@ test("each mark the journal writes in the chat is its own moment, and nothing el
 });
 
 test("a file's sins repented in its one mark is a moment when its tone changes, once, though the mark keeps the time it was made", () => {
-    const sin = (variant) => cardsOfMarks([mark("plugins.card", variant, {key: "plugin:code-commandments:sins:src/a.py"})]);
+    const sin = (variant) => cardsOfMarks([mark("plugins.card", variant, {id: 77, key: "plugin:code-commandments:sins:src/a.py"})]);
     const known = new Map();
     const beats = (cards, seen) => beatsAfter({data: {cards}}, seen).map((fire) => fire.beat);
     expect(beats(cardsMoved(sin("warn"), known, 50), 5), "first seen, it keeps its own time").toEqual(["sin_committed"]);
     expect(beats(cardsMoved(sin("warn"), known, 60), 50), "unchanged, it is no moment again").toEqual([]);
     expect(beats(cardsMoved(sin("good"), known, 70), 60)).toEqual(["sin_fixed"]);
     expect(beats(cardsMoved(sin("good"), known, 80), 70), "and seen once").toEqual([]);
+});
+
+test("a card is keyed as the page marks its mark, chat_mark and its id (markLook.js), so the figure can find it there", () => {
+    const row = {id: 12, type: "tasks.task", variant: "closed", key: "closed:3:4", text: "", outcome: "none", ended_at: null, created_at: at(10)};
+    expect(cardsOfMarks([row])[0].key).toBe("chat_mark:12");
 });
 
 test("what the user last said is the moment heard, once", () => {
@@ -62,13 +68,13 @@ test("a run's mark is a test run or a build as its title says, in any case", () 
 });
 
 test("a run seen going and then ended is its end, lit as it ended, and a test run's end a moment", () => {
-    const run = (outcome, ended) => mark("processes.command", "running", {key: "process:9", text: "Running tests", outcome, ended_at: ended ? at(20) : null});
+    const run = (outcome, ended) => mark("processes.command", "running", {id: 9, key: "process:9", text: "Running tests", outcome, ended_at: ended ? at(20) : null});
     const ends = new Map();
     const tests = new Map();
     processEndsAfter({data: {cards: cardsOfMarks([run("running", false)])}}, ends);
     testResultsAfter({data: {cards: cardsOfMarks([run("running", false)])}}, tests, 0);
     const over = {data: {cards: cardsOfMarks([run("failed", true)])}};
-    expect(processEndsAfter(over, ends)).toEqual([{tone: "bad", time: 10, card: "process:9"}]);
+    expect(processEndsAfter(over, ends)).toEqual([{tone: "bad", time: 10, card: "chat_mark:9"}]);
     expect(testResultsAfter(over, tests, 0).map((fire) => fire.beat)).toEqual(["tests_failed"]);
     expect(processEndsAfter(over, ends), "an end is seen once").toEqual([]);
 });

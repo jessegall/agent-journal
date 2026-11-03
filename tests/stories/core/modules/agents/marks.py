@@ -4,6 +4,7 @@ import pytest
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.testing.hook_samples import HookSamples
@@ -22,6 +23,21 @@ def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place
     story.run_listeners()
     assert mark_count(story) == 1 and "Finished journal-researcher: Read the cart" in marks_text(story), marks_text(story)
     story.expect_text("chat-mark show 1", "state: ended")
+
+
+def test_a_dispatch_mark_opens_its_subagent_once_that_has_started(new_story):
+    story = new_story(fixture=BuilderStarted)
+    sample = HookSamples.subagent().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
+    story.hook("s-1", sample)
+    story.run_listeners()
+    story.expect_absent("chat-mark show 1", "target_model: agents")
+    subagent = story.new_row_id(f"agent start s-sub claude subagent --parent {story.agent.id} --environment main")
+    story.container.get(Bus).run(BindSubagentDispatch(story.agent.id, "journal-researcher", subagent), story.agent, environment_id=1)
+    story.run_listeners()
+    story.expect_text("chat-mark show 1", "target_model: agents", f"target_id: {subagent}")
+    story.hook("s-1", sample.with_fields(event="post_tool_use"))
+    story.run_listeners()
+    story.expect_text("chat-mark show 1", "state: ended", "target_model: agents", f"target_id: {subagent}")
 
 
 def test_a_main_agent_started_shows_no_subagent_mark(new_story):

@@ -32,6 +32,11 @@ const look = computed(() => {
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
 const opens = computed(() => Boolean(props.mark.lines || (props.mark.detail && STOPPED_VARIANTS.has(props.mark.variant)) || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opened = ref(false);
+// a click on the line of a mark that names a row opens that row, as its declaration says; its fold sign still unfolds what the mark holds
+function clicked(event) {
+    if (look.value.handlers.onAct && !event.target.closest(".fold")) return look.value.handlers.onAct();
+    opened.value = !opened.value;
+}
 // a row in the dock has no Dock button left, and its mark steps back in opacity
 const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filter((button) => !button.runs?.startsWith(DOCK_LINE)) : declaration.value?.buttons));
 </script>
@@ -45,7 +50,7 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
     <template v-else>
         <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
-                <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
+                <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="clicked">
                     <template v-if="opens" #default="{shown}">
                         <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                     </template>

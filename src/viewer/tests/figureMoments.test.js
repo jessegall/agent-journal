@@ -117,7 +117,7 @@ test("from taking up the rifle or the mallet until the bug is gone the eyes are 
 
 test("a sin repented brings the halo now and then, and a sin found the crucifix on its knees, each at its chance and cooldown, for every voice", () => {
     // the plugin's marks in the chat are the moments, never a passed check or a failure
-    const mark = (id, tone) => ({type: "plugins.card", variant: tone, key: `plugin:code-commandments:sins:src/${id}.py`, text: "src/a.py", outcome: "none", created_at: new Date((100 + id) * 1000).toISOString()});
+    const mark = (id, tone) => ({id, type: "plugins.card", variant: tone, key: `plugin:code-commandments:sins:src/${id}.py`, text: "src/a.py", outcome: "none", created_at: new Date((100 + id) * 1000).toISOString()});
     const agent = {data: {cards: cardsOfMarks([mark(1, "good"), mark(2, "warn")])}};
     expect(beatsAfter(agent, 0).map((beat) => beat.beat)).toEqual(["sin_fixed", "sin_committed"]);
     for (const [moment, clip] of [["sin_fixed", "halo"], ["sin_committed", "repent"]]) {

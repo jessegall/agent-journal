@@ -125,7 +125,7 @@ const outcomeOf = (card) => card.outcome;
 
 // the commandments plugin's mark for a file: one mark for each file, kept up in place, in the warn tone while it holds sins and the good tone once repented
 const SIN_MARKS = "plugin:code-commandments:sins:";
-const isSinMark = (card) => card.type === "plugins.card" && card.key.startsWith(SIN_MARKS);
+const isSinMark = (card) => card.type === "plugins.card" && card.markKey.startsWith(SIN_MARKS);
 
 // One-off beats, each fired by a chat mark and played once before the held state resumes; the first rule a mark matches names its beat
 const BEATS = [
@@ -213,13 +213,14 @@ export function processEndsAfter(agent, known) {
     return ended.map((card) => ({tone: outcomeOf(card) === "passed" ? "good" : "bad", time: Number(card.time), card: card.key}));
 }
 
-// The chat's mark rows as the figure reads them: each its key, when it was made, its type and variant, how it stands and how it ended, whether
+// The chat's mark rows as the figure reads them: each its key as the page marks it (markLook.js), the journal's own key, when it was made, its type and variant, how it stands and how it ended, whether
 // it follows a run and what its title says it is about (chatMark.js)
 export const cardsOfMarks = (marks) =>
     marks.map((mark) => {
         const title = mark.text.toLowerCase();
         return {
-            key: mark.key,
+            key: `chat_mark:${mark.id}`,
+            markKey: mark.key,
             time: createdAt(mark),
             type: mark.type,
             variant: mark.variant,

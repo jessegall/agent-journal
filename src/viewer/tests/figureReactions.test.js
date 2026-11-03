@@ -165,8 +165,9 @@ test("the user typing now and then makes its eyes read, and finishing a long str
 });
 
 test("every moment a reaction waits for is one the journal makes, from cards shaped as the server writes them", () => {
-    const mark = (type, variant, fields = {}) => ({type, variant, key: `${type}:${variant}`, text: "", outcome: "none", created_at: new Date(2000).toISOString(), ...fields});
-    const run = (id, seconds, outcome) => mark("processes.command", outcome === "passed" ? "finished" : "failed", {key: `process:${id}`, text: "Running tests", outcome, ended_at: new Date((seconds + 1) * 1000).toISOString(), created_at: new Date(seconds * 1000).toISOString()});
+    let marks = 100;
+    const mark = (type, variant, fields = {}) => ({id: ++marks, type, variant, key: `${type}:${variant}`, text: "", outcome: "none", created_at: new Date(2000).toISOString(), ...fields});
+    const run = (id, seconds, outcome) => mark("processes.command", outcome === "passed" ? "finished" : "failed", {id, key: `process:${id}`, text: "Running tests", outcome, ended_at: new Date((seconds + 1) * 1000).toISOString(), created_at: new Date(seconds * 1000).toISOString()});
     const cards = cardsOfMarks([
         mark("workers.worker", "merged"),
         mark("workers.worker", "delivered"),
