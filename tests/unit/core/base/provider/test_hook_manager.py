@@ -120,3 +120,16 @@ def test_sweeping_stores_the_programs_clash_labels(manager: HookManager, monkeyp
     assert all(hook.effects == (HookEffect.CAN_REFUSE, HookEffect.ADDS_LINES) for hook in hooks)
     assert manager.managed.all() == hooks
     assert ProgramHooks.read(manager.managed.path)["hooks"][0]["clash"] == ["can_refuse", "adds_lines"]
+
+
+def test_shell_fallback_keeps_native_hooks_even_when_import_is_requested(manager: HookManager):
+    settings = {**SETTINGS, "hooks": {"BeforeTool": [{"matcher": "Shell", "hooks": [
+        {"type": "command", "command": 'sh "/p/.journal/hooks/hook.sh" sample /p'}, PROJECT_ENTRY,
+    ]}]}}
+    path = manager.root / HOOK_FILE
+    ProgramHooks.store(path, settings)
+    original = path.read_bytes()
+    assert manager.import_hooks(SampleProgram, manager.root) == []
+    assert path.read_bytes() == original
+    assert not manager.managed.path.exists()
+    assert len(manager.unmanaged(SampleProgram, manager.root)) == 1

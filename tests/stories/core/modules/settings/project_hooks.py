@@ -28,9 +28,9 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
         {"type": "command", "command": "pending-check"}, {"type": "prompt", "prompt": "Review this"}]}]}})
     ProgramHooks.store(root / ".claude/settings.local.json", {"hooks": {"PreToolUse": [{"hooks": [
         {"type": "command", "command": "sh /project/.journal/hooks/hook.sh"}]}]}})
-    result = story.run("managed-hook list --json")
-    assert result.code == 0, result.output_text
-    data = json.loads(result.output_text)
+    reply = story.run("managed-hook list --json")
+    assert reply.code == 0, reply.output_text
+    data = json.loads(reply.output_text)
     assert len(data["managed"]) == 1
     assert data["managed"][0]["history"]["refused"] == 1
     assert data["managed"][0]["history"]["last"]["exit_code"] == 2

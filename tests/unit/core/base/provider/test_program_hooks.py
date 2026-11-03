@@ -11,9 +11,9 @@ def test_partition_splits_a_mixed_block_per_entry_and_keeps_noncommand_entries()
     project_entry = {"type": "command", "command": "check"}
     prompt_entry = {"type": "prompt", "prompt": "Review this"}
     block = {"matcher": "Shell", "description": "Checks", "hooks": [journal_entry, project_entry, prompt_entry]}
-    kept, commands = ProgramHooks.partitioned({"BeforeTool": [block]})
-    assert kept == {"BeforeTool": [{**block, "hooks": [journal_entry, prompt_entry]}]}
-    assert commands == [("BeforeTool", "Shell", project_entry)]
+    parts = ProgramHooks.partitioned({"BeforeTool": [block]})
+    assert parts.kept == {"BeforeTool": [{**block, "hooks": [journal_entry, prompt_entry]}]}
+    assert parts.commands == [("BeforeTool", "Shell", project_entry)]
     assert block["hooks"] == [journal_entry, project_entry, prompt_entry]
 
 
@@ -22,12 +22,12 @@ def test_partition_keeps_event_block_and_entry_order():
     second = {"type": "command", "command": "second"}
     third = {"type": "command", "command": "third"}
     fourth = {"type": "command", "command": "fourth"}
-    kept, commands = ProgramHooks.partitioned({
+    parts = ProgramHooks.partitioned({
         "Start": [{"matcher": "startup", "hooks": [first, second]}, {"hooks": [third]}],
         "BeforeTool": [{"matcher": "Shell", "hooks": [fourth]}],
     })
-    assert kept == {}
-    assert commands == [("Start", "startup", first), ("Start", "startup", second), ("Start", "", third), ("BeforeTool", "Shell", fourth)]
+    assert parts.kept == {}
+    assert parts.commands == [("Start", "startup", first), ("Start", "startup", second), ("Start", "", third), ("BeforeTool", "Shell", fourth)]
 
 
 def test_partition_and_store_keep_settings_beside_hooks(tmp_path):
@@ -35,17 +35,19 @@ def test_partition_and_store_keep_settings_beside_hooks(tmp_path):
     settings = {"permissions": {"allow": ["Shell(ls)"]}, "hooks": {"Start": [{"hooks": [{"type": "command", "command": "check"}]}]}}
     ProgramHooks.store(path, settings)
     loaded = ProgramHooks.read(path)
-    kept, commands = ProgramHooks.partitioned(loaded["hooks"])
-    ProgramHooks.store(path, {**loaded, "hooks": kept})
+    parts = ProgramHooks.partitioned(loaded["hooks"])
+    ProgramHooks.store(path, {**loaded, "hooks": parts.kept})
     assert ProgramHooks.read(path) == {"permissions": settings["permissions"], "hooks": {}}
-    assert len(commands) == 1
+    assert len(parts.commands) == 1
 
 
 def test_partition_handles_empty_and_missing_settings_files(tmp_path):
     path = tmp_path / "nested" / "settings.json"
     assert ProgramHooks.read(path) == {}
-    assert ProgramHooks.partitioned(None) == ({}, [])
-    assert ProgramHooks.partitioned({}) == ({}, [])
+    assert ProgramHooks.partitioned(None).kept == {}
+    assert ProgramHooks.partitioned(None).commands == []
+    assert ProgramHooks.partitioned({}).native == {}
+    assert ProgramHooks.partitioned({}).journal == {}
     ProgramHooks.store(path, {})
     path.write_text("")
     assert ProgramHooks.read(path) == {}
@@ -120,3 +122,17 @@ def test_a_hook_file_is_written_only_once_it_holds_the_journals_entry_for_every_
     start_hook_file = hooks.is_complete()
     hooks.write('"/p/.journal/bin/journal-hook"', tmp_path)
     assert (empty_file, start_hook_file, hooks.is_complete()) == (False, False, True)
+
+
+def test_replacing_a_journal_entry_keeps_native_entries_in_its_mixed_block(tmp_path):
+    path = tmp_path / "hooks.json"
+    prompt = {"type": "prompt", "prompt": "Review"}
+    command = {"type": "command", "command": "check"}
+    block = {"matcher": "Shell", "description": "Checks", "hooks": [OLD_JOURNAL_BLOCK["hooks"][0], command, prompt]}
+    ProgramHooks.store(path, {"permissions": {"allow": []}, "hooks": {"BeforeTool": [block]}})
+    parts = ProgramHooks.partitioned(ProgramHooks.read(path)["hooks"])
+    assert parts.native == {"BeforeTool": [{**block, "hooks": [command, prompt]}]}
+    assert parts.journal == {"BeforeTool": [OLD_JOURNAL_BLOCK | {"matcher": "Shell", "description": "Checks"}]}
+    ProgramHooks("sample", path, ["BeforeTool"], 90).write("journal-hook", tmp_path)
+    assert ProgramHooks.read(path)["hooks"]["BeforeTool"][0] == {**block, "hooks": [command, prompt]}
+    assert ProgramHooks.read(path)["permissions"] == {"allow": []}

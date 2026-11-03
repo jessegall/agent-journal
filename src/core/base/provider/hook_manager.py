@@ -22,10 +22,13 @@ class HookManager:
         self.rules = rules
 
     def import_hooks(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
+        if ProgramHooks.hooks(provider, self.root).uses_shell_runner:
+            return self.managed.all()
         for name in provider.hook_files:
             path = folder / name
             settings = ProgramHooks.read(path)
-            kept, commands = ProgramHooks.partitioned(settings.get("hooks"))
+            parts = ProgramHooks.partitioned(settings.get("hooks"))
+            kept, commands = parts.kept, parts.commands
             if not commands:
                 continue
             detected = self._detected(provider, folder, name, commands)
@@ -40,7 +43,7 @@ class HookManager:
     def unmanaged(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
         detected_hooks: list[ManagedHook] = []
         for name in provider.hook_files:
-            _, commands = ProgramHooks.partitioned(ProgramHooks.read(folder / name).get("hooks"))
+            commands = ProgramHooks.partitioned(ProgramHooks.read(folder / name).get("hooks")).commands
             detected_hooks.extend(self._detected(provider, folder, name, commands))
         return detected_hooks
 

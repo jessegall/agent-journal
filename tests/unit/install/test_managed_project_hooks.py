@@ -25,7 +25,7 @@ def assert_imported(root: Path):
     for name in FILES:
         settings = ProgramHooks.read(root / name)
         assert settings["permissions"] == {"allow": ["Bash(ls)"]}
-        assert ProgramHooks.partitioned(settings["hooks"])[1] == []
+        assert ProgramHooks.partitioned(settings["hooks"]).commands == []
     for name in FILES[1:]:
         assert ProgramHooks.read(root / name)["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
 
@@ -50,7 +50,7 @@ def test_fallback_install_keeps_project_hooks_in_their_files(tmp_path):
     HookWriter(tmp_path).write(f'sh "{tmp_path}/.journal/hooks/hook.sh"')
     assert not (tmp_path / ".journal/hooks/managed.json").exists()
     for index, name in enumerate(FILES):
-        assert ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"])[1] == [
+        assert ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"]).commands == [
             ("PreToolUse", "Bash", {"type": "command", "command": f"project-check-{index}", "timeout": 600})]
     assert (tmp_path / FILES[0]).read_bytes() == original[FILES[0]]
 
@@ -69,7 +69,7 @@ def test_fallback_upgrade_keeps_every_project_command(tmp_path):
     HookSwitch(tmp_path).switch()
     assert not (tmp_path / ".journal/hooks/managed.json").exists()
     for index, name in enumerate(FILES):
-        assert ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"])[1] == [
+        assert ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"]).commands == [
             ("PreToolUse", "Bash", {"type": "command", "command": f"project-check-{index}", "timeout": 600})]
 
 
@@ -105,10 +105,28 @@ def test_version_four_restore_returns_disabled_hooks_and_keeps_new_hooks(tmp_pat
     RestoreVersionFour(home).restore(backup, [])
     assert store.all() == []
     for index, name in enumerate(FILES):
-        entries = ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"])[1]
+        entries = ProgramHooks.partitioned(ProgramHooks.read(tmp_path / name)["hooks"]).commands
         assert f"project-check-{index}" in [entry[2]["command"] for entry in entries]
-    commands = [entry[2]["command"] for entry in ProgramHooks.partitioned(ProgramHooks.read(path)["hooks"])[1]]
+    commands = [entry[2]["command"] for entry in ProgramHooks.partitioned(ProgramHooks.read(path)["hooks"]).commands]
     assert "new-check" in commands
     all_commands = [entry["command"] for blocks in ProgramHooks.read(path)["hooks"].values() for block in blocks for entry in block["hooks"]]
     assert any(old_runner in command for command in all_commands)
     assert not any(str(tmp_path / ".journal/bin/journal-hook") in command for command in all_commands)
+
+
+def test_restore_splits_mixed_current_and_saved_blocks_without_losing_native_entries(tmp_path):
+    path = tmp_path / FILES[1]
+    saved_path = tmp_path / ".journal/version-4/hooks" / FILES[1]
+    old = {"type": "command", "command": 'sh "/p/.journal/hooks/hook.sh" claude /p'}
+    current = {"type": "command", "command": '"/p/.journal/bin/journal-hook" claude /p'}
+    check = {"type": "command", "command": "check"}
+    prompt = {"type": "prompt", "prompt": "Review"}
+    ProgramHooks.store(saved_path, {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [old, check]}]}})
+    ProgramHooks.store(path, {"permissions": {"allow": []}, "hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [current, check, prompt]}]}})
+    unsaved = tmp_path / FILES[2]
+    ProgramHooks.store(unsaved, {"hooks": {"PreToolUse": [{"hooks": [current, check, prompt]}]}})
+    HookSwitch(tmp_path).restore()
+    assert ProgramHooks.read(path) == {"permissions": {"allow": []}, "hooks": {"PreToolUse": [
+        {"matcher": "Bash", "hooks": [check, prompt]}, {"matcher": "Bash", "hooks": [old]},
+    ]}}
+    assert ProgramHooks.read(unsaved)["hooks"] == {"PreToolUse": [{"hooks": [check, prompt]}]}

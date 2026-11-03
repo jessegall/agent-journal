@@ -37,7 +37,7 @@ class ProjectHooks:
         return [*native, *user_files]
 
     def excluded_file(self, program: str, name: Path) -> list[UnmanagedHook]:
-        kept, _ = ProgramHooks.partitioned(ProgramHooks.read(self.home.project_folder / name).get("hooks"))
+        kept = ProgramHooks.partitioned(ProgramHooks.read(self.home.project_folder / name).get("hooks")).kept
         return [entry for event, blocks in kept.items() for block in blocks for entry in self.excluded_block(program, str(name), event, block)]
 
     @staticmethod

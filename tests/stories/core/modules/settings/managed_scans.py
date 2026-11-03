@@ -35,7 +35,7 @@ def test_give_back_restores_disabled_hooks_and_records_both_actions(project_stor
     story.expect_text("managed-hook give-back", "restored hooks: 2", "off until the next scan")
     assert story.container.get(ManagedHooks).all() == []
     for name in (".claude/settings.json", ".codex/hooks.json"):
-        entries = ProgramHooks.partitioned(ProgramHooks.read(story.home.project_folder / name)["hooks"])[1]
+        entries = ProgramHooks.partitioned(ProgramHooks.read(story.home.project_folder / name)["hooks"]).commands
         assert len(entries) == 1 and entries[0][2]["command"] == "project-check"
     names = {event.event for event in events.events_past(start)}
     assert {"managed-hook.scanned", "managed-hook.restored"} <= names

@@ -1,10 +1,8 @@
-import json
 import shutil
 import subprocess
 from pathlib import Path
 
 from core.base.provider.program_hooks import ProgramHooks
-from core.base.type_guards import is_list, is_mapping
 from install.hook_writer import HookWriter
 from install.version_four_backup import BACKUP_FOLDER
 
@@ -41,22 +39,18 @@ class HookSwitch:
         (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)
         (self.root / VERSION_FOUR_SWITCH).touch()
         restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
-        for name in [name for name in SETTINGS_FILES if name not in restored and (self.root / name).is_file()]:
-            self.without_journal_hooks(self.root / name)
-        for name in restored:
-            current, kept = self.settings(self.root / name), self.settings(self.saved / name)
-            kept_hooks = kept.get("hooks")
-            hooks = ProgramHooks.without_journals(current.get("hooks"))
-            for event, blocks in (kept_hooks.items() if is_mapping(kept_hooks) else []):
-                if is_list(blocks):
-                    hooks.setdefault(str(event), []).extend(block for block in blocks if ProgramHooks.is_journals(block))
-            (self.root / name).write_text(json.dumps({**current, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
+        for name in SETTINGS_FILES:
+            path = self.root / name
+            if not path.is_file() and name not in restored:
+                continue
+            current = self.settings(path)
+            hooks = ProgramHooks.partitioned(current.get("hooks")).native
+            if name in restored:
+                saved = ProgramHooks.partitioned(self.settings(self.saved / name).get("hooks"))
+                for event, blocks in saved.journal.items():
+                    hooks.setdefault(event, []).extend(blocks)
+            ProgramHooks.store(path, {**current, "hooks": hooks})
         return [f"version 4's hooks are back in {', '.join(str(name) for name in restored)}"] if restored else []
-
-    def without_journal_hooks(self, path: Path) -> None:
-        current = self.settings(path)
-        hooks = ProgramHooks.without_journals(current.get("hooks"))
-        path.write_text(json.dumps({**current, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
 
     def runner(self) -> str:
         binary = self.root / BINARY
