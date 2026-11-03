@@ -29,7 +29,7 @@ class ServerFiles:
         self.log = home.folder / "runtime" / "server.log"
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.folder / "run-lock"
-        self.restart_mark = home.folder / "server-restarting"
+        self.restart_mark = home.restart_mark
         self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
 
