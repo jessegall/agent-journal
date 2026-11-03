@@ -1,8 +1,3 @@
-import {envState} from "./journals.js";
-import {seconds} from "./row.js";
-import {subagentsOf} from "./subagents.js";
-import {workerHeading, workerName, workerState} from "./workers.js";
-
 // The agents grid: each environment's live agent, each worker, and the subagents of the agent here, as one kind of entry.
 const STATES = {
     working: {word: "Working", dot: "running"},
@@ -18,128 +13,8 @@ export const agentState = (card) => {
     return {key, ...STATES[key]};
 };
 
-export function splitTask(task) {
-    const named = /^([^:]{2,32}): (.+)$/.exec(task || "");
-    return named ? {name: named[1], job: named[2]} : {name: "Helper", job: task || ""};
-}
-
-function environmentEntry(standing) {
-    const agent = standing.agent;
-    const title = standing.task?.title || agent.doing || "Nothing in hand";
-    return {
-        key: `environment:${standing.environment.name}`,
-        env: standing.environment.name,
-        kind: "environment",
-        n: standing.environment.id,
-        label: "Environment agent",
-        name: standing.environment.name,
-        title,
-        says: agent.last_message || "",
-        doing: agent.doing || "",
-        model: agent.model || "",
-        facts: {queued: null, done: null, pace: null, contextLeft: null, processes: processesText(agent.processes)},
-        time: seconds(agent.heard_at),
-        since: 0,
-        waits: Boolean(standing.questions || agent.awaiting),
-        opens: {table: "agents", id: agent.id},
-        card: {state: envState(standing), reason: agent.stuck || agent.awaiting || ""},
-    };
-}
-
-const WORKER_STATES = {running: "working", reported: "waiting", finished: "stopped"};
-
 const GIGABYTE = 1024 ** 3;
 const MEGABYTE = 1024 ** 2;
-
-// what an agent's processes take of the machine, as its cell shows it: CPU 34%, 1.2 GB; nothing until the journal has sampled them
-export function processesText(processes) {
-    if (!processes) {
-        return null;
-    }
-    const memory = processes.resident_bytes >= GIGABYTE ? `${(processes.resident_bytes / GIGABYTE).toFixed(1)} GB` : `${Math.round(processes.resident_bytes / MEGABYTE)} MB`;
-    return `CPU ${Math.round(processes.cpu_percent)}%, ${memory}`;
-}
-
-const HOUR = 3600;
-const perHour = (done, from, to) => (to > from ? Math.round((done * HOUR * 10) / (to - from)) / 10 : 0);
-
-// what a worker's cell adds, each only once the journal knows it: the tasks left in its queue and the tasks it finished once the worker is read by id, how many it finishes in an hour once it finished one, and the context its session reports left
-function workerFacts(worker, now) {
-    const read = Array.isArray(worker.queue);
-    const done = (worker.finished || []).length;
-    const ended = workerState(worker) === "finished" ? seconds(worker.updated_at) : now;
-    return {
-        queued: read ? worker.queue.length : null,
-        done: read ? done : null,
-        pace: done ? perHour(done, seconds(worker.created_at), ended) : null,
-        contextLeft: typeof worker.context === "number" ? Math.max(0, 100 - worker.context) : null,
-        processes: processesText(worker.processes),
-    };
-}
-
-function workerEntry(worker, env, now) {
-    return {
-        facts: workerFacts(worker, now),
-        key: `worker:${worker.id}`,
-        env,
-        kind: "worker",
-        n: worker.id,
-        label: "Worker",
-        name: workerName(worker),
-        heading: workerHeading(worker),
-        title: worker.brief,
-        says: "",
-        doing: "",
-        model: worker.model,
-        time: seconds(worker.updated_at),
-        since: workerState(worker) === "running" ? seconds(worker.created_at) : 0,
-        waits: workerState(worker) === "reported",
-        opens: {table: "workers", id: worker.id},
-        card: {state: WORKER_STATES[workerState(worker)], reason: workerState(worker) === "reported" ? "its report waits for the agent" : ""},
-    };
-}
-
-function subagentEntry(sub, agent, env) {
-    return {
-        key: `subagent:${sub.session}`,
-        env,
-        kind: "subagent",
-        n: 0,
-        sub: true,
-        session: sub.session,
-        label: "Helper",
-        name: splitTask(sub.task).name,
-        title: splitTask(sub.task).job || sub.session,
-        says: "",
-        doing: sub.type || "",
-        model: sub.model || "",
-        time: sub.time,
-        since: sub.running ? sub.time : 0,
-        waits: false,
-        opens: {table: "agents", id: agent.id, session: sub.session},
-        card: {state: sub.running ? "working" : "idle", reason: sub.running ? "" : sub.status || "finished"},
-    };
-}
-
-// The agents under the one here: the workers, its subagents and the agents of the other environments; the agent of this
-// environment is the top bar's, never a cell of its own.
-export function orchestraOf(summary, workers, lead, env, now = Date.now() / 1000) {
-    const environments = ((summary && summary.environments) || []).filter((s) => s.agent && s.environment.name !== env).map(environmentEntry);
-    const subs = subagentsOf(lead).map((sub) => subagentEntry(sub, lead, env));
-    return [...environments, ...workers.map((w) => workerEntry(w, env, now)), ...subs];
-}
-
-const AMBER_AFTER = 300;
-const RED_AFTER = 900;
-
-export function quietOf(at, now) {
-    const quiet = Math.max(0, now - at);
-    const minutes = Math.floor(quiet / 60);
-    return {
-        ago: quiet < 60 ? "just now" : minutes < 60 ? `${minutes} min ago` : `${Math.floor(minutes / 60)} h ${minutes % 60} min ago`,
-        tone: quiet > RED_AFTER ? "red" : quiet > AMBER_AFTER ? "amber" : "",
-    };
-}
 
 export const AGENT_VIEW = {
     states: {working: true, waiting: true, idle: true, stopped: true},
@@ -168,7 +43,7 @@ export const ORDERS = [
 ];
 
 const GROUP = {working: "working", waiting: "waiting", stuck: "waiting", idle: "idle", stopped: "stopped"};
-export const stateGroup = (entry) => GROUP[agentState(entry.card).key] || "idle";
+const stateGroup = (entry) => GROUP[agentState(entry.card).key] || "idle";
 
 export function hiddenBy(entry, view) {
     if (view.states[stateGroup(entry)] === false) return stateGroup(entry);
@@ -177,8 +52,6 @@ export function hiddenBy(entry, view) {
 }
 
 const byNumber = (a, b) => a.n - b.n || a.kind.localeCompare(b.kind) || a.key.localeCompare(b.key);
-
-export const slotsFor = (slots, entries) => [...slots, ...entries.filter((e) => !slots.includes(e.key)).sort(byNumber).map((e) => e.key)];
 
 // Working agents always come first, then those waiting for input, then the idle and the stopped; the order picked sorts within each.
 const RANK = {working: 0, waiting: 1, idle: 2, stopped: 3};

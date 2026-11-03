@@ -4,13 +4,13 @@ from enum import StrEnum
 class AddressForm(StrEnum):
     """How a voice addresses the user: by title and name, by name, not at all, or in words of its own."""
 
-    TITLE_AND_NAME = "title and name"
+    TITLE_NAME = "title and name"
     NAME = "name"
     NONE = "none"
-    OWN_WORDS = "its own words"
+    CUSTOM = "its own words"
 
     def called(self, title: str, name: str, owned: str | None = None) -> str:
-        parts = {AddressForm.TITLE_AND_NAME: (title, name), AddressForm.NAME: (name,), AddressForm.NONE: (), AddressForm.OWN_WORDS: (owned,)}[self]
+        parts = {AddressForm.TITLE_NAME: [title, name], AddressForm.NAME: [name], AddressForm.NONE: [], AddressForm.CUSTOM: [owned]}[self]
         return " ".join(part for part in parts if part)
 
     def instruction(self, called: str) -> str:

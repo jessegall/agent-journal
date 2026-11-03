@@ -11,7 +11,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TASK_AFTER_TAKEN, WORKER_TASK_TAKEN
+from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TASK_AFTER_REASSIGNED, WORKER_TASK_REASSIGNED
 
 
 class WorkerTaskAdvance:
@@ -24,10 +24,10 @@ class WorkerTaskAdvance:
         self.start(worktree, following, context)
         self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
 
-    def after_taken_task(self, worktree: Worktree, taken: Task, following: Task, context: Context) -> None:
+    def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.agent_id, WORKER_TASK_TAKEN, WORKER_JOB_SOURCE, context, task=taken.id)
-        self.nudger.send(worktree.agent_id, WORKER_TASK_AFTER_TAKEN, WORKER_JOB_SOURCE, context, task=following.id)
+        self.nudger.send(worktree.agent_id, WORKER_TASK_REASSIGNED, WORKER_JOB_SOURCE, context, task=reassigned.id)
+        self.nudger.send(worktree.agent_id, WORKER_TASK_AFTER_REASSIGNED, WORKER_JOB_SOURCE, context, task=following.id)
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))

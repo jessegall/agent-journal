@@ -1,7 +1,7 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
-from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_searcher import DocSearcher
@@ -55,8 +55,6 @@ from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 
-BUILT = ["make", "edit", "show", "list", "delete"]
-
 
 class DocumentsModule(Module):
     """Adds documents, which the project keeps knowing, reports of what was checked at one time, a document's
@@ -68,8 +66,8 @@ class DocumentsModule(Module):
     skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     settings = [SettingValue("revision-minutes", "Revision minutes", "How long one person's edits of a document fold into one revision.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
-    models = [ModelDeclaration(Doc, excluded_subcommands=BUILT), ModelDeclaration(Report, excluded_subcommands=BUILT),
-              ModelDeclaration(DocRevision, excluded_subcommands=BUILT), ModelDeclaration(Link, excluded_subcommands=BUILT)]
+    models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
+              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]

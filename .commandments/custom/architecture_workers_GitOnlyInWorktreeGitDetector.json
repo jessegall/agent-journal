@@ -46,7 +46,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/plugins/support/"
+                "fileMatches": "(^|/)core/modules/(plugins/support/|voices/support/voice_choice\\.py$)"
             }
         ]
     },

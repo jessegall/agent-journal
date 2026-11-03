@@ -15,7 +15,7 @@ def hours(count: int) -> timedelta:
     return timedelta(hours=count)
 
 
-def to_the_next_hour(story) -> timedelta:
+def next_hour_start(story) -> timedelta:
     now = story.clock.timestamp().value
     return timedelta(minutes=60 - now.minute, seconds=-now.second)
 
@@ -95,7 +95,7 @@ def test_the_hourly_sweep_removes_a_worktree_no_worker_holds_and_keeps_its_tip_a
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
-    story.advance(to_the_next_hour(story))
+    story.advance(next_hour_start(story))
     story.tick(MAIN_SESSION)
     repository.expect_no_folder(9)
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
@@ -105,7 +105,7 @@ def test_the_sweep_leaves_the_worktree_of_a_worker_that_holds_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    story.advance(to_the_next_hour(story))
+    story.advance(next_hour_start(story))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_rows(repository.worktree_folder(worker.id).exists())
@@ -115,7 +115,7 @@ def test_the_sweep_runs_only_on_the_first_minute_of_an_hour(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     orphan_worktree(repository, 9)
-    story.advance(to_the_next_hour(story) + timedelta(minutes=5))
+    story.advance(next_hour_start(story) + timedelta(minutes=5))
     story.tick(MAIN_SESSION)
     story.expect_rows(repository.worktree_folder(9).exists())
 
@@ -123,11 +123,11 @@ def test_the_sweep_runs_only_on_the_first_minute_of_an_hour(new_story):
 def test_the_sweep_leaves_a_worktree_outside_the_worktree_folder(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
-    elsewhere = story.home.folder.parent / "elsewhere"
-    repository.git("worktree", "add", "-b", "scratch", str(elsewhere), "version-5")
-    story.advance(to_the_next_hour(story))
+    separate_folder = story.home.folder.parent / "separate_folder"
+    repository.git("worktree", "add", "-b", "scratch", str(separate_folder), "version-5")
+    story.advance(next_hour_start(story))
     story.tick(MAIN_SESSION)
-    story.expect_rows(elsewhere.exists())
+    story.expect_rows(separate_folder.exists())
 
 
 def test_a_start_of_the_journal_sweeps_the_worktrees_no_worker_holds(new_story):

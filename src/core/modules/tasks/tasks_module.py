@@ -21,7 +21,7 @@ from core.modules.tasks.migrations.m008_delegated_task_index import DelegatedTas
 from core.modules.tasks.migrations.m009_task_reads import TaskReadsTableMigration
 from core.modules.tasks.models.task_read import TaskRead
 from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
-from core.modules.tasks.commands.read_task_brief.task_brief_subcommand import TaskBriefSubcommand
+from core.modules.tasks.commands.read_task_brief.read_task_brief_subcommand import ReadTaskBriefSubcommand
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler import ResetTaskReadsHandler
 from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
 from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
@@ -98,7 +98,7 @@ class TasksModule(Module):
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"]))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration]
-    subcommands = (AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, TaskBriefSubcommand, MakeTaskDependencySubcommand,
+    subcommands = (AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]

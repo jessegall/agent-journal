@@ -1,16 +1,11 @@
-import {onMounted, onUnmounted, watch} from "vue";
 import {transport} from "../api/transport.js";
 import {POLLERS} from "../sync/pollers.js";
-import {covered, STATUS_POLL} from "../state/updating.js";
+import {covered} from "../state/updating.js";
 
 const BACKOFF_CAP_MS = 60000;
-const STATUS_CAP_MS = 3000;
 const SLOW_FACTOR = 4;
 const WAKE_SPREAD_MS = 300;
-const POKE_GAP_MS = 1000;
 const FALLBACK_EVERY_MS = 5000;
-// The least time between two reads of one on-demand poller's run, unless the poller declares its own `least`.
-const LEAST_MS = 1000;
 
 // the runs of the declared pollers, one per poller, or one per agent or row for a poller declared with `by`
 const runs = new Map();
@@ -41,13 +36,13 @@ export const unseen = () => document.hidden;
 
 function pause(run) {
     const every = interval(run);
-    if (run.failures) return jittered(Math.min(run.key === STATUS_POLL ? STATUS_CAP_MS : BACKOFF_CAP_MS, every * 2 ** run.failures));
+    if (run.failures) return jittered(Math.min(BACKOFF_CAP_MS, every * 2 ** run.failures));
     return Math.max(every, SLOW_FACTOR * run.took);
 }
 
 function later(run, ms) {
     clearTimeout(run.timer);
-    if (!kept(run) || run.paused || unseen()) return;
+    if (!kept(run) || unseen()) return;
     run.timer = setTimeout(() => round(run), ms);
 }
 
@@ -61,7 +56,7 @@ function round(run) {
     return run.running;
 }
 
-const asked = (run) => !run.paused && !unseen() && (entryOf(run.key).active?.() ?? true) && newest(run).active() && (!covered() || run.key === STATUS_POLL);
+const asked = (run) => !unseen() && (entryOf(run.key).active?.() ?? true) && newest(run).active() && !covered();
 
 async function answer(run) {
     const started = performance.now();
@@ -92,61 +87,13 @@ async function rounds(run) {
         } catch (error) {
             run.users.forEach((user) => user.failed(error));
         }
-    } while (run.again && kept(run) && !run.paused);
+    } while (run.again && kept(run));
     later(run, pause(run));
 }
 
 const matching = (key, params) => (entryOf(key).by && params ? [runs.get(placeOf(key, params))].filter(Boolean) : [...runs.values()].filter((run) => run.key === key));
 
-// Stops a poller's runs, or the one run its params name, and settles once none of them has a request in flight.
-export async function pausePoller(key, params) {
-    const paused = matching(key, params);
-    paused.forEach((run) => {
-        run.paused += 1;
-        clearTimeout(run.timer);
-    });
-    await Promise.all(paused.map((run) => run.running).filter(Boolean)).catch(() => {});
-    return paused;
-}
-
-export function resumePoller(paused) {
-    paused.forEach((run) => {
-        run.paused = Math.max(0, run.paused - 1);
-        if (!run.paused) later(run, 0);
-    });
-}
-
-// when each on-demand run may next read: a read asked for sooner than that waits for it, so a run never reads twice within its least
-const openAt = new Map();
-
-async function spaced(place, entry) {
-    const now = Date.now();
-    const free = Math.max(now, openAt.get(place) ?? 0);
-    openAt.set(place, free + (entry.least ?? LEAST_MS));
-    if (free > now) await new Promise((resolve) => setTimeout(resolve, free - now));
-}
-
-// An on-demand poller's one read, made while the poller it pauses is quiet, so the two never pull at the same time, and no sooner
-// after the run's last read than its least interval.
-export async function demand(key, params = {}) {
-    const entry = entryOf(key);
-    await spaced(placeOf(key, params), entry);
-    const paused = entry.pauses ? await pausePoller(entry.pauses, params) : [];
-    try {
-        return await transport.attemptOnce(() => entry.read(params));
-    } finally {
-        resumePoller(paused);
-    }
-}
-
 export const pollNow = (key, params) => Promise.all(matching(key, params).map(round));
-
-export function poke(key) {
-    matching(key).forEach((run) => {
-        if (run.running) return;
-        later(run, Math.max(0, POKE_GAP_MS - (performance.now() - run.started)));
-    });
-}
 
 export function wakePolls() {
     runs.forEach((run) => {
@@ -181,29 +128,9 @@ export function startPoll(key, {params = () => ({}), take = () => {}, failed = (
         // a user that joins a poller another one runs is handed its last answer now, not after the next round
         if (run.last) take(run.last.got);
     } else {
-        const fresh = {key, place, users: new Map([[token, user]]), timer: 0, failures: 0, took: 0, started: -Infinity, last: null, paused: 0};
+        const fresh = {key, place, users: new Map([[token, user]]), timer: 0, failures: 0, took: 0, started: -Infinity, last: null};
         runs.set(place, fresh);
         round(fresh);
     }
     return () => leave(place, token);
-}
-
-// startPoll for a component's life; a user whose params come to name another run moves to it
-export function usePoll(key, options = {}) {
-    const params = options.params || (() => ({}));
-    let stop = () => {};
-    onMounted(() => {
-        stop = startPoll(key, options);
-        watch(
-            () => placeOf(key, params()),
-            () => {
-                stop();
-                stop = startPoll(key, options);
-            }
-        );
-    });
-    onUnmounted(() => stop());
-    // a poller that had nothing to ask for asks the moment it has, not a whole interval later
-    if (options.active) watch(options.active, (now) => now && pollNow(key, params()));
-    return () => pollNow(key, params());
 }

@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.caller.caller_request import CallerRequest
+from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_chain import ProcessChain
 from core.base.cli.usage_error import UsageError
@@ -13,17 +13,16 @@ from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.queries.environment_query import EnvironmentQuery
 
-SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 LOGIN_VARIABLE = "USER"
 
 
 class AgentCallerResolver(CallerResolver):
     """Names who runs a command line and where: the open agent the session variable names, else the open agent
-    whose pid and process start time match a process above the caller, else the open agent the session variable
-    of its agent program names, in its environment; else the person the login name names, in the environment
-    whose folder holds the working folder. A shell of an agent program is never taken for the person, so a command
-    whose hook timed out is not recorded as theirs. A session variable that names no open agent is refused, never
-    run as anyone else."""
+    whose pid and process start time match a process above the caller, else the open agent the session
+    variable of its agent program names, in its environment; else the person the login name names, in the
+    environment whose folder holds the working folder. A shell of an agent program is never taken for the
+    person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
+    agent is refused, never run as anyone else."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers

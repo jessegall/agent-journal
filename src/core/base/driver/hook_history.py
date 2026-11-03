@@ -1,4 +1,5 @@
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.seconds import Seconds
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.timestamp import Timestamp
 
@@ -17,9 +18,9 @@ class HookHistory:
     def last_answer(self, rule_name: str, hook: AgentHook) -> Timestamp | None:
         return self.answer_time(RuleHistoryKey(hook.agent_id, rule_name, hook.layer_ref))
 
-    def has_recent_answer(self, rule_name: str, hook: AgentHook, seconds: int) -> bool:
+    def has_recent_answer(self, rule_name: str, hook: AgentHook, span: Seconds) -> bool:
         answered_at = self.last_answer(rule_name, hook)
-        return answered_at is not None and answered_at.elapsed_seconds(hook.timestamp) < seconds
+        return answered_at is not None and answered_at.elapsed_seconds(hook.timestamp) < span.count
 
     def row(self, key: RuleHistoryKey) -> object | None:
         return None

@@ -7,7 +7,7 @@ from server.viewer.share_answer import ShareAnswer
 from server.viewer.shared_row import SharedRow
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.viewer_login import ViewerLogin
-from server.viewer.viewer_window import ViewerWindow
+from core.base.registry.window_listing import WindowListing
 
 
 class SessionRoute:
@@ -25,11 +25,11 @@ class SessionRoute:
         environment = self.login.shares.environment_name(shared.environment_id)
         return SessionAnswer(session.type, session.person_id, ShareAnswer(shared.model, shared.id, self.window(shared), environment, session.ends_at.text if session.ends_at else None, session.comments))
 
-    def window(self, shared: SharedRow) -> ViewerWindow:
+    def window(self, shared: SharedRow) -> WindowListing:
         container = synced_container(self.home)
         try:
             registry = container.get(Registry)
             window = SharedWindows(registry).window(shared.model)
-            return ViewerWindow.listed(window, registry.module_fingerprints[window.module])
+            return window.listing(registry.module_fingerprints[window.module])
         finally:
             container.get(Database).close()

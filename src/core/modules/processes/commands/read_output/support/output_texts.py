@@ -37,7 +37,7 @@ class OutputTexts:
         return self.folder.all_output(process.id).splitlines()
 
     def tail(self, process: Process, command: ReadOutput) -> list[str]:
-        return self.folder.last_lines(process.id, command.tail or 0)
+        return self.folder.last_lines(process.id, command.tail)
 
     def range(self, process: Process, command: ReadOutput) -> list[str]:
         first, _, last = command.lines.partition("-")

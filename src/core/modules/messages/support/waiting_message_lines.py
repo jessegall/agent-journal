@@ -18,7 +18,8 @@ WAITING_MESSAGE_SOURCE = "messages.waiting"
 
 class WaitingMessageLines:
     """The lines that tell an idle main agent of the first message waiting for it: which message a line names,
-    the lines of an agent that still wait, and the dropping of a line whose message was read or told by a hook."""
+    the lines of an agent that still wait, and the dropping of a line whose message was read or told by a
+    hook."""
 
     def __init__(self, queries: Queries, hook_calls: HookCallQuery, bus: Bus) -> None:
         self.queries, self.hook_calls, self.bus = queries, hook_calls, bus

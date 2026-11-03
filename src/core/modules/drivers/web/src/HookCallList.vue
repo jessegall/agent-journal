@@ -5,7 +5,7 @@ const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${useWindow()
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing recorded for this agent yet" hint="Each hook the agent program sends is listed here.">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing recorded for this agent yet" hint="Each call the agent program makes to the journal is listed here.">
         <template #default="{row}">
             <span class="note">{{ row.hook }}</span>
             <span class="main">{{ row.tool }} {{ row.summary }}</span>

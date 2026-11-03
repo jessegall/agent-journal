@@ -6,8 +6,9 @@ from core.modules.tasks.commands.read_task_brief.read_task_brief import ReadTask
 from core.modules.tasks.support.task_brief import TaskBrief
 
 
-class TaskBriefSubcommand(Subcommand[ReadTaskBrief, TaskBrief]):
-    """`journal task brief <n>`: a task's title, brief and comments; an agent given a task is blocked until it ran this."""
+class ReadTaskBriefSubcommand(Subcommand[ReadTaskBrief, TaskBrief]):
+    """`journal task brief <n>`: a task's title, brief and comments; an agent given a task is blocked until it
+    ran this."""
 
     cli_name = "task"
     name = "brief"

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
+from core.base.driver.nudge_declaration import CUT_MARK
 
 EXCERPT_CHARACTERS = 160
 LEAD_CHARACTERS = 40
-CUT_MARK = "…"
 
 
 @dataclass(frozen=True)

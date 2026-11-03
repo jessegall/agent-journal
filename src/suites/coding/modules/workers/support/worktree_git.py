@@ -76,7 +76,7 @@ class WorktreeGit:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers:
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.agent_id}", f"they are kept in its stash {stash}: the worker applies them")
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.agent_id}", f"they stay in its stash {stash}: the worker applies them")
         entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
         for entry in (line.split() for line in entries):
             if entry[0] == stash:

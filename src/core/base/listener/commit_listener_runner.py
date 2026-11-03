@@ -62,11 +62,11 @@ class CommitListenerRunner:
                 return
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
-        ran = self.run_listener(entry)
-        if ran:
+        handled = self.run_listener(entry)
+        if handled:
             for listener in urgent_entries:
                 self.run_listener(listener)
-        return ran
+        return handled
 
     @staticmethod
     def run_order(entry: ListenerEntry) -> int:
@@ -89,11 +89,11 @@ class CommitListenerRunner:
         listener_class = entry.path.loaded()
         if not issubclass(listener_class, CommitListener):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
-        tally = self.container.get(Database).tally
-        points_before = tally.points()
+        counter = self.container.get(Database).tally
+        start_points = counter.points()
         try:
             self.container.get(listener_class).handle(event)
-            cost = tally.points().minus(points_before)
+            cost = counter.points().minus(start_points)
             if cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
         except Exception as error:

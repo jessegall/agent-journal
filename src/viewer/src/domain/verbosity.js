@@ -6,6 +6,3 @@ export const LEVELS = [
 
 export const DEFAULT_LEVEL = "everything";
 
-export const levelOf = (pane) => (pane && pane.verbosity) || DEFAULT_LEVEL;
-
-export const levelChoices = (pane) => LEVELS.map((l) => ({...l, current: l.value === levelOf(pane)}));

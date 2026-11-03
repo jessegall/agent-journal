@@ -105,7 +105,7 @@ class BuilderWithBriefedTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: open", "brief: the total is in cents")
 
 
-class BuilderHoldingUnreadTask(StoryFixture):
+class BuilderWithUnreadTask(StoryFixture):
     """The builder's agent started task 1 and has not read its brief, so it is blocked."""
 
     parent = BuilderWithBriefedTask
@@ -118,10 +118,10 @@ class BuilderHoldingUnreadTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
 
 
-class BuilderHoldingReadTask(StoryFixture):
+class BuilderWithReadTask(StoryFixture):
     """The builder's agent holds task 1 and ran its brief, so it is no longer blocked."""
 
-    parent = BuilderHoldingUnreadTask
+    parent = BuilderWithUnreadTask
 
     def steps(self, story) -> None:
         story.run("task brief 1", actor=story.agent)

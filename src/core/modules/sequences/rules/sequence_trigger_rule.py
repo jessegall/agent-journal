@@ -4,14 +4,13 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
-from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
+from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_STARTED
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 
 EMPTY_TRIGGERS = "[]"
-START = "start"
 
 
 class SequenceTriggerRule(DriverRule):

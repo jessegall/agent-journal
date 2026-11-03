@@ -1,5 +1,5 @@
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
 import {h} from "vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {age, ago} from "../src/format/time.js";
@@ -44,19 +44,14 @@ const window = (facts = FACTS, options = {}) => ({
 const drawn = (facts, options) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
-const pick = async (element, label) => {
-    [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === label).click();
-    await settle();
-};
-
 test("the agents window filters on running or closed", async () => {
     const element = await drawn();
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).toBeNull();
-    await pick(element, "Closed");
+    await pickButton(element, "Closed");
     expect(cardOf(element, 2)).toBeNull();
     expect(cardOf(element, 1)).not.toBeNull();
-    await pick(element, "All");
+    await pickButton(element, "All");
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).not.toBeNull();
 });
@@ -165,7 +160,7 @@ test("a worker with a task in testing and none started says it waits for its tes
 
 test("a worker with a started task does not say it waits for its tests", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("waiting for its tests");
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("Waiting: tests");
 });
 
 test("a profile's name shows with a capital letter", async () => {
@@ -208,7 +203,7 @@ test("a waiting worker's command line says it waits for its tests", async () => 
     const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
-    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("waiting for its tests"));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Waiting: tests"));
 });
 
 test("a worker's card shows its completed tasks per hour", async () => {
@@ -232,7 +227,7 @@ test("an agent with no tasks has no tasks control", async () => {
 
 test("the agents window searches the session, program, role, profile and name", async () => {
     const element = await drawn();
-    await pick(element, "All");
+    await pickButton(element, "All");
     const search = element.querySelector("[data-search-input]");
     search.value = "codex";
     search.dispatchEvent(new Event("input"));
@@ -271,7 +266,7 @@ test("switching off the working state hides the working agent", async () => {
 
 test("switching off the not running state hides an ended agent under All", async () => {
     const element = await drawn(FACTS, {stopped: false});
-    await pick(element, "All");
+    await pickButton(element, "All");
     expect(listed(element)).toEqual([2, 3]);
     expect(element.querySelector("[data-agents-hidden]").textContent).toBe("Hidden: 1 not running");
 });

@@ -38,15 +38,15 @@ def test_another_agent_cannot_report_the_start_of_a_part_that_is_not_its_own(new
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     second_agent = story.new_row_id(SECOND_AGENT_START)
-    stranger_agent = type(story.agent)(second_agent, story.agent.type)
-    story.expect_refusal("process part-start 1 --position 1", "cannot report its parts", actor=stranger_agent)
+    unrelated_agent = type(story.agent)(second_agent, story.agent.type)
+    story.expect_refusal("process part-start 1 --position 1", "cannot report its parts", actor=unrelated_agent)
 
 
 def test_another_agent_cannot_report_on_a_run_that_is_not_its_own(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     second_agent = story.new_row_id(SECOND_AGENT_START)
-    stranger_agent = type(story.agent)(second_agent, story.agent.type)
-    story.expect_refusal(f"process end 1 --exit-code 0 --bytes {BYTES_LONG} --lines 80", "cannot report its end", actor=stranger_agent)
-    story.expect_refusal("process part-end 1 --position 1 --exit-code 0", "cannot report its parts", actor=stranger_agent)
+    unrelated_agent = type(story.agent)(second_agent, story.agent.type)
+    story.expect_refusal(f"process end 1 --exit-code 0 --bytes {BYTES_LONG} --lines 80", "cannot report its end", actor=unrelated_agent)
+    story.expect_refusal("process part-end 1 --position 1 --exit-code 0", "cannot report its parts", actor=unrelated_agent)
     story.expect_success("process show 1", "state: running")

@@ -7,8 +7,9 @@ BUILD_TIMEOUT_SECONDS = 180
 
 
 class GoBuild:
-    """Builds one of the repository's Go programs into a story's folder, statically and under a time limit, once,
-    and gives the clean environment the stories run them in, so no journal variable of this session leaks in."""
+    """Builds one of the repository's Go programs into a story's folder, statically and under a time limit,
+    once, and gives the clean environment the stories run them in, so no journal variable of this session
+    leaks in."""
 
     @staticmethod
     def built(program: str, binary: Path) -> Path:

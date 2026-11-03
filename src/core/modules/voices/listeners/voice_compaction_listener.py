@@ -10,7 +10,8 @@ from core.modules.voices.support.voice_nudges import VOICE_LINE
 
 
 class VoiceCompactionListener(SaveListener):
-    """When a main agent's context is compacted it is told how to talk to the user again, without the introduction."""
+    """When a main agent's context is compacted it is told how to talk to the user again, without the
+    introduction."""
 
     name = "voices.compaction"
     event = "hook_call.create"
@@ -20,5 +21,7 @@ class VoiceCompactionListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         call = change.new_row
-        if isinstance(call, HookCall) and call.is_compaction and self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
-            self.lines.tell(call.agent_id, VOICE_LINE, change)
+        if not isinstance(call, HookCall) or not call.is_compaction:
+            return
+        if self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
+            self.lines.deliver(call.agent_id, VOICE_LINE, change)

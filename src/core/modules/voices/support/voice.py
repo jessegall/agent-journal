@@ -8,7 +8,8 @@ PLAIN_VOCABULARY = ("The voice shapes only your tone and how you address me. Eve
 
 @dataclass(frozen=True)
 class Voice:
-    """How the agent talks in the chat: its tone, how it addresses the user, its humour, and how it names the agents it sends."""
+    """How the agent talks in the chat: its tone, how it addresses the user, its humour, and how it names the
+    agents it sends."""
 
     name: str
     text: str
@@ -22,7 +23,7 @@ class Voice:
     def called(self, title: str, first_name: str) -> str:
         return self.address_form.called(title, first_name, self.address)
 
-    def sample_for(self, title: str, first_name: str) -> str:
+    def sample_line(self, title: str, first_name: str) -> str:
         return self.sample.replace("{you}", self.called(title, first_name) or "you")
 
     def instruction(self, title: str, first_name: str) -> str:

@@ -5,7 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog

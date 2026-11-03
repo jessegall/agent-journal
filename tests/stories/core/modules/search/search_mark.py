@@ -8,8 +8,8 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 
 def search_hook(line: str):
-    words = line.split()
-    return HookSamples.shell(line, ShellPart(words[0], CommandCategory.JOURNAL, words[1:], subcommand=words[1]))
+    tokens = line.split()
+    return HookSamples.shell(line, ShellPart(tokens[0], CommandCategory.JOURNAL, tokens[1:], subcommand=tokens[1]))
 
 
 def details(story) -> list[dict]:
@@ -32,10 +32,10 @@ def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(
     story.run('doc make "Cart rules" --abstract "How the cart counts" --body "in cents"', actor=story.user)
     story.hook("s-1", search_hook("journal search find cart"))
     story.run_listeners()
-    [found] = details(story)
-    assert found["terms"] == ["cart"] and found["total"] == 2
-    assert [(hit["cli_name"], hit["id"]) for hit in found["hits"]] == [("doc", 1), ("task", 1)]
-    assert all(hit["excerpt"] for hit in found["hits"])
+    [mark] = details(story)
+    assert mark["terms"] == ["cart"] and mark["total"] == 2
+    assert [(hit["cli_name"], hit["id"]) for hit in mark["hits"]] == [("doc", 1), ("task", 1)]
+    assert all(hit["excerpt"] for hit in mark["hits"])
 
 
 def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_story):
@@ -44,8 +44,8 @@ def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_stor
         story.run(f'task make "Cart task {number}" --environment main', actor=story.user)
     story.hook("s-1", search_hook("journal search find cart"))
     story.run_listeners()
-    [found] = details(story)
-    assert len(found["hits"]) == 10 and found["total"] == 14
+    [mark] = details(story)
+    assert len(mark["hits"]) == 10 and mark["total"] == 14
     assert "Searched for cart: 14 rows" in marks_text(story)
 
 
@@ -55,8 +55,8 @@ def test_the_model_option_narrows_the_search_the_mark_shows(new_story):
     story.run('doc make "Cart rules" --abstract "How the cart counts" --body "in cents"', actor=story.user)
     story.hook("s-1", search_hook("journal search find cart --model task"))
     story.run_listeners()
-    [found] = details(story)
-    assert [hit["cli_name"] for hit in found["hits"]] == ["task"]
+    [mark] = details(story)
+    assert [hit["cli_name"] for hit in mark["hits"]] == ["task"]
 
 
 def test_a_command_that_is_no_search_and_a_search_of_an_unknown_model_leave_no_mark(new_story):

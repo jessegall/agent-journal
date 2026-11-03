@@ -22,10 +22,10 @@ from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodo
 from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
 from suites.coding.modules.workers.rules.unmerged_worker_rule import UnmergedWorkerRule
 from suites.coding.modules.workers.rules.small_batch_rule import SmallBatchRule
-from suites.coding.modules.workers.rules.idle_worker_retire_rule import IdleWorkerRetireRule
-from suites.coding.modules.workers.rules.worktree_sweep_rule import WorktreeSweepRule
-from suites.coding.modules.workers.listeners.boot_worktree_sweep_listener import BootWorktreeSweepListener
-from suites.coding.modules.workers.commands.sweep_worktrees.sweep_worktrees_handler import SweepWorktreesHandler
+from suites.coding.modules.workers.rules.inactive_worker_retire_rule import InactiveWorkerRetireRule
+from suites.coding.modules.workers.rules.orphan_worktree_rule import OrphanWorktreeRule
+from suites.coding.modules.workers.listeners.boot_orphan_worktrees_listener import BootOrphanWorktreesListener
+from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees_handler import RemoveOrphanWorktreesHandler
 from suites.coding.modules.workers.rules.worker_file_rule import WorkerFileRule
 from suites.coding.modules.workers.rules.worker_judge_scope_rule import WorkerJudgeScopeRule
 from suites.coding.modules.workers.rules.worker_log_due_rule import WorkerLogDueRule
@@ -37,7 +37,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker_handler impo
 from suites.coding.modules.workers.commands.send_worker.send_worker_subcommand import SendWorkerSubcommand
 from suites.coding.modules.workers.listeners.ended_worker_job_listener import EndedWorkerJobListener
 from suites.coding.modules.workers.listeners.delegated_task_comment_listener import DelegatedTaskCommentListener
-from suites.coding.modules.workers.listeners.taken_task_listener import TakenTaskListener
+from suites.coding.modules.workers.listeners.reassigned_task_listener import ReassignedTaskListener
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
 from suites.coding.modules.workers.listeners.worker_job_resume_listener import WorkerJobResumeListener
 from suites.coding.modules.workers.listeners.released_stop_listener import ReleasedStopListener
@@ -104,15 +104,15 @@ class WorkersModule(Module):
     migrations = [WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
     views = [WorkerPoints]
     moves = [WorkersMove]
-    handlers = [StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, SweepWorktreesHandler]
+    handlers = [StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
     subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, IdleWorkerRetireRule, WorktreeSweepRule, WorkerReportRule]
+    driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    listeners = [TakenTaskListener, DelegatedTaskCommentListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, BootWorktreeSweepListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
-    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.ONE_AGENT,
+    listeners = [ReassignedTaskListener, DelegatedTaskCommentListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
+    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
-               WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, shows=WindowShows.ONE_AGENT, reads=["todo-item list"],
+               WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),
                WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],

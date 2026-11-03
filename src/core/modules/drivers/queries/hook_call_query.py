@@ -10,8 +10,8 @@ from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
+from core.base.module.driver_entries import DRIVERS_MODULE
 
-DRIVERS_MODULE = "journal.core.drivers"
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 IDLE_LIMIT_SECONDS = 30

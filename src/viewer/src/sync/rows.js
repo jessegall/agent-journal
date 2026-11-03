@@ -1,6 +1,6 @@
 import {remember, remembered} from "../platform/storage.js";
 import {isWholePlan} from "../domain/plans.js";
-import {ref, toRaw, watch} from "vue";
+import {ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {withoutAnswered} from "../domain/placeholders.js";
@@ -151,14 +151,6 @@ function stillWhole(held, arriving) {
 
 export const isWhole = (r) => !isSummary(r);
 
-// the rows of these ids held as list rows alone, read whole in one request, as a task's plan comes only with a task read by id
-export async function wholeRows(table, ids) {
-    const summaries = ids.filter((id) => (store.rows[table] || []).some((r) => r.id === id && isSummary(r)));
-    if (!summaries.length) return;
-    const fresh = new Map((await api.list(table, {ids: summaries})).rows.map((r) => [r.id, r]));
-    store.rows[table] = (store.rows[table] || []).map((r) => fresh.get(r.id) || r);
-}
-
 // one row read whole by its own endpoint, in place of its index row
 export async function whole(table, id) {
     const row = await api.show(table, id);
@@ -250,31 +242,6 @@ async function readOlderPage(table) {
     store.paging.size[table] = store.rows[table].length;
     store.paging.more[table] = !got.is_last_page;
 }
-
-const closedMore = (table) => `${table}:closed`;
-
-function addedRows(table, got) {
-    const held = store.rows[table] || [];
-    const known = new Set(held.map((r) => r.id));
-    store.rows[table] = [...got.rows.filter((r) => !known.has(r.id)), ...held].sort(orderOf(table));
-    store.paging.size[table] = store.rows[table].length;
-}
-
-export async function closedFirst(table) {
-    if (closedMore(table) in store.paging.more) return;
-    const got = await api.list(table, {limit: pageOf(table), closed: true});
-    addedRows(table, got);
-    store.paging.more[closedMore(table)] = !got.is_last_page;
-}
-
-export async function closedEarlier(table) {
-    const before = (store.rows[table] || []).filter(isClosed).reduce((low, r) => Math.min(low, r.id), Infinity);
-    const got = await api.list(table, {limit: pageOf(table), closed: true, before: Number.isFinite(before) ? before : 0});
-    addedRows(table, got);
-    store.paging.more[closedMore(table)] = !got.is_last_page;
-}
-
-export const closedHasMore = (table) => Boolean(store.paging.more[closedMore(table)]);
 
 async function fetched(tables, whole = false) {
     tables.forEach((table) => changed.delete(table));
@@ -384,29 +351,6 @@ export function refresh(tables, because = true) {
     return drain();
 }
 
-export async function optimistic(table, row, send) {
-    store.rows[table] = [...(store.rows[table] || []), row];
-    try {
-        await send();
-        await refresh([table]);
-    } finally {
-        store.rows[table] = (store.rows[table] || []).filter((r) => toRaw(r) !== row);
-    }
-}
-
-export async function patched(row, change, send) {
-    change(row);
-    try {
-        await send();
-    } catch (refusal) {
-        // a refused change is read over by the whole newest page, since a read of the changes alone would not return a row the server never changed
-        loaded.delete(row.table);
-        throw refusal;
-    } finally {
-        await refresh([row.table]);
-    }
-}
-
 export function reload() {
     owedWhole = true;
     return drain();
@@ -422,15 +366,11 @@ function keepEntries(entries) {
     remember(entriesKey(), store.entries.slice(-KEPT_ENTRIES));
 }
 
-export function recallEntries() {
-    if (!store.entries.length) store.entries = remembered(entriesKey(), []);
-}
-
 const ROW_CHANGES = ["created", "updated", "deleted"];
 
 // The tables a row's change touches in the viewer: a plan is shown with its phases, so a phase's change is the plans' too.
 const SHOWN_AS = {phases: ["phases", "plans"]};
-export const tablesOf = (table) => SHOWN_AS[table] || [table];
+const tablesOf = (table) => SHOWN_AS[table] || [table];
 
 // The tables an entry tells the viewer to read again: a row's change names its table, a link's change the tables of the two rows it joins,
 // as a task put under a plan's phase changes the plan, a setting's change the settings.

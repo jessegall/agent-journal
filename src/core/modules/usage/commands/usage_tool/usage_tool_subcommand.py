@@ -23,14 +23,14 @@ from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 SHOWN_RUNS = 2
 QUEUE_LINE = "waiting for a spot in the queue"
-NO_COMMAND_NOTE = "has run no command yet"
+IDLE_NOTE = "has run no command yet"
 TURN_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.STOP, HookEventName.PROMPT, HookEventName.SESSION_START)
 
 
 class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     """`journal usage tool [--environment <name>] [--agent <n>]`: the tool the main agent, or the agent named,
-    last began, empty once it has stopped or a new turn began, and then what it waits for: the runs it left going
-    and, for the main agent, the open questions."""
+    last began, empty once it has stopped or a new turn began, and then what it waits for: the runs it left
+    going and, for the main agent, the open questions."""
 
     cli_name = "usage"
     name = "tool"
@@ -59,7 +59,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
         has_run_command = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
-        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else NO_COMMAND_NOTE)
+        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE)
 
     def running_part_text(self, call: HookCall) -> str:
         runs = self.processes.agent(call.agent_id).newest().limited(1)

@@ -12,5 +12,5 @@ class ReadOutput(Command[OutputLines]):
     summary: bool = False
     all: bool = False
     lines: str = ""
-    tail: int | None = None
+    tail: int = 0
     reader: str = ""

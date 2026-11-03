@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from core.base.type_guards import is_mapping
 from core.base.caller.caller_request_error import CallerRequestError
 
+SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
+
 
 @dataclass(frozen=True)
 class CallerRequest:

@@ -16,8 +16,9 @@ from core.modules.processes.support.run_title import RunTitle
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
-    """Saves a running process, its parts, one for each command of the line in order, and the output it will
-    keep with the reader the line's alias names, which reads all parts, or else the one chosen for one part."""
+    """Saves a running process, its parts, one for each command of the line in order, and the output it
+    will keep with the reader the line's alias names, which reads all parts, or else the one chosen for one
+    part."""
 
     command = StartProcess
 

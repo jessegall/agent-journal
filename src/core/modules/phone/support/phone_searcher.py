@@ -1,4 +1,4 @@
-from core.base.viewer.window_searcher import ModelSearcher
+from core.base.viewer.model_searcher import ModelSearcher
 from core.modules.phone.models.phone import Phone
 
 

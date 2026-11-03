@@ -1,7 +1,7 @@
 import json
 
 from core.base.journal_home import JournalHome
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement

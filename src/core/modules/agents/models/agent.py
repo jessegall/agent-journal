@@ -3,6 +3,8 @@ from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.base.agent_role import AgentRole
 
+ENDED_FIELD = "ended_at"
+
 
 @dataclass(frozen=True, kw_only=True)
 class Agent(Model):

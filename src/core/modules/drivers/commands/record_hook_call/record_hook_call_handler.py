@@ -34,9 +34,9 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.base.module.driver_entries import DRIVERS_MODULE
 
 
-DRIVERS_MODULE = "journal.core.drivers"
 SUMMARY_CHARACTERS = 200
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):

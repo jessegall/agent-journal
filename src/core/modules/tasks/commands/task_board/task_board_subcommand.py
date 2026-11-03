@@ -28,10 +28,10 @@ def board_group(text: str) -> TaskState | str:
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     """`journal task board [--environment <name>] [--state <state> --before-id <n> --before-closed-at <time>
-    --limit <n>]`: the first page of every state in one answer, or one more page of one state; `--limit` sets the rows of a page in either. A finished
-    state runs from the task closed last and pages by that time; any other from the newest task, by its
-    number. The tasks delegated to a worker that are not finished are the group `delegated`, apart from the
-    state groups."""
+    --limit <n>]`: the first page of every state in one answer, or one more page of one state; `--limit` sets
+    the rows of a page in either. A finished state runs from the task closed last and pages by that time; any
+    other from the newest task, by its number. The tasks delegated to a worker that are not finished are the
+    group `delegated`, apart from the state groups."""
 
     cli_name = "task"
     name = "board"

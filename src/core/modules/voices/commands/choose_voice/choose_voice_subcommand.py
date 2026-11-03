@@ -9,7 +9,7 @@ from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voices_settings import PROFILE_KEY
 
 
-class VoiceChooseSubcommand(Subcommand[SetSetting, CurrentSetting]):
+class ChooseVoiceSubcommand(Subcommand[SetSetting, CurrentSetting]):
     """`journal voice choose <name>`: the agent talks in this voice. Only the user chooses it."""
 
     cli_name = "voice"

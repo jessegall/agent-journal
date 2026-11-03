@@ -17,7 +17,7 @@ class OutputLines:
         parser.add_argument("--summary", action="store_true")
         parser.add_argument("--all", action="store_true")
         parser.add_argument("--lines", default="")
-        parser.add_argument("--tail", type=int)
+        parser.add_argument("--tail", type=int, default=0)
         parser.add_argument("--reader", default="")
 
     def write(self, output: Output, empty: str = "") -> None:

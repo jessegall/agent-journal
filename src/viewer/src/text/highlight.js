@@ -25,55 +25,6 @@ const LANGUAGES = {
     text: {keywords: "", quotes: []},
 };
 
-const BY_EXTENSION = {
-    js: "js",
-    mjs: "js",
-    cjs: "js",
-    ts: "js",
-    tsx: "js",
-    jsx: "js",
-    vue: "html",
-    py: "py",
-    php: "php",
-    c: "c",
-    h: "c",
-    cpp: "c",
-    cc: "c",
-    hpp: "c",
-    cs: "c",
-    java: "c",
-    kt: "c",
-    go: "c",
-    rs: "c",
-    swift: "c",
-    scala: "c",
-    dart: "c",
-    sh: "sh",
-    bash: "sh",
-    zsh: "sh",
-    fish: "sh",
-    css: "css",
-    scss: "css",
-    less: "css",
-    html: "html",
-    htm: "html",
-    xml: "html",
-    svg: "html",
-    json: "json",
-    lock: "json",
-    yml: "yaml",
-    yaml: "yaml",
-    toml: "yaml",
-    ini: "yaml",
-    sql: "sql",
-    md: "md",
-    markdown: "md",
-};
-
-export function languageOf(path) {
-    return BY_EXTENSION[String(path).split(".").pop().toLowerCase()] || "text";
-}
-
 function startsAt(text, i, mark) {
     return mark && text.startsWith(mark, i);
 }

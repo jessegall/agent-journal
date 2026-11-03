@@ -1,11 +1,10 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {createApp, h, nextTick, reactive} from "vue";
+import {nextTick, reactive} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
-import DockStack from "../src/chat/DockStack.vue";
 import {DOCK_ARRIVAL_MS} from "../src/kit/ChatDock.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
-import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
+import {stacked, unmountStacked} from "./support/stackedDock.js";
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -15,28 +14,18 @@ vi.stubGlobal("ResizeObserver", class {
 
 const DECLARATION = {type: "plans.plan", icon: "plan", title: "Plan {row_id}", body_url: "", draws_head: false, buttons: [], reads: []};
 const CHAT_DOCK = readFileSync(resolve(__dirname, "../src/kit/ChatDock.vue"), "utf8");
-let app;
 
 beforeEach(() => {
     vi.useFakeTimers();
     loadDockDeclarations([DECLARATION]);
 });
 afterEach(() => {
-    app?.unmount();
+    unmountStacked();
     document.body.innerHTML = "";
     vi.useRealTimers();
 });
 
 const plan = (id, extra) => ({id, type: "plans.plan", state: "docked", kept: false, leaves_at: null, target_model: "plans", target_id: id, text: "", ...extra});
-
-function stacked(items) {
-    const host = document.createElement("div");
-    document.body.append(host);
-    app = createApp({render: () => h(DockStack, {items})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
-    app.mount(host);
-    return host;
-}
 
 test("a card that docks comes in under the dock enter classes", async () => {
     const items = reactive([]);

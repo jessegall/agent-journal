@@ -92,6 +92,6 @@ export async function uploaded(file, signal = undefined) {
     }
 }
 
-export function lineWords(line) {
+function lineWords(line) {
     return [...line.matchAll(WORD)].map((match) => match[1] ?? match[2] ?? match[3]);
 }

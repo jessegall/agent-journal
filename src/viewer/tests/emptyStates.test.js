@@ -3,7 +3,7 @@ import {join, resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {createApp, h, ref} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
 import RowList from "../kit/RowList.vue";
 import {useListTools} from "../kit/useListTools.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
@@ -96,10 +96,7 @@ test("a search of the helpers window that finds none says nothing matches", asyn
 
 test("the other tabs of the helpers window say what is empty in their own terms", async () => {
     const element = await agents(helpers, {"agent list": page([]), "agent running": page([])});
-    const pick = async (label) => {
-        [...element.querySelectorAll(".segmented button")].find((button) => button.textContent.trim() === label).click();
-        await settle();
-    };
+    const pick = (label) => pickButton(element, label, ".segmented button");
     await pick("Closed");
     expect(words()).toEqual(["No helper has ended yet", "A helper that finished or was stopped shows here."]);
     await pick("All");

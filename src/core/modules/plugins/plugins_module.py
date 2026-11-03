@@ -1,6 +1,6 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.plugins.support.plugin_searcher import PluginSearcher
@@ -53,8 +53,6 @@ from core.modules.plugins.rules.plugin_rule import PluginRule
 from core.modules.plugins.support.plugin_marks import PLUGIN_MARKS
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
 
-BUILT = ["make", "edit", "show", "list", "delete"]
-
 
 class PluginsModule(Module):
     """Adds plugins: programs the person installs into the journal, switches on or off and configures, which
@@ -67,9 +65,9 @@ class PluginsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes"]
     skills = [SkillDeclaration("journal-plugins", "See what plugins do and propose one for the user to install; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
-    models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT),
-              ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT),
-              ModelDeclaration(PluginQueueFile, excluded_subcommands=BUILT)]
+    models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginSetting, excluded_subcommands=ALL_SUBCOMMANDS),
+              ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
+              ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]
     moves = [PluginsMove]
     windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]

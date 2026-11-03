@@ -5,7 +5,7 @@ from core.modules.schedules.models.enums.schedule_mark_variant import ScheduleMa
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 
 SCHEDULES_MODULE = "journal.core.schedules"
-RUN_FIELD = "last_run_at"
+JOB_RUN_FIELD = "last_run_at"
 
 
 class JobRunMarkListener(MarkListener):
@@ -16,7 +16,7 @@ class JobRunMarkListener(MarkListener):
     module_name = SCHEDULES_MODULE
 
     def handle(self, event: LoggedEvent) -> None:
-        if RUN_FIELD not in event.data:
+        if JOB_RUN_FIELD not in event.data:
             return
         job = self.queries.query(ScheduledJob).find(event.row_id)
         self.show(event, ScheduleMarkType.RUN, ScheduleMarkVariant.RUN, f"Scheduled job {job.job_id} ran", job.environment_id, job.agent_id, "scheduled_job", job.id, detail=job.prompt)

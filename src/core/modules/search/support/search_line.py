@@ -16,14 +16,14 @@ class SearchLine:
     @classmethod
     def parsed(cls, line: str) -> "SearchLine | None":
         try:
-            words = shlex.split(line)
+            tokens = shlex.split(line)
         except ValueError:
             return None
-        if tuple(words[: len(COMMAND)]) != COMMAND:
+        if tuple(tokens[: len(COMMAND)]) != COMMAND:
             return None
         terms: list[str] = []
         models: list[str] = []
-        arguments = iter(words[len(COMMAND):])
+        arguments = iter(tokens[len(COMMAND):])
         for word in arguments:
             if word in SHELL_OPERATORS:
                 break

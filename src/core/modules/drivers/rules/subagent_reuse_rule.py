@@ -36,6 +36,6 @@ class SubagentReuseRule(DriverRule):
         if not paths or profile in INDEPENDENT_PROFILES:
             return RuleAnswer.allowed()
         for row in self.queries.query(SubagentDispatch).filter(agent_id=hook.agent_id, profile=profile).newest().all_rows():
-            if row.ended_at is not None and row.subagent_id is not None and PathMentions.shared(paths, PathMentions.found(row.instruction)):
+            if row.ended_at is not None and row.subagent_id is not None and PathMentions.overlap(paths, PathMentions.found(row.instruction)):
                 return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(row.subagent_id).session))
         return RuleAnswer.allowed()

@@ -6,11 +6,12 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.environments.models.environment import Environment
-from suites.coding.modules.workers.commands.sweep_worktrees.sweep_worktrees import SweepWorktrees
+from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
 
 
-class BootWorktreeSweepListener(CommitListener):
-    """As the journal starts, the worktrees no worker holds are swept away in every environment that is a repository."""
+class BootOrphanWorktreesListener(CommitListener):
+    """As the journal starts, the worktrees no worker holds are swept away in every environment that is a
+    repository."""
 
     name = "workers.boot-worktree-sweep"
     event = JOURNAL_BOOTING_EVENT
@@ -21,6 +22,6 @@ class BootWorktreeSweepListener(CommitListener):
     def handle(self, event: LoggedEvent) -> None:
         for environment in tuple(self.queries.query(Environment).all_rows()):
             try:
-                self.bus.run(SweepWorktrees(environment.id), Actor.core(), environment_id=environment.id)
+                self.bus.run(RemoveOrphanWorktrees(environment.id), Actor.core(), environment_id=environment.id)
             except Refusal:
                 continue

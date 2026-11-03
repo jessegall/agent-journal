@@ -8,7 +8,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 
-class TakenTaskListener(SaveListener):
+class ReassignedTaskListener(SaveListener):
     """A task taken from a worker that was working on it moves the worker on to its next task; what the worker
     committed stays on its branch."""
 
@@ -27,4 +27,4 @@ class TakenTaskListener(SaveListener):
             return
         following = self.tasks.next_delegated(old.holder_id)
         if following is not None:
-            self.advance.after_taken_task(worktree, old, following, change.context)
+            self.advance.after_reassigned_task(worktree, old, following, change.context)

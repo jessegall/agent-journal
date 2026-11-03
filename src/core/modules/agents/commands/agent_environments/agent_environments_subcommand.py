@@ -21,7 +21,7 @@ class AgentEnvironmentsSubcommand(ReadSubcommand[ActiveEnvironments]):
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> ActiveEnvironments:
-        return ActiveEnvironments(sorted({agent.environment_id for agent in MainAgentFinder.in_every_environment(self.queries)}))
+        return ActiveEnvironments(sorted({agent.environment_id for agent in MainAgentFinder.all_running(self.queries)}))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ActiveEnvironments):

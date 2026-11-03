@@ -213,7 +213,7 @@ def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
 
 
 def test_a_line_that_could_not_be_typed_goes_to_the_next_hook(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run_listeners()
@@ -231,7 +231,7 @@ class BrokenTyping(TerminalTyping):
 
 
 def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, BrokenTyping())
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run_listeners()
@@ -239,7 +239,7 @@ def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
 
 
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run_listeners()
@@ -489,7 +489,7 @@ def test_editing_an_unread_message_says_nothing(new_story):
     assert not any("updated" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
 
 
-class IdleLead(StoryFixture):
+class StoppedLead(StoryFixture):
     """The sample lead has a person, was given a prompt and let to stop, so it sits idle."""
 
     parent = LeadStarted
@@ -503,8 +503,8 @@ class IdleLead(StoryFixture):
         story.expect_success(f"agent show {story.agent.id}", "session: s-1")
 
 
-def idle_lead_story(new_story):
-    return new_story(SAMPLES, fixture=IdleLead)
+def stopped_lead_story(new_story):
+    return new_story(SAMPLES, fixture=StoppedLead)
 
 
 class RefusingThenTyping(KeptTyping):
@@ -520,7 +520,7 @@ class RefusingThenTyping(KeptTyping):
 
 
 def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_again(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
     agent = story.agent
@@ -539,7 +539,7 @@ def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_
 
 
 def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
     story.run('message send "Are you there" --environment main', actor=story.user)
@@ -555,7 +555,7 @@ def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
 
 
 def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks_pass(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
     agent = story.agent
@@ -569,7 +569,7 @@ def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks
 
 
 def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, RefusingThenTyping())
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.advance(timedelta(seconds=11))
@@ -581,7 +581,7 @@ def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(new_story):
 
 
 def test_a_message_read_before_its_line_was_typed_is_never_typed_nor_told_again(new_story):
-    story = idle_lead_story(new_story)
+    story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
     story.run('message send "Are you there" --environment main', actor=story.user)

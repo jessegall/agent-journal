@@ -5,7 +5,7 @@ from core.base.container import Container
 from core.base.model.model import Model
 from core.base.page import Page
 from core.base.refusal import Refusal
-from core.base.registry.dotted_path import DottedPath
+from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.window_searcher import WindowSearcher

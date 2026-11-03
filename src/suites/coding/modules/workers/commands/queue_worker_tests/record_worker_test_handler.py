@@ -25,8 +25,8 @@ LINE_SOURCE = "workers"
 
 class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     """Checks a proof whose test passed, or sends it back short with the run's output to read. When a worker's
-    last test has ended, failures go back to the worker; all passed completes the tasks they prove and starts its
-    next task, or, once handed in, tells the main agent to merge."""
+    last test has ended, failures go back to the worker; all passed completes the tasks they prove and starts
+    its next task, or, once handed in, tells the main agent to merge."""
 
     command = RecordWorkerTest
 

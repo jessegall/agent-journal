@@ -18,7 +18,7 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HO
 HOUR_SECONDS = 3600
 
 
-class IdleWorkerRetireRule(DriverRule):
+class InactiveWorkerRetireRule(DriverRule):
     """A tick retires each worker of the main agent that has used no tool for the hours the setting gives and
     has delivered nothing: its task opens again, its worktree is removed and the worker ends."""
 

@@ -21,9 +21,9 @@ BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]
 
 
 class LinkPinCheck:
-    """The lines a text earns: words that claim a pin no pin in the last minute backs are pointed out, else the first
-    link no open pin has is offered, each link on its own count, and a ! command the agent asks the user to run
-    is asked to become a button. The link of a closed pin is offered again."""
+    """The lines a text earns: words that claim a pin no pin in the last minute backs are pointed out, else
+    the first link no open pin has is offered, each link on its own count, and a ! command the agent asks the
+    user to run is asked to become a button. The link of a closed pin is offered again."""
 
     def __init__(self, queries: Queries, clock: Clock) -> None:
         self.queries, self.clock = queries, clock
@@ -41,7 +41,7 @@ class LinkPinCheck:
         return replace(nudge, key=f"{nudge.key}.{name}")
 
     def first_unpinned_command(self, environment_id: int, text: str) -> str | None:
-        commands = dict.fromkeys(f"! {found.strip()}" for found in BANG_COMMAND.findall(text))
+        commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
         pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
         return next((command for command in commands if not pins.filter(link=command).exists()), None)
 

@@ -1,5 +1,4 @@
 import {api} from "../api/client.js";
-import {settingChanges} from "../domain/settingsCatalog.js";
 import {store} from "../state/store.js";
 
 let latest = 0;
@@ -40,6 +39,3 @@ export async function saveSettings(changes, client = api) {
     }
 }
 
-export function saveSetting(target, value) {
-    return saveSettings(settingChanges(target, value, store.settings || {}));
-}

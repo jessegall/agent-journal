@@ -28,7 +28,7 @@ const open = (hit) => peekRef(`${tableOf(hit)}:${hit.id}`);
         <template v-if="hidden > 0">
             <button type="button" class="search-child search-more" data-search-more @click="context.open(SEARCH_PAGE)">
                 <Icon name="search" :size="12" />
-                <span>All {{ found.total }} rows on the search page</span>
+                <span>All {{ found.total }} results on the search page</span>
             </button>
         </template>
     </div>

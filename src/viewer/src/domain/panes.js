@@ -9,8 +9,6 @@ const split = (dir, r, a, b) => ({dir, r, a, b});
 // one empty pane, which a suite's layout or a preset arranges
 export const fresh = () => ({tree: leaf(1), panes: {1: {tabs: [], active: ""}}, next: 2});
 
-const shaped = (tabs, active = tabs[0]) => ({tabs, active});
-
 export const FULL = "full";
 export const CONTAINED = "contained";
 
@@ -159,10 +157,6 @@ export function fronted(layout, id) {
     const f = floating(layout).find((x) => x.id === id);
     return f ? {...unfloated(layout, id), floats: [...floating(layout).filter((x) => x.id !== id), f]} : layout;
 }
-
-export const widthOf = (pane) => (pane && pane.width) || FULL;
-
-export const schemed = (layout, scheme) => ({...kept(layout, layout.tree, layout.panes, layout.next), scheme});
 
 export function tuned(layout, id, patch) {
     const change = draft(layout);

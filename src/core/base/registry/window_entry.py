@@ -1,14 +1,17 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
+from core.base.registry.window_listing import WindowListing
+from core.base.viewer.window_loading import WindowLoading
+
 
 @dataclass(frozen=True)
 class WindowEntry:
-    """A registered window: its name, the module that declares it, its title, entry file, loading and place, whose work it shows,
-    the agent roles it is for, the read lines, commands and events it may use, whether the journal ships its
-    module, why it is unavailable when its kit does not fit this viewer (empty when it does), and its icon,
-    float size, pane menu options, count line, the read lines a share link may use and its search, empty when
-    it declares none."""
+    """A registered window: its name, the module that declares it, its title, entry file, loading and place,
+    whose work it shows, the agent roles it is for, the read lines, commands and events it may use, whether
+    the journal ships its module, why it is unavailable when its kit does not fit this viewer (empty when it
+    does), and its icon, float size, pane menu options, count line, the read lines a share link may use and
+    its search, empty when it declares none."""
 
     name: str
     module: str
@@ -33,3 +36,12 @@ class WindowEntry:
     tabs: Sequence[Mapping[str, str]] = ()
     search: Mapping[str, object] = field(default_factory=dict[str, object])
     shows: str = "environment"
+
+    def listing(self, fingerprint: str) -> WindowListing:
+        document = self.loading == WindowLoading.DOCUMENT
+        entry_url = "" if document else f"/modules/{self.module}/{self.entry}?v={fingerprint}"
+        search = {key: value for key, value in self.search.items() if key != "searcher"}
+        return WindowListing(self.name, self.module, self.title, entry_url, self.entry if document else "", self.loading, self.place, self.roles,
+                             self.reads, self.runs, self.events, self.unavailable_reason, self.shipped, self.icon,
+                             self.float_width, self.float_height, self.options, self.count, self.group, self.auto_scroll, self.tabs,
+                             search, self.shows)

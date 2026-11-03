@@ -50,13 +50,13 @@ def test_a_server_killed_with_its_tunler_up_finds_one_tunler_after_it_starts_aga
 def test_a_pid_that_names_some_other_program_is_left_alone(program, tmp_path):
     home = JournalHome(tmp_path / "project" / ".journal")
     home.folder.mkdir(parents=True)
-    bystander = subprocess.Popen(["sleep", "300"])
+    unrelated_process = subprocess.Popen(["sleep", "300"])
     try:
-        (home.folder / "tunnel.pid").write_text(str(bystander.pid))
+        (home.folder / "tunnel.pid").write_text(str(unrelated_process.pid))
         client = real_client(home)
         client.start(PORT, SUBDOMAIN)
-        assert bystander.poll() is None
+        assert unrelated_process.poll() is None
         client.stop()
     finally:
-        bystander.kill()
-        bystander.wait()
+        unrelated_process.kill()
+        unrelated_process.wait()

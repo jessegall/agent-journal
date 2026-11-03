@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+SECONDS_PER_MINUTE = 60
+
 
 @dataclass(frozen=True, order=True)
 class Timestamp:
@@ -22,3 +24,6 @@ class Timestamp:
 
     def elapsed_seconds(self, later: "Timestamp") -> float:
         return (later.value - self.value).total_seconds()
+
+    def elapsed_minutes(self, later: "Timestamp") -> int:
+        return int(self.elapsed_seconds(later) // SECONDS_PER_MINUTE)

@@ -2,7 +2,7 @@
 const DAY_SECONDS = 86400;
 const dayStart = (seconds) => new Date(new Date(seconds * 1000).toDateString()).getTime() / 1000;
 
-export function dayLine(seconds, nowSeconds) {
+function dayLine(seconds, nowSeconds) {
     const date = new Date(seconds * 1000);
     const sameYear = date.getFullYear() === new Date(nowSeconds * 1000).getFullYear();
     const dated = date.toLocaleDateString("en-GB", {day: "numeric", month: "long", ...(sameYear ? {} : {year: "numeric"})});

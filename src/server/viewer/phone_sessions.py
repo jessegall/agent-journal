@@ -15,8 +15,7 @@ from server.viewer.paired_phone import PairedPhone
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit
 from core.base.text_digest import TextDigest
-
-TOKEN_BYTES = 24
+from core.modules.sharing.commands.make_share_link.make_share_link_handler import TOKEN_BYTES
 
 
 class PhoneSessions:

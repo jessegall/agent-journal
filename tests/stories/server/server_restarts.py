@@ -1,4 +1,4 @@
-from server.server_files import ServerFiles
+from server.server_files import SERVER_LOG_LIMIT_BYTES, ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
@@ -50,3 +50,16 @@ def test_a_stop_ends_the_server_at_once_while_a_client_still_holds_its_connectio
         server.expect_health()
         server.expect_stop_with_an_idle_connection()
 
+
+
+def test_a_server_that_starts_past_the_log_limit_leaves_a_small_log_and_one_old_file(new_story):
+    home = new_story(fixture=ThreeTasks).home
+    log = ServerFiles(home).log
+    log.parent.mkdir(parents=True, exist_ok=True)
+    old_log = log.with_name("server.log.1")
+    for size in (SERVER_LOG_LIMIT_BYTES + 1, SERVER_LOG_LIMIT_BYTES + 2):
+        log.write_text("x" * size)
+        with ServerProcess(home, logged=True) as server:
+            server.expect_health()
+        assert old_log.stat().st_size == size and log.stat().st_size < SERVER_LOG_LIMIT_BYTES // 100
+        assert "listening on" in log.read_text() and not log.with_name("server.log.2").exists()

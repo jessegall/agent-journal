@@ -129,15 +129,3 @@ export function depart(el, done, later = setTimeout) {
     later(done, DEPART_MS);
 }
 
-// Something that joins a bubble, as the chips of a task made from it: the bubble's height opens to take it instead of jumping.
-export function growHeight(el, done, later = setTimeout) {
-    const height = el.scrollHeight;
-    Object.assign(el.style, {boxSizing: "border-box", height: "0px", overflow: "hidden", opacity: "0"});
-    void el.offsetHeight;
-    el.style.transition = `height ${PUSH_MS}ms ${EASE}, opacity ${FADE_MS}ms ease-out`;
-    Object.assign(el.style, {height: `${height}px`, opacity: "1"});
-    later(() => {
-        Object.assign(el.style, {boxSizing: "", height: "", overflow: "", opacity: "", transition: ""});
-        done();
-    }, PUSH_MS);
-}

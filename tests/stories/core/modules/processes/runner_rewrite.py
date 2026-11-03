@@ -100,11 +100,11 @@ def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
     assert story.hook("s-1", SERVER).refusal
 
 
-def test_a_line_that_only_reads_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
+def test_a_line_that_read_command_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py | tail -n 3"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, only_reads=True)}
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, read_command=True)}
     story.expect_success("process show 1", f"line: {line}", "state: running")
 
 

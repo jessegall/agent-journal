@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -82,7 +82,7 @@ readCommand();
         <template v-if="showsCommand">
             <span class="agent-command" data-agent-command>
                 <template v-if="waitingForTests">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">waiting for its tests</button>
+                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the test queue" @click.stop="peekRef('test_queue:0')">Waiting: tests</button>
                 </template>
                 <template v-else>
                     <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />
@@ -96,29 +96,31 @@ readCommand();
                 </template>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
-                    <template v-if="tab?.key === 'tasks'">
-                        <template v-for="section in sections" :key="section.state">
-                            <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
-                                <template v-for="task in section.tasks" :key="task.id">
-                                    <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                                        <TaskStatusIcon :status="task.state" />
-                                        <span class="agent-task-number">{{ task.id }}</span>
-                                        <span class="agent-task-title">{{ task.title }}</span>
-                                    </button>
-                                </template>
-                            </FoldGroup>
+                    <SwitchCase :value="tab?.key">
+                        <template #tasks>
+                            <template v-for="section in sections" :key="section.state">
+                                <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
+                                    <template v-for="task in section.tasks" :key="task.id">
+                                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                                            <TaskStatusIcon :status="task.state" />
+                                            <span class="agent-task-number">{{ task.id }}</span>
+                                            <span class="agent-task-title">{{ task.title }}</span>
+                                        </button>
+                                    </template>
+                                </FoldGroup>
+                            </template>
+                            <template v-if="facts?.instruction">
+                                <p class="agent-label">Instruction</p>
+                                <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                            </template>
                         </template>
-                        <template v-if="facts?.instruction">
-                            <p class="agent-label">Instruction</p>
-                            <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                        <template #transcript>
+                            <TranscriptRows :line="`agent transcript ${row.id}`" />
                         </template>
-                    </template>
-                    <template v-else-if="tab?.key === 'transcript'">
-                        <TranscriptRows :line="`agent transcript ${row.id}`" />
-                    </template>
-                    <template v-else-if="tab?.key === 'file-feed'">
-                        <AgentFileEdits :agent="row.id" />
-                    </template>
+                        <template #file-feed>
+                            <AgentFileEdits :agent="row.id" />
+                        </template>
+                    </SwitchCase>
                 </div>
             </div>
         </template>
