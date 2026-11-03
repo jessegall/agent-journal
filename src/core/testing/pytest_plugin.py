@@ -3,7 +3,6 @@ from collections.abc import Callable, Generator
 from pathlib import Path
 
 import pytest
-from xdist.workermanage import WorkerController
 
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -36,7 +35,8 @@ def templates(tmp_path_factory: pytest.TempPathFactory) -> TemplateDatabases:
 @pytest.fixture
 def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., Story]]:
     overlap = request.config.stash[STORY_OVERLAP]
-    created = request.node.stash[STORY_RUNS]
+    item: pytest.Item = getattr(request, "node")
+    created = item.stash[STORY_RUNS]
 
     def started(*modules: str, fixture: type[StoryFixture] | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
@@ -44,7 +44,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         return story
     yield started
     for steps in created:
-        overlap.add(request.node.nodeid, steps.lines())
+        overlap.add(item.nodeid, steps.lines())
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
@@ -59,15 +59,16 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
 
 
 @pytest.hookimpl(optionalhook=True)
-def pytest_testnodedown(node: WorkerController, error: object) -> None:
-    output = getattr(node, "workeroutput", {})
+def pytest_testnodedown(node: pytest.Session, error: object) -> None:
+    output: dict[str, dict[str, list[str]]] = getattr(node, "workeroutput", {})
     node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
 
 
 def pytest_sessionfinish(session: pytest.Session) -> None:
     overlap = session.config.stash[STORY_OVERLAP]
-    if hasattr(session.config, "workeroutput"):
-        session.config.workeroutput[STORY_STEPS_KEY] = overlap.stories
+    worker_output: dict[str, object] | None = getattr(session.config, "workeroutput", None)
+    if worker_output is not None:
+        worker_output[STORY_STEPS_KEY] = overlap.stories
         return
     lines = overlap.report_lines()
     if not lines:
