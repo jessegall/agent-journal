@@ -59,11 +59,14 @@ class ProfileFiles:
 
     @staticmethod
     def claude_text(profile: AgentProfile) -> str:
-        return (f"---\nname: {profile.name}\ndescription: {profile.description}\ntools: {profile.tools}\nkind: {profile.profile_type}\n"
-                f"model: {profile.model}\ncodex-model: {profile.codex_model}\n---\n\n{profile.body}\n")
+        """A model the profile does not name is left out of its file, so the agent program uses its own, rather than
+        read an empty one."""
+        models = "".join(f"{key}: {value}\n" for key, value in (("model", profile.model), ("codex-model", profile.codex_model)) if value)
+        return f"---\nname: {profile.name}\ndescription: {profile.description}\ntools: {profile.tools}\nkind: {profile.profile_type}\n{models}---\n\n{profile.body}\n"
 
     @staticmethod
     def codex_text(profile: AgentProfile) -> str:
         sandbox = "read-only" if profile.profile_type == SUBAGENT else "workspace-write"
-        return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\nmodel = {json.dumps(profile.codex_model)}\n"
+        model = f"model = {json.dumps(profile.codex_model)}\n" if profile.codex_model else ""
+        return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\n{model}"
                 f"sandbox_mode = \"{sandbox}\"\ndeveloper_instructions = {json.dumps(profile.body, ensure_ascii=False)}\n")

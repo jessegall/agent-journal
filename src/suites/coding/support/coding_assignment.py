@@ -10,5 +10,4 @@ class CodingAssignment:
         self.choice = choice
 
     def is_active(self, environment_id: int) -> bool:
-        suite = self.choice.suite(environment_id)
-        return suite is not None and (suite.name == CodingSuite.name or CodingSuite.name in suite.requires)
+        return self.choice.runs(environment_id, CodingSuite.name)
