@@ -9,7 +9,6 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -21,6 +20,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
+from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
@@ -31,8 +31,9 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     command = MergeWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
         self.queries, self.worktrees, self.checks, self.repository, self.git, self.nudger = queries, worktrees, checks, repository, git, nudger
+        self.advance = advance
 
     def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -75,7 +76,6 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
                           f"switch the checkout back to {worktree.base_branch}, then merge again")
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
-        if task.state is TaskState.TESTING:
-            self.repository.save(task.moved(TaskLifecycle.retest), context)
+        self.advance.restart_task(worktree, task, context)
         self.nudger.send(worktree.agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

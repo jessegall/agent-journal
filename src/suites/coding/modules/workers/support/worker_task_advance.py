@@ -8,6 +8,8 @@ from core.base.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
@@ -32,3 +34,10 @@ class WorkerTaskAdvance:
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
         self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+
+    def restart_task(self, worktree: Worktree, task: Task, context: Context) -> None:
+        if task.state is TaskState.COMPLETED:
+            self.repository.save(task.reopen(context.timestamp, context.actor), context)
+            self.bus.dispatch(StartTask(task.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
+            return
+        self.repository.save(task.moved(TaskLifecycle.retest, holder_id=worktree.agent_id), context)
