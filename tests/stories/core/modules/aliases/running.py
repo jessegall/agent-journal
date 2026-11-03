@@ -1,8 +1,12 @@
 import json
+import shlex
 from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.caller.caller import Caller
+from core.base.caller.caller_request import CallerRequest
+from core.base.cli.shell_aliases import ShellAliases
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
@@ -20,6 +24,18 @@ def test_an_agent_line_that_runs_an_alias_runs_as_a_shell_line_with_the_normal_l
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('alias add sins "echo judged"', actor=story.agent)
     assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes").replace(" -- ", " --aliases sins -- ", 1)}
+
+
+def test_an_alias_into_the_journals_folder_runs_from_any_folder_in_that_folder(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('alias add sins ".journal/plugins/judge/bin/judge judge {args}"', actor=story.agent)
+    story.run('alias add lint "ruff check {args}"', actor=story.agent)
+    aliases = story.container.get(ShellAliases)
+    caller, worktree = Caller(story.agent), CallerRequest(folder="/work/worktrees/worker-1")
+    judged = aliases.shell_run(["sins", "--changes"], caller, worktree)
+    assert judged.line == f"{shlex.quote(str(story.home.folder.resolve()))}/plugins/judge/bin/judge judge --changes"
+    assert judged.folder == "/work/worktrees/worker-1"
+    assert aliases.shell_run(["lint", "src"], caller, worktree).line == "ruff check src"
 
 
 def test_a_background_alias_moves_to_the_background_at_once(new_story):
