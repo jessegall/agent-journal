@@ -3,13 +3,13 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.INSTRUCTION, '{role}:{helper} has used no tool for {minutes} minutes: check on it', turn_limited=False)
+HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.INSTRUCTION, '{name}:{agent} has used no tool for {minutes} minutes: check on it', turn_limited=False)
 BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
 PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}: journal proof check {proofs}, or journal proof short <proof> "<what is missing>"')
 MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.INSTRUCTION, 'the merge of worker {worker} waits for the checkout of environment {environment} to return to {branch}', turn_limited=False)
 WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.NUDGE, 'worker:{worker} holds task:{task}: its worktree is {state}')
 
-WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.NUDGE, 'worker:{worker} delivered {tasks} and it is not merged: journal worker merge {worker} once its proofs are checked, or journal worker release {worker} "<why>"', interval=Interval(Seconds(600)), turn_limited=False)
+WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.NUDGE, 'worker:{worker} delivered {tasks}, unmerged: journal worker merge {worker}, or journal worker release {worker}', interval=Interval(Seconds(600)), turn_limited=False)
 
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: journal worker send {worker} \"<job>\", or wait for its delivery", turn_limited=False)
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTION, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False, required_command="")

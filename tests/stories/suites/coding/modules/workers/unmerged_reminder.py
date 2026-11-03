@@ -13,7 +13,7 @@ def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    reminder = f"worker:{worker.id} delivered task:1 and it is not merged"
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.tick(MAIN_SESSION)
@@ -27,7 +27,7 @@ def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
-    reminder = f"worker:{worker.id} delivered task:1 and it is not merged"
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -42,7 +42,7 @@ def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    reminder = f"worker:{worker.id} delivered task:1 and it is not merged"
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_success(f'worker release {worker.id} "not wanted"', actor=story.agent)

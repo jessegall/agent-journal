@@ -35,7 +35,7 @@ class InactiveHelperRule(DriverRule):
         if reminded_at is not None and reminded_at.elapsed_seconds(hook.timestamp) < minutes * MINUTE_SECONDS:
             return RuleAnswer.allowed()
         quiet = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, minutes)]
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(role=helper.role.value, helper=helper.id, minutes=minutes) for helper in quiet))
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=minutes) for helper in quiet))
 
     def helpers(self, main_id: int) -> list[Agent]:
         return [helper for role in HELPER_ROLES for helper in self.queries.query(Agent).filter(parent_id=main_id, role=role).matching(IsNull("ended_at")).oldest().all_rows()]

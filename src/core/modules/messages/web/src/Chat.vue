@@ -8,7 +8,7 @@ const {rows: messages, failure, loaded, load, older, context} = useRows("message
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
+const {rows: notices, act: runOnNotice} = useRows("notice list", ["notice.*"]);
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;
@@ -331,6 +331,12 @@ document.addEventListener("visibilitychange", flushWhenHidden);
 onUnmounted(() => document.removeEventListener("visibilitychange", flushWhenHidden));
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
+// a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal
+const isCommand = (notice) => notice.link.startsWith("!");
+async function runCommand(notice) {
+    const main = await context.read("agent main");
+    if (main.ok && main.value.id) await runOnNotice(["agent", "type", String(main.value.id), notice.link]);
+}
 </script>
 
 <template>
@@ -340,8 +346,13 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 <div class="notice">
                     <span class="notice-dot" />
                     <span class="notice-text">{{ notice.title }}</span>
-                    <a class="notice-link" :href="linkOf(notice)" :target="notice.link.startsWith('http') ? '_blank' : undefined">{{ notice.label }}</a>
-                    <button type="button" class="notice-close" data-notice-close aria-label="Close" @click="closeNotice(['notice', 'close', String(notice.id)])">
+                    <template v-if="isCommand(notice)">
+                        <button type="button" class="notice-link" data-notice-run :title="notice.link" @click="runCommand(notice)">{{ notice.label }}</button>
+                    </template>
+                    <template v-else>
+                        <a class="notice-link" :href="linkOf(notice)" :target="notice.link.startsWith('http') ? '_blank' : undefined">{{ notice.label }}</a>
+                    </template>
+                    <button type="button" class="notice-close" data-notice-close aria-label="Close" @click="runOnNotice(['notice', 'close', String(notice.id)])">
                         <Icon name="close" :size="12" />
                     </button>
                 </div>

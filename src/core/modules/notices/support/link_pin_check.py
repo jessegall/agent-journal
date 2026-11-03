@@ -11,17 +11,19 @@ from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.base.type_guards import is_list, is_mapping
 from core.modules.notices.models.notice import Notice
-from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
+from core.modules.notices.support.notice_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
 
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
 CLAIM_WINDOW_SECONDS = 60
+BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]*)", re.IGNORECASE | re.MULTILINE)
 
 
 class LinkPinCheck:
-    """The line a text earns: words that claim a pin no pin in the last minute backs are pointed out, else the first
-    link no open pin has is offered, each link on its own count. The link of a closed pin is offered again."""
+    """The lines a text earns: words that claim a pin no pin in the last minute backs are pointed out, else the first
+    link no open pin has is offered, each link on its own count, and a ! command the agent asks the user to run
+    is asked to become a button. The link of a closed pin is offered again."""
 
     def __init__(self, queries: Queries, clock: Clock) -> None:
         self.queries, self.clock = queries, clock
@@ -30,10 +32,18 @@ class LinkPinCheck:
         if self.claims_unmade_pin(environment_id, agent_text):
             return [UNPINNED_CLAIM.nudge()]
         unpinned = self.first_unpinned(environment_id, f"{agent_text}\n{tool_output}")
-        if unpinned is None:
-            return []
-        nudge = LINK_PIN_REQUEST.nudge(url=unpinned)
-        return [replace(nudge, key=f"{nudge.key}.{unpinned}")]
+        nudges = [self.keyed(LINK_PIN_REQUEST.nudge(url=unpinned), unpinned)] if unpinned is not None else []
+        command = self.first_unpinned_command(environment_id, agent_text)
+        return [*nudges, self.keyed(BANG_BUTTON_REQUEST.nudge(), command)] if command is not None else nudges
+
+    @staticmethod
+    def keyed(nudge: Nudge, name: str) -> Nudge:
+        return replace(nudge, key=f"{nudge.key}.{name}")
+
+    def first_unpinned_command(self, environment_id: int, text: str) -> str | None:
+        commands = dict.fromkeys(f"! {found.strip()}" for found in BANG_COMMAND.findall(text))
+        pins = self.queries.query(Notice).filter(environment_id=environment_id).matching(IsNull("closed_at"))
+        return next((command for command in commands if not pins.filter(link=command).exists()), None)
 
     def first_unpinned(self, environment_id: int, text: str) -> str | None:
         links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url))
