@@ -97,7 +97,10 @@ function stepSidebar() {
     else sideMini.value = true;
 }
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
-const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || "agent-journal");
+// the project's name as this browser last knew it, so it does not change when the server answers
+const lastProject = rememberedRef("last-project", "agent-journal");
+const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
+watchEffect(() => (lastProject.value = project.value));
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
 let activityTimer = null;
 let usageTimer = null;

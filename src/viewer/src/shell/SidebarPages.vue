@@ -1,6 +1,6 @@
 <script setup>
 import {rememberedRef} from "../windows/rememberedState.js";
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import NewEnvironment from "./NewEnvironment.vue";
@@ -26,8 +26,15 @@ const drafting = ref(false);
 const openEnvironment = (name) => (window.location.search = `?environment=${encodeURIComponent(name)}`);
 const foldedNames = rememberedRef("sidebar-folded", []);
 const folded = computed(() => new Set(foldedNames.value));
+// what the sidebar last showed in this browser is drawn at once, so nothing in it moves when the server answers
+const lastWindows = rememberedRef("sidebar-windows", []);
+const lastEnvironments = rememberedRef("sidebar-environments", []);
+const shownWindows = computed(() => (props.windows.length ? props.windows : lastWindows.value));
+const shownEnvironments = computed(() => (props.environments.length ? props.environments : lastEnvironments.value));
+watch(() => props.windows, (windows) => windows.length && (lastWindows.value = windows));
+watch(() => props.environments, (environments) => environments.length && (lastEnvironments.value = environments));
 // the windows in their groups, each in the order the suite lists them
-const inGroup = (group) => props.windows.filter((window) => (window.group || "") === group);
+const inGroup = (group) => shownWindows.value.filter((window) => (window.group || "") === group);
 const sections = computed(() => [{key: "environment", title: "Environment", windows: inGroup("")}, {key: "project", title: "Project", windows: inGroup("project")}]);
 
 // each page has its own address, which a click follows
@@ -60,7 +67,7 @@ function fold(key) {
             <span class="sidebar-name">{{ project }}</span>
         </div>
         <div class="sidebar-scroll">
-            <template v-if="!windows.length">
+            <template v-if="!shownWindows.length">
                 <Skeleton shape="rows" />
             </template>
             <template v-for="section in sections" :key="section.key">
@@ -88,7 +95,7 @@ function fold(key) {
                 <template v-if="run">
                     <button type="button" class="item" data-new-environment @click="drafting = true"><Icon name="plus" :size="14" /><span class="item-title">New environment</span></button>
                 </template>
-                <template v-for="environment in environments" :key="environment.id">
+                <template v-for="environment in shownEnvironments" :key="environment.id">
                     <a :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
                         <span :class="['dot', {active: activeEnvironments.includes(environment.id)}]" /><span class="item-title">{{ environment.name }}</span>
                     </a>
