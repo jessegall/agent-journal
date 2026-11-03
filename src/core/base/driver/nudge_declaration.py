@@ -1,3 +1,4 @@
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from core.base.driver.interval import Interval
@@ -17,7 +18,8 @@ class NudgeDeclaration:
     """A line a module can say to an agent, declared once: its key, its type, its words with {fields}, the
     interval before it may be said again, the longest it may be, cut in its middle so its instruction stays,
     whether a turn says it only once, as a reminder on a clock does not, and the command with {fields} that
-    pays it, which makes the line a required_command. Each field is held to its own limit too."""
+    pays it, which makes the line a required_command. Each field is held to its own limit too. Lines of this
+    key in one hook are written as one, each field listing its values, in many_text when it has one."""
 
     key: str
     type: NudgeType
@@ -26,9 +28,22 @@ class NudgeDeclaration:
     longest_characters: int = LONGEST_LINE_CHARACTERS
     turn_limited: bool = True
     required_command: str = ""
+    many_text: str = ""
+
+    @property
+    def is_mergeable(self) -> bool:
+        return self.text != BARE_TEMPLATE and not self.required_command
 
     def nudge(self, **fields: object) -> Nudge:
-        return Nudge(self.key, self.type, self.cut(self.text.format(**fields) if self.text == BARE_TEMPLATE else self.text.format(**{name: self.field_text(value) for name, value in fields.items()})), self.interval, self.turn_limited, self.required_command.format(**fields))
+        return self.worded(self.text, fields)
+
+    def merged(self, nudges: Sequence[Nudge]) -> Nudge:
+        values = {name: ", ".join(dict.fromkeys(str(dict(nudge.fields)[name]) for nudge in nudges)) for name, _ in nudges[0].fields}
+        return self.worded(self.many_text or self.text, values)
+
+    def worded(self, text: str, fields: Mapping[str, object]) -> Nudge:
+        words = text.format(**fields) if self.text == BARE_TEMPLATE else text.format(**{name: self.field_text(value) for name, value in fields.items()})
+        return Nudge(self.key, self.type, self.cut(words), self.interval, self.turn_limited, self.required_command.format(**fields), tuple(fields.items()), self)
 
     @staticmethod
     def field_text(value: object) -> str:
