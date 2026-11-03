@@ -27,3 +27,9 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   program's rewritten input carries is in its row of the program table.
 - **`reader-judged-outside-one-place`** - Reader findings become messages outside `EndedOutputText`.
   `ReaderJudge` produces findings; `EndedOutputText` turns them into declarations from `process_nudges`.
+
+- **`reader-saved-outside-add-reader`** - a reader definition is persisted outside `AddReaderHandler`.
+  Save definitions through `AddReader` so writer checks and output proof always run. Unsaved readers used
+  to judge draft patterns are ordinary values and do not bypass a save.
+- **`reader-demand-from-whole-line`** - reader demand or drafting reads `runner_text` or `display_text`.
+  Judge the command and sample of each part separately, including every part of a chain.

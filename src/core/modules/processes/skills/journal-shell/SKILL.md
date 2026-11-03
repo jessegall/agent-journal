@@ -15,7 +15,9 @@ Every shell command you run goes through the journal's runner.
 - Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
-- Wait on a run with a Monitor on `journal output monitor N`; never ask for its status again and again. A worker needs no Monitor: its run is watched for it. It goes on working and is told on its next tool call, or it stops and is started again when the run ends. `journal output monitor N` is there if it wants to wait; an empty answer means the run still goes, so run it again.
+- A main agent waits with a Monitor on `journal output monitor N`, rather than repeatedly asking for status.
+  A worker needs no Monitor. The worker can continue other work and hear the result on its next tool call,
+  or stop its session while the run continues. If the worker stops, the journal starts it when the run ends.
 - Read an output by the flag that fits: `--summary` first, `--tail K` or `--lines A-B` for a part, `--all` only for a short output.
 - Name a run for the user with `journal output title N "<what it does>"`: a whole phrase such as Running tests.
 
@@ -27,8 +29,9 @@ Only a main agent, a person or a module saves, removes or chooses a reader. A wo
 A reader selects useful output with `--lines <pattern>` or `--script <path>`. Every reader needs `--title`
 and `--summary <pattern>` too. The other requirements depend on the command:
 
-- A test run always needs a reader with `--count <pattern>` and either `--progress <pattern>` or
-  `--step <pattern>` with `--count`. A progress pattern captures a percent, or done and total as two numbers.
+- A test run always needs a reader with `--count <pattern>`. It also needs either `--progress <pattern>`
+  or `--step <pattern>`. A progress pattern captures a percent, or done and total as two numbers. A step
+  pattern matches completed tests, whose count and the required total give the progress.
 - A build always needs a reader. It needs progress only when its output prints a percent or a done/total count.
 - A check needs a reader after a run of that command moved to the background.
 - Reading, searching, journal commands, help, version and listing commands need no reader. Each part of a
@@ -39,7 +42,7 @@ and `--summary <pattern>` too. The other requirements depend on the command:
 above zero. `{part}` is replaced with that part's command, not the whole chain; alias environment variables
 are not included, so put any variables the listing needs in its command. Counts of test parts are added.
 A failed listing, a listing cut off after 120 seconds, or one with no number leaves the count unknown and
-the run goes on. A known count above the limit stops the run before it gets a spot.
+the run goes on. A known count above `worker-run-most-tests` stops the run before it gets a spot.
 
 When the main agent receives a reader request:
 
@@ -55,12 +58,12 @@ reader whose commands do not match leaves the request open and says so. `journal
 saved readers. Adding under an existing name changes the fields given; `--commands` replaces the whole
 command list, so keep the old patterns when adding a command.
 
-Without a kept sample, one worker run becomes the sample while the worker waits. The worker may read or
-stop during the wait, and cannot skip its block. The default wait is 25 minutes, set by
+Without a kept sample, one worker run becomes the sample while the worker waits. The worker may read
+outputs and files or stop its own session during the wait. The worker cannot skip its block. The default wait is 25 minutes, set by
 `reader-block-minutes`; after it the run starts without a reader. With no main agent running there is no
-wait. `readers-forced` defaults to on; off removes reader requests and blocks. At session start a main
-agent gets a count of readers lacking required fields without a block. Full judgement happens when a
-worker first needs each reader, so existing project readers are not changed on upgrade.
+wait. `readers-forced` defaults to on; off removes reader requests and blocks. At session start the main
+agent is told how many readers lack required fields. This notice never blocks the main agent. Full
+judgement happens when a worker first needs each reader, so project readers are not changed on upgrade.
 
 A pipe or redirect hides output from its reader. Run tests and builds without them and read output by its
 number. An ended sample can be read with `journal output read <output> --reader <name>` after saving its

@@ -18,3 +18,11 @@ def test_a_worker_gets_no_reader_count_at_session_start(new_story):
     story.run("agent start s-reader-notice claude worker --environment main")
     reply = story.hook("s-reader-notice", HookSamples.session_start())
     story.expect_rows(not any("readers need required fields" in line for line in reply.lines))
+
+
+def test_readers_with_complete_required_fields_need_no_notice(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run("reader remove dotnet-test", actor=story.agent)
+    story.run("reader remove phpunit", actor=story.agent)
+    reply = story.hook("s-1", HookSamples.session_start())
+    story.expect_rows(not any("readers need required fields" in line for line in reply.lines), not reply.refusal)

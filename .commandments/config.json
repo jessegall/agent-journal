@@ -196,8 +196,8 @@
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
         "naming_NoTypeWordInsideNameDetector",
-        "ArchitectureProcessesReaderSavedThroughAddReaderDetector",
-        "ArchitectureProcessesReaderDemandByPartDetector"
+        "architecture_processes_ReaderSavedThroughAddReaderDetector",
+        "architecture_processes_ReaderDemandByPartDetector"
     ],
     "parallel": 2,
     "configure": {
