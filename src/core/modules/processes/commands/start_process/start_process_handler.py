@@ -14,6 +14,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
+from core.modules.processes.support.run_slots import RunSlots
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -23,9 +24,10 @@ class StartProcessHandler(Handler[StartProcess, Process]):
 
     command = StartProcess
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots) -> None:
         self.queries, self.repository, self.folder, self.readers, self.kept = queries, repository, folder, readers, kept
         self.requests = requests
+        self.slots = slots
 
     def handle(self, command: StartProcess, context: Context) -> Process:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -38,17 +40,20 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
             selected = ReaderSelection.choose(self.all_readers(), [part])
             named_reader = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
-            reader = self.readers.find(named_reader) if named_reader is not None else selected.reader if selected else None
+            reader = selected.reader if selected else None
+            if named_reader is not None:
+                reader = self.readers.find(named_reader)
             request_id = self.requests.request(process, spec, reader, context) if self.requests.needed(process, agent) else None
             parts.append(self.repository.save(part.changed(reader_request_id=request_id), context))
-        if command.reader_id is not None:
+        if command.reader_id is not None and not any(part.reader_request_id is not None for part in parts):
             reader = self.readers.find(command.reader_id)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id, title=RunTitle.title(reader, command.line)), context)
         else:
-            part_reader = ReaderSelection.choose(self.all_readers(), parts)
+            part_reader = ReaderSelection.choose(self.all_readers(), [part for part in parts if part.reader_request_id is None])
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
+        self.slots.grant(process.environment_id, context)
         return process
 
     def all_readers(self) -> tuple[Reader, ...]:

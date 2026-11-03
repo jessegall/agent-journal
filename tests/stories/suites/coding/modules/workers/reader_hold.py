@@ -2,13 +2,14 @@ from datetime import timedelta
 import pytest
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import ended_run
+from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.run_slots import RunSlots
-from core.base.command.context import Context
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
-from tests.stories.core.modules.processes.support.reader_hold_fixtures import ForcedReaders, ReaderSampleKept, reader_worker, worker_run
+from tests.stories.core.modules.processes.support.reader_hold_fixtures import ForcedReaders, reader_worker, worker_run
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -78,12 +79,14 @@ def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
     story.expect_rows(requests.holds(worker.id, story.clock.timestamp()))
     blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id).all_rows())
     story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
+    story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "cannot", actor=worker)
     story.expect_hook_refusal("s-reader", HookSamples.shell("touch skip", ShellPart("touch", CommandCategory.EDIT, ["skip"])), "no proper reader")
 
 
 def test_a_held_worker_may_read_and_may_stop(new_story):
     story = new_story(fixture=ForcedReaders)
     worker_run(story, "stop-build run")
+    install_runner(story)
     story.expect_hook_allowed("s-reader", HookSamples.shell("cat README.md", ShellPart("cat", CommandCategory.READ, ["README.md"])))
     story.expect_hook_allowed("s-reader", HookSamples.stop())
 
@@ -109,12 +112,13 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).holds(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper", "workers.worker-job")
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):
     story = new_story(fixture=ForcedReaders)
     worker_run(story, "unmatched-build run")
-    story.run('reader add unrelated --commands "another-build*" --title Building --lines done --summary done', actor=story.agent)
+    story.expect_text('reader add unrelated --commands "another-build*" --title Building --lines done --summary done', "does not read unmatched-build run", actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1)
 
 
@@ -133,3 +137,34 @@ def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     process = worker_run(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.container.get(OutputFolder).has_slot(process.id))
     story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())
+
+
+def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story):
+    story = new_story(fixture=ForcedReaders)
+    story.run(f"agent end {story.agent.id}", actor=story.agent)
+    process = worker_run(story, "alone-build run")
+    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
+    story.expect_rows(request.hold_until == story.clock.timestamp(), story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())
+
+
+def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run("setting set journal.core.processes.readers-forced on --environment main", actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    bus = story.container.get(Bus)
+    process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30, is_queued=True), worker, environment_id=1)
+    story.run(f"process background {process.id}", actor=worker)
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.run_listeners()
+    bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your run {process.id} ended", "workers.worker-job")
+
+
+def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
+    story = new_story(fixture=ForcedReaders)
+    process = worker_run(story, "running-build run")
+    reader = story.new_row_id('reader add running --commands "running-build*" --title Building --lines done --summary done', actor=story.agent)
+    output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
+    story.expect_rows(output.reader_id == reader, output.read_offset == 0)

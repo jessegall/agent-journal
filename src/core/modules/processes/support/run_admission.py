@@ -12,7 +12,10 @@ class RunAdmission:
         self.queries = queries
 
     def may_start(self, process: Process, now: Timestamp) -> bool:
-        for part in self.queries.query(ProcessPart).filter(process_id=process.id).all_rows():
+        parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).all_rows())
+        if not parts:
+            return False
+        for part in parts:
             if part.reader_request_id is None:
                 continue
             request = self.queries.query(ReaderRequest).find(part.reader_request_id)

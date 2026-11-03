@@ -176,6 +176,7 @@
         "architecture_nudges_InstructionDeclaresWhatPaysItDetector",
         "listener_repeats_a_decision",
         "architecture_processes_ReaderOnlyOnTickDetector",
+        "architecture_processes_SlotOnlyThroughTheQueueDetector",
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",
         "architecture_viewer_NoTimerOutsideClocksDetector",

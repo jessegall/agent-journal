@@ -12,6 +12,9 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 
 ## When it fires
 
+- **`slot-written-outside-the-queue`** - a call to `OutputFolder.write_slot` outside `RunSlots` bypasses
+  admission. Only `RunSlots` grants a slot after the parts and their reader requests are saved.
+
 - **`shell-input-rewritten-outside-the-runner-rule`** - a rule other than `RunnerRewriteRule` calls `RuleAnswer.rewritten`.
   Only that rule gives a shell line a new input; the others answer with lines or a refusal.
 - **`process-folder-layout-outside-output-folder`** - Python names `heartbeat`, `run.sh`, `<n>.out` or `<n>.status`

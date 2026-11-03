@@ -6,10 +6,8 @@ from core.modules.agents.models.agent import Agent
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
@@ -21,15 +19,6 @@ class ForcedReaders(StoryFixture):
     def steps(self, story: Story) -> None:
         story.run("setting set journal.core.processes.readers-forced on --environment main", actor=story.agent)
         story.run("agent start s-reader claude worker --environment main")
-
-
-class ReaderSampleKept(StoryFixture):
-    """A kept build output precedes the worker's first run."""
-
-    parent = ForcedReaders
-
-    def steps(self, story: Story) -> None:
-        ended_run(story, "custom-build run", "compile\n" * 8 + "done\n")
 
 
 def reader_worker(story: Story) -> Actor:

@@ -30,7 +30,7 @@ class AddReaderSubcommand(Subcommand[AddReader, Reader]):
 
     def write_output(self, value: object, output: Output) -> None:
         super().write_output(value, output)
-        if not isinstance(value, Reader):
+        if not isinstance(value, Reader) or output.json_output:
             return
         for request in self.requests.open().all_rows():
             if not ReaderSelection.reads_command(value, request.command, request.category):

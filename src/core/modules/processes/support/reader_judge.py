@@ -1,9 +1,11 @@
 import re
 from dataclasses import replace
 from itertools import islice
+from collections.abc import Sequence
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.colour_codes import ColourCodes
@@ -43,7 +45,12 @@ class ReaderJudge:
         return tuple(flag for flag, value in wanted.items() if not value)
 
     def misses(self, reader: Reader, category: CommandCategory, text: str) -> tuple[str, ...]:
-        lines = self.run.lines(reader, text, "finished")
+        return self.misses_with_lines(reader, category, text, self.run.lines(reader, text, "finished"))
+
+    def misses_read_output(self, reader: Reader, category: CommandCategory, output: Output) -> tuple[str, ...]:
+        return self.misses_with_lines(reader, category, self.output_text(output.process_id, output.reader_position), self.folder.reader_lines(output.process_id))
+
+    def misses_with_lines(self, reader: Reader, category: CommandCategory, text: str, lines: Sequence[str]) -> tuple[str, ...]:
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)
         count = self.run.count(reader, text, 0)
