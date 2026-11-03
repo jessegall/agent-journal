@@ -10,4 +10,4 @@ class ToolUses(BlockCondition):
     name = "tool-uses"
 
     def is_true(self, check: BlockCheck) -> bool:
-        return ToolUseCount.since(check.container.get(Queries), check.hook.agent_id, check.opened_at) >= int(self.text)
+        return ToolUseCount.after_timestamp(check.container.get(Queries), check.hook.agent_id, check.opened_at) >= int(self.text)

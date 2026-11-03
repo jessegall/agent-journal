@@ -12,4 +12,4 @@ class ToolUseSpan:
     count: int
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
-        return ToolUseCount.since(queries, agent_id, start) >= self.count
+        return ToolUseCount.after_timestamp(queries, agent_id, start) >= self.count
