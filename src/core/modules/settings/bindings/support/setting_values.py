@@ -2,6 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TypeVar
 
+from core.base.driver.seconds import Seconds
 from core.base.type_guards import is_list, is_tuple
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_type_error import SettingTypeError
@@ -45,6 +46,9 @@ class SettingValues:
 
     def number(self, key: str, environment_id: int | None) -> int:
         return self.typed(key, environment_id, int, "a whole number")
+
+    def minutes(self, key: str, environment_id: int | None) -> Seconds:
+        return Seconds.minutes(self.number(key, environment_id))
 
     def flag(self, key: str, environment_id: int | None) -> bool:
         return self.typed(key, environment_id, bool, "on or off")
