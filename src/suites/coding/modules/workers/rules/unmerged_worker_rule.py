@@ -1,3 +1,4 @@
+from core.base.driver.nudge import Nudge
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -22,7 +23,7 @@ class UnmergedWorkerRule(DriverRule):
         self.delivered, self.tasks, self.proofs = delivered, tasks, proofs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        nudges = []
+        nudges: list[Nudge] = []
         for worktree in self.delivered.delivered(hook.agent_id):
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).oldest().all_rows())
             action = f"journal worker merge {worktree.agent_id}, or journal worker release {worktree.agent_id}"

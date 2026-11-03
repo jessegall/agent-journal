@@ -46,6 +46,7 @@ func project(t *testing.T, port string) string {
 	writeFile(t, filepath.Join(root, ".journal", "src", "journal", "version.py"), "VERSION = \"5.0.1\"\n")
 	if port != "" {
 		writeFile(t, filepath.Join(root, ".journal", "port"), port+"\n")
+		writeFile(t, filepath.Join(root, ".journal", versionFourSwitchName), "")
 	}
 	return root
 }
@@ -109,6 +110,7 @@ func TestAHookTheJournalDoesNotAnswerInTimeGoesOnAndIsNoted(t *testing.T) {
 	}
 	for name, setting := range cases {
 		root := project(t, setting.port)
+		writeFile(t, filepath.Join(root, ".journal", versionFourSwitchName), "")
 		started := time.Now()
 		status, _ := post(sample(root, "pre_tool_use"), setting.transport, time.Unix(1793395000, 0))
 		if status == 200 || status == 409 {
@@ -151,9 +153,7 @@ func read(t *testing.T, path string) string {
 
 func switchedProject(t *testing.T) string {
 	t.Helper()
-	root := project(t, "")
-	writeFile(t, filepath.Join(root, ".journal", socketSwitchName), "")
-	return root
+	return project(t, "")
 }
 
 func timingNames(text string) []string {

@@ -20,3 +20,10 @@ def test_retiring_what_is_not_there_moves_nothing(tmp_path):
     journal = tmp_path / ".journal"
     journal.mkdir()
     assert VersionFourFiles(journal).retire() == []
+
+
+def test_the_shell_entry_of_version_four_moves_with_its_code(tmp_path):
+    journal = journal_with_version_four(tmp_path)
+    (journal / "src" / "journal.sh").write_text("#!/bin/sh\n")
+    assert "src/journal.sh" in VersionFourFiles(journal).retire()
+    assert not (journal / "src" / "journal.sh").exists() and (journal / "version-4" / "src" / "journal.sh").is_file()
