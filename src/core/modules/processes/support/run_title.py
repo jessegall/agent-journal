@@ -1,14 +1,27 @@
 import re
+from pathlib import Path
 from re import Match
 
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.process_part import ProcessPart
 
 TOPIC = "{topic}"
+TEMPORARY_TITLES = {"rm": "Removing files", "python": "Running Python", "python3": "Running Python"}
 
 
 class RunTitle:
-    """What a run's card is called, from its reader: the reader's title, with the topic its pattern finds in
-    the command it reads put in place of {topic}, or after it."""
+    """Names a run from its reader or first program without showing its script as a title."""
+
+    @staticmethod
+    def temporary(part: ProcessPart | None) -> str:
+        if part is None:
+            return "Running a command"
+        program = Path(part.program).name
+        return TEMPORARY_TITLES.get(program, f"Running {program}")
+
+    @staticmethod
+    def is_descriptive(title: str, command: str) -> bool:
+        return bool(title.strip()) and title.strip() != command.strip()
 
     @staticmethod
     def title(reader: Reader | None, command: str) -> str:

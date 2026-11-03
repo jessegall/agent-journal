@@ -19,6 +19,9 @@ READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
 BLOCK_BYTES = 64 * 1024
 
+COUNT_OUTPUT = "count.out"
+COUNT_STATUS = "counted"
+
 COUNT_LINES = 20
 
 class OutputFolder:
@@ -104,9 +107,9 @@ class OutputFolder:
 
     def is_running(self, process_id: int) -> bool:
         is_started = (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_OUTPUT_FILE).exists()
-        return is_started and self.end(process_id) is None and self.has_runner_process(process_id)
+        return is_started and self.end(process_id) is None and self.has_leader_process(process_id)
 
-    def has_runner_process(self, process_id: int) -> bool:
+    def has_leader_process(self, process_id: int) -> bool:
         pid = self.pid(process_id)
         if pid is None:
             return False
@@ -231,3 +234,13 @@ class OutputFolder:
     def number(self, process_id: int, name: str) -> int | None:
         text = self.text(process_id, name).strip()
         return int(text) if text.lstrip("-").isdigit() else None
+
+    def count_text(self, process_id: int) -> str:
+        return self.text(process_id, COUNT_OUTPUT)
+
+    def count_status(self, process_id: int) -> int | None:
+        return self.number(process_id, COUNT_STATUS)
+
+    def write_count(self, process_id: int, text: str, status: int) -> None:
+        self.write(process_id, COUNT_OUTPUT, text)
+        self.write_number(process_id, COUNT_STATUS, status)

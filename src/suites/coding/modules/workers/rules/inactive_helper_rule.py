@@ -15,6 +15,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.queue_run_workers import QueueRunWorkers
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 
 HELPER_ROLES = (AgentRole.WORKER, AgentRole.SUBAGENT)
 
@@ -29,9 +30,10 @@ class InactiveHelperRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers) -> None:
+    def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery) -> None:
         self.queries, self.calls, self.hook_history, self.settings = queries, calls, history, settings
         self.processes, self.workers = processes, workers
+        self.requests = requests
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)
@@ -59,6 +61,8 @@ class InactiveHelperRule(DriverRule):
         return [helper for role in HELPER_ROLES for helper in self.queries.query(Agent).filter(parent_id=main_id, role=role).matching(IsNull("ended_at")).oldest().all_rows()]
 
     def is_inactive(self, helper: Agent, hook: AgentHook, span: Seconds) -> bool:
+        if self.requests.has_active_requests(helper.id, hook.timestamp):
+            return False
         newest = self.calls.newest_agent_hook(helper.id)
         activity_at = newest.created_at if newest is not None else helper.created_at
         return activity_at is not None and activity_at.elapsed_seconds(hook.timestamp) >= span.count

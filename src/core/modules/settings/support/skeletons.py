@@ -1,6 +1,12 @@
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.skeleton_size import SkeletonSize
 
+PROJECT_HOOKS_SKELETON = [SkeletonPart.stack([
+    SkeletonPart.row([SkeletonPart.block(32, "100px"), SkeletonPart.block(32, "120px")]),
+    SkeletonPart.line(SkeletonSize.MEDIUM, "360px"),
+    SkeletonPart.block(72, count=3),
+], spacing=12, padding="12px")]
+
 SETTINGS_SETTINGS_SKELETON = [
     SkeletonPart.stack([
         SkeletonPart.block(30),

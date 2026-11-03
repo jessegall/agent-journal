@@ -176,8 +176,10 @@
         "architecture_nudges_InstructionDeclaresWhatPaysItDetector",
         "listener_repeats_a_decision",
         "architecture_processes_ReaderOnlyOnTickDetector",
+        "architecture_processes_SlotOnlyThroughTheQueueDetector",
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",
+        "architecture_testing_NoSleepInTestsDetector",
         "architecture_viewer_NoTimerOutsideClocksDetector",
         "architecture_nudges_TypedLineThroughLineTypingDetector",
         "architecture_providers_HookNamesByMemberDetector",
@@ -194,18 +196,20 @@
         "architecture_views_ViewModelDeclaresSelectDetector",
         "naming_ClassNamedForItsBaseDetector",
         "naming_CommandAsAnOrderDetector",
-        "naming_NoTypeWordInsideNameDetector"
+        "naming_NoTypeWordInsideNameDetector",
+        "architecture_processes_ReaderSavedThroughAddReaderDetector",
+        "architecture_processes_ReaderDemandByPartDetector"
     ],
     "parallel": 2,
     "configure": {
-        "naming_LongDocstringLineDetector": [
+        "naming_GoPoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "naming_GoPoeticMethodNameDetector": [
+        "naming_LongDocstringLineDetector": [
             {
                 "judges": [
                     "tests"

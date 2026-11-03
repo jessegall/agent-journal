@@ -8,6 +8,7 @@ from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
 from core.base.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
+from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
 from core.base.private.private_folder import PrivateFolder
@@ -46,8 +47,15 @@ def test_a_resumed_helper_puts_resume_right_after_exec(provider):
                                        "-m", "gpt-6.1-sol", "Write the tests"]
 
 
-def test_the_hook_file_asks_for_no_limit_on_added_context(provider):
-    assert (provider.hook_file.path, dict(provider.hook_file.entry_values)) == (Path(".codex/hooks.json"), {"additionalContextLimit": 0})
+def test_hook_options_are_written_only_for_events_that_support_them(tmp_path):
+    ProgramHooks.hooks(CodexProvider, tmp_path).write("journal-hook", tmp_path)
+    hooks = json.loads((tmp_path / ".codex/hooks.json").read_text())["hooks"]
+    entries = {event: blocks[0]["hooks"][0] for event, blocks in hooks.items()}
+    assert {event for event, entry in entries.items() if entry.get("additionalContextLimit") == 0} == {
+        "SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "SubagentStart",
+    }
+    assert entries["SessionEnd"]["timeout"] == 3
+    assert all(entry["timeout"] == 90 for event, entry in entries.items() if event != "SessionEnd")
 
 
 def test_a_helpers_outcome_is_its_last_reply_its_thread_and_its_last_failure(provider):

@@ -7,7 +7,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 
 class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):

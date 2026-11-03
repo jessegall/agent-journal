@@ -1,18 +1,18 @@
 from core.base.driver.count_down import CountDown
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
-from core.modules.drivers.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_outcome import RULE_FAILED
 
-REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create', required_command="")
-OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.INFO, '{text}', turn_limited=False)
-MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.INFO, '{text}', turn_limited=False)
+REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create')
+OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
+MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, '{text}', turn_limited=False)
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, '{text}', turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
-TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.INFO, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
+TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
 
 PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, 'the user paused you: only journal commands and reads run until you are resumed; answer in the chat', turn_limited=False)
 

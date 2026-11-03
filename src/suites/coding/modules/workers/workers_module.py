@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.listeners.reader_sample_ready_listener import ReaderSampleReadyListener
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_subcommand import RecordWorkerReportSubcommand
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
@@ -21,6 +22,10 @@ from suites.coding.modules.workers.migrations.m005_proof_tests import ProofTests
 from suites.coding.modules.workers.migrations.m004_proofs_per_task import ProofsPerTaskMigration
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.usage.conditions.agent_activity import AgentActivity
+from suites.coding.modules.workers.conditions.worker_agent_activity import WorkerAgentActivity
+from suites.coding.modules.workers.models.worker_progress import WorkerProgress
+from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
 from core.modules.tasks.support.task_takers import TaskTakers
 from suites.coding.modules.workers.support.worker_task_takers import WorkerTaskTakers
 from core.base.ticker.tick_handler import TickHandler
@@ -40,6 +45,7 @@ from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTa
 from suites.coding.modules.workers.models.todo_item import TodoItem
 from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
 from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
+from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from suites.coding.modules.workers.rules.unmerged_worker_rule import UnmergedWorkerRule
 from suites.coding.modules.workers.rules.small_batch_rule import SmallBatchRule
 from suites.coding.modules.workers.rules.inactive_worker_retire_rule import InactiveWorkerRetireRule
@@ -57,7 +63,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker_handler impo
 from suites.coding.modules.workers.commands.send_worker.send_worker_subcommand import SendWorkerSubcommand
 from suites.coding.modules.workers.listeners.ended_worker_job_listener import EndedWorkerJobListener
 from suites.coding.modules.workers.listeners.delegated_task_comment_listener import DelegatedTaskCommentListener
-from suites.coding.modules.workers.listeners.worker_limit_listener import WorkerLimitListener
+from suites.coding.modules.workers.listeners.worker_count_raised_listener import WorkerCountRaisedListener
 from suites.coding.modules.workers.listeners.reassigned_task_listener import ReassignedTaskListener
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
 from suites.coding.modules.workers.listeners.worker_run_ended_listener import WorkerRunEndedListener
@@ -91,6 +97,8 @@ from suites.coding.modules.workers.guards.dispatch_worker_guard import DispatchW
 from suites.coding.modules.workers.migrations.m001_workers import WorkersTablesMigration
 from suites.coding.modules.workers.migrations.m003_proofs_worktree_index import ProofsWorktreeIndexMigration
 from suites.coding.modules.workers.models.worker_points import WorkerPoints
+from suites.coding.modules.workers.models.worker_wait import WorkerWait
+from suites.coding.modules.workers.commands.worker_waits.worker_waits_subcommand import WorkerWaitsSubcommand
 from suites.coding.modules.workers.commands.worker_points.worker_points_subcommand import WorkerPointsSubcommand
 from suites.coding.modules.workers.commands.worker_points.proof_points_subcommand import ProofPointsSubcommand
 from suites.coding.modules.workers.models.proof import Proof
@@ -127,21 +135,21 @@ class WorkersModule(Module):
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages"]
+    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage"]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
-    views = [WorkerPoints]
+    views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove]
     handlers = [RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
-    subcommands = [RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
+    subcommands = [WorkerProgressSubcommand, WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
+    driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    bindings = [(TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets), (QueueRunWorkers, WorkerQueueRunWorkers)]
-    listeners = [WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerLimitListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    bindings = [(AgentActivity, WorkerAgentActivity), (TaskTakers, WorkerTaskTakers), (SkillProjects, WorkerSkillProjects), (TaskWaitTargets, WorkerTaskWaitTargets), (QueueRunWorkers, WorkerQueueRunWorkers)]
+    listeners = [ReaderSampleReadyListener, WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),

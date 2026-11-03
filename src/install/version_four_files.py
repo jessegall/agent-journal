@@ -9,9 +9,7 @@ SHELL_ENTRY = CODE_FOLDER.parent / "journal.sh"
 
 
 class VersionFourFiles:
-    """The files version 4 left in a project's .journal folder: its database with its side files, its
-    code and the shell entry the journal command prefers when it finds one. After a good upgrade they move into .journal/version-4/, where the backup is, so only version 5 is
-    live."""
+    """Moves the version 4 database, code and shell entry into its backup folder after an upgrade."""
 
     def __init__(self, journal: Path) -> None:
         self.journal = journal

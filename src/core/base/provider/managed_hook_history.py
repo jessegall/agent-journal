@@ -13,3 +13,4 @@ class ManagedHookHistory:
     timed_out: int
     failed: int
     last: ForeignRun | None
+    last_at: str | None = None

@@ -29,4 +29,5 @@ class ManagedHookHistoryQuery(Query[HookCall]):
                                   rewritten=sum(bool(answer.updated_input) for answer in answers),
                                   timed_out=sum(record.run.timed_out for record in records),
                                   failed=sum(record.run.exit_code not in (0, 2) and not record.run.timed_out for record in records),
-                                  last=records[0].run if records else None)
+                                  last=records[0].run if records else None,
+                                  last_at=calls[0].creation_timestamp().text if records else None)

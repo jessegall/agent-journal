@@ -29,8 +29,14 @@ class ServerProcess:
         self.process = self.started()
         deadline = time.monotonic() + TIMEOUT_SECONDS
         while not self.socket.exists() and time.monotonic() < deadline:
-            time.sleep(POLL_SECONDS)
+            self.wait_or_go_on()
         return self
+
+    def wait_or_go_on(self) -> None:
+        try:
+            self.process.wait(POLL_SECONDS)
+        except subprocess.TimeoutExpired:
+            pass
 
     def __exit__(self, *details: object) -> None:
         if self.process is not None:

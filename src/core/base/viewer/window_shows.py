@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class WindowShows(StrEnum):
-    """Whose work a window shows: the environment's, or one agent's, which the pane menu's Agent row picks."""
+    """Whose work a window shows: the environment's, or an agent selected by its pane or parent."""
 
     ENVIRONMENT = "environment"
     SELECTED_AGENT = "one-agent"

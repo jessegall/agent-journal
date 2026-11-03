@@ -8,7 +8,11 @@ onMounted(load);
 
 <template>
     <WindowRoom>
-        <p v-if="failure" role="alert">{{ failure }}</p>
-        <p v-if="value">Managed: {{ value.managed.length }} · Pending: {{ value.pending.length }}</p>
+        <template v-if="failure">
+            <p role="alert">{{ failure }}</p>
+        </template>
+        <template v-if="value">
+            <p>Managed: {{ value.managed.length }} · Pending: {{ value.pending.length }}</p>
+        </template>
     </WindowRoom>
 </template>

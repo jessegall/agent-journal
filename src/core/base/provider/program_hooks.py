@@ -26,17 +26,19 @@ class ProgramHooks:
     timeout_seconds: int
     entry_fields: Mapping[str, object] = field(default_factory=lambda: {})
     provider: type[Provider] | None = None
+    event_fields: Mapping[str, Mapping[str, object]] = field(default_factory=dict)
 
     @classmethod
     def hooks(cls, provider: type[Provider], folder: Path) -> "ProgramHooks":
-        return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider)
+        return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider,
+                   event_fields=provider.hook_file.event_values)
 
     def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()
         hooks = self.without_journals(settings.get("hooks"))
         for event in self.events:
             hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
-                                                                     **self.entry_fields}]})
+                                                                     **self.entry_fields, **self.event_fields.get(event, {})}]})
         self.store(self.path, {**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:

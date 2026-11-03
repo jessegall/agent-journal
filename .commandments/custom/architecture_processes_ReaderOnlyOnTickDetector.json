@@ -15,7 +15,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/server/tick_work\\.py$|(^|/)src/core/modules/processes/commands/end_process/end_process_handler\\.py$"
+                "fileMatches": "(^|/)src/core/modules/processes/ticks/output_reading\\.py$|(^|/)src/server/tick_work\\.py$|(^|/)src/core/modules/processes/commands/end_process/end_process_handler\\.py$"
             }
         ]
     },

@@ -1,3 +1,4 @@
+from pathlib import Path
 from dataclasses import dataclass
 
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
@@ -14,3 +15,6 @@ class ManifestService:
     condition: str
     restart: ServiceRestart
     answers: bool
+
+    def is_listed(self, pid_file: Path) -> bool:
+        return not self.condition or pid_file.is_file()

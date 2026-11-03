@@ -34,6 +34,7 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     assert len(data["managed"]) == 1
     assert data["managed"][0]["history"]["refused"] == 1
     assert data["managed"][0]["history"]["last"]["exit_code"] == 2
+    assert data["managed"][0]["history"]["last_at"] is not None
     assert "can_refuse" in data["managed"][0]["hook"]["effects"]
     assert [entry["command"] for entry in data["pending"]] == ["pending-check"]
     assert {entry["reason"] for entry in data["unmanaged"]} == {"This entry is not a command.", "User-level files are listed without changes."}

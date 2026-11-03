@@ -8,8 +8,10 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 
 
 def worker_with_background_run(new_story):
@@ -41,6 +43,64 @@ def test_a_worker_still_working_gets_no_job_when_its_run_ends(new_story):
     story, worker, run, bus = worker_with_background_run(new_story)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
+
+
+def test_a_worker_a_person_stopped_stays_stopped_when_its_run_ends_and_the_main_agent_hears_at_the_stop(new_story):
+    story, worker, run, bus = worker_with_background_run(new_story)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
+    story.expect_success(f"agent stop {worker.id}", actor=user)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with")
+    bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
+    story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
+
+
+def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new_story):
+    story, worker, run, bus = worker_with_background_run(new_story)
+    story.expect_success('wait stuck "the build tool is missing"', actor=worker)
+    story.run(f"agent end {worker.id}", actor=worker)
+    bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
+    story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
+
+
+def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 1)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    session = worker_session(story, worker)
+    story.advance(timedelta(minutes=1))
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.hook(session, HookSamples.session_start())
+    story.advance(timedelta(minutes=1))
+    story.expect_success('task close 1 --outcome "done"', actor=worker)
+    story.advance(timedelta(minutes=1))
+    story.run(f"agent end {worker.id}", actor=worker)
+    assert story.run(f"agent-line list --agent {worker.id}").output_text.count("you ended with tasks left") == 2
+
+
+def test_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_main_agent(new_story):
+    story, worker, run, _ = worker_with_background_run(new_story)
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.tick("s-1")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"waits on output {run.id}")
+    story.advance(timedelta(minutes=31))
+    story.tick("s-1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} stopped and waits on output {run.id}")
+
+
+def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch):
+    story, worker, run, bus = worker_with_background_run(new_story)
+    hands = []
+    monkeypatch.setattr(WorkerLauncher, "hand", lambda self, *arguments: hands.append(arguments))
+    story.expect_success(f"agent pause {worker.id}", actor=story.agent)
+    story.run(f"agent end {worker.id}", actor=worker)
+    bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
+    story.run_listeners()
+    WorkerResumeRetry()(story.container)
+    assert not hands
+    story.expect_text(f"agent show {worker.id}", "paused_at:", actor=story.agent)
 
 
 def test_a_worker_with_a_run_going_may_stop(new_story):

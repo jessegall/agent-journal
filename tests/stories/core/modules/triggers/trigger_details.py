@@ -1,4 +1,5 @@
-import time
+import os
+import select
 
 from core.testing.hook_samples import HookSamples
 from core.base.driver.command_category import CommandCategory
@@ -6,6 +7,8 @@ from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+
+RUN_LIMIT_SECONDS = 5
 
 GIT_CHAIN = HookSamples.shell("git status && git push --force", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("git", CommandCategory.VERSION_CONTROL, ["push", "--force"]))
 
@@ -28,12 +31,22 @@ def made(story, *edits: str):
         story.expect_success(f"trigger edit 1 {line}", actor=story.agent)
 
 
-def wait_for_file(marker):
-    for _ in range(50):
-        if marker.exists():
-            break
-        time.sleep(0.1)
-    assert marker.exists()
+class RunSignal:
+    """A named pipe an extra command writes to, so a story waits on the command itself, never with a sleep."""
+
+    def __init__(self, folder):
+        self.path = folder / "ran"
+        os.mkfifo(self.path)
+        self.pipe = os.open(self.path, os.O_RDONLY | os.O_NONBLOCK)
+
+    @property
+    def command(self):
+        return f"echo ran > {self.path}"
+
+    def wait(self):
+        readable, _, _ = select.select([self.pipe], [], [], RUN_LIMIT_SECONDS)
+        os.close(self.pipe)
+        assert readable, "the extra command did not run"
 
 
 def test_a_trigger_keeps_its_name_and_description(new_story):
@@ -116,23 +129,23 @@ def test_a_paused_trigger_rests_and_goes_on_again(new_story):
 
 def test_a_fired_trigger_runs_its_extra_command(new_story, tmp_path):
     story = new_story(fixture=AgentsEnableTriggers)
-    marker = tmp_path / "ran"
+    marker = RunSignal(tmp_path)
     story.expect_success('trigger make "cart" "Mind the cart"', actor=story.agent)
-    story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "touch {marker}"}}]'""", actor=story.agent)
+    story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""", actor=story.agent)
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
     story.expect_text("trigger list --json", '"fired_count": 1', actor=story.agent)
-    wait_for_file(marker)
+    marker.wait()
 
 
 def test_a_trigger_that_blocks_counts_as_fired_and_runs_its_extra_command(new_story, tmp_path):
     story = new_story(fixture=AgentsEnableTriggers)
-    marker = tmp_path / "ran"
-    made(story, f"""--extra-actions '[{{"type": "run", "target": "touch {marker}"}}]'""")
+    marker = RunSignal(tmp_path)
+    made(story, f"""--extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""")
     story.expect_hook_refusal("s-1", GIT_CHAIN, "Never force push")
     story.run_listeners()
     story.expect_text("trigger list --json", '"fired_count": 1', actor=story.agent)
-    wait_for_file(marker)
+    marker.wait()
 
 
 def test_a_trigger_ends_at_its_limit_of_firings(new_story):
@@ -146,10 +159,10 @@ def test_a_trigger_ends_at_its_limit_of_firings(new_story):
 
 def test_a_scheduled_trigger_runs_its_extra_command_when_its_time_comes(new_story, tmp_path):
     story = new_story(fixture=AgentsEnableTriggers)
-    marker = tmp_path / "ran"
+    marker = RunSignal(tmp_path)
     story.expect_success('trigger schedule "Look at the build" --at 2020-01-01T00:00:00+00:00', actor=story.agent)
-    story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "touch {marker}"}}]'""", actor=story.agent)
+    story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.prompt("Next"), "Look at the build")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("Next"), "Look at the build")
     story.run_listeners()
-    wait_for_file(marker)
+    marker.wait()

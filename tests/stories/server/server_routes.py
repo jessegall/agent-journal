@@ -43,7 +43,7 @@ def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cl
     story.expect_busy_timeout(CLI_LIMIT_SECONDS)
 
 
-def test_a_write_whose_deadline_passed_before_the_commit_writes_nothing(task_server):
+def test_a_write_whose_deadline_passed_before_the_commit_is_readonly(task_server):
     story = task_server
     story.expect_deadline_rollback('task make "Late" --environment main', lines.TASK_LIST, "4  Late  open  normal")
 

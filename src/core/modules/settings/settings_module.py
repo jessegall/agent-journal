@@ -27,7 +27,7 @@ from core.modules.settings.commands.setting_show.setting_show_subcommand import 
 from core.modules.settings.commands.setting_tree.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
 from core.modules.settings.upgrade.settings_move import SettingsMove
-from core.modules.settings.support.skeletons import SETTINGS_SETTINGS_SKELETON
+from core.modules.settings.support.skeletons import PROJECT_HOOKS_SKELETON, SETTINGS_SETTINGS_SKELETON
 
 
 class SettingsModule(Module):
@@ -37,6 +37,7 @@ class SettingsModule(Module):
     name = "journal.core.settings"
     seed_reason = "its rows are the settings the other modules declare"
     requires_core = ">=5,<6"
+    file_events = ("managed-hook.changed", "managed-hook.scanned", "managed-hook.restored")
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
@@ -44,7 +45,7 @@ class SettingsModule(Module):
     handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
                                  reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"]),
-               WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
+               WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*"])]
     subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]

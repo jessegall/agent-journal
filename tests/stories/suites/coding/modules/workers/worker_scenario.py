@@ -1,4 +1,5 @@
 import subprocess
+from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -38,6 +39,20 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
     story.expect_text("proof list --task 3", "receipt.py:1", actor=worker)
 
 
+def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_over(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
+    story.expect_success("task depend 2 --on 1", actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
+    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    expect_states(story, task1="completed", task2="started")
+
+
 def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)
@@ -64,6 +79,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
     folder = story.container.get(OutputFolder)
     folder.write_pid(started[0], ended_program.pid)
     folder.write_end(started[0], 0)
+    story.advance(timedelta(seconds=11))
     RunEndRecovery()(story.container)
     story.run_listeners()
     expect_states(story, task1="completed")

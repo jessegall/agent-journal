@@ -59,8 +59,15 @@ class CodexProvider(Provider):
     decoder = HookDecoder.CODEX
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",
                 "SubagentStart": "agent_type", "SubagentStop": "agent_type"}
-    hook_file = HookFile(Path(".codex/hooks.json"), {"additionalContextLimit": 0})
     hook_files = tuple([Path(".codex/hooks.json")])
+    hook_file = HookFile(Path(".codex/hooks.json"), {}, {
+        "SessionStart": {"additionalContextLimit": 0},
+        "UserPromptSubmit": {"additionalContextLimit": 0},
+        "PreToolUse": {"additionalContextLimit": 0},
+        "PostToolUse": {"additionalContextLimit": 0},
+        "SubagentStart": {"additionalContextLimit": 0},
+        "SessionEnd": {"timeout": 3},
+    })
     session_variable = "CODEX_THREAD_ID"
     markers = ["CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION",
                "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS"]

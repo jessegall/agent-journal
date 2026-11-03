@@ -31,7 +31,7 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
         return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_ones() for service in PluginManifest.read(self.folders.code(plugin.name)).services if self.is_listed(plugin.name, service)])
 
     def is_listed(self, plugin_name: str, service: ManifestService) -> bool:
-        return not service.condition or self.sockets.pid(plugin_name, service.name).is_file()
+        return service.is_listed(self.sockets.pid(plugin_name, service.name))
 
     def row(self, plugin_name: str, service: ManifestService) -> PluginServicesSubcommandRowRecord:
         pid_file = self.sockets.pid(plugin_name, service.name)

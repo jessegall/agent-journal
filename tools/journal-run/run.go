@@ -16,6 +16,7 @@ const pollInterval = 20 * time.Millisecond
 // journal folder, the shell and how often the heartbeat is written. Detach continues a moved run without the
 // runner; when it is nil the run goes on in this program.
 type Options struct {
+	Count          string
 	Process        int
 	LimitSeconds   int
 	Background     bool
@@ -45,7 +46,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		}
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}
@@ -68,6 +69,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 // when the line execs.
 func start(options Options, folder Folder) (*exec.Cmd, error) {
 	command := exec.Command("/bin/sh", "-c", `"$1" "$2"; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path)
+	command.Env = journalEnvironment(options.Home)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := command.Start(); err != nil {
 		return nil, err

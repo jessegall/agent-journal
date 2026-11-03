@@ -1,8 +1,12 @@
+from collections.abc import Sequence
+
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 
 START = Statement("INSERT OR IGNORE INTO listener_cursors (listener, event_id) VALUES (?, (SELECT coalesce(max(id), 0) FROM events))")
 POSITION = Statement("SELECT event_id FROM listener_cursors WHERE listener = ?")
+POSITIONS = Statement("SELECT listener, event_id FROM listener_cursors")
+BULK_ADVANCE = "UPDATE listener_cursors SET event_id = ? WHERE event_id < ? AND listener IN ({listeners})"
 CLAIM = Statement("UPDATE listener_cursors SET event_id = ? WHERE listener = ? AND event_id = ?")
 UNHANDLED_EVENTS = Statement("SELECT (SELECT coalesce(min(event_id), 0) FROM listener_cursors) < (SELECT coalesce(max(id), 0) FROM events)")
 PENDING_EVENTS = Statement("SELECT EXISTS(SELECT 1 FROM listener_cursors WHERE event_id < ?)")
@@ -25,6 +29,15 @@ class ListenerCursorTable:
 
     def position(self, listener: str) -> int:
         return self.database.rows(Statement(POSITION.sql, [listener]))[0][0]
+
+    def positions(self) -> dict[str, int]:
+        return {row[0]: row[1] for row in self.database.rows(POSITIONS)}
+
+    def advance_all(self, listeners: Sequence[str], event_id: int) -> int:
+        if not listeners:
+            return 0
+        placeholders = ", ".join("?" for _ in listeners)
+        return self.database.update(Statement(BULK_ADVANCE.format(listeners=placeholders), (event_id, event_id, *listeners)))
 
     def claimed(self, listener: str, position: int, event_id: int) -> bool:
         return self.database.update(Statement(CLAIM.sql, (event_id, listener, position))) == 1

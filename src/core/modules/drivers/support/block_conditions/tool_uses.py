@@ -1,7 +1,7 @@
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
 from core.base.query.queries import Queries
-from core.modules.drivers.support.tool_use_count import ToolUseCount
+from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 
 
 class ToolUses(BlockCondition):

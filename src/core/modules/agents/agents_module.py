@@ -41,7 +41,6 @@ from core.base.module.module import Module
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
-from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -53,8 +52,8 @@ from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_SUBAGENTS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
-CARD_READS = ["agent list", "agent running", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list", "process-part list", "proof list"]
-CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create", "process_part.*", "proof.*"]
+CARD_READS = ["agent cards", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "file-edit list", "process-part list", "proof list", "worker waits", "worker progress"]
+CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "file_edit.create", "process_part.*", "proof.*", "worker_worktree.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript"), WindowTab("file-feed", "File feed", "file-edit list")]
 
 
@@ -70,8 +69,7 @@ class AgentsModule(Module):
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS,
-                                 options=[ChoiceOption("order", "Order", [("number", "By number"), ("state", "By state"), ("active", "By last active")], "number")]),
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.WORKER, reads=["agent show", *CARD_READS], events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, skeleton=AGENTS_SUBAGENTS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, reads=CARD_READS,
                                  events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,

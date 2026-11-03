@@ -58,13 +58,17 @@ class PluginProgram:
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:
-        os.killpg(process.pid, signal.SIGKILL)
         try:
-            process.communicate(timeout=STOP_LIMIT_SECONDS)
-        except subprocess.TimeoutExpired:
-            for pipe in (process.stdin, process.stdout):
-                if pipe is not None:
-                    pipe.close()
+            os.killpg(process.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            return
+        finally:
+            try:
+                process.communicate(timeout=STOP_LIMIT_SECONDS)
+            except subprocess.TimeoutExpired:
+                for pipe in (process.stdin, process.stdout):
+                    if pipe is not None:
+                        pipe.close()
 
     def write_settings(self, plugin_name: str, settings: Mapping[str, object]) -> None:
         data = self.folders.data(plugin_name)

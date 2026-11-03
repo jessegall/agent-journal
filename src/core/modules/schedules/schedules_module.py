@@ -7,6 +7,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_shows import WindowShows
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job_run.record_scheduled_job_run_handler import RecordScheduledJobRunHandler
@@ -42,5 +43,5 @@ class SchedulesModule(Module):
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
     listeners = [EndedAgentJobsListener, JobRunMarkListener]
     marks = SCHEDULE_MARKS
-    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN,
+    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT,
                                  reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"])]
