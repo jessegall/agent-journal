@@ -10,6 +10,7 @@ const SHOWS = [
 ];
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, only: {type: Function, default: () => true}});
 const {rows, failure, loaded, more, older} = useRows(props.line, ["agent.*"], {incremental: true});
+const {rows: runningRows} = useRows("agent running", ["agent.*"]);
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
 const show = ref("running");
 const words = ref("");
@@ -17,7 +18,9 @@ const words = ref("");
 const kept = (row) => show.value === "all" || (show.value === "running") === !row.ended_at;
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const found = (row) => `${row.id} ${row.session} ${row.program} ${row.role} ${factsOf(row)?.profile ?? ""} ${factsOf(row)?.given_name ?? ""}`.toLowerCase().includes(words.value.trim().toLowerCase());
-const shown = computed(() => rows.value.filter((row) => props.only(row) && kept(row) && found(row)));
+// the running tab reads every running agent, however old; the others page through all agents
+const listed = computed(() => (show.value === "running" ? runningRows.value : rows.value));
+const shown = computed(() => listed.value.filter((row) => props.only(row) && kept(row) && found(row)));
 const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches" : props.empty));
 </script>
 
@@ -28,7 +31,7 @@ const emptyText = computed(() => (rows.value.some(props.only) ? "Nothing matches
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
             </SearchBar>
         </div>
-        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText">
+        <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more && show !== 'running'" :older="older" :empty="emptyText">
             <template #default="{row}">
                 <AgentCard :row="row" :facts="factsOf(row)" />
             </template>

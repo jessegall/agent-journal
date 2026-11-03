@@ -27,10 +27,10 @@ func TestANewRunWaitsOnTheRunLockAndStartsWhenItIsGone(t *testing.T) {
 
 func TestAJournalCommandDoesNotWaitOnTheRunLock(t *testing.T) {
 	journalLine := Parts("journal message read 7; journal task list")
-	if strings.Contains(LockWait("/home", 4, journalLine), "while") {
-		t.Errorf("a journal line waits: %q", LockWait("/home", 4, journalLine))
+	if strings.Contains(LockWait("/home", 4, journalLine, nil), "while") {
+		t.Errorf("a journal line waits: %q", LockWait("/home", 4, journalLine, nil))
 	}
-	if !strings.Contains(LockWait("/home", 4, Parts("journal task list; make build")), "while") {
+	if !strings.Contains(LockWait("/home", 4, Parts("journal task list; make build"), nil), "while") {
 		t.Error("a line with another command in it does not wait")
 	}
 }
@@ -63,5 +63,11 @@ func TestAnEndIsToldAgainWhileTheServerIsAway(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(client.reported(), "\n"), "process end 4") {
 		t.Errorf("reported %q", client.reported())
+	}
+}
+
+func TestAnAliasWaitsOnTheRunLockAsTheCommandUnderItDoes(t *testing.T) {
+	if !strings.Contains(LockWait("/home", 4, Parts("journal go-tests ."), []string{"go-tests"}), "while") {
+		t.Error("an alias does not wait on the run lock")
 	}
 }

@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {age, Btn, Icon, peekRef, TaskStatusIcon, useNow} from "@journal/window-kit";
+import {computed, onUnmounted, ref} from "vue";
+import {age, Btn, Icon, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
 // its number, usage, Inspect, its tasks under the state names of the tasks window, and its instruction
@@ -29,6 +29,18 @@ const completedCount = computed(() => tasks.value.filter((task) => task.state ==
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);
+// a running worker's card names the command it runs, as the foot of the chat does for the main agent
+const context = useWindow();
+const runningCommand = ref("");
+const showsCommand = computed(() => props.row.role === "worker" && !props.row.ended_at);
+async function readCommand() {
+    if (!showsCommand.value) return;
+    const answer = await context.read(`usage tool --agent ${props.row.id}`);
+    runningCommand.value = answer.ok ? answer.value.tool : "";
+}
+const stopFollowing = context.follow(["hook_call.*"], readCommand);
+onUnmounted(() => stopFollowing?.());
+readCommand();
 </script>
 
 <template>
@@ -46,6 +58,9 @@ const opened = ref(false);
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="showsCommand">
+            <span class="agent-command" data-agent-command><RunningCommand :text="runningCommand" /></span>
+        </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>
                 <span class="agent-usage-line">
@@ -167,6 +182,12 @@ const opened = ref(false);
 }
 
 .agent-line {
+    padding-left: 15px;
+}
+
+.agent-command {
+    display: flex;
+    min-width: 0;
     padding-left: 15px;
 }
 

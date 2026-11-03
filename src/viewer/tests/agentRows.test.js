@@ -22,7 +22,7 @@ const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
     {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
-const window = (facts = FACTS) => context({"agent list": page(AGENTS), "usage agents --closed": page(facts)});
+const window = (facts = FACTS) => context({"agent list": page(AGENTS), "agent running": page(AGENTS.filter((row) => !row.ended_at)), "usage agents --closed": page(facts)});
 const drawn = (facts) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
@@ -114,6 +114,18 @@ test("a worker with a started task does not say it waits for its tests", async (
 test("a profile's name shows with a capital letter", async () => {
     const element = await drawn([{...FACTS[0], profile: "auditor"}]);
     expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Auditor");
+});
+
+test("a running worker's card names the command it runs", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
+});
+
+test("the running list has no show more button", async () => {
+    const element = await drawn();
+    expect(element.querySelector("[data-row-list-more]")).toBeNull();
 });
 
 test("an agent with no tasks has no tasks control", async () => {

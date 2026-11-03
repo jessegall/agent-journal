@@ -10,13 +10,45 @@
         "tools/journal-hook",
         "src/viewer"
     ],
+    "exclude": [
+        "src/core/modules/agents/web/dist",
+        "src/core/modules/developer/web/dist",
+        "src/core/modules/documents/web/dist",
+        "src/core/modules/drivers/web/dist",
+        "src/core/modules/dumps/web/dist",
+        "src/core/modules/mcp/web/dist",
+        "src/core/modules/memories/web/dist",
+        "src/core/modules/messages/web/dist",
+        "src/core/modules/phone/web/dist",
+        "src/core/modules/plans/web/dist",
+        "src/core/modules/plugins/web/dist",
+        "src/core/modules/processes/web/dist",
+        "src/core/modules/questions/web/dist",
+        "src/core/modules/reviews/web/dist",
+        "src/core/modules/schedules/web/dist",
+        "src/core/modules/search/web/dist",
+        "src/core/modules/secrets/web/dist",
+        "src/core/modules/sequences/web/dist",
+        "src/core/modules/settings/web/dist",
+        "src/core/modules/sharing/web/dist",
+        "src/core/modules/skills/web/dist",
+        "src/core/modules/suggestions/web/dist",
+        "src/core/modules/tasks/web/dist",
+        "src/core/modules/templates/web/dist",
+        "src/core/modules/triggers/web/dist",
+        "src/core/modules/tunnel/web/dist",
+        "src/core/modules/updates/web/dist",
+        "src/core/modules/usage/web/dist",
+        "src/core/modules/viewer/web/dist",
+        "src/suites/coding/modules/checks/web/dist",
+        "src/suites/coding/modules/workers/web/dist",
+        "src/suites/coding/web/dist",
+        "src/tunnels/tunler/web/dist",
+        "src/viewer/tests/sample-window",
+        "tests",
+        "tools/journal-hook/testdata"
+    ],
     "base": "main",
-    "disable": {
-        "languages": [
-            "php",
-            "csharp"
-        ]
-    },
     "detectors": [
         "architecture_viewer_WindowFieldOutsideEntryDetector",
         "architecture_viewer_WindowLoadingPageDetector",
@@ -156,6 +188,41 @@
     ],
     "parallel": 2,
     "configure": {
+        "naming_LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "naming_PoeticMethodNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "naming_PoeticParameterNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "naming_PoeticTypeNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "naming_PoeticVariableNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
         "python/NamespaceDependencyDetector": [
             {
                 "layer": [
@@ -259,48 +326,6 @@
                 ]
             }
         ],
-        "vue/ComponentBudgetDetector": [
-            {
-                "elements": [
-                    50
-                ]
-            }
-        ],
-        "naming_PoeticTypeNameDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "naming_PoeticMethodNameDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "naming_PoeticVariableNameDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "naming_PoeticParameterNameDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "naming_LongDocstringLineDetector": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
         "syntax_OneElementTupleDetector": [
             {
                 "judges": [
@@ -314,44 +339,13 @@
                     "tests"
                 ]
             }
+        ],
+        "vue/ComponentBudgetDetector": [
+            {
+                "elements": [
+                    50
+                ]
+            }
         ]
-    },
-    "exclude": [
-        "src/core/modules/agents/web/dist",
-        "src/core/modules/developer/web/dist",
-        "src/core/modules/documents/web/dist",
-        "src/core/modules/drivers/web/dist",
-        "src/core/modules/dumps/web/dist",
-        "src/core/modules/mcp/web/dist",
-        "src/core/modules/memories/web/dist",
-        "src/core/modules/messages/web/dist",
-        "src/core/modules/phone/web/dist",
-        "src/core/modules/plans/web/dist",
-        "src/core/modules/plugins/web/dist",
-        "src/core/modules/processes/web/dist",
-        "src/core/modules/questions/web/dist",
-        "src/core/modules/reviews/web/dist",
-        "src/core/modules/schedules/web/dist",
-        "src/core/modules/search/web/dist",
-        "src/core/modules/secrets/web/dist",
-        "src/core/modules/sequences/web/dist",
-        "src/core/modules/settings/web/dist",
-        "src/core/modules/sharing/web/dist",
-        "src/core/modules/skills/web/dist",
-        "src/core/modules/suggestions/web/dist",
-        "src/core/modules/tasks/web/dist",
-        "src/core/modules/templates/web/dist",
-        "src/core/modules/triggers/web/dist",
-        "src/core/modules/tunnel/web/dist",
-        "src/core/modules/updates/web/dist",
-        "src/core/modules/usage/web/dist",
-        "src/core/modules/viewer/web/dist",
-        "src/suites/coding/modules/checks/web/dist",
-        "src/suites/coding/modules/workers/web/dist",
-        "src/suites/coding/web/dist",
-        "src/tunnels/tunler/web/dist",
-        "src/viewer/tests/sample-window",
-        "tests",
-        "tools/journal-hook/testdata"
-    ]
+    }
 }

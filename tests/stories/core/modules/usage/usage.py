@@ -1,3 +1,4 @@
+from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
 
 from core.base.command.bus import Bus
@@ -137,3 +138,10 @@ def test_a_subagents_facts_carry_its_profile_given_name_and_instruction(new_stor
     story.hook("s-1", HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": dispatch, "tool_use_id": "tool-1"}))
     story.hook("s-1", HookSamples.sample("session_start").with_fields(subagent="sub-1").with_raw({"agent_type": "journal-researcher"}))
     story.expect_text("usage agents --environment main --json", '"profile": "journal-researcher"', '"given_name": "Madame Curie"', '"instruction": "Read the cart"')
+
+
+def test_agent_running_lists_every_running_agent_and_no_ended_one(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_text("agent running --environment main", "main", actor=story.agent)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    story.expect_absent("agent running --environment main", "main", actor=story.agent)
