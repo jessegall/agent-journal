@@ -14,8 +14,8 @@ import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
 
 // one item docked above the chat, drawn as version 4 drew a docked card: the type's icon and title, its buttons, and the body its module gives it
-const emit = defineEmits(["fold"]);
-const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean});
+const emit = defineEmits(["fold", "undock"]);
+const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean, refusal: {type: String, default: ""}});
 const declaration = computed(() => dockDeclaration(props.item.type));
 const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
@@ -68,10 +68,10 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                     </template>
                 </template>
             </span>
-            <CloseButton :title="undock.label" data-dock-action="undock" @click="press(undock)" />
+            <CloseButton :title="undock.label" data-dock-action="undock" @click="emit('undock', undock)" />
         </template>
-        <template v-if="failure">
-            <p class="dock-text dock-failure" role="alert" data-dock-failure>{{ failure }}</p>
+        <template v-if="failure || refusal">
+            <p class="dock-text dock-failure" role="alert" data-dock-failure>{{ failure || refusal }}</p>
         </template>
         <template v-if="item.text && !declaration?.body_url">
             <p class="dock-text">{{ item.text }}</p>
