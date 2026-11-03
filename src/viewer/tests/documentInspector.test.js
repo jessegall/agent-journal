@@ -11,6 +11,8 @@ const ROW = {id: 4, title: "Cart", abstract: "How the cart counts", body: BODY, 
 const onWords = {id: 7, body: "Why cents?", quote: "in cents", position: 16, selection_type: "text", created_at: "2026-11-01T10:00:00Z"};
 const whole = {id: 8, body: "Good plan", quote: "", position: null, selection_type: "", created_at: "2026-11-01T10:00:00Z"};
 
+Element.prototype.scrollIntoView = () => {};
+
 globalThis.ResizeObserver ??= class {
     observe() {}
     disconnect() {}

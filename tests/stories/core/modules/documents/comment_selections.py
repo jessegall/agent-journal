@@ -16,7 +16,8 @@ def test_the_message_to_the_agent_names_the_selection(new_story):
     story = new_story(fixture=BuilderStarted)
     made(story)
     story.expect_success('doc comment 1 "Why cents?" --quote "in cents" --position 13 --environment main', actor=story.user)
-    story.expect_text("doc comments 1", 'On doc 1, Cart, about "in cents": Why cents?', actor=story.user)
+    story.expect_text("doc comments 1", '"in cents": Why cents?', actor=story.user)
+    story.expect_absent("doc comments 1", "On doc 1", actor=story.user)
 
 
 def test_a_comment_on_the_whole_document_has_no_selection(new_story):

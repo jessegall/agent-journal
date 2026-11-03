@@ -31,8 +31,8 @@ class CommentTextHandler(Handler[CommentText, Message]):
         if not body:
             raise Refusal("give the comment's text")
         text_row = self.queries.query(command.text_model).find(command.row_id)
-        quoted = f', about "{command.quote[:QUOTE_LIMIT_CHARACTERS]}"' if command.quote else ""
-        message = self.bus.dispatch(SendMessage(f"On {text_row.cli_name} {text_row.id}, {text_row.title}{quoted}: {body}", commented_row=(text_row.model_name, text_row.id)), context)
+        quoted = f'"{command.quote[:QUOTE_LIMIT_CHARACTERS]}": ' if command.quote else ""
+        message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id)), context)
         self.repository.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
                                   link_type=LinkType.COMMENT), context)
         if isinstance(text_row, TextRow):
