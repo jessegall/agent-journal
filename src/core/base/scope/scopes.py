@@ -15,6 +15,7 @@ from core.base.scope.scope import Scope
 from core.base.scope.scope_opening import ScopeOpening
 
 M = TypeVar("M", bound=Model)
+WholeScopes = Sequence[type[Scope]]
 DisabledScopes = Sequence[type[Scope] | ScopeOpening]
 
 
@@ -32,7 +33,7 @@ class Scopes:
     def applied(self, model: M) -> M:
         return model if self.actor_id is None else model.scoped(self.actor_id)
 
-    def command_scope(self, disabled: DisabledScopes, actor: Actor) -> ContextManager[None]:
+    def command_scope(self, disabled: WholeScopes, actor: Actor) -> ContextManager[None]:
         if ActorScope in disabled:
             return self.opened(None)
         if self.decided:
@@ -46,7 +47,7 @@ class Scopes:
         return self.opened(None) if self.passes(disabled, change) else nullcontext()
 
     @contextmanager
-    def read_scope(self, disabled: DisabledScopes, actor_id: int | None) -> Generator[None]:
+    def read_scope(self, disabled: WholeScopes, actor_id: int | None) -> Generator[None]:
         previous = self.database.read_actor_id
         self.database.read_actor_id = None if ActorScope in disabled else actor_id
         try:

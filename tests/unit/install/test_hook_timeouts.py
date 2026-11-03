@@ -20,7 +20,7 @@ def test_hook_writer_passes_the_saved_hooks_to_each_program(tmp_path: Path):
     HookWriter(tmp_path).write("runner")
     claude = ProgramHooks.read(tmp_path / ".claude/settings.local.json")["hooks"]
     codex = ProgramHooks.read(tmp_path / ".codex/hooks.json")["hooks"]
-    assert claude["PreToolUse"][0]["hooks"][0]["timeout"] == 630
+    assert claude["PreToolUse"][0]["hooks"][0]["timeout"] == 690
     assert claude["Stop"][0]["hooks"][0]["timeout"] == 90
     assert codex["PreToolUse"][0]["hooks"][0]["timeout"] == 90
 
@@ -33,5 +33,5 @@ def test_hook_switch_passes_the_saved_hooks_and_keeps_settings(tmp_path: Path):
         HookSwitch(tmp_path).switch()
     settings = ProgramHooks.read(path)
     assert settings["permissions"] == {"allow": ["Bash(ls)"]}
-    assert settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 630
+    assert settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
     assert settings["hooks"]["Stop"][0]["hooks"][0]["timeout"] == 90

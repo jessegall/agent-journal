@@ -27,7 +27,7 @@ def started(new_story):
 
 
 def due_notes(story) -> None:
-    story.expect_success(f"skill require {story.agent.id} journal-notes", "state: due")
+    story.expect_text(f"skill require {story.agent.id} journal-notes --json", '"state": "due"')
 
 
 def test_a_skill_made_due_for_an_agent_is_a_due_row(new_story):

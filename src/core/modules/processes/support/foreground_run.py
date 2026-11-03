@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.support.part_command import PartCommand
 
 
 @dataclass(frozen=True)
@@ -16,3 +17,4 @@ class ForegroundRun:
     category: CommandCategory | None = None
     queued: bool = False
     read_command: bool = False
+    part_commands: tuple[PartCommand, ...] = ()

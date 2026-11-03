@@ -71,7 +71,7 @@ def test_a_long_managed_hook_extends_only_its_program_and_event(tmp_path):
     ProgramHooks("sample", path, ["BeforeTool", "End"], 90).write("runner", tmp_path, managed)
     settings = ProgramHooks.read(path)
     assert settings["hooks"] == {
-        "BeforeTool": [{"matcher": "", "hooks": [{"type": "command", "command": f'runner sample "{tmp_path}"', "timeout": 630}]}],
+        "BeforeTool": [{"matcher": "", "hooks": [{"type": "command", "command": f'runner sample "{tmp_path}"', "timeout": 690}]}],
         "End": [{"matcher": "", "hooks": [{"type": "command", "command": f'runner sample "{tmp_path}"', "timeout": 90}]}],
     }
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}

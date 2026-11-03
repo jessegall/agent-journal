@@ -2,6 +2,7 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
 import {cliOf, movesOf} from "../src/domain/resourceKinds.js";
+import {pageOf} from "../src/sync/paging.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 30));
 globalThis.ResizeObserver ??= class {
@@ -91,8 +92,11 @@ test("a task shows its log, and a move that needs words asks for them before it 
     const lines = [];
     await opened("#?open=tasks:7", answering({
         "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", priority: "normal", brief: "The totals", waits: [], logs: [{id: 1, line: "rounding found"}]}},
+        [`task-log list --task-id 7 --limit ${pageOf("task_logs")} --page 1`]: {ok: true, value: {rows: [{id: 1, line: "rounding found", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}},
     }, lines));
-    expect(shown().querySelector("[data-resource-logs]").textContent).toContain("rounding found");
+    [...shown().querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
+    await later();
+    expect(shown().querySelector("[data-task-log]").textContent).toContain("rounding found");
     expect(shown().querySelector("[data-move='close']").textContent).toContain("Complete");
     shown().querySelector("[data-move='close']").click();
     await later();

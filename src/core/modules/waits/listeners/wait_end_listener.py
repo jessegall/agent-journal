@@ -1,3 +1,4 @@
+from core.base.scope.actor_scope import ActorScope
 from core.modules.waits.support.wait_nudges import WAIT_ENDED
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
@@ -17,6 +18,7 @@ class WaitEndListener(SaveListener):
 
     name = "waits.wait-over"
     event = "wait.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, nudger: Nudger) -> None:
         self.nudger = nudger

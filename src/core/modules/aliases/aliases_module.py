@@ -16,6 +16,8 @@ from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
+from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
+from core.modules.aliases.support.alias_nudges import ALIAS_REFUSAL
 
 
 class AliasesModule(Module):
@@ -32,3 +34,5 @@ class AliasesModule(Module):
     bindings = [(ShellAliases, AliasShellAliases)]
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
+    driver_rules = [AliasExpansionRule]
+    nudges = [ALIAS_REFUSAL]

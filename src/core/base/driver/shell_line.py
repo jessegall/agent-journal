@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from core.base.cli.shell_aliases import ShellAliases
+
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.hook_event_error import HookEventError
@@ -24,6 +26,7 @@ class ShellLine:
     redirects: tuple[str, ...]
     is_journal_line: bool
     parse_error: str
+    alias_names: tuple[str, ...] = ()
 
     @classmethod
     def parsed(cls, data: object) -> "ShellLine":
@@ -31,7 +34,7 @@ class ShellLine:
         parts = fields.get("parts", [])
         if not is_list(parts):
             raise HookEventError("parts is a list")
-        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), fields.get("is_journal_only") is True, text(fields, "parse_error"))
+        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), fields.get("is_journal_only") is True, text(fields, "parse_error"), texts(fields, "aliases"))
 
     @property
     def display_text(self) -> str:
@@ -82,9 +85,13 @@ class ShellLine:
     def has_category_part(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)
 
+    def command_alias_names(self, aliases: ShellAliases) -> tuple[str, ...]:
+        commands = tuple(part.arguments[0] for part in self.parts_running_journal_command() if part.arguments and aliases.options(part.arguments[0]) is not None)
+        return tuple(dict.fromkeys((*self.alias_names, *commands)))
+
     def parts_running_journal_command(self, *commands: str) -> tuple[Part, ...]:
         command_terms = tuple(tuple(command.split()) for command in commands)
-        return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and any(part.arguments[:len(terms)] == terms for terms in command_terms))
+        return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and (not command_terms or any(part.arguments[:len(terms)] == terms for terms in command_terms)))
 
     def journal_command_numbers(self, *commands: str) -> tuple[int, ...]:
         firsts = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))

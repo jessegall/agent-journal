@@ -5,8 +5,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class ReaderTimeTool(PerformanceTool):
-    """How long an output reader took on the text it was handed, kept in the hook numbers under the reader's name
-    while Hook durations is on for the run's environment."""
+    """Database points spent by an output reader, kept with the hook costs."""
 
     name = "developer.reader-time"
 
@@ -14,9 +13,9 @@ class ReaderTimeTool(PerformanceTool):
         self.numbers, self.settings = numbers, settings
 
     def measure(self, *values: object) -> object:
-        reader, milliseconds, environment_id = values
-        if not isinstance(reader, str) or not isinstance(milliseconds, int) or not isinstance(environment_id, int):
-            raise TypeError("a reader's time is measured from its name, its milliseconds and the environment of its run")
+        reader, points, environment_id = values
+        if not isinstance(reader, str) or not isinstance(points, int) or not isinstance(environment_id, int):
+            raise TypeError("a reader's cost needs its name, points and environment")
         if self.settings.value(HOOK_DURATIONS_SETTING, environment_id) is True:
-            self.numbers.add(f"reader {reader}", milliseconds, 0)
+            self.numbers.add(f"reader {reader}", points)
         return None

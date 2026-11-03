@@ -60,6 +60,7 @@ class ClaudeCodeProvider(Provider):
     subagent_events = ["SubagentStart", "SubagentStop", "PreToolUse", "PostToolUse", "PostToolUseFailure"]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
+    skills_folder = ".claude/skills"
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
     monitor_tool = ToolType.MONITOR

@@ -1,4 +1,6 @@
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.performance_tools import PerformanceTools
+from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.modules.processes.ticks.output_reading import OutputReading
 from server.ticker import Ticker
 from tests.stories.core.base.driver.support.fixtures import LeadLocked
@@ -28,10 +30,10 @@ def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
 
 def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_story):
     story = new_story(fixture=BuilderWithUser)
-    output_tick = OutputReading(iter([0.0, 0.4, 1.0, 1.4]).__next__)
-    output_tick(story.container)
+    tools = story.container.get(PerformanceTools)
+    tools.run(SlowTickTool, 51)
     assert "over its limit" not in story.run("message list --environment main").output_text
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
-    output_tick(story.container)
-    assert "A tick of the journal's clock took 400 ms" in story.run("message list --environment main").output_text
+    tools.run(SlowTickTool, 51)
+    assert "A tick of the journal's clock cost 51 points" in story.run("message list --environment main").output_text

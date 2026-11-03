@@ -7,7 +7,10 @@ from core.base.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.viewer"
 WINDOW_SETTINGS = f"{MODULE_KEY}.window."
-VIEWER_SETTINGS = [SettingGroup("window", "Window settings", "What each window keeps of its own, such as its zoom or sort order.",
+TOUR_COMPLETED = f"{MODULE_KEY}.tour-completed"
+VIEWER_SETTINGS = [SettingValue("tour-completed", "Tour completed", "Skip the introductory tour in every browser.", SettingType.FLAG,
+                                default=False, scope=SettingScope.PROJECT),
+                   SettingGroup("window", "Window settings", "What each window keeps of its own, such as its zoom or sort order.",
                                 any_key=SettingValue("*", "Window setting", "One setting a window keeps of its own.", SettingType.ANY,
                                                      scope=SettingScope.ENVIRONMENT))]
 

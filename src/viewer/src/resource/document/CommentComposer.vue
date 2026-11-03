@@ -2,6 +2,7 @@
 import {computed, nextTick, ref} from "vue";
 import Btn from "../../kit/Btn.vue";
 import CloseButton from "../../kit/CloseButton.vue";
+import {submitOnEnter} from "../../platform/keys.js";
 
 // the comment box at the foot of a document, always open: with the selection it is on above it, and growing with what is written; a failed send keeps the words
 const props = defineProps({selection: {type: Object, default: null}, send: {type: Function, required: true}, narrow: Boolean});
@@ -35,12 +36,6 @@ async function submit() {
     }
 }
 
-function enter(event) {
-    if (event.shiftKey || event.isComposing) return;
-    event.preventDefault();
-    submit();
-}
-
 defineExpose({focus: () => box.value.focus()});
 </script>
 
@@ -57,7 +52,7 @@ defineExpose({focus: () => box.value.focus()});
             <p class="comment-failure" role="alert">{{ failure }}</p>
         </template>
         <div class="comment-row">
-            <textarea ref="box" v-model="draft" rows="1" maxlength="2000" :class="{on: draft}" :placeholder="placeholder" aria-label="Write a comment" data-comment-input @input="grow" @keydown.enter="enter" />
+            <textarea ref="box" v-model="draft" rows="1" maxlength="2000" :class="{on: draft}" :placeholder="placeholder" aria-label="Write a comment" data-comment-input @input="grow" @keydown.enter="submitOnEnter($event, submit)" />
             <Btn kind="primary" :busy="sending" :disabled="!draft.trim()" data-comment-send @click="submit">Comment</Btn>
         </div>
     </div>

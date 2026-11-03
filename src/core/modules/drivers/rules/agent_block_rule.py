@@ -24,6 +24,7 @@ class AgentBlockRule(DriverRule):
 
     name = "drivers.agent-block"
     exempt = True
+    overlay_proof = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]

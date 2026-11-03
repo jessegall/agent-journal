@@ -50,6 +50,7 @@ type DiffRow struct {
 }
 
 type ShellLine struct {
+	Aliases       []string `json:"aliases,omitempty"`
 	Line          string   `json:"line"`
 	Parts         []Part   `json:"parts"`
 	Redirects     []string `json:"redirects"`

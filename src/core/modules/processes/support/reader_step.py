@@ -1,5 +1,3 @@
-import time
-
 from core.base.module.performance_tools import PerformanceTools
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.modules.processes.models.enums.reader_type import ReaderType
@@ -14,7 +12,6 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.step_tally import StepTally
 
 NEWLINE = b"\n"
-SECOND_MILLISECONDS = 1000
 
 
 class ReaderStep:
@@ -28,9 +25,11 @@ class ReaderStep:
         if output.reader_id is None:
             return None
         reader = self.readers.find(output.reader_id)
-        started = time.monotonic()
+        started = self.tools.begin()
         advanced = self.script_advance(process, output, reader, is_final) if reader.type is ReaderType.SCRIPT else self.text_advance(process, output, reader, is_final)
-        self.tools.run(ReaderTimeTool, reader.name, round((time.monotonic() - started) * SECOND_MILLISECONDS), process.environment_id)
+        cost = self.tools.cost(started)
+        if cost is not None:
+            self.tools.run(ReaderTimeTool, reader.name, cost.total, process.environment_id)
         return advanced
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:

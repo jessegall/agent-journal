@@ -6,6 +6,7 @@
     ],
     "find": {
         "reject": [
+            {"name": "named_line"},
             {
                 "all": [
                     {

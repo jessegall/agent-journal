@@ -27,5 +27,5 @@ class TaskStartRule(DriverRule):
         starts = [list(part.arguments)[2:] for part in parts if part.classification.category is CommandCategory.JOURNAL and list(part.arguments[:2]) == TASK_START_COMMAND]
         if not starts:
             return RuleAnswer.allowed()
-        held_tasks = [task.id for task in self.current_tasks.started_tasks(hook.agent_id) if str(task.id) not in starts[0]]
-        return RuleAnswer.with_nudges(TASK_TESTING_QUESTION.nudge(task=held_tasks[0])) if held_tasks else RuleAnswer.allowed()
+        active_task_ids = [task.id for task in self.current_tasks.started_tasks(hook.agent_id) if str(task.id) not in starts[0]]
+        return RuleAnswer.with_nudges(TASK_TESTING_QUESTION.nudge(task=active_task_ids[0])) if active_task_ids else RuleAnswer.allowed()

@@ -10,8 +10,8 @@ from core.base.type_guards import is_list, is_mapping
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 # Longer than the hook program's wait for a restarting server and its last ask, so the program never kills that wait.
 HOOK_TIMEOUT_SECONDS = 90
-JOURNAL_WAIT_CEILING_SECONDS = 25
 TIMEOUT_PADDING_SECONDS = 5
+JOURNAL_WAIT_CEILING_SECONDS = HOOK_TIMEOUT_SECONDS - TIMEOUT_PADDING_SECONDS
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,8 @@ class ProgramHooks:
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
         longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
+        if not longest:
+            return self.timeout_seconds
         return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS)
 
     def is_complete(self) -> bool:

@@ -20,6 +20,14 @@ test("a trigger from before, with no name, shows by its text", async () => {
     expect(element.querySelector('[data-row="2"]').textContent).toContain("Check the build");
 });
 
+test("a trigger an agent made says it waits and offers to enable it, and an enabled one does not", async () => {
+    const element = mounted(TriggerCards, [{id: 3, action: "nudge", text: "Mind the cart", phrases: ["cart"], next_at: null, needs_enabling: true}, {id: 4, action: "nudge", text: "Mind the till", phrases: ["till"], next_at: null, needs_enabling: false}]);
+    await settled();
+    expect(element.querySelector('[data-row="3"]').textContent).toContain("Waiting for you");
+    expect(element.querySelector('[data-row="4"]').textContent).not.toContain("Waiting for you");
+    expect(element.querySelectorAll("[data-trigger-enable]")).toHaveLength(1);
+});
+
 test("a check card shows its title, verdict and how often it runs, and its command and output once opened", async () => {
     const element = mounted(CheckCards, [{id: 1, title: "Lint", status: "failed", interval_minutes: 15, command: "echo two problems; false", last_output: "two problems"}]);
     await settled();

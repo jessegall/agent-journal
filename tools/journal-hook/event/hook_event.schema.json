@@ -278,6 +278,10 @@
         "parse_error"
       ],
       "properties": {
+        "aliases": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
         "line": {
           "type": "string"
         },

@@ -1,4 +1,3 @@
-import re
 from core.base.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
 from pathlib import PurePath
@@ -9,13 +8,9 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_visibility import RunVisibility
 
-WIDTH_LINE_COUNT = 50
-WIDE_SHARE = 10
-COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
-FEW_LINES = 5
 SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time", "bash", "sh", "zsh"))
 
 
@@ -24,16 +19,15 @@ class EndedOutputText:
     how it ended, and how to read it; and, for a run shown in the chat, how to read such a run better next
     time."""
 
-    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, folder: OutputFolder, parts: ProcessPartQuery, visibility: RunVisibility) -> None:
-        self.outputs, self.readers, self.folder, self.parts, self.visibility = outputs, readers, folder, parts, visibility
+    def __init__(self, outputs: OutputQuery, readers: ReaderQuery, parts: ProcessPartQuery, visibility: RunVisibility, judge: ReaderJudge) -> None:
+        self.outputs, self.readers, self.parts, self.visibility, self.judge = outputs, readers, parts, visibility, judge
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
         if not self.visibility.is_visible(process):
             return tuple([ended])
-        note = self.note(process)
         program = self.read_program(process)
-        draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if note and program else []
+        draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if self.needs_reader(process) and program else []
         return (ended, *draft, *self.reader_nudges(process))
 
     def result(self, process: Process) -> str:
@@ -52,26 +46,25 @@ class EndedOutputText:
         reader = self.readers.find(output.reader_id)
         if reader.type is not ReaderType.PATTERN:
             return ()
-        if not output.reader_lines and output.line_count >= FEW_LINES:
+        missed = self.judge.misses(reader, process.category, self.judge.output_text(process.id, output.reader_position))
+        if "--lines picked none" in missed:
             return tuple([READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id)])
-        matches = [READER_WIDTH.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if output.line_count >= WIDTH_LINE_COUNT and output.reader_lines * WIDE_SHARE >= output.line_count * (WIDE_SHARE - 1) else []
-        if reader.summary_pattern and not output.reader_summary:
+        matches = [READER_WIDTH.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if "--lines picked nearly all" in missed else []
+        if reader.summary_pattern and "--summary found nothing" in missed:
             matches.append(READER_SUMMARY_MISSING.nudge(reader=reader.name, output=process.id))
-        if not reader.progress_pattern and COUNTED.search(self.folder.last_text(process.id)):
+        if not reader.progress_pattern and "--progress found nothing" in missed:
             matches.append(READER_PROGRESS_MISSING.nudge(reader=reader.name, output=process.id))
         return tuple(matches)
 
-    def note(self, process: Process) -> str:
+    def needs_reader(self, process: Process) -> bool:
         kept = self.outputs.process(process.id).page(1, 1).rows
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
-            return ""
+            return False
         first = self.read_program(process)
         if first is None or first in SHELL_TERMS:
-            return ""
+            return False
         name = PurePath(first).name
-        if self.readers.with_name(name).exists():
-            return ""
-        return f'no reader reads {name} yet: fill in journal reader add {name} --commands "{first}*" --lines "<the lines that matter>" from this run\'s output and run it'
+        return not self.readers.with_name(name).exists()
 
     def summary(self, process: Process) -> str:
         kept = self.outputs.process(process.id).page(1, 1).rows

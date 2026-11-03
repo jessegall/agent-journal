@@ -5,6 +5,7 @@ from core.base.driver.shell_line import ShellLine
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.foreground_run import ForegroundRun
+from core.modules.processes.support.part_command import PartCommand
 
 
 class Settings:
@@ -27,6 +28,9 @@ class Background:
 
     def declared_category(self, shell: ShellLine) -> None:
         return None
+
+    def part_command(self, part: Part) -> PartCommand:
+        return PartCommand(part.text)
 
 
 class Rows:
@@ -79,22 +83,22 @@ def limit(over_limit: bool = False, waiting: bool = False, journal_commands: boo
 
 
 def test_a_journal_only_line_has_no_limit_to_move_at():
-    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False)
+    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal")]))
 
 
 def test_a_journal_line_never_goes_to_the_background():
-    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False)
+    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal")]))
 
 
 def test_a_test_run_and_a_build_go_to_the_background_at_once():
-    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(15, True)
-    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(15, True)
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("pytest")]))
+    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("make")]))
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, True)
+    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("ls")]))
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, False)
-    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False)
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, False, part_commands=tuple([PartCommand("ls")]))
+    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False, part_commands=tuple([PartCommand("ls")]))

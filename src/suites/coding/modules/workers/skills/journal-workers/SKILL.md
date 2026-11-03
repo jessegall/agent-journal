@@ -25,9 +25,12 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 
 ## As the worker
 
+- `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
+  a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <n>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
+- Correct your own unchecked proof with `journal proof make` again for the same point. A checked proof cannot be changed.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
@@ -35,3 +38,8 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.
 - Git is not yours to run: the journal commits your work.
+- Use python3 for Python commands.
+- `journal skill write` publishes the declared skill files into the project's .claude/skills and .agents/skills;
+  it does not read a skill for you. Read the SKILL.md path with cat to load it.
+- `journal module sync` updates the module registry and applies pending schema migrations. These are maintenance
+  commands: use them when the journal asks for a repair, rather than as a way to load a skill. Workers may run them.

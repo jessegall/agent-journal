@@ -12,3 +12,5 @@ class PartSpec:
     program: str
     piped: bool = False
     category: CommandCategory = CommandCategory.UNKNOWN
+    command: str = ""
+    named_reader_id: int | None = None

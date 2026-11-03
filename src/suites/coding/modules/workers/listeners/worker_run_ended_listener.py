@@ -3,6 +3,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
@@ -19,6 +20,7 @@ class WorkerRunEndedListener(SaveListener):
 
     name = "workers.run-ended"
     event = "process.*"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, nudger: Nudger) -> None:
         self.queries, self.worktrees, self.nudger = queries, worktrees, nudger

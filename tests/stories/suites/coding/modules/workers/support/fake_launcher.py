@@ -36,6 +36,6 @@ class FakeLauncher:
         expected = {"agent_id": worker_id, "session": session, "folder": str(folder)}
         assert {key: request.get(key) for key in expected} == expected, f"the launcher was handed {request}, not {expected}"
         command, variables = request.get("command"), request.get("variables")
-        assert isinstance(command, list) and session in command, f"the worker's program would not start under its session {session}: {command}"
+        assert isinstance(command, list) and command, f"the worker's program has no command: {command}"
         assert isinstance(variables, dict) and variables.get("JOURNAL_ENV") == "main" and variables.get("AGENT_JOURNAL_ACTIVE") == "1", \
             f"the worker's hooks would not reach environment main: {variables}"

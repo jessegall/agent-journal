@@ -1,4 +1,5 @@
 from core.base.actor import CORE_ACTOR_ID
+import pytest
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -17,6 +18,15 @@ def agents_folder(story):
 def saved_profile_story(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(SAVE_PROFILE, actor=story.user)
+    return story
+
+
+@pytest.fixture
+def profiles_missing(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.run_listeners()
+    for profile in SHIPPED_PROFILES:
+        (agents_folder(story) / f"{profile.name}.md").unlink(missing_ok=True)
     return story
 
 
@@ -40,18 +50,16 @@ def test_a_saved_profile_that_names_no_model_leaves_the_model_out_of_its_files(n
     story.expect_rows("model: haiku" in (agents_folder(story) / "critic.md").read_text())
 
 
-def test_a_module_sync_writes_the_journals_own_profiles(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run_listeners()
+def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
+    story = profiles_missing
     with story.container.get(Database).transaction():
         story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
     story.run_listeners()
     assert (agents_folder(story) / "journal-senior.md").is_file()
 
 
-def test_the_journals_start_writes_its_own_profiles(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run_listeners()
+def test_the_journals_start_writes_its_own_profiles(profiles_missing):
+    story = profiles_missing
     BootingWork().run(story.container)
     story.run_listeners()
     assert (agents_folder(story) / "journal-senior.md").is_file()

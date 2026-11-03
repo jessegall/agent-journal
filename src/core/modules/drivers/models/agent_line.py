@@ -20,6 +20,7 @@ class AgentLine(Model):
     creator_id: int
     text: str
     source: str = ""
+    wakes_agent: bool = False
     state: AgentLineState = AgentLineState.WAITING
     delivered_at: Timestamp | None = None
 

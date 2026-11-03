@@ -1,0 +1,27 @@
+{
+  "note": "The sins this project has reported to code-commandments. A judge reads a sin listed here as reported rather than active, so deleting this file makes every one of them active again and invites a second report of each. The flagged line is kept as a hash, never as text: this file is committed and the issues it names are public.",
+  "reports": {
+    "2254f2c20725ec002a1f4f54a33696208c18d841": {
+      "detector": "FeatureEnvyDetector",
+      "sin": "feature-envy",
+      "file": "src/core/modules/processes/support/background_commands.py",
+      "line": 26,
+      "reason": "BackgroundCommands.alias_names applies configured alias policy to parsed shell commands. Journal-part selection now belongs to ShellLine.parts_running_journal_command; this method calls that API and checks names through the injected ShellAliases interface, then preserves the hook-provided alias names. It does not select programs by traversing shell.parts. ShellLine cannot decide which command names are configured aliases. The remaining traversal is the policy-over-flat-fields exception documented by the tell-dont-ask skill.",
+      "repository": "jessegall/code-commandments",
+      "issue": 822,
+      "filed": "2026-11-03T18:15:53Z",
+      "seen": {}
+    },
+    "4a637eb6a659f08bb94347350f2d19470fb39402": {
+      "detector": "FeatureEnvyDetector",
+      "sin": "feature-envy",
+      "file": "src/core/base/driver/shell_line.py",
+      "line": 86,
+      "reason": "BackgroundCommands.alias_names applies configured alias policy to parsed shell commands. Journal-part selection now belongs to ShellLine.parts_running_journal_command; this method calls that API and checks names through the injected ShellAliases interface, then preserves the hook-provided alias names. It does not select programs by traversing shell.parts. ShellLine cannot decide which command names are configured aliases. The remaining traversal is the policy-over-flat-fields exception documented by the tell-dont-ask skill.",
+      "repository": "jessegall/code-commandments",
+      "issue": 822,
+      "filed": "2026-11-03T18:15:53Z",
+      "seen": {}
+    }
+  }
+}

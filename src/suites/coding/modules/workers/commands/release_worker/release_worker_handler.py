@@ -2,16 +2,21 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.environments.models.environment import Environment
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.release_worker.release_worker import ReleaseWorker
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+
+
+WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
@@ -30,7 +35,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         abandoned = self.repository.save(worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.queries.query(Task).find(worktree.task_id)
         self.repository.save(replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
-        for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id).all_rows()):
+        for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.save(replace(delegated, delegated_to=None), context)
         unmerged = self.git.remove(self.queries.query(Environment).find(abandoned.environment_id).folder, abandoned)
         removed = self.repository.save(abandoned.remove(context.timestamp, context.actor), context)

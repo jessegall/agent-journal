@@ -4,13 +4,14 @@ from core.base.container import Container
 from core.base.error_log import ErrorLog
 from core.base.exception_sink import ExceptionSink
 from core.base.listener.commit_listener import CommitListener
-from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
 from core.base.listener.commit_listener_error import CommitListenerError
+from core.base.database.performance_costs import PerformanceCosts
+from core.base.performance.performance_state import PerformanceState
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -56,6 +57,10 @@ class CommitListenerRunner:
 
     def run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None:
         for _ in range(CHAIN_LIMIT_ROUNDS):
+            state = self.container.get(PerformanceState)
+            boot_event = state.boot_event()
+            if boot_event and not self.cursors.has_pending_events(boot_event):
+                state.finish_start()
             if not self.cursors.has_unhandled_events():
                 return
             progress = [self.run_entry(entry, urgent_entries) for entry in entries]
@@ -95,13 +100,13 @@ class CommitListenerRunner:
         listener_class = entry.path.loaded()
         if not issubclass(listener_class, CommitListener):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
-        counter = self.container.get(Database).tally
-        start_points = counter.points()
+        tools = self.container.get(PerformanceCosts)
+        start_points = tools.begin()
         try:
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
                 self.container.get(listener_class).handle(event)
-            cost = counter.points().minus(start_points)
-            if cost.total >= COSTLY_LISTENER_POINTS:
+            cost = tools.cost(start_points)
+            if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)

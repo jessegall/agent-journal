@@ -16,7 +16,7 @@ class ResumeRunQueueHandler(Handler[ResumeRunQueue, str]):
 
     def handle(self, command: ResumeRunQueue, context: Context) -> str:
         if not self.halt.command_halted:
-            raise Refusal("the test queue is not halted", "journal queue halt \"<why>\" halts it")
+            raise Refusal("the process queue is not halted", "journal queue halt \"<why>\" halts it")
         self.halt.resume()
         self.slots.grant_all_environments(context)
-        return "the test queue is resumed"
+        return "the process queue is resumed"

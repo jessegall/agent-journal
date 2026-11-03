@@ -1,0 +1,78 @@
+from unittest.mock import Mock
+
+from core.base.driver.command_category import CommandCategory
+from core.modules.processes.models.enums.reader_type import ReaderType
+from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.queries.process_part_query import ProcessPartQuery
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.reader_judge import FEW_LINES, SAMPLE_OUTPUTS, WIDTH_LINE_COUNT, ReaderJudge
+from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_run import ReaderRun
+
+
+def reader(**fields: object) -> Reader:
+    return Reader(**{"id": 1, "version": 1, "creator_id": 1, "name": "build", "type": ReaderType.PATTERN,
+                     "commands": "make*", "title": "Building", "lines_pattern": "done", "summary_pattern": "done", **fields})
+
+
+def judge() -> ReaderJudge:
+    return ReaderJudge(ReaderRun(), Mock(spec=OutputFolder), Mock(spec=ProcessPartQuery))
+
+
+def test_a_reader_that_picks_no_lines_misses_the_output():
+    misses = judge().misses(reader(lines_pattern="FAILED"), CommandCategory.BUILD, "noise\n" * FEW_LINES + "done\n")
+    assert "--lines picked none" in misses
+
+
+def test_a_reader_that_picks_nearly_all_lines_is_too_wide():
+    misses = judge().misses(reader(lines_pattern=".*"), CommandCategory.BUILD, "noise\n" * WIDTH_LINE_COUNT + "done\n")
+    assert "--lines picked nearly all" in misses
+
+
+def test_a_reader_that_finds_no_summary_misses_the_output():
+    misses = judge().misses(reader(summary_pattern="result"), CommandCategory.BUILD, "done\n")
+    assert "--summary found nothing" in misses
+
+
+def test_a_reader_needs_progress_when_its_build_output_prints_a_count():
+    assert "--progress found nothing" in judge().misses(reader(), CommandCategory.BUILD, "done 2/4\n")
+    assert "--progress found nothing" in judge().misses(reader(progress_pattern=r"\[([0-9]+)%\]"), CommandCategory.BUILD, "done 2/4\n")
+    assert "--progress found nothing" not in judge().misses(reader(progress_pattern=r"([0-9]+)/([0-9]+)"), CommandCategory.BUILD, "done 2/4\n")
+
+
+def test_a_build_reader_passes_without_progress_when_its_output_prints_no_count():
+    build_reader = reader()
+    assert judge().fields_missing(build_reader, CommandCategory.BUILD) == ()
+    assert judge().misses(build_reader, CommandCategory.BUILD, "compile\ndone\n") == ()
+
+
+def test_a_check_reader_needs_no_progress_even_when_its_output_prints_a_count():
+    assert judge().misses(reader(), CommandCategory.CHECK, "done 2/4\n") == ()
+
+
+def test_a_test_reader_requires_progress_and_a_build_reader_requires_its_other_fields():
+    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == tuple(["--progress"])
+    assert judge().fields_missing(reader(title="", lines_pattern="", summary_pattern=""), CommandCategory.BUILD) == ("--title", "--lines or --script", "--summary")
+
+
+def test_a_judgement_reports_its_missing_fields_and_misses():
+    judgement = ReaderJudgement(tuple(["--title"]), tuple(["--summary found nothing"]))
+    assert not judgement.is_proper
+    assert judgement.text == "--title, --summary found nothing"
+    assert ReaderJudgement().is_proper
+    assert ReaderJudgement().text == ""
+
+
+def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
+    parts, folder = Mock(spec=ProcessPartQuery), Mock(spec=OutputFolder)
+    rows = [ProcessPart(id=position, version=1, process_id=position, position=1, text="journal compile", command="make build", program="journal", category=CommandCategory.BUILD)
+            for position in range(SAMPLE_OUTPUTS + 2, 0, -1)]
+    rows.insert(0, ProcessPart(id=100, version=1, process_id=100, position=1, text="other", program="other", category=CommandCategory.BUILD))
+    parts.with_kept_output.return_value.filter.return_value.newest.return_value.all_rows.return_value = iter(rows)
+    folder.output.side_effect = lambda process_id, position: f"\x1b[32mdone {process_id}\x1b[0m\n"
+    selection = ReaderJudge(ReaderRun(), folder, parts).samples(reader(), CommandCategory.BUILD)
+    assert selection == tuple(f"done {position}\n" for position in range(SAMPLE_OUTPUTS + 2, 2, -1))
+    parts.with_kept_output.assert_called_once_with()
+    parts.with_kept_output.return_value.filter.assert_called_once_with(category=CommandCategory.BUILD)
+    assert folder.output.call_count == SAMPLE_OUTPUTS

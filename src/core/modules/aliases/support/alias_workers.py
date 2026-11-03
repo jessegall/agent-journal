@@ -14,7 +14,12 @@ class AliasWorkers:
         self.queries = queries
 
     def check(self, alias: Alias, caller: Caller) -> None:
+        if refusal := self.refusal(alias, caller):
+            raise refusal
+
+    def refusal(self, alias: Alias, caller: Caller) -> Refusal | None:
         if alias.worker_access or caller.actor.type is not ActorType.AGENT:
-            return
+            return None
         if self.queries.query(Agent).find(caller.actor.id).role == AgentRole.WORKER.value:
-            raise Refusal(f"a worker runs only the aliases marked for workers, and {alias.name} is not", f"ask the main agent to mark it: journal alias edit {alias.name} --workers")
+            return Refusal(f"a worker runs only the aliases marked for workers, and {alias.name} is not", f"ask the main agent to mark it: journal alias edit {alias.name} --workers")
+        return None

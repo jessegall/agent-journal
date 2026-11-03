@@ -25,7 +25,13 @@ class WorkerCommand:
         self.providers, self.models = providers, models
 
     def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
-        brief = f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\n{WORK_STEPS}"
+        skills = Path(worktree.folder) / self.providers.provider(worker.program).skills_folder
+        reads = "\n".join(str(skills / name / "SKILL.md") for name in
+                          ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
+        brief = (f"You are worker {worker.id} on task {task.id}, {task.title}.\n{task.brief}\n"
+                 f"Read these files before your first write:\n{reads}\n"
+                 f"Run journal overview, then journal task show {task.id}. Read the architectural skills required by the files you change in {skills}.\n"
+                 f"Run only tests of the code you change, never the whole test suite.\n{WORK_STEPS}")
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
 
     def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:

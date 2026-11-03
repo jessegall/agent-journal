@@ -43,6 +43,7 @@ class Provider(ABC):
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
+    skills_folder: ClassVar[str] = ".agents/skills"
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
