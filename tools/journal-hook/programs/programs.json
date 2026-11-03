@@ -34,6 +34,15 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matchers": {
+        "PostToolUse": "tool_name",
+        "PostToolUseFailure": "tool_name",
+        "PreCompact": "trigger",
+        "PreToolUse": "tool_name",
+        "SessionEnd": "reason",
+        "SessionStart": "source",
+        "SubagentStop": "agent_type"
+      },
       "refusals": {
         "pre_tool_use": "deny",
         "prompt": "block",
@@ -86,6 +95,14 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matchers": {
+        "PostToolUse": "tool_name",
+        "PreToolUse": "tool_name",
+        "SessionEnd": "reason",
+        "SessionStart": "source",
+        "SubagentStart": "agent_type",
+        "SubagentStop": "agent_type"
+      },
       "refusals": {
         "stop": "block"
       },

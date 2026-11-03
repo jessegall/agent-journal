@@ -67,6 +67,8 @@ class ClaudeCodeProvider(Provider):
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Grep": ToolType.SEARCH,
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
+    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
+                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "SubagentStop": "agent_type"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"

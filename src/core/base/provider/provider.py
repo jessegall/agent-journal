@@ -34,6 +34,7 @@ class Provider(ABC):
     title: ClassVar[str]
     executable: ClassVar[str]
     hook_events: ClassVar[Mapping[str, HookEventName]]
+    matchers: ClassVar[Mapping[str, str]] = {}
     subagent_events: ClassVar[Sequence[str]]
     line_events: ClassVar[Sequence[HookEventName]]
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}

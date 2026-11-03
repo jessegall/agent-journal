@@ -17,10 +17,11 @@ class ProgramRow:
     tool_categories: Mapping[str, str]
     decoder: str
     rewrites: Mapping[str, Mapping[str, object]]
+    matchers: Mapping[str, str]
 
     @classmethod
     def row(cls, provider: type[Provider]) -> "ProgramRow":
         return cls({hook: name.value for hook, name in provider.hook_events.items()}, list(provider.subagent_events),
                    [name.value for name in provider.line_events], {name.value: style.value for name, style in provider.refusals.items()},
                    {tool: category.value for tool, category in provider.tool_categories.items()}, provider.decoder.value,
-                   {name.value: dict(fields) for name, fields in provider.rewrites.items()})
+                   {name.value: dict(fields) for name, fields in provider.rewrites.items()}, dict(provider.matchers))

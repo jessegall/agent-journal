@@ -57,6 +57,8 @@ class CodexProvider(Provider):
                        "request_user_input": ToolType.QUESTION}
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
+    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",
+                "SubagentStart": "agent_type", "SubagentStop": "agent_type"}
     hook_file = HookFile(Path(".codex/hooks.json"), {"additionalContextLimit": 0})
     hook_files = tuple([Path(".codex/hooks.json")])
     session_variable = "CODEX_THREAD_ID"

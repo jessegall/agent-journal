@@ -15,6 +15,27 @@ func TestTheShippedTableReadsAndNamesBothPrograms(t *testing.T) {
 	}
 }
 
+func TestTheTableReadsRecordedMatcherFields(t *testing.T) {
+	table := LoadTable("")
+	for _, name := range []string{"claude", "codex"} {
+		matchers := table.Programs[name].Matchers
+		for event, field := range map[string]string{"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason", "SubagentStop": "agent_type"} {
+			if matchers[event] != field {
+				t.Fatalf("%s %s matcher field = %q, want %q", name, event, matchers[event], field)
+			}
+		}
+		if _, exists := matchers["Stop"]; exists {
+			t.Fatalf("%s Stop has no recorded matcher field", name)
+		}
+	}
+	if table.Programs["claude"].Matchers["PreCompact"] != "trigger" || table.Programs["codex"].Matchers["SubagentStart"] != "agent_type" {
+		t.Fatal("program-specific recorded matcher fields were lost")
+	}
+	if _, exists := table.Programs["claude"].Matchers["SubagentStart"]; exists {
+		t.Fatal("an event without a recording received a matcher field")
+	}
+}
+
 func TestAProjectTablesRowReplacesTheShippedOne(t *testing.T) {
 	project := filepath.Join(t.TempDir(), "programs.json")
 	os.WriteFile(project, []byte(`{"programs": {"claude": {"events": {"Stop": "stop"}, "decoder": "common"}, "sample": {"events": {"End": "stop"}, "decoder": "common"}}}`), 0o644)
