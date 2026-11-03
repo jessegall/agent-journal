@@ -3250,7 +3250,7 @@ const Gh = { class: "growing-card-top" }, Kh = ["aria-expanded"], Yh = { class: 
       ])
     ], 2));
   }
-}, ef = /* @__PURE__ */ K(Qh, [["__scopeId", "data-v-e31436cb"]]), tf = ["title", "aria-label"], nf = {
+}, ef = /* @__PURE__ */ K(Qh, [["__scopeId", "data-v-08411e3a"]]), tf = ["title", "aria-label"], nf = {
   viewBox: "0 0 19 12",
   fill: "none",
   stroke: "currentColor",
@@ -3340,7 +3340,7 @@ function mf(e) {
   }
   return [...t.values()].map(({ names: n, ...s }) => ({ ...s, title: [...n].join(" and ") }));
 }
-const gf = ["data-ref"], vf = ["data-figure-mark", "data-figure-agent", "data-from", "data-ref"], yf = { class: "message-body" }, wf = ["title"], kf = ["innerHTML"], bf = ["title"], xf = ["innerHTML"], $f = {
+const gf = ["data-incoming", "data-ref"], vf = ["data-figure-mark", "data-figure-agent", "data-from", "data-ref"], yf = { class: "message-body" }, wf = ["title"], kf = ["innerHTML"], bf = ["title"], xf = ["innerHTML"], $f = {
   class: "message-faces",
   "data-message-faces": ""
 }, Mf = ["title", "data-face", "onClick"], Sf = {
@@ -3407,6 +3407,7 @@ const gf = ["data-ref"], vf = ["data-figure-mark", "data-figure-agent", "data-fr
       key: 0,
       class: "message",
       "data-message-between-agents": "",
+      "data-incoming": e.message.recipient ? null : "",
       "data-ref": `message:${e.message.id}`
     }, [
       W(ef, {
@@ -3629,7 +3630,7 @@ const gf = ["data-ref"], vf = ["data-figure-mark", "data-figure-agent", "data-fr
       ])
     ], 8, vf));
   }
-}, ok = /* @__PURE__ */ K(Vf, [["__scopeId", "data-v-727a6be5"]]), Bn = [
+}, ok = /* @__PURE__ */ K(Vf, [["__scopeId", "data-v-817edd99"]]), Bn = [
   { key: 100, label: "Low" },
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
@@ -9640,7 +9641,7 @@ const Gw = /* @__PURE__ */ Uw(Vw), Kw = ["width", "height", "viewBox"], Yw = ["w
       }, null, 8, Jw)
     ], 8, Kw));
   }
-}, w4 = /* @__PURE__ */ K(Zw, [["__scopeId", "data-v-489f0852"]]), k4 = Oi(() => import("./VoiceFigure-tSbO0UWP.js").then((e) => e.V)), b4 = "1.0.0", x4 = "3.5";
+}, w4 = /* @__PURE__ */ K(Zw, [["__scopeId", "data-v-489f0852"]]), k4 = Oi(() => import("./VoiceFigure-z_pUn2Za.js").then((e) => e.V)), b4 = "1.0.0", x4 = "3.5";
 export {
   ul as $,
   Se as A,

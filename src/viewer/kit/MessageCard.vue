@@ -91,7 +91,7 @@ function pick(face) {
 
 <template>
     <template v-if="message.peer || message.recipient">
-        <div class="message" data-message-between-agents :data-ref="`message:${message.id}`">
+        <div class="message" data-message-between-agents :data-incoming="message.recipient ? null : ''" :data-ref="`message:${message.id}`">
             <GrowingCard :title="message.recipient ? `Message sent to ${message.recipient}` : `Message from ${message.peer}`" :text="message.text" :icon="message.recipient ? 'send' : 'reply'" :person="message.recipient || message.peer" :incoming="!message.recipient" commentable @comment="emit('comment', message)" />
         </div>
     </template>
@@ -320,7 +320,8 @@ function pick(face) {
     max-width: min(78%, calc(100% - 48px));
 }
 
-.message[data-from="user"] {
+.message[data-from="user"],
+.message[data-incoming] {
     align-items: flex-end;
     margin-left: auto;
 }

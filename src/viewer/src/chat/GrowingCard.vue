@@ -68,6 +68,7 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
 
 <style scoped>
 .growing-card-wrap {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: fit-content;
@@ -115,11 +116,14 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
     align-items: center;
 }
 
+/* the comment button stands just outside the card, so while hidden it takes no room in the card's line */
 .growing-card-comment {
+    position: absolute;
+    top: 6px;
+    left: 100%;
     display: grid;
-    flex: none;
     place-items: center;
-    margin: 0 8px 0 0;
+    margin-left: 4px;
     padding: 3px;
     border: 0;
     border-radius: 6px;
@@ -142,6 +146,12 @@ const paragraphs = computed(() => props.text.split(/\n\s*\n/).filter((part) => p
 
 .growing-card-wrap.incoming .growing-card-top {
     flex-direction: row-reverse;
+}
+
+.growing-card-wrap.incoming .growing-card-comment {
+    right: 100%;
+    left: auto;
+    margin: 0 4px 0 0;
 }
 
 .growing-card:hover .fold,
