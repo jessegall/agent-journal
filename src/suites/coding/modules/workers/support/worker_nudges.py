@@ -3,7 +3,7 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-WORKER_INACTIVE = NudgeDeclaration("workers.worker_inactive", NudgeType.INSTRUCTION, 'worker:{worker} has used no tool for {minutes} minutes', turn_limited=False)
+HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.INSTRUCTION, '{role}:{helper} has used no tool for {minutes} minutes: check on it', turn_limited=False)
 BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
 PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}: journal proof check {proofs}, or journal proof short <proof> "<what is missing>"')
 MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.INSTRUCTION, 'the merge of worker {worker} waits for the checkout of environment {environment} to return to {branch}', turn_limited=False)
@@ -21,4 +21,4 @@ WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.INSTRUCTION, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False)
 WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.INSTRUCTION, 'the user commented: {job}', turn_limited=False)
 WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.INSTRUCTION, 'your tests passed. Your next task, task:{task}: {job}', turn_limited=False)
-WORKER_NUDGES = [WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, WORKER_UNMERGED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_NUDGES = [WORKER_NEXT_TASK, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
