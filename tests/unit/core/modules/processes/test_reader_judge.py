@@ -52,8 +52,17 @@ def test_a_check_reader_needs_no_progress_even_when_its_output_prints_a_count():
 
 
 def test_a_test_reader_requires_progress_and_a_build_reader_requires_its_other_fields():
-    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == tuple(["--progress"])
+    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == ("--count", "--progress or --step with --count")
     assert judge().fields_missing(reader(title="", lines_pattern="", summary_pattern=""), CommandCategory.BUILD) == ("--title", "--lines or --script", "--summary")
+
+
+def test_a_test_reader_can_use_steps_and_count_for_progress():
+    counted = reader(count_pattern=r"collected ([0-9]+)", step_pattern="[.FE]")
+    assert judge().fields_missing(counted, CommandCategory.TEST_RUN) == ()
+    assert "--count found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")
+    assert "--progress found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")
+    assert "--count found nothing" in judge().misses(counted, CommandCategory.TEST_RUN, "done\n")
+    assert "--count found nothing" not in judge().misses(reader(count_command="list-tests"), CommandCategory.TEST_RUN, "done\n")
 
 
 def test_a_judgement_reports_its_missing_fields_and_misses():

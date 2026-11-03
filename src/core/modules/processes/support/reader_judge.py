@@ -29,7 +29,8 @@ class ReaderJudge:
     def fields_missing(self, reader: Reader, category: CommandCategory) -> tuple[str, ...]:
         wanted = {"--title": reader.title, "--lines or --script": reader.lines_pattern or reader.script, "--summary": reader.summary_pattern}
         if category is CommandCategory.TEST_RUN:
-            wanted["--progress"] = reader.progress_pattern
+            wanted["--count"] = reader.count_pattern
+            wanted["--progress or --step with --count"] = reader.progress_pattern or (reader.step_pattern and reader.count_pattern)
         return tuple(flag for flag, value in wanted.items() if not value)
 
     def misses(self, reader: Reader, category: CommandCategory, text: str) -> tuple[str, ...]:
@@ -38,7 +39,10 @@ class ReaderJudge:
         checks = {"--lines picked none": bool(lines) or total < FEW_LINES,
                  "--lines picked nearly all": total < WIDTH_LINE_COUNT or len(lines) * WIDE_SHARE < total * (WIDE_SHARE - 1),
                  "--summary found nothing": bool(self.run.summary(reader, text))}
-        if category is not CommandCategory.CHECK and COUNTED.search(text):
+        if category is CommandCategory.TEST_RUN and not reader.count_command:
+            checks["--count found nothing"] = self.run.count(reader, text, 0) > 0
+        step_progress = reader.step_pattern and self.run.count(reader, text, 0) > 0
+        if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
         return tuple(miss for miss, valid in checks.items() if not valid)
 

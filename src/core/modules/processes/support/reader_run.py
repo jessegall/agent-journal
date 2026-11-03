@@ -37,6 +37,18 @@ class ReaderRun:
             return min(100, numbers[0] * 100 // numbers[1])
         return min(100, numbers[0])
 
+    def count(self, reader: Reader, text: str, current: int) -> int:
+        if not reader.count_pattern:
+            return current
+        pattern = re.compile(reader.count_pattern)
+        hits = [hit for line in text.splitlines() if (hit := pattern.search(line))]
+        if not hits:
+            return current
+        if not pattern.groups:
+            return current + len(hits)
+        numbers = [int(group) for group in hits[-1].groups() if group and group.isdigit()]
+        return numbers[0] if numbers else current
+
     def summary(self, reader: Reader, text: str) -> str:
         if not reader.summary_pattern:
             return ""
