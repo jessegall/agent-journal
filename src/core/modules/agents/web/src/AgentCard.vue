@@ -319,6 +319,13 @@ readCommand();
     min-height: 0;
 }
 
+/* opened, the instruction runs down the whole body and scrolls inside it */
+.agent-card.open .agent-instruction {
+    flex: 1;
+    max-height: none;
+    min-height: 0;
+}
+
 .agent-tabs {
     margin: 0 -22px -6px -27px;
     padding: 0 22px 0 27px;

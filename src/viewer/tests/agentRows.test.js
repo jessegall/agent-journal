@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
 import {h} from "vue";
@@ -261,6 +263,12 @@ test("an age reads a row's ISO time as well as epoch seconds", () => {
 });
 
 const listed = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
+
+// message 101517: an open card's instruction stopped at 240px with empty room under it
+test("an open card's instruction has no fixed height and takes the room of its body", () => {
+    const card = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
+    expect(card).toMatch(/\.agent-card\.open \.agent-instruction \{[^}]*flex: 1;[^}]*max-height: none;/);
+});
 
 // message 101362: nothing is ever hidden, even for a pane that saved a switch off in an older version
 test("a switch saved off hides no agent, and no line speaks of hidden agents", async () => {

@@ -221,7 +221,7 @@ const Re = { class: "file-feed" }, Ne = 5, qe = {
       ], 10, Le);
     };
   }
-}, at = /* @__PURE__ */ se(tt, [["__scopeId", "data-v-d1df82bf"]]), nt = { class: "agents-bar" }, st = {
+}, at = /* @__PURE__ */ se(tt, [["__scopeId", "data-v-9baa7e26"]]), nt = { class: "agents-bar" }, st = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, ot = ["data-agent-row", "onMouseenter", "onMouseleave"], lt = {
