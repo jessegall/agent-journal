@@ -68,7 +68,7 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
     story.expect_text("task show 1", "state: open", f"delegated_to: {story.agent.id}", "reason: assigned to agent", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it. Your next task is task:2: journal task show 2")
+    story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2: journal task show 2")
 
 
 def test_a_workers_last_task_goes_back_with_the_worker(new_story):

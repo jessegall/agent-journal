@@ -11,7 +11,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK
+from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TASK_AFTER_TAKEN, WORKER_TASK_TAKEN
 
 
 class WorkerTaskAdvance:
@@ -20,7 +20,15 @@ class WorkerTaskAdvance:
     def __init__(self, bus: Bus, repository: Repository, nudger: Nudger) -> None:
         self.bus, self.repository, self.nudger = bus, repository, nudger
 
-    def start(self, worktree: Worktree, following: Task, opening: str, context: Context) -> None:
+    def after_passed_tests(self, worktree: Worktree, following: Task, context: Context) -> None:
+        self.start(worktree, following, context)
+        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
+
+    def after_taken_task(self, worktree: Worktree, taken: Task, following: Task, context: Context) -> None:
+        self.start(worktree, following, context)
+        self.nudger.send(worktree.agent_id, WORKER_TASK_TAKEN, WORKER_JOB_SOURCE, context, task=taken.id)
+        self.nudger.send(worktree.agent_id, WORKER_TASK_AFTER_TAKEN, WORKER_JOB_SOURCE, context, task=following.id)
+
+    def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
         self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, opening=opening, task=following.id)
