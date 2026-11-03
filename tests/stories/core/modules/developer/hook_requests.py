@@ -1,13 +1,21 @@
+from core.testing.story_fixture import StoryFixture
+
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
 
 
+class HookRequestLogging(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
+        story.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=story.user)
+
+
 def logging_story(new_story, size: int = 3):
-    story = new_story(fixture=BuilderWithUser)
-    story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
-    story.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=story.user)
+    story = new_story(fixture=HookRequestLogging)
     story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log-size {size} --project", actor=story.user)
     return story
 

@@ -39,6 +39,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.rules.dispatch_law_rule import DispatchLawRule
 from core.modules.drivers.rules.subagent_reuse_rule import SubagentReuseRule
 from core.modules.drivers.rules.long_output_rule import LongOutputRule
+from core.modules.drivers.rules.foreign_hooks_rule import ForeignHooksRule
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line_handler import RecordBypassLineHandler
@@ -140,7 +141,7 @@ class DriversModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
+    driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
@@ -36,18 +38,16 @@ def test_a_watch_tells_the_progress_only_as_it_passes_each_10_percent(new_story)
     assert f"output {process_id}: 53%" in story.hook("s-1", AFTER).lines
 
 
-def test_a_watch_of_an_ended_process_is_refused_and_a_watch_ends_with_its_process(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process_id = watched(story)
+def test_a_watch_of_an_ended_process_is_refused_and_a_watch_ends_with_its_process(watched_process):
+    story, process_id = watched_process
     end_run(story, start_process(story, "make other"), "done\n")
     story.expect_refusal("output watch 2", "has ended", actor=story.agent)
     story.run("output stop 1", actor=story.agent)
     story.expect_success("watch show 1", "state: ended", f"process_id: {process_id}", actor=story.agent)
 
 
-def test_a_watch_is_ended_by_unwatching(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process_id = watched(story)
+def test_a_watch_is_ended_by_unwatching(watched_process):
+    story, process_id = watched_process
     story.run(f"output unwatch {process_id}", actor=story.agent)
     story.expect_success("watch show 1", "state: ended", actor=story.agent)
     story.expect_refusal(f"output unwatch {process_id}", "no open watch", actor=story.agent)
@@ -80,3 +80,10 @@ def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
     assert output_tick(story.container) is True
     assert story.container.get(ProcessQuery).find(process_id).progress == 42
     assert output_tick(story.container) is False
+
+
+@pytest.fixture
+def watched_process(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process_id = watched(story)
+    return story, process_id

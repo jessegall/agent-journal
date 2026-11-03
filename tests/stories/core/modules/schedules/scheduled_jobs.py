@@ -1,3 +1,5 @@
+from core.testing.story_fixture import StoryFixture
+
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -15,11 +17,17 @@ def cron_hook(tool: str, fields: dict, answer: str = ""):
     return HookSamples.sample("post_tool_use", {"name": tool, "category": "other", "files": [], "diff": None}).with_raw({"tool_input": fields, "tool_response": answer})
 
 
-def scheduled(new_story, recurring: bool = True):
-    story = new_story(fixture=BuilderStarted)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.hook("s-1", cron_hook("CronCreate", {"cron": CRON, "prompt": "Check the build\nand say", "recurring": recurring}, f"Scheduled job {JOB}, next run soon"))
-    return story
+class ScheduledBuildJob(StoryFixture):
+    parent = BuilderStarted
+    recurring = True
+
+    def steps(self, story):
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        story.hook('s-1', cron_hook('CronCreate', {'cron': CRON, 'prompt': 'Check the build\nand say', 'recurring': self.recurring}, f'Scheduled job {JOB}, next run soon'))
+
+
+class OneTimeBuildJob(ScheduledBuildJob):
+    recurring = False
 
 
 def running(story) -> str:
@@ -27,12 +35,12 @@ def running(story) -> str:
 
 
 def test_a_job_an_agent_schedules_is_listed_with_its_schedule(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.expect_text(running(story), f"{JOB} {CRON}: Check the build")
 
 
 def test_a_job_the_agent_deletes_leaves_the_list(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.hook("s-1", cron_hook("CronDelete", {"id": JOB}))
     story.expect_absent(running(story), JOB)
 
@@ -44,7 +52,7 @@ def test_a_schedule_whose_answer_names_no_job_records_nothing(new_story):
 
 
 def test_stopping_tells_the_agent_to_delete_it_and_it_stays_until_it_has(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.expect_success("scheduled-job stop 1", actor=story.user)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"delete it with CronDelete, id {JOB}", actor=story.user)
     story.expect_text(running(story), JOB)
@@ -54,18 +62,18 @@ def test_stopping_tells_the_agent_to_delete_it_and_it_stays_until_it_has(new_sto
 
 
 def test_an_agent_stops_a_job(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.expect_success("scheduled-job stop 1", actor=story.agent)
 
 
 def test_an_agents_end_ends_its_jobs(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_absent(running(story), JOB)
 
 
 def test_a_repeating_job_lapses_after_seven_days_and_a_single_one_does_not(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.hook("s-1", cron_hook("CronCreate", {"cron": "0 9 2 11 *", "prompt": "Once", "recurring": False}, "Scheduled job 9f8e7d6c"))
     story.advance(timedelta(days=8))
     story.expect_absent(running(story), JOB)
@@ -79,7 +87,7 @@ def test_the_agent_bars_windows_are_offered_by_the_coding_suite(new_story):
 
 
 def test_a_prompt_that_is_a_jobs_words_is_its_run_and_shows_a_mark(new_story):
-    story = scheduled(new_story)
+    story = new_story(fixture=ScheduledBuildJob)
     story.hook("s-1", HookSamples.prompt("something else"))
     story.run_listeners()
     story.expect_absent("chat-mark list --environment 1", "schedules.job-run")
@@ -90,6 +98,6 @@ def test_a_prompt_that_is_a_jobs_words_is_its_run_and_shows_a_mark(new_story):
 
 
 def test_a_job_that_does_not_repeat_ends_with_its_run(new_story):
-    story = scheduled(new_story, recurring=False)
+    story = new_story(fixture=OneTimeBuildJob)
     story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
     story.expect_text(f"scheduled-job show 1", "ended_at: 2026", actor=story.user)

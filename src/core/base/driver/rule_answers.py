@@ -21,7 +21,8 @@ class RuleAnswers:
 
     @property
     def refusal(self) -> str:
-        refusal = next((rule.answer.refusal for rule in self.answered if rule.answer is not None and rule.answer.refusal), "")
+        refused = [rule.answer for rule in self.answered if rule.answer is not None and rule.answer.refusal]
+        refusal = max(refused, key=lambda answer: answer.refusal_priority).refusal if refused else ""
         return refusal or self.double_rewrite
 
     @property
@@ -30,7 +31,7 @@ class RuleAnswers:
 
     @property
     def double_rewrite(self) -> str:
-        names = [rule.name for rule in self.rewriters]
+        names = [rule.answer.source_name or rule.name for rule in self.rewriters if rule.answer is not None]
         if len(names) < 2:
             return ""
         return f"{', '.join(names[:-1])} and {names[-1]} each rewrite the input of this tool, and only one rule may"

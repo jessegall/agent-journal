@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.command.bus import Bus
 import shlex
 from core.base.registry.registry import Registry
@@ -29,16 +31,14 @@ def test_require_of_a_skill_no_module_declares_is_refused(new_story):
     story.expect_refusal(f"skill require {story.agent.id} journal-gone", "no module declares the skill journal-gone")
 
 
-def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_text(new_story):
-    story = started(new_story)
-    story.run(f"skill require {story.agent.id} journal-notes")
+def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_text(required_notes_skill):
+    story = required_notes_skill
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", current_digest(story, "journal-notes")), story.agent)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "loaded: journal-notes")
 
 
-def test_require_makes_a_skill_read_in_an_older_text_due_again(new_story):
-    story = started(new_story)
-    story.run(f"skill require {story.agent.id} journal-notes")
+def test_require_makes_a_skill_read_in_an_older_text_due_again(required_notes_skill):
+    story = required_notes_skill
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "an-old-digest"), story.agent)
     path = story.container.get(SkillFiles).readable("journal-notes")
     story.expect_success(f"skill require {story.agent.id} journal-notes", f"read: cat {shlex.quote(str(path))}")
@@ -59,3 +59,10 @@ def test_reset_removes_the_loaded_rows_of_the_agent_and_keeps_the_due_ones(new_s
     story.container.get(Bus).run(ResetSkills(story.agent.id), story.agent)
     story.expect_refusal("agent-skill show 1", "no agent-skill 1")
     story.expect_success("agent-skill show 2", "state: due")
+
+
+@pytest.fixture
+def required_notes_skill(new_story):
+    story = started(new_story)
+    story.run(f"skill require {story.agent.id} journal-notes")
+    return story

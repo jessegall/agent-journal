@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
@@ -22,23 +24,20 @@ def test_a_page_the_suite_gives_no_presets_lists_none(new_story):
     window.story.expect_success("suite presets main agent", "nothing found")
 
 
-def test_a_person_saves_a_layout_of_their_own_and_finds_it_listed(new_story):
-    window = window_story(new_story)
-    key = window.story.new_row_id(SAVE, actor=window.story.user)
+def test_a_person_saves_a_layout_of_their_own_and_finds_it_listed(saved_layout):
+    window, key = saved_layout
     window.story.expect_text("person-preset list --page home --environment main", f"{key}  ", "home  Mine", actor=window.story.user)
 
 
-def test_a_person_renames_and_removes_a_saved_layout(new_story):
-    window = window_story(new_story)
-    key = window.story.new_row_id(SAVE, actor=window.story.user)
+def test_a_person_renames_and_removes_a_saved_layout(saved_layout):
+    window, key = saved_layout
     window.story.expect_success(f"person-preset rename {key} --name Review", "name: Review", actor=window.story.user)
     window.story.expect_success(f"person-preset remove {key}", actor=window.story.user)
     window.story.expect_success("person-preset list --page home --environment main", "nothing found", actor=window.story.user)
 
 
-def test_another_person_lists_none_of_your_saved_layouts(new_story):
-    window = window_story(new_story)
-    window.story.new_row_id(SAVE, actor=window.story.user)
+def test_another_person_lists_none_of_your_saved_layouts(existing_layout):
+    window = existing_layout
     window.story.expect_success("person-preset list --page home --environment main", "nothing found", actor=window.new_person("Bob"))
 
 
@@ -47,21 +46,18 @@ def test_an_agent_cannot_save_a_person_preset(new_story):
     window.story.expect_refusal(SAVE, "only a person keeps a layout", actor=window.story.agent)
 
 
-def test_another_person_cannot_remove_your_person_preset(new_story):
-    window = window_story(new_story)
-    key = window.story.new_row_id(SAVE, actor=window.story.user)
+def test_another_person_cannot_remove_your_person_preset(saved_layout):
+    window, key = saved_layout
     window.story.expect_refusal(f"person-preset remove {key}", f"preset {key} is another person's", actor=window.new_person("Bob"))
 
 
-def test_another_person_cannot_rename_your_preset(new_story):
-    window = window_story(new_story)
-    key = window.story.new_row_id(SAVE, actor=window.story.user)
+def test_another_person_cannot_rename_your_preset(saved_layout):
+    window, key = saved_layout
     window.story.expect_refusal(f"person-preset rename {key} --name Theirs", "only a person keeps a layout", actor=window.new_person("Bob"))
 
 
-def test_a_second_preset_with_the_same_name_for_the_page_is_refused(new_story):
-    window = window_story(new_story)
-    window.story.new_row_id(SAVE, actor=window.story.user)
+def test_a_second_preset_with_the_same_name_for_the_page_is_refused(existing_layout):
+    window = existing_layout
     window.story.expect_refusal(SAVE, "you have a preset named Mine for home already", actor=window.story.user)
 
 
@@ -80,3 +76,17 @@ def test_the_viewers_own_tree_with_a_split_and_pane_options_is_saved_as_it_came(
     tree = '{"dir":"row","r":0.5,"a":{"tabs":["notes.board"],"active":"notes.board","width":"full"},"b":{"tabs":["notes.board"],"active":"notes.board","width":"contained"}}'
     window.story.expect_success(f"person-preset save --page home --name Split --shape '{tree}' --environment main", actor=window.story.user)
     window.story.expect_text("person-preset list --page home --json --environment main", "contained", actor=window.story.user)
+
+
+@pytest.fixture
+def saved_layout(new_story):
+    window = window_story(new_story)
+    key = window.story.new_row_id(SAVE, actor=window.story.user)
+    return window, key
+
+
+@pytest.fixture
+def existing_layout(new_story):
+    window = window_story(new_story)
+    window.story.new_row_id(SAVE, actor=window.story.user)
+    return window

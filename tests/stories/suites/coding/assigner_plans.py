@@ -1,3 +1,7 @@
+import pytest
+
+from core.testing.story_fixture import StoryFixture
+
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
@@ -22,18 +26,14 @@ def state_of(story, task_id: int) -> str:
     return story.run(f"task show {task_id}", actor=story.agent).output_text
 
 
-def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_lowest_id_at_one_priority(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
+def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_lowest_id_at_one_priority(next_plan_task):
+    story = next_plan_task
     assert "state: started" in state_of(story, 2), state_of(story, 2)
     assert "state: open" in state_of(story, 3) and "state: open" in state_of(story, 4)
 
 
 def test_inside_a_phase_the_higher_priority_goes_first(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
+    story = new_story(fixture=StartedPlanTasks)
     story.run("task edit 3 --priority high", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
@@ -41,28 +41,21 @@ def test_inside_a_phase_the_higher_priority_goes_first(new_story):
 
 
 def test_a_critical_task_outside_the_plan_goes_before_the_started_plan(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
+    story = new_story(fixture=StartedPlanTasks)
     story.run("task edit 4 --priority critical", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     assert "state: started" in state_of(story, 4), state_of(story, 4)
 
 
-def test_a_task_above_high_goes_before_the_started_plan_and_a_high_task_does_not(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
-    story.run('task make "Just above high" --environment main --priority 301', actor=story.agent)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
+def test_a_task_above_high_goes_before_the_started_plan_and_a_high_task_does_not(urgent_plan_task):
+    story = urgent_plan_task
     assert "state: started" in state_of(story, 5), state_of(story, 5)
     assert "state: open" in state_of(story, 2) and "state: open" in state_of(story, 4)
 
 
 def test_a_critical_task_goes_before_a_task_above_high(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
-    story.run('task make "Just above high" --environment main --priority 301', actor=story.agent)
+    story = new_story(fixture=PlanWithUrgentTask)
     story.run('task make "Fire" --environment main --priority critical', actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
@@ -98,8 +91,7 @@ def test_a_stop_with_empty_hands_is_handed_the_started_plans_next_task(new_story
 
 
 def test_the_tasks_of_a_plan_not_yet_started_are_never_handed_out(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=False)
+    story = new_story(fixture=UnstartedPlanTasks)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     assert "state: started" in state_of(story, 4), state_of(story, 4)
@@ -107,8 +99,7 @@ def test_the_tasks_of_a_plan_not_yet_started_are_never_handed_out(new_story):
 
 
 def test_when_the_plan_has_nothing_free_the_next_task_outside_it_is_handed_out(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
-    planned_tasks(story, started=True)
+    story = new_story(fixture=StartedPlanTasks)
     story.run("task depend 3 --on 4", actor=story.agent)
     story.run("task depend 2 --on 4", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
@@ -132,3 +123,40 @@ def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
     story.run_listeners()
     assert "state: started" in state_of(story, 3), state_of(story, 3)
     assert "state: open" in state_of(story, 2)
+
+
+class StartedPlanTasks(StoryFixture):
+    parent = BuilderWithStartedTask
+
+    def steps(self, story):
+        planned_tasks(story, started=True)
+
+
+class PlanWithUrgentTask(StoryFixture):
+    parent = StartedPlanTasks
+
+    def steps(self, story):
+        story.run('task make "Just above high" --environment main --priority 301', actor=story.agent)
+
+
+@pytest.fixture
+def next_plan_task(new_story):
+    story = new_story(fixture=StartedPlanTasks)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def urgent_plan_task(new_story):
+    story = new_story(fixture=PlanWithUrgentTask)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    return story
+
+
+class UnstartedPlanTasks(StoryFixture):
+    parent = BuilderWithStartedTask
+
+    def steps(self, story):
+        planned_tasks(story, started=False)

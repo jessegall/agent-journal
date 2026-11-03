@@ -22,34 +22,31 @@ def test_an_environment_has_one_dock_made_with_it(new_story):
     story.expect_refusal("dock make --environment main", "exists already")
 
 
-def test_items_are_added_within_the_types_limit(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    first, second = ended_task(story, "First"), ended_task(story, "Second")
+def test_items_are_added_within_the_types_limit(ended_pair):
+    story, first, second = ended_pair
     assert (docked_state(story, docked(story, first)), docked_state(story, docked(story, second))) == ("docked", "docked")
 
 
-def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    first, second, third = ended_task(story, "First"), ended_task(story, "Second"), ended_task(story, "Third")
+def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended_pair):
+    story, first, second = ended_pair
+    third = ended_task(story, "Third")
     oldest, newer = docked(story, first), docked(story, second)
     story.container.get(Bus).run(KeepDockItem(oldest.id), story.user)
     added = docked(story, third)
     assert (docked_state(story, oldest), docked_state(story, newer), docked_state(story, added)) == ("docked", "undocked", "docked")
 
 
-def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    kept, running, third = ended_task(story, "Kept"), running_task(story, "Running"), ended_task(story, "Third")
-    story.container.get(Bus).run(KeepDockItem(docked(story, kept).id), story.user)
+def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):
+    story, item = kept_dock
+    running, third = running_task(story, "Running"), ended_task(story, "Third")
     docked(story, running)
     with pytest.raises(Refusal, match="docksample.task allows at most 2 items"):
         docked(story, third)
 
 
-def test_an_item_leaves_after_its_time_unless_it_was_kept(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    leaving, staying = ended_task(story, "Leaving"), ended_task(story, "Staying")
-    leaves, stays = docked(story, leaving), docked(story, staying)
+def test_an_item_leaves_after_its_time_unless_it_was_kept(leaving_dock):
+    story, leaves = leaving_dock
+    stays = docked(story, ended_task(story, "Staying"))
     story.container.get(Bus).run(KeepDockItem(stays.id), story.user)
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run('task make "Tick" --environment main', actor=story.user)
@@ -57,9 +54,8 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(new_story):
     assert (docked_state(story, leaves), docked_state(story, stays)) == ("undocked", "docked")
 
 
-def test_an_item_leaves_on_a_change_in_another_environment(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    leaves = docked(story, ended_task(story, "Leaving"))
+def test_an_item_leaves_on_a_change_in_another_environment(leaving_dock):
+    story, leaves = leaving_dock
     story.expect_success("environment make other /work/other", actor=story.user)
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run('task make "Tick" --environment other', actor=story.user)
@@ -102,10 +98,8 @@ def test_an_environment_cannot_act_on_another_environments_item(new_story):
     story.expect_refusal(f"dock keep {item.id} --environment elsewhere", "belongs to another environment's dock", actor=story.user)
 
 
-def test_an_agent_undocks_an_item_a_person_kept(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    item = docked(story, ended_task(story, "Kept"))
-    story.container.get(Bus).run(KeepDockItem(item.id), story.user)
+def test_an_agent_undocks_an_item_a_person_kept(kept_dock):
+    story, item = kept_dock
     story.expect_success(f"dock remove {item.id}", actor=story.agent)
 
 
@@ -123,15 +117,14 @@ def test_a_docked_document_carries_its_abstract_to_read_when_the_card_is_expande
     story.expect_text("dock-item list --oldest", "Cart rules", "How the cart counts money")
 
 
-def test_an_item_carries_the_title_and_the_text_of_its_row(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    item = docked(story, running_task(story, "Fix the cart"))
+def test_an_item_carries_the_title_and_the_text_of_its_row(running_cart_task):
+    story, task_id = running_cart_task
+    item = docked(story, task_id)
     assert story.row(type(item), item.id).title == "Task 1" and "Task 1" in story.run("dock-item list").output_text
 
 
-def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_it(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    task_id = running_task(story, "Fix the cart")
+def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_it(running_cart_task):
+    story, task_id = running_cart_task
     with pytest.raises(Refusal, match="has no title"):
         docked(story, task_id, SampleDockType.UNTITLED)
 
@@ -140,3 +133,29 @@ def test_the_chat_window_may_run_the_buttons_of_its_docked_cards():
     chat = next(window for window in MessagesModule.windows if window.name == "messages.chat")
     assert {"dock remove", "dock keep", "dock unkeep"} <= set(chat.runs)
 
+
+
+@pytest.fixture
+def ended_pair(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    return story, ended_task(story, "First"), ended_task(story, "Second")
+
+
+@pytest.fixture
+def kept_dock(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    item = docked(story, ended_task(story, "Kept"))
+    story.container.get(Bus).run(KeepDockItem(item.id), story.user)
+    return story, item
+
+
+@pytest.fixture
+def leaving_dock(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    return story, docked(story, ended_task(story, "Leaving"))
+
+
+@pytest.fixture
+def running_cart_task(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    return story, running_task(story, "Fix the cart")

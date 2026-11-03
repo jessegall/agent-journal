@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -27,11 +29,8 @@ def lines_of(story, sample) -> list[str]:
     return list(story.hook("s-1", sample).lines)
 
 
-def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summary(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "pytest -q")
-    end_run(story, process, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
+def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summary(ended_test_output):
+    story, process = ended_test_output
     assert ENDED in lines_of(story, NOTHING)
     assert ENDED not in lines_of(story, NOTHING)
 
@@ -66,48 +65,41 @@ def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
     return story, process, lines_of(story, NOTHING)
 
 
-def test_a_plain_command_is_not_asked_for_a_reader(new_story):
-    _, _, lines = ended_lines(new_story, "grep -n word file", "one\ntwo\n")
+def test_a_plain_command_is_not_asked_for_a_reader(ended_plain_output):
+    lines = ended_plain_output
     assert not any("no reader reads" in line for line in lines)
 
 
-def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
-    command = StartProcess(story.agent.id, None, "mkdir build && make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts)
-    process = story.container.get(Bus).run(command, story.agent, environment_id=1)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    end_run(story, process, "one\ntwo\n")
-    story.advance(timedelta(seconds=1))
-    lines = lines_of(story, NOTHING)
+def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(ended_chain_output):
+    story, parts, command, process, lines = ended_chain_output
     assert any("no reader reads make yet" in line for line in lines)
     assert not any("no reader reads mkdir" in line for line in lines)
 
 
-def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(new_story):
-    story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n", category=CommandCategory.BUILD)
+def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(unread_build_output):
+    story, lines = unread_build_output
     assert any("no reader reads deploy.sh yet: journal reader add deploy.sh" in line for line in lines)
     assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(new_story):
-    _, _, lines = ended_lines(new_story, "for i in 1 2 3; do ./deploy.sh; done", "uploading\n")
+def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(ended_loop_output):
+    lines = ended_loop_output
     assert not any("no reader reads" in line for line in lines)
 
 
-def test_a_shell_running_a_script_is_not_told_to_draft_a_reader_for_the_shell(new_story):
-    _, _, lines = ended_lines(new_story, "bash install.sh", "registry: rewritten\n", category=CommandCategory.BUILD)
+def test_a_shell_running_a_script_is_not_told_to_draft_a_reader_for_the_shell(ended_script_output):
+    lines = ended_script_output
     assert not any("no reader reads" in line for line in lines)
 
 
-def test_a_run_a_reader_reads_gets_no_advice(new_story):
-    _, _, lines = ended_lines(new_story, "pytest -q")
+def test_a_run_a_reader_reads_gets_no_advice(read_test_output):
+    lines = read_test_output
     assert ENDED in lines
     assert not any("no reader reads" in line for line in lines)
 
 
-def test_a_run_that_printed_nothing_gets_no_advice(new_story):
-    _, _, lines = ended_lines(new_story, "./deploy.sh staging", "")
+def test_a_run_that_printed_nothing_gets_no_advice(empty_build_output):
+    lines = empty_build_output
     assert not any("no reader reads" in line for line in lines)
 
 
@@ -117,13 +109,8 @@ def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
     assert not any("ended" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
-    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(unmatched_reader_output):
+    story, process = unmatched_reader_output
     assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
 
 
@@ -157,32 +144,18 @@ def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_stor
     assert any(f"output {process.id} printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "pytest tests/one.py && echo done", category=CommandCategory.TEST_RUN)
-    story.container.get(OutputFolder).write_start(process.id, process.line, [process.line])
-    end_run(story, process, "one\ntwo\n")
-    story.advance(timedelta(seconds=1))
+def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):
+    story, process = program_reader_output
     assert not any("no reader reads pytest" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging && echo one && echo two", category=CommandCategory.BUILD)
-    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_reader_output):
+    story, process = chain_reader_output
     assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
-    process = moved_run(story, "./deploy.sh staging")
-    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(unshown_output):
+    story, process = unshown_output
     assert not any("reader deploys" in line for line in lines_of(story, NOTHING))
 
 
@@ -215,3 +188,108 @@ def test_an_agents_own_message_moves_nothing(new_story):
     story.run('message send "working on it" --environment main', actor=story.agent)
     story.run_listeners()
     assert story.container.get(OutputFolder).text(process.id, "move") == ""
+
+
+@pytest.fixture
+def deploy_reader(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
+    return story
+
+
+@pytest.fixture
+def ended_test_output(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest -q")
+    end_run(story, process, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
+    return story, process
+
+
+@pytest.fixture
+def ended_plain_output(new_story):
+    _, _, lines = ended_lines(new_story, "grep -n word file", "one\ntwo\n")
+    return lines
+
+
+@pytest.fixture
+def ended_chain_output(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
+    command = StartProcess(story.agent.id, None, "mkdir build && make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts)
+    process = story.container.get(Bus).run(command, story.agent, environment_id=1)
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    end_run(story, process, "one\ntwo\n")
+    story.advance(timedelta(seconds=1))
+    lines = lines_of(story, NOTHING)
+    return story, parts, command, process, lines
+
+
+@pytest.fixture
+def unread_build_output(new_story):
+    story, _, lines = ended_lines(new_story, "./deploy.sh staging", "uploading\nall done\n", category=CommandCategory.BUILD)
+    return story, lines
+
+
+@pytest.fixture
+def ended_loop_output(new_story):
+    _, _, lines = ended_lines(new_story, "for i in 1 2 3; do ./deploy.sh; done", "uploading\n")
+    return lines
+
+
+@pytest.fixture
+def ended_script_output(new_story):
+    _, _, lines = ended_lines(new_story, "bash install.sh", "registry: rewritten\n", category=CommandCategory.BUILD)
+    return lines
+
+
+@pytest.fixture
+def read_test_output(new_story):
+    _, _, lines = ended_lines(new_story, "pytest -q")
+    return lines
+
+
+@pytest.fixture
+def empty_build_output(new_story):
+    _, _, lines = ended_lines(new_story, "./deploy.sh staging", "")
+    return lines
+
+
+@pytest.fixture
+def unmatched_reader_output(deploy_reader):
+    story = deploy_reader
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    return story, process
+
+
+@pytest.fixture
+def program_reader_output(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest tests/one.py && echo done", category=CommandCategory.TEST_RUN)
+    story.container.get(OutputFolder).write_start(process.id, process.line, [process.line])
+    end_run(story, process, "one\ntwo\n")
+    story.advance(timedelta(seconds=1))
+    return story, process
+
+
+@pytest.fixture
+def chain_reader_output(deploy_reader):
+    story = deploy_reader
+    process = moved_run(story, "./deploy.sh staging && echo one && echo two", category=CommandCategory.BUILD)
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    return story, process
+
+
+@pytest.fixture
+def unshown_output(deploy_reader):
+    story = deploy_reader
+    process = moved_run(story, "./deploy.sh staging")
+    end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    return story, process

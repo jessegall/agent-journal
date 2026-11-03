@@ -12,11 +12,8 @@ from tests.stories.core.modules.chat.support.mark_samples import mark_count, mar
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place(new_story):
-    story = new_story(fixture=BuilderStarted)
-    sample = HookSamples.subagent().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
-    story.hook("s-1", sample)
-    story.run_listeners()
+def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place(researcher_dispatched):
+    story, sample = researcher_dispatched
     assert "Dispatched journal-researcher . haiku: Read the cart" in marks_text(story), marks_text(story)
     story.expect_text("chat-mark show 1", "detail: Find where totals are counted", "state: shown")
     story.hook("s-1", sample.with_fields(event="post_tool_use"))
@@ -25,11 +22,8 @@ def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place
     story.expect_text("chat-mark show 1", "state: ended")
 
 
-def test_a_dispatch_mark_opens_its_subagent_once_that_has_started(new_story):
-    story = new_story(fixture=BuilderStarted)
-    sample = HookSamples.subagent().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
-    story.hook("s-1", sample)
-    story.run_listeners()
+def test_a_dispatch_mark_opens_its_subagent_once_that_has_started(researcher_dispatched):
+    story, sample = researcher_dispatched
     story.expect_absent("chat-mark show 1", "target_model: agents")
     subagent = story.new_row_id(f"agent start s-sub claude subagent --parent {story.agent.id} --environment main")
     story.container.get(Bus).run(BindSubagentDispatch(story.agent.id, "journal-researcher", subagent), story.agent, environment_id=1)
@@ -54,3 +48,12 @@ def test_the_agents_module_writes_only_its_own_marks(new_story):
 
 def test_the_subagent_mark_is_declared_as_version_4_showed_it(new_story):
     expect_declared_appearance(new_story(fixture=BuilderStarted), SUBAGENT)
+
+
+@pytest.fixture
+def researcher_dispatched(new_story):
+    story = new_story(fixture=BuilderStarted)
+    sample = HookSamples.subagent().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
+    story.hook("s-1", sample)
+    story.run_listeners()
+    return story, sample

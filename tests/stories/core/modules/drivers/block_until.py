@@ -6,7 +6,7 @@ from core.modules.drivers.support.block_conditions.any_condition import AnyCondi
 from core.base.driver.conditions.ran_command import RanCommand
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.base.command.bus import Bus
@@ -22,8 +22,8 @@ LINE = "wait for it"
 
 
 def blocked_story(new_story, condition):
-    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    agent = story.agent
     story.container.get(Bus).run(BlockUntil(agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), condition), Actor.core())
     return story
 
@@ -54,8 +54,14 @@ def test_a_block_ends_when_its_condition_is_true(new_story):
 
 @pytest.mark.parametrize("condition,line,ends", [(AnyCondition(RanCommand("journal a"), RanCommand("journal b")), "journal b", True),
                                                  (AllConditions(RanCommand("journal a"), RanCommand("journal b")), "journal b", False)])
-def test_conditions_combine(new_story, condition, line, ends):
-    story = blocked_story(new_story, condition)
-    story.hook("s-1", shell(line, ShellPart("journal", CommandCategory.JOURNAL, [line.split()[1]], subcommand=line.split()[1])))
+def test_conditions_combine(condition_story, ends):
+    story = condition_story
     edit = story.hook("s-1", HookSamples.edit("src/cart.py"))
     assert bool(edit.refusal) is not ends
+
+
+@pytest.fixture
+def condition_story(new_story, condition, line):
+    story = blocked_story(new_story, condition)
+    story.hook("s-1", shell(line, ShellPart("journal", CommandCategory.JOURNAL, [line.split()[1]], subcommand=line.split()[1])))
+    return story

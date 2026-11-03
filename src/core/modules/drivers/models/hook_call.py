@@ -33,3 +33,7 @@ class HookCall(Model):
     @property
     def is_compaction(self) -> bool:
         return self.hook == HookEventName.COMPACT
+
+    @property
+    def is_session_start(self) -> bool:
+        return self.hook == HookEventName.SESSION_START

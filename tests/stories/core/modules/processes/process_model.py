@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
@@ -42,23 +44,13 @@ def test_a_running_process_moves_to_the_background_and_a_background_one_cannot_m
     story.expect_refusal("process background 1", "background")
 
 
-def test_a_process_ends_finished_on_exit_code_0_and_failed_on_another(new_story):
-    story = new_story(fixture=BuilderStarted)
-    start_process(story)
-    start_process(story, "make build")
-    bus(story).run(EndProcess(1, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
-    bus(story).run(EndProcess(2, 2, BYTES_SHORT, 1), story.agent, environment_id=1)
-    story.expect_success(PROCESS, "state: finished", "exit_code: 0")
+def test_a_process_ends_finished_on_exit_code_0_and_failed_on_another(ended_process_states):
+    story = ended_process_states
     story.expect_success("process show 2", "state: failed", "exit_code: 2")
 
 
-def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end_twice(new_story):
-    story = new_story(fixture=BuilderStarted)
-    start_process(story)
-    start_process(story, "make build")
-    bus(story).run(StopProcess(1), story.agent, environment_id=1)
-    bus(story).run(OrphanProcess(2), story.agent, environment_id=1)
-    story.expect_success(PROCESS, "state: stopped")
+def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end_twice(stopped_process_states):
+    story = stopped_process_states
     story.expect_success("process show 2", "state: orphaned")
     story.expect_refusal("output stop 1", "stopped", actor=story.agent)
 
@@ -106,3 +98,29 @@ def test_the_parts_of_a_process_go_with_it(new_story):
     story.expect_text(PARTS, "make test")
     story.run("process delete 1", actor=story.agent)
     story.expect_text(PARTS, "nothing found")
+
+
+@pytest.fixture
+def started_process(new_story):
+    story = new_story(fixture=BuilderStarted)
+    start_process(story)
+    start_process(story, "make build")
+    return story
+
+
+@pytest.fixture
+def ended_process_states(started_process):
+    story = started_process
+    bus(story).run(EndProcess(1, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
+    bus(story).run(EndProcess(2, 2, BYTES_SHORT, 1), story.agent, environment_id=1)
+    story.expect_success(PROCESS, "state: finished", "exit_code: 0")
+    return story
+
+
+@pytest.fixture
+def stopped_process_states(started_process):
+    story = started_process
+    bus(story).run(StopProcess(1), story.agent, environment_id=1)
+    bus(story).run(OrphanProcess(2), story.agent, environment_id=1)
+    story.expect_success(PROCESS, "state: stopped")
+    return story

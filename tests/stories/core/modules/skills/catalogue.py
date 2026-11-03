@@ -1,3 +1,5 @@
+import pytest
+
 import os
 from pathlib import Path
 
@@ -50,8 +52,8 @@ def test_skill_write_puts_each_skill_in_both_program_folders(new_story):
         assert "Start a task before you write." in skill_file(story, program_folder, "journal-chores").read_text()
 
 
-def test_skill_write_rewrites_only_a_changed_file(new_story):
-    story = story_with_skill_files(new_story)
+def test_skill_write_rewrites_only_a_changed_file(installed_skill_files):
+    story = installed_skill_files
     unchanged, changed = skill_file(story, ".claude/skills", "journal-chores"), skill_file(story, ".claude/skills", "journal-notes")
     os.utime(unchanged, ns=(1, 1))
     changed.write_text("an old text")
@@ -60,8 +62,8 @@ def test_skill_write_rewrites_only_a_changed_file(new_story):
     assert "Write a note for every decision." in changed.read_text()
 
 
-def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_write(new_story):
-    story = story_with_skill_files(new_story)
+def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_write(installed_skill_files):
+    story = installed_skill_files
     stale, foreign = skill_file(story, ".claude/skills", "journal-old"), skill_file(story, ".claude/skills", "writing-story-tests")
     for file in (stale, foreign):
         file.parent.mkdir(parents=True, exist_ok=True)
@@ -91,3 +93,8 @@ def test_skill_show_and_skill_list_answer_json_rows_for_a_window(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     assert '"text": "---' in story.run("skill show journal-notes --json").output_text
     assert '"folder": "journal-notes"' in story.run("skill list --json").output_text
+
+
+@pytest.fixture
+def installed_skill_files(new_story):
+    return story_with_skill_files(new_story)

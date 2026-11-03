@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
@@ -16,11 +18,8 @@ def log_file(story):
     return path
 
 
-def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_the_agent(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log_file(story).write_text(LOG_LINES)
-    story.hook("s-1", FINISHED)
-    story.run_listeners()
+def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_the_agent(two_bypassed_hooks):
+    story = two_bypassed_hooks
     assert "2 hooks went through unchecked while the journal did not answer" in marks_text(story), marks_text(story)
     story.expect_rows(not log_file(story).exists())
     story.expect_hook_allowed("s-1", FINISHED, "2 of your hooks went through unchecked")
@@ -29,15 +28,9 @@ def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_t
     assert marks_text(story).count("went through unchecked") == 1, marks_text(story)
 
 
-def test_one_hook_is_said_in_the_singular_and_an_empty_log_says_nothing(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log_file(story).write_text("1700000000 hook claude\n")
-    story.hook("s-1", FINISHED)
-    story.run_listeners()
-    assert "1 hook went through unchecked" in marks_text(story), marks_text(story)
-    log_file(story).write_text("")
-    story.hook("s-1", FINISHED)
-    story.run_listeners()
+def test_one_hook_is_said_in_the_singular_and_an_empty_log_says_nothing(single_bypassed_hook):
+    story, initial_marks = single_bypassed_hook
+    assert "1 hook went through unchecked" in initial_marks
     assert marks_text(story).count("went through unchecked") == 1, marks_text(story)
 
 
@@ -60,3 +53,25 @@ def test_the_hook_wait_a_person_sets_reaches_the_file_the_go_hook_reads(new_stor
     story.container.get(Database).connection.execute("DELETE FROM settings")
     story.container.get(HookWaitFileListener).handle(None)
     story.expect_rows(not home.hook_wait_file.exists())
+
+
+@pytest.fixture
+def two_bypassed_hooks(new_story):
+    story = new_story(fixture=BuilderStarted)
+    log_file(story).write_text(LOG_LINES)
+    story.hook("s-1", FINISHED)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def single_bypassed_hook(new_story):
+    story = new_story(fixture=BuilderStarted)
+    log_file(story).write_text("1700000000 hook claude\n")
+    story.hook("s-1", FINISHED)
+    story.run_listeners()
+    initial_marks = marks_text(story)
+    log_file(story).write_text("")
+    story.hook("s-1", FINISHED)
+    story.run_listeners()
+    return story, initial_marks

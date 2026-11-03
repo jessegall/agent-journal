@@ -3,15 +3,13 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.rules.support.hook_memories import HookMemories
-from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.base.agent_role import AgentRole
 
 
 class StartDeliveryRule(DriverRule):
-    """At a session start and after a compaction, gives the agent each active memory of its scope and the
-    project's whose type gives at start and that has no due time: rules first, facts heaviest first."""
+    """At a session start and after a compaction, tells the agent how many active memories of its scope and the
+    project's it has whose type gives at start and that have no due time; StartMemoriesListener records them."""
 
     name = "memories.start-delivery"
     start_line_rule = True
@@ -23,7 +21,5 @@ class StartDeliveryRule(DriverRule):
         self.memories = memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        memories = list(self.memories.query(hook).start_memories().undated().delivery_order().all_rows())
-        if not memories:
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=len(memories), agent=hook.agent_id)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.START))
+        count = self.memories.query(hook).start_memories().undated().count()
+        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()

@@ -45,13 +45,19 @@
             },
             {
                 "fileMatches": "base/driver/rule_answer\\.py$"
+            },
+            {
+                "all": [
+                    {"fileMatches": "modules/drivers/rules/foreign_hooks_rule\\.py$"},
+                    {"name": "RuleAnswer"}
+                ]
             }
         ]
     },
     "sin": {
         "name": "shell-input-rewritten-outside-the-runner-rule",
         "description": "A rule other than the processes module's RunnerRewriteRule gives the tool a new input, so two rules compete for a shell line and the line may skip the runner.",
-        "rule": "Only RunnerRewriteRule rewrites a tool's input, into a call of the runner, and RefusalLine shows a refusal as the command's printed output; every other rule answers with lines or a refusal.",
+        "rule": "RunnerRewriteRule builds shell input for the runner; RefusalLine prints a refusal through a command. ForeignHooksRule forwards a managed hook's native replacement input for the existing rewrite-conflict check. Other rules answer with lines or a refusal.",
         "skill": "processes-architecture"
     }
 }

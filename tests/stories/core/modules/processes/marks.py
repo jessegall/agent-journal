@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -25,10 +27,8 @@ AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["
 PROGRESS = 'reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"'
 
 
-def test_a_run_shows_a_process_mark_keyed_by_its_number(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "make test", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
+def test_a_run_shows_a_process_mark_keyed_by_its_number(started_test_mark):
+    story = started_test_mark
     story.expect_text(MARKS, "processes.command", "process:1", "make test")
 
 
@@ -61,23 +61,16 @@ def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_st
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1", "process:2")
 
 
-def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "make plain", category=CommandCategory.BUILD)
-    story.run_listeners()
+def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(ended_short_mark):
+    story, process = ended_short_mark
     story.expect_text(MARKS, "process:1")
     end_run(story, process, "ok\n")
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1")
 
 
-def test_a_run_moved_to_the_background_updates_its_mark_in_place(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "make build", category=CommandCategory.BUILD)
-    story.run_listeners()
-    starting_count = mark_count(story)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    story.run_listeners()
+def test_a_run_moved_to_the_background_updates_its_mark_in_place(background_build_mark):
+    story, process, starting_count = background_build_mark
     assert mark_count(story) == starting_count
     story.expect_text(MARKS, "process:1", "Running make build")
 
@@ -132,29 +125,19 @@ def test_a_failed_plain_command_makes_no_mark(new_story):
     assert mark_count(story) == 0
 
 
-def test_a_plain_command_moved_to_the_background_makes_no_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "grep -n cart notes")
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    story.run_listeners()
-    end_run(story, process, "done\n")
-    story.run_listeners()
+def test_a_plain_command_moved_to_the_background_makes_no_mark(background_plain_mark):
+    story, process = background_plain_mark
     assert mark_count(story) == 0
 
 
-def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    parts = (PartSpec("grep -n cart notes", "grep", False, CommandCategory.SEARCH), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
-    story.container.get(Bus).run(StartProcess(story.agent.id, None, "grep -n cart notes; make test", "/work/main", "zsh", CommandCategory.SEARCH, 30, parts), story.agent, environment_id=1)
-    story.run_listeners()
+def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(command_chain_mark):
+    story, parts = command_chain_mark
     story.expect_text(MARKS, "process:1", "Running make test")
     story.expect_absent(MARKS, "grep")
 
 
-def test_a_mark_names_the_command_and_not_where_the_project_lives(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "cd /work/main && make test /work/main/cart.py", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
+def test_a_mark_names_the_command_and_not_where_the_project_lives(project_path_mark):
+    story = project_path_mark
     story.expect_text(MARKS, "make test cart.py")
 
 
@@ -167,13 +150,8 @@ def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_
     assert folder.bytes_after(process.id, 2) == b"n\n"
 
 
-def test_output_that_is_not_utf8_still_ends_its_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
-    (story.container.get(OutputFolder).home.folder / "processes" / str(process.id) / "1.out").write_bytes(b"caf\xe9\n")
-    story.container.get(Bus).run(EndProcess(process.id, 0, 5, 1), story.agent, environment_id=1)
-    story.run_listeners()
+def test_output_that_is_not_utf8_still_ends_its_mark(binary_output_mark):
+    story, process = binary_output_mark
     story.expect_text(MARKS, "process:1", "ended")
 
 
@@ -196,23 +174,14 @@ def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
     window.expect_window_allowed("messages.chat", "output peek 1 --all")
 
 
-def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
-    story.advance(timedelta(seconds=6))
-    wanted = f'journal output title {process.id} "<what it does>"'
+def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(untitled_docked_run):
+    story, process, wanted = untitled_docked_run
     assert any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
     assert not any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
 
 
-def test_only_a_real_long_run_docks_and_not_one_whose_folder_says_it_ended(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "grep -n word file")
-    ended = start_process(story, "make build", category=CommandCategory.BUILD)
-    story.container.get(OutputFolder).write_end(ended.id, 0)
-    story.advance(timedelta(seconds=6))
-    story.hook("s-1", HookSamples.stop())
-    story.run_listeners()
+def test_only_a_real_long_run_docks_and_not_one_whose_folder_says_it_ended(running_docked_process):
+    story, ended = running_docked_process
     story.expect_absent("dock-item list", "processes.output")
 
 
@@ -231,3 +200,90 @@ def test_an_ended_run_says_its_result_on_its_mark(new_story):
     end_run(story, process, "F..\n=== 1 failed, 2 passed in 1.00s ===\n", exit_code=1)
     story.run_listeners()
     story.expect_text("chat-mark list --json", "1 failed, 2 passed")
+
+
+@pytest.fixture
+def started_test_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "make test", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def ended_short_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make plain", category=CommandCategory.BUILD)
+    story.run_listeners()
+    return story, process
+
+
+@pytest.fixture
+def background_build_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.run_listeners()
+    starting_count = mark_count(story)
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_listeners()
+    return story, process, starting_count
+
+
+@pytest.fixture
+def background_plain_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "grep -n cart notes")
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_listeners()
+    end_run(story, process, "done\n")
+    story.run_listeners()
+    return story, process
+
+
+@pytest.fixture
+def command_chain_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    parts = (PartSpec("grep -n cart notes", "grep", False, CommandCategory.SEARCH), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
+    story.container.get(Bus).run(StartProcess(story.agent.id, None, "grep -n cart notes; make test", "/work/main", "zsh", CommandCategory.SEARCH, 30, parts), story.agent, environment_id=1)
+    story.run_listeners()
+    return story, parts
+
+
+@pytest.fixture
+def project_path_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "cd /work/main && make test /work/main/cart.py", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def binary_output_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    (story.container.get(OutputFolder).home.folder / "processes" / str(process.id) / "1.out").write_bytes(b"caf\xe9\n")
+    story.container.get(Bus).run(EndProcess(process.id, 0, 5, 1), story.agent, environment_id=1)
+    story.run_listeners()
+    return story, process
+
+
+@pytest.fixture
+def untitled_docked_run(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
+    story.advance(timedelta(seconds=6))
+    wanted = f'journal output title {process.id} "<what it does>"'
+    return story, process, wanted
+
+
+@pytest.fixture
+def running_docked_process(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "grep -n word file")
+    ended = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.container.get(OutputFolder).write_end(ended.id, 0)
+    story.advance(timedelta(seconds=6))
+    story.hook("s-1", HookSamples.stop())
+    story.run_listeners()
+    return story, ended
