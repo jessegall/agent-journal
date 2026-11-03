@@ -2,8 +2,21 @@
     margin: 6px 0;
 }
 
+.chat-code-block {
+    min-width: 0;
+    max-width: 100%;
+}
+
 .chat-code-block > pre.chat-code {
     margin: 0;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.chat-code-block > pre.chat-code code {
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 .chat-code-copy {
