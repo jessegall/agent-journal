@@ -21,19 +21,6 @@ type Reply struct {
 	HookCallID   *int64         `json:"hook_call_id"`
 }
 
-func nativeRefusal(stdout string) bool {
-	var answer struct {
-		Decision           string `json:"decision"`
-		HookSpecificOutput struct {
-			PermissionDecision string `json:"permissionDecision"`
-		} `json:"hookSpecificOutput"`
-	}
-	if json.Unmarshal([]byte(stdout), &answer) != nil {
-		return false
-	}
-	return answer.Decision == "block" || answer.HookSpecificOutput.PermissionDecision == "deny"
-}
-
 // isAnswerObject says a project hook's stdout is a JSON object, the only form a program reads as an answer.
 func isAnswerObject(stdout string) bool {
 	var object map[string]any
@@ -41,7 +28,7 @@ func isAnswerObject(stdout string) bool {
 }
 
 // nativeReply reads a project hook's own answer on stdout into a reply.
-func nativeReply(style, stdout string) Reply {
+func nativeReply(style, name, stdout string) Reply {
 	var answer struct {
 		Decision           string `json:"decision"`
 		Reason             string `json:"reason"`
@@ -57,6 +44,9 @@ func nativeReply(style, stdout string) Reply {
 		return Reply{}
 	}
 	reply := Reply{UpdatedInput: answer.HookSpecificOutput.UpdatedInput, Terminal: answer.SystemMessage}
+	if answer.HookSpecificOutput.PermissionDecision == "ask" {
+		return Reply{Terminal: joined(reply.Terminal, name+": hook asked for permission; the journal cannot ask")}
+	}
 	if text := answer.HookSpecificOutput.AdditionalContext; text != "" {
 		reply.Lines = strings.Split(text, "\n")
 	}

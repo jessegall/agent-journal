@@ -9,8 +9,8 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 def test_a_hook_call_keeps_each_foreign_result_in_its_drivers_metadata(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     runs = [
-        {"id": "first", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False},
-        {"id": "second", "exit_code": -1, "stdout": "", "stderr": "", "milliseconds": 1000, "timed_out": True},
+        {"id": "first", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False, "answer": {"refusal": "details"}},
+        {"id": "second", "exit_code": -1, "stdout": "", "stderr": "", "milliseconds": 1000, "timed_out": True, "answer": {"terminal": "second: hook timed out"}},
     ]
     story.hook("s-1", HookSamples.stop().with_fields(firing="foreign-results", foreign=runs))
     calls = list(story.container.get(Queries).query(HookCall).filter(firing="foreign-results").all_rows())

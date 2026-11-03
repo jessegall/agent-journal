@@ -86,6 +86,8 @@ func preparedHook(program, root string, body []byte, context programs.Context) (
 	}()
 	prepared, skip, err := programs.Prepared(program, body, context)
 	prepared.Foreign = <-runs
+	definition := context.Programs.Programs[program]
+	decodeRuns(definition, definition.Events[hookName(body)], prepared.Foreign)
 	return prepared, skip, err
 }
 

@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import boolean, mapping, number, text
@@ -17,6 +18,7 @@ class ForeignRun:
     stderr: str
     milliseconds: int
     timed_out: bool
+    answer: Mapping[str, object] = field(default_factory=dict)
 
     @classmethod
     def parsed(cls, data: object) -> "ForeignRun":
@@ -27,7 +29,9 @@ class ForeignRun:
         milliseconds = number(fields, "milliseconds")
         if milliseconds < 0:
             raise HookEventError(f"milliseconds is nonnegative, not {milliseconds}")
-        return cls(text(fields, "id"), number(fields, "exit_code"), text(fields, "stdout"), text(fields, "stderr"), milliseconds, boolean(fields, "timed_out"))
+        answer = mapping(fields.get("answer", {}), "a foreign hook answer")
+        return cls(text(fields, "id"), number(fields, "exit_code"), text(fields, "stdout"), text(fields, "stderr"), milliseconds, boolean(fields, "timed_out"),
+                   {str(key): value for key, value in answer.items()})
 
     @classmethod
     def parsed_many(cls, data: object) -> tuple["ForeignRun", ...]:

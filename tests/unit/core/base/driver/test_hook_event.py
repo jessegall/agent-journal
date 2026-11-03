@@ -42,7 +42,7 @@ def test_another_version_is_refused_with_both_versions_named():
 
 def test_foreign_hook_results_are_parsed():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
-    fields = {"id": "check", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False}
+    fields = {"id": "check", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False, "answer": {}}
     event = HookEvent.parsed({**example, "version": 3, "foreign": [fields]})
     assert len(event.foreign) == 1
     run = event.foreign[0]

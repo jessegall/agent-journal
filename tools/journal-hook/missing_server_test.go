@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -15,7 +16,14 @@ func TestMissingServerKeepsTheFirstManagedRefusal(t *testing.T) {
 		{Stdout: `{"decision":"block","reason":"unfinished"}`},
 	} {
 		var stdout, stderr bytes.Buffer
-		code, handled := answerWithoutServer(&stdout, &stderr, "stop", []ForeignRun{{Stdout: `{"hookSpecificOutput":{"permissionDecision":"allow"}}`}, run, {ExitCode: 2, Stderr: "later"}})
+		runs := []ForeignRun{{Stdout: `{"hookSpecificOutput":{"permissionDecision":"allow"}}`}, run, {ExitCode: 2, Stderr: "later"}}
+		program := hookProgram
+		program.Refusals = map[string]string{"stop": "block"}
+		if strings.Contains(run.Stdout, `"permissionDecision":"deny"`) {
+			program.Refusals = map[string]string{"stop": "deny"}
+		}
+		decodeRuns(program, "stop", runs)
+		code, handled := answerWithoutServer(&stdout, &stderr, "stop", runs)
 		if !handled || code != run.ExitCode || stdout.String() != run.Stdout || stderr.String() != run.Stderr {
 			t.Fatalf("native refusal changed: %d %t %q %q", code, handled, stdout.String(), stderr.String())
 		}
@@ -47,7 +55,7 @@ func TestManagedRefusalExcludesFailedOrTimedOutRuns(t *testing.T) {
 		{Stdout: `{"hookSpecificOutput":{"permissionDecision":"ask"}}`},
 		{Stdout: `{"systemMessage":"notice"}`},
 	} {
-		if refuses(run) {
+		if foreignRunReply(hookProgram, "stop", run).Refusal != "" {
 			t.Fatalf("non-refusal counted: %#v", run)
 		}
 	}
