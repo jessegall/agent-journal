@@ -16,5 +16,5 @@ class PluginSettingLines:
                 for setting in self.manifest.settings]
 
     def json(self) -> dict[str, object]:
-        return {"settings": [{"key": setting.key, "type": setting.value_type, "title": setting.title, "value": self.values[setting.key] if setting.key in self.values else setting.default}
-                             for setting in self.manifest.settings]}
+        return {"settings": [{"key": setting.key, "type": setting.value_type, "title": setting.title, "help": setting.help_line, "group": setting.group, "parent": setting.parent, "choices": list(setting.choices),
+                              "value": self.values[setting.key] if setting.key in self.values else setting.default} for setting in self.manifest.settings]}

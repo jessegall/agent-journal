@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
@@ -8,7 +8,7 @@ import PluginInstallPreview from "./PluginInstallPreview.vue";
 import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRecordDialog from "./PluginRecordDialog.vue";
 import PluginRemoveDialog from "./PluginRemoveDialog.vue";
-import PluginSettingList from "./PluginSettingList.vue";
+import PluginSettingsDialog from "./PluginSettingsDialog.vue";
 import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 
 // the plugins of this project as version 4's page drew them: a bar to install one from a source, a line on what installing means, a card for each plugin with its
@@ -30,7 +30,9 @@ const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
 const removing = ref(null);
-const settings = ref({});
+const settings = ref([]);
+const settingsOf = ref("");
+const openedPlugin = computed(() => rows.value.find((row) => row.name === settingsOf.value) ?? null);
 
 const switchOver = (row) => run(`plugin ${row.enabled ? "disable" : "enable"} ${row.name}`);
 
@@ -109,17 +111,16 @@ async function remove(purge) {
     if (await run(["plugin", "remove", removing.value.name, ...(purge ? ["--purge"] : [])])) removing.value = null;
 }
 
-async function toggleSettings(row) {
-    if (settings.value[row.name]) {
-        const {[row.name]: _, ...others} = settings.value;
-        return void (settings.value = others);
-    }
+async function showSettings(row) {
     const answer = await context.read(["plugin", "settings", row.name]);
     refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) settings.value = {...settings.value, [row.name]: answer.value.settings};
+    settingsOf.value = answer.ok ? row.name : "";
+    settings.value = answer.ok ? answer.value.settings : [];
 }
 
-const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
+async function configure(setting, value) {
+    if (await run(["plugin", "configure", settingsOf.value, setting.key, value])) await showSettings(openedPlugin.value);
+}
 
 const {value: record, failure: recordFailure, load: showRecord} = useReadLine((row) => `plugin record ${row.name}`);
 </script>
@@ -160,15 +161,12 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
             </template>
             <div class="cards">
                 <template v-for="row in rows" :key="row.id">
-                    <PluginCard :plugin="row" :description="descriptionOf(row)" :services="servicesOf(row)" :board="boardOf(row)" @toggle="switchOver(row)" @settings="toggleSettings(row)" @board="showBoard(row)" @record="showRecord(row)" @latest="checkLatest(row)" @remove="removing = row">
+                    <PluginCard :plugin="row" :description="descriptionOf(row)" :services="servicesOf(row)" :board="boardOf(row)" @toggle="switchOver(row)" @settings="showSettings(row)" @board="showBoard(row)" @record="showRecord(row)" @latest="checkLatest(row)" @remove="removing = row">
                         <template v-if="latest[row.name]">
                             <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
                             <template v-if="latest[row.name].is_newer">
                                 <Btn small kind="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
                             </template>
-                        </template>
-                        <template v-if="settings[row.name]">
-                            <PluginSettingList :settings="settings[row.name]" @configure="(setting, value) => configure(row, setting, value)" />
                         </template>
                     </PluginCard>
                 </template>
@@ -179,6 +177,9 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
                 </button>
             </div>
         </div>
+        <template v-if="openedPlugin">
+            <PluginSettingsDialog :plugin="openedPlugin" :description="descriptionOf(openedPlugin)" :settings="settings" @close="settingsOf = ''" @configure="configure" @toggle="switchOver(openedPlugin)" />
+        </template>
         <template v-if="making">
             <PluginMakeDialog v-model:repository="repository" v-model:wish="wish" @close="making = false" @guide="readGuide" @ask="askTheAgent" />
         </template>
