@@ -56,9 +56,9 @@ onMounted(load);
                 <ProcessQueueControls :queue="queue" :read="read" @saved="load" />
                 <TransitionGroup name="queue" tag="div" class="queue-list">
                     <template v-for="item in items" :key="item.key">
-                        <ProcessQueueRun v-if="item.run" :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" />
-                        <p v-else-if="item.empty" class="empty" :data-queue-empty="item.section.kind">{{ item.section.empty }}</p>
-                        <ProcessQueueBand v-else :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.kind">{{ item.section.heading }}</ProcessQueueBand>
+                        <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
+                        <template v-else-if="item.empty"><p class="empty" :data-queue-empty="item.section.kind">{{ item.section.empty }}</p></template>
+                        <template v-else><ProcessQueueBand :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.kind">{{ item.section.heading }}</ProcessQueueBand></template>
                     </template>
                 </TransitionGroup>
             </template>
