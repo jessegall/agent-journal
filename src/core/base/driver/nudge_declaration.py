@@ -6,7 +6,7 @@ from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 
 LONGEST_LINE_CHARACTERS = 120
-LONGEST_INFO_CHARACTERS = 800
+LONGEST_NOTICE_CHARACTERS = 800
 LONGEST_FIELD_CHARACTERS = 80
 AUTHORED_LINE_CHARACTERS = 2000
 BARE_TEMPLATE = "{text}"
@@ -39,7 +39,7 @@ class NudgeDeclaration:
     def limit(self) -> int:
         if self.longest_characters is not None:
             return self.longest_characters
-        return LONGEST_INFO_CHARACTERS if self.type is NudgeType.INFO else LONGEST_LINE_CHARACTERS
+        return LONGEST_NOTICE_CHARACTERS if self.type is NudgeType.NOTICE else LONGEST_LINE_CHARACTERS
 
     @property
     def is_mergeable(self) -> bool:

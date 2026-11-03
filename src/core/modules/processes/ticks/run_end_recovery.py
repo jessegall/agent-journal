@@ -7,7 +7,7 @@ from core.modules.processes.commands.orphan_process.orphan_process import Orphan
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.run_folder_ends import RunFolderEnds
+from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 
 RUNNER_MISSING_SECONDS = 10
 

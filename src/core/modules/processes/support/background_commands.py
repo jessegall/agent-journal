@@ -24,8 +24,7 @@ class BackgroundCommands:
         return PartCommand(self.aliases.named_line(argv) or part.text, options.reader_id if options else None)
 
     def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
-        commands = tuple(part.arguments[0] for part in shell.parts_running_journal_command() if part.arguments and self.aliases.options(part.arguments[0]) is not None)
-        return tuple(dict.fromkeys((*shell.alias_names, *commands)))
+        return shell.all_alias_names(lambda name: self.aliases.options(name) is not None)
 
     def alias_runs(self, shell: ShellLine) -> list[AliasOptions]:
         runs = [self.aliases.options(name) for name in self.alias_names(shell)]

@@ -23,9 +23,9 @@ RESUME_LIMIT_COUNT = 3
 class EndedWorkerListener(SaveListener):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
     agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
-    ended while a run of its own goes is started again when the run ends. A worker a person or another agent stopped holds no delegated task or was ended by them; that one,
-    one that reported being stuck and one that keeps ending leave its main agent one line naming all its
-    tasks."""
+    ended while a run of its own goes is started again when the run ends. A worker a person or another agent
+    stopped holds no delegated task or was ended by them; that one, one that reported being stuck and one that
+    keeps ending leave its main agent one line naming all its tasks."""
 
     name = "workers.ended-worker"
     event = "agent.update"

@@ -9,7 +9,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.support.run_folder_ends import RunFolderEnds
+from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 
 
 TICK_INTERVAL_SECONDS = 150
