@@ -26,4 +26,4 @@ class StartDeliveryRule(DriverRule):
         memories = list(self.memories.query(hook).start_memories().undated().delivery_order().all_rows())
         if not memories:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=len(memories))).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.START))
+        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=len(memories), agent=hook.agent_id)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.START))

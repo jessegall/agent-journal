@@ -4,6 +4,7 @@ READ_COMMANDS = (
     "journal report list; journal report show <n>; journal output read <n> --summary or --lines <first>-<last>. "
     "Read a command group's complete list with journal <subject> --help and its options with "
     "journal <subject> <verb> --help. Read the journal skill for that subject before its first command."
+    " Use python3 for Python commands."
 )
 
 DOCUMENT_COMMANDS = (
@@ -49,6 +50,7 @@ WORKER_COMMANDS = (
     "and journal task log <n> \"<what changed or what you found>\". Read its points with journal proof points "
     "--agent <your agent number>. Record each with journal proof make <point> \"<file:line and evidence>\" "
     "--test \"<focused test command>\"; inspect evidence with journal proof list --task <n> and journal proof show <n>. "
+    "Correct an unchecked proof with journal proof make again for the same point; checked proofs cannot be changed. "
     "Use journal worker next after proving the task; when its tests are queued, stop until the journal sends "
     "a failure or the next task. After the last task use journal worker deliver. "
     "Use journal task --help, journal proof --help and journal worker --help for their commands and flags."

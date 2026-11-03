@@ -17,7 +17,7 @@ class StockReader:
 
 
 STOCK_READERS = (
-    StockReader("pytest", "pytest*,*python -m pytest*,*uv run pytest*", "Running tests",
+    StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Running tests",
                   r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$",
                   r"\[ *([0-9]+)%\]", r"^(=+ )?[0-9]+ passed", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:([0-9]+ failed), )?([0-9]+ passed)"),
     StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Running tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", "",
