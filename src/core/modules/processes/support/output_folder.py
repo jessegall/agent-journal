@@ -19,6 +19,9 @@ READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
 BLOCK_BYTES = 64 * 1024
 
+COUNT_OUTPUT = "count.out"
+COUNT_STATUS = "counted"
+
 COUNT_LINES = 20
 
 class OutputFolder:
@@ -231,3 +234,13 @@ class OutputFolder:
     def number(self, process_id: int, name: str) -> int | None:
         text = self.text(process_id, name).strip()
         return int(text) if text.lstrip("-").isdigit() else None
+
+    def count_text(self, process_id: int) -> str:
+        return self.text(process_id, COUNT_OUTPUT)
+
+    def count_status(self, process_id: int) -> int | None:
+        return self.number(process_id, COUNT_STATUS)
+
+    def write_count(self, process_id: int, text: str, status: int) -> None:
+        self.write(process_id, COUNT_OUTPUT, text)
+        self.write_number(process_id, COUNT_STATUS, status)

@@ -1,3 +1,5 @@
+from core.modules.processes.models.output import Output
+from core.modules.processes.support.test_listings import TestListings
 from collections.abc import Sequence
 from dataclasses import replace
 
@@ -22,9 +24,9 @@ class RunSlots:
     main-runs-take-slots on, the main agent's running runs, which hold no spot and never wait, count against
     the batch size too."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: TestListings) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
-        self.admission, self.clock = admission, clock
+        self.admission, self.clock, self.listings = admission, clock, listings
 
     def grant(self, environment_id: int, context: Context) -> None:
         if self.halt.is_halted:
@@ -34,7 +36,9 @@ class RunSlots:
         room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
         for waiting in [process for process in runs if process.is_queued and self.admission.may_start(process, self.clock.timestamp())][:max(room, 0)]:
             process = self.queries.query(Process).find(waiting.id)
-            if process.is_queued:
+            self.record_count(process, context)
+            process = self.queries.query(Process).find(process.id)
+            if process.is_queued and process.state in RUNNING_STATES:
                 self.folder.write_slot(process.id)
                 self.repository.save(replace(process, is_queued=False), context)
 
@@ -49,3 +53,11 @@ class RunSlots:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).filter(is_queued=True).oldest().all_rows()
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             self.grant(environment_id, context)
+
+    def record_count(self, process: Process, context: Context) -> None:
+        if self.folder.count_status(process.id) != 0:
+            return
+        count = self.listings.count(process, self.folder.count_text(process.id))
+        outputs = self.queries.query(Output).filter(process_id=process.id).page(1, 1).rows
+        if count and outputs and outputs[0].test_count != count:
+            self.repository.save(replace(outputs[0], test_count=count), context)

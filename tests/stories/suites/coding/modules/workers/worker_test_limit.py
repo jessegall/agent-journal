@@ -1,3 +1,4 @@
+from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 import pytest
 from pathlib import Path
 
@@ -55,8 +56,9 @@ def test_a_part_that_ran_over_the_limit_last_time_is_refused_at_the_hook(limited
     story, process = limited_run
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
-    story.expect_hook_refusal("s-reader", HookSamples.shell("cat notes && pytest tests/cart.py", ShellPart("cat", CommandCategory.READ, ["notes"]),
-                                                          ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"])), "8 tests")
+    reply = story.hook("s-reader", HookSamples.shell("cat notes && pytest tests/cart.py", ShellPart("cat", CommandCategory.READ, ["notes"]),
+                                               ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"])))
+    assert "8 tests" in reply.refusal, reply
 
 
 @pytest.mark.parametrize("limit,count", [(5, 4), (0, 8)])
@@ -114,3 +116,45 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
     launcher.expect_worker(worker.id, worker_session(story, worker), Path(worktree.folder))
     story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
+
+
+def test_a_queued_run_over_the_limit_by_its_listing_never_gets_a_spot(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    story.expect_rows(not folder.has_slot(process.id))
+    folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
+    story.expect_text(f"output show {process.id}", "test_count: 8", actor=story.agent)
+
+
+@pytest.mark.parametrize("status", [0, 1, 143])
+def test_a_listing_that_fails_leaves_the_count_to_the_run(limited_run, status):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    folder.write_count(process.id, "no number\n" if status == 0 else "collected 100 items\n", status)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+    story.expect_text(f"output show {process.id}", "test_count: 0", actor=story.agent)
+
+
+def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):
+    story, previous = limited_run
+    worker = reader_worker(story)
+    task = story.new_row_id('task make "List both test commands" --environment main')
+    story.run(f"task start {task}", actor=worker)
+    story.run(f"task brief {task}", actor=worker)
+    reply = story.hook("s-reader", HookSamples.shell("pytest tests/one.py && pytest tests/two.py",
+                       ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]),
+                       ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/two.py"])))
+    story.expect_rows(not reply.refusal, "--count" in str(reply.updated_input), "JOURNAL_COUNT_PART_1" in str(reply.updated_input),
+                      "JOURNAL_COUNT_PART_2" in str(reply.updated_input))
+    process = story.container.get(Queries).query(Process).filter(agent_id=worker.id).newest().page(1, 1).rows[0]
+    folder = story.container.get(OutputFolder)
+    folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 3 items\nJOURNAL_COUNT_PART_2\ncollected 3 items\n", 0)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
+    story.expect_text(f"output show {process.id}", "test_count: 6", actor=story.agent)
+    story.expect_hook_allowed("s-reader", HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"])))
+    story.expect_hook_allowed("s-reader", HookSamples.shell("pytest tests/two.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/two.py"])))
+

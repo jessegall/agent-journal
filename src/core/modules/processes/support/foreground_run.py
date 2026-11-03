@@ -18,3 +18,5 @@ class ForegroundRun:
     queued: bool = False
     read_command: bool = False
     part_commands: tuple[PartCommand, ...] = ()
+
+    count_line: str = ""

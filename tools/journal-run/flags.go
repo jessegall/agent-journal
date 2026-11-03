@@ -12,6 +12,7 @@ import (
 // Flags are what the rewritten command line says: the process, the foreground limit, whether to move at once and the
 // line after --; --follow with --folder and --parts is the detached tracker of a moved run.
 type Flags struct {
+	Count      string
 	Process    int
 	Limit      int
 	Background bool
@@ -80,6 +81,12 @@ func ParseFlags(arguments []string) (Flags, error) {
 			flags.OnlyReads = true
 		case "--follow":
 			flags.Follow = true
+		case "--count":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.Count = arguments[index]
 		case "--aliases":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)
