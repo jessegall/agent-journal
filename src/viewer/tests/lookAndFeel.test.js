@@ -6,6 +6,7 @@ import {settled} from "./settled.js";
 import {perLine} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import DockWrapper from "../src/chat/DockWrapper.vue";
+import DockStack from "../src/chat/DockStack.vue";
 import MarkHost from "../src/chat/MarkHost.vue";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
@@ -39,7 +40,9 @@ function windowContext(answers) {
     return {
         read: async (line) => {
             lines.push(line);
-            return {ok: true, value: Array.isArray(answers[line]) || !answers[line] ? {rows: answers[line] ?? []} : answers[line]};
+            const key = Object.keys(answers).find((start) => line === start || line.startsWith(`${start} `));
+            const answer = answers[key];
+            return {ok: true, value: Array.isArray(answer) || !answer ? {rows: answer ?? []} : answer};
         },
         run: async (line) => {
             runs.push(line);
@@ -56,7 +59,7 @@ function windowContext(answers) {
 }
 
 async function mountedChat(answers = {}) {
-    const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item list": [REPORT_DOCK], "pin list": [], ...answers});
+    const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item main": [REPORT_DOCK], "pin list": [], ...answers});
     const element = document.createElement("div");
     document.body.append(element);
     createApp({setup: () => () => h(Chat), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
@@ -159,7 +162,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
 test("a refused close of a docked card says why on the card", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
     mounted.push(element);
     await settled();
     element.querySelector("[data-dock-action='undock']").click();
