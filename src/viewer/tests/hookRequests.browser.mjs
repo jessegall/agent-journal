@@ -19,7 +19,9 @@ try {
         await page.screenshot({path: "/tmp/journal-hook-requests-461-failure.png"});
         throw error;
     }
-    assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Time", "Duration"]);
+    assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Duration"]);
+    assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').textContent(), "3");
+    assert.equal(await page.locator('[data-hook-request="69"] [data-hook-parts]').textContent(), "");
     assert.match(await page.locator('[data-fold="developer"]').textContent(), /Developer/);
     assert.equal(await page.locator('[data-sidebar-window="developer.hook-requests"]').count(), 1);
     assert.equal(await page.locator("[data-hook-request-detail]").count(), 0);

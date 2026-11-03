@@ -67,6 +67,7 @@ def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recordi
     story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 100 --project", actor=story.user)
     log = story.container.get(HookRequestLog)
     for number in range(70):
-        log.record("claude", {"X-Journal-Hook-Id": f"request-{number}"}, {"event": "pre_tool_use", "tool": {"name": "Bash"}, "text": "x" * 4000},
+        shell = {"parts": [{"text": "ls"}] * 3} if number == 69 else {}
+        log.record("claude", {"X-Journal-Hook-Id": f"request-{number}"}, {"event": "pre_tool_use", "tool": {"name": "Bash", "shell": shell}, "text": "x" * 4000},
                    number * 20, HookAnswer.REFUSED if number == 69 else HookAnswer.ALLOWED)
     expect_browser(recording_server, "hookRequests.browser.mjs", [])
