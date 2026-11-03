@@ -9,9 +9,9 @@ async function search(answer, words = "cart total") {
     const opened = [];
     window.open = (name) => opened.push(name);
     const element = await mounted(SearchWindow, window);
-    element.querySelector(".search-input").value = words;
-    element.querySelector(".search-input").dispatchEvent(new Event("input"));
-    element.querySelector("form").dispatchEvent(new Event("submit"));
+    element.querySelector("[data-search-input]").value = words;
+    element.querySelector("[data-search-input]").dispatchEvent(new Event("input"));
+    element.querySelector("[data-search-go]").click();
     await settle();
     return {element, window, opened};
 }

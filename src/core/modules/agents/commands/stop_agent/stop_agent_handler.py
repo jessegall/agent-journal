@@ -10,7 +10,12 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+
+
+STOPPED_ANSWER = b"stopped\n"
+ANSWER_BYTES = 16
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):
@@ -20,17 +25,18 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     command = StopAgent
 
-    def __init__(self, queries: Queries, providers: Providers, repository: Repository, bus: Bus) -> None:
-        self.queries, self.providers, self.repository, self.bus = queries, providers, repository, bus
+    def __init__(self, queries: Queries, providers: Providers, repository: Repository, bus: Bus, launcher: LauncherLink) -> None:
+        self.queries, self.providers, self.repository, self.bus, self.launcher = queries, providers, repository, bus, launcher
 
     def prepare(self, command: StopAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already")
-        if agent.pid is None:
+        if agent.pid is None and self.launcher.sent({"agent_id": agent.id, "stop": True}, ANSWER_BYTES) != STOPPED_ANSWER:
             raise Refusal(f"the journal does not know the process of agent {agent.id}", "stop it in its own terminal")
         self.bus.run(ClearDelegatedTasks(agent.id), actor, environment_id=agent.environment_id)
-        LeftoverProcess.stop(agent.pid, self.providers.provider(agent.program).executable)
+        if agent.pid is not None:
+            LeftoverProcess.stop(agent.pid, self.providers.provider(agent.program).executable)
 
     def handle(self, command: StopAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)

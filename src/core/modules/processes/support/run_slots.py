@@ -32,7 +32,7 @@ class RunSlots:
         if self.halt.is_halted:
             return
         runs = tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
-        used_slots = sum(self.folder.has_slot(process.id) for process in runs) + self.main_runs_taking_spots(runs, environment_id)
+        used_slots = sum(process.slot_assigned for process in runs) + self.main_runs_taking_spots(runs, environment_id)
         room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
         for waiting in [process for process in runs if process.is_queued and self.admission.may_start(process, self.clock.timestamp())][:max(room, 0)]:
             process = self.queries.query(Process).find(waiting.id)
@@ -40,12 +40,12 @@ class RunSlots:
             process = self.queries.query(Process).find(process.id)
             if process.is_queued and process.state in RUNNING_STATES:
                 self.folder.write_slot(process.id)
-                self.repository.save(replace(process, is_queued=False), context)
+                self.repository.save(replace(process, is_queued=False, slot_assigned=True, started_at=context.timestamp), context)
 
     def main_runs_taking_spots(self, runs: Sequence[Process], environment_id: int) -> int:
         if not self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id):
             return 0
-        running = [process for process in runs if not process.is_queued and not self.folder.has_slot(process.id)]
+        running = [process for process in runs if not process.is_queued and not process.slot_assigned]
         main = MainAgentFinder.main_ids(self.queries, tuple({process.agent_id for process in running})) if running else set[int]()
         return sum(1 for process in running if process.agent_id in main)
 

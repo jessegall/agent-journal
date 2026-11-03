@@ -2,11 +2,22 @@ from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
 
+import json
+from pathlib import Path
+
+from core.base.database.database import Database
+from core.base.database.registry_table import RegistryTable
+from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.module_finder import ModuleFinder
 from server.server_files import SERVER_LOG_LIMIT_BYTES, ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.server_process import ServerProcess
+
+SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
+SCHEMA_EDIT = json.loads((SCHEMA_EXAMPLES / "edit.json").read_text())
+SCHEMA_STOP = json.loads((SCHEMA_EXAMPLES / "stop.json").read_text())
 
 
 def test_a_request_after_the_code_changed_gets_409_runs_nothing_and_the_server_releases_its_files(changing_code_server):
@@ -24,6 +35,26 @@ def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_s
     with ServerProcess(story.story.home) as server:
         server.expect_health()
         assert not restart_mark.exists()
+
+
+def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(new_story):
+    story = new_story(fixture=ThreeTasks)
+    database = story.container.get(Database)
+    database.connection.execute("UPDATE registry SET fingerprint = 'older code'")
+    database.connection.commit()
+    with ServerProcess(story.home) as server:
+        server.expect_health()
+    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
+
+
+def test_a_hook_on_code_newer_than_the_registry_goes_through_unchecked_and_a_stop_is_held(new_story):
+    story = new_story(fixture=ThreeTasks)
+    database = story.container.get(Database)
+    database.connection.execute("UPDATE registry SET fingerprint = 'older code'")
+    database.connection.commit()
+    with server_story(story) as served:
+        served.expect_hook_answer("/hook", SCHEMA_EDIT, 200, "the journal let this through unchecked: the journal's modules changed")
+        served.expect_hook_answer("/hook", SCHEMA_STOP, 200, "the journal could not check this stop and holds it")
 
 
 def test_a_stop_request_is_answered_and_the_server_stops(task_server):

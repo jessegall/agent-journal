@@ -1,3 +1,4 @@
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -43,7 +44,7 @@ class SettingsModule(Module):
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
-    windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
+    windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, search=WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key")),
                                  reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"]),
                WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.create"])]

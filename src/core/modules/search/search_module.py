@@ -1,3 +1,4 @@
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -21,4 +22,4 @@ class SearchModule(Module):
     subcommands = [SearchFindSubcommand]
     marks = SEARCH_MARKS
     listeners = [SearchMarkListener]
-    windows = [WindowDeclaration("search.search", "Search", "search.js", WindowLoading.COMPONENT, skeleton=SEARCH_SEARCH_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEARCH, reads=["search find"])]
+    windows = [WindowDeclaration("search.search", "Search", "search.js", WindowLoading.COMPONENT, skeleton=SEARCH_SEARCH_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEARCH, reads=["search find"], search=WindowReadSearch("search find", "Search the journal"))]

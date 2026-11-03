@@ -31,6 +31,11 @@ from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
 from core.modules.triggers.rules.phrase_trigger_rule import PhraseTriggerRule
 from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerRule
 from core.modules.triggers.support.skeletons import TRIGGERS_TRIGGERS_SKELETON
+from core.modules.triggers.models.trigger_action_run import TriggerActionRun
+from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
+from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
+from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
+from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
 
 BUILT = ["make", "show", "list", "delete"]
 
@@ -45,11 +50,11 @@ class TriggersModule(Module):
     marks = TRIGGER_MARKS
     guards = [AgentTriggerGuard]
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings"]
-    models = [ModelDeclaration(Trigger, query=TriggerQuery, excluded_subcommands=BUILT)]
-    migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration]
-    handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler]
-    listeners = [TriggerActionsListener, TriggerWaitingMarkListener]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings", "journal.core.processes"]
+    models = [ModelDeclaration(Trigger, query=TriggerQuery, excluded_subcommands=BUILT), ModelDeclaration(TriggerActionRun, excluded_subcommands=["make", "edit", "list", "show", "delete"])]
+    migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration]
+    handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
+    listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener]
     subcommands = (EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand)
     driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
     windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, skeleton=TRIGGERS_TRIGGERS_SKELETON, icon=WindowIcon.TRIGGER,

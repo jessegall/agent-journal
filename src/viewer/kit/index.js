@@ -45,6 +45,7 @@ export {usePoll} from "./usePoll.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
 export {useRows} from "./useRows.js";
+export {matchesSearch} from "./searchFields.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";
 export {useReadLine} from "./useReadLine.js";
 export {usageRead, useUsage} from "./useUsage.js";

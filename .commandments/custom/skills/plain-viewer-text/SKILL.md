@@ -25,6 +25,10 @@ says what it is about, or what happens when they press it, in the words a newcom
 
 ## How to fix it
 
+- A window search uses `SearchBar` or `ListTools` from the window kit and declares its search on
+  `WindowDeclaration`. Use `WindowSearch` for model searches or `WindowReadSearch` for an existing read command.
+  The shared bar owns sticky positioning, spacing and the bottom border; do not wrap it in a second toolbar.
+
 - Write a tag, badge or status as a label, a colon and the value: "Helper: Leslie", "Helpers: Hedy, Benny",
   "Ticket: 12", "Waiting: the agent", "Working: 3 jobs", "Agent: running"; "Delegated" when there is no value.
 

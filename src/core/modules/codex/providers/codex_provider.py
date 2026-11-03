@@ -26,7 +26,7 @@ from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
-from core.modules.codex.providers.support.codex_turn_effort import CodexTurnEffort
+from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
@@ -121,8 +121,9 @@ class CodexProvider(Provider):
 
     def session_effort(self, home: JournalHome, session: str) -> str:
         path = self.transcript(home.folder.parent, session)
-        efforts = [CodexTurnEffort.parsed(line) for line in TranscriptTail(path).lines()] if path else []
-        return next((effort for effort in reversed(efforts) if effort), "")
+        if path is None:
+            return ""
+        return CodexSessionEffort(path).read()
 
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
         fields: object = json.loads(line) if line.strip() else {}

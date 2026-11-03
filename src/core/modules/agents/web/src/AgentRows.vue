@@ -66,12 +66,10 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
 
 <template>
     <div :class="['agents', {focused: openRow}]">
-        <div class="agents-bar">
-            <SearchBar v-model="words" class="agents-search" data-agents-search>
+            <SearchBar v-model="words" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
                 <Btn small bordered title="Open the process queue" data-agents-queue @click="peekRef('test_queue:0')">Process queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
             </SearchBar>
-        </div>
         <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
@@ -141,19 +139,6 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
 .agents-held:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.agents-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.agents-search {
-    flex: 1;
-    min-width: 0;
 }
 
 .agents-queue-count {

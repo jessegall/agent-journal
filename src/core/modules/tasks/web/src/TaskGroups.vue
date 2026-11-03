@@ -123,11 +123,9 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
             <p class="tasks-note">{{ failure }}</p>
         </template>
         <template v-else>
-            <div class="tasks-tools">
-                <SearchBar ref="search" v-model="query" class="tasks-search">
+                <SearchBar ref="search" v-model="query" class="tasks-tools">
                     <slot name="tools" />
                 </SearchBar>
-            </div>
             <template v-if="!groups.length">
                 <p class="tasks-note">{{ query ? "No task matches" : "No tasks yet" }}</p>
             </template>
@@ -208,16 +206,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 }
 
 .tasks-tools {
-    position: sticky;
-    z-index: 2;
-    top: 0;
-    display: flex;
-    gap: 8px;
-    align-items: center;
     margin: 0 -12px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
 }
 
 .tasks-fold {
@@ -240,11 +229,6 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 
 .tasks-caret.closed {
     transform: rotate(-90deg);
-}
-
-.tasks-search {
-    flex: 1;
-    min-width: 0;
 }
 
 .tasks-group-head {

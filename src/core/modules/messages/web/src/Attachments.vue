@@ -46,10 +46,9 @@ read(0);
 
 <template>
     <section class="attachments" data-attachments>
-        <div class="bar">
-            <SearchBar v-model="words" class="search" placeholder="Search file names and their messages" data-attachment-search />
+        <SearchBar v-model="words" class="bar" data-attachment-search>
             <Segmented :options="kinds" :value="kind" @pick="kind = $event" />
-        </div>
+        </SearchBar>
         <template v-if="failure">
             <p class="failure" role="alert">{{ failure }}</p>
         </template>
@@ -93,16 +92,10 @@ read(0);
 }
 
 .bar {
-    display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    align-items: center;
+    box-sizing: border-box;
     width: 100%;
-}
-
-.search {
-    flex: 1;
-    min-width: 200px;
 }
 
 .gallery {

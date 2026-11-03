@@ -56,3 +56,11 @@ class DueSkillsModule(Module):
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["note"]),
               SkillDeclaration("journal-chores", "How to work a task", keywords=["tasks"], commands=["chore"], events=["task.start"])]
+
+
+class LongPathSkillsModule(Module):
+    name = "longpathskills"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    skills = [SkillDeclaration("journal-commandments-plain-code-words-and-the-architecture-of-process-reader-requests",
+                               "How to write process reader requests")]

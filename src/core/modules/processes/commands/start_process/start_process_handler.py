@@ -34,7 +34,9 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(environment_id=agent.environment_id, agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
-                                               is_queued=command.is_queued, is_queue_run=command.is_queued), context)
+                                               is_queued=command.is_queued, is_queue_run=command.is_queued,
+                                               started_at=None if command.is_queued else context.timestamp,
+                                               worker_id=command.worker_id, task_id=command.task_id), context)
         parts = []
         for position, spec in enumerate(command.parts, 1):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)

@@ -23,16 +23,16 @@ def dispatched_worker(story: Story, line: str = DISPATCH) -> Actor:
     return Actor(story.new_row_id(line, actor=story.agent), ActorType.AGENT)
 
 
-def delivered_worker(story: Story, repository: GitRepository) -> Actor:
-    worker = dispatched_worker(story)
+def delivered_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
+    worker = dispatched_worker(story, line)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success(DELIVERY, actor=worker)
     return worker
 
 
-def checked_worker(story: Story, repository: GitRepository) -> Actor:
-    worker = delivered_worker(story, repository)
+def checked_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
+    worker = delivered_worker(story, repository, line)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     return worker
 

@@ -8,7 +8,6 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -16,6 +15,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
@@ -25,15 +25,16 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     command = SendWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
         self.queries, self.worktrees, self.repository, self.git, self.nudger = queries, worktrees, repository, git, nudger
+        self.advance = advance
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker dispatch <task> starts a new one")
         if worktree.state is WorktreeState.DELIVERED:
-            self.repository.save(self.queries.query(Task).find(worktree.task_id).moved(TaskLifecycle.retest), context)
+            self.advance.restart_task(worktree, self.queries.query(Task).find(worktree.task_id), context)
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         task = self.queries.query(Task).find(worktree.task_id)
         if not self.git.conflict_files(worktree):

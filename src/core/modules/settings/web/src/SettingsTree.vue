@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {Segmented, Skeleton, WindowRoom, patchedWhere, useRows} from "@journal/window-kit";
+import {SearchBar, Segmented, Skeleton, WindowRoom, matchesSearch, patchedWhere, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 
@@ -28,7 +28,7 @@ const filters = computed(() => [
 const shown = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     if (!wanted && filter.value === "all") return listed.value;
-    const hits = listed.value.filter((row) => FILTERS[filter.value](row) && [row.title, row.description, row.key].join(" ").toLowerCase().includes(wanted));
+    const hits = listed.value.filter((row) => FILTERS[filter.value](row) && matchesSearch(row, wanted, context.search?.fields));
     const keys = new Set(hits.map((row) => row.key));
     for (const row of hits) {
         for (let up = listed.value.find((other) => other.key === row.parent); up; up = listed.value.find((other) => other.key === up.parent)) keys.add(up.key);
@@ -74,13 +74,10 @@ function saved(words, change) {
                 <SettingsEnvironments />
             </template>
             <template v-else>
-            <div class="settings-bar">
-                <label class="settings-search">
-                    <input ref="field" v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" @keydown.esc="query = ''" />
-                </label>
+            <SearchBar ref="field" v-model="query" class="settings-bar">
                 <Segmented :options="filters" :value="filter" data-settings-filter @pick="filter = $event" />
                 <span class="settings-saved">Changes are saved as you make them</span>
-            </div>
+            </SearchBar>
             <template v-if="!loaded">
                 <Skeleton shape="text" />
             </template>
@@ -125,31 +122,13 @@ function saved(words, change) {
 }
 
 .settings-bar {
-    display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    align-items: center;
-}
-
-.settings-search {
-    flex: 1;
-    min-width: 200px;
-    max-width: 360px;
 }
 
 .settings-saved {
     color: var(--text-3);
     font-size: 12px;
-}
-
-.settings-search-field {
-    width: 100%;
-    max-width: 360px;
-    padding: 7px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
 }
 
 .settings-body {

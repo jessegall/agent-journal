@@ -5,6 +5,6 @@ class SampleListener:
     # @righteous architecture_scope_DisabledScopesOnlyDeclaredDetector
     disabled_scopes = [ActorScope]
 
-    def open_up(self, listener):
+    def open(self, listener):
         # @sin architecture_scope_DisabledScopesOnlyDeclaredDetector
         listener.disabled_scopes = []

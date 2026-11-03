@@ -3,6 +3,7 @@ from core.base.command.bus import Bus
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.support.reader_demands import ReaderDemands
+from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
@@ -154,3 +155,11 @@ def test_a_run_the_journal_started_is_never_held(new_story):
     actor = story.container.get(ModuleActors).actor("journal.core.processes")
     story.container.get(Bus).run(StartProcess.single_part(worker.id, "module-build run", "/work/main", CommandCategory.BUILD, 30), actor, environment_id=1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+
+
+def test_a_quiet_run_and_an_empty_output_do_not_make_the_stock_test_reader_poor(new_story):
+    story = new_story(fixture=BuilderStarted)
+    judge = story.container.get(ReaderJudge)
+    reader = story.container.get(ReaderQuery).filter(name="pytest").page(1, 1).rows[0]
+    assert judge.misses(reader, CommandCategory.TEST_RUN, "") == ()
+    assert judge.misses(reader, CommandCategory.TEST_RUN, "...  [100%]\n3 passed, 11 deselected in 1.15s\n") == ()

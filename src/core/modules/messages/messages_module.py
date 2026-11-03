@@ -1,3 +1,4 @@
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.modules.messages.listeners.read_message_line_listener import ReadMessageLineListener
 from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
 from core.modules.messages.migrations.m009_message_recipient import MessageRecipientMigration
@@ -89,7 +90,7 @@ class MessagesModule(Module):
     handlers = (RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     subcommands = (AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
-    windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
+    windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*"],
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),

@@ -43,6 +43,7 @@ const missing = computed(() => {
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
 const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, kind: "words"});
+const changeExtra = (position, values) => (draft.extra = draft.extra.map((entry, place) => place === position ? {...entry, ...values} : entry));
 watch(() => draft.kind, (kind) => {
     if (kind === "time" && draft.action === "deny") draft.action = "nudge";
 });
@@ -61,7 +62,7 @@ function newLine() {
 
 function editLine() {
     const line = ["trigger", "edit", String(held.id), "--text", draft.text.trim(), "--action", draft.action, ...detailFlags()];
-    return draft.kind === "words" ? [...line, "--phrases", ...draft.phrases] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
+    return draft.kind === "words" ? [...line, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
 }
 
 async function ran(line) {
@@ -108,7 +109,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
                 <TriggerConditionFields v-model="draft.conditions" />
             </TriggerPart>
             <TriggerPart title="Action" hint="What it does, in order">
-                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.kind === 'time' ? TIME_DOES : DOES" />
+                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.kind === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
             </TriggerPart>
         </div>
         <template #foot>

@@ -48,7 +48,7 @@ def parser_argument(parser: ArgumentParser, flag: str, value_type: type[object])
     if value_type is bool:
         parser.add_argument(flag, action="store_true", default=None)
     elif value_type is tuple:
-        parser.add_argument(flag, nargs="+")
+        parser.add_argument(flag, nargs="+", action="extend")
     elif issubclass(value_type, StrEnum):
         parser.add_argument(flag, type=value_type, choices=tuple(value_type.__members__.values()))
     elif value_type is Timestamp:

@@ -18,8 +18,7 @@ const STATES = [
 </script>
 
 <template>
-    <div class="list-tools" data-list-tools>
-        <SearchBar v-model="tools.words.value" class="list-tools-search" :placeholder="placeholder" data-list-search @pick="emit('pick', $event)">
+        <SearchBar v-model="tools.words.value" class="list-tools" :placeholder="placeholder" data-list-tools data-list-search @pick="emit('pick', $event)">
             <template #menu>
                 <MenuLabel>Order</MenuLabel>
                 <template v-for="order in ORDERS" :key="order.key">
@@ -34,11 +33,10 @@ const STATES = [
             </template>
             <slot />
         </SearchBar>
-    </div>
 </template>
 
 <style scoped>
 .list-tools {
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 </style>

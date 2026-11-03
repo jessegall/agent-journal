@@ -23,7 +23,9 @@ class RunQueueHalt:
 
     @property
     def reason(self) -> str:
-        return self.home.run_queue_halt_file.read_text().strip() if self.command_halted else ""
+        if self.command_halted:
+            return self.home.run_queue_halt_file.read_text().strip()
+        return "Server restart" if self.is_restarting else ""
 
     def halt(self, reason: str) -> None:
         self.home.run_queue_halt_file.write_text(reason)

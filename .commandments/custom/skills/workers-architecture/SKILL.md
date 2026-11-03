@@ -14,6 +14,9 @@ happened to be on; these rules keep that fault from coming back.
 
 ## When it fires
 
+- **`worker-launch-outside-worker-command`** - worker code constructs `HelperLaunch` or `LaunchCommand` outside `WorkerCommand`.
+  Build every dispatch, send, resume and retry through `WorkerCommand`, using the model saved on the worker.
+  Refuse a missing model before building the command; never choose a new model during a resume.
 - **`git-outside-worktree-git`** - a subprocess call runs `git` outside `WorktreeGit`
   (`src/suites/coding/modules/workers/support/worktree_git.py`). Add the step to `WorktreeGit`, with its time
   limit, and call that method from the handler.

@@ -29,6 +29,36 @@ def test_a_script_that_changes_a_file_leaves_a_file_edit_with_its_line_counts(ne
     story.expect_success("file-edit show 1", "path: cart.py", "added: 2", "removed: 1", f"agent_id: {story.agent.id}")
 
 
+def expect_rules_pass_and_edit_absent(story, repository, path: str) -> None:
+    answers = [story.hook("s-1", script_sample(repository, path).with_fields(event="pre_tool_use")), story.hook("s-1", script_sample(repository, path))]
+    story.expect_rows(not [line for answer in answers for line in answer.lines if "failed and was passed by" in line])
+    story.expect_absent("file-edit list", path)
+
+
+def test_a_command_that_names_a_folder_as_what_it_writes_leaves_no_edit_and_raises_no_rule(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    (repository.folder / "moved").mkdir()
+    expect_rules_pass_and_edit_absent(story, repository, "moved")
+
+
+def test_a_command_that_names_a_path_under_a_file_leaves_no_edit_and_raises_no_rule(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    repository.committed("cart.py", "TOTAL = 1\n", "the cart")
+    expect_rules_pass_and_edit_absent(story, repository, "cart.py/deeper.py")
+
+
+def test_a_script_that_deletes_a_file_counts_its_lines_as_removed(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    repository.committed("cart.py", "TOTAL = 1\nTAX = 2\n", "the cart")
+    story.hook("s-1", script_sample(repository, "cart.py").with_fields(event="pre_tool_use"))
+    (repository.folder / "cart.py").unlink()
+    story.hook("s-1", script_sample(repository, "cart.py"))
+    story.expect_success("file-edit show 1", "path: cart.py", "added: 0", "removed: 2")
+
+
 def edit_rows(story) -> list[dict[str, object]]:
     return json.loads(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["rows"])
 

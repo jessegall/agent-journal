@@ -1,0 +1,65 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Element",
+        "where": [
+            {
+                "file": "**/web/src/**"
+            },
+            {
+                "nameIn": [
+                    "input",
+                    "TextInput"
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "name": "type"
+                                },
+                                {
+                                    "textMatches": "^search$"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "name": "icon"
+                                },
+                                {
+                                    "textMatches": "^search$"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "name": "placeholder"
+                                },
+                                {
+                                    "textMatches": "(?i)^(search|find|filter)\\b"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "name": "window-search-bar",
+        "description": "A window builds its own search field, so it skips the declared search bar and its shared layout.",
+        "rule": "Use SearchBar or ListTools for window searches and declare the search on WindowDeclaration. The shared bar owns sticky positioning and its bottom border.",
+        "skill": "plain-viewer-text"
+    }
+}

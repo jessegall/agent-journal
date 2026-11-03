@@ -7,7 +7,9 @@ from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
+from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.hook_samples import HookSamples
+from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -135,3 +137,17 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
     assert story.run(f"agent-line list --agent {worker.id}").output_text.count("you ended with tasks left") == 2
+
+
+def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(new_story):
+    story, worker, _, _ = worker_with_background_run(new_story)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n")
+    story.expect_success(f"agent stop {worker.id}", f"stopped agent {worker.id}", actor=story.agent)
+    assert launcher.requests[-1] == {"agent_id": worker.id, "stop": True}
+    story.expect_text(f"agent show {worker.id}", "ended_at:", actor=story.agent)
+
+
+def test_a_worker_no_launcher_runs_is_refused_a_stop_and_keeps_its_tasks(new_story):
+    story, worker, _, _ = worker_with_background_run(new_story)
+    story.expect_refusal(f"agent stop {worker.id}", "does not know the process", actor=story.agent)
+    story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)
