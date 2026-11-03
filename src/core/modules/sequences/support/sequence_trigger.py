@@ -56,7 +56,7 @@ class SequenceTrigger:
         if event.event is not HookEventName.POST_TOOL_USE or tool is None:
             return False
         if category == COMMAND_TRIGGER:
-            return tool.shell is not None and re.search(self.pattern, tool.shell.line) is not None
+            return tool.shell is not None and tool.shell.part_matches(self.pattern)
         if category == FILE_TRIGGER:
             return any(fnmatch(path, self.pattern) for path in tool.files)
         if category == FILE_TEXT_TRIGGER:

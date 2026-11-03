@@ -124,6 +124,19 @@ class OutputFolder:
             passed += size
         return collected
 
+    def reader_bytes_after(self, process_id: int, position: int, offset: int) -> bytes:
+        if not position:
+            return self.bytes_after(process_id, offset)
+        path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
+        if not path.exists():
+            return b""
+        with path.open("rb") as handle:
+            handle.seek(offset)
+            return handle.read()
+
+    def reader_text(self, process_id: int, position: int) -> str:
+        return ColourCodes.removed(self.output(process_id, position)) if position else self.all_output(process_id)
+
     def last_text(self, process_id: int) -> str:
         return "\n".join(self.last_lines(process_id, COUNT_LINES))
 

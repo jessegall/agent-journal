@@ -148,14 +148,27 @@ def test_a_program_that_has_a_reader_is_not_asked_for_one(new_story):
     assert not any("no reader reads pytest" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_reader_is_not_judged_on_a_chain_of_commands(new_story):
+def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
     process = moved_run(story, "./deploy.sh staging && echo one && echo two")
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    assert not any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+    assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add tests --commands "pytest*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
+    parts = (PartSpec("grep -n word notes", "grep", False, CommandCategory.SEARCH), PartSpec("pytest -q -n 4", "pytest", False, CommandCategory.TEST_RUN))
+    bus = story.container.get(Bus)
+    process = bus.run(StartProcess(story.agent.id, None, "grep -n word notes; pytest -q -n 4", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts), story.agent, environment_id=1)
+    folder = story.container.get(OutputFolder)
+    folder.write_output(process.id, 1, "FAILED in a note [ 90%]\n")
+    folder.write_output(process.id, 2, "..... [ 40%]\n")
+    bus.run(ReadNewOutput(process.id, False), story.agent, environment_id=1)
+    story.expect_text(f"process show {process.id}", "progress: 40", actor=story.agent)
 
 
 def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_background(new_story):
