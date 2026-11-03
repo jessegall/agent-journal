@@ -15,7 +15,8 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 class PluginServicesSubcommand(ReadSubcommand[RowList]):
     """`journal plugin services`: each service of the plugins switched on and whether it runs, by the pid the
-    journal kept for it."""
+    journal kept for it. A service with a condition the journal never started it under, as a language this project
+    does not have, is left out."""
 
     cli_name = "plugin"
     name = "services"
@@ -27,7 +28,10 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_ones() for service in PluginManifest.read(self.folders.code(plugin.name)).services])
+        return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_ones() for service in PluginManifest.read(self.folders.code(plugin.name)).services if self.is_listed(plugin.name, service)])
+
+    def is_listed(self, plugin_name: str, service: ManifestService) -> bool:
+        return not service.condition or self.sockets.pid(plugin_name, service.name).is_file()
 
     def row(self, plugin_name: str, service: ManifestService) -> PluginServicesSubcommandRowRecord:
         pid_file = self.sockets.pid(plugin_name, service.name)

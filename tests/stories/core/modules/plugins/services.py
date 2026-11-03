@@ -158,6 +158,15 @@ def conditioned_story(new_story, condition: str):
     return story
 
 
+def test_a_service_whose_condition_kept_it_from_starting_is_not_listed(new_story):
+    story = conditioned_story(new_story, "false")
+    try:
+        story.services.run(story.processes)
+        story.expect_absent("plugin services", "served answers")
+    finally:
+        story.processes.close()
+
+
 def test_a_condition_past_its_limit_counts_as_failed_and_is_the_plugins_fault(new_story):
     story = conditioned_story(new_story, "sleep 5")
     try:
