@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {Btn, RowList, TextDisplay, WindowRoom, useRows} from "@journal/window-kit";
 
 const releases = useRows("release list", ["release.*"]);
@@ -11,8 +11,14 @@ const notes = ref([]);
 const notesPage = ref(1);
 const lastPage = ref(true);
 const notesFailure = ref("");
+const checkLine = computed(() => {
+    if (standing.value) return standing.value.line;
+    if (checkFailure.value) return "Release unavailable";
+    return "Checking for a newer release";
+});
 
 async function check() {
+    checkFailure.value = "";
     const result = await releases.context.read("update check");
     standing.value = result.ok ? result.value : null;
     checkFailure.value = result.ok ? "" : result.error;
@@ -57,7 +63,7 @@ readNotes(1);
             <p class="failure">{{ checkFailure || releases.actionFailure.value }}</p>
         </template>
         <div class="standing">
-            <span class="line">{{ standing ? standing.line : "Checking for a newer release" }}</span>
+            <span class="line">{{ checkLine }}</span>
             <button type="button" @click="check">Check again</button>
             <template v-if="standing && !standing.is_current">
                 <Btn small kind="primary" data-update-install @click="install">{{ standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
@@ -67,14 +73,16 @@ readNotes(1);
             </template>
         </div>
         <h3 class="heading">Installed releases</h3>
-        <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet" hint="A release you install from this journal shows here with when.">
-            <template #default="{row}">
-                <div class="release" :data-row="row.id">
-                    <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>
-                    <span class="detail">{{ new Date(row.created_at).toLocaleString() }}</span>
-                </div>
-            </template>
-        </RowList>
+        <div class="releases">
+            <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No release installed from here yet" hint="A release you install from this journal shows here with when.">
+                <template #default="{row}">
+                    <div class="release" :data-row="row.id">
+                        <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>
+                        <span class="detail">{{ new Date(row.created_at).toLocaleString() }}</span>
+                    </div>
+                </template>
+            </RowList>
+        </div>
         <h3 class="heading">What changed</h3>
         <template v-if="notesFailure">
             <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
@@ -95,6 +103,11 @@ readNotes(1);
 </template>
 
 <style scoped>
+.releases {
+    position: relative;
+    min-height: 100px;
+}
+
 .failure {
     margin: 0 0 8px;
     color: var(--bad, var(--text-2));
