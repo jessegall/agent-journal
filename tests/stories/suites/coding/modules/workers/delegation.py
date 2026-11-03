@@ -1,4 +1,5 @@
 import json
+import pytest
 
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -41,14 +42,19 @@ def judge_sample(*arguments: str):
     return HookSamples.shell(f"journal sins {' '.join(arguments)}", ShellPart("journal", CommandCategory.JOURNAL, ["sins", *arguments], subcommand="sins"))
 
 
-def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(new_story):
-    story, _, worker = delegated_story(new_story)
+@pytest.fixture
+def judge_worker(new_story):
+    return delegated_story(new_story)
+
+
+def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker):
+    story, _, worker = judge_worker
     line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
     assert "a worker judges only its own changes" not in story.hook(worker_session(story, worker), line).refusal
 
 
-def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(new_story):
-    story, _, worker = delegated_story(new_story)
+def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_worker):
+    story, _, worker = judge_worker
     session = worker_session(story, worker)
     story.expect_hook_refusal(session, judge_sample("src"), "a worker judges only its own changes")
     story.expect_hook_refusal(session, judge_sample(), "a worker judges only its own changes")
