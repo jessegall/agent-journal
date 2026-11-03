@@ -11,46 +11,46 @@ from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.managed_state import ManagedState
 
 
-def found(command: str = "check") -> ManagedHook:
+def sample_hook(command: str = "check") -> ManagedHook:
     return ManagedHook.found("sample", "BeforeTool", "Shell", {"command": command, "timeout": 30, "statusMessage": "Checking"}, "settings.json", True)
 
 
 def test_the_same_hook_has_the_same_id_and_keeps_extra_fields():
-    hook = found()
-    assert hook.id == found().id
-    assert hook.id != found("other").id
+    hook = sample_hook()
+    assert hook.id == sample_hook().id
+    assert hook.id != sample_hook("additional_hook").id
     assert hook.fields == {"statusMessage": "Checking"}
 
 
 def test_added_keeps_a_known_hooks_state_and_timeout_and_enables_new_hooks(tmp_path: Path):
     home = JournalHome(tmp_path)
     store = ManagedHooks(home)
-    hook = found()
+    hook = sample_hook()
     assert store.all() == []
     store.added([hook])
-    store.changed(hook.id, ManagedState.OFF, 17)
-    other = replace(found("other"), state=ManagedState.OFF)
-    store.added([hook, other])
-    assert ManagedHooks(home).all() == [replace(hook, state=ManagedState.OFF, timeout=17), replace(other, state=ManagedState.ON)]
-    assert store.emptied() == [replace(hook, state=ManagedState.OFF, timeout=17), replace(other, state=ManagedState.ON)]
+    store.changed(hook.id, ManagedState.DISABLED, 17)
+    additional_hook = replace(sample_hook("additional_hook"), state=ManagedState.DISABLED)
+    store.added([hook, additional_hook])
+    assert ManagedHooks(home).all() == [replace(hook, state=ManagedState.DISABLED, timeout=17), replace(additional_hook, state=ManagedState.ENABLED)]
+    assert store.emptied() == [replace(hook, state=ManagedState.DISABLED, timeout=17), replace(additional_hook, state=ManagedState.ENABLED)]
     assert store.all() == []
 
 
 def test_a_failed_write_leaves_the_old_file_whole(tmp_path: Path):
     home = JournalHome(tmp_path)
     store = ManagedHooks(home)
-    store.added([found()])
-    before = store.path.read_bytes()
+    store.added([sample_hook()])
+    previous_bytes = store.path.read_bytes()
     with patch("core.base.provider.managed_hooks.os.replace", side_effect=OSError("write failed")):
         with pytest.raises(OSError, match="write failed"):
-            store.added([found("other")])
-    assert store.path.read_bytes() == before
-    assert store.all() == [found()]
+            store.added([sample_hook("additional_hook")])
+    assert store.path.read_bytes() == previous_bytes
+    assert store.all() == [sample_hook()]
 
 
 def test_two_writers_lose_no_entries(tmp_path: Path):
     home = JournalHome(tmp_path)
-    hooks = [found(str(number)) for number in range(16)]
+    hooks = [sample_hook(str(number)) for number in range(16)]
     with ThreadPoolExecutor(max_workers=2) as writers:
         list(writers.map(lambda hook: ManagedHooks(home).added([hook]), hooks))
     assert {hook.id for hook in ManagedHooks(home).all()} == {hook.id for hook in hooks}

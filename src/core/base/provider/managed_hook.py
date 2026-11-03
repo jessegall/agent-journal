@@ -20,7 +20,7 @@ class ManagedHook:
     source: str
     tracked: bool
     fields: Mapping[str, object] = field(default_factory=dict)
-    state: ManagedState = ManagedState.ON
+    state: ManagedState = ManagedState.ENABLED
 
     @classmethod
     def found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool) -> "ManagedHook":

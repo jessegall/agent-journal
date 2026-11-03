@@ -22,15 +22,15 @@ class ManagedHooks:
         with self._locked():
             return self._read()
 
-    def added(self, found: Sequence[ManagedHook]) -> list[ManagedHook]:
+    def added(self, detected_hooks: Sequence[ManagedHook]) -> list[ManagedHook]:
         with self._locked():
             hooks = {hook.id: hook for hook in self._read()}
-            for hook in found:
-                known = hooks.get(hook.id)
-                hooks[hook.id] = replace(hook, state=known.state, timeout=known.timeout) if known else replace(hook, state=ManagedState.ON)
-            result = list(hooks.values())
-            self._write(result)
-            return result
+            for hook in detected_hooks:
+                saved_hook = hooks.get(hook.id)
+                hooks[hook.id] = replace(hook, state=saved_hook.state, timeout=saved_hook.timeout) if saved_hook else replace(hook, state=ManagedState.ENABLED)
+            merged_hooks = list(hooks.values())
+            self._write(merged_hooks)
+            return merged_hooks
 
     def changed(self, hook_id: str, state: ManagedState, timeout: int) -> ManagedHook:
         with self._locked():
