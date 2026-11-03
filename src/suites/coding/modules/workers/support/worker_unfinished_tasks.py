@@ -21,6 +21,11 @@ class WorkerUnfinishedTasks:
             return ()
         return (*started, *self.tasks.filter(delegated_to=worker_id, state=TaskState.OPEN).all_rows())
 
+    def last_progress_text(self, worker_id: int) -> str:
+        tasks = self.tasks.filter(delegated_to=worker_id).all_rows()
+        times = [time.text for task in tasks for time in (task.started_at, task.closed_at) if time]
+        return max(times, default="")
+
     def has_run_going(self, worker_id: int) -> bool:
         return self.processes.agent(worker_id).running().exists()
 

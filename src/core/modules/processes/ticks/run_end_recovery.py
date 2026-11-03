@@ -3,30 +3,42 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.container import Container
+from core.base.refusal import Refusal
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.process_settings import ProcessSettings
 
-RUNNER_MISSING_SECONDS = 10
+LEADER_MISSING_SECONDS = 10
 
 
 class RunEndRecovery:
-    """Ends each run whose runner is gone and whose end the server never heard of, whichever agent ran it, so
-    a run that ended during a restart frees its queue spot while its agent is stopped and sends no ticks."""
+    """Ends each run whose shell is gone and whose end the server never heard of, whichever agent ran it, so a run
+    that ended during a restart, or one no runner ever started, frees its queue spot while its agent sends no
+    ticks. A run the runner reported first is passed over; one run's refusal leaves the others to go on."""
 
-    def __call__(self, container: Container) -> None:
+    def __call__(self, container: Container) -> bool:
+        settled = [self.settled(container, process) for process in tuple(container.get(ProcessQuery).running().oldest().all_rows())]
+        return any(settled)
+
+    def settled(self, container: Container, process: Process) -> bool:
         bus = container.get(Bus)
-        folder = container.get(OutputFolder)
-        for process in tuple(container.get(ProcessQuery).running().oldest().all_rows()):
-            if folder.pid(process.id) is not None and not folder.has_runner_process(process.id):
-                for command in self.commands(container, folder, process):
-                    bus.run(command, Actor.core(), environment_id=process.environment_id)
+        try:
+            commands = self.commands(container, process)
+            for command in commands:
+                bus.run(command, Actor.core(), environment_id=process.environment_id)
+        except Refusal:
+            return False
+        return bool(commands)
 
-    def commands(self, container: Container, folder: OutputFolder, process: Process) -> list[Command[object]]:
-        ended = container.get(RunFolderEnds).commands(process)
+    def commands(self, container: Container, process: Process) -> list[Command[object]]:
+        folder = container.get(OutputFolder)
         last_sign = folder.heartbeat(process.id) or process.created_at
-        if ended or last_sign is None or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= RUNNER_MISSING_SECONDS:
-            return ended
-        return [OrphanProcess(process.id)]
+        has_pid = folder.pid(process.id) is not None
+        limit_seconds = LEADER_MISSING_SECONDS if has_pid else container.get(ProcessSettings).integer(ProcessSetting.ORPHAN_SECONDS, process.environment_id)
+        if last_sign is None or folder.has_leader_process(process.id) or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
+            return []
+        return container.get(RunFolderEnds).commands(process) or [OrphanProcess(process.id)]

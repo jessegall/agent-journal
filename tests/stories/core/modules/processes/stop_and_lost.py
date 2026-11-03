@@ -7,6 +7,8 @@ from datetime import timedelta
 
 from tests.stories.core.modules.processes.background import NOTHING
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, start_process
+from core.base.command.bus import Bus
+from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -98,7 +100,8 @@ def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_st
     folder.write_output(process.id, 1, "done\n")
     folder.write_status(process.id, 1, 0)
     folder.write_end(process.id, 0)
-    RunEndRecovery()(story.container)
+    story.advance(timedelta(seconds=11))
+    assert RunEndRecovery()(story.container) is True
     story.expect_success("process show 1", "state: finished", "exit_code: 0", actor=story.agent)
     story.expect_text("process-part list --process 1", "finished")
 
@@ -212,3 +215,37 @@ def orphaned_process_child(background_build):
         yield child_pid
     finally:
         subprocess.run(['kill', '-9', str(child_pid)], capture_output=True, check=False)
+
+
+def test_a_run_no_runner_ever_started_is_lost_past_the_limit_with_no_tick_of_its_agent(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "make build")
+    assert RunEndRecovery()(story.container) is False
+    story.advance(timedelta(seconds=120))
+    assert RunEndRecovery()(story.container) is True
+    story.expect_success("process show 1", "state: orphaned", actor=story.agent)
+
+
+def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    reported = start_process(story, "make build")
+    second = start_process(story, "make docs")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    folder = story.container.get(OutputFolder)
+    for process in (reported, second):
+        folder.write_pid(process.id, ended_program.pid)
+        folder.write_end(process.id, 0)
+    story.advance(timedelta(seconds=11))
+    recovery = RunEndRecovery()
+    original = recovery.commands
+
+    def reported_between(container, process):
+        commands = original(container, process)
+        if process.id == reported.id:
+            story.container.get(Bus).run(EndProcess(process.id, 0, 0, 0), story.agent, environment_id=1)
+        return commands
+
+    recovery.commands = reported_between
+    assert recovery(story.container) is True
+    story.expect_success(f"process show {second.id}", "state: finished", actor=story.agent)
