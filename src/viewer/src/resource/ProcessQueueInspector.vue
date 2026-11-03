@@ -12,13 +12,23 @@ const props = defineProps({read: {type: Function, required: true}, backed: Boole
 const emit = defineEmits(["close", "back"]);
 const queue = ref(null);
 const failure = ref("");
+const open = ref([]);
 let reading = 0;
-const sections = computed(() => [
-    {kind: "running", heading: "Running", rows: queue.value.running, empty: "Nothing is running."},
-    {kind: "waiting", heading: "Waiting (oldest first)", rows: queue.value.waiting, empty: "No run waits. A run that starts now gets a spot at once."},
-    {kind: "recent", heading: "Finished lately", rows: queue.value.recent, empty: "Nothing ran yet."},
-]);
-
+const items = computed(() => {
+    if (!queue.value) return [];
+    const sections = [
+        {kind: "running", heading: "Running", icon: "play", rows: queue.value.running, empty: "Nothing is running."},
+        {kind: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "Nothing waits. A command that starts now gets a place at once."},
+        {kind: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "Nothing has run yet."},
+    ];
+    return sections.flatMap((section) => [
+        {key: `band:${section.kind}`, section},
+        ...(section.rows.length ? section.rows.map((run, index) => ({key: `run:${run.id}`, run, position: index + 1})) : [{key: `none:${section.kind}`, section, empty: true}]),
+    ]);
+});
+function toggle(id) {
+    open.value = open.value.includes(id) ? open.value.filter((value) => value !== id) : [...open.value, id];
+}
 async function load() {
     const turn = ++reading;
     const answer = await props.read(["queue", "list"]);
@@ -31,106 +41,47 @@ onMounted(load);
 </script>
 
 <template>
-    <Transition name="queue" appear>
     <article class="process-queue" data-test-queue>
         <header class="top">
             <template v-if="backed"><BackButton @back="emit('back')" /></template>
-            <div class="heading"><span class="kind"><Icon name="terminal" :size="14" />Environment {{ queue?.environment_name }}</span><h1>Process queue</h1><p>Commands from workers wait here for a free spot. Reads and edits never wait.</p></div>
+            <Icon name="terminal" :size="13" /><h1>Process queue</h1>
+            <span class="environment">Environment {{ queue?.environment_name }}</span>
             <CloseButton title="Close the process queue" data-resource-close @click="emit('close')" />
         </header>
+        <p class="lead">Commands from workers wait here for a free place. Reading and editing never wait.</p>
         <div class="scroll">
-            <template v-if="failure">
-                <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
-            </template>
+            <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-if="queue">
                 <ProcessQueueControls :queue="queue" :read="read" @saved="load" />
-                <template v-for="section in sections" :key="section.kind">
-                    <section class="section" :aria-label="section.heading">
-                        <h2 :data-queue-heading="section.kind">
-                            {{ section.heading }}
-                            <span>{{ section.rows.length }}</span>
-                        </h2>
-                        <TransitionGroup name="queue-run" tag="div" class="runs">
-                            <ProcessQueueRun v-for="(run, index) in section.rows" :key="run.id" :run="run" :environment="queue.environment_name" :position="index + 1" :read="read" />
-                        </TransitionGroup>
-                        <template v-if="!section.rows.length">
-                            <p class="note" :data-queue-empty="section.kind">{{ section.empty }}</p>
-                        </template>
-                    </section>
-                </template>
+                <TransitionGroup name="queue" tag="div" class="queue-list">
+                    <template v-for="item in items" :key="item.key">
+                        <ProcessQueueRun v-if="item.run" :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" />
+                        <p v-else-if="item.empty" class="empty" :data-queue-empty="item.section.kind">{{ item.section.empty }}</p>
+                        <h2 v-else class="band" :data-queue-heading="item.section.kind"><Icon :name="item.section.icon" :size="12" />{{ item.section.heading }}<span>{{ item.section.rows.length }}</span></h2>
+                    </template>
+                </TransitionGroup>
             </template>
             <template v-else-if="!failure"><Skeleton /></template>
         </div>
     </article>
-    </Transition>
 </template>
 
 <style scoped>
-.process-queue {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-}
-.queue-enter-active,
-.queue-leave-active { transition: opacity 180ms ease; }
-.queue-enter-from,
-.queue-leave-to { opacity: 0; }
-.runs { position: relative; }
-@media (prefers-reduced-motion: reduce) {
-    .queue-enter-active,
-    .queue-leave-active { transition: none; }
-}
-.top {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px 20px 18px 28px;
-    border-bottom: 1px solid var(--border);
-}
-.kind {
-    display: inline-flex;
-    flex: 1;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 500;
-}
-.heading { flex: 1; min-width: 0; }
-h1 { margin: 8px 0; font-size: 19px; }
-.heading p { margin: 0; font-size: 12px; color: var(--text-3); line-height: 1.5; }
-.scroll {
-    flex: 1;
-    overflow: auto;
-    padding: 24px 28px 32px;
-    scrollbar-width: thin;
-}
-.section {
-    margin-top: 28px;
-}
-h2 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-2);
-}
-h2 span {
-    color: var(--text-4);
-    font-size: 11px;
-    font-weight: 400;
-}
-.note {
-    margin: 0;
-    padding: 12px 0;
-    color: var(--text-4);
-    font-size: 12px;
-}
-.failure {
-    color: var(--danger);
-    font-size: 12px;
-}
+.process-queue { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.top { display: flex; align-items: center; gap: 8px; height: 34px; flex: none; padding: 0 6px 0 14px; background: var(--side); border-bottom: 1px solid var(--border); color: var(--text-3); }
+h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-spacing: .03em; }
+.environment { flex: 1; font-size: 11px; }
+.lead { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; line-height: 1.5; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.queue-list { position: relative; border-top: 1px solid var(--border); }
+.band { display: flex; align-items: center; gap: 7px; height: 28px; margin: 0; padding: 0 14px; background: var(--side); border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 11.5px; font-weight: 500; letter-spacing: .03em; }
+.band svg { color: var(--text-3); }
+.band span { margin-left: auto; color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.empty { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
+.failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
+.queue-move { transition: transform 320ms cubic-bezier(.2,.9,.25,1); }
+.queue-enter-active { transition: opacity 200ms ease-out; }
+.queue-leave-active { position: absolute; left: 0; right: 0; transition: opacity 160ms ease-out; }
+.queue-enter-from, .queue-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .queue-move, .queue-enter-active, .queue-leave-active { transition: none; } }
 </style>
