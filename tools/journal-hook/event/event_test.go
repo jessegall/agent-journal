@@ -2,6 +2,7 @@ package event_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -34,14 +35,14 @@ func TestEachTypeWritesItsEmptyListsAsListsAndFitsTheSchema(t *testing.T) {
 
 func TestForeignHookResultsFitTheSchemaAndRoundTrip(t *testing.T) {
 	prepared := emptyEvent()
-	prepared.Foreign = []event.ForeignRun{{ID: "check", ExitCode: 2, Stdout: "blocked", Stderr: "details", Milliseconds: 17, TimedOut: true}}
+	prepared.Foreign = []event.ForeignRun{{ID: "check", ExitCode: 2, Stdout: "blocked", Stderr: "details", Milliseconds: 17, TimedOut: true, Answer: event.ForeignAnswer{Lines: []string{}, UpdatedInput: map[string]any{}}}}
 	schemacheck.Fits(t, prepared)
 	encoded, err := json.Marshal(prepared)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var decoded event.HookEvent
-	if err := json.Unmarshal(encoded, &decoded); err != nil || len(decoded.Foreign) != 1 || decoded.Foreign[0] != prepared.Foreign[0] {
+	if err := json.Unmarshal(encoded, &decoded); err != nil || !reflect.DeepEqual(decoded.Foreign, prepared.Foreign) {
 		t.Fatalf("foreign results did not round trip: %+v, %v", decoded.Foreign, err)
 	}
 }

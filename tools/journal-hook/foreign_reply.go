@@ -73,13 +73,14 @@ func foreignRunReply(program programs.Program, event string, run ForeignRun) Rep
 	if stdout == "" {
 		return Reply{}
 	}
-	if !isAnswerObject(stdout) {
+	answer, valid := nativeReply(program.Refusals[event], run.ID, stdout)
+	if !valid {
 		if program.TakesPlainOutput(event) {
 			return Reply{Lines: strings.Split(stdout, "\n")}
 		}
 		return Reply{Terminal: run.ID + ": hook answer must be a JSON object"}
 	}
-	return nativeReply(program.Refusals[event], run.ID, stdout)
+	return answer
 }
 
 func withDefault(text, fallback string) string {

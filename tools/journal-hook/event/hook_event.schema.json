@@ -456,7 +456,8 @@
         "stdout",
         "stderr",
         "milliseconds",
-        "timed_out"
+        "timed_out",
+        "answer"
       ],
       "properties": {
         "id": {
@@ -477,6 +478,17 @@
         },
         "timed_out": {
           "type": "boolean"
+        },
+        "answer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["refusal", "lines", "updated_input", "terminal"],
+          "properties": {
+            "refusal": {"type": "string"},
+            "lines": {"type": "array", "items": {"type": "string"}},
+            "updated_input": {"type": "object"},
+            "terminal": {"type": "string"}
+          }
         }
       }
     }
