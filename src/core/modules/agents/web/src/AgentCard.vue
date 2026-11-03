@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {age, Btn, Icon, InnerTabs, peekRef, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, Btn, FoldGroup, Icon, InnerTabs, peekRef, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -32,6 +32,10 @@ const completedCount = computed(() => tasks.value.filter((task) => task.state ==
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);
+const FOLDED_STATES = new Set(["completed"]);
+const folded = ref({});
+const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
+const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 </script>
 
 <template>
@@ -59,14 +63,15 @@ const opened = ref(false);
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <template v-if="tab?.key === 'tasks'">
                         <template v-for="section in sections" :key="section.state">
-                            <p class="agent-label" :data-agent-section="section.state">{{ section.label }} <span class="agent-section-count">{{ section.tasks.length }}</span></p>
-                            <template v-for="task in section.tasks" :key="task.id">
-                                <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                                    <TaskStatusIcon :status="task.state" />
-                                    <span class="agent-task-number">{{ task.id }}</span>
-                                    <span class="agent-task-title">{{ task.title }}</span>
-                                </button>
-                            </template>
+                            <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
+                                <template v-for="task in section.tasks" :key="task.id">
+                                    <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                                        <TaskStatusIcon :status="task.state" />
+                                        <span class="agent-task-number">{{ task.id }}</span>
+                                        <span class="agent-task-title">{{ task.title }}</span>
+                                    </button>
+                                </template>
+                            </FoldGroup>
                         </template>
                         <template v-if="facts?.instruction">
                             <p class="agent-label">Instruction</p>
@@ -196,10 +201,6 @@ const opened = ref(false);
     flex: none;
     color: var(--text-2);
     font-size: 12px;
-}
-
-.agent-section-count {
-    margin-left: 2px;
 }
 
 .agent-task {

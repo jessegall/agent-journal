@@ -16,6 +16,13 @@ def test_the_agents_window_reads_its_lines_with_no_allowance(new_story):
     window.expect_window_allowed("agents.agents", "agent show 1")
 
 
+def test_the_agent_windows_read_the_transcript_and_file_edits_their_card_tabs_show(new_story):
+    window = window_story(new_story)
+    for name in ["agents.agents", "agents.subagents"]:
+        window.expect_window_allowed(name, "agent transcript 1")
+        window.expect_window_allowed(name, "file-edit list --agent 1")
+
+
 def test_the_subagents_window_is_a_page_window_of_one_agent(new_story):
     window_story(new_story).expect_declared_window("agents.subagents", "component", "agent")
 

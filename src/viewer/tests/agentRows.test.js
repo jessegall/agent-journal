@@ -125,14 +125,29 @@ test("the card counts what is completed and lists its tasks when opened, under t
     expect(card.querySelector("[data-agent-delegated]")).toBeNull();
     card.click();
     await settle();
-    const labels = [...card.querySelectorAll("[data-agent-section]")].map((label) => label.textContent.trim());
+    const labels = [...card.querySelectorAll("[data-agent-section]")].map((section) => `${section.querySelector(".fold-label").textContent.trim()} ${section.querySelector(".fold-count").textContent.trim()}`);
     expect(labels).toEqual(["Started 1", "Open 1", "Completed 1"]);
-    const rows = [...card.querySelectorAll("[data-agent-delegated]")];
-    expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
+    let rows = [...card.querySelectorAll("[data-agent-delegated]")];
+    expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13"]);
     expect(rows[0].querySelector(".ring").classList.contains("started")).toBe(true);
     rows[0].click();
     await settle();
     expect(card.getAttribute("aria-expanded")).toBe("true");
+});
+
+test("the Completed section of the Tasks tab is folded until a click opens it", async () => {
+    const element = await drawn([{...FACTS[0], tasks: TASKS}]);
+    const card = cardOf(element, 2);
+    card.click();
+    await settle();
+    const completed = card.querySelector("[data-agent-section=completed]");
+    expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
+    completed.querySelector(".fold-head").click();
+    await settle();
+    expect([...card.querySelectorAll("[data-agent-delegated]")].map((row) => row.dataset.agentDelegated)).toEqual(["12", "13", "11"]);
+    completed.querySelector(".fold-head").click();
+    await settle();
+    expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
 });
 
 test("a worker with a task in testing and none started says it waits for its tests", async () => {
