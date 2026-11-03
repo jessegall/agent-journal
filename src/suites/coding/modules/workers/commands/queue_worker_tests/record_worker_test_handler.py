@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 LINE_SOURCE = "workers"
@@ -25,9 +25,7 @@ LINE_SOURCE = "workers"
 
 
 class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
-    """Checks a proof whose test passed, or sends it back short with the run's output to read. When a worker's
-    last test has ended, failures go back to the worker; all passed completes the tasks they prove and starts
-    its next task, or, once handed in, tells the main agent to merge."""
+    """Records test results and asks for remaining proof checks before recommending a merge."""
 
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
@@ -49,13 +47,19 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.complete_tested(proofs, context)
         if worktree.state is WorktreeState.CUT:
             self.start_next(worktree, context)
-        else:
-            self.main_agent_line.send(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
+            return
+        waiting = [row for row in proofs if row.state is ProofState.SHOWN]
+        if waiting:
+            for task_id in sorted({row.task_id for row in waiting}):
+                proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
+                self.main_agent_line.send(worktree.environment_id, PROOF_CHECK.nudge(worker=worktree.agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
+            return
+        self.main_agent_line.send(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):
             task = self.queries.query(Task).find(task_id)
-            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id and row.test_command):
+            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id):
                 self.repository.save(task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
@@ -66,7 +70,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return
-        self.advance.after_passed_tests(worktree, following, context)
+        self.advance.next_task(worktree, following, context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):

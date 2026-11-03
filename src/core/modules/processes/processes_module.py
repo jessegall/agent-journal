@@ -2,6 +2,7 @@ from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
+from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -39,6 +40,7 @@ from core.modules.processes.commands.watch_output.watch_output_handler import Wa
 from core.modules.processes.commands.watch_output.watch_output_subcommand import WatchOutputSubcommand
 from core.modules.processes.listeners.background_run_watch_listener import BackgroundRunWatchListener
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
+from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
 from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
 from core.modules.processes.commands.prune_outputs.prune_outputs_handler import PruneOutputsHandler
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
@@ -138,7 +140,8 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
-    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots")]
+    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots"),
+                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
@@ -153,7 +156,7 @@ class ProcessesModule(Module):
     subcommands = [ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
+    listeners = [RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]
     docks = PROCESS_DOCKS

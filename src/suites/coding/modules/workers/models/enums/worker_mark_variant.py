@@ -2,7 +2,8 @@ from enum import StrEnum
 
 
 class WorkerMarkVariant(StrEnum):
-    """What a worker's mark says: its tests are queued, all passed or some failed; or a move of the worker itself."""
+    """What a worker's mark says: its tests are queued, all passed or some failed; or a move or a stop of
+    the worker itself."""
 
     QUEUED = "queued"
     PASSED = "passed"
@@ -12,3 +13,5 @@ class WorkerMarkVariant(StrEnum):
     DELIVERED = "delivered"
     MERGED = "merged"
     RELEASED = "released"
+    ENDED_EARLY = "ended early"
+    HELP_REQUEST = "help request"

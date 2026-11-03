@@ -46,16 +46,16 @@ class Tool:
         return self.shell is not None and self.shell.is_journal_line
 
     @property
-    def is_read_only(self) -> bool:
+    def writes_nothing(self) -> bool:
         if self.category.reads_files:
             return True
-        return self.shell is not None and self.shell.is_read_only
+        return self.shell is not None and self.shell.writes_nothing
 
     @property
     def block_exempt(self) -> bool:
         if self.category.reads_files:
             return True
-        if self.shell is None or self.shell.has_redirect_to_file or not self.shell.parts:
+        if self.shell is None or self.shell.has_file_redirect or not self.shell.parts:
             return False
         return all(part.classification.category.is_readonly for part in self.shell.parts)
 

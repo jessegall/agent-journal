@@ -35,3 +35,26 @@ def test_a_worker_refused_its_stop_leaves_no_report(new_story):
     worker: Actor = dispatched_worker(story)
     story.expect_hook_refusal(worker_session(story, worker), stop_with_text(REPORT), "journal worker deliver, or say why with journal wait stuck")
     story.expect_text("message feed", "nothing found")
+
+
+def test_a_workers_message_reaches_the_agent_that_sent_it_as_a_line(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} reports in message:1: journal message read 1")
+    story.expect_text("message read 1", "The cart needs a tax rate", actor=story.agent)
+    story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}")
+
+
+def test_the_dispatch_refusal_names_the_command_that_tells_the_main_agent(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success('task make "Add the tax" --brief "Add the tax rate" --environment main', actor=story.agent)
+    story.expect_refusal("worker dispatch --model sonnet 2", "journal worker report", actor=worker)
+
+
+def test_a_main_agent_cannot_send_a_workers_report(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_refusal('worker report "The cart needs a tax rate"', "only a worker reports to its main agent", actor=story.agent)

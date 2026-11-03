@@ -13,6 +13,8 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.queue_run_workers import QueueRunWorkers
 
 HELPER_ROLES = (AgentRole.WORKER, AgentRole.SUBAGENT)
 
@@ -27,15 +29,31 @@ class InactiveHelperRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers) -> None:
         self.queries, self.calls, self.hook_history, self.settings = queries, calls, history, settings
+        self.processes, self.workers = processes, workers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)
         if self.hook_history.has_recent_answer(self.name, hook, span):
             return RuleAnswer.allowed()
         inactive = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, span)]
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=span.whole_minutes) for helper in inactive))
+        if not inactive:
+            return RuleAnswer.allowed()
+        notes = self.queue_notes(inactive, hook.environment_id)
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=span.whole_minutes, queue=notes[helper.id], action=f'journal worker send {helper.id} "<job>", or journal worker release {helper.id}' if helper.role is AgentRole.WORKER else "check on it") for helper in inactive))
+
+    def queue_notes(self, helpers: Sequence[Agent], environment_id: int) -> dict[int, str]:
+        notes = {helper.id: "" for helper in helpers}
+        queue = self.processes.environment(environment_id).running().filter(is_queue_run=True).oldest()
+        page = queue.page(1, max(1, queue.count()))
+        workers = self.workers.read(page)
+        for position, process in enumerate(page.rows):
+            worker_id = workers.get(process.id)
+            if not process.is_queued or worker_id is None or worker_id not in notes or notes[worker_id]:
+                continue
+            notes[worker_id] = f"; its run {process.id} waits for a spot, {position} runs ahead"
+        return notes
 
     def helpers(self, main_id: int) -> list[Agent]:
         return [helper for role in HELPER_ROLES for helper in self.queries.query(Agent).filter(parent_id=main_id, role=role).matching(IsNull("ended_at")).oldest().all_rows()]
@@ -44,3 +62,5 @@ class InactiveHelperRule(DriverRule):
         newest = self.calls.newest_agent_hook(helper.id)
         activity_at = newest.created_at if newest is not None else helper.created_at
         return activity_at is not None and activity_at.elapsed_seconds(hook.timestamp) >= span.count
+from collections.abc import Sequence
+

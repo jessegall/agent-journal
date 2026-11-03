@@ -10,17 +10,17 @@ WORKER_WAITS_SELECT = """
 SELECT worktree.agent_id, worktree.environment_id,
        CASE
            WHEN EXISTS (SELECT 1 FROM tasks WHERE tasks.holder_id = worktree.agent_id AND tasks.state = 'started')
-               THEN CASE WHEN agents.ended_at IS NOT NULL THEN 'next turn' ELSE '' END
+               THEN CASE WHEN agents.ended_at IS NOT NULL THEN 'a job' ELSE '' END
            WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running'))
-               THEN 'tests in the queue'
+               THEN 'tests'
            WHEN worktree.state = 'delivered' AND EXISTS (
                SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'shown')
-               THEN 'main agent''s proof check'
-           WHEN worktree.state = 'delivered' THEN 'main agent''s merge'
+               THEN 'proof check'
+           WHEN worktree.state = 'delivered' THEN 'merge'
            WHEN worktree.state = 'cut' AND NOT EXISTS (
                SELECT 1 FROM tasks WHERE tasks.delegated_to = worktree.agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
-               THEN 'a job from the main agent'
-           WHEN agents.ended_at IS NOT NULL THEN 'next turn'
+               THEN 'a job'
+           WHEN agents.ended_at IS NOT NULL THEN 'a job'
            ELSE ''
        END AS reason
 FROM worker_worktrees AS worktree

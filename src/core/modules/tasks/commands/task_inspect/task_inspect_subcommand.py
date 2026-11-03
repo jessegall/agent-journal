@@ -5,6 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.tasks.commands.support.task_opener import TaskOpener
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
 from core.modules.tasks.support.task_inspection import TaskInspection
@@ -26,12 +27,7 @@ class TaskInspectSubcommand(ReadSubcommand[TaskInspection]):
     def read(self, arguments: Namespace, caller: Caller) -> TaskInspection:
         task = self.queries.query(Task).find(arguments.task_id)
         row = self.queries.query(TaskInspectionRow).find(arguments.task_id)
-        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(self.opener(wait) for wait in json.loads(row.openers)))
-
-    @staticmethod
-    def opener(wait: dict[str, str]) -> str:
-        target_model, _, target_id = wait["target"].partition(":")
-        return f"{wait['command']} passes" if wait["command"] else f"{target_model.removesuffix('s')} {target_id} is settled"
+        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(TaskOpener.parsed(wait).text for wait in json.loads(row.openers)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskInspection):

@@ -29,9 +29,9 @@ class AliasShellAliases(ShellAliases):
         if alias is None:
             return None
         self.workers.check(alias, caller)
-        return ShellRun(self.line_from_any_folder(alias.shell_line(argv[1:])), {**request.variables, **alias.variable_values()}, request.folder)
+        return ShellRun(self.resolve_journal_path(alias.shell_line(argv[1:])), {**request.variables, **alias.variable_values()}, request.folder)
 
-    def line_from_any_folder(self, line: str) -> str:
+    def resolve_journal_path(self, line: str) -> str:
         return f"{shlex.quote(str(self.home.folder.resolve()))}/{line.removeprefix(JOURNAL_FOLDER_PREFIX)}" if line.startswith(JOURNAL_FOLDER_PREFIX) else line
 
     def options(self, name: str) -> AliasOptions | None:

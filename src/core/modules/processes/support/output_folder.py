@@ -103,8 +103,12 @@ class OutputFolder:
         return tuple(int(name) for name in names if self.is_running(int(name)))
 
     def is_running(self, process_id: int) -> bool:
+        is_started = (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_OUTPUT_FILE).exists()
+        return is_started and self.end(process_id) is None and self.has_runner_process(process_id)
+
+    def has_runner_process(self, process_id: int) -> bool:
         pid = self.pid(process_id)
-        if pid is None or self.end(process_id) is not None or not (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_OUTPUT_FILE).exists():
+        if pid is None:
             return False
         try:
             os.kill(pid, 0)

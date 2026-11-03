@@ -25,15 +25,16 @@ def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, mon
     story.expect_success('proof make 2 "cart.py:1, the review"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
+    story.expect_success('actor make user "Ada"')
     with server_story(story) as server:
-        expect_reason(story, worker, "tests in the queue")
-        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "tests in the queue"])
+        expect_reason(story, worker, "tests")
+        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "tests"])
         ended(story, launches[0], 0)
-        expect_reason(story, worker, "main agent's proof check")
-        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "main agent's proof check"])
+        expect_reason(story, worker, "proof check")
+        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "proof check"])
         story.expect_success("proof check 2", actor=story.agent)
-        expect_reason(story, worker, "main agent's merge")
-        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "main agent's merge"])
+        expect_reason(story, worker, "merge")
+        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "merge"])
 
 
 def test_a_worker_with_no_unfinished_tasks_waits_for_a_job(new_story):
@@ -41,6 +42,7 @@ def test_a_worker_with_no_unfinished_tasks_waits_for_a_job(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task cancel 1 --reason "the job was withdrawn"', actor=story.agent)
-    expect_reason(story, worker, "a job from the main agent")
+    story.expect_success('actor make user "Ada"')
+    expect_reason(story, worker, "a job")
     with server_story(story) as server:
-        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "a job from the main agent"])
+        expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "a job"])

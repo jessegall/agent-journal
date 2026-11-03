@@ -1,3 +1,5 @@
+import json
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
@@ -9,6 +11,18 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
+
+
+def last_reply(tmp_path, session, text):
+    transcript = tmp_path / "claude" / "projects" / "worker" / f"{session}.jsonl"
+    transcript.parent.mkdir(parents=True)
+    rows = [{"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}, {"type": "user", "message": {"content": "carry on"}}]
+    transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+
+
+def stop_mark(story, variant):
+    listed = story.run("chat-mark list --environment 1").output_text
+    return next(line.split()[0] for line in listed.splitlines() if variant in line)
 
 
 def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
@@ -43,6 +57,47 @@ def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
     assert "you ended with tasks left" not in story.run(f"agent-line list --agent {worker.id}").output_text
+
+
+def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_main_chat(new_story, tmp_path, monkeypatch):
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
+    story.expect_success('wait stuck "the build tool is missing"', actor=worker)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} is stuck on task:1, wait:", f"journal worker send {worker.id}")
+    story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} is stuck: the build tool is missing")
+    story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")
+    story.expect_absent(f"chat-mark show {stop_mark(story, 'help request')}", "agent_id:")
+
+
+def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hears_it_is_started_again(new_story, tmp_path, monkeypatch):
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    last_reply(tmp_path, worker_session(story, worker), "I ran out of ideas")
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} stopped with task:1 left and is started again")
+    story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} stopped with 1 tasks left")
+    story.expect_text(f"chat-mark show {stop_mark(story, 'ended early')}", "Tasks left: task 1", "Last words: I ran out of ideas")
+
+
+def test_a_worker_with_no_tasks_left_shows_no_stop_mark(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success("task cancel 1 --reason gone", actor=story.agent)
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.run_listeners()
+    story.expect_absent("chat-mark list --environment 1", "stopped with")
 
 
 def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_story):

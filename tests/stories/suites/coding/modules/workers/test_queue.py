@@ -5,6 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
@@ -70,7 +71,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
-def test_a_proof_with_no_test_beside_a_passing_test_still_tells_the_main_agent(new_story, monkeypatch):
+def mixed_proof_story(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
@@ -81,9 +82,25 @@ def test_a_proof_with_no_test_beside_a_passing_test_still_tells_the_main_agent(n
     story.expect_success('proof make 2 "cart.py:1, looked at it"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
+    return story, repository, worker, started
+
+
+def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(new_story, monkeypatch):
+    story, repository, worker, started = mixed_proof_story(new_story, monkeypatch)
     ended(story, started[0], 0)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
+    lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    assert PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text in lines
+    assert f"journal worker merge {worker.id}" not in lines
     assert "passed" in marks_text(story), marks_text(story)
+    story.expect_success("proof check 2", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+
+
+def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(new_story, monkeypatch):
+    story, _, _, started = mixed_proof_story(new_story, monkeypatch)
+    ended(story, started[0], 0)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
 
 
 def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):

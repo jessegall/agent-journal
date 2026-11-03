@@ -27,7 +27,7 @@ class AliasFileListener(CommitListener):
         self.home.alias_file.write_text(json.dumps(lines))
 
     def line(self, alias: Alias) -> str:
-        line = self.shell_aliases.line_from_any_folder(alias.line)
+        line = self.shell_aliases.resolve_journal_path(alias.line)
         if not alias.variables:
             return line
         arguments = line if ARGS_MARK in line else f"{line} {ARGS_MARK}"
