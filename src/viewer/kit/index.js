@@ -5,6 +5,7 @@ export {default as Btn} from "../src/kit/Btn.vue";
 export {default as RunningCommand} from "./RunningCommand.vue";
 export {default as Switch} from "./Switch.vue";
 export {openInChat, peekRef} from "../src/route.js";
+export {tableOfWord} from "../src/domain/tables.js";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as RowList} from "./RowList.vue";
 export {default as AgentRowList} from "./AgentRowList.vue";
