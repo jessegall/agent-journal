@@ -9,6 +9,7 @@
             }
         ],
         "reject": [
+            {"name": "named_reader_id"},
             {
                 "of": "parent",
                 "all": [

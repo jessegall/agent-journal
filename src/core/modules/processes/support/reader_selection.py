@@ -22,4 +22,4 @@ class ReaderSelection:
 
     @staticmethod
     def reads(reader: Reader, part: ProcessPart) -> bool:
-        return not part.category.is_readonly and any(fnmatchcase(part.text, pattern.strip()) for pattern in reader.commands.split(","))
+        return not part.category.is_readonly and any(fnmatchcase(part.command or part.text, pattern.strip()) for pattern in reader.commands.split(","))

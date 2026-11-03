@@ -25,14 +25,15 @@ class ForegroundLimit:
 
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         alias_runs = self.background.alias_runs(shell)
+        part_commands = tuple(self.background.part_command(part) for part in shell.parts)
         if shell.is_journal_line and (not alias_runs or all(part.classification.category is CommandCategory.JOURNAL for part in shell.parts)):
-            return ForegroundRun(0, False)
+            return ForegroundRun(0, False, part_commands=part_commands)
         declared = self.background.declared_category(shell)
         categories = {part.classification.category for part in shell.parts}
         categories.update(category for category in [declared] if category is not None)
         is_long = any(category.is_long_running for category in categories) or self.has_moved_run(environment_id, shell)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
-        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared)
+        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands)
 
     def has_moved_run(self, environment_id: int, shell: ShellLine) -> bool:
         commands = tuple(part.text for part in shell.parts)

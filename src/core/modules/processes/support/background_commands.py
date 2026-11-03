@@ -1,7 +1,9 @@
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
+from core.modules.processes.support.part_command import PartCommand
 
 JOURNAL = "journal"
 
@@ -16,8 +18,13 @@ class BackgroundCommands:
     def includes(self, shell: ShellLine) -> bool:
         return any(options.background for options in self.alias_runs(shell))
 
+    def part_command(self, part: Part) -> PartCommand:
+        argv = list(part.arguments) if part.program == JOURNAL else []
+        options = self.aliases.options(argv[0]) if argv else None
+        return PartCommand(self.aliases.named_line(argv) or part.text, options.reader_id if options else None)
+
     def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
-        commands = tuple(part.arguments[0] for part in shell.parts if part.program == JOURNAL and part.arguments and self.aliases.options(part.arguments[0]) is not None)
+        commands = tuple(part.arguments[0] for part in shell.parts_running_journal_command() if part.arguments and self.aliases.options(part.arguments[0]) is not None)
         return tuple(dict.fromkeys((*shell.alias_names, *commands)))
 
     def alias_runs(self, shell: ShellLine) -> list[AliasOptions]:
