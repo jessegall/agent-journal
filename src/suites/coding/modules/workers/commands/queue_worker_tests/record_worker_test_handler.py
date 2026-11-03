@@ -20,9 +20,11 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.main_agent import MainAgent
+from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE, WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+
+LINE_SOURCE = "workers"
 
 
 
@@ -33,8 +35,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     command = RecordWorkerTest
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent: MainAgent, tasks: TaskQuery, bus: Bus) -> None:
-        self.queries, self.repository, self.main_agent, self.tasks, self.bus = queries, repository, main_agent, tasks, bus
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, bus: Bus) -> None:
+        self.queries, self.repository, self.main_agent_line, self.tasks, self.bus = queries, repository, main_agent_line, tasks, bus
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.queries.query(Proof).find(command.proof_id)
@@ -51,15 +53,19 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if worktree.state is WorktreeState.CUT:
             self.start_next(worktree, context)
         else:
-            self.main_agent.send_line(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, context)
+            self.main_agent_line.send(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):
             task = self.queries.query(Task).find(task_id)
-            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id):
+            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id and row.test_command):
                 self.repository.save(task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
+        started_task = next(iter(self.tasks.holder(worktree.agent_id).started().page(1, 1).rows), None)
+        if started_task is not None:
+            self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
+            return
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
             return

@@ -2,7 +2,7 @@ import stat
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.enums.reader_type import ReaderType
-from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
@@ -12,8 +12,8 @@ def reader(identifier: int = 1, **fields: object) -> Reader:
     return Reader(**{"id": identifier, "version": 1, "creator_id": 1, "name": f"reader{identifier}", "type": ReaderType.PATTERN, "commands": "pytest*", **fields})
 
 
-def process(line: str = "pytest -q", category: CommandCategory = CommandCategory.TEST_RUN) -> Process:
-    return Process(id=1, version=1, environment_id=1, agent_id=2, creator_id=2, line=line, folder="/work", shell="sh", category=category, limit_seconds=30)
+def part(text: str = "pytest -q", category: CommandCategory = CommandCategory.TEST_RUN, position: int = 1) -> ProcessPart:
+    return ProcessPart(id=position, version=1, process_id=1, position=position, text=text, program=text.split()[0], category=category)
 
 
 def script(tmp_path, body: str) -> str:
@@ -25,15 +25,25 @@ def script(tmp_path, body: str) -> str:
 
 def test_the_default_reader_of_the_matching_ones_reads_a_line_and_else_the_newest():
     readers = [reader(1), reader(2, is_default=True), reader(3, commands="make*", is_default=True)]
-    assert ReaderSelection.choose(readers, process()).id == 2
-    assert ReaderSelection.choose(readers[:1] + readers[2:], process()).id == 1
-    assert ReaderSelection.choose([reader(1), reader(4)], process()).id == 4
-    assert ReaderSelection.choose([reader(1, commands="make*,pytest*")], process()).id == 1
-    assert ReaderSelection.choose(readers, process("ls")) is None
+    assert ReaderSelection.choose(readers, [part()]).reader.id == 2
+    assert ReaderSelection.choose(readers[:1] + readers[2:], [part()]).reader.id == 1
+    assert ReaderSelection.choose([reader(1), reader(4)], [part()]).reader.id == 4
+    assert ReaderSelection.choose([reader(1, commands="make*,pytest*")], [part()]).reader.id == 1
+    assert ReaderSelection.choose(readers, [part("ls", CommandCategory.PROCESS)]) is None
 
 
 def test_a_journal_commands_own_output_is_read_by_no_reader():
-    assert ReaderSelection.choose([reader(1, commands="*")], process("journal task show 1", CommandCategory.JOURNAL)) is None
+    assert ReaderSelection.choose([reader(1, commands="*")], [part("journal task show 1", CommandCategory.JOURNAL)]) is None
+
+
+def test_a_search_that_names_a_command_is_read_by_no_reader():
+    assert ReaderSelection.choose([reader(1, commands="*vitest*")], [part("grep -n vitest notes", CommandCategory.SEARCH)]) is None
+
+
+def test_a_chain_is_read_by_the_reader_of_its_test_run_whatever_stands_before_it():
+    parts = [part("grep -n word notes", CommandCategory.SEARCH), part("pytest -q -n 4", CommandCategory.TEST_RUN, 2)]
+    part_reader = ReaderSelection.choose([reader(1, commands="grep*"), reader(2)], parts)
+    assert (part_reader.reader.id, part_reader.part.position) == (2, 2)
 
 
 def test_a_pattern_picks_the_matching_lines_with_their_numbers():

@@ -20,6 +20,7 @@ from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
+from core.base.provider.transcript_tail import TranscriptTail
 from core.base.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
@@ -59,6 +60,7 @@ class CodexProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
+        self.rollouts: dict[str, Path] = {}
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
@@ -85,27 +87,30 @@ class CodexProvider(Provider):
         return HelperOutcome(replies[-1].strip() if replies else errors.strip(), session, failures[-1] if failures else None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
+        known = self.rollouts.get(session)
+        if known is not None and known.is_file():
+            return known
         sessions = self.folders.folder(HOME_VARIABLE, ".codex") / "sessions"
-        return next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+        found = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+        if found is not None:
+            self.rollouts[session] = found
+        return found
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         path = self.transcript(home.folder.parent, session)
-        counts = [CodexTokenCount.parsed(line) for line in path.read_text().splitlines()] if path else []
+        counts = [CodexTokenCount.parsed(line) for line in TranscriptTail(path).lines()] if path else []
         latest = next((count for count in reversed(counts) if count is not None), None)
         return latest.percent() if latest else None
 
-    def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
-        rows: list[TranscriptRow] = []
-        for line in path.read_text().splitlines():
-            fields: object = json.loads(line) if line.strip() else {}
-            payload = fields.get("payload") if is_mapping(fields) else None
-            role = payload.get("role") if is_mapping(payload) else None
-            content = payload.get("content") if is_mapping(payload) else None
-            if role in TRANSCRIPT_AUTHORS and is_list(content):
-                text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
-                if text.strip():
-                    rows.append(TranscriptAuthor.row(len(rows) + 1, role, text))
-        return rows
+    def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
+        fields: object = json.loads(line) if line.strip() else {}
+        payload = fields.get("payload") if is_mapping(fields) else None
+        role = payload.get("role") if is_mapping(payload) else None
+        content = payload.get("content") if is_mapping(payload) else None
+        if role not in TRANSCRIPT_AUTHORS or not is_list(content):
+            return None
+        text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
+        return TranscriptAuthor.row(position, role, text) if text.strip() else None
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)

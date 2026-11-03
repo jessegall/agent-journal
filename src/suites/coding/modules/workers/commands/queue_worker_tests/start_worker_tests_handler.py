@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.main_agent import MainAgent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 TEST_LIMIT_SECONDS = 3600
 
@@ -22,14 +22,14 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     command = StartWorkerTests
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, main_agent: MainAgent) -> None:
-        self.queries, self.repository, self.bus, self.main_agent = queries, repository, bus, main_agent
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
+        self.queries, self.repository, self.bus = queries, repository, bus
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).filter(environment_id=command.environment_id).all_rows()}
         proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
-        owner = self.main_agent.running(command.environment_id)
+        owner = MainAgentFinder.newest(self.queries, command.environment_id)
         for proof in proofs:
             if owner is None:
                 return

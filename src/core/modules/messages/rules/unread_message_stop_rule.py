@@ -23,5 +23,5 @@ class UnreadMessageStopRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
+        unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
         return RuleAnswer.refused(UNREAD_MESSAGE_STOP.nudge(message=unread[0].id)) if unread else RuleAnswer.allowed()

@@ -14,6 +14,8 @@ class ShellFileChanges:
         self.git = git
 
     def diff(self, folder: str, path: str) -> DiffCount | None:
+        if (Path(folder) / path).is_dir():
+            return None
         counts = self.git.git(folder, GIT_LIMIT_SECONDS, "diff", "--numstat", "HEAD", "--", path).stdout.split()
         if len(counts) >= 2 and counts[0].isdigit() and counts[1].isdigit():
             return DiffCount(path, True, int(counts[0]), int(counts[1]))

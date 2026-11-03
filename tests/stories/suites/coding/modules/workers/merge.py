@@ -7,6 +7,8 @@ from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
+import subprocess
+
 from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from datetime import timedelta
@@ -116,6 +118,19 @@ def test_uncommitted_changes_that_clash_with_a_moved_base_go_back_to_the_worker_
     assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "tax.py").read_text()
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     repository.expect_no_stash()
+
+
+def test_uncommitted_changes_whose_stash_cannot_apply_stay_in_the_stash_and_refuse_the_merge(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    worker = checked_worker(story, repository)
+    (repository.worktree_folder(worker.id) / "extra.py").write_text("EXTRA = 1\n")
+    repository.committed("extra.py", "EXTRA = 2\n", "Another extra")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_refusal(f"worker merge {worker.id}", "git stash apply failed", actor=story.agent)
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+    assert subprocess.run(["git", "stash", "list"], cwd=repository.worktree_folder(worker.id), capture_output=True, text=True).stdout.strip()
 
 
 def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_base_branch(new_story):

@@ -50,6 +50,3 @@ class Process(Model):
 
     def orphan(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.orphan, ended_at=timestamp)
-
-    def program_word(self) -> str | None:
-        return next((word for word in self.line.split() if "=" not in word), None)

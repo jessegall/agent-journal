@@ -81,14 +81,14 @@ test("the main agent is titled Main agent and its model follows the provider", a
     expect(card.textContent).not.toContain("Fix the cart");
 });
 
-test("a click opens the card on its number, usage, Inspect and instruction, and a second closes it", async () => {
+test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
     const element = await drawn();
     document.body.append(element);
     const card = cardOf(element, 3);
     card.click();
     await settle();
-    expect(card.querySelector("[data-agent-card-usage]").textContent).toBe("agent 3");
-    expect(card.querySelector("[data-agent-inspect]").textContent.trim()).toBe("Inspect");
+    expect(card.querySelector("[data-agent-card-usage]")).toBeNull();
+    expect(card.querySelector("[data-agent-inspect]")).toBeNull();
     expect(card.querySelector("[data-agent-instruction]").textContent).toBe("Read the cart\nand report");
     card.click();
     await settle();

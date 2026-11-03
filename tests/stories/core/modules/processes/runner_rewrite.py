@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from core.base.command.bus import Bus
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
@@ -39,6 +43,10 @@ def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_
     story.hook("s-1", SERVER)
     story.run("process background 1", actor=story.agent)
     story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": "journal output monitor 1"}}).with_raw({"tool_input": {"command": "journal output monitor 1"}}))
+    bus = story.container.get(Bus)
+    bus.run(StartProcessPart(1, 1), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=40))
+    bus.run(EndProcessPart(1, 1, 0), story.agent, environment_id=1)
     assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 2, "node serve.js", background=True)}
 
 

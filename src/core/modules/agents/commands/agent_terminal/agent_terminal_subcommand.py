@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.journal_home import JournalHome
+from core.base.provider.transcript_tail import TranscriptTail
 from core.base.query.queries import Queries
 from core.base.page import Page
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -28,7 +29,7 @@ class AgentTerminalSubcommand(ReadSubcommand[Page[TerminalLine]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[TerminalLine]:
         path = self.home.terminal_file(self.queries.query(Agent).find(arguments.agent_id).terminal_id)
-        logged = path.read_text(errors="replace").splitlines() if path.exists() else []
+        logged = TranscriptTail(path).lines(TERMINAL_LIMIT_LINES)
         lines = [TerminalLine(int(number), text) for number, _, text in (line.partition(SEPARATOR) for line in logged) if number.isdigit()]
         newer = [line for line in lines if line.number > arguments.after][-TERMINAL_LIMIT_LINES:]
         return Page(tuple(newer), 1, max(len(newer), 1), len(newer))

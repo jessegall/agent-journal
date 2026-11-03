@@ -1,4 +1,7 @@
+from core.modules.messages.listeners.read_message_line_listener import ReadMessageLineListener
+from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
 from core.modules.messages.migrations.m009_message_recipient import MessageRecipientMigration
+from core.modules.messages.migrations.m010_message_hook_indexes import MessageHookIndexesMigration
 from core.modules.messages.rules.reply_note_rule import ReplyNoteRule
 from core.modules.messages.commands.record_peer_message.record_peer_message_handler import RecordPeerMessageHandler
 from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
@@ -77,7 +80,7 @@ class MessagesModule(Module):
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
@@ -92,5 +95,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
+    listeners = [MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener]
     seeders = [MessagesSeeder]

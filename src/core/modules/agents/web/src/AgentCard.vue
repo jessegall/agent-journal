@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, Btn, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
+import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, TaskStatusIcon, useNow, useWindow} from "@journal/window-kit";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -23,7 +23,7 @@ const identity = computed(() => [props.row.program, props.facts?.model, props.ro
 const runTime = computed(() => (props.row.ended_at ? `${age(props.row.ended_at, now.value)} ago` : age(props.row.process_started_at || props.row.created_at, now.value)));
 const dotState = computed(() => (props.row.ended_at ? "closed" : waitingForTests.value ? "waiting" : props.facts?.state || "running"));
 const usage = computed(() => {
-    const parts = [`agent ${props.row.id}`];
+    const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
     if (props.facts?.cost_dollars) parts.push(`$${props.facts.cost_dollars.toFixed(2)}`);
     return parts.join(" · ");
@@ -90,10 +90,9 @@ readCommand();
         </template>
         <template v-if="opened">
             <div class="agent-more" data-agent-more @click.stop>
-                <span class="agent-usage-line">
+                <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
-                    <Btn small bordered data-agent-inspect @click="peekRef(`agents:${row.id}`)">Inspect</Btn>
-                </span>
+                </template>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <template v-if="tab?.key === 'tasks'">
@@ -304,7 +303,7 @@ readCommand();
 .agent-tabs {
     margin: 0 -22px -6px -27px;
     padding: 0 22px 0 27px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 .agent-tab-body {
@@ -326,15 +325,7 @@ readCommand();
 }
 
 .agent-tab-body :deep(.row-list-row) {
-    padding: 6px 8px;
-}
-
-.agent-usage-line {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
+    padding: 6px 22px 6px 27px;
 }
 
 .agent-label {

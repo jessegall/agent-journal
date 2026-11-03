@@ -1,5 +1,3 @@
-import re
-
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -17,7 +15,6 @@ from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED, PHASE_FI
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 
-TASK_END_LINE = re.compile(r"(?:^|-- '|&& |; )journal task (?:close|cancel|block|release) (\d+)")
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
 BLOCKED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
@@ -37,8 +34,8 @@ class PlanTaskLineRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        numbers = TASK_END_LINE.findall(shell.line) if shell is not None else []
-        ended = [task for task in (self.queries.query(Task).find(int(number)) for number in numbers) if task.state is not TaskState.STARTED]
+        numbers = shell.journal_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
+        ended = [task for task in (self.queries.query(Task).find(number) for number in numbers) if task.state is not TaskState.STARTED]
         if not ended:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(*(nudge for task in ended for nudge in self.plan_nudges(task.id)))

@@ -82,6 +82,7 @@ async function elaborate() {
     flex: 1;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
     max-width: 640px;
     margin-bottom: 10px;
     padding: 14px 16px 16px;

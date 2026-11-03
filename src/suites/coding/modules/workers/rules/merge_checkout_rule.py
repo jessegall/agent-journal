@@ -5,7 +5,6 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -28,8 +27,7 @@ class MergeCheckoutRule(DriverRule):
         self.queries, self.delivered, self.proofs, self.git, self.hook_history = queries, delivered, proofs, git, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        reminded_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
-        if reminded_at is not None and reminded_at.elapsed_seconds(hook.timestamp) < REMINDER_SECONDS:
+        if self.hook_history.answered_within(self.name, hook, REMINDER_SECONDS):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
         for worktree in self.delivered.delivered(hook.agent_id):

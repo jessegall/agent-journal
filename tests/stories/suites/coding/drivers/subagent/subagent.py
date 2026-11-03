@@ -15,6 +15,13 @@ def test_a_subagent_reads_and_searches(new_story):
     story.expect_hook_allowed("s-1", CART_SEARCH)
 
 
+def test_a_subagent_runs_journal_commands_also_those_that_write_rows(new_story):
+    story = new_story(fixture=SubagentStarted)
+    for line, words in (("journal search find totals", ["search", "find", "totals"]), ('journal task make "Fix the totals"', ["task", "make", "Fix the totals"])):
+        sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, words, effects=[CommandEffect.WRITES_FILES])).with_fields(**SUBAGENT)
+        story.expect_hook_allowed("s-1", sample)
+
+
 def test_a_subagent_edits_no_file(new_story):
     story = new_story(fixture=SubagentStarted)
     story.expect_hook_refusal("s-1", CART_EDIT, "a subagent reads and searches only")

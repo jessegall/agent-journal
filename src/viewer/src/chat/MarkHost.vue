@@ -85,9 +85,15 @@ const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filte
     max-width: none;
 }
 
-/* a card of what the user did keeps to the user's side as well */
+/* a card of what the user did keeps to the user's side as well, at the width it has on the other side */
 .thread-turn.whole-card.user-side {
     align-items: flex-end;
+    align-self: stretch;
+    margin-left: 0;
+}
+
+.thread-turn.whole-card.user-side > :deep(*) {
+    width: 100%;
 }
 
 .mark-row {

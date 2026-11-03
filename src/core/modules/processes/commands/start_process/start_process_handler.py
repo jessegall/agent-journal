@@ -17,7 +17,7 @@ from core.modules.processes.support.run_title import RunTitle
 
 class StartProcessHandler(Handler[StartProcess, Process]):
     """Saves a running process, its parts, one for each command of the line in order, and the output it will
-    keep with the reader the line's alias names, or else the one chosen for the line."""
+    keep with the reader the line's alias names, which reads all parts, or else the one chosen for one part."""
 
     command = StartProcess
 
@@ -29,11 +29,15 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(environment_id=agent.environment_id, agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run, is_queued=command.is_queued), context)
-        for position, part in enumerate(command.parts, 1):
-            self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped, category=part.category), context)
-        reader = ReaderSelection.choose(self.all_readers(), process) if command.reader_id is None else self.readers.find(command.reader_id)
-        self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id if reader is not None else None,
-                                    title=RunTitle.title(reader, process)), context)
+        parts = [self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped, category=part.category), context)
+                 for position, part in enumerate(command.parts, 1)]
+        if command.reader_id is not None:
+            reader = self.readers.find(command.reader_id)
+            self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id, title=RunTitle.title(reader, command.line)), context)
+        else:
+            part_reader = ReaderSelection.choose(self.all_readers(), parts)
+            self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
+                                        reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         return process
 

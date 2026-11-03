@@ -1,17 +1,15 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 START = "start"
 EMPTY_TRIGGERS = "[]"
@@ -33,7 +31,7 @@ class SequenceRowTriggerListener(CommitListener):
         sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, event)), None)
         if sequence is None:
             return
-        agents = self.queries.query(Agent).filter(environment_id=event.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
+        agents = MainAgentFinder.rows(self.queries, event.environment_id)
         if agents and self.runs.current(agents[0].id) is None:
             self.bus.run(MoveSequenceRun(START, sequence.id), Actor(agents[0].id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
 

@@ -12,7 +12,7 @@ from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_nudges import TASK_NAME
 
 
-TASK_START_LINE = re.compile(r"(?:^|-- '|&& |; )journal task (?:start|close|cancel|block|release)\b")
+TASK_MOVES = ("task start", "task close", "task cancel", "task block", "task release")
 TASK_NUMBER = re.compile(r"\btasks? (\d+)\b", re.I)
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
 
@@ -29,7 +29,7 @@ class TaskNameRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        current = self.current_tasks.current(hook.agent_id) if shell is not None and TASK_START_LINE.search(shell.line) else None
+        current = self.current_tasks.current(hook.agent_id) if shell is not None and shell.journal_parts(*TASK_MOVES) else None
         if current is None:
             return RuleAnswer.allowed()
         numbers = {int(number) for number in TASK_NUMBER.findall(current.task.brief)} - {current.task.id}

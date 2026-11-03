@@ -55,7 +55,9 @@ class WorktreeGit:
 
     def rebase(self, worktree: Worktree) -> bool:
         """Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
-        stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were."""
+        stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were. A
+        stash that clashes leaves conflict markers; one that applies not at all stays in the stash list and refuses
+        the merge."""
         stash = self.stash(worktree)
         rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
         if not rebased:
@@ -71,7 +73,10 @@ class WorktreeGit:
         return self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "stash@{0}").stdout.strip()
 
     def unstash(self, worktree: Worktree, stash: str) -> None:
-        self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash)
+        applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
+        has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
+        if not applied and not has_markers:
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.agent_id}", f"they are kept in its stash {stash}: the worker applies them")
         entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
         for entry in (line.split() for line in entries):
             if entry[0] == stash:

@@ -3,7 +3,6 @@ import re
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
-from core.modules.agents.support.person_check import PersonCheck
 from core.modules.profiles.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.agent_profile import SUBAGENT, WORKER, AgentProfile
 from core.modules.profiles.support.profile_files import SHIPPED_PREFIX, ProfileFiles
@@ -20,7 +19,6 @@ class SaveProfileHandler(Handler[SaveProfile, AgentProfile]):
         self.files = files
 
     def handle(self, command: SaveProfile, context: Context) -> AgentProfile:
-        PersonCheck.require(context, "only a person saves a profile, since it says what an agent may do")
         profile = command.profile
         if not PROFILE_NAME.fullmatch(profile.name):
             raise Refusal(f"{profile.name} cannot name a profile", "use letters, digits, dashes and underscores")

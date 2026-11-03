@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 
 
@@ -19,13 +21,13 @@ def test_closing_the_task_in_hand_starts_the_most_urgent_open_one_for_the_same_a
     assert "state: open" in started_holder(story, 2)
 
 
-def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story):
-    for move in ('task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'):
-        story = new_story(fixture=BuilderWithStartedTask)
-        task_pair(story)
-        story.run(move, actor=story.agent)
-        story.run_listeners()
-        assert "state: started" in started_holder(story, 3), move
+@pytest.mark.parametrize("move", ['task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'])
+def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story, move):
+    story = new_story(fixture=BuilderWithStartedTask)
+    task_pair(story)
+    story.expect_success(move, actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in started_holder(story, 3), move
 
 
 def test_closing_a_task_with_another_in_hand_starts_a_critical_open_task_but_no_other(new_story):

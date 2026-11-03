@@ -1,18 +1,15 @@
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
-from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.project_paths import ProjectPaths
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
@@ -22,6 +19,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.usage.support.tool_facts import ToolFacts
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 SHOWN_RUNS = 2
 QUEUE_LINE = "waiting for a spot in the queue"
@@ -50,13 +48,13 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the tool is shown for one environment", "name it with --environment")
-        mains = self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
+        mains = MainAgentFinder.rows(self.queries, environment_id)
         if not mains:
             return ToolFacts()
         return self.agent_tool(mains[0].id, self.open_question_lines(environment_id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
-        calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
+        calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
@@ -64,7 +62,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else NO_COMMAND_NOTE)
 
     def running_part_text(self, call: HookCall) -> str:
-        runs = self.processes.agent(call.agent_id).newest().page(1, 1).rows
+        runs = self.processes.agent(call.agent_id).newest().limited(1)
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
         if runs[0].is_queued:
@@ -79,7 +77,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)
 
     def title(self, process: Process) -> str:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         return kept[0].title if kept and kept[0].title else process.line
 
     def open_question_lines(self, environment_id: int) -> list[str]:

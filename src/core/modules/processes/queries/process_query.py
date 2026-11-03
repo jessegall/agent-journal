@@ -2,13 +2,17 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
+from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.query import Query
+from core.base.query.select import Select
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
+PROCESS_PARTS_TABLE = "process_parts"
 
 
 class ProcessQuery(Query[Process]):
@@ -29,8 +33,11 @@ class ProcessQuery(Query[Process]):
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
 
-    def line(self, line: str) -> Self:
-        return self.filter(line=line)
+    def with_part(self, *conditions: Condition) -> Self:
+        select = Select(PROCESS_PARTS_TABLE)
+        for condition in conditions:
+            select = select.matching(condition)
+        return self.matching(SubqueryMatch("id", select.column("process_id")))
 
     def moved(self) -> Self:
         return self.matching(Greater("moved_at", ""))

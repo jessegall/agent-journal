@@ -93,7 +93,7 @@ class Registry:
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
-            windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(window["place"], window["place"]), tuple(window["roles"]),
+            windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(str(window["place"]), str(window["place"])), tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
                                       window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")))

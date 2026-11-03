@@ -1,4 +1,3 @@
-import re
 
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
@@ -18,7 +17,6 @@ from core.modules.messages.support.block_conditions.messages_answered import Mes
 
 ALLOWED_TOOL_CALL_COUNT = 10
 COUNTDOWN_CALL_COUNT = 3
-ANSWER_LINE = re.compile(r"""(?:^|[\s/'"])journal (?:message|task make) """)
 
 
 class UnansweredMessageRule(DriverRule):
@@ -37,7 +35,7 @@ class UnansweredMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unanswered = self.unanswered(hook.environment_id)
         tool = hook.event.tool
-        if not unanswered or (tool is not None and tool.shell is not None and ANSWER_LINE.search(tool.shell.line)):
+        if not unanswered or (tool is not None and tool.shell is not None and tool.shell.journal_parts("message", "task make")):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
         first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)
@@ -47,7 +45,7 @@ class UnansweredMessageRule(DriverRule):
         return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(messages=message_numbers, count=remaining_calls) if remaining_calls <= COUNTDOWN_CALL_COUNT else UNANSWERED.nudge(messages=message_numbers))
 
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
-        agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().limited(1)
         read_messages = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
         candidates = tuple(read_messages.oldest().all_rows())
         answered: set[int | None] = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()

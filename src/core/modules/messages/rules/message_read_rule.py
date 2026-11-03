@@ -1,6 +1,5 @@
 from core.base.driver.nudge import Nudge
 from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
-import re
 from pathlib import PurePath
 
 from core.base.agent_role import AgentRole
@@ -17,16 +16,12 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
-COMMAND_START = r"(?:^|-- '|&& |; )"
-MESSAGE_READ_LINE = re.compile(COMMAND_START + r"journal message read (\d+)")
-MESSAGE_UNREAD_LINE = re.compile(COMMAND_START + r"journal message unread\b")
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageReadRule(DriverRule):
     """A message the main agent has read with journal message read is marked read, the first time, and the
-    agent is told how to act on it. The tool's line holds the command inside the runner's own line by then, so
-    the rule looks for it in the text."""
+    agent is told how to act on it."""
 
     name = "messages.read-marks-read"
     hook = HookEventName.POST_TOOL_USE
@@ -40,9 +35,9 @@ class MessageReadRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
-        numbers = tuple(int(number) for number in MESSAGE_READ_LINE.findall(shell.line))
+        numbers = shell.journal_numbers("message read")
         unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
-        if MESSAGE_UNREAD_LINE.search(shell.line):
+        if shell.journal_parts("message unread"):
             all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
