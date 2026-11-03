@@ -28,6 +28,27 @@ def test_a_script_that_changes_a_file_leaves_a_file_edit_with_its_line_counts(ne
     story.expect_success("file-edit show 1", "path: cart.py", "added: 2", "removed: 1", f"agent_id: {story.agent.id}")
 
 
+def edit_rows(story) -> list[dict[str, object]]:
+    return json.loads(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["rows"])
+
+
+def test_a_script_that_changes_a_file_keeps_the_lines_it_changed(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    repository.committed("cart.py", "TOTAL = 1\nNAME = 'cart'\n", "the cart")
+    (repository.folder / "cart.py").write_text("TOTAL = 2\nNAME = 'cart'\n")
+    story.hook("s-1", script_sample(repository, "cart.py"))
+    assert [(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("del", 1, "TOTAL = 1"), ("add", 1, "TOTAL = 2"), ("ctx", 2, "NAME = 'cart'")]
+
+
+def test_a_script_that_makes_a_new_file_keeps_its_lines_as_added(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    (repository.folder / "fresh.py").write_text("ONE = 1\nTWO = 2\n")
+    story.hook("s-1", script_sample(repository, "fresh.py"))
+    assert [(row["line_type"], row["line"], row["text"]) for row in edit_rows(story)] == [("add", 1, "ONE = 1"), ("add", 2, "TWO = 2")]
+
+
 def test_a_script_that_makes_a_new_file_counts_its_lines_and_one_that_leaves_a_file_as_it_was_records_nothing(new_story):
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)

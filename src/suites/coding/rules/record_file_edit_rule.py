@@ -37,8 +37,8 @@ class RecordFileEditRule(DriverRule):
             return []
         cwd = hook.event.raw.get("cwd")
         folder = cwd if isinstance(cwd, str) else self.queries.query(Environment).find(hook.environment_id).folder
-        diffs = (self.changes.diff(folder, path) for path in sorted(paths))
-        return [RecordFileEdit(hook.agent_id, hook.environment_id, diff) for diff in diffs if diff is not None]
+        changes = (self.changes.change(folder, path) for path in sorted(paths))
+        return [RecordFileEdit(hook.agent_id, hook.environment_id, change.diff, change.rows) for change in changes if change is not None]
 
     def is_external_path(self, path: str, environment_id: int) -> bool:
         return Path(path).is_absolute() and not Path(path).is_relative_to(self.queries.query(Environment).find(environment_id).folder)
