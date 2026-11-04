@@ -1,0 +1,7 @@
+ NX   Running target c for project example and 2 tasks it depends on failed
+
+Failed tasks:
+
+- example:b
+
+Hint: run the command with --verbose for more details.

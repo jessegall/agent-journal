@@ -1,0 +1,5 @@
+[sdist]
+dist/hatch_demo-1rc0.tar.gz
+
+[wheel]
+dist/hatch_demo-1rc0-py3-none-any.whl

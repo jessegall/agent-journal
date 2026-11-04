@@ -1,0 +1,9 @@
+--13:30:45--  http://fly.cc.fer.hr:80/en/
+           => `index.html'
+Connecting to fly.cc.fer.hr:80... connected!
+HTTP request sent, awaiting response... 200 OK
+Length: 4,694 [text/html]
+
+    0K -> ....                                                   [100%]
+
+13:30:46 (23.75 KB/s) - `index.html' saved [4694/4694]

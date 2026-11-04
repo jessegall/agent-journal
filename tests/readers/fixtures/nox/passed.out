@@ -1,0 +1,5 @@
+nox > Running session lint
+nox > Creating virtualenv using python3.14 in .nox/lint
+nox > pip install flake8
+nox > flake8 example.py
+nox > Session lint was successful.

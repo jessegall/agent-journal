@@ -1,0 +1,15 @@
+[info] 2. Monitoring source files for hello/testQuick...
+[info]    Press <enter> to interrupt or '?' for more options.
+[info] Build triggered by /tmp/foo-build/src/test/scala/example/HelloSuite.scala. Running 'testQuick'.
+[info] compiling 1 Scala source to /tmp/foo-build/target/scala-2.13/test-classes ...
+HelloSuite:
+==> X HelloSuite.Hello should start with H  0.004s munit.FailException: /tmp/foo-build/src/test/scala/example/HelloSuite.scala:4 assertion failed
+3:  test("Hello should start with H") {
+4:    assert("hello".startsWith("H"))
+5:  }
+    at munit.FunSuite.assert(FunSuite.scala:11)
+    at HelloSuite.$anonfun$new$1(HelloSuite.scala:4)
+[error] Failed: Total 1, Failed 1, Errors 0, Passed 0
+[error] Failed tests:
+[error]         HelloSuite
+[error] (Test / testQuick) sbt.TestsFailedException: Tests unsuccessful

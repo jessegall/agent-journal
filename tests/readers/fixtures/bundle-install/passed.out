@@ -1,0 +1,10 @@
+Fetching gem metadata from https://rubygems.org/.
+Resolving dependencies...
+Fetching rake 13.4.2
+Installing rake 13.4.2
+Using bundler 1.17.2
+Fetching rainbow 3.1.1
+Installing rainbow 3.1.1
+Updating files in vendor/cache
+Bundle complete! 2 Gemfile dependencies, 3 gems now installed.
+Bundled gems are installed into `/tmp/w499/bundle/vendor`
