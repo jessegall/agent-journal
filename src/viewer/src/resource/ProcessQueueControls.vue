@@ -34,10 +34,10 @@ async function save(key, value) {
                 <input :id="limit.key" class="limit" type="number" min="0" :value="limit.value" :disabled="saving" data-queue-suite-limit @change="save(limit.key, $event.target.value)" />
             </div>
         </template>
-        <div class="control"><div><label id="main-spots-label">Main agent's commands take a place</label><p>Count the main agent's commands in that number.</p></div>
+        <div class="control"><div><label id="main-spots-label">Include the main agent</label><p>On: its commands count toward Commands at once and can wait. Off: they always start right away.</p></div>
             <button type="button" role="switch" aria-labelledby="main-spots-label" :aria-checked="queue.count_main_runs" :disabled="saving" data-queue-main-spots @click="save(queue.main_spots_setting, queue.count_main_runs ? 'off' : 'on')"><span /></button>
         </div>
-        <template v-if="!queue.count_main_runs && mainCount"><p class="note"><Icon name="info" :size="13" />{{ mainCount === 1 ? "One more command is running for the main agent. It takes no place" : `${mainCount} more commands are running for the main agent. They take no place` }} while Main agent's commands take a place is off.</p></template>
+        <template v-if="!queue.count_main_runs && mainCount"><p class="note"><Icon name="info" :size="13" />{{ mainCount === 1 ? "The main agent is also running 1 command, which is not counted above." : `The main agent is also running ${mainCount} commands, which are not counted above.` }}</p></template>
         <template v-if="queue.halted"><p class="note halted" role="status" data-queue-held><Icon name="pause" :size="13" />The queue is paused. No waiting command gets a place until it is resumed. {{ queue.halt_reason }}</p></template>
         <template v-if="failure"><p class="note failure" role="alert">{{ failure }}</p></template>
     </div>
