@@ -8,7 +8,7 @@ const {rows, failure, loaded} = useRows(`todo-item list --agent ${useWindow().ag
 
 <template>
     <WindowRoom>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="This agent has written no tasks yet" hint="The tasks it files with journal task make show here.">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="This agent has written no tasks yet" hint="Tasks created by this agent appear here.">
             <template #default="{row}">
                 <span class="main">{{ row.text }}</span>
                 <span class="note">{{ STATE_TEXT[row.state] || row.state }}</span>

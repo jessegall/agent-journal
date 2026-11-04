@@ -45,7 +45,7 @@ const closed = () => {
                 </div>
             </template>
             <template v-else>
-                <p class="trigger-none"><strong>No triggers yet</strong>A trigger you add shows here by its name.</p>
+                <p class="trigger-none"><strong>No triggers yet</strong>Triggers you create appear here.</p>
                 <button type="button" class="make" @click="drafting = true">
                     <span class="make-title">New trigger</span>
                     <span class="make-text">Give it a name, say what to watch for, and say what should happen.</span>

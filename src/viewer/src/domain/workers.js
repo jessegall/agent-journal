@@ -13,7 +13,7 @@ const STATES = {
 
 const workerState = (row) => (row.state === "reported" && row.adopted ? "finished" : STATES[row.state] || "running");
 
-export const WORKER_WORDS = {running: "Working", ready: "Clocked out, ready to check", unfinished: "Ended without clocking out", reported: "Idle, waiting for a job", finished: "Closed"};
+export const WORKER_WORDS = {running: "Working", ready: "Review: ready", unfinished: "Work: unfinished", reported: "Status: idle", finished: "Closed"};
 
 const ENDINGS = {stopped: "Stopped", merged: "Merged", released: "Released"};
 const workerEnding = (row) => ENDINGS[row.state] || "Retired";
@@ -23,19 +23,19 @@ const workerEnding = (row) => ENDINGS[row.state] || "Retired";
 // the tasks queued for it.
 const queuedWords = (row) => {
     const queued = (row.queue || []).length;
-    return queued ? `Idle, ${queued} ${queued === 1 ? "task" : "tasks"} queued` : "Idle, waiting for a job";
+    return queued ? `Queued: ${queued} ${queued === 1 ? "task" : "tasks"} queued` : "Status: idle";
 };
 
 export function workerActivity(row, agent = null) {
     const state = workerState(row);
     if (state === "finished") return workerEnding(row);
-    if (row.merging) return "Its work is being merged";
-    if (state === "ready") return "Clocked out, waiting for its work to be checked";
+    if (row.merging) return "Work: merging";
+    if (state === "ready") return "Review: pending";
     if (state === "reported") return queuedWords(row);
     if (state === "unfinished") return WORKER_WORDS.unfinished;
-    if (row.state === "waiting for the usage limit") return "Waiting for the usage limit";
-    if ((row.runs || []).includes("testing")) return "Running its tests";
-    return agent && agent.tool_running && agent.doing ? `Working: ${agent.doing}` : "Working on its task";
+    if (row.state === "waiting for the usage limit") return "Waiting: usage limit";
+    if ((row.runs || []).includes("testing")) return "Tests: running";
+    return agent && agent.tool_running && agent.doing ? `Working: ${agent.doing}` : "Task: in progress";
 }
 
 export const grouped = (run) => Boolean(run.holder) && run.rows.length > 1;

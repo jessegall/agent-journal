@@ -1,35 +1,35 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-00c6c34d9a42")) { const style = document.createElement("style"); style.id = "window-styles-00c6c34d9a42"; style.textContent = ".main[data-v-d1545365]{flex:1}.note[data-v-d1545365]{color:var(--text-3);font-size:12px}.nudge[data-v-ff6ed4dd]{min-width:0;padding:6px 0}.nudge-head[data-v-ff6ed4dd]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-ff6ed4dd]{color:var(--text);font-weight:500}.nudge-type[data-v-ff6ed4dd],.nudge-count[data-v-ff6ed4dd]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-ff6ed4dd]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-ff6ed4dd]{color:var(--accent-text)}.nudge-text[data-v-ff6ed4dd]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
-import { openBlock as c, createBlock as l, unref as s, withCtx as a, createVNode as u, createElementVNode as t, toDisplayString as d } from "vue";
-import { useRows as _, WindowRoom as r, RowList as p } from "@journal/window-kit";
-import { _ as m } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const f = {
+if (!document.getElementById("window-styles-4fe434278c06")) { const style = document.createElement("style"); style.id = "window-styles-4fe434278c06"; style.textContent = ".main[data-v-d1545365]{flex:1}.note[data-v-d1545365]{color:var(--text-3);font-size:12px}.nudge[data-v-30fe2b6a]{min-width:0;padding:6px 0}.nudge-head[data-v-30fe2b6a]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-30fe2b6a]{color:var(--text);font-weight:500}.nudge-type[data-v-30fe2b6a],.nudge-count[data-v-30fe2b6a]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-30fe2b6a]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-30fe2b6a]{color:var(--accent-text)}.nudge-text[data-v-30fe2b6a]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+import { openBlock as u, createBlock as i, unref as s, withCtx as a, createVNode as _, createElementVNode as t, toDisplayString as o } from "vue";
+import { useRows as l, WindowRoom as r, RowList as p } from "@journal/window-kit";
+import { _ as g } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const m = {
   class: "nudge",
   "data-nudge": ""
-}, g = { class: "nudge-head" }, h = { class: "nudge-key" }, y = ["data-type"], x = { class: "nudge-count" }, N = { class: "nudge-text" }, k = {
+}, f = { class: "nudge-head" }, y = { class: "nudge-key" }, h = ["data-type"], x = { class: "nudge-count" }, v = { class: "nudge-text" }, N = {
   __name: "NudgeList",
-  setup(v) {
-    const { rows: o, failure: n, loaded: i } = _("nudge list", ["nudge_record.*"]);
-    return (w, L) => (c(), l(s(r), null, {
+  setup(k) {
+    const { rows: d, failure: n, loaded: c } = l("nudge list", ["nudge_record.*"]);
+    return (b, L) => (u(), i(s(r), null, {
       default: a(() => [
-        u(s(p), {
-          rows: s(o),
+        _(s(p), {
+          rows: s(d),
           failure: s(n),
-          loaded: s(i),
+          loaded: s(c),
           empty: "No module declares a nudge",
-          hint: "A line a module may say to an agent is listed here with the module that declares it."
+          hint: "Instructions available to agents appear here, grouped by module."
         }, {
           default: a(({ row: e }) => [
-            t("div", f, [
-              t("p", g, [
-                t("span", h, d(e.key), 1),
+            t("div", m, [
+              t("p", f, [
+                t("span", y, o(e.key), 1),
                 t("span", {
                   class: "nudge-type",
                   "data-type": e.type
-                }, d(e.type), 9, y),
-                t("span", x, "said " + d(e.delivery_count) + " " + d(e.delivery_count === 1 ? "time" : "times"), 1)
+                }, o(e.type), 9, h),
+                t("span", x, "said " + o(e.delivery_count) + " " + o(e.delivery_count === 1 ? "time" : "times"), 1)
               ]),
-              t("p", N, d(e.text), 1)
+              t("p", v, o(e.text), 1)
             ])
           ]),
           _: 1
@@ -38,7 +38,7 @@ const f = {
       _: 1
     }));
   }
-}, A = /* @__PURE__ */ m(k, [["__scopeId", "data-v-ff6ed4dd"]]);
+}, I = /* @__PURE__ */ g(N, [["__scopeId", "data-v-30fe2b6a"]]);
 export {
-  A as default
+  I as default
 };

@@ -47,7 +47,7 @@ function away(id) {
                 <template v-if="menu === f.id">
                     <div class="float-menu" role="menu">
                         <PaneMenuOptions :declared="entryOf(f)?.options || []" :values="f.options || {}" @set="(key, value) => setOption(f, key, value)" />
-                        <Btn :data-float-away="f.id" @click="away(f.id)">Send away</Btn>
+                        <Btn :data-float-away="f.id" @click="away(f.id)">Close window</Btn>
                     </div>
                 </template>
                 <WindowPane

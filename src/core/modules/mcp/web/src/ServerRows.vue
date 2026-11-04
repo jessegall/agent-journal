@@ -103,7 +103,7 @@ async function giveKey(row) {
             <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
         </form>
         <h3 class="heading">Suggested</h3>
-        <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="A server the journal suggests shows here until it is installed.">
+        <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="Suggested servers appear here until installed.">
             <template #default="{row}">
                 <div class="server">
                     <div class="head">

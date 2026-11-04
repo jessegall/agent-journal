@@ -11,7 +11,7 @@ REVIEW_SETTINGS = [
     SettingValue("reviewer", "Reviewers", "Whether finished work is reviewed by a reviewer before it is merged.", SettingType.FLAG, default=False),
     SettingValue("reviewers-most", "Reviewers at once", "How many reviewers may work at the same time.", SettingType.NUMBER, default=1),
     SettingValue("program", "Reviewer program", "The agent program a reviewer runs in.", SettingType.TEXT, default="claude"),
-    SettingValue("model", "Reviewer model", "The model a reviewer uses; empty uses the program's own.", SettingType.TEXT, default=""),
+    SettingValue("model", "Reviewer model", "The reviewer model. Leave blank to use the program’s default.", SettingType.TEXT, default=""),
 ]
 
 

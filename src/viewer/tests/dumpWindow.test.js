@@ -29,7 +29,7 @@ test("the newest dump opens with its phase, the files settled and what each file
 test("a dump that filed its files names each row made, its kind and the file it came from", async () => {
     const {element} = await drawn();
     const made = [...element.querySelectorAll("[data-made]")].map((row) => row.textContent);
-    expect(element.querySelector(".made-title").textContent).toBe("2 things filed");
+    expect(element.querySelector(".made-title").textContent).toBe("2 items created");
     expect(made[0]).toContain("Document");
     expect(made[0]).toContain("docs:7");
     expect(made[0]).toContain("From totals.md");

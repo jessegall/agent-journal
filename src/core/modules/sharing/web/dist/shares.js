@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-e02a41bd085e")) { const style = document.createElement("style"); style.id = "window-styles-e02a41bd085e"; style.textContent = ".shares[data-v-82920287]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-82920287],.shares-waiting[data-v-82920287],.shares-opens[data-v-82920287],.shares-open[data-v-82920287]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-82920287],.shares-waiting[data-v-82920287],.shares-opens[data-v-82920287]{align-items:flex-start}.shares-target[data-v-82920287]{width:100%;min-width:0}.shares-option[data-v-82920287],.shares-row[data-v-82920287]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-82920287]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-82920287]{flex:1;min-width:0}.shares-link[data-v-82920287],.shares-comment[data-v-82920287]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-82920287],.shares-failure[data-v-82920287]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { computed as U, ref as c, openBlock as t, createBlock as E, unref as o, withCtx as i, createElementVNode as n, withModifiers as G, withDirectives as O, vModelText as F, createVNode as d, createElementBlock as r, createCommentVNode as u, Fragment as _, renderList as T, toDisplayString as l, createTextVNode as h } from "vue";
+if (!document.getElementById("window-styles-155bd73f873d")) { const style = document.createElement("style"); style.id = "window-styles-155bd73f873d"; style.textContent = ".shares[data-v-3c818f43]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-3c818f43],.shares-waiting[data-v-3c818f43],.shares-opens[data-v-3c818f43],.shares-open[data-v-3c818f43]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-3c818f43],.shares-waiting[data-v-3c818f43],.shares-opens[data-v-3c818f43]{align-items:flex-start}.shares-target[data-v-3c818f43]{width:100%;min-width:0}.shares-option[data-v-3c818f43],.shares-row[data-v-3c818f43]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-3c818f43]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-3c818f43]{flex:1;min-width:0}.shares-link[data-v-3c818f43],.shares-comment[data-v-3c818f43]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-3c818f43],.shares-failure[data-v-3c818f43]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { computed as M, ref as c, openBlock as t, createBlock as E, unref as o, withCtx as i, createElementVNode as n, withModifiers as G, withDirectives as O, vModelText as q, createVNode as d, createElementBlock as r, createCommentVNode as u, Fragment as _, renderList as P, toDisplayString as l, createTextVNode as h } from "vue";
 import { useWindow as H, useRows as J, useListTools as Q, WindowRoom as X, Segmented as Z, Switch as ee, Btn as m, ListTools as se, RowList as ae } from "@journal/window-kit";
 const te = (x, N) => {
   const k = x.__vccOpts || x;
@@ -30,7 +30,7 @@ const te = (x, N) => {
   key: 2,
   class: "shares-waiting",
   "data-share-waiting": ""
-}, me = ["data-share-row"], ke = { class: "shares-name" }, we = ["data-share-row"], fe = { class: "shares-row" }, ye = { class: "shares-name" }, _e = {
+}, me = ["data-share-row"], ke = { class: "shares-name" }, fe = ["data-share-row"], we = { class: "shares-row" }, ye = { class: "shares-name" }, _e = {
   key: 0,
   class: "shares-hint"
 }, ge = {
@@ -44,29 +44,29 @@ const te = (x, N) => {
       { key: "7d", label: "7 days" },
       { key: "30d", label: "30 days" },
       { key: "never", label: "Never" }
-    ], k = H(), { rows: b, failure: V, loaded: I, load: K } = J("share list", ["share_link.*", "share_comment.*"]), D = U(() => b.value.filter((a) => a.state === "waiting")), R = U(() => b.value.filter((a) => a.state === "active")), L = Q(R, { title: (a) => `${a.row_model} ${a.row_id}` }), f = c(new URLSearchParams(window.location.search).get("share") ?? ""), A = c("7d"), y = c(""), B = c(!1), S = c(null), w = c(null), g = c(""), p = c({}), $ = c(!1), P = (a) => a.expires_at ? `ends ${a.expires_at}` : "never ends";
+    ], k = H(), { rows: b, failure: V, loaded: F, load: I } = J("share list", ["share_link.*", "share_comment.*"]), T = M(() => b.value.filter((a) => a.state === "waiting")), R = M(() => b.value.filter((a) => a.state === "active")), L = Q(R, { title: (a) => `${a.row_model} ${a.row_id}` }), w = c(new URLSearchParams(window.location.search).get("share") ?? ""), A = c("7d"), y = c(""), B = c(!1), S = c(null), f = c(null), g = c(""), p = c({}), $ = c(!1), D = (a) => a.expires_at ? `ends ${a.expires_at}` : "never ends";
     async function C(a) {
       const e = await k.run(a);
-      return g.value = e.ok ? "" : e.error, e.ok && K(), e;
+      return g.value = e.ok ? "" : e.error, e.ok && I(), e;
     }
     async function W(a) {
       const e = await k.read(["tunnel", "status"]), s = e.ok && e.value.address ? e.value.address : window.location.origin;
       return { ...a.value, address: `${s}${a.value.link}`, outside: !!(e.ok && e.value.address) };
     }
-    async function M() {
-      const a = await k.read(["share", "opens", f.value.trim()]);
+    async function U() {
+      const a = await k.read(["share", "opens", w.value.trim()]);
       g.value = a.ok ? "" : a.error, S.value = a.ok ? a.value.rows : null;
     }
-    f.value && M();
-    async function Y() {
-      const a = await C(["share", "make", f.value.trim(), "--ends", A.value, ...y.value ? [`--password=${y.value}`] : [], ...B.value ? ["--comments"] : []]);
-      a.ok && (w.value = await W(a), y.value = "", S.value = null);
+    w.value && U();
+    async function K() {
+      const a = await C(["share", "make", w.value.trim(), "--ends", A.value, ...y.value ? [`--password=${y.value}`] : [], ...B.value ? ["--comments"] : []]);
+      a.ok && (f.value = await W(a), y.value = "", S.value = null);
     }
-    async function j(a) {
+    async function Y(a) {
       const e = await C(["share", "accept", String(a.id)]);
-      e.ok && (w.value = await W(e));
+      e.ok && (f.value = await W(e));
     }
-    async function q() {
+    async function j() {
       for (const a of R.value) await C(["share", "revoke", String(a.id)]);
       $.value = !1;
     }
@@ -84,16 +84,16 @@ const te = (x, N) => {
           n("form", {
             class: "shares-make",
             "data-share-form": "",
-            onSubmit: G(Y, ["prevent"])
+            onSubmit: G(K, ["prevent"])
           }, [
             O(n("input", {
-              "onUpdate:modelValue": e[0] || (e[0] = (s) => f.value = s),
+              "onUpdate:modelValue": e[0] || (e[0] = (s) => w.value = s),
               class: "shares-target",
               placeholder: "plans:2, docs:12 or reports:4",
               "aria-label": "What to share",
-              onChange: M
+              onChange: U
             }, null, 544), [
-              [F, f.value]
+              [q, w.value]
             ]),
             n("div", oe, [
               e[6] || (e[6] = n("span", { class: "shares-label" }, "Ends after", -1)),
@@ -114,7 +114,7 @@ const te = (x, N) => {
                 placeholder: "None",
                 "aria-label": "Password"
               }, null, 512), [
-                [F, y.value]
+                [q, y.value]
               ]),
               y.value ? (t(), r("span", re, "Visitors enter any name and this password.")) : u("", !0)
             ]),
@@ -122,46 +122,46 @@ const te = (x, N) => {
               e[8] || (e[8] = n("span", { class: "shares-label" }, "Visitors can comment", -1)),
               d(o(ee), {
                 on: B.value,
-                title: "Let visitors comment under a name of their own",
+                title: "Let visitors choose a name when commenting",
                 onChange: e[3] || (e[3] = (s) => B.value = s)
               }, null, 8, ["on"])
             ]),
             S.value ? (t(), r("div", de, [
               e[9] || (e[9] = n("span", { class: "shares-label" }, "Whoever has the link can view", -1)),
-              (t(!0), r(_, null, T(S.value, (s) => (t(), r("span", {
+              (t(!0), r(_, null, P(S.value, (s) => (t(), r("span", {
                 key: s.id
               }, l(s.line), 1))), 128))
             ])) : u("", !0),
             d(o(m), {
               kind: "primary",
               type: "submit",
-              disabled: !f.value.trim()
+              disabled: !w.value.trim()
             }, {
               default: i(() => [...e[10] || (e[10] = [
-                h("Make a link", -1)
+                h("Create link", -1)
               ])]),
               _: 1
             }, 8, ["disabled"])
           ], 32),
-          w.value ? (t(), r(_, { key: 0 }, [
-            n("p", ue, l(w.value.address), 1),
-            n("p", ve, "This link is shown once. Anyone who has it can read it" + l(w.value.expires_at ? ` until ${w.value.expires_at}` : "") + ".", 1),
-            w.value.outside ? u("", !0) : (t(), r("p", ce, "No tunnel is connected, so this address works only from this computer."))
+          f.value ? (t(), r(_, { key: 0 }, [
+            n("p", ue, l(f.value.address), 1),
+            n("p", ve, "This link is shown once. Anyone who has it can read it" + l(f.value.expires_at ? ` until ${f.value.expires_at}` : "") + ".", 1),
+            f.value.outside ? u("", !0) : (t(), r("p", ce, "No tunnel is connected, so this address works only from this computer."))
           ], 64)) : u("", !0),
           g.value ? (t(), r("p", he, l(g.value), 1)) : u("", !0),
-          D.value.length ? (t(), r("section", pe, [
-            e[13] || (e[13] = n("h3", { class: "shares-label" }, "Needs you", -1)),
-            (t(!0), r(_, null, T(D.value, (s) => (t(), r("div", {
+          T.value.length ? (t(), r("section", pe, [
+            e[13] || (e[13] = n("h3", { class: "shares-label" }, "Pending requests", -1)),
+            (t(!0), r(_, null, P(T.value, (s) => (t(), r("div", {
               key: s.id,
               class: "shares-row",
               "data-share-row": s.id
             }, [
-              n("span", ke, "An agent asks to share " + l(s.row_model) + " " + l(s.row_id) + ", " + l(P(s)) + l(s.locked ? ", with a password" : "") + l(s.comments ? ", with comments" : ""), 1),
+              n("span", ke, "An agent asks to share " + l(s.row_model) + " " + l(s.row_id) + ", " + l(D(s)) + l(s.locked ? ", with a password" : "") + l(s.comments ? ", with comments" : ""), 1),
               d(o(m), {
                 small: "",
                 kind: "primary",
                 "data-share-accept": "",
-                onClick: (v) => j(s)
+                onClick: (v) => Y(s)
               }, {
                 default: i(() => [...e[11] || (e[11] = [
                   h("Accept", -1)
@@ -184,9 +184,9 @@ const te = (x, N) => {
           d(o(ae), {
             rows: o(L).shown.value,
             failure: o(V),
-            loaded: o(I),
+            loaded: o(F),
             empty: "No link is open",
-            hint: "A link you share an item with shows here until you close it.",
+            hint: "Active share links appear here.",
             searching: o(L).filtering.value
           }, {
             default: i(({ row: s }) => [
@@ -194,8 +194,8 @@ const te = (x, N) => {
                 class: "shares-open",
                 "data-share-row": s.id
               }, [
-                n("div", fe, [
-                  n("span", ye, l(s.row_model) + " " + l(s.row_id) + ", " + l(P(s)) + ", " + l(s.view_count) + " " + l(s.view_count === 1 ? "view" : "views") + l(s.locked ? ", with a password" : ""), 1),
+                n("div", we, [
+                  n("span", ye, l(s.row_model) + " " + l(s.row_id) + ", " + l(D(s)) + ", " + l(s.view_count) + " " + l(s.view_count === 1 ? "view" : "views") + l(s.locked ? ", with a password" : ""), 1),
                   s.comments ? (t(), E(o(m), {
                     key: 0,
                     small: "",
@@ -220,7 +220,7 @@ const te = (x, N) => {
                 ]),
                 p.value[s.id] ? (t(), r(_, { key: 0 }, [
                   p.value[s.id].length ? u("", !0) : (t(), r("p", _e, "No comments yet")),
-                  (t(!0), r(_, null, T(p.value[s.id], (v) => (t(), r("p", {
+                  (t(!0), r(_, null, P(p.value[s.id], (v) => (t(), r("p", {
                     key: v.id,
                     class: "shares-comment",
                     "data-share-comment": ""
@@ -229,7 +229,7 @@ const te = (x, N) => {
                     h(" " + l(v.text), 1)
                   ]))), 128))
                 ], 64)) : u("", !0)
-              ], 8, we)
+              ], 8, fe)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded", "searching"]),
@@ -248,7 +248,7 @@ const te = (x, N) => {
                 small: "",
                 kind: "danger",
                 "data-share-stop-every-confirm": "",
-                onClick: q
+                onClick: j
               }, {
                 default: i(() => [...e[17] || (e[17] = [
                   h("Yes, stop every share", -1)
@@ -272,7 +272,7 @@ const te = (x, N) => {
       _: 1
     }));
   }
-}, $e = /* @__PURE__ */ te(Ce, [["__scopeId", "data-v-82920287"]]);
+}, $e = /* @__PURE__ */ te(Ce, [["__scopeId", "data-v-3c818f43"]]);
 export {
   $e as default
 };

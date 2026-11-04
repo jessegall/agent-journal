@@ -4,7 +4,7 @@ export const TRIGGER_KINDS = [
     {value: "phrase", label: "You ask for it", fields: [{name: "text", label: "Words you write", placeholder: "an update please"}]},
     {value: "command", label: "A command runs", fields: [{name: "pattern", label: "Pattern on the command line", placeholder: "^git push"}]},
     {value: "file", label: "A file is edited", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}]},
-    {value: "file-text", label: "An edit adds a text", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}, {name: "text", label: "Text in the new content", placeholder: "TODO"}]},
+    {value: "file-text", label: "An edit adds text", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}, {name: "text", label: "Text in the new content", placeholder: "TODO"}]},
     {value: "tool", label: "A tool is used", fields: [{name: "tool", label: "Tool name", placeholder: "Edit"}, {name: "pattern", label: "Pattern on its input, if any", placeholder: "migrations/"}]},
 ];
 
@@ -35,5 +35,5 @@ const OPTIONAL = {tool: ["pattern"]};
 
 export function triggersProblem(triggers) {
     const lacking = triggers.find((trigger) => kindOf(trigger.trigger_type).fields.some((field) => !(OPTIONAL[trigger.trigger_type] ?? []).includes(field.name) && !(trigger[field.name] || "").trim()));
-    return lacking ? `${kindOf(lacking.trigger_type).label}: every field needs its words.` : "";
+    return lacking ? `${kindOf(lacking.trigger_type).label}: complete every field.` : "";
 }

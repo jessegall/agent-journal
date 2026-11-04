@@ -7,4 +7,10 @@ export const looks = {
     tag: "waiting for a reply",
     // @righteous naming_SentenceLabelScriptDetector
     status: "Replies",
+    // @sin naming_PlainViewerScriptTextDetector
+    help: "Make the secret",
+    // @sin naming_PlainViewerScriptTextDetector
+    placeholder: "Type the value",
+    // @righteous naming_PlainViewerScriptTextDetector
+    hint: "Add credentials",
 };

@@ -30,12 +30,12 @@ async function make() {
 
 <template>
     <form class="dump" data-dump-form @submit.prevent="make" @dragover.prevent @drop.prevent="drop">
-        <textarea v-model="notes" class="dump-notes" rows="4" placeholder="Paste or drop what you have: a paragraph or a file is one part" />
+        <textarea v-model="notes" class="dump-notes" rows="4" placeholder="Paste text or drop files. Each paragraph or file becomes a separate item." />
         <template v-if="dropped.length">
             <p class="dump-files">{{ dropped.map((file) => file.name).join(", ") }}</p>
         </template>
         <div class="dump-row">
-            <Btn kind="primary" small :disabled="!parts().length" data-dump-make @click="make">Make the dump</Btn>
+            <Btn kind="primary" small :disabled="!parts().length" data-dump-make @click="make">Create dump</Btn>
             <Btn small @click="emit('close')">Cancel</Btn>
         </div>
         <template v-if="failure">

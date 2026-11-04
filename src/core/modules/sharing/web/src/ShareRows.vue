@@ -95,7 +95,7 @@ async function toggleComments(row) {
                 </div>
                 <div class="shares-option">
                     <span class="shares-label">Visitors can comment</span>
-                    <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
+                    <Switch :on="comments" title="Let visitors choose a name when commenting" @change="comments = $event" />
                 </div>
                 <template v-if="opens">
                     <div class="shares-opens" data-share-opens>
@@ -105,7 +105,7 @@ async function toggleComments(row) {
                         </template>
                     </div>
                 </template>
-                <Btn kind="primary" type="submit" :disabled="!target.trim()">Make a link</Btn>
+                <Btn kind="primary" type="submit" :disabled="!target.trim()">Create link</Btn>
             </form>
             <template v-if="made">
                 <p class="shares-link" data-share-address>{{ made.address }}</p>
@@ -119,7 +119,7 @@ async function toggleComments(row) {
             </template>
             <template v-if="waiting.length">
                 <section class="shares-waiting" data-share-waiting>
-                    <h3 class="shares-label">Needs you</h3>
+                    <h3 class="shares-label">Pending requests</h3>
                     <template v-for="row in waiting" :key="row.id">
                         <div class="shares-row" :data-share-row="row.id">
                             <span class="shares-name">An agent asks to share {{ row.row_model }} {{ row.row_id }}, {{ when(row) }}{{ row.locked ? ", with a password" : "" }}{{ row.comments ? ", with comments" : "" }}</span>
@@ -130,7 +130,7 @@ async function toggleComments(row) {
                 </section>
             </template>
             <ListTools :tools="tools" />
-            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No link is open" hint="A link you share an item with shows here until you close it." :searching="tools.filtering.value">
+            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No link is open" hint="Active share links appear here." :searching="tools.filtering.value">
                 <template #default="{row}">
                     <div class="shares-open" :data-share-row="row.id">
                         <div class="shares-row">

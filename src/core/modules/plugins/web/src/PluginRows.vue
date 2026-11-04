@@ -172,7 +172,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
                 </template>
                 <button type="button" class="make" data-plugin-make @click="(making = true), (asked = false)">
                     <span class="make-mark"><Icon name="plus" :size="16" /></span>
-                    <span class="make-title">Make a plugin</span>
+                    <span class="make-title">Create a plugin</span>
                     <span class="make-text">Ask the agent to build one for you, or read how plugins are made.</span>
                 </button>
             </div>

@@ -9,12 +9,12 @@ const emit = defineEmits(["close", "remove"]);
 <template>
     <Dialog :title="`Remove ${title}`" fits @close="emit('close')">
         <p class="remove-lead">
-            Its services stop, its hooks and blocks no longer run, and its folder is taken away. What it kept of its own (settings,
-            caches, anything it wrote in its data folder) can stay, in case you install it again, or go with it.
+            Removing this plugin stops its services and event handlers and deletes its folder. You can keep its settings
+            and saved data for a future installation, or delete everything.
         </p>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn data-plugin-remove-keep @click="emit('remove', false)">Remove, keep what it kept</Btn>
+            <Btn data-plugin-remove-keep @click="emit('remove', false)">Remove, keep data</Btn>
             <Btn kind="danger" data-plugin-remove-purge @click="emit('remove', true)">Remove everything</Btn>
         </template>
     </Dialog>

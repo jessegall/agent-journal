@@ -63,7 +63,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
             <p class="search-note">{{ failure }}</p>
         </template>
         <template v-else-if="answer && !answer.hits.length">
-            <p class="search-note" data-no-hits>Nothing here holds all of: {{ terms.trim() }}</p>
+            <p class="search-note" data-no-hits>No results match all these words: {{ terms.trim() }}</p>
         </template>
         <template v-else-if="answer">
             <ul class="search-hits">
@@ -76,7 +76,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
                     </li>
                 </template>
             </ul>
-            <p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "row holds" : "rows hold" }} all of: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p>
+            <p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p>
         </template>
     </div>
 </template>

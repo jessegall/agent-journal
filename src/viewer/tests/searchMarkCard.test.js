@@ -45,6 +45,6 @@ test("when more rows held the words than are shown the last child opens the sear
 
 test("a search that found nothing says which words nothing held", async () => {
     const element = await card({terms: ["cart", "euros"], total: 0, hits: []});
-    expect(element.querySelector("[data-search-none]").textContent).toBe("Nothing held all of: cart euros");
+    expect(element.querySelector("[data-search-none]").textContent).toBe("No results match all these words: cart euros");
     expect(element.querySelectorAll("[data-search-child]")).toHaveLength(0);
 });

@@ -46,16 +46,16 @@ async function make() {
             <TextInput v-model="title" label="What is it for?" data-secret-new-title />
             <TextInput v-model="note" label="Note for the agent" data-secret-new-note />
             <template v-if="isCustom">
-                <TextInput v-model="firstField" label="Name of its first field" data-secret-first-field />
+                <TextInput v-model="firstField" label="First field name" data-secret-first-field />
             </template>
-            <p class="line">It shows on the page as a button until you give it a value.</p>
+            <p class="line">After creating the secret, select Add credentials to save your key or login.</p>
             <template v-if="refusal">
                 <p class="refusal" role="alert">{{ refusal }}</p>
             </template>
         </div>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="!isReady" data-secret-create @click="make">Make the secret</Btn>
+            <Btn kind="primary" :disabled="!isReady" data-secret-create @click="make">Create secret</Btn>
         </template>
     </Dialog>
 </template>

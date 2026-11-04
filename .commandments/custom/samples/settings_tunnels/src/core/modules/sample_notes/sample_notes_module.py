@@ -10,6 +10,8 @@ class SampleNotesModule(Module):
 
     name = "journal.core.sample_notes"
     settings = [
+        # @sin naming_PlainSettingTextDetector
+        SettingValue("saved", "Window settings", "Each window saves its own data.", SettingType.NUMBER, default=1),
         SettingValue("limit", "Note limit", "How many notes the window lists.", SettingType.NUMBER, default=20),
         SettingValue("depth", "Depth",
                      # @sin naming_PlainSettingTextDetector

@@ -23,7 +23,7 @@ test("typing terms shows the hits with their excerpt and the total", async () =>
         ["task 7", "Round the cart total to cents"],
         ["doc 2", "How the cart counts money"],
     ]);
-    expect(element.querySelector("[data-total]").textContent).toBe("2 rows hold all of: cart total");
+    expect(element.querySelector("[data-total]").textContent).toBe("2 results match all these words: cart total");
 });
 
 test("a hit opens the window of the row it names", async () => {
@@ -41,5 +41,5 @@ test("a model chip narrows the search to that model, and none picked means all",
 
 test("a search that holds nothing says so", async () => {
     const {element} = await search({hits: [], total: 0}, "zebra");
-    expect(element.querySelector("[data-no-hits]").textContent).toBe("Nothing here holds all of: zebra");
+    expect(element.querySelector("[data-no-hits]").textContent).toBe("No results match all these words: zebra");
 });

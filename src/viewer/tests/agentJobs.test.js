@@ -23,7 +23,7 @@ test("a job being stopped says so and cannot be stopped twice, and none says so"
     const asked = await mounted(AgentJobs, context({"scheduled-job running --agent 7": page([{...JOB, stop_requested_at: "2026-11-01"}])}, 7));
     expect(asked.querySelector("[data-job-stop]").textContent).toContain("Stopping");
     expect(asked.querySelector("[data-job-stop]").disabled).toBe(true);
-    expect((await mounted(AgentJobs, context({"scheduled-job running --agent 7": page([])}, 7))).textContent).toContain("The agent has scheduled nothing");
+    expect((await mounted(AgentJobs, context({"scheduled-job running --agent 7": page([])}, 7))).textContent).toContain("No scheduled jobs");
 });
 
 test("a job far off says it is not due soon and says once a single time", async () => {

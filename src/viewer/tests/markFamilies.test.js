@@ -21,7 +21,7 @@ test("the catalogue lists the chat window with the families' switches, so the pa
     const catalogue = new WindowCatalogue(async () => ({windows: [{name: CHAT_WINDOW, options: []}, {name: "notes.board", options: []}]}), async () => declarations);
     await catalogue.load();
     expect(catalogue.window(CHAT_WINDOW).options.map((option) => option.key)).toEqual(["show-preset", "main-only-memories", "show-memories.memories", "show-memories.reminders"]);
-    expect(catalogue.window(CHAT_WINDOW).options.find((option) => option.control === "preset").presets.map((preset) => preset.label)).toEqual(["Only chat", "Chat with context", "Every mark"]);
+    expect(catalogue.window(CHAT_WINDOW).options.find((option) => option.control === "preset").presets.map((preset) => preset.label)).toEqual(["Only chat", "Chat with context", "All updates"]);
     expect(catalogue.window("notes.board").options).toEqual([]);
     expect(withFamilyOptions([], declarations)).toEqual([]);
 });

@@ -25,7 +25,7 @@ const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.
 const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const usage = computed(() => {
     const parts = [];
-    if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
+    if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context: ${props.facts.context_percent}%`);
     if (props.facts?.cost_dollars) parts.push(`$${props.facts.cost_dollars.toFixed(2)}`);
     return parts.join(" · ");
 });
@@ -115,7 +115,7 @@ readCommand();
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
-                            <template v-if="!tasks.length"><EmptyState title="No tasks">This agent was given none.</EmptyState></template>
+                            <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
                             <template v-for="section in sections" :key="section.state">
                                 <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
                                     <template v-for="task in section.tasks" :key="task.id">

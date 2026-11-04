@@ -84,7 +84,7 @@ const type = async (element, text) => {
 
 test("the running tab of the helpers window with none running says so and what brings one, though closed helpers exist", async () => {
     const element = await agents(helpers);
-    expect(words()).toEqual(["No helpers running", "A helper shows here while it works: a subagent the agent starts, or a reviewer."]);
+    expect(words()).toEqual(["No helpers running", "Active subagents and reviewers appear here."]);
     expect(element.textContent).not.toContain("Nothing matches");
 });
 
@@ -98,11 +98,11 @@ test("the other tabs of the helpers window say what is empty in their own terms"
     const element = await agents(helpers, {"agent cards": page([])});
     const pick = (label) => pickButton(element, label, ".segmented button");
     await pick("Idle");
-    expect(words()).toEqual(["No helpers idle", "Helpers ready for another job show here."]);
+    expect(words()).toEqual(["No helpers idle", "Helpers available for another job appear here."]);
     await pick("Retired");
-    expect(words()).toEqual(["No helpers retired", "Helpers that will not be used again show here."]);
+    expect(words()).toEqual(["No helpers retired", "Retired helpers appear here."]);
     await pick("All");
-    expect(words()).toEqual(["No helpers yet", "The helpers the agent sends show here."]);
+    expect(words()).toEqual(["No helpers yet", "Helpers started by the agent appear here."]);
 });
 
 test("a window with no texts declared says its one empty line on every tab", async () => {
@@ -116,7 +116,7 @@ test("the memories window says it is empty, and once words are typed that nothin
     const element = await mounted(MemoryRows, context({"memory list": page([]), "memory context": page([])}));
     document.body.append(element);
     host = element;
-    expect(words()).toEqual(["No memories yet", "A memory an agent or you keep with journal memory make shows here."]);
+    expect(words()).toEqual(["No memories yet", "Memories you or the agent save appear here."]);
     const box = element.querySelector("[data-search-input]");
     box.value = "cart";
     box.dispatchEvent(new Event("input", {bubbles: true}));

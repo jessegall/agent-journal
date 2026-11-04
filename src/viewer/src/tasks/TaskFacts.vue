@@ -22,7 +22,7 @@ const emit = defineEmits(["priority"]);
         </template>
         <template v-if="task.state === 'started' && task.holder_id">
             <div class="fact">
-                <span class="fact-label">Holder</span>
+                <span class="fact-label">Assigned to</span>
                 <span class="fact-value">Agent {{ task.holder_id }}</span>
             </div>
         </template>

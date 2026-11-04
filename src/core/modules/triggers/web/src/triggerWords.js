@@ -15,11 +15,11 @@ export const EXAMPLES = [
 
 export const WHEN_KINDS = [
     {key: "words", label: "Words appear", hint: "In what you write or what the agent runs"},
-    {key: "time", label: "A time comes", hint: "Once, or again and again"},
+    {key: "time", label: "A scheduled time arrives", hint: "Once, or again and again"},
 ];
 
 export const TIMES = [
-    {key: "every", label: "Again and again", hint: "Every so many minutes"},
+    {key: "every", label: "Repeat", hint: "At a fixed interval"},
     {key: "once", label: "Once", hint: "On one day, at one time"},
     {key: "cron", label: "By a cron line", hint: "Such as every weekday at nine"},
 ];
@@ -38,7 +38,7 @@ export const MATCHES = [
 
 const AGENT_CHOICES = [
     {key: "main", value: "main", label: "The main agent"},
-    {key: "helper", value: "helper", label: "A agent or subagent"},
+    {key: "helper", value: "helper", label: "An agent or subagent"},
 ];
 
 export const CONDITION_TYPES = [
@@ -78,7 +78,7 @@ const DOING = {
 const TIME_OPENINGS = {
     every: (trigger) => `Every ${trigger.every || "few"} minutes`,
     once: () => "At the time you choose",
-    cron: () => "On the cron line's times",
+    cron: () => "At the scheduled times",
 };
 
 export function sentence(trigger) {

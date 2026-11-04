@@ -16,8 +16,8 @@ load();
             </template>
             <template v-if="fitness">
                 <p class="load-head" data-load-head>Load {{ fitness.workload.toFixed(2) }}</p>
-                <p class="load-row" data-load-row="arrivals"><span>Your messages arriving an hour</span><span>{{ Math.round(fitness.arrivals_hourly) }}</span></p>
-                <p class="load-row" data-load-row="answers"><span>Messages the agent answers an hour</span><span>{{ Math.round(fitness.answers_hourly) }}</span></p>
+                <p class="load-row" data-load-row="arrivals"><span>Your messages per hour</span><span>{{ Math.round(fitness.arrivals_hourly) }}</span></p>
+                <p class="load-row" data-load-row="answers"><span>Agent replies per hour</span><span>{{ Math.round(fitness.answers_hourly) }}</span></p>
                 <p class="load-row" data-load-row="waiting"><span>Your messages waiting to be read</span><span>{{ fitness.waiting_messages }}</span></p>
                 <p class="load-note">Load is messages arriving against those answered, over the last half hour.</p>
             </template>

@@ -32,7 +32,7 @@ async function stop(row) {
             <template v-if="refusal">
                 <p class="agent-jobs-refusal" role="alert" data-job-refusal>{{ refusal }}</p>
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="The agent has scheduled nothing" hint="A job the agent sets to run later shows here.">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No scheduled jobs" hint="Scheduled jobs appear here.">
                 <template #default="{row}">
                     <div class="agent-job" :data-job="row.job_id">
                         <div class="agent-job-text">

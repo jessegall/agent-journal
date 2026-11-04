@@ -27,7 +27,7 @@ async function remove(row) {
                         <span class="environment-here">You are here</span>
                     </template>
                     <p class="environment-folder">{{ row.folder }}{{ row.branch ? ` on ${row.branch}` : "" }}</p>
-                    <p class="environment-folder" data-environment-state>{{ row.running_agent_count ? "Agent running" : "No agent running" }} · {{ row.unfinished_task_count }} {{ row.unfinished_task_count === 1 ? "task" : "tasks" }} not done</p>
+                    <p class="environment-folder" data-environment-state>{{ row.running_agent_count ? "Agent: running" : "Agent: stopped" }} · {{ row.unfinished_task_count }} {{ row.unfinished_task_count === 1 ? "task" : "tasks" }} not done</p>
                     <template v-if="refusal[row.id]">
                         <p class="environment-refusal" role="alert" data-environment-refusal>{{ refusal[row.id] }}</p>
                     </template>

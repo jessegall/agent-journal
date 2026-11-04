@@ -32,9 +32,9 @@ const kind = (title, icon, abstract, more = {}) => ({
 });
 
 export const TABLES = {
-    messages: kind("Message", "mail", "What the user left for the agent, or the agent for the user", {in_sidebar: true, listed_under: "environment", takes_comments: true}),
-    questions: kind("Question", "help", "Something the agent asks the user, with choices to pick", {needs_attention: true, takes_comments: true, labels: {answer: "Answer"}}),
-    plans: kind("Plan", "flag", "Ordered phases of tasks with a goal, approved by the user before it runs", {
+    messages: kind("Message", "mail", "Messages between you and the agent", {in_sidebar: true, listed_under: "environment", takes_comments: true}),
+    questions: kind("Question", "help", "A question from the agent with suggested answers", {needs_attention: true, takes_comments: true, labels: {answer: "Answer"}}),
+    plans: kind("Plan", "flag", "A series of phases and tasks for you to approve before work begins", {
         view: "document",
         in_sidebar: true,
         listed_under: "sidebar",
@@ -45,7 +45,7 @@ export const TABLES = {
         labels: {brief: "What you want, in your own words; the agent builds the plan with you from here"},
         filters: OPEN_AND_CLOSED,
     }),
-    tasks: kind("Task", "ring", "One unit of work with a life: open, started, done", {
+    tasks: kind("Task", "ring", "A unit of work tracked from creation to completion", {
         in_sidebar: true,
         listed_under: "sidebar",
         takes_comments: true,
@@ -54,7 +54,7 @@ export const TABLES = {
         labels: {outcome: "How"},
         filters: OPEN_AND_CLOSED,
     }),
-    reports: kind("Report", "report", "What was checked and what was found, written for the user", {
+    reports: kind("Report", "report", "A record of what was checked and found", {
         view: "document",
         in_sidebar: true,
         listed_under: "environment",
@@ -63,7 +63,7 @@ export const TABLES = {
         closed_first: true,
         exports: true,
     }),
-    collections: kind("Collection", "folder", "Rows that belong together, gathered under a name", {
+    collections: kind("Collection", "folder", "Related items grouped under a name", {
         in_sidebar: true,
         listed_under: "sidebar",
         listed_as_cards: true,
@@ -89,7 +89,7 @@ export const TABLES = {
         created_in_viewer: true,
         labels: {weight: "A weight from 1 to 10"},
     }),
-    rules: kind("Rule", "list", "A ruling that binds every environment of the project", {
+    rules: kind("Rule", "list", "An instruction that applies to every environment in the project", {
         scope: "project",
         in_sidebar: true,
         listed_under: "project",
@@ -97,7 +97,7 @@ export const TABLES = {
         created_in_viewer: true,
         labels: {reason: "Reasoning"},
     }),
-    reminders: kind("Reminder", "clock", "An instruction said again until it is retired", {
+    reminders: kind("Reminder", "clock", "An instruction repeated until it is removed", {
         in_sidebar: true,
         listed_under: "environment",
         takes_comments: true,
@@ -105,15 +105,15 @@ export const TABLES = {
     }),
     pins: kind("Pin", "band", "One line pinned to the chat while it matters", {filters: OPEN_AND_CLOSED}),
     reactions: kind("Reaction", "smile", "A face on a message", {nested: true, typed_as_title: true}),
-    plugins: kind("Plugin", "plug", "A repository installed into the journal: it hears the bus, answers, and may run services of its own", {scope: "project"}),
-    environments: kind("Environment", "branch", "One line of work with its own record: messages, tasks, facts, plans, settings", {scope: "project"}),
+    plugins: kind("Plugin", "plug", "An installed extension that responds to events and can run background services", {scope: "project"}),
+    environments: kind("Environment", "branch", "A separate workspace with messages, tasks, memories, plans and settings", {scope: "project"}),
     agents: kind("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
     nudges: kind("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", {nested: true, typed_as_title: true}),
-    workers: kind("Worker", "bot", "An agent sent to write one bounded job, in a working copy of its own"),
-    verifiers: kind("Verifier", "verifier", "An agent the journal sends by itself to judge whether a dismissed reader report was dismissed rightly"),
+    workers: kind("Worker", "bot", "An agent assigned a task in a separate working copy"),
+    verifiers: kind("Verifier", "verifier", "An agent that checks whether an output reader report was correctly closed"),
     test_turns: kind("Test turn", "terminal", "A worker's turn to run the tests it named, under the test budget"),
-    reviewers: kind("Reviewer", "reviewer", "An agent the journal sends by itself, in orchestrator mode with the reviewer on, to test and check each worker's work and report each point to the agent"),
-    subagents: kind("Subagent", "bot", "A helper the agent started inside its own session for one job", {nested: true}),
+    reviewers: kind("Reviewer", "reviewer", "An agent that tests and reviews worker changes and reports the results to the main agent"),
+    subagents: kind("Subagent", "bot", "A helper started by the agent for a specific job", {nested: true}),
     sequences: kind("Sequence", "list", "Steps the agent follows in order, one at a time, started by hand or by its triggers", {
         view: "document",
         scope: "project",
@@ -131,7 +131,7 @@ export const TABLES = {
         listed_under: "project",
         labels: {brief: "Instructions"},
     }),
-    triggers: kind("Trigger", "bolt", "Words that the user watches for, and what the journal does when they come up", {
+    triggers: kind("Trigger", "bolt", "Words to watch for and the action to take when they appear", {
         scope: "project",
         in_sidebar: true,
         listed_under: "sidebar",
@@ -149,7 +149,7 @@ export const TABLES = {
         listed_under: "sidebar",
         created_in_viewer: true,
     }),
-    dumps: kind("Dump", "inbox", "A pile the user drops in one place, which the agent sorts by subject and files", {
+    dumps: kind("Dump", "inbox", "Text and files you submit for the agent to sort by subject", {
         view: "document",
         needs_attention: true,
         takes_comments: true,

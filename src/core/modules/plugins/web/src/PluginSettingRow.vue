@@ -36,7 +36,7 @@ const say = (text) => emit("configure", props.setting, String(text));
                         <TextArea :id="id" rows="4" :value="value" @change="say($event.target.value)" />
                     </template>
                     <template #secret>
-                        <p class="plugin-setting-help">{{ value ? `Kept as ${value}.` : "A secret." }} You fill it on the Secrets page and allow it to the plugin there; no command sets it.</p>
+                        <p class="plugin-setting-help">{{ value ? `Kept as ${value}.` : "A secret." }} Add the credential on the Secrets page and allow this plugin to use it.</p>
                     </template>
                     <template #default>
                         <TextInput :id="id" :type="setting.type === 'number' ? 'number' : 'text'" :value="value" @change="say($event.target.value)" />

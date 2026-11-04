@@ -11,4 +11,14 @@
     <input placeholder="Hooks and resources" />
     <!-- @righteous naming_PlainViewerTextDetector -->
     <input placeholder="Search the notes" />
+    <!-- @sin naming_PlainViewerPageTextDetector -->
+    <button>Enter the values</button>
+    <!-- @sin naming_PlainViewerPageTextDetector -->
+    <span>Needs a value</span>
+    <!-- @sin naming_PlainViewerTextDetector -->
+    <input placeholder="Type what it needs" />
+    <!-- @righteous naming_PlainViewerPageTextDetector -->
+    <button>Add credentials</button>
+    <!-- @righteous naming_PlainViewerTextDetector -->
+    <input placeholder="Leave blank to keep the saved credential" />
 </template>

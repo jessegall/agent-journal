@@ -35,7 +35,7 @@ test("the waiting list shows each item with its label, its status and where it w
     expect(text).toContain("open");
     expect(text).toContain("questions:1");
     expect(text).toContain("5 min");
-    expect(text).toContain("What the agent is waiting on");
+    expect(text).toContain("What the agent is waiting for");
 });
 
 test("an empty waiting list shows an empty state", async () => {

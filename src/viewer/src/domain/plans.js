@@ -12,10 +12,10 @@ export const PLAN_STATES = {
     ready: "Ready",
     reviewing: "Under review",
     approved: "Starting",
-    started: "Being worked on",
-    waiting: "Needs you",
+    started: "Work: in progress",
+    waiting: "Approval: needed",
     paused: "Paused",
-    delegated: "With workers",
+    delegated: "Workers: active",
     blocked: "Blocked",
     done: "Closed",
 };

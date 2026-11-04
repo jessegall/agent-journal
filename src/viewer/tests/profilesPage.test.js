@@ -52,10 +52,10 @@ test("the page lists each profile with its description, kind, models and use, un
     expect(first).toContain("journal-researcher");
     expect(first).toContain("Researches a question and reports what it found");
     expect(first).toContain("subagent · sonnet on Claude · gpt-6.1-sol on Codex");
-    expect(first).toContain("Dispatched 3 times, last");
+    expect(first).toContain("Uses: 3 times, last");
     const second = host.querySelector('[data-profile="builder"]').textContent.replace(/\s+/g, " ");
     expect(second).toContain("worker · chosen at start on Claude · gpt-6-luna on Codex");
-    expect(second).toContain("Never dispatched here");
+    expect(second).toContain("Uses: none");
     expect(host.querySelector("[data-profile-find]")).not.toBeNull();
     expect(host.querySelector("[data-profile-new]").textContent).toBe("New profile");
 });
@@ -82,7 +82,7 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     const pickers = [...panel().querySelectorAll("[data-drop-head]")].map((head) => head.textContent.trim());
     expect(pickers).toEqual(["sonnet", "gpt-6.1-sol"]);
     expect(panel().querySelector('input[aria-label="Model on Claude Code"]')).toBeNull();
-    expect(panel().textContent).toContain("The journal ships this profile");
+    expect(panel().textContent).toContain("This is a built-in profile");
     expect([...panel().querySelectorAll(".segmented button")].map((button) => button.textContent.trim())).toEqual(["Subagent", "Worker", "Reader"]);
 });
 
@@ -101,7 +101,7 @@ test("Save waits until something changed, and an edit with a new model is saved 
     save.click();
     await settle();
     expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--tools", "Read, Grep, Glob", "--type", "subagent", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--body", "You research."]);
-    expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved; the agent reads it at its next dispatch.");
+    expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
 });
 
 test("a new profile asks for a name and a description before it can be saved, and is saved under that name", async () => {

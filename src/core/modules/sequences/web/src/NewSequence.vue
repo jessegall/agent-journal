@@ -10,7 +10,7 @@ const steps = ref([""]);
 const failure = ref("");
 const missing = computed(() => {
     if (!title.value.trim()) return "Give the sequence a title.";
-    return steps.value.some((step) => !step.trim()) ? "Every step needs its text." : "";
+    return steps.value.some((step) => !step.trim()) ? "Add instructions for each step." : "";
 });
 
 async function create() {

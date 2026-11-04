@@ -104,7 +104,7 @@ load();
                             </div>
                         </template>
                         <template v-if="madeOf(card).length">
-                            <h4 class="made-title">{{ madeOf(card).length }} things filed</h4>
+                            <h4 class="made-title">{{ madeOf(card).length }} items created</h4>
                             <template v-for="made in madeOf(card)" :key="`${made.ref}-${made.from}`">
                                 <div class="made" data-made>
                                     <span class="made-kind">{{ kindOf(made.ref) }}</span>

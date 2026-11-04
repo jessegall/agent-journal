@@ -1,30 +1,30 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-993e04482ee9")) { const style = document.createElement("style"); style.id = "window-styles-993e04482ee9"; style.textContent = ".open-questions-icon[data-v-bb9f2ba6]{flex:none;color:var(--text-3)}.open-questions-text[data-v-bb9f2ba6]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.open-questions-space[data-v-bb9f2ba6]{flex:1}.question[data-v-38203f52]{display:flex;flex:1;flex-direction:column;gap:8px;width:100%;max-width:640px;margin-bottom:10px;padding:14px 16px 16px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);overflow-wrap:anywhere}.question-head[data-v-38203f52]{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.question-time[data-v-38203f52]{flex:none;color:var(--text-3);font-size:11.5px}.question-label[data-v-38203f52]{margin:0;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.question-open[data-v-38203f52]{padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4;text-align:left;cursor:pointer}.question-options[data-v-38203f52]{display:flex;flex-direction:column;gap:6px}.question-option[data-v-38203f52]{display:flex;flex-direction:column;overflow:hidden;padding:9px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer;transition:transform .12s ease,border-color .2s ease}.question-option[data-v-38203f52]:hover{border-color:var(--accent)}.question-option[data-v-38203f52]:active{transform:scale(.98)}.question-option.recommended[data-v-38203f52]{border-color:color-mix(in srgb,var(--accent) 40%,var(--border-2))}.question-tag[data-v-38203f52]{margin:-9px -12px 8px;padding:4px 12px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-text);font-size:11px}.question-closed[data-v-38203f52]{margin:0;color:var(--text-3);font-size:12.5px}.question-failure[data-v-38203f52]{margin:0;color:var(--danger);font-size:12.5px}.question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.waiting-heading[data-v-f7cafce3]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-f7cafce3]{flex:1}.detail[data-v-f7cafce3]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as h, openBlock as s, createBlock as m, unref as a, withCtx as i, createElementVNode as o, createVNode as g, toDisplayString as r, createElementBlock as l, Fragment as x, renderList as R } from "vue";
-import { useRows as W, WindowRoom as k, RowList as v } from "@journal/window-kit";
-import { _ as y } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const b = { class: "waiting" }, B = { class: "label" }, D = {
+if (!document.getElementById("window-styles-7d9e8199ad5f")) { const style = document.createElement("style"); style.id = "window-styles-7d9e8199ad5f"; style.textContent = ".open-questions-icon[data-v-bb9f2ba6]{flex:none;color:var(--text-3)}.open-questions-text[data-v-bb9f2ba6]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.open-questions-space[data-v-bb9f2ba6]{flex:1}.question[data-v-38203f52]{display:flex;flex:1;flex-direction:column;gap:8px;width:100%;max-width:640px;margin-bottom:10px;padding:14px 16px 16px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);overflow-wrap:anywhere}.question-head[data-v-38203f52]{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.question-time[data-v-38203f52]{flex:none;color:var(--text-3);font-size:11.5px}.question-label[data-v-38203f52]{margin:0;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.question-open[data-v-38203f52]{padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4;text-align:left;cursor:pointer}.question-options[data-v-38203f52]{display:flex;flex-direction:column;gap:6px}.question-option[data-v-38203f52]{display:flex;flex-direction:column;overflow:hidden;padding:9px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer;transition:transform .12s ease,border-color .2s ease}.question-option[data-v-38203f52]:hover{border-color:var(--accent)}.question-option[data-v-38203f52]:active{transform:scale(.98)}.question-option.recommended[data-v-38203f52]{border-color:color-mix(in srgb,var(--accent) 40%,var(--border-2))}.question-tag[data-v-38203f52]{margin:-9px -12px 8px;padding:4px 12px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-text);font-size:11px}.question-closed[data-v-38203f52]{margin:0;color:var(--text-3);font-size:12.5px}.question-failure[data-v-38203f52]{margin:0;color:var(--danger);font-size:12.5px}.question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.waiting-heading[data-v-3304b1f9]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-3304b1f9]{flex:1}.detail[data-v-3304b1f9]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as g, openBlock as s, createBlock as m, unref as a, withCtx as o, createElementVNode as n, createVNode as h, toDisplayString as r, createElementBlock as l, Fragment as x, renderList as R } from "vue";
+import { useRows as b, WindowRoom as k, RowList as v } from "@journal/window-kit";
+import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const y = { class: "waiting" }, B = { class: "label" }, D = {
   __name: "WaitingRows",
   setup(N) {
-    const { rows: d, failure: u, loaded: c } = W("wait waiting", ["wait.*"]);
-    function w(t) {
-      return `${Math.max(0, Math.round((Date.now() - Date.parse(t)) / 6e4))} min`;
+    const { rows: d, failure: u, loaded: c } = b("wait waiting", ["wait.*"]);
+    function p(e) {
+      return `${Math.max(0, Math.round((Date.now() - Date.parse(e)) / 6e4))} min`;
     }
-    const p = h(() => d.value.map((t) => ({ id: t.id, label: t.focus, status: t.state, where: t.targets, waited: w(t.opened_at) })));
-    return (t, n) => (s(), m(a(k), null, {
-      default: i(() => [
-        o("div", b, [
-          n[0] || (n[0] = o("h3", { class: "waiting-heading" }, "What the agent is waiting on", -1)),
-          g(a(v), {
-            rows: p.value,
+    const w = g(() => d.value.map((e) => ({ id: e.id, label: e.focus, status: e.state, where: e.targets, waited: p(e.opened_at) })));
+    return (e, i) => (s(), m(a(k), null, {
+      default: o(() => [
+        n("div", y, [
+          i[0] || (i[0] = n("h3", { class: "waiting-heading" }, "What the agent is waiting for", -1)),
+          h(a(v), {
+            rows: w.value,
             failure: a(u),
             loaded: a(c),
             empty: "Nothing is waiting",
-            hint: "What the agent waits for, such as your answer to a question, shows here."
+            hint: "Pending answers and other things the agent is waiting for appear here."
           }, {
-            default: i(({ row: e }) => [
-              o("span", B, r(e.label), 1),
-              (s(!0), l(x, null, R([e.status, e.where, e.waited], (_, f) => (s(), l("span", {
+            default: o(({ row: t }) => [
+              n("span", B, r(t.label), 1),
+              (s(!0), l(x, null, R([t.status, t.where, t.waited], (_, f) => (s(), l("span", {
                 key: f,
                 class: "detail"
               }, r(_), 1))), 128))
@@ -36,7 +36,7 @@ const b = { class: "waiting" }, B = { class: "label" }, D = {
       _: 1
     }));
   }
-}, V = /* @__PURE__ */ y(D, [["__scopeId", "data-v-f7cafce3"]]);
+}, V = /* @__PURE__ */ W(D, [["__scopeId", "data-v-3304b1f9"]]);
 export {
   V as default
 };

@@ -33,7 +33,7 @@ const {opened, toggle} = useOpenRow();
                         </template>
                     </ul>
                 </template>
-                <span class="card-foot">For {{ row.targets.length ? row.targets.join(", ") : "any row" }}{{ row.purpose ? ` · ${row.purpose}` : "" }}</span>
+                <span class="card-foot">For {{ row.targets.length ? row.targets.join(", ") : "any item" }}{{ row.purpose ? ` · ${row.purpose}` : "" }}</span>
             </button>
         </template>
     </div>

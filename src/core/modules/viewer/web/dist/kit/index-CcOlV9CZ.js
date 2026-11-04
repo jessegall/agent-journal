@@ -644,9 +644,9 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
   filters: [],
   ...s
 }), dn = {
-  messages: me("Message", "mail", "What the user left for the agent, or the agent for the user", { in_sidebar: !0, listed_under: "environment", takes_comments: !0 }),
-  questions: me("Question", "help", "Something the agent asks the user, with choices to pick", { needs_attention: !0, takes_comments: !0, labels: { answer: "Answer" } }),
-  plans: me("Plan", "flag", "Ordered phases of tasks with a goal, approved by the user before it runs", {
+  messages: me("Message", "mail", "Messages between you and the agent", { in_sidebar: !0, listed_under: "environment", takes_comments: !0 }),
+  questions: me("Question", "help", "A question from the agent with suggested answers", { needs_attention: !0, takes_comments: !0, labels: { answer: "Answer" } }),
+  plans: me("Plan", "flag", "A series of phases and tasks for you to approve before work begins", {
     view: "document",
     in_sidebar: !0,
     listed_under: "sidebar",
@@ -657,7 +657,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     labels: { brief: "What you want, in your own words; the agent builds the plan with you from here" },
     filters: is
   }),
-  tasks: me("Task", "ring", "One unit of work with a life: open, started, done", {
+  tasks: me("Task", "ring", "A unit of work tracked from creation to completion", {
     in_sidebar: !0,
     listed_under: "sidebar",
     takes_comments: !0,
@@ -666,7 +666,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     labels: { outcome: "How" },
     filters: is
   }),
-  reports: me("Report", "report", "What was checked and what was found, written for the user", {
+  reports: me("Report", "report", "A record of what was checked and found", {
     view: "document",
     in_sidebar: !0,
     listed_under: "environment",
@@ -675,7 +675,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     closed_first: !0,
     exports: !0
   }),
-  collections: me("Collection", "folder", "Rows that belong together, gathered under a name", {
+  collections: me("Collection", "folder", "Related items grouped under a name", {
     in_sidebar: !0,
     listed_under: "sidebar",
     listed_as_cards: !0,
@@ -701,7 +701,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     created_in_viewer: !0,
     labels: { weight: "A weight from 1 to 10" }
   }),
-  rules: me("Rule", "list", "A ruling that binds every environment of the project", {
+  rules: me("Rule", "list", "An instruction that applies to every environment in the project", {
     scope: "project",
     in_sidebar: !0,
     listed_under: "project",
@@ -709,7 +709,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     created_in_viewer: !0,
     labels: { reason: "Reasoning" }
   }),
-  reminders: me("Reminder", "clock", "An instruction said again until it is retired", {
+  reminders: me("Reminder", "clock", "An instruction repeated until it is removed", {
     in_sidebar: !0,
     listed_under: "environment",
     takes_comments: !0,
@@ -717,15 +717,15 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
   }),
   pins: me("Pin", "band", "One line pinned to the chat while it matters", { filters: is }),
   reactions: me("Reaction", "smile", "A face on a message", { nested: !0, typed_as_title: !0 }),
-  plugins: me("Plugin", "plug", "A repository installed into the journal: it hears the bus, answers, and may run services of its own", { scope: "project" }),
-  environments: me("Environment", "branch", "One line of work with its own record: messages, tasks, facts, plans, settings", { scope: "project" }),
+  plugins: me("Plugin", "plug", "An installed extension that responds to events and can run background services", { scope: "project" }),
+  environments: me("Environment", "branch", "A separate workspace with messages, tasks, memories, plans and settings", { scope: "project" }),
   agents: me("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
   nudges: me("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", { nested: !0, typed_as_title: !0 }),
-  workers: me("Worker", "bot", "An agent sent to write one bounded job, in a working copy of its own"),
-  verifiers: me("Verifier", "verifier", "An agent the journal sends by itself to judge whether a dismissed reader report was dismissed rightly"),
+  workers: me("Worker", "bot", "An agent assigned a task in a separate working copy"),
+  verifiers: me("Verifier", "verifier", "An agent that checks whether an output reader report was correctly closed"),
   test_turns: me("Test turn", "terminal", "A worker's turn to run the tests it named, under the test budget"),
-  reviewers: me("Reviewer", "reviewer", "An agent the journal sends by itself, in orchestrator mode with the reviewer on, to test and check each worker's work and report each point to the agent"),
-  subagents: me("Subagent", "bot", "A helper the agent started inside its own session for one job", { nested: !0 }),
+  reviewers: me("Reviewer", "reviewer", "An agent that tests and reviews worker changes and reports the results to the main agent"),
+  subagents: me("Subagent", "bot", "A helper started by the agent for a specific job", { nested: !0 }),
   sequences: me("Sequence", "list", "Steps the agent follows in order, one at a time, started by hand or by its triggers", {
     view: "document",
     scope: "project",
@@ -743,7 +743,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     listed_under: "project",
     labels: { brief: "Instructions" }
   }),
-  triggers: me("Trigger", "bolt", "Words that the user watches for, and what the journal does when they come up", {
+  triggers: me("Trigger", "bolt", "Words to watch for and the action to take when they appear", {
     scope: "project",
     in_sidebar: !0,
     listed_under: "sidebar",
@@ -761,7 +761,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     listed_under: "sidebar",
     created_in_viewer: !0
   }),
-  dumps: me("Dump", "inbox", "A pile the user drops in one place, which the agent sorts by subject and files", {
+  dumps: me("Dump", "inbox", "Text and files you submit for the agent to sort by subject", {
     view: "document",
     needs_attention: !0,
     takes_comments: !0,
@@ -4867,7 +4867,7 @@ function Lp(e, t = Tp, n = () => !0) {
 }
 const Np = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, Dp = (e) => String(e ?? "").replace(Np, ""), Pp = {
   __name: "OutputLines",
-  props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "It printed nothing yet." } },
+  props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "No output yet." } },
   emits: ["older"],
   setup(e, { emit: t }) {
     const n = e, s = t, a = B(null), { away: o, scrolled: r, arrived: i, toBottom: l } = Lp(a);
@@ -4896,7 +4896,7 @@ const Np = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       }, "Follow")) : O("", !0)
     ], 544));
   }
-}, jp = /* @__PURE__ */ Y(Pp, [["__scopeId", "data-v-d9fa8127"]]), qp = 1e4;
+}, jp = /* @__PURE__ */ Y(Pp, [["__scopeId", "data-v-c2fb1783"]]), qp = 1e4;
 class Fp {
   constructor(t, n) {
     this.frame = t, this.context = n, this.heardAt = null, this.received = this.received.bind(this);
@@ -8193,9 +8193,9 @@ const ik = ["title"], lk = {
   completed: [],
   cancelled: []
 }, _k = {
-  open: [{ word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)" }, Ze],
-  started: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)" }, Ze],
-  testing: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "retest", label: "Back to work" }, Ze],
+  open: [{ word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)" }, Ze],
+  started: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What was the outcome?", main: !0 }, { word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)" }, Ze],
+  testing: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What was the outcome?", main: !0 }, { word: "retest", label: "Back to work" }, Ze],
   blocked: [{ word: "unblock", label: "Unblock", main: !0 }, Ze],
   completed: [{ word: "reopen", label: "Reopen" }],
   cancelled: [{ word: "reopen", label: "Reopen" }]
@@ -8364,7 +8364,7 @@ const ik = ["title"], lk = {
           p("span", Gk, $(e.place.phase_number) + " of " + $(e.place.phase_total) + ": " + $(e.place.phase_title), 1)
         ])) : O("", !0),
         e.task.state === "started" && e.task.holder_id ? (c(), h("div", Kk, [
-          o[3] || (o[3] = p("span", { class: "fact-label" }, "Holder", -1)),
+          o[3] || (o[3] = p("span", { class: "fact-label" }, "Assigned to", -1)),
           p("span", Yk, "Agent " + $(e.task.holder_id), 1)
         ])) : O("", !0),
         p("div", Jk, [
@@ -8380,13 +8380,13 @@ const ik = ["title"], lk = {
       ]);
     };
   }
-}, Qk = /* @__PURE__ */ Y(Xk, [["__scopeId", "data-v-2018762d"]]), e2 = {
+}, Qk = /* @__PURE__ */ Y(Xk, [["__scopeId", "data-v-dd83aeb0"]]), e2 = {
   started: "In progress",
   testing: "Testing",
   paused: "Paused",
   blocked: "Blocked",
   planned: "Planned",
-  asked: "Needs you",
+  asked: "Action: needed",
   open: "Open"
 }, t2 = { ...e2, done: "Completed" }, n2 = { class: "task-status-icon" }, s2 = ["width", "height", "aria-label"], a2 = {
   __name: "TaskStatusIcon",
@@ -8629,7 +8629,7 @@ const ik = ["title"], lk = {
         e.task.state === "blocked" ? (c(), h("section", v2, [
           o[4] || (o[4] = p("span", { class: "label" }, "Blocked, waiting on", -1)),
           p("p", y2, $(e.task.reason || "Other tasks"), 1),
-          (r = e.task.openers) != null && r.length ? (c(), h("p", w2, "Opens by itself when " + $(e.task.openers.join(" or ")) + ".", 1)) : (c(), h("p", k2, "Nothing opens it by itself. Unblock it when that is done."))
+          (r = e.task.openers) != null && r.length ? (c(), h("p", w2, "Opens by itself when " + $(e.task.openers.join(" or ")) + ".", 1)) : (c(), h("p", k2, "Unblock this task manually when it is ready to continue."))
         ])) : e.task.state === "cancelled" && e.task.reason ? (c(), h("section", b2, [
           o[5] || (o[5] = p("span", { class: "label" }, "Why it was cancelled", -1)),
           p("p", x2, $(e.task.reason), 1)
@@ -8647,7 +8647,7 @@ const ik = ["title"], lk = {
       ]);
     };
   }
-}, M2 = /* @__PURE__ */ Y($2, [["__scopeId", "data-v-4a8b1505"]]), S2 = {
+}, M2 = /* @__PURE__ */ Y($2, [["__scopeId", "data-v-2863d987"]]), S2 = {
   class: "task-log",
   "aria-label": "Task log"
 }, _2 = {
@@ -10246,7 +10246,7 @@ const ib = /* @__PURE__ */ ab(rb), lb = ["width", "height", "viewBox"], cb = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-BbX6qpwd.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
+}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-CP0d1d2t.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
 export {
   zl as $,
   Me as A,

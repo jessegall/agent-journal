@@ -130,5 +130,5 @@ test("picking a section in the nav shows that section alone", async () => {
 
 test("an environment says whether its agent runs and how many tasks are not done", async () => {
     const element = await environments([]);
-    expect(element.querySelector("[data-environment-state]").textContent).toContain("Agent running · 3 tasks not done");
+    expect(element.querySelector("[data-environment-state]").textContent).toContain("Agent: running · 3 tasks not done");
 });

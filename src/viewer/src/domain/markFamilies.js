@@ -37,11 +37,11 @@ function families(declarations) {
 const options = (list, shown) => Object.fromEntries(list.map((family) => [familyKey(family.key), shown(family)]));
 
 // the presets of version 4's menu, each the pane options it sets: Only chat hides every family, Chat with context shows those shown by default,
-// Every mark shows them all
+// All updates shows them all
 export const familyPresets = (declarations) => [
     {key: "chat", label: "Only chat", icon: "chat", options: options(families(declarations), () => false)},
     {key: "context", label: "Chat with context", icon: "list", options: options(families(declarations), (family) => family.shown)},
-    {key: "every", label: "Every mark", icon: "list", options: options(families(declarations), () => true)},
+    {key: "every", label: "All updates", icon: "list", options: options(families(declarations), () => true)},
 ];
 
 const groupFamilies = (declarations, group) => families(declarations).filter((family) => family.group === group);
@@ -55,12 +55,12 @@ export function mainOnlyOptions(declarations, group, option) {
     return options(groupFamilies(declarations, group), (family) => (already ? true : family.main));
 }
 
-// Show in chat below its presets, group by group: the group's name with Only its main marks, then a switch for each family in it
+// Show in chat below its presets, group by group: the group's name with Main updates only, then a switch for each family in it
 export function groupOptions(declarations) {
     const groups = new Map();
     for (const declaration of declarations) groups.set(declaration.group, [...(groups.get(declaration.group) ?? []), declaration]);
     return [...groups].flatMap(([group, own]) => [
-        {control: "main", key: `main-only-${group}`, label: "Only its main marks", title: groupTitle(group), group, declarations: own, section: MARKS_SECTION},
+        {control: "main", key: `main-only-${group}`, label: "Main updates only", title: groupTitle(group), group, declarations: own, section: MARKS_SECTION},
         ...familyOptions(own),
     ]);
 }

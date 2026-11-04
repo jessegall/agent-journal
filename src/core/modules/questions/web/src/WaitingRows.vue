@@ -14,8 +14,8 @@ const rows = computed(() => waits.value.map((wait) => ({id: wait.id, label: wait
 <template>
     <WindowRoom>
         <div class="waiting">
-            <h3 class="waiting-heading">What the agent is waiting on</h3>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing is waiting" hint="What the agent waits for, such as your answer to a question, shows here.">
+            <h3 class="waiting-heading">What the agent is waiting for</h3>
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing is waiting" hint="Pending answers and other things the agent is waiting for appear here.">
                 <template #default="{row}">
                     <span class="label">{{ row.label }}</span>
                     <template v-for="(detail, position) in [row.status, row.where, row.waited]" :key="position">

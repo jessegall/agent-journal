@@ -56,7 +56,7 @@ afterEach(() => {
 test("a phone that can take notices and has not been asked is offered them on a button", async () => {
     fakeWorker();
     fakeNotification("default");
-    expect(button(await mountedOffer()).textContent).toContain("notices");
+    expect(button(await mountedOffer()).textContent).toContain("Get notifications when your attention is needed");
 });
 
 test("a tap asks for permission, subscribes with the journal's public key and posts the subscription", async () => {

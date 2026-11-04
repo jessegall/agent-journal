@@ -4,6 +4,6 @@ export const GROUPS = {
     paused: "Paused",
     blocked: "Blocked",
     planned: "Planned",
-    asked: "Needs you",
+    asked: "Action: needed",
     open: "Open",
 };

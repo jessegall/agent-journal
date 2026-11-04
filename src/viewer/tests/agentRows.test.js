@@ -350,7 +350,7 @@ test("a worker's opened card shows its context and cost", async () => {
     document.body.append(element);
     cardOf(element, 4).click();
     await settle();
-    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").textContent.trim()).toBe("Context 20% · $1.50");
+    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").textContent.trim()).toBe("Context: 20% · $1.50");
 });
 
 test("the running list has no show more button", async () => {

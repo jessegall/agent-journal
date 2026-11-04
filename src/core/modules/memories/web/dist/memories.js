@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-e4ae6a5246da")) { const style = document.createElement("style"); style.id = "window-styles-e4ae6a5246da"; style.textContent = ".memories[data-v-a3ef6a6c],.memories-form[data-v-a3ef6a6c]{display:flex;flex-direction:column;gap:8px}.memories-form[data-v-a3ef6a6c]{align-items:flex-start}.memories-form textarea[data-v-a3ef6a6c]{width:100%}.memories-refusal[data-v-a3ef6a6c]{margin:0;color:var(--danger);font-size:12.5px}.memory[data-v-a3ef6a6c]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.memory-kind[data-v-a3ef6a6c]{color:var(--text-3);font-size:12px}.memories-page[data-v-76fcf470]{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.memories-page[data-v-76fcf470]>.memories{align-self:stretch}.memory-dock[data-v-19bd84d7]{display:flex;gap:8px;font-size:12px;line-height:1.45}.memory-dock-weight[data-v-19bd84d7]{color:var(--text-4)}.memory-round[data-v-03fe1c3a]{margin:0 0 0 20px}.memory-round-rows[data-v-03fe1c3a]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-03fe1c3a]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-03fe1c3a]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-03fe1c3a]{color:var(--text-4)}\n"; document.head.appendChild(style); }
-import { ref as i, openBlock as u, createElementBlock as x, createElementVNode as s, createVNode as l, unref as e, withCtx as y, createTextVNode as R, withModifiers as A, withDirectives as E, vModelText as j, createCommentVNode as M, toDisplayString as p, computed as D, createBlock as N } from "vue";
-import { useWindow as C, useRows as L, useListTools as I, Btn as S, Segmented as P, ListTools as F, RowList as O, peekRef as U, WindowRoom as Y } from "@journal/window-kit";
+if (!document.getElementById("window-styles-5568e4247e0a")) { const style = document.createElement("style"); style.id = "window-styles-5568e4247e0a"; style.textContent = ".memories[data-v-ba051f84],.memories-form[data-v-ba051f84]{display:flex;flex-direction:column;gap:8px}.memories-form[data-v-ba051f84]{align-items:flex-start}.memories-form textarea[data-v-ba051f84]{width:100%}.memories-refusal[data-v-ba051f84]{margin:0;color:var(--danger);font-size:12.5px}.memory[data-v-ba051f84]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.memory-kind[data-v-ba051f84]{color:var(--text-3);font-size:12px}.memories-page[data-v-76fcf470]{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.memories-page[data-v-76fcf470]>.memories{align-self:stretch}.memory-dock[data-v-19bd84d7]{display:flex;gap:8px;font-size:12px;line-height:1.45}.memory-dock-weight[data-v-19bd84d7]{color:var(--text-4)}.memory-round[data-v-03fe1c3a]{margin:0 0 0 20px}.memory-round-rows[data-v-03fe1c3a]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-03fe1c3a]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-03fe1c3a]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-03fe1c3a]{color:var(--text-4)}\n"; document.head.appendChild(style); }
+import { ref as i, openBlock as u, createElementBlock as g, createElementVNode as n, createVNode as l, unref as e, withCtx as y, createTextVNode as R, withModifiers as E, withDirectives as A, vModelText as D, createCommentVNode as M, toDisplayString as p, computed as I, createBlock as N } from "vue";
+import { useWindow as C, useRows as L, useListTools as j, Btn as S, Segmented as P, ListTools as F, RowList as O, peekRef as U, WindowRoom as Y } from "@journal/window-kit";
 import { _ as T } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const q = { class: "memories" }, z = { class: "memories-tools" }, G = {
   key: 1,
@@ -11,18 +11,18 @@ const q = { class: "memories" }, z = { class: "memories-tools" }, G = {
 }, H = ["data-memory", "onClick"], J = { class: "memory-text" }, K = { class: "memory-kind" }, Q = {
   __name: "MemoryRows",
   props: { environment: { type: String, default: "" } },
-  setup(g) {
+  setup(h) {
     const f = [
       { key: "fact", label: "Fact" },
       { key: "rule", label: "Rule" },
       { key: "reminder", label: "Reminder" }
-    ], d = g, a = d.environment ? ["--environment", d.environment] : [], _ = C(), { rows: r, failure: c, loaded: k, more: V, load: $, older: B } = L(["memory list", ...a].join(" "), ["memory.*"], { incremental: !0 }), b = I(r, { title: (n) => n.text, isOpen: (n) => n.state === "active" }), v = i(!1), m = i(""), w = i("fact"), h = i("");
+    ], d = h, a = d.environment ? ["--environment", d.environment] : [], _ = C(), { rows: r, failure: c, loaded: k, more: V, load: $, older: B } = L(["memory list", ...a].join(" "), ["memory.*"], { incremental: !0 }), b = j(r, { title: (s) => s.text, isOpen: (s) => s.state === "active" }), v = i(!1), m = i(""), w = i("fact"), x = i("");
     async function W() {
-      const n = await _.run(["memory", "make", m.value.trim(), "--type", w.value, ...a]);
-      h.value = n.ok ? "" : n.error, n.ok && (m.value = "", v.value = !1, $());
+      const s = await _.run(["memory", "make", m.value.trim(), "--type", w.value, ...a]);
+      x.value = s.ok ? "" : s.error, s.ok && (m.value = "", v.value = !1, $());
     }
-    return (n, t) => (u(), x("div", q, [
-      s("div", z, [
+    return (s, t) => (u(), g("div", q, [
+      n("div", z, [
         l(e(S), {
           small: "",
           bordered: "",
@@ -35,19 +35,19 @@ const q = { class: "memories" }, z = { class: "memories-tools" }, G = {
           _: 1
         })
       ]),
-      v.value ? (u(), x("form", {
+      v.value ? (u(), g("form", {
         key: 0,
         class: "memories-form",
         "data-memory-form": "",
-        onSubmit: A(W, ["prevent"])
+        onSubmit: E(W, ["prevent"])
       }, [
-        E(s("textarea", {
+        A(n("textarea", {
           "onUpdate:modelValue": t[1] || (t[1] = (o) => m.value = o),
           rows: "2",
           placeholder: "What should be remembered?",
           "aria-label": "What should be remembered?"
         }, null, 512), [
-          [j, m.value]
+          [D, m.value]
         ]),
         l(e(P), {
           options: f,
@@ -61,12 +61,12 @@ const q = { class: "memories" }, z = { class: "memories-tools" }, G = {
           disabled: !m.value.trim()
         }, {
           default: y(() => [...t[4] || (t[4] = [
-            R("Save it", -1)
+            R("Save memory", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
       ], 32)) : M("", !0),
-      h.value ? (u(), x("p", G, p(h.value), 1)) : M("", !0),
+      x.value ? (u(), g("p", G, p(x.value), 1)) : M("", !0),
       l(e(F), { tools: e(b) }, null, 8, ["tools"]),
       l(e(O), {
         rows: e(b).shown.value,
@@ -75,31 +75,31 @@ const q = { class: "memories" }, z = { class: "memories-tools" }, G = {
         more: e(V),
         older: e(B),
         empty: "No memories yet",
-        hint: "A memory an agent or you keep with journal memory make shows here.",
+        hint: "Memories you or the agent save appear here.",
         searching: e(b).filtering.value
       }, {
         default: y(({ row: o }) => [
-          s("button", {
+          n("button", {
             type: "button",
             class: "memory",
             "data-memory": o.id,
             onClick: (oe) => e(U)(`memories:${o.id}`)
           }, [
-            s("span", J, p(o.text), 1),
-            s("span", K, p(o.type) + " · weight " + p(o.weight), 1)
+            n("span", J, p(o.text), 1),
+            n("span", K, p(o.type) + " · weight " + p(o.weight), 1)
           ], 8, H)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded", "more", "older", "searching"])
     ]));
   }
-}, X = /* @__PURE__ */ T(Q, [["__scopeId", "data-v-a3ef6a6c"]]), Z = { class: "memories-page" }, ee = "", te = {
+}, X = /* @__PURE__ */ T(Q, [["__scopeId", "data-v-ba051f84"]]), Z = { class: "memories-page" }, ee = "", te = {
   __name: "MemoriesPage",
-  setup(g) {
-    const f = C(), { rows: d } = L("environment list", ["environment.*"]), a = i(f.environment), _ = D(() => [{ key: ee, label: "All" }, ...d.value.map((r) => ({ key: r.name, label: r.name }))]);
+  setup(h) {
+    const f = C(), { rows: d } = L("environment list", ["environment.*"]), a = i(f.environment), _ = I(() => [{ key: ee, label: "All" }, ...d.value.map((r) => ({ key: r.name, label: r.name }))]);
     return (r, c) => (u(), N(e(Y), null, {
       default: y(() => [
-        s("div", Z, [
+        n("div", Z, [
           l(e(P), {
             options: _.value,
             value: a.value,

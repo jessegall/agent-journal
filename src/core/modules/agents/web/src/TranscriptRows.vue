@@ -14,7 +14,7 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
     <WindowRoom :padding="padding">
         <div class="transcript">
             <AutoScrollPane :row-count="newest">
-                <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">
+                <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent’s messages and tool calls appear here.">
                     <template #default="{row}">
                         <span class="author" :data-author="row.author">{{ row.author }}</span>
                         <span class="text">{{ row.text }}</span>

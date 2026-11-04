@@ -26,7 +26,7 @@ async function remove(row) {
 
 <template>
     <WindowRoom>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No worktrees" hint="A worker's worktree shows here while it works and until its work is merged.">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No worktrees" hint="Worker working copies appear here until their changes are merged.">
             <template #default="{row}">
                 <div class="worktree" :data-worktree="row.folder">
                     <div class="worktree-names">
