@@ -13,7 +13,6 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.documents.models.enums.link_type import LinkType
-from core.modules.documents.upgrade.document_environment import DocumentEnvironment
 from core.modules.documents.support.row_ref import RowRef
 
 TEXT_TABLES = ("docs", "reports")
@@ -24,10 +23,7 @@ LINK_END_MODELS = {"docs": "doc", "reports": "report", "tasks": "task", "plans":
 
 
 class DocumentsMove(VersionFourMove):
-    """Carries version 4's documents and reports with their numbers (a project one, environment 0, has no
-    environment; a signed off one is closed with its reason), each document's revisions through their
-    revision_of links, and the about, mentions and comments_on links of a document or report whose two ends
-    moved; links to a row that did not move are counted."""
+    """Moves version 4 documents, reports, revisions and links into the project library."""
 
     name = "documents"
     reads = [*TEXT_TABLES, REVISIONS]
@@ -69,7 +65,7 @@ class DocumentsMove(VersionFourMove):
 
     def insert_text(self, rows: RowInsert, table: str, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        return rows.insert(table, {"id": row["id"], "environment_id": DocumentEnvironment.id(row["environment_id"]), "creator_id": creator_id, "title": row["title"], "abstract": row["abstract"],
+        return rows.insert(table, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "abstract": row["abstract"],
                                    "body": row["body"] or "", "close_reason": row["settled_reason"] or "", "created_at": created, "updated_at": row["updated_at"] or created})
 
     def insert_revision(self, rows: RowInsert, row: sqlite3.Row, doc_id: int, creator_id: int, context: MoveContext) -> int:

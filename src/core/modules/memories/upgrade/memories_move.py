@@ -68,7 +68,7 @@ class MemoriesMove(VersionFourMove):
     def insert_instruction(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, table: str, memory_type: str, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"] if table == REMINDERS else None, "creator_id": creator_id, "type": memory_type,
-                                        "text": documents.fitting_text(row, row["environment_id"] if table == REMINDERS else None, creator_id, created),
+                                        "text": documents.fitting_text(row, creator_id, created),
                                         "reason": row["reason"] if table == RULES else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})
         self.keep_words(rows, memory_id, creator_id, row["keywords"], created)
@@ -80,7 +80,7 @@ class MemoriesMove(VersionFourMove):
         faded = row["weight"] == LOWEST_WEIGHT and not row["removed_at"]
         removed_at = context.timestamp if faded else row["removed_at"]
         memory_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "task_id": task_id, "creator_id": creator_id, "type": TYPE,
-                                        "text": documents.fitting_text(row, row["environment_id"], creator_id, created), "weight": row["weight"], "removed_at": removed_at,
+                                        "text": documents.fitting_text(row, creator_id, created), "weight": row["weight"], "removed_at": removed_at,
                                         "reason": FADING_REMOVAL_REASON if faded else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})
         if removed_at:

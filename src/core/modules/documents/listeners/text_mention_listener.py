@@ -27,4 +27,4 @@ class TextMentionListener(CommitListener):
         text_row = rows[0]
         source = RowRef(text_row.model_name, text_row.id)
         self.bus.run(RecordMentions(source, "\n".join((text_row.title, text_row.abstract, text_row.body))), self.actors.actor(MODULE_NAME), cause_id=event.id,
-                     environment_id=text_row.environment_id)
+                     environment_id=event.environment_id)

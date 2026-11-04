@@ -16,7 +16,7 @@ DOCUMENTS_MODULE = "journal.core.documents"
 
 
 class NewTextDockListener(CommitListener):
-    """A new document or report is docked above the chat of its environment, or of the agent that wrote it."""
+    """Docks a new project document or report in the chat where it was created."""
 
     row_model: ClassVar[type[TextRow]]
     dock_type: ClassVar[TextDockType]
@@ -27,6 +27,7 @@ class NewTextDockListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         row = self.queries.query(self.row_model).find(event.row_id)
-        environment_id = row.environment_id or next((agent.environment_id for agent in self.queries.query(Agent).filter(id=row.creator_id).page(1, 1).rows), None)
-        if environment_id is not None:
-            self.bus.run(AddDockItem(environment_id, self.dock_type.value, self.row_model.model_name, row.id), self.actors.actor(DOCUMENTS_MODULE), cause_id=event.id, environment_id=environment_id)
+        environment_id = event.environment_id or next((agent.environment_id for agent in self.queries.query(Agent).filter(id=row.creator_id).page(1, 1).rows), None)
+        if environment_id is None:
+            return
+        self.bus.run(AddDockItem(environment_id, self.dock_type.value, self.row_model.model_name, row.id), self.actors.actor(DOCUMENTS_MODULE), cause_id=event.id, environment_id=environment_id)

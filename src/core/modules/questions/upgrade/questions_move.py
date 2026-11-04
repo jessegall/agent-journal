@@ -45,7 +45,7 @@ class QuestionsMove(VersionFourMove):
     def insert(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, agent_id: int, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         question_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent_id, "creator_id": creator_id,
-                                   "text": documents.fitting_text(row, row["environment_id"], creator_id, created),
+                                   "text": documents.fitting_text(row, creator_id, created),
                                    "options": json.dumps(json.loads(row["options"] or "[]")), "recommended": row["recommended"] or "", "answer": row["answer"] or "",
                                    "created_at": created, "updated_at": row["updated_at"] or created})
         for step in StateWalk(QuestionLifecycle).path(QuestionState.ANSWERED if row["answer"] else QuestionState.OPEN) or []:

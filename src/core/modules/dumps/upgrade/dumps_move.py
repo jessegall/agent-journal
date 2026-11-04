@@ -29,9 +29,6 @@ class DumpsMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
-            if map.new_id("environments", row["environment_id"]) is None:
-                report.skip(TABLE, row["id"], "its environment did not move")
-                continue
             if row["question"] not in (None, "", "{}") or row["log"] not in (None, "", "[]"):
                 report.drop("dump questions and logs", 1)
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, creators.actor_id(row["creator"]), context)))
@@ -41,7 +38,7 @@ class DumpsMove(VersionFourMove):
         created, updated = row["created_at"] or context.timestamp, row["updated_at"] or row["created_at"] or context.timestamp
         files = sorted(self.texts(row["files"]))
         details = self.json_value(row["items"], {})
-        dump_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "creator_id": creator_id, "title": row["title"] or "",
+        dump_id = rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"] or "",
                                       "brief": row["brief"] or "", "files": json.dumps(files), "outcome": row["outcome"] or "",
                                       "closed_at": updated if row["completed_at"] else None, "created_at": created, "updated_at": updated})
         for position, name in enumerate(self.item_names(row, files), 1):

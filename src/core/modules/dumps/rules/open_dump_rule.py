@@ -10,8 +10,7 @@ from core.modules.dumps.support.dump_nudges import DUMP_OPEN
 
 
 class OpenDumpRule(DriverRule):
-    """While the main agent works with a dump of its environment not filed, it is told what is left of the
-    oldest one, after a tool since a stop takes no lines."""
+    """Reminds the main agent of the oldest unfinished project dump after a tool call."""
 
     name = "dumps.open-dump"
     hook = HookEventName.POST_TOOL_USE
@@ -22,5 +21,5 @@ class OpenDumpRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        dumps = self.queries.query(Dump).filter(environment_id=hook.environment_id).matching(IsNull("closed_at")).oldest().page(1, 1).rows
+        dumps = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().page(1, 1).rows
         return RuleAnswer.with_nudges(DUMP_OPEN.nudge(dump=dumps[0].id)) if dumps else RuleAnswer.allowed()

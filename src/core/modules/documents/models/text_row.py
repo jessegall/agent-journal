@@ -6,10 +6,8 @@ from core.modules.documents.models.support.abstract_check import AbstractCheck
 
 @dataclass(frozen=True, kw_only=True)
 class TextRow(Model):
-    """What a document and a report both are: a title, a one-line abstract and a text in sections, in an
-    environment or the whole project, and closed with a reason once it needs no action."""
+    """A project document or report with a title, abstract, body and optional reason for closing."""
 
-    environment_id: int | None = None
     creator_id: int
     title: str
     abstract: str
