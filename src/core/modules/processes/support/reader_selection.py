@@ -31,5 +31,9 @@ class ReaderSelection:
 
     @staticmethod
     def reads_command(reader: Reader, command: str, category: CommandCategory) -> bool:
+        return not category.is_readonly and ReaderSelection.matches(reader.commands, command)
+
+    @staticmethod
+    def matches(patterns: str, command: str) -> bool:
         bare_command = ENVIRONMENT_PREFIX.sub("", command)
-        return not category.is_readonly and any(fnmatchcase(bare_command, pattern.strip()) for pattern in reader.commands.split(","))
+        return any(fnmatchcase(bare_command, pattern.strip()) for pattern in patterns.split(","))

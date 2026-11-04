@@ -2120,7 +2120,7 @@ Mt((e) => {
     { kind: "text", text: n.tail }
   ] : null;
 });
-const gd = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, vd = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, yd = /[\w\]]\(/, wd = /^[\w$.[\]'"]+\s*=\s*[^=]/, kd = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, bd = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, xd = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, $d = /[[({,]$/, Md = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, Sd = /^(\t|\s{2,})\S/, _d = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*\/?|<!--)/, Ed = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, Ad = /[{}()[\];=<>$&|*\\@+^~%]/g, Cr = /^\s*(?:[-*+]|\d+[.)])\s/, Cd = /^\s*>/, Od = /^\s*\|/, Td = 0.6, Id = 0.4, Rd = 5, Bd = 0.03, Or = (e) => {
+const gd = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, vd = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, yd = /[\w\]]\(/, wd = /^[\w$.[\]'"]+\s*=\s*[^=]/, kd = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, bd = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, xd = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, $d = /[[({,]$/, Md = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, Sd = /^(\t|\s{2,})\S/, _d = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*(?!\*)\/?|<!--)/, Ed = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, Ad = /[{}()[\];=<>$&|*\\@+^~%]/g, Cr = /^\s*(?:[-*+]|\d+[.)])\s/, Cd = /^\s*>/, Od = /^\s*\|/, Td = 0.6, Id = 0.4, Rd = 5, Bd = 0.03, Or = (e) => {
   const t = e.trim().split(/\s+/);
   return t.length >= Rd && t.every((n) => Ed.test(n) || /^[\w'’-]+$/.test(n)) && (e.match(Ad) ?? []).length / e.length < Bd;
 }, fs = (e) => {
@@ -10246,7 +10246,7 @@ const ib = /* @__PURE__ */ ab(rb), lb = ["width", "height", "viewBox"], cb = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-CGPSa8z6.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
+}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-BnUY86Bl.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
 export {
   zl as $,
   Me as A,

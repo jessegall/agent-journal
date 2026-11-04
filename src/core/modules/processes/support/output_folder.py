@@ -100,6 +100,17 @@ class OutputFolder:
     def total_bytes(self, process_id: int) -> int:
         return sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
 
+    def part_bytes(self, process_id: int, position: int) -> int:
+        path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
+        return path.stat().st_size if path.exists() else 0
+
+    def seconds_since_any_output(self, process_id: int, timestamp: Timestamp) -> int:
+        return int(timestamp.value.timestamp() - max(path.stat().st_mtime for path in self.output_paths(process_id) if path.exists()))
+
+    def silent_seconds(self, process_id: int, position: int, timestamp: Timestamp) -> int:
+        path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
+        return int(timestamp.value.timestamp() - path.stat().st_mtime)
+
     def piped_paths(self, process_id: int) -> list[Path]:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
         return [path for position in range(1, len(self.part_texts(process_id)) + 1) if (path := folder / f"{position}.filtered").exists()]

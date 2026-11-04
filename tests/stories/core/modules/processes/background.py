@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from datetime import timedelta
@@ -11,11 +13,15 @@ from core.modules.processes.commands.move_process.move_process import MoveProces
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 
@@ -138,19 +144,46 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     assert any("prints a count with no bar" in line for line in lines_of(story, NOTHING))
 
 
-def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
+class SilentVitestRun(StoryFixture):
+    """A vitest run has moved to the background and printed nothing yet."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        install_runner(story)
+        moved_run(story, "npx vitest run", category=CommandCategory.TEST_RUN)
+
+
+def expect_streaming_line(story, text: str) -> None:
+    lines = lines_of(story, NOTHING)
+    assert any(text in line for line in lines), lines
+
+
+def expect_without_hint(story) -> None:
+    lines = lines_of(story, NOTHING)
+    assert not any("not streaming" in line or "still runs" in line for line in lines), lines
+
+
+def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_streaming(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "python3 tools/deploy.py staging", category=CommandCategory.BUILD)
-    assert not any("may buffer" in line for line in lines_of(story, NOTHING))
+    expect_without_hint(story)
     story.advance(timedelta(seconds=31))
-    assert any(f"output {process.id} printed nothing for 30 seconds, so Python may buffer it: use python3 -u" in line for line in lines_of(story, NOTHING))
+    expect_streaming_line(story, f"output {process.id} printed nothing for 30 seconds, so its output is not streaming: it may hold its output back")
 
 
-def test_a_run_of_another_program_that_prints_nothing_gets_no_line_about_python(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    moved_run(story, "go build ./...", category=CommandCategory.BUILD)
+def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_story):
+    story = new_story(fixture=SilentVitestRun)
     story.advance(timedelta(seconds=31))
-    assert not any("printed nothing" in line for line in lines_of(story, NOTHING))
+    expect_streaming_line(story, "run vitest with --reporter=verbose")
+    story.advance(timedelta(seconds=31))
+    expect_without_hint(story)
+    folder = story.container.get(OutputFolder)
+    process_id = next(iter(story.container.get(ProcessQuery).agent(story.agent.id).running().all_rows())).id
+    folder.write_output(process_id, 1, "first line\n")
+    modified_at = story.clock.timestamp().value.timestamp() - STALLED_SECONDS
+    os.utime(folder.home.folder / "processes" / str(process_id) / "1.out", (modified_at, modified_at))
+    expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: run vitest with --reporter=verbose")
 
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):

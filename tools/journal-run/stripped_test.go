@@ -364,6 +364,16 @@ func TestAStrippedPartRunsItsCommandAndThenItsFiltersInTheScript(t *testing.T) {
 	}
 }
 
+func TestPythonWritesEachLineAsItComesUnlessTheLineChoseOtherwise(t *testing.T) {
+	if output, _ := run(t, options(t, `printf '%s' "$PYTHONUNBUFFERED"`), newClient()); output != "1" {
+		t.Fatalf("printed %q", output)
+	}
+	t.Setenv(unbufferedPython, "")
+	if output, _ := run(t, options(t, `printf '%s' "[$PYTHONUNBUFFERED]"`), newClient()); output != "[]" {
+		t.Fatalf("printed %q", output)
+	}
+}
+
 func TestTheOutputPipesLiveOutsideTheRunFolder(t *testing.T) {
 	script := Script([]Part{{Text: "make | tail -5", Command: "make", Filters: "tail -5", Position: 1}}, "/folder")
 	if strings.Contains(script, ".fifo") || !strings.Contains(script, `"${TMPDIR:-/tmp}/journal-run-$$-1"`) {
