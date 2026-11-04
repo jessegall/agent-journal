@@ -30,7 +30,7 @@ class Alias(Model):
     description: str = ""
     variables: tuple[str, ...] = ()
     background: bool = False
-    worker_access: bool = False
+    agent_access: bool = False
     plugin_id: int | None = None
     category: CommandCategory | None = None
 

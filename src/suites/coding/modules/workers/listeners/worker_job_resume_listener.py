@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
@@ -23,6 +23,6 @@ class WorkerJobResumeListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         worker = self.queries.query(Agent).find(event.row_id)
-        ended_worker = worker.role is AgentRole.WORKER and worker.ended_at is not None
+        ended_worker = worker.role == AgentRole.WORKER and worker.ended_at is not None
         if ended_worker and not self.stop.is_final(worker, event.actor_id):
             self.worker_resume.resume(worker, Actor(event.actor_id, ActorType.AGENT))

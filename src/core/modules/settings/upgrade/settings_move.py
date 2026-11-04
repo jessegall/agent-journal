@@ -10,22 +10,12 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 
 TABLE = "settings"
-LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout", "viewer.layout", "viewer.inspector_layout", "viewer.worker_layout")
-RENAMED = {"viewer.tour_seen": "journal.core.viewer.tour-completed", "memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.worker-limit",
-           "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
-           "workers.command_kinds": "journal.suites.coding.worker-command-types", "profiles.model.claude": "journal.core.profiles.model-claude",
+RENAMED = {"viewer.tour_seen": "journal.core.viewer.tour-completed", "memories.keyword-limit": "journal.core.memories.keyword-limit", "profiles.model.claude": "journal.core.profiles.model-claude",
            "profiles.model.codex": "journal.core.profiles.model-codex", "voices.profile": "journal.core.voices.profile", "voices.title": "journal.core.voices.title",
            "voices.name": "journal.core.voices.name", "voices.avatar": "journal.core.voices.avatar", "voices.avatar_shown": "journal.core.voices.avatar-shown"}
-LISTED_KEY = "journal.suites.coding.worker-command-types"
 FEATURE_FLAG_REASON = "version 5 chooses features through modules and the suite instead of feature switches"
-TEST_COMMAND_REASON = "test commands now belong to each proof; supply the project command with journal proof make --test"
 DROPPED_REASONS = {
-    **dict.fromkeys(("features.checks", "features.sequences", "features.sharing", "features.templates", "features.triggers"), FEATURE_FLAG_REASON),
-    "plans.test_commands": TEST_COMMAND_REASON,
-    "workers.test_command": TEST_COMMAND_REASON,
-    "workers.test_command_proof": "this test argument must be combined with the project test command in journal proof make --test",
-    "workers.builder_may_queue": "version 5 has no separate builder queue permission; workers receive task queues through dispatch and send",
-    "workers.mode": "the mode was chosen per person; version 5 chooses a driver for each environment with journal driver choose",
+    **dict.fromkeys(("features.sequences", "features.sharing", "features.templates", "features.triggers"), FEATURE_FLAG_REASON),
 }
 
 
@@ -35,13 +25,15 @@ class SettingsMove(VersionFourMove):
     name = "settings"
     reads = ["settings"]
     id_modules = ["journal.core.actors", "journal.core.environments"]
+    key_replacements = RENAMED
+    unsupported_keys = DROPPED_REASONS
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows, moved_scopes = MoveReport(), CreatorResolver(target, map), RowInsert(target), set[tuple[str, int | None]]()
-        for row in [row for row in source.rows(TABLE) if row["key"] not in LAYOUT_KEYS]:
+        for row in [row for row in source.rows(TABLE) if self.accepts_key(row["key"], context)]:
             key = self.renamed(row["key"])
             if key not in context.setting_keys:
-                explanation = DROPPED_REASONS.get(row["key"], "version 5 does not declare this setting")
+                explanation = self.unsupported_keys.get(row["key"], "version 5 does not declare this setting")
                 report.skip(TABLE, row["id"], f"no module declares the key {row['key']} (value {row['value']}); dropped: {explanation}")
             elif (key, row["environment_id"] or None) in moved_scopes:
                 report.skip(TABLE, row["id"], f"the key {key} is already moved for that scope")
@@ -53,14 +45,13 @@ class SettingsMove(VersionFourMove):
         return report
 
     def renamed(self, key: str) -> str:
-        return RENAMED.get(key, key)
+        return self.key_replacements.get(key, key)
+
+    def accepts_key(self, key: str, context: MoveContext) -> bool:
+        return key in self.setting_keys if self.setting_keys else key not in context.reserved_setting_keys
 
     def stored(self, key: str, value: str) -> str:
-        text = self.json_text(value)
-        if key != LISTED_KEY:
-            return text
-        loaded = json.loads(text)
-        return json.dumps([item.strip() for item in loaded.split(",") if item.strip()] if isinstance(loaded, str) else loaded)
+        return self.json_text(value)
 
     def json_text(self, value: str) -> str:
         try:

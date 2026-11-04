@@ -7,7 +7,8 @@ import ProfilePanel from "./ProfilePanel.vue";
 // the profile opened in a panel at the side, where it is edited and saved; the person saves, an agent is refused
 const NEW_PROFILE = {name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
 
-const {rows, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
+const {rows, listing, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
+const types = computed(() => listing.value ? listing.value.types : []);
 const opened = ref("");
 const query = ref("");
 const notice = ref("");
@@ -63,8 +64,7 @@ async function save(profile, fields) {
         </template>
         <template v-else-if="!loaded || !rows.length">
             <EmptyState class="empty" :loading="!loaded" title="No profiles yet">
-                A profile is a subagent the agent can start for one kind of job: its description says when, its tools what it may do, its model what it runs on.
-                The journal writes a researcher, a planner and a debugger at setup.
+                A profile gives an agent its instructions, tools and model. Your suite supplies its standard profiles at setup.
             </EmptyState>
         </template>
         <template v-else-if="!matching.length">
@@ -87,7 +87,7 @@ async function save(profile, fields) {
             </div>
         </template>
         <template v-if="panel">
-            <ProfilePanel :profile="panel" :used="usedWords(panel)" @close="close" @save="save" />
+            <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" />
         </template>
     </section>
 </template>

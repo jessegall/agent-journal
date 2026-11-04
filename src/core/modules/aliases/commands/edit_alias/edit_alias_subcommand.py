@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.aliases.commands.edit_alias.edit_alias import EditAlias
@@ -14,6 +15,9 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
     cli_name = "alias"
     name = "edit"
 
+    def __init__(self, registry: Registry) -> None:
+        self.registry = registry
+
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("alias_name")
         parser.add_argument("--line")
@@ -22,12 +26,12 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
         running = parser.add_mutually_exclusive_group()
         running.add_argument("--background", dest="background", action="store_true", default=None)
         running.add_argument("--foreground", dest="background", action="store_false")
-        workers = parser.add_mutually_exclusive_group()
-        workers.add_argument("--workers", dest="worker_access", action="store_true", default=None)
-        workers.add_argument("--main-only", dest="worker_access", action="store_false")
+        access = parser.add_mutually_exclusive_group()
+        access.add_argument(*(f"--{name}" for name in self.registry.alias_permission_names), dest="agent_access", action="store_true", default=None)
+        access.add_argument("--main-only", dest="agent_access", action="store_false")
 
     def command(self, arguments: Namespace, caller: Caller) -> EditAlias:
-        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background, arguments.worker_access)
+        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background, arguments.agent_access)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Alias):

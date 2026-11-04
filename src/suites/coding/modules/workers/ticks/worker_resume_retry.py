@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.container import Container
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
@@ -26,7 +26,7 @@ class WorkerResumeRetry:
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:
         ended_at = worker.ended_at
-        if worker.role is not AgentRole.WORKER or ended_at is None:
+        if worker.role != AgentRole.WORKER or ended_at is None:
             return False
         if any(line.creation_timestamp().value > ended_at.value for line in lines):
             return True

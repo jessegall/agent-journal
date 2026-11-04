@@ -128,8 +128,8 @@ watch(() => props.id, () => {
                                     <Dot :kind="task.state" />
                                     <span class="row-id">#{{ task.id }}</span>
                                     <span class="row-title">{{ task.title }}</span>
-                                    <template v-if="task.worker_id">
-                                        <span class="holder" data-plan-worker>Worker {{ task.worker_id }}</span>
+                                    <template v-if="task.helper_id">
+                                        <span class="holder" data-plan-agent>Agent {{ task.helper_id }}</span>
                                     </template>
                                 </button>
                             </template>

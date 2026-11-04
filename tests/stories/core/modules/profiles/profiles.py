@@ -3,7 +3,7 @@ import pytest
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.modules.profiles.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser

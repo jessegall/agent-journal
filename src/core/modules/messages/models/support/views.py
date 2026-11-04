@@ -1,7 +1,6 @@
 COMMENTED_ROW_SELECT = "COALESCE(json_extract(metadata, '$.\"journal.core.messages\".commented_row.model') || ':' || json_extract(metadata, '$.\"journal.core.messages\".commented_row.id'), '') AS commented_row"
-WORKER_SELECT = "(SELECT agents.id FROM agents WHERE agents.id = messages.agent_id AND agents.role = 'worker') AS worker_id"
-CHAT_MESSAGES_SELECT = (f"SELECT id, environment_id, parent_id, type, text, read_at, files, captions, reactions, flowchart_edges, peer, recipient, {COMMENTED_ROW_SELECT}, {WORKER_SELECT}, created_at FROM messages"
-    " WHERE agent_id IS NULL OR agent_id NOT IN (SELECT id FROM agents WHERE role = 'worker')")
+CHAT_MESSAGES_SELECT = (f"SELECT id, environment_id, parent_id, type, text, read_at, files, captions, reactions, flowchart_edges, peer, recipient, {COMMENTED_ROW_SELECT}, agent_id, created_at FROM messages"
+    " WHERE is_chat_visible = 1")
 
 MAIN_CHAT_MARKS_SELECT = (
     "SELECT id, environment_id, agent_id, type, variant, key AS mark_key, text, detail, lines, target_model, target_id, outcome, figure, fraction, run_key, run_step, state, ended_at, created_at"

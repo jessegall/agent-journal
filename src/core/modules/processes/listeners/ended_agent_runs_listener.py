@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -11,19 +11,20 @@ from core.modules.agents.models.agent import ENDED_FIELD, Agent
 
 
 class EndedAgentRunsListener(CommitListener):
-    """When an agent ends, the runs it left going end as lost, since no agent is left to hear of them. A worker's
-    runs go on: it is started again to hear of them."""
+    """Ends an agent's runs unless its suite declares that they continue after the agent stops."""
 
     name = "processes.ended-agent-runs"
     event = "agent.*"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, processes: ProcessQuery, queries: Queries) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, processes: ProcessQuery, queries: Queries, suites: SuiteChoice) -> None:
         self.bus, self.actors, self.processes, self.queries = bus, actors, processes, queries
+        self.suites = suites
 
     def handle(self, event: LoggedEvent) -> None:
         if ENDED_FIELD not in event.data or event.data[ENDED_FIELD][1] is None:
             return
-        if self.queries.query(Agent).find(event.row_id).role is AgentRole.WORKER:
+        agent = self.queries.query(Agent).find(event.row_id)
+        if agent.role in self.suites.agent_policy(agent.environment_id).continuing_run_roles:
             return
         for process in tuple(self.processes.agent(event.row_id).running().all_rows()):
             self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=event.environment_id)

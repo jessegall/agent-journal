@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 
@@ -13,7 +13,7 @@ class TaskReturnLineRule(DriverRule):
     name = "tasks.where-you-stand"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.TASK
     history = True
 
     def __init__(self, current_tasks: CurrentTasks) -> None:

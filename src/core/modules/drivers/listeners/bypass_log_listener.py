@@ -31,7 +31,7 @@ class BypassLogListener(CommitListener):
         if not log.is_file():
             return
         agent = self.queries.query(Agent).find(self.queries.query(HookCall).find(event.row_id).agent_id)
-        if agent.role is not AgentRole.MAIN:
+        if agent.role != AgentRole.MAIN:
             return
         claimed = log.with_suffix(".taken")
         log.replace(claimed)

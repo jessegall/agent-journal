@@ -27,7 +27,7 @@ class StartProcess(Command[Process]):
     reader_id: int | None = None
     is_full_test_run: bool = False
     is_queued: bool = False
-    worker_id: int | None = None
+    owner_agent_id: int | None = None
     task_id: int | None = None
 
     @classmethod

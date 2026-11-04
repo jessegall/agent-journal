@@ -22,5 +22,5 @@ class PausedOverlay(Overlay):
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
         agent = self.queries.query(Agent).find(agent_id)
-        holder = self.queries.query(Agent).find(agent.parent_id) if agent.role is AgentRole.SUBAGENT and agent.parent_id is not None else agent
+        holder = self.queries.query(Agent).find(agent.parent_id) if agent.role == AgentRole.SUBAGENT and agent.parent_id is not None else agent
         return [OpenRow("agent", holder.id, holder.paused_at)] if holder.paused_at is not None else []

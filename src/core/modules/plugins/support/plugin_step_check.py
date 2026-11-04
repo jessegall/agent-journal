@@ -14,10 +14,7 @@ STEP_CEILING_MS = 180_000
 
 
 class PluginStepCheck:
-    """Asks the plugins switched on that answer one of a worker's steps, its delivery or its merge, before
-    the step's command is sent, in the order they were installed, each within its window and at most three
-    minutes; the first refusal is the answer, and a fault or a late answer lets the step through, as in
-    version 4."""
+    """Asks enabled plugins to accept an operation, with a time limit for each reply."""
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings) -> None:
         self.plugins, self.folders, self.program, self.settings = plugins, folders, program, settings

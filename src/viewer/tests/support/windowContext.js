@@ -11,6 +11,8 @@ export function context(answers, agent = null) {
         environment: "main",
         agent,
         tabs: [],
+        sources: [],
+        links: {},
         visible: {value: true},
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
         read: async (line) => {

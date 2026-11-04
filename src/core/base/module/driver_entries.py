@@ -17,8 +17,9 @@ class DriverEntries:
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
-        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {role.value: driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
-                                      tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()})
+        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {str(role): driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
+                                      tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
+                                      tuple(suite.profiles), tuple(suite.profile_types), tuple(suite.templates), suite.agent_policy)
                      for module in modules for suite in module.suites)
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
@@ -38,8 +39,8 @@ class DriverEntries:
             for overlay in module.overlays:
                 declared += [self.entry(rule, overlay.name) for rule in overlay.rules]
             declared += [self.entry(rule, module.name, essential=rule.essential and module.name == DRIVERS_MODULE) for rule in module.driver_rules]
-        return tuple(replace(entry, position=position) for position, entry in enumerate(declared, 1))
+        return tuple(replace(entry, position=position) for position, entry in enumerate(sorted(declared, key=lambda entry: entry.priority), 1))
 
     def entry(self, rule: type[DriverRule], owner: str, exempt: bool = False, essential: bool = False) -> DriverRuleEntry:
         return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), exempt, essential, rule.history,
-                               rule.essential)
+                               rule.essential, rule.role_group, rule.priority)

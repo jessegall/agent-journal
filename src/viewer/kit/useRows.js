@@ -7,9 +7,15 @@ import {useWindow} from "./windowContextKey.js";
 // whether the server says another page follows the one it answered
 const followed = (page) => page.page * page.size < page.total;
 
+export function useDeclaredRows(key) {
+    const source = useWindow().sources.find((source) => source.key === key);
+    return source ? useRows(source.read, source.events) : useRows("", []);
+}
+
 export function useRows(line, patterns, {incremental = false} = {}) {
     const context = useWindow();
     const rows = ref([]);
+    const listing = ref(null);
     const failure = ref("");
     const loaded = ref(false);
     const startedAt = performance.now();
@@ -63,6 +69,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         if (turn !== latestLoad) return;
         const fresh = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
         rows.value = take(fresh);
+        listing.value = result.ok ? result.value : null;
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
         if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value);
         failure.value = result.ok ? "" : result.error;
@@ -93,7 +100,9 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         return result;
     }
 
-    context.follow(patterns, heard);
-    load();
-    return {rows, failure, loaded, more, load, loadLatest, older, act, actionFailure, answer, context};
+    if (line) {
+        context.follow(patterns, heard);
+        load();
+    }
+    return {rows, listing, failure, loaded, more, load, loadLatest, older, act, actionFailure, answer, context};
 }

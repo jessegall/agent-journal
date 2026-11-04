@@ -16,6 +16,3 @@ class PartSpec:
     named_reader_id: int | None = None
     command_key: str = ""
 
-    @property
-    def is_visible(self) -> bool:
-        return self.category.is_long_running or self.text.startswith("journal worker merge")

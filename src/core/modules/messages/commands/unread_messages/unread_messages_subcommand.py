@@ -5,6 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
 from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.equal import Equal
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
@@ -19,7 +20,7 @@ from core.modules.messages.support.message_text import MessageText
 
 class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
     """`journal message unread`: every unread message of the person, oldest first, as message read shows each;
-    the messages module marks them read once this ran. They are the main agent's, so a worker gets none."""
+    the messages module marks them read once this ran. Only the main agent reads the person's unread messages."""
 
     cli_name = "message"
     name = "unread"
@@ -34,7 +35,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("unread messages are read for one environment", "name it with --environment")
-        if self.queries.query(Agent).filter(id=caller.read_actor_id, role=AgentRole.WORKER).exists():
+        if self.queries.query(Agent).filter(id=caller.read_actor_id).matching(Equal("role", AgentRole.MAIN, negated=True)).exists():
             return ()
         unread =self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
         return tuple(MessageText.built(message, self.links) for message in unread)

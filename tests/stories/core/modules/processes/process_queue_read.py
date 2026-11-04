@@ -41,7 +41,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
                       [row["id"] for row in page["rows"]] == [first.id, second.id],
                       [row["is_queued"] for row in page["rows"]] == [False, True],
                       [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.CHECK.value],
-                      all(row["worker_id"] == story.agent.id and row["output_id"] == row["id"] for row in page["rows"]),
+                      all(row["owner_agent_id"] == story.agent.id and row["output_id"] == row["id"] for row in page["rows"]),
                       page["rows"][1]["line"] == "python check_cart.py")
     story.expect_success(f"setting set {page['limit_setting']} 2 --environment main", actor=story.user)
     third = start_process(story, "make site", category=CommandCategory.BUILD, is_queued=True)

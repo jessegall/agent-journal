@@ -21,7 +21,7 @@ def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output
                       [row["id"] for row in queue["waiting"]] == [second.id, third.id],
                       queue["running"][0]["started_at"] is not None,
                       queue["running"][0]["uses_slot"], queue["waiting"][0]["started_at"] is None,
-                      queue["running"][0]["worker_id"] == story.agent.id)
+                      queue["running"][0]["owner_agent_id"] == story.agent.id)
     story.advance(timedelta(seconds=7))
     end_run(story, first, "package built\n")
     queue = json.loads(story.run("queue inspect --environment-id 1 --json", actor=story.user).output_text)

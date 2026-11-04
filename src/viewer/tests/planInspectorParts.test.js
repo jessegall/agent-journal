@@ -50,7 +50,7 @@ test("a plan with no reviews shows no rounds", async () => {
 
 test("the inspector tags a task a worker holds and switches to the timeline", async () => {
     const lines = [];
-    const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", worker_id: 44}, {id: 8, title: "Tax", state: "open", worker_id: null}]}]};
+    const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", helper_id: 44}, {id: 8, title: "Tax", state: "open", helper_id: null}]}]};
     const read = async (line) => {
         lines.push(line[1]);
         return line[1] === "inspect" ? {ok: true, value: plan} : line[1] === "timeline" ? {ok: true, value: {events: [event("made", 7)]}} : {ok: true, value: {rows: []}};
@@ -58,8 +58,8 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
     const element = document.createElement("div");
     createApp({render: () => h(PlanInspector, {id: 3, read})}).directive("tip", {}).mount(element);
     await settle();
-    expect(element.querySelectorAll("[data-plan-worker]").length).toBe(1);
-    expect(element.querySelector("[data-plan-worker]").textContent).toBe("Worker 44");
+    expect(element.querySelectorAll("[data-plan-agent]").length).toBe(1);
+    expect(element.querySelector("[data-plan-agent]").textContent).toBe("Agent 44");
     [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === "Timeline").click();
     await settle();
     expect(lines).toContain("timeline");

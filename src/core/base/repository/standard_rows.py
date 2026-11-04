@@ -17,8 +17,8 @@ class StandardRows:
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def save_all[M: Model](self, standard: Sequence[M], fields: Sequence[str], context: Context, used: Callable[[M], bool] = lambda row: False) -> None:
-        stored = {getattr(row, "title"): row for row in self.queries.query(type(standard[0])).filter(creator_id=CORE_ACTOR_ID).all_rows()}
+    def save_all[M: Model](self, model: type[M], standard: Sequence[M], fields: Sequence[str], context: Context, used: Callable[[M], bool] = lambda row: False) -> None:
+        stored = {getattr(row, "title"): row for row in self.queries.query(model).filter(creator_id=CORE_ACTOR_ID).all_rows()}
         titles = {getattr(row, "title") for row in standard}
         for title, row in stored.items():
             if title not in titles and not used(row):

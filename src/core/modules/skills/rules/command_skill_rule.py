@@ -1,5 +1,5 @@
 from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -19,7 +19,7 @@ class CommandSkillRule(DriverRule):
     name = "skills.command"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles, requirement: SkillRequirement) -> None:
         self.catalogue, self.rows, self.files, self.requirement = catalogue, rows, files, requirement

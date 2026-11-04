@@ -1,6 +1,6 @@
 import {afterEach, expect, test} from "vitest";
 import {h} from "vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/codingWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 
 const PROOFS = [

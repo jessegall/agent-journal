@@ -16,8 +16,7 @@ READERS, PLUGINS = "readers", "plugins"
 
 
 class AliasesMove(VersionFourMove):
-    """Carries version 4's aliases with their numbers, lines, descriptions, variables, background and worker
-    flags, and the reader and the plugin each names, found by name among the moved ones; a reader that did
+    """Carries aliases with their numbers, lines, variables, background flags, readers and plugins; a reader that did
     not move leaves the alias with none and is told, and an alias of a plugin that did not move is skipped
     and told."""
 
@@ -43,5 +42,5 @@ class AliasesMove(VersionFourMove):
         variables = [f"{name}={value}" for name, value in json.loads(row["variables"] or "{}").items()]
         return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "name": row["name"], "line": row["line"], "reader_id": reader_id,
                                    "description": row["description"] or "", "variables": json.dumps(variables), "background": int(bool(row["background"])),
-                                   "worker_access": int(bool(row["worker_access"])), "plugin_id": plugin_id, "created_at": created,
+                                   "plugin_id": plugin_id, "created_at": created,
                                    "updated_at": row["updated_at"] or created})

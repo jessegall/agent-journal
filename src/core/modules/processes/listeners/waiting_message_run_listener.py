@@ -27,5 +27,5 @@ class WaitingMessageRunListener(CommitListener):
         if message.type not in PERSON_MESSAGE_TYPES:
             return
         for process in tuple(self.processes.environment(message.environment_id).filter(state=ProcessState.RUNNING).all_rows()):
-            if self.queries.query(Agent).find(process.agent_id).role is AgentRole.MAIN:
+            if self.queries.query(Agent).find(process.agent_id).role == AgentRole.MAIN:
                 self.folder.write(process.id, MOVE_FILE, "1")

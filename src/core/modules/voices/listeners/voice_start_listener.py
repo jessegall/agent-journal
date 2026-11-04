@@ -19,5 +19,5 @@ class VoiceStartListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         agent = change.new_row
-        if isinstance(agent, Agent) and agent.role is AgentRole.MAIN:
+        if isinstance(agent, Agent) and agent.role == AgentRole.MAIN:
             self.lines.deliver(agent.id, VOICE_LINE if agent.launch_agent_id is None else VOICE_INTRODUCTION, change)

@@ -8,6 +8,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
+from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
 class SkillListener(CommitListener):
@@ -16,8 +17,9 @@ class SkillListener(CommitListener):
 
     module_name: ClassVar[str] = "journal.core.skills"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, suites: SuiteChoice) -> None:
         self.bus, self.actors, self.queries, self.catalogue = bus, actors, queries, catalogue
+        self.suites = suites
 
     def call(self, event: LoggedEvent) -> HookCall:
         return self.queries.query(HookCall).find(event.row_id)

@@ -58,7 +58,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
     def filter_columns(self) -> tuple[str, ...]:
         return tuple(column for column, value_type in self.table.types.items()
-                     if column != "id" and (issubclass(value_type, StrEnum) or (column.endswith(FOREIGN_KEY_SUFFIX) and value_type is int)))
+                     if column != "id" and (column in self.table.model.filter_fields or issubclass(value_type, StrEnum)
+                                            or (column.endswith(FOREIGN_KEY_SUFFIX) and value_type is int)))
 
 
 def filter_flag(column: str) -> str:

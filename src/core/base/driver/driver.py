@@ -4,7 +4,6 @@ from typing import ClassVar
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.suite import Suite
 from core.base.guard.guard import Guard
-from core.base.agent_role import AgentRole
 
 
 class Driver:
@@ -14,7 +13,7 @@ class Driver:
 
     name: ClassVar[str]
     suite: ClassVar[type[Suite]]
-    role: ClassVar[AgentRole]
+    role: ClassVar[str]
     rules: ClassVar[Sequence[type[DriverRule]]] = []
     guards: ClassVar[Sequence[type[Guard]]] = []
     opening_lines: ClassVar[Sequence[str]] = []

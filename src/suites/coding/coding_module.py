@@ -1,4 +1,6 @@
 from core.base.viewer.window_read_search import WindowReadSearch
+from core.base.viewer.window_extension import WindowExtension
+from core.base.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.skill.skill_declaration import SkillDeclaration
@@ -16,6 +18,9 @@ from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
+from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
+from suites.coding.upgrade.coding_settings_move import CodingSettingsMove
+from suites.coding.seeders.coding_seeder import CodingSeeder
 from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
@@ -36,6 +41,8 @@ from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
 from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
 from suites.coding.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
+from suites.coding.listeners.full_test_run_listener import FullTestRunListener
+from suites.coding.support.test_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
@@ -46,12 +53,16 @@ class CodingModule(Module):
     windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
-    nudges = CODING_NUDGES
-    seed_reason = "its file edits are written by an agent's edit hooks, and the demo has no hooks"
+    nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
+    seeders = [CodingSeeder]
+    window_extensions = [*(WindowExtension(name, reads=["file-edit list"], events=["file_edit.create"],
+                                          tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js")]) for name in ("agents.agents", "agents.subagents")),
+                         WindowExtension("viewer.shell", reads=["git-overview current"]),
+                         WindowExtension("plugins.plugins", links={"files": "coding.files"})]
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS
-    moves = [FileEditsMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
+    moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
     drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
@@ -60,7 +71,7 @@ class CodingModule(Module):
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
-    listeners = [AutoNextTaskListener, NextPlanTaskStarterListener]
+    listeners = [AutoNextTaskListener, NextPlanTaskStarterListener, FullTestRunListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project")),

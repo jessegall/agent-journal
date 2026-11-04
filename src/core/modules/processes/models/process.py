@@ -39,7 +39,7 @@ class Process(Model):
     is_queue_run: bool = False
     started_at: Timestamp | None = None
     slot_assigned: bool = False
-    worker_id: int | None = None
+    owner_agent_id: int | None = None
     task_id: int | None = None
 
     def background(self, timestamp: Timestamp, actor: Actor) -> "Process":

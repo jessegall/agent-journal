@@ -22,7 +22,7 @@ load();
                         <span>{{ measure.value }}<template v-if="measure.pass_level !== null"> of {{ measure.pass_level }}</template></span>
                     </p>
                 </template>
-                <p class="fitness-note">Counts messages, waits and tasks. Version 4 also measured workers, merges and lines of code, which this version does not record.</p>
+                <p class="fitness-note">Counts messages, waits and tasks. Version 4 also measured agents, merges and lines of code, which this version does not record.</p>
             </template>
         </div>
     </WindowRoom>

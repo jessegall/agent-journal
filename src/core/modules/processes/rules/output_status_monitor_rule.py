@@ -1,5 +1,5 @@
-from core.base.agent_role import AgentRole
-from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, WORKER_RUN_WATCHED
+from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, AUTOMATIC_RUN_WATCHED
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.nudge_declaration import NudgeDeclaration
@@ -14,16 +14,14 @@ OUTPUT_STATUS_COMMAND = ["output", "status"]
 
 
 class OutputStatusMonitorRule(DriverRule):
-    """An agent that asks for a run's status is told to watch its end instead of asking again: to set a Monitor on
-    it, or, when its program has no Monitor tool, to run journal output monitor in its shell. A worker is told
-    that the run is watched for it."""
+    """Explains how a run is monitored, using the suite's declared watch policy."""
 
     name = "processes.status-monitor"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, providers: Providers) -> None:
-        self.providers = providers
+    def __init__(self, providers: Providers, suites: SuiteChoice) -> None:
+        self.providers, self.suites = providers, suites
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -32,8 +30,8 @@ class OutputStatusMonitorRule(DriverRule):
         return RuleAnswer.with_nudges(*(note.nudge(output=number) for number in numbers))
 
     def note(self, hook: AgentHook) -> NudgeDeclaration:
-        if hook.role is AgentRole.WORKER:
-            return WORKER_RUN_WATCHED
+        if hook.role in self.suites.agent_policy(hook.environment_id).automatic_watch_roles:
+            return AUTOMATIC_RUN_WATCHED
         return MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
 
     def is_status(self, part: Part) -> bool:

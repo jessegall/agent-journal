@@ -24,6 +24,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.registry_table import RegistryTable
 from core.base.listener.save_listener import SaveListener
 from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.window_extensions import WindowExtensions
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.change.event_pattern import EventPattern
 from core.base.registry.guard_entry import GuardEntry
@@ -138,17 +139,18 @@ class ModuleSync:
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
             tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),
             skills=self.skills(modules),
-            moves=tuple(MoveEntry(module.name, DottedPath.class_path(move), tuple(move.reads), tuple(move.drops), tuple(move.id_modules))
+            moves=tuple(MoveEntry(module.name, DottedPath.class_path(move), tuple(move.reads), tuple(move.drops), tuple(move.id_modules), tuple(move.references), tuple(move.setting_keys))
                         for module in modules for move in module.moves),
         )
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
         shipped = set(self.finder.default_modules())
+        extensions = WindowExtensions(modules)
         return tuple(WindowEntry(window.name, module.name, window.title, window.entry, window.loading.value, window.place.value, tuple(window.roles),
                                  tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window.kit), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count, tuple(window.shared_reads), window.group, window.auto_scroll.value, tuple(tab.listed() for tab in window.tabs),
-                                 window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings))
-                     for module in modules for window in module.windows)
+                                 window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings), tuple(source.listed() for source in window.sources), dict(window.links))
+                     for module in modules for window in map(extensions.extend, module.windows))
 
     def marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]:
         shipped = set(self.finder.default_modules())

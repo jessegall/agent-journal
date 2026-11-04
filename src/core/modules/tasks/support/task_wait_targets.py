@@ -4,7 +4,6 @@ from core.base.refusal import Refusal
 
 TARGET_TABLES = {"task": "tasks", "question": "questions", "plan": "plans"}
 FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
-TARGET_HELP = "write --on task:<n>, --on question:<n>, --on plan:<n> or --on worker:<n>"
 
 
 class TaskWaitTargets:
@@ -13,10 +12,19 @@ class TaskWaitTargets:
     def __init__(self, database: Database) -> None:
         self.database = database
 
+    @property
+    def target_types(self) -> tuple[str, ...]:
+        return tuple(TARGET_TABLES)
+
+    @property
+    def target_help(self) -> str:
+        choices = [f"--on {target}:<n>" for target in self.target_types]
+        return f"write {', '.join(choices[:-1])} or {choices[-1]}"
+
     def target(self, target_type: str, row_id: int) -> str:
         table = TARGET_TABLES.get(target_type)
         if table is None:
-            raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", TARGET_HELP)
+            raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", self.target_help)
         rows = self.database.rows(Statement.row_state(table, row_id))
         if not rows:
             raise Refusal(f"{target_type} {row_id} does not exist", "name a row that does")

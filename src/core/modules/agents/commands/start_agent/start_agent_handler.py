@@ -11,6 +11,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.registry.registry import Registry
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
@@ -20,12 +21,15 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain) -> None:
+    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain, registry: Registry) -> None:
         self.queries, self.repository, self.chain = queries, repository, chain
+        self.registry = registry
 
     def handle(self, command: StartAgent, context: Context) -> Agent:
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
+        if command.role not in self.registry.role_names:
+            raise Refusal(f"role {command.role} is not declared", "choose a role declared by an installed suite")
         started = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
         if started and started[0].ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")

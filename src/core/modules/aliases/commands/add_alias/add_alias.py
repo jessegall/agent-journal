@@ -15,5 +15,5 @@ class AddAlias(Command[Alias]):
     description: str
     variables: tuple[str, ...]
     background: bool
-    worker_access: bool
+    agent_access: bool
     category: CommandCategory | None = None

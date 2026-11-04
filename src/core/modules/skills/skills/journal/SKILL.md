@@ -16,7 +16,7 @@ task 12, plan 3, message 7: write both, so the chat links it.
 
 - An environment is one line of work in this project, with its own agents, tasks and chat.
 - A task is the work in hand and a plan orders tasks; a message or a question is what you and the user say to each other.
-- A memory keeps what matters past the context window; a worker writes for you on one task, a subagent only reads.
+- A memory keeps what matters past the context window; a subagent reads a bounded subject for its parent agent.
 - A sequence is steps followed one at a time; an output is a command's output, kept and read by its number.
 
 When the journal holds you, its line says why and names the way out: reading and journal commands still go through.
@@ -27,7 +27,6 @@ or ask the user again: `journal search find "<words>"`.
 |---|---|---|
 | journal-etiquette, journal-messages | the chat, messages and questions | at every start; a message, a question |
 | journal-tasks, journal-plans | work in hand, blocks, waits; ordered tasks | a task or plan command |
-| journal-workers, journal-work-modes | workers, proofs and merging; the builder and orchestrator modes | a worker or proof command; its words |
 | journal-shell, journal-memory | commands, outputs, readers, aliases; memories | an output or alias; a memory command |
 | journal-sequences, journal-documents, journal-templates | steps; documents and reports; templates | their commands |
 | journal-checks, journal-dumps, journal-flowcharts | checks; dropped material; flowcharts | their commands and words |

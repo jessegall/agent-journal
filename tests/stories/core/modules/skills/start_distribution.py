@@ -1,6 +1,6 @@
 import pytest
 
-from core.modules.profiles.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 

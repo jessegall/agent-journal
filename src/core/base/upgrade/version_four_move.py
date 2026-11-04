@@ -18,6 +18,8 @@ class VersionFourMove:
 
     name: ClassVar[str]
     reads: ClassVar[Sequence[str]] = ()
+    references: ClassVar[Sequence[str]] = ()
+    setting_keys: ClassVar[Sequence[str]] = ()
     drops: ClassVar[Sequence[str]] = ()
     id_modules: ClassVar[Sequence[str]] = ()
 

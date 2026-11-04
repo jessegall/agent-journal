@@ -23,6 +23,19 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - `journal worker release <worker> "<why>"` puts its task back to open.
 
+## Process rules
+
+A worker needs no Monitor for a background run. It can continue independent work or stop and receive the
+result when the run ends. A worker asks its main agent for a reader and cannot save one itself.
+
+A reader's `--count-command` lists tests before a queued run gets a spot when `worker-run-most-tests` is
+positive. Counts of test parts are added. A failed listing, a listing cut off after 120 seconds, or one
+with no number leaves the count unknown and the run goes on. A known count above the limit stops it.
+
+`journal task block <n> --on worker:<m>` opens when that worker is merged, released or ended. Pending
+tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that
+never starts is retired after the idle time.
+
 ## As the worker
 
 - `journal worker report "<what the task needs>"` sends your main agent a message number to read while you keep

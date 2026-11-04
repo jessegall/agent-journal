@@ -15,8 +15,7 @@ from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
 
 
 class SequenceRowTriggerListener(CommitListener):
-    """An event a sequence names as its trigger starts that sequence for the agent that caused it, subagent or
-    worker too, or for the environment's main agent when no agent did, unless one is running."""
+    """Continues a sequence for the triggering agent or the environment's idle main agent."""
 
     name = "sequences.row-trigger"
     event = "*.*"

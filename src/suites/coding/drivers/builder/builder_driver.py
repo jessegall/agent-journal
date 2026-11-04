@@ -2,7 +2,7 @@ from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.drivers.builder.rules.open_task_assignment_rule import OpenTaskAssignmentRule
 from suites.coding.drivers.builder.rules.subagent_allowance_rule import SubagentAllowanceRule
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class BuilderDriver(Driver):

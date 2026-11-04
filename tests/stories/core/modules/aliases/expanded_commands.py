@@ -82,7 +82,7 @@ def test_expansion_keeps_the_worker_permission_on_the_alias(new_story):
     session = story.container.get(Queries).query(Agent).find(worker.id).session
     with server_story(story) as server:
         hook = AliasHook(server, session)
-        hook.expect_denied("journal judged src", "marked for workers")
-        story.expect_success("alias edit judged --workers", actor=story.agent)
+        hook.expect_denied("journal judged src", "marked for agents")
+        story.expect_success("alias edit judged --agents", actor=story.agent)
         story.run_listeners()
         hook.expect_expanded("journal judged src", "echo checker src")

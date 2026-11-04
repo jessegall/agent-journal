@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -33,5 +33,5 @@ class ReaderSampleReadyListener(SaveListener):
         if sample.ended_at is None:
             return
         reader = self.queries.query(Reader).find(request.reader_id)
-        if self.queries.query(Agent).find(sample.agent_id).role is AgentRole.WORKER:
+        if self.queries.query(Agent).find(sample.agent_id).role == AgentRole.WORKER:
             self.nudger.send(sample.agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, change.context, output=sample.id, reader=reader.name)

@@ -3,7 +3,9 @@ from typing import ClassVar
 
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
-from core.base.agent_role import AgentRole
+from core.base.profile.agent_profile import AgentProfile
+from core.base.template.template_declaration import TemplateDeclaration
+from core.base.agent_policy import AgentPolicy
 
 
 class Suite:
@@ -14,9 +16,13 @@ class Suite:
 
     name: ClassVar[str]
     requires: ClassVar[Sequence[str]] = []
-    defaults: ClassVar[Mapping[AgentRole, str]] = {}
+    defaults: ClassVar[Mapping[str, str]] = {}
     complete_control: ClassVar[bool] = False
     included_overlays: ClassVar[Sequence[str]] = []
     windows: ClassVar[Sequence[str]] = []
     layouts: ClassVar[Mapping[str, LayoutShape]] = {}
     presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
+    profiles: ClassVar[Sequence[AgentProfile]] = ()
+    profile_types: ClassVar[Sequence[str]] = tuple(["subagent"])
+    templates: ClassVar[Sequence[TemplateDeclaration]] = ()
+    agent_policy: ClassVar[AgentPolicy] = AgentPolicy()

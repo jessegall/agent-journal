@@ -26,7 +26,7 @@ def plugin_with_aliases(new_story):
 def test_a_plugin_s_aliases_arrive_on_install_running_from_the_plugin_s_folder(new_story):
     story = plugin_with_aliases(new_story)
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
-    story.expect_text("alias show 1", "name: sample-judge", "background: True", "worker_access: True", "LEVEL=2", actor=story.user)
+    story.expect_text("alias show 1", "name: sample-judge", "background: True", "agent_access: True", "LEVEL=2", actor=story.user)
     story.expect_success("sample-judge --changes", "judged at level 2: --changes", actor=story.user)
 
 

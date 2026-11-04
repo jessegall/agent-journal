@@ -11,7 +11,7 @@ from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.modules.memories.support.memory_settings import KEYWORD_LIMIT
 
 
@@ -24,7 +24,7 @@ class KeywordDeliveryRule(DriverRule):
     name = "memories.keyword-delivery"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, queries: Queries, settings: SettingValues, memories: HookMemories) -> None:
         self.queries, self.settings, self.memories = queries, settings, memories

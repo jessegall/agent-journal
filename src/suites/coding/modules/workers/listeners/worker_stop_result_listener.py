@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.change import Change
 from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.save_listener import SaveListener
@@ -26,7 +26,7 @@ class WorkerStopResultListener(SaveListener):
         call = change.new_row
         if not isinstance(call, HookCall) or call.hook != HookEventName.STOP:
             return
-        if self.queries.query(Agent).find(call.agent_id).role is not AgentRole.WORKER:
+        if self.queries.query(Agent).find(call.agent_id).role != AgentRole.WORKER:
             return
         worktree = self.worktrees.worker_worktree(call.agent_id)
         if worktree is None:

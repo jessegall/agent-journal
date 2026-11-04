@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
@@ -11,23 +11,21 @@ from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
 
-START_ROLES = (AgentRole.MAIN, AgentRole.WORKER)
 
 
 class StartSkillsListener(SkillListener):
-    """When a main agent or a worker starts a session, the skills of the session-start setting become due for
-    it; when it starts again right after a compaction, those of the after-compaction setting."""
+    """Requires startup skills for the prompt recipients declared by the suite."""
 
     name = "skills.start"
     event = "hook_call.create"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills) -> None:
-        super().__init__(bus, actors, queries, catalogue)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice) -> None:
+        super().__init__(bus, actors, queries, catalogue, suites)
         self.start = start
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.call(event)
-        if not call.is_session_start or self.queries.query(Agent).find(call.agent_id).role not in START_ROLES:
+        if not call.is_session_start or self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return

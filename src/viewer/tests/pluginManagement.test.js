@@ -60,8 +60,8 @@ test("a plugin shows everything it would run, and installs only from there", asy
 });
 
 test("a dashboard's file row opens the Files window at the row's line, or at the top when it names none", () => {
-    expect(fileAddress("http://journal.test/viewer/?page=plugins", {path: "AGENTS.md", line: 12})).toBe("http://journal.test/viewer/?page=coding.files&file=AGENTS.md&line=12");
-    expect(fileAddress("http://journal.test/viewer/?page=plugins&line=9", {path: "src/a.py"})).toBe("http://journal.test/viewer/?page=coding.files&file=src%2Fa.py");
+    expect(fileAddress("http://journal.test/viewer/?page=plugins", {path: "AGENTS.md", line: 12}, "coding.files")).toBe("http://journal.test/viewer/?page=coding.files&file=AGENTS.md&line=12");
+    expect(fileAddress("http://journal.test/viewer/?page=plugins&line=9", {path: "src/a.py"}, "coding.files")).toBe("http://journal.test/viewer/?page=coding.files&file=src%2Fa.py");
 });
 
 const fromMenu = async (element, item) => {

@@ -6,8 +6,7 @@ from core.modules.tasks.models.task_card import TaskCard
 
 @dataclass(frozen=True)
 class TaskGroup:
-    """One state's group of tasks on the board, or the group delegated to workers: how many there
-    are, and the page of them that was asked for."""
+    """A page of tasks grouped by state or delegation."""
 
     state: str
     total: int

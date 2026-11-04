@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -16,7 +16,7 @@ class TaskStartRule(DriverRule):
     name = "tasks.start-with-one-in-hand"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.TASK
 
     def __init__(self, current_tasks: CurrentTasks) -> None:
         self.current_tasks = current_tasks

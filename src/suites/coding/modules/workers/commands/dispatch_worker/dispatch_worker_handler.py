@@ -12,7 +12,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.settings.bindings.support.setting_values import SettingValues

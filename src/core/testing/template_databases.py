@@ -22,10 +22,7 @@ STATE_FILE = "story-state.pickle"
 
 
 class TemplateDatabases:
-    """One migrated and synced database per set of modules, and one more per fixture built on it, each made
-    once under a lock in a folder shared by the workers of a run and by later runs, and copied for every
-    story that starts from it. A template's name holds the text of the files its fixtures are written
-    in, so a changed fixture gets a new one."""
+    """Migrated databases shared by test processes and copied for each story."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder

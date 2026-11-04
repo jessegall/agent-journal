@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -21,7 +21,7 @@ class MainAgentWorkersListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         agent = change.new_row
-        if not isinstance(agent, Agent) or agent.role is not AgentRole.MAIN:
+        if not isinstance(agent, Agent) or agent.role != AgentRole.MAIN:
             return
         for worktree in self.worktrees.environment_worktrees(agent.environment_id):
             worker = self.queries.query(Agent).find(worktree.agent_id)

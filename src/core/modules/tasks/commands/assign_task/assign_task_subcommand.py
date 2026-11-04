@@ -7,7 +7,7 @@ from core.modules.tasks.models.task import Task
 
 
 class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
-    """`journal task assign <task> --to <agent>`: moves a task to another worker or back to the main agent."""
+    """Assigns a task to the agent named by journal task assign."""
 
     cli_name = "task"
     name = "assign"

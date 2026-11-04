@@ -1,6 +1,7 @@
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.registry import Registry
 from core.base.registry.suite_entry import SuiteEntry
+from core.base.agent_policy import AgentPolicy
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 
@@ -24,6 +25,10 @@ class SuiteChoice:
         """Whether the environment runs the suite of that name, as the suite it chose or one that requires it, however far down."""
         suite = self.suite(environment_id)
         return suite is not None and suite_name in self.registry.lineage(suite)
+
+    def agent_policy(self, environment_id: int) -> AgentPolicy:
+        suite = self.suite(environment_id)
+        return suite.agent_policy if suite is not None else AgentPolicy()
 
     def driver(self, environment_id: int, role: str) -> DriverEntry | None:
         suite = self.suite(environment_id)

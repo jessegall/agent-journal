@@ -1,5 +1,5 @@
 from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -23,7 +23,7 @@ class PhraseTriggerRule(DriverRule):
     name = "triggers.phrase"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions) -> None:
         self.triggers, self.conditions = triggers, conditions

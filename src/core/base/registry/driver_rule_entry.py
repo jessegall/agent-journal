@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_patterns import DriverPatterns
+from core.base.role_group import RoleGroup
 
 ANY_HOOK = "*"
 
@@ -24,6 +25,8 @@ class DriverRuleEntry:
     essential: bool = False
     history: bool = False
     claims_essential: bool = False
+    role_group: RoleGroup = RoleGroup.ANY
+    priority: int = 0
 
     @property
     def is_standing(self) -> bool:

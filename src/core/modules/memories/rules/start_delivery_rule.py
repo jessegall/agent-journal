@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.rules.support.hook_memories import HookMemories
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 
 
 class StartDeliveryRule(DriverRule):
@@ -15,7 +15,7 @@ class StartDeliveryRule(DriverRule):
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, memories: HookMemories) -> None:
         self.memories = memories

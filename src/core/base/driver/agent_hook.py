@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.open_row import OpenRow
 from core.base.timestamp import Timestamp
-from core.base.agent_role import AgentRole
 
 
 @dataclass(frozen=True)
@@ -14,7 +13,7 @@ class AgentHook:
     event: HookEvent
     agent_id: int
     environment_id: int
-    role: AgentRole
+    role: str
     driver: str
     timestamp: Timestamp
     layer: OpenRow | None = None

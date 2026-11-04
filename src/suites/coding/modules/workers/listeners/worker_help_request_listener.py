@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -29,5 +29,5 @@ class WorkerHelpRequestListener(SaveListener):
         if not isinstance(wait, Wait) or wait.type is not WaitType.HELP_REQUEST:
             return
         worker = self.queries.query(Agent).find(wait.agent_id)
-        if worker.role is AgentRole.WORKER and worker.parent_id is not None:
+        if worker.role == AgentRole.WORKER and worker.parent_id is not None:
             self.nudger.send(worker.parent_id, WORKER_HELP_REQUEST, SOURCE, change.context, worker=worker.id, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id)

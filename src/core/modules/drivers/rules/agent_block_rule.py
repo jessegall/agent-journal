@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_check import BlockCheck
@@ -28,7 +28,7 @@ class AgentBlockRule(DriverRule):
     overlay_proof = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
     tools = tuple(ToolType)
 
     def __init__(self, queries: Queries, conditions: BlockConditions, container: Container) -> None:

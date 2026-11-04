@@ -4,12 +4,12 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.profiles.commands.save_profile.save_profile import SaveProfile
-from core.modules.profiles.support.agent_profile import SUBAGENT, AgentProfile
+from core.base.profile.agent_profile import SUBAGENT, AgentProfile
 
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
     """`journal profile save <name> --description "<when it is used>" [--tools "<tools>"]
-    [--type subagent|worker] [--model <model>] [--codex-model <model>] [--body "<instructions>"]`."""
+    [--type <profile type>] [--model <model>] [--codex-model <model>] [--body "<instructions>"]`."""
 
     cli_name = "profile"
     name = "save"

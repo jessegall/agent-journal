@@ -32,7 +32,7 @@ class ProcessQueueRow(ViewModel):
     is_queue_run: bool
     slot_assigned: bool
     is_main: bool
-    worker_id: int | None
+    owner_agent_id: int | None
     task_id: int | None
     section: QueueSection
 

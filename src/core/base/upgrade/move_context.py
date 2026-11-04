@@ -13,3 +13,5 @@ class MoveContext:
     setting_keys: tuple[str, ...] = ()
     mark_variants: Mapping[str, str] = field(default_factory=lambda: {})
     journal_folder: str = ""
+    role_names: tuple[str, ...] = ("main", "subagent", "reviewer")
+    reserved_setting_keys: tuple[str, ...] = ()

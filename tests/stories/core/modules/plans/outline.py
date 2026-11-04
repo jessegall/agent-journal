@@ -11,7 +11,7 @@ def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
     story = new_story(fixture=PlanWithCheckpoint)
     answer = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
     assert answer["phases"] and all("tasks" in phase and "title" in phase for phase in answer["phases"])
-    assert any(phase["tasks"] and {"id", "title", "state", "worker_id"} == set(phase["tasks"][0]) for phase in answer["phases"])
+    assert any(phase["tasks"] and {"id", "title", "state", "helper_id"} == set(phase["tasks"][0]) for phase in answer["phases"])
 
 
 def test_the_board_brings_the_open_plans_cards_and_both_counts_in_one_answer(new_story):
@@ -54,6 +54,6 @@ def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(new_
     story.run(lines.TASK_START, actor=worker)
     story.run("task start 2", actor=story.agent)
     phases = json.loads(story.run("plan inspect 1 --json", actor=story.agent).output_text)["phases"]
-    holders = {task["id"]: task["worker_id"] for phase in phases for task in phase["tasks"]}
+    holders = {task["id"]: task["helper_id"] for phase in phases for task in phase["tasks"]}
     assert holders[1] == worker.id
     assert holders[2] is None

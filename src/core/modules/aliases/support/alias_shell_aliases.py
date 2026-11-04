@@ -9,26 +9,22 @@ from core.base.journal_home import JournalHome
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_names import AliasNames
-from core.modules.aliases.support.alias_workers import AliasWorkers
+from core.modules.aliases.support.alias_access import AliasAccess
 
 JOURNAL_FOLDER_PREFIX = ".journal/"
 
 
 class AliasShellAliases(ShellAliases):
-    """The shell line of the alias a command line's first word names, with the caller's variables and the
-    alias's own over them, to run in the caller's folder; a line that starts in the journal's own folder is
-    given that folder's whole path, since a worker's worktree has none of its own; a journal command of the
-    same name always wins, so an alias version 4 had under a name version 5 now uses is never run in its
-    place."""
+    """Expands aliases with quoted arguments, declared access and paths from the journal folder."""
 
-    def __init__(self, aliases: AliasQuery, workers: AliasWorkers, names: AliasNames, home: JournalHome) -> None:
-        self.aliases, self.workers, self.names, self.home = aliases, workers, names, home
+    def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome) -> None:
+        self.aliases, self.access, self.names, self.home = aliases, access, names, home
 
     def shell_run(self, argv: list[str], caller: Caller, request: CallerRequest) -> ShellRun | None:
         alias = self.alias(argv[0]) if argv else None
         if alias is None:
             return None
-        self.workers.check(alias, caller)
+        self.access.check(alias, caller)
         return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **alias.variable_values()}, request.folder)
 
     def resolved_line(self, line: str) -> str:

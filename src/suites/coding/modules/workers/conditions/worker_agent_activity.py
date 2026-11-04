@@ -3,7 +3,13 @@ from core.modules.usage.conditions.agent_activity import AgentActivity
 
 
 class WorkerAgentActivity(AgentActivity):
-    """Finds workers with a worktree available for another job."""
+    """Finds workers running unfinished tasks or idle with a worktree ready for another job."""
+
+    def statement(self) -> Statement:
+        active = super().statement()
+        return Statement(f"({active.sql} OR (role = 'worker' AND EXISTS (SELECT 1 FROM tasks WHERE"
+                         " (tasks.delegated_to = agent_listing.id OR tasks.holder_id = agent_listing.id)"
+                         " AND tasks.state IN ('open', 'started', 'testing'))))", active.parameters)
 
     def idle(self) -> Statement:
         idle = super().idle()

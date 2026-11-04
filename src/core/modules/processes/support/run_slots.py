@@ -1,5 +1,5 @@
 from core.modules.processes.models.output import Output
-from core.modules.processes.support.test_listings import TestListings
+from core.modules.processes.support.run_counts import RunCounts
 from collections.abc import Sequence
 from dataclasses import replace
 
@@ -24,7 +24,7 @@ class RunSlots:
     main-runs-take-slots on, the main agent's running runs, which hold no spot and never wait, count against
     the batch size too."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: TestListings) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
 

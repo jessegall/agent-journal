@@ -35,9 +35,25 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.modules.processes.support.queue_run_workers import QueueRunWorkers
+from core.modules.processes.support.run_counts import RunCounts
+from core.modules.processes.support.part_visibility import PartVisibility
+from suites.coding.modules.workers.support.worker_part_visibility import WorkerPartVisibility
+from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.listeners.worker_test_count_listener import WorkerTestCountListener
+from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
+from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
+from suites.coding.modules.workers.migrations.m008_test_limit_setting import WorkerTestSettingMigration
+from suites.coding.modules.workers.migrations.m009_report_visibility import ReportVisibilityMigration
+from suites.coding.modules.workers.migrations.m010_alias_access import AliasAccessMigration
+from suites.coding.modules.workers.migrations.m011_process_owner import ProcessOwnerMigration
+from suites.coding.modules.workers.upgrade.alias_permissions_move import AliasPermissionsMove
+from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker_handler import EndGoneWorkerHandler
+from suites.coding.modules.workers.rules.missing_process_rule import MissingProcessRule
+from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from suites.coding.modules.workers.bindings.worker_queue_run_workers import WorkerQueueRunWorkers
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
+from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_shows import WindowShows
@@ -133,31 +149,38 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    nudges = [*WORKER_NUDGES, *LAUNCH_FAILURE_NUDGES]
+    window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
+                                          events=["proof.*", "worker_worktree.*"],
+                                          sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
+                                                   WindowSource("progress", "worker progress", ["task.*", "worker_worktree.*"]),
+                                                   WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.subagents")),
+                         WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
+                                         runs=["worker send", "worker merge", "worker release"])]
+    nudges = [*WORKER_NUDGES, *LAUNCH_FAILURE_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage"]
+    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage", "journal.core.aliases", "journal.core.viewer"]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration]
+    migrations = [ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
-    moves = [WorkersMove]
-    handlers = [RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
+    moves = [WorkersMove, AliasPermissionsMove]
+    handlers = [EndGoneWorkerHandler, RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
     subcommands = [ShortProofSubcommand, WorkerProgressSubcommand,WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
+    driver_rules = [MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    bindings = {AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers}
-    listeners = [RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    bindings = {AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
+    listeners = [WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, skeleton=WORKERS_TODOS_SKELETON, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),
-               WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.WORKER, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
+               WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],
                                  runs=["setting set"], events=["setting.*"]),
                WindowDeclaration("workers.worktrees", "Worktrees", "worktrees.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKTREES_SKELETON, group="project", icon=WindowIcon.BRANCH, reads=["project-worktree list"],

@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.agent_role import AgentRole
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.change.change import Change
 from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
@@ -18,16 +18,14 @@ from core.modules.processes.support.process_nudges import REQUIRED_MONITOR, REQU
 
 
 class BackgroundRunWatchListener(SaveListener):
-    """A run moved to the background is watched by the agent that started it, so it hears how the run goes. A
-    main agent whose program has a way to watch a run is held until it watches a run it started itself: it
-    sets a Monitor on it, or runs journal output monitor in its shell when its program has no Monitor tool. A
-    worker is never held: it hears of the end on its next hook, or is started again if it has stopped."""
+    """Watches background runs and requires a monitor according to the suite's declared policy."""
 
     name = "processes.background-run-watch"
     event = "process.*"
 
-    def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers) -> None:
+    def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers, suites: SuiteChoice) -> None:
         self.repository, self.bus, self.queries, self.providers = repository, bus, queries, providers
+        self.suites = suites
 
     def handle(self, change: Change[Model]) -> None:
         process = change.row
@@ -41,6 +39,6 @@ class BackgroundRunWatchListener(SaveListener):
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.agent_id)
-        if process.creator_id != process.agent_id or agent.role is AgentRole.WORKER:
+        if process.creator_id != process.agent_id or agent.role in self.suites.agent_policy(agent.environment_id).automatic_watch_roles:
             return None
         return self.providers.provider(agent.program).monitor_tool

@@ -38,6 +38,8 @@ class WindowEntry:
     shows: str = "environment"
     skeleton: Sequence[Mapping[str, object]] = ()
     required_settings: Sequence[str] = ()
+    sources: Sequence[Mapping[str, object]] = ()
+    links: Mapping[str, str] = field(default_factory=dict[str, str])
 
     def listing(self, fingerprint: str) -> WindowListing:
         document = self.loading == WindowLoading.DOCUMENT
@@ -46,4 +48,4 @@ class WindowEntry:
         return WindowListing(self.name, self.module, self.title, entry_url, self.entry if document else "", self.loading, self.place, self.roles,
                              self.reads, self.runs, self.events, self.unavailable_reason, self.shipped, self.icon,
                              self.float_width, self.float_height, self.options, self.count, self.group, self.auto_scroll, self.tabs,
-                             search, self.shows, self.skeleton)
+                             search, self.shows, self.skeleton, self.sources, self.links)

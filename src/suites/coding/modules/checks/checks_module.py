@@ -6,6 +6,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.modules.checks.support.check_searcher import CheckSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_icon import WindowIcon
 from core.base.periodic_checks import PeriodicChecks
 from core.base.viewer.window_loading import WindowLoading
@@ -49,10 +50,11 @@ class ChecksModule(Module):
     fails."""
 
     name = "journal.suites.coding.checks"
+    window_extensions = [WindowExtension("viewer.shell", reads=["check show"], runs=["check run", "check stop"])]
     nudges = CHECK_NUDGES
     requires_core = ">=5,<6"
     block_conditions = [CheckPassed]
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
     skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]

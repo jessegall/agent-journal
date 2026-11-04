@@ -42,7 +42,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         if environment_id is None:
             raise Refusal("the bars are shown for one environment", "name it with --environment")
         agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at"))
-        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_workers(environment_id)
+        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates(environment_id)
         tasks =self.tasks.environment(environment_id).unclosed().page(1, PAGE_ROWS).total
         waiting = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).page(1, PAGE_ROWS).total
         mains = MainAgentFinder.rows(self.queries, environment_id)
@@ -50,9 +50,9 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         jobs = self.queries.query(ScheduledJob).filter(agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs)
 
-    def ended_workers(self, environment_id: int) -> int:
+    def ended_delegates(self, environment_id: int) -> int:
         holders = {task.delegated_to for task in self.tasks.environment(environment_id).unclosed().all_rows() if task.state in UNFINISHED_WORK_STATES and task.delegated_to is not None}
-        return self.queries.query(Agent).filter(role=AgentRole.WORKER).matching(Among("id", sorted(holders))).matching(Greater("ended_at", "")).count()
+        return self.queries.query(Agent).matching(Among("id", sorted(holders))).matching(Greater("ended_at", "")).count()
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, BarFacts):

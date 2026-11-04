@@ -13,7 +13,7 @@ from core.modules.processes.support.reader_requests import ReaderRequests
 
 
 class ReaderFailureListener(SaveListener):
-    """Opens a request when a worker's reader fails on a completed run."""
+    """Opens a request when a reader fails on a completed run."""
 
     name = "processes.reader-failure"
     event = "output.*"

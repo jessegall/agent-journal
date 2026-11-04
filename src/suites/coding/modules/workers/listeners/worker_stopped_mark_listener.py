@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
@@ -15,6 +15,6 @@ class WorkerStoppedMarkListener(WorkerStopMarkListener):
         if ENDED_FIELD not in event.data or event.data[ENDED_FIELD][0] is not None:
             return
         worker = self.queries.query(Agent).find(event.row_id)
-        count = len(self.unfinished.rows(worker.id)) if worker.role is AgentRole.WORKER else 0
+        count = len(self.unfinished.rows(worker.id)) if worker.role == AgentRole.WORKER else 0
         if count and not self.unfinished.has_running_process(worker.id):
             self.show_stop(event, worker, WorkerMarkVariant.ENDED_EARLY, f"stopped with {count} tasks left")

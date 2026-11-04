@@ -11,10 +11,7 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """The folder that keeps the story templates between test runs: one per checkout and state of its
-    source, so a changed source file means new templates and never a stale one. A newer folder replaces
-    the older ones of its checkout, and the folders of a checkout unused for a week go, since a worker's
-    worktree does not stay."""
+    """Caches migrated test databases for the current checkout."""
 
     def __init__(self, root: Path = CACHE_FOLDER) -> None:
         self.root = root

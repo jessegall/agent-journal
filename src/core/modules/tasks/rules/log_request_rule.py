@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 
 
 class LogRequestRule(DriverRule):
@@ -14,7 +14,7 @@ class LogRequestRule(DriverRule):
     name = "tasks.log-request"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.TASK
 
     def __init__(self, task_writes: TaskWriteCount) -> None:
         self.task_writes = task_writes

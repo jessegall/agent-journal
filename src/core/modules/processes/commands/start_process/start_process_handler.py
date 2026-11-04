@@ -15,6 +15,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
+from core.modules.processes.support.part_visibility import PartVisibility
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -24,10 +25,11 @@ class StartProcessHandler(Handler[StartProcess, Process]):
 
     command = StartProcess
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility) -> None:
         self.queries, self.repository, self.folder, self.readers, self.kept = queries, repository, folder, readers, kept
         self.requests = requests
         self.slots = slots
+        self.visibility = visibility
 
     def handle(self, command: StartProcess, context: Context) -> Process:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -36,10 +38,10 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
                                                is_queued=command.is_queued, is_queue_run=command.is_queued,
                                                started_at=None if command.is_queued else context.timestamp,
-                                               worker_id=command.worker_id, task_id=command.task_id), context)
-        parts = []
+                                               owner_agent_id=command.owner_agent_id, task_id=command.task_id), context)
+        parts: list[ProcessPart] = []
         for position, spec in enumerate(command.parts, 1):
-            part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=spec.is_visible)
+            part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=self.visibility.is_visible(spec))
             selected = ReaderSelection.choose(self.all_readers(), [part])
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None

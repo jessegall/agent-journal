@@ -17,7 +17,7 @@ LIFETIME_SECONDS = "3600"
 class WebPush(PushService):
     """Pushes a phone as version 4 did: an empty push signed with the journal's VAPID keys, which name the
     address the tunnel gives as their contact, sent only to Apple's, Google's, Mozilla's or Microsoft's push
-    service; the phone's service worker then asks what waits."""
+    service; the phone then asks what waits."""
 
     def __init__(self, bus: Bus, tunnels: Tunnels, clock: Clock, transport: PushTransport) -> None:
         self.bus, self.tunnels, self.clock, self.transport = bus, tunnels, clock, transport

@@ -4,7 +4,7 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.tasks.queries.task_query import TaskQuery
 
 

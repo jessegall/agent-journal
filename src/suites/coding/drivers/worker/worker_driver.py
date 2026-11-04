@@ -5,7 +5,7 @@ from suites.coding.drivers.worker.rules.worker_git_rule import WorkerGitRule
 from suites.coding.drivers.worker.rules.worker_full_test_run_rule import WorkerFullTestRunRule
 from suites.coding.drivers.worker.rules.worker_stop_rule import WorkerStopRule
 from suites.coding.drivers.worker.rules.worker_task_start_rule import WorkerTaskStartRule
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class WorkerDriver(Driver):

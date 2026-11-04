@@ -26,7 +26,7 @@ class DefaultSubcommands:
     def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks) -> None:
         self.tables, self.queries, self.environment_names, self.links = tables, queries, environment_names, links
 
-    def make(self, model: type[Model]) -> MakeSubcommand:
+    def make(self, model: type[Model]) -> MakeSubcommand[Model]:
         return MakeSubcommand(self.tables.table(model))
 
     def show(self, model: type[Model]) -> ShowSubcommand:

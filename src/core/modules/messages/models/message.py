@@ -15,6 +15,7 @@ class Message(Model):
     shared_rows = True
     cli_name = "message"
     search_fields = ["text"]
+    hidden_fields = frozenset(["is_chat_visible"])
 
     environment_id: int
     agent_id: int | None = None
@@ -31,6 +32,7 @@ class Message(Model):
     peer: str = ""
     peer_key: str = ""
     recipient: str = ""
+    is_chat_visible: bool = True
 
     @property
     def title(self) -> str:

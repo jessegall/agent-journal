@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.modules.agents.models.agent import Agent
-from core.base.agent_role import AgentRole
 from core.base.command.command import Command
 from core.base.timestamp import Timestamp
 
@@ -13,7 +12,7 @@ class StartAgent(Command[Agent]):
 
     session: str
     program: str
-    role: AgentRole
+    role: str
     parent_id: int | None = None
     pid: int | None = None
     process_started_at: Timestamp | None = None

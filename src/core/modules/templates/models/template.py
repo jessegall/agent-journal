@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
+from core.base.actor import CORE_ACTOR_ID
+from core.base.template.template_declaration import TemplateDeclaration
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -19,3 +21,8 @@ class Template(Model):
     purpose: str = ""
     parts: tuple[str, ...] = ()
     commands: tuple[str, ...] = ()
+
+    @classmethod
+    def build(cls, declaration: TemplateDeclaration) -> "Template":
+        return cls(creator_id=CORE_ACTOR_ID, title=declaration.title, brief=declaration.brief, targets=declaration.targets,
+                   purpose=declaration.purpose, parts=declaration.parts, commands=declaration.commands)

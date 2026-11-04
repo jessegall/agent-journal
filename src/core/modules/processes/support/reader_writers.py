@@ -7,7 +7,7 @@ from core.modules.agents.models.agent import Agent
 
 
 class ReaderWriters:
-    """Main agents, people and modules may change readers; workers ask the main agent."""
+    """Allows people, modules and the main agent to change readers."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -15,8 +15,8 @@ class ReaderWriters:
     def check(self, actor: Actor) -> None:
         if self.allows(actor):
             return
-        raise Refusal("a worker writes no readers: the main agent does, and the journal has asked it",
+        raise Refusal("only the main agent writes readers, and the journal has asked it",
                       "stop, or read on; you are started again once the reader exists")
 
     def allows(self, actor: Actor) -> bool:
-        return actor.type is not ActorType.AGENT or self.queries.query(Agent).find(actor.id).role is AgentRole.MAIN
+        return actor.type is not ActorType.AGENT or self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN

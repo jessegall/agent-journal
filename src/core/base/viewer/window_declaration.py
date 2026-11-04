@@ -1,5 +1,5 @@
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import field, dataclass
 from pathlib import Path
 
 from core.base.declaration_names import DeclarationNames
@@ -13,6 +13,7 @@ from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_search import WindowSearch
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_tab import WindowTab
+from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_shows import WindowShows
@@ -52,6 +53,8 @@ class WindowDeclaration:
     search: WindowSearch | WindowReadSearch | None = None
     skeleton: Sequence[SkeletonPart] = ()
     required_settings: Sequence[str] = ()
+    sources: Sequence[WindowSource] = ()
+    links: Mapping[str, str] = field(default_factory=dict[str, str])
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -62,6 +65,14 @@ class WindowDeclaration:
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
         keys = [option.key for option in self.options]
         problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
+        tab_keys = [tab.key for tab in self.tabs]
+        problems += [f"{self.name} names the tab {key} twice" for key in dict.fromkeys(tab_keys) if tab_keys.count(key) > 1]
+        source_keys = [source.key for source in self.sources]
+        problems += [f"{self.name} names the source {key} twice" for key in dict.fromkeys(source_keys) if source_keys.count(key) > 1]
+        problems += [f"{self.name} fills its source {source.key} with an undeclared read" for source in self.sources
+                     if not any(source.read.startswith(line) for line in self.reads)]
+        problems += [f"{self.name} follows {pattern} for source {source.key} without declaring it" for source in self.sources
+                     for pattern in source.events if pattern not in self.events]
         if self.shows is WindowShows.SELECTED_AGENT and self.place not in (WindowPlace.PANE, WindowPlace.DROPDOWN):
             problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}: use a pane or dropdown")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)

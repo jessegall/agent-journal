@@ -7,6 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.registry.registry import Registry
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE, EM_DASH_NUDGE, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE
@@ -16,7 +17,7 @@ SENTENCE_COUNT = 3
 SENTENCE_END = ". "
 PARAGRAPH_BREAK = "\n\n"
 NUDGE_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
-    (re.compile(r"\bjournal (task|plan|message|question|memory|rule|reminder|sequence|worker|check|skill) [a-z]+\b|\[journal\]", re.I), SHOP_TALK_NUDGE),
+    (re.compile(r"\[journal\]", re.I), SHOP_TALK_NUDGE),
     (re.compile(r"\bthe user\b", re.I), THIRD_PERSON_NUDGE),
     (re.compile(r"—.*—", re.S), EM_DASH_NUDGE),
 )
@@ -32,8 +33,8 @@ class ChatMannersRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, registry: Registry) -> None:
+        self.queries, self.registry = queries, registry
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         rows = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.AGENT).newest().limited(1)
@@ -41,6 +42,11 @@ class ChatMannersRule(DriverRule):
             return RuleAnswer.allowed()
         text = rows[0].text.strip()
         declarations = [declaration for pattern, declaration in NUDGE_PATTERNS if pattern.search(text)]
+        if self.has_journal_command(text) and SHOP_TALK_NUDGE not in declarations:
+            declarations.append(SHOP_TALK_NUDGE)
         if len(text) >= LONG_TEXT_CHARACTERS and PARAGRAPH_BREAK not in text and text.count(SENTENCE_END) >= SENTENCE_COUNT:
             declarations.append(PARAGRAPH_NUDGE)
         return RuleAnswer.with_nudges(*(declaration.nudge() for declaration in declarations))
+
+    def has_journal_command(self, text: str) -> bool:
+        return any(re.search(rf"\bjournal {re.escape(command)}\b", text, re.I) for command in self.registry.subcommands)

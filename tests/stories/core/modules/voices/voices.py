@@ -65,7 +65,7 @@ def test_show_prints_the_instruction_the_agent_is_given(new_story):
     given_names(story)
     text = story.run("voice show", actor=story.user).output_text
     assert BUTLER_TEXT in text and 'Address me as "Captain Ada".' in text
-    assert "say worker, subagent, task and environment" in text
+    assert "Keep the normal names of agents, tasks and environments" in text
 
 
 def enabled_story(new_story):

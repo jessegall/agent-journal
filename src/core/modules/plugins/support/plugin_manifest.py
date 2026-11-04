@@ -17,7 +17,6 @@ from core.modules.plugins.support.event_window import EventWindow
 
 MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
-WORKERS_ROLE = "workers"
 
 
 @dataclass(frozen=True)
@@ -148,8 +147,8 @@ class PluginManifest:
             raise Refusal(f"{self.name} has no setting {key}: it has {', '.join(setting.key for setting in self.settings) or 'none'}", "journal plugin settings shows them")
         return matching[0]
 
-    def reaches_workers(self, event: str) -> bool:
-        return event in self.reaches and WORKERS_ROLE in self.reaches[event]
+    def reaches_role(self, event: str, role: str) -> bool:
+        return event in self.reaches and any(name in self.reaches[event] for name in (role, f"{role}s"))
 
     def window_names(self) -> tuple[str, ...]:
         return tuple(window.event for window in self.event_windows)
