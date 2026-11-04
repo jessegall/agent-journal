@@ -1,12 +1,15 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
+import {useOutputPages} from "../composables/outputPages.js";
 import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
 const props = defineProps({run: {type: Object, required: true}, environment: {type: String, required: true}, position: {type: Number, required: true}, read: {type: Function, required: true}, expanded: Boolean});
 const emit = defineEmits(["toggle"]);
-const lines = ref([]);
+const output = ref();
+const pages = useOutputPages((words) => props.read([...words, "--limit", "50"]), () => props.run.id);
+const lines = pages.lines;
 const now = useSharedNow();
 const kind = computed(() => ({test: "Test run", build: "Build", check: "Check", install: "Install"})[props.run.category] || props.run.category.charAt(0).toUpperCase() + props.run.category.slice(1));
 const duration = computed(() => {
@@ -20,10 +23,19 @@ const duration = computed(() => {
 });
 async function refresh() {
     if (!props.expanded) return;
-    const answer = await props.read(["output", "peek", String(props.run.id), "--lines", "1-10"]);
-    lines.value = answer.ok ? answer.value.lines : [answer.error];
+    const box = output.value;
+    const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 2;
+    await pages.follow();
+    await nextTick();
+    if (props.expanded && atEnd) box.scrollTop = box.scrollHeight;
 }
-watch(() => props.expanded, refresh, {immediate: true});
+async function open() {
+    if (!props.expanded) return;
+    await pages.newest();
+    await nextTick();
+    if (props.expanded) output.value.scrollTop = output.value.scrollHeight;
+}
+watch(() => props.expanded, open, {immediate: true});
 useResourceEvents(["output.*"], refresh);
 </script>
 <template>
@@ -34,7 +46,7 @@ useResourceEvents(["output.*"], refresh);
             </div>
             <div class="details"><span data-queue-kind>{{ kind }}</span><template v-if="run.owner_agent_id"><span class="separator">·</span><button type="button" class="link" data-queue-agent @click.stop="peek('agents', run.owner_agent_id)">Agent {{ run.owner_agent_id }}</button></template><template v-else-if="run.is_main"><span class="separator">·</span><span>Main agent</span></template><template v-if="run.task_id"><span class="separator">·</span><button type="button" class="link" data-queue-task @click.stop="peek('tasks', run.task_id)">Task {{ run.task_id }}</button></template><template v-if="run.state === 'failed'"><span class="separator">·</span><span class="failed">Failed, exit {{ run.exit_code }}</span></template></div>
         </div>
-        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}</span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre data-queue-output-body><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
+        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}</span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre ref="output" data-queue-output-body @scroll="expanded && pages.loadEarlier($event.target)"><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
     </div>
 </template>
 <style scoped>
