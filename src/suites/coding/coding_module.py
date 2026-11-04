@@ -2,6 +2,7 @@ from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
+from suites.coding.support.coding_templates import CODING_TEMPLATES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.module import Module
@@ -51,6 +52,7 @@ class CodingModule(Module):
     windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
+    templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]
     window_extensions = [*(WindowExtension(name, reads=["file-edit list"], events=["file_edit.create"],

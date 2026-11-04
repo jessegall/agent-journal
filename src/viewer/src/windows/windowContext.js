@@ -12,7 +12,8 @@ export const PANE_PAGE = Symbol("pane-page");
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
 const QUIET_AFTER_READS_MS = 50;
-const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
+const WORD = /(?:[^\s"'\\]|\\[\s\S]|"(?:\\[\s\S]|[^"\\])*"|'[^']*')+/g;
+const QUOTED = /'([^']*)'|"((?:\\[\s\S]|[^"\\])*)"|\\([\s\S])/g;
 
 // what every window is given: its name, environment, agent and page, whether it is shown, what it may run, its follows
 // through the host, the search it declares, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings, one of its pane's options written through setOption
@@ -124,6 +125,7 @@ async function uploaded(file, signal = undefined) {
     }
 }
 
-function lineWords(line) {
-    return [...line.matchAll(WORD)].map((match) => match[1] ?? match[2] ?? match[3]);
+export function lineWords(line) {
+    return [...line.matchAll(WORD)].map(([word]) => word.replace(QUOTED, (_, single, double, escaped) =>
+        single ?? (double === undefined ? escaped : double.replace(/\\(["\\])/g, "$1"))));
 }

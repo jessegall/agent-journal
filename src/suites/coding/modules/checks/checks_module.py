@@ -56,11 +56,12 @@ class ChecksModule(Module):
     fails."""
 
     name = "journal.suites.coding.checks"
+    parent_suite = "coding"
     window_extensions = [WindowExtension("viewer.shell", reads=["check show"], runs=["check run", "check stop"])]
     nudges = CHECK_NUDGES
     requires_core = ">=5,<6"
     block_conditions = [CheckPassed]
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
+    dependencies = ["journal.suites.coding", "journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
     skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
     library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]

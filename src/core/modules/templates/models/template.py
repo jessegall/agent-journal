@@ -21,8 +21,9 @@ class Template(Model):
     purpose: str = ""
     parts: tuple[str, ...] = ()
     commands: tuple[str, ...] = ()
+    module: str = ""
 
     @classmethod
-    def build(cls, declaration: TemplateDeclaration) -> "Template":
+    def build(cls, declaration: TemplateDeclaration, module: str) -> "Template":
         return cls(creator_id=CORE_ACTOR_ID, title=declaration.title, brief=declaration.brief, targets=declaration.targets,
-                   purpose=declaration.purpose, parts=declaration.parts, commands=declaration.commands)
+                   purpose=declaration.purpose, parts=declaration.parts, commands=declaration.commands, module=module)

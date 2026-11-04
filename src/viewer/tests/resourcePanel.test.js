@@ -93,11 +93,9 @@ test("a plan shows how far it has come, the phase it is in and which phases are 
 
 test("a plan's moves follow its state and run its line, and the close button shuts the panel", async () => {
     const lines = [];
-    expect(movesOf("plan", {state: "ready"}).map((move) => move.word)).toEqual(["approve", "cancel"]);
+    expect(movesOf("plan", {state: "ready"}).map((move) => move.word)).toEqual(["cancel"]);
     await opened("#?open=plans:5", answering(PLAN, lines));
-    shown().querySelector("[data-move='approve']").click();
-    await later();
-    expect(lines).toContainEqual(["plan", "approve", "5"]);
+    expect(shown().querySelector("[data-move='approve']")).toBeNull();
     shown().querySelector("[data-resource-close]").click();
     await later();
     expect(location.hash).not.toContain("open=");

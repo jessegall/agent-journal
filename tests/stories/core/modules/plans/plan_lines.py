@@ -1,7 +1,5 @@
 from core.testing.story_fixture import StoryFixture
 
-from core.testing.story_fixture import StoryFixture
-
 import pytest
 
 from datetime import timedelta
@@ -10,8 +8,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.support.coding_fixtures import CodingEnvironment
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
@@ -26,11 +23,10 @@ VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).w
 
 
 class CartPlan(StoryFixture):
-    parent = CodingEnvironment
+    parent = BuilderWithUser
     checkpoint = False
 
     def steps(self, story):
-        story.agent = hook_agent(story, story.hook('s-1', HookSamples.session_start()))
         story.run('plan make "Cart plan" --environment main')
         story.run(f'''phase make --plan 1 "Build"{(' --checkpoint' if self.checkpoint else '')}''')
         story.run('phase make --plan 1 "Ship"')
@@ -38,7 +34,7 @@ class CartPlan(StoryFixture):
             task_id = story.new_row_id(f'task make "{title}" --brief "{title} well" --environment main')
             story.run(f'phase place {task_id} --phase {phase}')
         for move in ('ready', 'approve', 'start'):
-            story.run(f'plan {move} 1')
+            story.run(f'plan {move} 1 --environment main', actor=story.user)
 
 
 class CheckpointCartPlan(CartPlan):
@@ -83,7 +79,7 @@ def test_a_task_refused_its_close_says_nothing(started_cart_plan):
 def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story = new_story(fixture=ReadyCartPlan)
     story.advance(timedelta(seconds=1))
-    story.run("plan approve 1")
+    story.run("plan approve 1 --environment main", actor=story.user)
     story.expect_hook_allowed("s-1", VIEW_LINE, "plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "plan 1 approved")
@@ -128,7 +124,7 @@ def test_a_plan_with_a_task_still_in_hand_is_not_stalled(started_cart_plan):
 def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_story):
     story = new_story(fixture=ReadyCartPlan)
     story.advance(timedelta(seconds=30))
-    story.run("plan approve 1")
+    story.run("plan approve 1 --environment main", actor=story.user)
     story.advance(timedelta(seconds=30))
     story.hook("s-1", HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])))
     story.expect_hook_allowed("s-1", VIEW_LINE, "plan 1 approved")
@@ -142,10 +138,9 @@ def started_cart_plan(new_story):
 
 
 class ReadyCartPlan(StoryFixture):
-    parent = CodingEnvironment
+    parent = BuilderWithUser
 
     def steps(self, story):
-        story.agent = hook_agent(story, story.hook('s-1', HookSamples.session_start()))
         story.run('plan make "Cart plan" --environment main')
         story.run('phase make --plan 1 "Build"')
         story.run('task make "Cart" --environment main')

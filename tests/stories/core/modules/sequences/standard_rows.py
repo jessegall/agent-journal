@@ -7,7 +7,8 @@ from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
 from core.modules.templates.models.template import Template
-from suites.coding.support.standard_templates import STANDARD_TEMPLATES
+from suites.coding.support.coding_templates import CODING_TEMPLATES
+from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -31,7 +32,7 @@ def plan_building(story):
 def test_a_fresh_journal_lists_what_comes_with_it_after_a_start(new_story):
     story = new_story(fixture=StartedSequences)
     expect_title_standard_templates_limit(STANDARD_SEQUENCES, titles(story, Sequence))
-    expect_title_standard_templates_limit(STANDARD_TEMPLATES, titles(story, Template))
+    expect_title_standard_templates_limit([*CODING_TEMPLATES, *WORKER_TEMPLATES], titles(story, Template))
 
 
 def test_a_person_cannot_change_a_sequence_that_comes_with_the_journal(new_story):

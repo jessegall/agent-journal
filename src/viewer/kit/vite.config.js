@@ -21,7 +21,7 @@ const frameTokens = () => ({
 export default defineConfig({
     plugins: [vue(), stylesInScripts(), frameTokens()],
     publicDir: false,
-    resolve: {alias: {"@journal/window-kit": here("./windowContextKey.js")}},
+    resolve: {alias: {"@journal/window-kit": here("./runtime.js")}},
     build: {
         outDir: OUT_DIR,
         emptyOutDir: true,

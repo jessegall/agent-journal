@@ -11,7 +11,7 @@ const context = inject(WINDOW_CONTEXT);
 
 // a button the server refuses shows the refusal beside it, until the next press
 async function press(button) {
-    const result = await pressButton(button, props.mark, context.environment);
+    const result = await pressButton(button, {id: props.mark.target_id}, context.environment);
     refusal.value = result.ok ? "" : result.error;
 }
 </script>

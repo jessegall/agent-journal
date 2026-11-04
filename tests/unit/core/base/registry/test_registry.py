@@ -18,6 +18,9 @@ from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration
+from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
+from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from core.base.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
@@ -117,6 +120,7 @@ def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read
     read_window = registry.windows[0]
     assert (read_window.icon, read_window.float_width, read_window.float_height, read_window.options, read_window.count, registry.suites[0].presets) == (
         "window", 400, 340, (), "", {})
+    assert registry.suites[0].shipped is False
 
 
 def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_show(tmp_path):
@@ -132,15 +136,14 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
 
 def test_suite_profiles_and_their_types_survive_registry_storage(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read", "Read the notes.", "reader", "small", "small")
-    template = TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=tuple(["doc"]), parts=tuple(["Summary"]))
     policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
-    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), tuple([template]), policy)
+    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), policy, shipped=True)
     registry = replace(Registry.read(database), suites=tuple([suite]))
     restored = Registry.parsed("profiles", registry.entries_text())
     assert restored.suites[0].profiles == tuple([profile])
     assert restored.suites[0].profile_types == tuple(["reader"])
-    assert restored.suites[0].templates == tuple([template])
     assert restored.suites[0].agent_policy == policy
+    assert restored.suites[0].shipped is True
 
 
 def test_window_sources_links_and_components_survive_registry_storage(database):
@@ -154,3 +157,52 @@ def test_window_sources_links_and_components_survive_registry_storage(database):
     assert restored.tabs == tuple(window.tabs)
     assert restored.listing("current").sources == restored.sources
     assert restored.listing("current").links == restored.links
+
+
+def test_module_templates_survive_registry_storage(database):
+    declaration = TemplateDeclaration(title="Review notes", brief="Read the notes.", targets=("item", "worker"),
+                                      purpose="critique", parts=("Problems", "Changes"), commands=tuple(["journal item list"]))
+    entry = TemplateEntry("acme.review", declaration)
+    registry = replace(Registry.read(database), templates=tuple([entry]))
+    restored = Registry.parsed("module-templates", registry.entries_text())
+    assert restored.templates == tuple([entry])
+    assert isinstance(restored.templates[0].declaration.targets, tuple)
+    assert isinstance(restored.templates[0].declaration.parts, tuple)
+    assert isinstance(restored.templates[0].declaration.commands, tuple)
+
+
+def test_a_registry_saved_before_module_templates_has_no_entries(database):
+    assert Registry.read(database).templates == ()
+
+
+def test_module_suites_survive_registry_storage(database):
+    memberships = {"acme.suite": ("acme", "coding"), "acme.review": tuple(["coding"]), "core": ()}
+    registry = replace(Registry.read(database), module_suites=memberships)
+    assert Registry.parsed("module-suites", registry.entries_text()).module_suites == memberships
+
+
+def test_a_registry_saved_before_module_suites_has_no_memberships(database):
+    assert Registry.read(database).module_suites == {}
+
+
+def test_a_button_with_fields_menu_and_labels_survives_registry_storage(database):
+    size = ChoiceField("size", "Size", (Choice("short", "Short"), Choice("full", "Full")), "short")
+    template = TemplateField("template", "Template", "item", "critique", "General critique")
+    message = TextField("message", "Message")
+    menu = ButtonMenuItem("Review with a message", "item pause {row_id} --message={message}",
+                          fields=tuple([message]), description="Send a message with the review")
+    declaration = ButtonDeclaration("notes.review", ("row.item", "notes.toolbar"), "Review", "item pause {row_id}",
+                                    icon="check", primary=True, fields=(size, template, message),
+                                    condition=ButtonCondition("state", tuple(["open"])), menu=tuple([menu]),
+                                    menu_label="More review actions", tip="Review this item")
+    entry = ButtonEntry("notes", declaration, True)
+    registry = replace(Registry.read(database), buttons=tuple([entry]), button_slots=("row.item", "notes.toolbar"))
+    restored = Registry.parsed("buttons", registry.entries_text())
+    assert restored.buttons == tuple([entry])
+    assert restored.button_slots == registry.button_slots
+
+
+def test_a_registry_saved_before_declared_buttons_has_none(database):
+    registry = Registry.read(database)
+    assert registry.buttons == ()
+    assert registry.button_slots == ()

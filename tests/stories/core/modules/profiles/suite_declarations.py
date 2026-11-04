@@ -12,7 +12,7 @@ def test_another_suite_supplies_its_profiles_and_profile_types(new_story):
     story.expect_success('profile save reader --type reader --description "Reads notes"', actor=story.user)
 
 
-def test_another_suite_supplies_its_standard_templates(new_story):
+def test_a_module_supplies_its_standard_templates(new_story):
     story = new_story(NOTES_MODULE, fixture=UserJoined)
     BootingWork().run(story.container)
     story.run_listeners()

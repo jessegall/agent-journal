@@ -6,7 +6,7 @@ import PlanReviews from "./PlanReviews.vue";
 import PlanTimeline from "./PlanTimeline.vue";
 import Segmented from "../kit/Segmented.vue";
 import {computed, ref, watch} from "vue";
-import Btn from "../kit/Btn.vue";
+import ButtonSlot from "../kit/ButtonSlot.vue";
 import BackButton from "../kit/BackButton.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Dot from "../kit/Dot.vue";
@@ -17,14 +17,13 @@ import Skeleton from "../kit/Skeleton.vue";
 import {render} from "../text/index.js";
 import RowMoves from "./RowMoves.vue";
 import CommentedRow from "./CommentedRow.vue";
-import PlanCritique from "./PlanCritique.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 import {delegationWord} from "../domain/plans.js";
 
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
-const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, backed: Boolean});
+const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, environment: {type: String, required: true}, readOnly: Boolean, backed: Boolean});
 const emit = defineEmits(["close", "back", "select", "open"]);
 const VIEWS = [
     {key: "phases", label: "Phases"},
@@ -33,7 +32,6 @@ const VIEWS = [
 const view = ref("phases");
 const plan = ref(null);
 const failure = ref("");
-const critiquing = ref(false);
 const textComments = useTextComments(() => (plan.value ? {kind: "plan", id: props.id, title: plan.value.title} : {}), (line) => props.read(line));
 let reading = 0;
 
@@ -95,11 +93,9 @@ watch(() => props.id, () => {
                     <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
                 </template>
                 <RowMoves inline kind="plan" :id="id" :row="plan" :read="read" @done="load" />
-                <template v-if="plan.state === 'ready'">
-                    <div class="plan-critique">
-                        <Btn small bordered data-plan-critique-open @click="critiquing = true">Ask for a critique</Btn>
-                    </div>
-                </template>
+                <div class="plan-buttons">
+                    <ButtonSlot name="row.plan" :row="{...plan, kind: 'plan'}" :environment="environment" :read-only="readOnly" @done="load" />
+                </div>
                 <template v-if="html">
                     <div class="brief">
                         <Folded :name="`plans:${id}:brief`" :at="220" :keep="160">
@@ -151,9 +147,6 @@ watch(() => props.id, () => {
         <template v-if="plan">
             <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
         </template>
-        <template v-if="critiquing">
-            <PlanCritique :plan="plan" :read="read" @close="critiquing = false" />
-        </template>
     </article>
 </template>
 
@@ -186,7 +179,7 @@ watch(() => props.id, () => {
     font-size: 12.5px;
 }
 
-.plan-critique {
+.plan-buttons {
     margin-top: 8px;
 }
 

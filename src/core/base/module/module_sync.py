@@ -33,6 +33,8 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
+from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
@@ -42,6 +44,7 @@ from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
+from core.base.module.button_slots import ButtonSlots
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.provider_entries import ProviderEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -116,6 +119,9 @@ class ModuleSync:
         return Registry(
             fingerprint=self.fingerprint.text(modules),
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
+            module_suites={module.name: tuple(dict.fromkeys([suite for suite in
+                           (module.parent_suite, *(suite.name for suite in module.suites)) if suite is not None]))
+                           for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
                                                   declaration.excluded_subcommands) for module in modules for declaration in module.models},
             handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},
@@ -128,12 +134,15 @@ class ModuleSync:
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
             overlays=self.entries.overlays(modules),
             rules=rules,
-            suites=self.entries.suites(modules),
+            suites=self.entries.suites(modules, self.finder.default_modules()),
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
             marks=self.marks(modules),
             nudges=self.nudges(modules),
             docks=self.docks(modules),
+            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
+            buttons=self.buttons(modules),
+            button_slots=self.button_slots(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
@@ -179,6 +188,13 @@ class ModuleSync:
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
                                           SkillDigest.digest(path.read_text()), str(path), module in shipped))
         return tuple(entries)
+
+    def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.buttons)
+
+    def button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
+        return tuple(sorted(ButtonSlots(modules).owners))
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

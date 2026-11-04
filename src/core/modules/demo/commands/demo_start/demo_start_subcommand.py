@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -15,8 +16,8 @@ class DemoStartSubcommand(DemoReportWriting, ReadSubcommand[DemoReport]):
     name = "start"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        parser.add_argument("--with-module", type=Path, dest="module_folder", help="Install a module folder in the demo before seeding it")
 
     def read(self, arguments: Namespace, caller: Caller) -> DemoReport:
-        session = DemoScratch().start()
+        session = DemoScratch().start(arguments.module_folder)
         return DemoReport([f"the demo runs in {session.folder} (server pid {session.pid})", session.link, f"stop it with: kill {session.pid}"])

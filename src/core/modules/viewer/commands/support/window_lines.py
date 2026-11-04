@@ -9,6 +9,7 @@ from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
+from core.modules.drivers.support.active_modules import ActiveModules
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
 WINDOW_SEARCH_LINE = "window search"
@@ -21,9 +22,11 @@ class WindowLines:
     button allows answers to the module of that button, not the window. It checks the parsed line, never its
     raw words."""
 
-    def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames) -> None:
+    def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
+                 active: ActiveModules) -> None:
         self.registry, self.line_parser, self.flags = registry, line_parser, flags
         self.allowances, self.environment_names = allowances, environment_names
+        self.active = active
 
     def check(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
         dock = self.registry.dock(window_name)
@@ -62,13 +65,13 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
 
     def check_button(self, window_name: str, argv: list[str], parsed: ParsedLine, person: Actor, environment: str) -> None:
-        buttons = [button for button in self.registry.button_lines(window_name) if button.allows(argv)]
+        environment_id = self.environment_names.environment_id(environment)
+        buttons = [button for button in self.registry.button_lines(window_name) if self.active.is_active(button.module, environment_id) and button.allows(argv)]
         if not buttons:
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
         if any(button.shipped for button in buttons):
             return
-        environment_id = self.environment_names.environment_id(environment)
-        if parsed.line not in self.allowances.allowed_lines(person.id, environment_id, buttons[0].subject, WindowPermissionType.RUNS):
+        if not any(button.permission_line in self.allowances.allowed_lines(person.id, environment_id, button.subject, WindowPermissionType.RUNS) for button in buttons):
             raise WindowRefusal(f"{buttons[0].module} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:

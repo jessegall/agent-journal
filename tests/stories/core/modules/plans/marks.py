@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.core.support.fixtures import AgentStarted
+from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.modules.chat.support.v4_looks import PLAN, expect_declared_appearance
 import pytest
 
@@ -13,18 +13,17 @@ from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor, expect_mark_count, expect_marks_text
-from tests.stories.core.modules.tasks.task_lifecycle import started_story
 from tests.stories.core.support import story_lines as lines
 from core.testing.expect_row import expect_row
 
 
 class ApprovedPlan(StoryFixture):
-    parent = AgentStarted
+    parent = UserJoined
 
     def steps(self, story):
         story.run(lines.NEW_PLAN)
         story.run("plan ready 1")
-        story.run("plan approve 1")
+        story.run("plan approve 1 --environment main", actor=story.user)
 
 
 def started_plan(new_story):
@@ -71,7 +70,7 @@ def test_a_started_plan_is_docked_and_undocked_when_it_ends(running_plan):
 
 
 def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
-    story = started_story(new_story)
+    story = new_story(fixture=UserJoined)
     story.run(lines.NEW_PLAN)
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "plans.plan")
@@ -80,12 +79,12 @@ def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
 
 
 def test_a_plan_card_follows_where_the_plan_stands(new_story):
-    story = started_story(new_story)
+    story = new_story(fixture=UserJoined)
     story.run(lines.NEW_PLAN)
     story.run("plan ready 1")
     story.run_listeners()
     story.expect_text("dock-item list", "plans.waiting", "docked")
-    story.run("plan approve 1")
+    story.run("plan approve 1 --environment main", actor=story.user)
     story.run("plan start 1", actor=story.agent)
     story.run_listeners()
     story.expect_text("dock-item list", "plans.started", "docked")

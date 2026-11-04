@@ -88,6 +88,10 @@ class JournalHome:
         return self.folder / "modules.json"
 
     @property
+    def modules_folder(self) -> Path:
+        return self.folder / "modules"
+
+    @property
     def status_folder(self) -> Path:
         return self.folder / "runtime" / "status"
 

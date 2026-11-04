@@ -3,6 +3,7 @@ import {onMounted, onUnmounted, ref, watchEffect} from "vue";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
 import Btn from "../kit/Btn.vue";
+import ButtonAllowance from "../windows/ButtonAllowance.vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import {usageRead} from "../../kit/useUsage.js";
@@ -64,6 +65,7 @@ watchEffect(() => {
 
 <template>
     <div :class="['view-window', {standalone}]" :data-face="face" :data-page="standalone ? page : undefined">
+        <ButtonAllowance :prompts="prompts" />
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
                 <SidebarPages :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
@@ -88,7 +90,7 @@ watchEffect(() => {
                     <WindowPane :key="page" :name="page" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="mainAgent" :prompts="prompts" :shell-read="shellLine" />
                 </template>
             </div>
-            <ResourcePanel :read="shellLine" />
+            <ResourcePanel :read="shellLine" :catalogue="catalogue" :environment="environment" />
         </template>
     </div>
 </template>

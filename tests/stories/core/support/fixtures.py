@@ -79,7 +79,7 @@ class UserJoined(StoryFixture):
 class PlanWithPhases(StoryFixture):
     """A draft plan 1 in main with three phases in order: Values, Models and Queries."""
 
-    parent = AgentStarted
+    parent = UserJoined
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
@@ -156,7 +156,7 @@ class UnansweredMessage(StoryFixture):
 class PlanTasksPlaced(StoryFixture):
     """A draft plan 1 with one phase, Everything, holding the open tasks First (1) and Second (2) in that order."""
 
-    parent = AgentStarted
+    parent = UserJoined
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
@@ -174,7 +174,7 @@ class PlanAcrossPhases(StoryFixture):
     3, Tax, sit in Build in that order, so the order of phases and places differs from the order the tasks
     were made."""
 
-    parent = AgentStarted
+    parent = UserJoined
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
@@ -184,7 +184,7 @@ class PlanAcrossPhases(StoryFixture):
             task_id = story.new_row_id(f'task make "{title}" --environment main')
             story.run(f"phase place {task_id} --phase {phase}")
         for move in ("ready", "approve", "start"):
-            story.run(f"plan {move} 1")
+            story.run(f"plan {move} 1 --environment main", actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_success("plan show 1", "state: started")
@@ -233,7 +233,7 @@ class PlanWithCheckpoint(StoryFixture):
     """A started plan 1 whose phase Build (1) is a checkpoint holding Cart (1), Tax (2) and Totals (3), followed by
     phase Ship (2) holding Release (4); Tax waits on Outside (5), an open task in no plan."""
 
-    parent = AgentStarted
+    parent = UserJoined
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
@@ -245,7 +245,7 @@ class PlanWithCheckpoint(StoryFixture):
         story.run('task make "Outside" --environment main')
         story.run("task depend 2 --on 5")
         for move in ("ready", "approve", "start"):
-            story.run(f"plan {move} 1")
+            story.run(f"plan {move} 1 --environment main", actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_success("phase show 1", "checkpoint: True")
@@ -270,7 +270,7 @@ class StartedPlanTask(StoryFixture):
 
     def steps(self, story: Story) -> None:
         for move in ("ready", "approve", "start"):
-            story.run(f"plan {move} 1")
+            story.run(f"plan {move} 1 --environment main", actor=story.user)
         story.run(lines.TASK_START, actor=story.agent)
 
     def expect(self, story: Story) -> None:

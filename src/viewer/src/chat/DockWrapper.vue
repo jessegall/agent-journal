@@ -1,13 +1,15 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
+import ButtonSlot from "../kit/ButtonSlot.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import DockLeave from "./DockLeave.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
-import {WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {lineResult, WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {cliOf} from "../domain/resourceKinds.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockLook} from "../domain/dockLook.js";
 import {pressButton} from "./markButtons.js";
@@ -20,6 +22,28 @@ const declaration = computed(() => dockDeclaration(props.item.type));
 const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
 const context = inject(WINDOW_CONTEXT);
+const row = ref(null);
+let reading = 0;
+
+async function loadRow() {
+    const turn = ++reading;
+    const kind = cliOf(props.item.target_model ?? "");
+    const line = `${kind} show`;
+    if (!declaration.value?.reads?.includes(line)) return;
+    const answer = await lineResult(props.item.type, [kind, "show", String(props.item.target_id)], context.environment);
+    if (turn !== reading) return;
+    row.value = answer.ok ? {...answer.value, id: props.item.target_id, kind} : {id: props.item.target_id, kind};
+}
+
+watch(() => [props.item.type, props.item.target_model, props.item.target_id, declaration.value], (_, previous, cleanup) => {
+    const kind = cliOf(props.item.target_model ?? "");
+    row.value = {id: props.item.target_id, kind};
+    loadRow();
+    const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${kind.replaceAll("-", "_")}.*`], (event) => {
+        if (!event.row_id || event.row_id === props.item.target_id) loadRow();
+    });
+    cleanup(() => { reading += 1; stop?.(); });
+}, {immediate: true});
 // a declared button goes the moment it is pressed, and comes back if the server refuses
 const pressed = ref(new Set());
 const failure = ref("");
@@ -28,7 +52,7 @@ async function press(button) {
     const isDeclared = button.action === "declared";
     if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
     failure.value = "";
-    const answer = await pressButton(button, props.item, context.environment);
+    const answer = await pressButton(button, {id: props.item.target_id}, context.environment);
     if (answer?.ok !== false) return;
     pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
     failure.value = answer.error;
@@ -59,6 +83,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
             </template>
             <span class="chat-dock-acts dock-acts">
+                <ButtonSlot :name="`dock.${item.type}`" :row="row" :environment="context.environment" :read-only="context.readOnly" @done="loadRow" />
                 <template v-for="button in buttons" :key="button.action + button.runs">
                     <template v-if="button.iconOnly">
                         <Btn kind="icon" :aria-label="button.label" :title="button.label" :data-dock-action="button.action" @click="press(button)"><Icon :name="button.icon" :size="13" /></Btn>

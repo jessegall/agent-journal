@@ -1,0 +1,64 @@
+import json
+
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
+from core.testing.expect_row import expect_row
+from tests.stories.fixtures.third_party import third_party, third_party_cookie, viewer_body
+from tests.stories.server.support.server_client import request_answer
+from tests.stories.support.story_checks import expect_value
+
+
+def test_a_coding_module_adds_its_template_to_the_critique_choices(third_party):
+    story = third_party.story
+    story.expect_text("template list --target plan --purpose critique", "Security review", "Module: acme.review")
+    template = next(entry for entry in json.loads(story.run("template list --json").output_text)["rows"] if entry["title"] == "Security review")
+    story.expect_success(f'template send {template["id"]} --on=plan:1 --set=agents=2 --set=size="a normal read" --environment main', actor=story.user)
+    story.expect_text("message list", "(Security review), and compile what they find into a report linked to the plan.")
+
+
+def test_a_button_names_its_module_and_requires_a_persons_allowance(third_party, third_party_cookie):
+    offered = json.loads(viewer_body(third_party, "/api/buttons?environment=main", third_party_cookie))
+    button = next(button for button in offered["buttons"] if button["name"] == "review.audit")
+    expect_row(button, module="acme.review", **{"from": "acme.review"}, label="Audit", runs="acme audit {row_id}",
+               slots=["dock.plans.waiting", "row.plan"])
+    expect_value(offered["missing"]["acme.review"], [{"label": "Audit", "line": "acme audit {row_id}"}])
+    line = {"window": "messages.chat", "line": ["acme", "audit", "1"], "environment": "main"}
+    third_party.expect_viewer_line(third_party_cookie, line, 200, '"code": 1')
+    third_party.story.expect_success("window allow button:acme.review --type runs --environment main", actor=third_party.story.user)
+    third_party.expect_viewer_line(third_party_cookie, line, 200, "Audited plan 1: Cart security")
+    third_party.expect_viewer_status("/api/buttons?environment=main", 200, third_party_cookie, text='"missing": {}')
+
+
+def test_a_third_party_suite_adds_its_window_without_changing_the_default(third_party, third_party_cookie):
+    story = third_party.story
+    story.expect_success("suite current main", "suite: coding", "drivers: main: coding.builder, subagent: coding.subagent, worker: coding.worker")
+    offered = json.loads(viewer_body(third_party, "/api/windows?environment=main", third_party_cookie))
+    story.expect_rows("findings.findings" not in json.dumps(offered))
+    story.expect_success("suite choose acme --environment main", actor=story.user)
+    third_party.expect_viewer_status("/api/windows?environment=main", 200, third_party_cookie, text="findings.findings")
+    third_party.expect_viewer_status("/api/windows?environment=main", 200, third_party_cookie, text="messages.chat")
+    registry = Registry.read(story.container.get(Database))
+    story.expect_rows("findings.row" in registry.button_slots)
+
+
+def test_another_suite_hides_templates_and_buttons_but_keeps_commands(third_party, third_party_cookie):
+    story = third_party.story
+    story.expect_success("suite choose control --environment main", actor=story.user)
+    story.expect_no_text("template list --environment main", "Security review")
+    offered = json.loads(viewer_body(third_party, "/api/buttons?environment=main", third_party_cookie))
+    story.expect_rows(all(button["module"] != "acme.review" for button in offered["buttons"]))
+    story.expect_success("acme audit 1", "Audited plan 1: Cart security")
+
+
+def test_removal_deletes_the_modules_buttons_templates_and_permissions(third_party, third_party_cookie):
+    story = third_party.story
+    story.expect_success("window allow button:acme.review --type runs --environment main", actor=story.user)
+    answer = request_answer(third_party.socket_path, "POST", "/cli", {"argv": ["module", "remove", "acme.review"],
+                                                                    "variables": {"USER": "Ada"}, "folder": "/"})
+    expect_value(answer.exit_code, 0)
+    offered = json.loads(viewer_body(third_party, "/api/buttons?environment=main", third_party_cookie))
+    story.expect_rows(all(button["module"] != "acme.review" for button in offered["buttons"]))
+    code, text = story.synced()
+    story.expect_rows(code == 0)
+    story.expect_no_text("template list --environment main", "Security review")
+    story.expect_no_text("window-permission list", "button:acme.review")

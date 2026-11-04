@@ -2,12 +2,14 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
 from core.modules.templates.commands.support.template_heading import TemplateHeading
 from core.modules.templates.models.template import Template
+from core.modules.templates.conditions.template_target import TemplateTarget
+from core.modules.templates.queries.template_query import TemplateQuery
 
 
 class TemplateListSubcommand(ReadSubcommand[Sequence[Template]]):
@@ -16,14 +18,22 @@ class TemplateListSubcommand(ReadSubcommand[Sequence[Template]]):
     cli_name = "template"
     name = "list"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, templates: TemplateQuery, environments: EnvironmentNames) -> None:
+        self.templates, self.environments = templates, environments
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return
+        parser.add_argument("--target", help="Show templates that apply to this target")
+        parser.add_argument("--purpose", help="Show templates with this purpose")
+        parser.add_argument("--environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Template]:
-        return tuple(self.queries.query(Template).oldest().all_rows())
+        environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        query = self.templates.active(environment_id).oldest()
+        if arguments.target is not None:
+            query = query.matching(TemplateTarget(arguments.target))
+        if arguments.purpose is not None:
+            query = query.filter(purpose=arguments.purpose)
+        return tuple(query.all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Template)] if is_tuple(value) else []

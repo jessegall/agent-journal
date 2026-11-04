@@ -29,7 +29,7 @@ const refusals = ref({});
 
 async function undock(item, button) {
     closed.value = new Set([...closed.value, item.id]);
-    const answer = await pressButton(button, item, context.environment);
+    const answer = await pressButton(button, {id: item.target_id}, context.environment);
     if (answer?.ok !== false) return;
     closed.value = new Set([...closed.value].filter((id) => id !== item.id));
     refusals.value = {...refusals.value, [item.id]: answer.error};

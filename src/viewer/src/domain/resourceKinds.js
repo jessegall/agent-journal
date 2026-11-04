@@ -13,7 +13,7 @@ const CANCEL = {word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is 
 
 const PLAN_MOVES = {
     draft: [{word: "ready", label: "Mark ready"}, CANCEL],
-    ready: [{word: "approve", label: "Approve", main: true}, CANCEL],
+    ready: [CANCEL],
     approved: [{word: "start", label: "Start", main: true}, CANCEL],
     started: [{word: "block", label: "Pause", flag: "--reason", ask: "Why does it wait?"}, {word: "close", label: "Close"}, CANCEL],
     blocked: [{word: "unblock", label: "Resume", main: true}, CANCEL],

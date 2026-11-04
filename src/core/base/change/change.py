@@ -48,6 +48,14 @@ class Change(Generic[M]):
         return [field.name for field in fields(self.row) if field.name not in BOOKKEEPING_FIELDS and getattr(self.old_row, field.name) != getattr(self.new_row, field.name)]
 
     @property
+    def has_metadata_change(self) -> bool:
+        return self.old_row is not None and self.new_row is not None and self.old_row.metadata != self.new_row.metadata
+
+    @property
+    def stored_fields(self) -> list[str]:
+        return [*self.fields, METADATA] if self.has_metadata_change else self.fields
+
+    @property
     def is_empty(self) -> bool:
         return self.old_row is not None and self.new_row is not None and self.move is None and not self.fields
 

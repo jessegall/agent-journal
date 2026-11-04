@@ -161,9 +161,23 @@ defineExpose({card});
     visibility: hidden;
 }
 
-@container (max-width: 300px) {
+@container (max-width: 420px) {
+    .chat-dock-head {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 36px;
+        padding-block: 6px;
+    }
+
+    .chat-dock-head :slotted(.dock-title) {
+        flex: 1;
+    }
+
     .chat-dock-head :slotted(.chat-dock-acts) {
-        display: none;
+        order: 1;
+        flex-basis: 100%;
+        margin-left: 0;
+        justify-content: flex-end;
     }
 }
 

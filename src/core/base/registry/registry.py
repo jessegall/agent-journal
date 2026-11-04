@@ -1,6 +1,6 @@
 import json
+from collections.abc import Sequence
 from core.base.profile.agent_profile import AgentProfile
-from core.base.template.template_declaration import TemplateDeclaration
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
 from core.base.agent_role import AgentRole
@@ -20,6 +20,8 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
+from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.setting_entry import SettingEntry
@@ -65,6 +67,9 @@ class Registry:
     marks: tuple[MarkEntry, ...] = ()
     nudges: tuple[NudgeEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
+    templates: tuple[TemplateEntry, ...] = ()
+    buttons: tuple[ButtonEntry, ...] = ()
+    button_slots: tuple[str, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
@@ -73,6 +78,7 @@ class Registry:
     skills: tuple[SkillEntry, ...] = ()
     moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
+    module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -105,9 +111,7 @@ class Registry:
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
                                     tuple(AgentProfile(**profile) for profile in suite.get("profiles", [])), tuple(suite.get("profile_types", ["subagent"])),
-                                    tuple(TemplateDeclaration(title=template["title"], brief=template["brief"], targets=tuple(template["targets"]), purpose=template["purpose"],
-                                                              parts=tuple(template["parts"]), commands=tuple(template["commands"])) for template in suite.get("templates", [])),
-                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""))
+                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""), suite.get("shipped", False))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -120,6 +124,9 @@ class Registry:
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
+            templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
+            buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
+            button_slots=tuple(entries.get("button_slots", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
@@ -128,6 +135,7 @@ class Registry:
             skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
             moves=tuple(MoveEntry.restored(move) for move in entries.get("moves", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
+            module_suites={module: tuple(suites) for module, suites in entries.get("module_suites", {}).items()},
         )
 
     def entries_text(self) -> str:
@@ -147,8 +155,7 @@ class Registry:
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
                         "profiles": [asdict(profile) for profile in suite.profiles], "profile_types": list(suite.profile_types),
-                        "templates": [asdict(template) for template in suite.templates],
-                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner,
+                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner, "shipped": suite.shipped,
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -161,6 +168,9 @@ class Registry:
             "marks": [asdict(mark) for mark in self.marks],
             "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],
+            "templates": [asdict(template) for template in self.templates],
+            "buttons": [asdict(button) for button in self.buttons],
+            "button_slots": list(self.button_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
             "shared_rows": {model: path.text for model, path in self.shared_rows.items()},
@@ -169,6 +179,7 @@ class Registry:
             "skills": [asdict(skill) for skill in self.skills],
             "moves": [dict(move.stored()) for move in self.moves],
             "module_fingerprints": self.module_fingerprints,
+            "module_suites": {module: list(suites) for module, suites in self.module_suites.items()},
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
@@ -230,14 +241,16 @@ class Registry:
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
-            return (*(ButtonLine(mark.module, button["runs"], mark.shipped) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
-                    *(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons))
+            return (*(ButtonLine(mark.module, button["runs"], mark.shipped, label=button["label"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
+                    *(ButtonLine(dock.module, button["runs"], dock.shipped, label=button["label"]) for dock in self.docks for button in dock.buttons),
+                    *(ButtonLine(button.module, action.runs, button.shipped, {item.name: item for item in action.fields}, action.label)
+                      for button in self.buttons for action in (button.declaration, *button.declaration.menu)))
         if window == ButtonWindow.DOCK:
-            return tuple(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons)
+            return tuple(ButtonLine(dock.module, button["runs"], dock.shipped, label=button["label"]) for dock in self.docks for button in dock.buttons)
         return ()
 
     def subject_button_lines(self, subject: str) -> tuple[str, ...]:
-        return tuple(button.line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
+        return tuple(button.permission_line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
 
     def dock(self, type_name: str) -> DockEntry | None:
         return next((dock for dock in self.docks if dock.type == type_name), None)
@@ -252,8 +265,15 @@ class Registry:
         return next((driver for driver in self.drivers if driver.name == name), None)
 
     def top_suites(self) -> list[SuiteEntry]:
-        required = {name for suite in self.suites for name in suite.requires}
-        return [suite for suite in self.suites if suite.name not in required]
+        return self.suite_roots(self.suites)
+
+    def default_suite_roots(self) -> list[SuiteEntry]:
+        return self.suite_roots([suite for suite in self.suites if suite.shipped])
+
+    @staticmethod
+    def suite_roots(suites: Sequence[SuiteEntry]) -> list[SuiteEntry]:
+        required = {name for suite in suites for name in suite.requires}
+        return [suite for suite in suites if suite.name not in required]
 
     # The suite's name and the names of every suite it requires, those they require too, nearest first.
     def lineage(self, suite: SuiteEntry) -> tuple[str, ...]:

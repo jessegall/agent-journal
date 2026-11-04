@@ -1,4 +1,7 @@
 import json
+import sys
+
+from core.base.dotted_path.dotted_path_error import DottedPathError
 
 from core.base.journal_home import JournalHome
 from core.base.dotted_path.dotted_path import DottedPath
@@ -45,7 +48,17 @@ class ModuleFinder:
         return tuple(paths)
 
     def checked(self, path: DottedPath) -> type[Module]:
-        return self.module(path.loaded(), path.text)
+        self.enable_imports()
+        try:
+            loaded = path.loaded()
+        except (ImportError, DottedPathError, SyntaxError) as error:
+            raise ModuleError.import_failed(path.text, error) from error
+        return self.module(loaded, path.text)
+
+    def enable_imports(self) -> None:
+        folder = str(self.home.modules_folder.resolve())
+        if folder not in sys.path:
+            sys.path.insert(0, folder)
 
     def module(self, value: object, source: str) -> type[Module]:
         if not isinstance(value, type) or not issubclass(value, Module):

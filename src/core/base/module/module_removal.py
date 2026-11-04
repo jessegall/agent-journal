@@ -1,4 +1,7 @@
 import json
+import importlib
+import shutil
+import sys
 
 from core.base.database.database import Database
 from core.base.database.migration import Migration
@@ -48,6 +51,18 @@ class ModuleRemoval:
                 self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
         self.home.module_list.write_text(json.dumps([path for path in listed if path != module_paths[0]]))
         self.sync.run()
+        self.remove_folder(module_paths[0])
+
+    def remove_folder(self, module_path: str) -> None:
+        package = module_path.partition(":")[0].partition(".")[0]
+        folder = self.home.modules_folder / package
+        if not folder.is_dir():
+            return
+        shutil.rmtree(folder)
+        for name in tuple(sys.modules):
+            if name == package or name.startswith(package + "."):
+                del sys.modules[name]
+        importlib.invalidate_caches()
 
     def module(self, path: str) -> type[Module]:
         return self.finder.checked(DottedPath(path))

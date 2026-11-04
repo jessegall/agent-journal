@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
 from core.base.profile.agent_profile import AgentProfile
-from core.base.template.template_declaration import TemplateDeclaration
 from core.base.agent_policy import AgentPolicy
 
 
@@ -25,9 +24,9 @@ class SuiteEntry:
     presets: Mapping[str, Sequence[LayoutPreset]]
     profiles: Sequence[AgentProfile] = ()
     profile_types: Sequence[str] = tuple(["subagent"])
-    templates: Sequence[TemplateDeclaration] = ()
     agent_policy: AgentPolicy = AgentPolicy()
     task_assigner: str = ""
+    shipped: bool = False
 
     def is_overlay_included(self, overlay: str) -> bool:
         return not self.complete_control or overlay in self.included_overlays

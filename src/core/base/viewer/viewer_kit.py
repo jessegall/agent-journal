@@ -1,1 +1,1 @@
-VIEWER_KIT = (1, 0, 0)
+VIEWER_KIT = (1, 1, 0)

@@ -13,11 +13,13 @@ import pytest
 from core.base.code_copy import IGNORED
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
+from core.testing.expect_row import expect_row
 from install.code_handover import CodeHandover
 from install.install_journal import InstallJournal
 from install.unix_connection import UnixConnection
 from server.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4
+from tests.stories.server.support.server_client import request_answer
 
 pytestmark = pytest.mark.install_job
 
@@ -111,6 +113,23 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
     expect_health_status(home, 200)
     expect_absent_symlink_folder_home(home, "src")
     expect_absent_exists_restart_mark(home)
+
+
+def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
+    source = Path(__file__).parents[1] / "core" / "base" / "module" / "support" / "folder_sample"
+    folder = tmp_path / "installed_notes"
+    shutil.copytree(source, folder)
+    added = request_answer(ServerFiles(home).socket, "POST", "/cli",
+                           {"argv": ["module", "add", str(folder)], "variables": {}, "folder": str(tmp_path)})
+    expect_row(added, status=200, exit_code=0)
+    running_pid = ServerFiles(home).pid_file.read_text()
+    CodeHandover(home).run(SOURCE)
+    wait_started(home)
+    expect_changed_pid_file_server(home, running_pid)
+    listed = request_answer(ServerFiles(home).socket, "POST", "/cli",
+                            {"argv": ["template", "list", "--target", "plan", "--purpose", "critique"], "variables": {}, "folder": str(tmp_path)})
+    expect_row(listed, status=200, exit_code=0)
+    expect_value_4("Folder review" in listed.text)
 
 
 def expect_health_status(home: JournalHome, expected) -> None:

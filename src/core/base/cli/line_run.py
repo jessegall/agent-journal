@@ -4,6 +4,8 @@ from typing import TextIO
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from core.base.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
+from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from core.base.container import Container
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.base.deadline import Deadline
@@ -31,10 +33,11 @@ class LineRun:
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
-        if argv[:2] == SYNC_ARGV:
+        if argv[:2] in (SYNC_ARGV, MODULE_ADDITION_ARGUMENTS):
             container = opened_container(self.home)
             try:
-                return container.get(ModuleSyncLine).run(argv, stream)
+                line = ModuleAddLine if argv[:2] == MODULE_ADDITION_ARGUMENTS else ModuleSyncLine
+                return container.get(line).run(argv, stream)
             finally:
                 container.get(Database).close()
         try:
@@ -45,6 +48,8 @@ class LineRun:
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
+            if argv[:2] == MODULE_REMOVAL_ARGUMENTS:
+                return container.get(ModuleRemoveLine).run(argv, request, stream)
             return container.get(Console).requested_run(argv, request, stream)
         finally:
             cost = tools.cost(start_points)
