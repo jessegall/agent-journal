@@ -22,7 +22,8 @@
       "stdout": "blocked",
       "stderr": "details",
       "milliseconds": 17,
-      "timed_out": false
+      "timed_out": false,
+      "answer": {"refusal": "details", "lines": [], "updated_input": {}, "terminal": ""}
     }
   ]
 }

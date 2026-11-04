@@ -7,6 +7,7 @@ from core.base.type_guards import is_mapping
 from core.base.database.database import Database
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
+from core.base.driver.old_hook_runner_error import OldHookRunnerError
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
 from core.base.provider.providers import Providers
@@ -51,7 +52,7 @@ class HookEndpoint:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
                 self.timing.stamp("hook_locked")
                 return self.routed_answer(data, program, headers, database, started_at)
-        except HookDatabaseBusyError as error:
+        except (HookDatabaseBusyError, OldHookRunnerError) as error:
             return self.unchecked(data, error)
         finally:
             self.timing.stamp("hook_answered")

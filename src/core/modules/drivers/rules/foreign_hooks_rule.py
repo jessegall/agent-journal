@@ -20,7 +20,7 @@ class ForeignHooksRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
-        answers = [ForeignAnswer.read(provider, hook.event.event, run) for run in hook.event.foreign]
+        answers = [ForeignAnswer.read(run) for run in hook.event.foreign]
         refusal = next((answer.reason() for answer in answers if answer.refusal), "")
         rewritten = next((answer for answer in answers if answer.updated_input), None)
         lines = [MANAGED_HOOK_LINE.nudge(text=f"{answer.name}: {line}") for answer in answers for line in answer.lines]

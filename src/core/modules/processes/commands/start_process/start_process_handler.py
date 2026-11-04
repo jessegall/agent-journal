@@ -39,7 +39,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                worker_id=command.worker_id, task_id=command.task_id), context)
         parts = []
         for position, spec in enumerate(command.parts, 1):
-            part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
+            part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=spec.is_visible)
             selected = ReaderSelection.choose(self.all_readers(), [part])
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None

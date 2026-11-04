@@ -72,7 +72,7 @@ func TestManagedHookTimeoutKillsItsChild(t *testing.T) {
 
 func TestFailedManagedHookDoesNotRefuseItsTool(t *testing.T) {
 	run := runOne(ManagedHook{ID: "failed", Command: `printf '{"decision":"block","reason":"ignored"}'; printf details >&2; exit 7`, Timeout: 5}, nil)
-	if run.ExitCode != 7 || run.Stderr != "details" || refuses(run) {
+	if run.ExitCode != 7 || run.Stderr != "details" || foreignRunReply(hookProgram, "pre_tool_use", run).Refusal != "" {
 		t.Fatalf("failed run = %+v", run)
 	}
 }

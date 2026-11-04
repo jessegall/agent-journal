@@ -8,6 +8,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.provider.hook_source import HookSource
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState
 from core.base.provider.hook_effect import HookEffect
@@ -34,8 +35,11 @@ class ManagedHooks:
                 if not saved_hook:
                     hooks[hook.id] = replace(hook, state=ManagedState.ENABLED)
                     continue
-                hooks[hook.id] = replace(hook, state=saved_hook.state, timeout=saved_hook.timeout, source=saved_hook.source,
-                                        tracked=hook.tracked if hook.source == saved_hook.source else saved_hook.tracked)
+                sources = {source.path: source for source in saved_hook.all_sources()}
+                sources.update({source.path: source for source in hook.all_sources()})
+                first = sources.pop(saved_hook.source)
+                hooks[hook.id] = replace(hook, state=saved_hook.state, timeout=saved_hook.timeout, source=first.path,
+                                        tracked=first.tracked, sources=tuple(sources.values()))
             merged_hooks = list(hooks.values())
             self._write(merged_hooks)
             return merged_hooks
@@ -73,7 +77,8 @@ class ManagedHooks:
             return []
         stored = json.loads(self.path.read_text())
         return [ManagedHook(**{**{key: value for key, value in hook.items() if key != "clash"}, "state": ManagedState(hook["state"]),
-                              "effects": tuple(HookEffect(value) for value in hook.get("clash", []))}) for hook in stored["hooks"]]
+                              "effects": tuple(HookEffect(value) for value in hook.get("clash", [])),
+                              "sources": tuple(HookSource(**source) for source in hook.get("sources", []))}) for hook in stored["hooks"]]
 
     def _write(self, hooks: Sequence[ManagedHook]) -> None:
         with tempfile.NamedTemporaryFile(mode="w", dir=self.path.parent, delete=False) as writing:

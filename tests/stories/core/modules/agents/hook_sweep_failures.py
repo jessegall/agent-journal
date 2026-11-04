@@ -39,3 +39,36 @@ def test_a_restore_passes_over_a_hook_whose_worktree_is_gone(new_story):
     story.expect_text("hooks give-back", "restored hooks: 1")
     assert story.container.get(ManagedHooks).all() == []
     assert not (folder / ".claude").exists()
+
+
+def test_a_hook_in_both_settings_files_is_restored_to_both(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = story.home.project_folder
+    paths = [folder / SETTINGS, folder / ".claude/settings.local.json"]
+    for path in paths:
+        ProgramHooks.store(path, HOOKS)
+    story.expect_text(f'program manage claude "{folder}"', "managed hooks: 1")
+    assert all(ProgramHooks.read(path) == {"hooks": {}} for path in paths)
+    assert len(story.container.get(ManagedHooks).all()[0].all_sources()) == 2
+    story.expect_text("hooks give-back", "restored hooks: 1")
+    assert all(ProgramHooks.read(path) == HOOKS for path in paths)
+
+
+def test_a_hook_first_seen_in_a_removed_worktree_is_restored_to_the_tracked_project_file(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = story.home.project_folder
+    worktree = folder / "worktree"
+    git(folder, "init", "-q")
+    ProgramHooks.store(worktree / SETTINGS, HOOKS)
+    story.expect_text(f'program manage claude "{worktree}"', "managed hooks: 1")
+    ProgramHooks.store(folder / SETTINGS, HOOKS)
+    git(folder, "add", SETTINGS)
+    story.expect_text(f'program manage claude "{folder}"', "managed hooks: 1")
+    listed = subprocess.run(["git", "-C", str(folder), "ls-files", "-v", SETTINGS], capture_output=True, text=True, check=True).stdout
+    assert listed.startswith("S ")
+    (worktree / SETTINGS).unlink()
+    (worktree / ".claude").rmdir()
+    story.expect_text("hooks give-back", "restored hooks: 1")
+    assert ProgramHooks.read(folder / SETTINGS) == HOOKS
+    listed = subprocess.run(["git", "-C", str(folder), "ls-files", "-v", SETTINGS], capture_output=True, text=True, check=True).stdout
+    assert listed.startswith("H ")

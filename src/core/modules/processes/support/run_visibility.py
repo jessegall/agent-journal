@@ -1,11 +1,6 @@
-from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-
-VISIBLE_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
-MERGE_COMMAND = "journal worker merge"
-
 
 class RunVisibility:
     """Decides whether a run leaves a chat mark and a docked card, the same for every agent: a test run, a build, a
@@ -16,7 +11,7 @@ class RunVisibility:
 
     def visible_part(self, process: Process) -> ProcessPart | None:
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows())
-        categorized = next((part for part in parts if part.category in VISIBLE_CATEGORIES or part.text.startswith(MERGE_COMMAND)), None)
+        categorized = next((part for part in parts if part.is_visible), None)
         return categorized or (parts[0] if parts and process.creator_id != process.agent_id else None)
 
     def is_visible(self, process: Process) -> bool:

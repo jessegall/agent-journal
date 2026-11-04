@@ -25,6 +25,7 @@ func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr 
 	}
 	table := programs.LoadTable(filepath.Join(root, ".journal", "programs.json"))
 	runs := runManaged(Matching(hooks, programName, hookName(body), body, table), body)
+	decodeRuns(table.Programs[programName], table.Programs[programName].Events[hookName(body)], runs)
 	return foreignAnswered(stdout, stderr, table.Programs[programName], hookName(body), runs)
 }
 
@@ -42,7 +43,7 @@ func foreignAnswered(stdout, stderr io.Writer, program programs.Program, hookNam
 func foreignReply(program programs.Program, event string, runs []ForeignRun) Reply {
 	reply := Reply{}
 	for _, run := range runs {
-		answer := foreignRunReply(program, event, run)
+		answer := run.Answer
 		if reply.Refusal == "" {
 			reply.Refusal = answer.Refusal
 		}
@@ -72,13 +73,14 @@ func foreignRunReply(program programs.Program, event string, run ForeignRun) Rep
 	if stdout == "" {
 		return Reply{}
 	}
-	if !isAnswerObject(stdout) {
+	answer, valid := nativeReply(program.Refusals[event], run.ID, stdout)
+	if !valid {
 		if program.TakesPlainOutput(event) {
 			return Reply{Lines: strings.Split(stdout, "\n")}
 		}
 		return Reply{Terminal: run.ID + ": hook answer must be a JSON object"}
 	}
-	return nativeReply(program.Refusals[event], stdout)
+	return answer
 }
 
 func withDefault(text, fallback string) string {

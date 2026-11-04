@@ -34,6 +34,13 @@ def test_a_shell_line_is_read_with_its_parts_and_their_paths():
     assert [part.program for part in event.tool.shell.parts] == [part["program"] for part in example["tool"]["shell"]["parts"]]
 
 
+def test_an_old_runner_with_a_project_hook_is_rejected():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "foreign.json").read_text())
+    del example["foreign"][0]["answer"]
+    with pytest.raises(HookEventVersionError, match="update the hook runner"):
+        HookEvent.parsed(example)
+
+
 def test_another_version_is_refused_with_both_versions_named():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
     with pytest.raises(HookEventVersionError, match="version 1 .* reads version 3"):
@@ -42,7 +49,7 @@ def test_another_version_is_refused_with_both_versions_named():
 
 def test_foreign_hook_results_are_parsed():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
-    fields = {"id": "check", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False}
+    fields = {"id": "check", "exit_code": 2, "stdout": "blocked", "stderr": "details", "milliseconds": 17, "timed_out": False, "answer": {}}
     event = HookEvent.parsed({**example, "version": 3, "foreign": [fields]})
     assert len(event.foreign) == 1
     run = event.foreign[0]

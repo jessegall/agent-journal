@@ -5,6 +5,13 @@ import QuestionOverlay from "./QuestionOverlay.vue";
 import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useRows("message feed --limit 50", ["message.*"], {incremental: true});
+context.markMotion = ref(false);
+async function readMarkMotion() {
+    const answer = await context.read("setting show journal.core.developer.tools.mark-motion");
+    context.markMotion.value = answer.ok && answer.value.value === true;
+}
+context.follow(["setting.*"], readMarkMotion);
+readMarkMotion();
 const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = useRows("chat-mark main --limit 50", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item main", ["dock_item.*"]);
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));

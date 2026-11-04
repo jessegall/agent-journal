@@ -5,7 +5,8 @@ from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_event_version_error import HookEventVersionError
-from core.base.driver.hook_fields import boolean, mapping, number, text
+from core.base.driver.old_hook_runner_error import OldHookRunnerError
+from core.base.driver.hook_fields import boolean, mapping, mappings, number, text
 from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 3
@@ -54,6 +55,8 @@ class HookEvent:
             raise HookEventError(f"{event!r} names no hook event: {', '.join(HookEventName)}")
         if prompt is not None and not isinstance(prompt, str):
             raise HookEventError(f"prompt is a text, not {prompt!r}")
+        if any("answer" not in run for run in mappings(fields["foreign"], "a foreign hook run")):
+            raise OldHookRunnerError.detected()
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
