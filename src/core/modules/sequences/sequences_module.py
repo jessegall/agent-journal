@@ -19,6 +19,7 @@ from core.modules.sequences.commands.sequence_show.sequence_show_subcommand impo
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences_handler import SaveStandardSequencesHandler
 from core.modules.sequences.guards.standard_sequence_guard import StandardSequenceGuard
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
+from core.modules.sequences.listeners.sequence_started_mark_listener import SequenceStartedMarkListener
 from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
@@ -33,6 +34,7 @@ from core.modules.sequences.rules.step_guard_rule import StepGuardRule
 from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
+from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
 from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
@@ -47,7 +49,7 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     block_conditions = [SequenceStepStarted]
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
@@ -58,7 +60,8 @@ class SequencesModule(Module):
     subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
-    listeners = [SequenceRowTriggerListener, StandardSequencesListener]
+    listeners = [SequenceRowTriggerListener, StandardSequencesListener, SequenceStartedMarkListener]
+    marks = SEQUENCE_MARKS
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
