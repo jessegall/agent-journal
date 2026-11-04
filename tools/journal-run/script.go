@@ -17,6 +17,10 @@ __journal_status() {
 // its status written when it ends. The runner only follows the files, so a run that moves to the background goes on
 // without it. The output files are opened for appending, so the runner can cut them while they grow.
 func Script(parts []Part, folder string) string {
+	return ScriptWithWaits(parts, folder, nil)
+}
+
+func ScriptWithWaits(parts []Part, folder string, waits map[int]string) string {
 	var script strings.Builder
 	script.WriteString(scriptSetup)
 	for index, part := range parts {
@@ -26,6 +30,7 @@ func Script(parts []Part, folder string) string {
 			script.WriteString("if [ \"$__journal_code\" -eq 0 ]; then\n")
 			indent = "  "
 		}
+		script.WriteString(waits[part.Position])
 		fmt.Fprintf(&script, "%s: > %s\n", indent, partFile("started"))
 		fmt.Fprintf(&script, "%s__journal_status\n", indent)
 		writeRun(&script, part, indent, grouped("{", part.Text, "}"), fmt.Sprintf(">> %s 2>&1", partFile(outputSuffix)))

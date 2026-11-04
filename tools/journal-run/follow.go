@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -39,7 +37,7 @@ type Tracker struct {
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
 	started := time.Now()
-	queueStarted := started
+	var queueStarted time.Time
 	for {
 		tracker.reportParts(stdout)
 		if code, ended := tracker.Folder.End(); ended {
@@ -49,6 +47,9 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 			return tracker.orphan(stdout)
 		}
 		if tracker.waitsForSlot() {
+			if queueStarted.IsZero() {
+				queueStarted = time.Now()
+			}
 			if time.Since(queueStarted) >= tracker.Options.QueueWait {
 				return tracker.move(stdout)
 			}
@@ -64,11 +65,7 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 }
 
 func (tracker *Tracker) waitsForSlot() bool {
-	if !tracker.Options.Queue {
-		return false
-	}
-	_, err := os.Stat(filepath.Join(tracker.Folder.Path, "slot"))
-	return os.IsNotExist(err)
+	return tracker.Options.Queue && tracker.Folder.WaitingSlot()
 }
 
 // mayMove says whether the run may go to the background: never before the line's last journal command has finished.

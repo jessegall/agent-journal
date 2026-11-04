@@ -77,3 +77,25 @@ def test_saved_journal_command_enters_queue_as_its_real_command(new_story):
     process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
     story.expect_rows("--queue" in str(reply.updated_input), "--limit 15" in str(reply.updated_input),
                       process.is_queue_run, story.container.get(OutputFolder).has_slot(process.id))
+
+
+def test_reads_and_journal_commands_in_one_line_never_queue(new_story):
+    story = install_runner(new_story(fixture=AdmissionQueue))
+    output = start_process(story, "make sample", category=CommandCategory.BUILD)
+    end_run(story, output, "sample\n")
+    line = f"rg cart src; journal output read {output.id} --summary"
+    reply = story.hook("s-1", HookSamples.shell(line,
+                       ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
+                       ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", str(output.id), "--summary"], subcommand="output")))
+    expect_reply_allowed(reply)
+    process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
+    story.expect_rows("--queue" not in str(reply.updated_input), not process.is_queue_run)
+
+
+def test_only_the_build_part_of_a_mixed_line_is_marked_for_waiting(new_story):
+    story = install_runner(new_story(fixture=AdmissionQueue))
+    reply = story.hook("s-1", HookSamples.shell("rg cart src; make package",
+                       ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
+                       ShellPart("make", CommandCategory.BUILD, ["package"])))
+    expect_reply_allowed(reply)
+    story.expect_rows("JOURNAL_RUN_QUEUE_PARTS=2" in str(reply.updated_input))

@@ -41,7 +41,7 @@ func main() {
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
 	return Options{Count: flags.Count, Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
-		MostOutputBytes: mostOutputBytes(), ReadFlags: outputReading(), QueueWait: queueWait(), HeartbeatEvery: HeartbeatInterval, Detach: Detach}
+		MostOutputBytes: mostOutputBytes(), ReadFlags: outputReading(), QueueWait: queueWait(), QueuePositions: queuePositions(), HeartbeatEvery: HeartbeatInterval, Detach: Detach}
 }
 
 // HeartbeatInterval is how often a run's heartbeat is written while its shell lives.

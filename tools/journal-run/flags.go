@@ -34,6 +34,20 @@ type Flags struct {
 const mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
 
 const queueWaitVariable = "JOURNAL_RUN_QUEUE_WAIT"
+const queuePartsVariable = "JOURNAL_RUN_QUEUE_PARTS"
+
+func queuePositions() []int {
+	value := os.Getenv(queuePartsVariable)
+	_ = os.Unsetenv(queuePartsVariable)
+	var positions []int
+	for _, word := range strings.Split(value, ",") {
+		position, err := strconv.Atoi(word)
+		if err == nil && position > 0 {
+			positions = append(positions, position)
+		}
+	}
+	return positions
+}
 
 func queueWait() time.Duration {
 	value := os.Getenv(queueWaitVariable)

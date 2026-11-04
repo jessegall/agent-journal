@@ -54,3 +54,22 @@ func TestQueueWaitDefaultsToFiveSecondsAndReadsTheSetting(t *testing.T) {
 		t.Fatal("the queue wait setting was not read")
 	}
 }
+
+func TestQueuedBuildWaitsAfterTheReadPartHasRun(t *testing.T) {
+	options := options(t, "printf read; printf build")
+	options.Queue = true
+	options.QueuePositions = []int{2}
+	options.QueueWait = 100 * time.Millisecond
+	output, code := run(t, options, newClient())
+	folder := NewFolder(options.Home, options.Process)
+	if code != 0 || !strings.Contains(output, "read") || !strings.Contains(output, "queued as output 4") || folder.Started(2) {
+		t.Fatalf("parts before admission: code %d, output %q, build started %v", code, output, folder.Started(2))
+	}
+	if err := os.WriteFile(filepath.Join(folder.Path, "slot"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, 3*time.Second, "the admitted build to finish", func() bool { _, ended := folder.End(); return ended })
+	if text := folder.Output(2); text != "build" {
+		t.Fatalf("build output %q", text)
+	}
+}

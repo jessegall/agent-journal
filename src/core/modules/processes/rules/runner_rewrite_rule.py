@@ -5,7 +5,6 @@ from core.modules.processes.support.process_nudges import RUNNER_MISSING
 from collections.abc import Mapping, Sequence
 
 from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -42,11 +41,8 @@ class RunnerRewriteRule(DriverRule):
         if not self.runner.is_installed():
             return self.missing(hook)
         decided = self.limits.decide(hook.environment_id, shell)
-        run = replace(decided, queued=decided.seconds > 0 and not self.is_read_write(shell), read_command=shell.is_readonly)
+        run = replace(decided, queued=bool(decided.queue_positions), read_command=shell.is_readonly)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
-
-    def is_read_write(self, shell: ShellLine) -> bool:
-        return bool(shell.parts) and all(part.classification.category.accesses_files and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)

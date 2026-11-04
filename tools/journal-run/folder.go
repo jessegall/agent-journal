@@ -84,6 +84,12 @@ func (folder Folder) MoveAsked() bool {
 	return err == nil
 }
 
+func (folder Folder) WaitingSlot() bool {
+	_, waiting := os.Stat(filepath.Join(folder.Path, "slot-wait"))
+	_, admitted := os.Stat(filepath.Join(folder.Path, "slot"))
+	return waiting == nil && os.IsNotExist(admitted)
+}
+
 func (folder Folder) WriteEnd(code int) error {
 	return os.WriteFile(filepath.Join(folder.Path, "end"), []byte(strconv.Itoa(code)), 0o644)
 }
