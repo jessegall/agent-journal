@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle as settleWindow} from "./support/windowContext.js";
 import {h} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
@@ -20,10 +20,11 @@ vi.stubGlobal("ResizeObserver", class {
 afterEach(() => (document.body.innerHTML = ""));
 
 const AGENTS = [
-    {id: 2, session: "s-live", program: "claude", role: "main", ended_at: null},
-    {id: 3, session: "s-sub", program: "claude", role: "subagent", ended_at: null},
-    {id: 1, session: "s-old", program: "codex", role: "worker", ended_at: "2026-11-01T10:00:00Z"},
+    {id: 2, session: "s-live", program: "claude", role: "main", state: "running", ended_at: null},
+    {id: 3, session: "s-sub", program: "claude", role: "subagent", state: "running", ended_at: null},
+    {id: 1, session: "s-old", program: "codex", role: "worker", state: "retired", ended_at: "2026-11-01T10:00:00Z"},
 ];
+const settle = async () => { await settleWindow(); await new Promise((resolve) => setTimeout(resolve, 80)); };
 
 const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
@@ -73,7 +74,7 @@ test("the agents window filters on running, idle, retired or all", async () => {
 });
 
 test("an idle subagent's card opens its report", async () => {
-    const subagent = {...AGENTS[1], ended_at: "2026-11-02T10:00:00Z"};
+    const subagent = {...AGENTS[1], state: "idle", ended_at: "2026-11-02T10:00:00Z"};
     const held = window(FACTS, {}, [subagent]);
     const read = held.read;
     held.read = (line) => line.startsWith("agent transcript 3") ? Promise.resolve(page([{id: 1, author: "assistant", text: "The review is complete"}])) : read(line);
@@ -108,15 +109,16 @@ test("the main agent is titled Main agent and its model follows the provider", a
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
     const element = await drawn(FACTS, {}, WORKERS);
     document.body.append(element);
-    const card = cardOf(element, 3);
+    let card = cardOf(element, 3);
     card.click();
     await settle();
+    card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-card-usage]")).toBeNull();
     expect(card.querySelector("[data-agent-inspect]")).toBeNull();
     expect(card.querySelector("[data-agent-instruction]").textContent).toBe("Read the cart\nand report");
-    card.click();
+    card.querySelector(".agent-back").click();
     await settle();
-    expect(card.querySelector("[data-agent-instruction]")).toBeNull();
+    expect(cardOf(element, 3).querySelector("[data-agent-instruction]")).toBeNull();
 });
 
 test("an opened card has the tabs Tasks, Transcript and File feed, each read only when chosen", async () => {
@@ -124,9 +126,10 @@ test("an opened card has the tabs Tasks, Transcript and File feed, each read onl
     const held = window(FACTS, {}, WORKERS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
     document.body.append(element);
-    const card = cardOf(element, 3);
+    let card = cardOf(element, 3);
     card.click();
     await settle();
+    card = cardOf(element, 3);
     expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed"]);
     expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
     expect(reads).not.toContain("agent transcript 3");
@@ -151,13 +154,14 @@ const TASKS = [
 
 test("the card counts what is completed and lists its tasks when opened, under the state names of the tasks window", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
-    const card = cardOf(element, 2);
+    let card = cardOf(element, 2);
     expect(card.querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 3 tasks");
     expect(card.querySelector("[data-agent-delegated]")).toBeNull();
     card.click();
     await settle();
+    card = cardOf(element, 2);
     const labels = [...card.querySelectorAll("[data-agent-section]")].map((section) => `${section.querySelector(".fold-label").textContent.trim()} ${section.querySelector(".fold-count").textContent.trim()}`);
-    expect(labels).toEqual(["Started 1", "Open 1", "Completed 1"]);
+    expect(labels).toEqual(["Started 1", "Blocked 0", "Open 1", "Completed 1"]);
     let rows = [...card.querySelectorAll("[data-agent-delegated]")];
     expect(rows.map((row) => row.dataset.agentDelegated)).toEqual(["12", "13"]);
     expect(rows[0].querySelector(".ring").classList.contains("started")).toBe(true);
@@ -168,9 +172,10 @@ test("the card counts what is completed and lists its tasks when opened, under t
 
 test("the Completed section of the Tasks tab is folded until a click opens it", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
-    const card = cardOf(element, 2);
+    let card = cardOf(element, 2);
     card.click();
     await settle();
+    card = cardOf(element, 2);
     const completed = card.querySelector("[data-agent-section=completed]");
     expect(completed.querySelector("[data-agent-delegated]")).toBeNull();
     completed.querySelector(".fold-head").click();
@@ -295,7 +300,7 @@ test.each(["merge", "proof check", "tests", "a job"])("a worker card shows the s
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: "2026-11-03T13:35:28Z"};
     const lines = {"agent list": page([worker]), "agent running": page([]), "usage agents --closed": page([{id: 4, tasks: []}]), "worker waits": page([{agent_id: 4, reason}])};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
-    await vi.waitFor(() => expect(element.querySelector("[data-agent-waiting]")?.textContent).toBe(`Waiting: ${reason}`));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-waiting]")?.textContent.trim()).toBe(`Waiting: ${reason}`));
     expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
 });
 
@@ -308,7 +313,7 @@ test("one read supplies every worker's short reason without commands or paths", 
     const window = context(lines);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window);
     await vi.waitFor(() => expect(element.querySelectorAll("[data-agent-waiting]")).toHaveLength(4));
-    expect([...element.querySelectorAll("[data-agent-waiting]")].map((line) => line.textContent)).toEqual(reasons.map((reason) => `Waiting: ${reason}`));
+    expect([...element.querySelectorAll("[data-agent-waiting]")].map((line) => line.textContent.trim())).toEqual(reasons.map((reason) => `Waiting: ${reason}`));
     expect(window.reads.filter((line) => line === "worker waits")).toHaveLength(1);
     for (const line of element.querySelectorAll("[data-agent-command]")) {
         expect(line.textContent).not.toContain("pytest");

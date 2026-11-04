@@ -2,7 +2,7 @@ import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
 import {h} from "vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle as settleWindow} from "./support/windowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 
 vi.stubGlobal("ResizeObserver", class {
@@ -37,6 +37,7 @@ const drawn = async () => {
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 const cards = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
 const band = (element) => element.querySelector("[data-agents-held]");
+const settle = async () => { await settleWindow(); await new Promise((resolve) => setTimeout(resolve, 80)); };
 
 test("every card is listed and there is no band while none is open", async () => {
     const element = await drawn();
@@ -71,7 +72,7 @@ test("closing the card itself brings the others back", async () => {
     cardOf(element, 5).click();
     await settle();
     expect(cards(element)).toEqual([5]);
-    cardOf(element, 5).click();
+    cardOf(element, 5).querySelector(".agent-back").click();
     await settle();
     expect(cards(element)).toEqual([2, 3, 4, 5]);
     expect(band(element)).toBeNull();
@@ -93,6 +94,8 @@ test("opening another card closes the one that was open", async () => {
 test("starting a search closes the open card and lists every match", async () => {
     const element = await drawn();
     cardOf(element, 3).click();
+    await settle();
+    band(element).click();
     await settle();
     const box = element.querySelector("[data-search-input]");
     box.value = "worker";

@@ -26,6 +26,7 @@ try {
             });
             assert.ok(Math.abs(bounds.left) < 3 && Math.abs(bounds.right) < 3, JSON.stringify(bounds));
             assert.equal(bounds.border, "1px");
+            await card.evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished)));
             await page.screenshot({path: `${capture}-${width}-${tab}.png`, animations: "disabled"});
         }
         await card.getByRole("button", {name: "Back to the list"}).click();

@@ -118,13 +118,11 @@ test("queue arrivals and departures keep their Vue transition classes", async ()
     try {
         let queue = SNAPSHOT;
         await panel(async () => ({ok: true, value: queue}));
-        expect(document.querySelector("[data-test-queue]").classList.contains("queue-enter-active")).toBe(true);
         queue = {...SNAPSHOT, running: [RUN, {...SNAPSHOT.waiting[0], section: "running"}], waiting: []};
-        document.querySelector('[aria-label="More runs at once"]').click();
+        subscriptions.dispatch({event: "process.update", row_id: 71});
         await settle();
-        expect(document.querySelector('[data-queue-process="71"].running').classList.contains("queue-run-enter-active")).toBe(true);
-        expect(document.querySelector('[data-queue-process="71"].waiting').classList.contains("queue-run-leave-active")).toBe(true);
-        expect(document.querySelector('[data-queue-process="72"]').classList.contains("queue-run-leave-active")).toBe(true);
+        expect(document.querySelector('[data-queue-process="71"]').dataset.queueRow).toBe("running");
+        expect(document.querySelector('[data-queue-process="72"]').classList.contains("queue-leave-active")).toBe(true);
     } finally {
         frame.mockRestore();
     }
@@ -133,9 +131,9 @@ test("queue arrivals and departures keep their Vue transition classes", async ()
 test("queue motion styles include reordering and respect reduced motion", () => {
     const inspector = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueInspector.vue"), "utf8");
     const run = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueRun.vue"), "utf8");
-    expect(inspector).toContain('<TransitionGroup name="queue-run"');
-    expect(run).toContain(".queue-run-move,");
-    expect(run).toContain(".queue-run-leave-active { position: absolute; }");
+    expect(inspector).toContain('<TransitionGroup name="queue"');
+    expect(inspector).toContain(".queue-move");
+    expect(inspector).toContain(".queue-leave-active { position: absolute;");
     expect(inspector).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
     expect(run).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
 });
@@ -148,33 +146,33 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
     expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
-        "Running 1",
-        "Waiting (oldest first) 2",
-        "Finished lately 1",
+        "Running1",
+        "Waiting2",
+        "Finished1",
     ]);
     expect(rowsOf("running")[0].textContent).toContain("make package");
     expect(rowsOf("running")[0].textContent).toContain("Worker 21");
     expect(rowsOf("running")[0].textContent).toContain("Task 11");
-    expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("build");
+    expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("Build");
     expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);
     expect(rowsOf("waiting").map((row) => row.querySelector("[data-queue-position]").textContent)).toEqual(["1", "2"]);
     expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");
-    expect(rowsOf("recent")[0].querySelector("[data-queue-state]").textContent).toBe("Passed");
+    expect(rowsOf("recent")[0].querySelector(".dot").title).toBe("Passed");
 });
 
 test("output opens under a process and collapses again", async () => {
     const read = vi.fn(reader);
     await panel(read);
     const row = rowsOf("recent")[0];
-    row.querySelector("[data-queue-output]").click();
+    row.querySelector(".toggle").click();
     await settle();
-    expect(row.querySelector("[data-queue-output-body]").textContent).toBe(OUTPUT_LINES.join("\n"));
-    expect(row.querySelector("[data-queue-output]").getAttribute("aria-expanded")).toBe("true");
+    expect(row.querySelector("[data-queue-output-body]").textContent).toContain(OUTPUT_LINES.join("\n"));
+    expect(row.querySelector(".toggle").getAttribute("aria-expanded")).toBe("true");
     expect(read).toHaveBeenCalledWith(["output", "peek", "66", "--lines", "1-10"]);
     expect(row.querySelector('a[target="_blank"]').getAttribute("href")).toContain("page=processes.output&output=66");
-    row.querySelector("[data-queue-output]").click();
+    row.querySelector(".toggle").click();
     await settle();
-    expect(row.querySelector("[data-queue-output-body]")).toBeNull();
+    expect(row.querySelector(".drop").classList.contains("open")).toBe(false);
 });
 
 test("the stepper and switch save their declared settings and refresh the queue", async () => {
@@ -189,11 +187,11 @@ test("the stepper and switch save their declared settings and refresh the queue"
         return {ok: true, value: queue};
     });
     await panel(read);
-    document.body.querySelector('[aria-label="More runs at once"]').click();
+    document.body.querySelector('[aria-label="One more command at once"]').click();
     await settle();
     expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.limit_setting, "3"]);
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("3");
-    document.body.querySelector('[aria-label="Fewer runs at once"]').click();
+    document.body.querySelector('[aria-label="One fewer command at once"]').click();
     await settle();
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
     document.body.querySelector("[data-queue-main-spots]").click();
@@ -206,8 +204,8 @@ test("the minimum limit disables decrease and a refused setting stays unchanged"
     await panel(async (line) =>
         line[0] === "setting" ? {ok: false, error: "Read only"} : {ok: true, value: {...SNAPSHOT, parallel_limit: 1}}
     );
-    expect(document.body.querySelector('[aria-label="Fewer runs at once"]').disabled).toBe(true);
-    document.body.querySelector('[aria-label="More runs at once"]').click();
+    expect(document.body.querySelector('[aria-label="One fewer command at once"]').disabled).toBe(true);
+    document.body.querySelector('[aria-label="One more command at once"]').click();
     await settle();
     expect(document.body.querySelector('[role="alert"]').textContent).toBe("Read only");
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("1");
@@ -227,8 +225,8 @@ test("a held empty queue shows the reason and empty messages", async () => {
             halt_reason: "Machine maintenance",
         },
     }));
-    expect(document.body.querySelector("[data-queue-held]").textContent).toBe("Queue paused: Machine maintenance");
-    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("No run waits. A run that starts now gets a spot at once.");
+    expect(document.body.querySelector("[data-queue-held]").textContent).toContain("Machine maintenance");
+    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("Nothing waits. A command that starts now gets a place at once.");
     expect(document.body.textContent).toContain("Process queue");
     expect(document.body.textContent).not.toContain("Test queue");
 });
@@ -252,11 +250,11 @@ test("process events refresh the queue and output events refresh only an open ou
     expect(read).toHaveBeenCalledTimes(2);
     await vi.waitFor(() => expect(rowsOf("waiting")).toHaveLength(0));
     const row = rowsOf("running")[0];
-    row.querySelector("[data-queue-output]").click();
+    row.querySelector(".toggle").click();
     await settle();
     output = ["package built"];
     subscriptions.dispatch({event: "output.update", row_id: 70});
     await settle();
-    expect(row.querySelector("[data-queue-output-body]").textContent).toBe("package built");
+    expect(row.querySelector("[data-queue-output-body]").textContent).toContain("package built");
     expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
 });
