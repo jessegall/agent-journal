@@ -11,10 +11,11 @@ class BlockUntil(Command[object]):
     """Blocks an agent until the condition is true; each tool it may not use is refused with the nudge. With
     an interval in after, the block holds only once that grace has passed, and the countdown nudge is said
     while it runs: {block} in the nudge is the block's number and {left} in the countdown the tool uses
-    left."""
+    left. A block that holds the stop only refuses no tool, only the agent's stop."""
 
     agent_id: int
     nudge: Nudge
     condition: BlockCondition
     after: Interval | None = None
     countdown: Nudge | None = None
+    stop_only: bool = False

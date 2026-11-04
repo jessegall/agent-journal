@@ -52,7 +52,7 @@ class AgentBlockRule(DriverRule):
         return self.conditions.built(block.condition_name, block.condition_text).is_true(BlockCheck(hook, block.creation_timestamp(), self.container))
 
     def is_active(self, block: AgentBlock, hook: AgentHook) -> bool:
-        return block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp)
+        return not block.stop_only and (block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp))
 
     def countdown(self, block: AgentBlock, hook: AgentHook) -> Nudge | None:
         if not block.countdown_text or not block.grace_tool_uses:

@@ -44,7 +44,7 @@ func WatchOutput(number string, ask func(line ...string) (string, int), sleep fu
 			return code
 		}
 		if code == SuccessCode && !strings.Contains(status, outputRunningWord) {
-			summary, summaryCode := ask("output", "read", number, "--summary")
+			summary, summaryCode := ask("output", "read", number, "--summary", "--again")
 			fmt.Fprint(stdout, summary)
 			return summaryCode
 		}

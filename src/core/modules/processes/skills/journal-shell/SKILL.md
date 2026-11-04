@@ -15,8 +15,8 @@ Every shell command you run goes through the journal's runner.
 - Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
-- Your suite chooses which agent roles must wait with `journal output monitor N`. Other roles can continue
-  independent work and hear the result on their next tool call.
+- While you keep working you hear of a run's end on your next tool call, so a run needs no Monitor. Only when you
+  stop with a run of yours still going does your suite ask for `journal output monitor N`, which wakes you when it ends.
 - Read an output by the flag that fits: `--summary` first, `--tail K` or `--lines A-B` for a part, `--all` only for a short output.
 - Name a run for the user with `journal output title N "<what it does>"`: a whole phrase such as Running tests.
 

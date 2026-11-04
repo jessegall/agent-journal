@@ -50,11 +50,13 @@ def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_backgro
     assert "--background" not in str(story.hook("s-1", HookSamples.shell("cut -c1-9", ShellPart("cut", CommandCategory.PROCESS, ["-c1-9"]))).updated_input)
 
 
-def test_the_hold_for_a_monitor_lets_the_tool_search_through_so_the_monitor_tool_can_be_loaded(new_story):
+def test_a_moved_run_with_work_going_on_needs_no_monitor(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     moved_run(story, "pytest -q")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "set a Monitor on")
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     story.expect_hook_allowed("s-1", HookSamples.tool_use("ToolSearch", ClaudeCodeProvider.tool_categories["ToolSearch"], [], None))
+
+
 
 
 def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
