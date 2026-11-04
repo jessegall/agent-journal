@@ -11,6 +11,7 @@ from core.modules.processes.support.reader_candidates import CANDIDATES, BUILD_C
 from core.modules.processes.support.reader_draft import ReaderDraft
 from core.modules.processes.support.reader_judge import COUNTED, ReaderJudge
 from core.modules.processes.support.reader_run import ReaderRun
+from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.base.driver.command_category import CommandCategory
 
@@ -29,10 +30,14 @@ class ReaderDrafting:
         parts = self.parts.filter(process_id=request.sample_process_id).all_rows()
         part = next((part for part in parts if part.reader_request_id == request.id or part.command == request.command or part.text == request.command), None)
         text = self.judge.output_text(request.sample_process_id, part.position if part else 0)
-        readers = tuple(self.readers.newest().all_rows()) + tuple(Reader(creator_id=request.creator_id, name=stock.name, type=ReaderType.PATTERN,
+        stock_readers = tuple(Reader(creator_id=request.creator_id, name=stock.name, type=ReaderType.PATTERN,
                          commands=stock.commands, title=stock.title, lines_pattern=stock.lines, progress_pattern=stock.progress,
                          finished_pattern=stock.finished, failed_pattern=stock.failed, summary_pattern=stock.summary,
                          count_pattern=stock.count, count_command=stock.count_command, step_pattern=stock.step) for stock in STOCK_READERS)
+        matching_stock = tuple(reader for reader in stock_readers if ReaderSelection.matches(reader.commands, request.command))
+        stock_names = {reader.name for reader in stock_readers}
+        project_readers = tuple(reader for reader in self.readers.newest().all_rows() if reader.name not in stock_names)
+        readers = matching_stock if matching_stock else project_readers + stock_readers
         for reader in readers:
             if not self.judge.fields_missing(reader, request.category) and not self.judge.misses(reader, request.category, text):
                 commands = reader.commands.split(",")
@@ -58,7 +63,10 @@ class ReaderDrafting:
         if self.needs_build_progress(reader, request, text):
             missing.append("--progress")
         missing.extend(self.judge.misses(reader, request.category, text))
-        matches = (f"sample output {request.sample_process_id}", *self.run.lines(reader, text, "finished"),
+        lines = self.run.lines(reader, text, "finished")
+        if not lines and "--lines picked none" not in missing:
+            missing.append("--lines picked none")
+        matches = (f"sample output {request.sample_process_id}", *lines,
                  f"summary: {self.run.summary(reader, text)}", f"count: {self.run.count(reader, text, 0)}",
                  f"progress: {self.run.progress(reader, text, -1)}")
         if missing:
