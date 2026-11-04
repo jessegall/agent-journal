@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as s, createElementBlock as l, withModifiers as H, unref as u, createTextVNode as oe, toDisplayString as c, createVNode as v, createBlock as S, computed as i, ref as d, defineAsyncComponent as we, onUnmounted as pe, withKeys as re, normalizeClass as ae, createElementVNode as r, createCommentVNode as g, Fragment as F, withCtx as k, createSlots as fe, renderList as te, resolveDynamicComponent as ke, watch as de, normalizeStyle as ye, Transition as he } from "vue";
-import { peekRef as le, Icon as se, RunningCommand as be, useNow as Se, age as $e, useWindow as me, loadWindowComponent as Ce, TimeAgo as Re, FoldGroup as ce, InnerTabs as Te, SwitchCase as xe, EmptyState as _e, TaskStatusIcon as Oe, useRows as qe, useDeclaredRows as ne, SearchBar as Ae, Segmented as Ie, Btn as Be, RowList as Ee } from "@journal/window-kit";
-import { _ as ie, T as ge } from "./TranscriptRows-ntRsOdt9.js";
+import { peekRef as le, Icon as se, RunningCommand as be, useNow as Se, age as $e, useWindow as me, loadWindowComponent as Ce, TimeAgo as Re, FoldGroup as ce, InnerTabs as xe, SwitchCase as Te, EmptyState as _e, TaskStatusIcon as Oe, useRows as qe, useDeclaredRows as ne, SearchBar as Ae, Segmented as Ie, Btn as Be, RowList as Ee } from "@journal/window-kit";
+import { _ as ie, T as ge } from "./TranscriptRows-CjXeMFF-.js";
 const Ne = {
   class: "agent-command",
   "data-agent-command": ""
@@ -75,7 +75,7 @@ const Ne = {
   props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, open: Boolean },
   emits: ["toggle"],
   setup(a, { emit: K }) {
-    const $ = { subagent: "Subagent", reviewer: "Reviewer" }, M = ["started", "blocked", "open", "completed"], n = a, x = K, P = Se(), Y = i(() => {
+    const $ = { subagent: "Subagent", reviewer: "Reviewer" }, M = ["started", "blocked", "open", "completed"], n = a, T = K, P = Se(), Y = i(() => {
       var t;
       const e = ((t = n.facts) == null ? void 0 : t.profile) || $[n.row.role] || n.row.role;
       return e.slice(0, 1).toUpperCase() + e.slice(1);
@@ -91,7 +91,7 @@ const Ne = {
     }), W = i(() => {
       var t, o, h;
       const e = [];
-      return ((t = n.facts) == null ? void 0 : t.context_percent) !== null && ((o = n.facts) == null ? void 0 : o.context_percent) !== void 0 && e.push(`Context ${n.facts.context_percent}%`), (h = n.facts) != null && h.cost_dollars && e.push(`$${n.facts.cost_dollars.toFixed(2)}`), e.join(" · ");
+      return ((t = n.facts) == null ? void 0 : t.context_percent) !== null && ((o = n.facts) == null ? void 0 : o.context_percent) !== void 0 && e.push(`Context: ${n.facts.context_percent}%`), (h = n.facts) != null && h.cost_dollars && e.push(`$${n.facts.cost_dollars.toFixed(2)}`), e.join(" · ");
     }), _ = i(() => {
       var e;
       return ((e = n.progress) == null ? void 0 : e.completed_count) ?? y.value.filter((t) => t.state === "completed").length;
@@ -118,10 +118,10 @@ const Ne = {
         role: a.open ? void 0 : "button",
         tabindex: a.open ? void 0 : 0,
         title: a.row.session,
-        onClick: t[4] || (t[4] = (f) => !a.open && x("toggle")),
+        onClick: t[4] || (t[4] = (f) => !a.open && T("toggle")),
         onKeydown: [
-          t[5] || (t[5] = re(H((f) => !a.open && x("toggle"), ["self", "prevent"]), ["enter"])),
-          t[6] || (t[6] = re(H((f) => !a.open && x("toggle"), ["self", "prevent"]), ["space"]))
+          t[5] || (t[5] = re(H((f) => !a.open && T("toggle"), ["self", "prevent"]), ["enter"])),
+          t[6] || (t[6] = re(H((f) => !a.open && T("toggle"), ["self", "prevent"]), ["space"]))
         ]
       }, [
         r("span", je, [
@@ -131,7 +131,7 @@ const Ne = {
             class: "agent-back",
             title: "Back to the list",
             "aria-label": "Back to the list",
-            onClick: t[0] || (t[0] = H((f) => x("toggle"), ["stop"]))
+            onClick: t[0] || (t[0] = H((f) => T("toggle"), ["stop"]))
           }, [
             v(u(se), {
               name: "chevronRight",
@@ -207,7 +207,7 @@ const Ne = {
               padding: "0"
             }, null, 8, ["line"])
           ])) : (s(), l(F, { key: 3 }, [
-            v(u(Te), {
+            v(u(xe), {
               class: "agent-tabs",
               active: R.value,
               answer: { tasks: y.value.length },
@@ -217,7 +217,7 @@ const Ne = {
               class: "agent-tab-body",
               "data-agent-tab-body": (U = R.value) == null ? void 0 : U.key
             }, [
-              v(u(xe), {
+              v(u(Te), {
                 value: (ue = R.value) == null ? void 0 : ue.key
               }, fe({
                 tasks: k(() => {
@@ -228,7 +228,7 @@ const Ne = {
                       title: "No tasks"
                     }, {
                       default: k(() => [...t[7] || (t[7] = [
-                        oe("This agent was given none.", -1)
+                        oe("No tasks have been assigned to this agent.", -1)
                       ])]),
                       _: 1
                     })),
@@ -238,21 +238,21 @@ const Ne = {
                       count: b.tasks.length,
                       open: Q(b.state),
                       "data-agent-section": b.state,
-                      onToggle: (T) => V(b.state)
+                      onToggle: (x) => V(b.state)
                     }, {
                       default: k(() => [
-                        (s(!0), l(F, null, te(b.tasks, (T) => (s(), l("button", {
-                          key: T.id,
+                        (s(!0), l(F, null, te(b.tasks, (x) => (s(), l("button", {
+                          key: x.id,
                           type: "button",
                           class: "agent-task",
-                          "data-agent-delegated": T.id,
-                          onClick: (rt) => u(le)(`tasks:${T.id}`)
+                          "data-agent-delegated": x.id,
+                          onClick: (rt) => u(le)(`tasks:${x.id}`)
                         }, [
                           v(u(Oe), {
-                            status: T.state
+                            status: x.state
                           }, null, 8, ["status"]),
-                          r("span", et, c(T.id), 1),
-                          r("span", tt, c(T.title), 1)
+                          r("span", et, c(x.id), 1),
+                          r("span", tt, c(x.title), 1)
                         ], 8, Ze))), 128))
                       ]),
                       _: 2
@@ -286,7 +286,7 @@ const Ne = {
       ], 42, We);
     };
   }
-}, ot = /* @__PURE__ */ ie(st, [["__scopeId", "data-v-d6137af6"]]), lt = {
+}, ot = /* @__PURE__ */ ie(st, [["__scopeId", "data-v-11633900"]]), lt = {
   class: "agents-queue-count",
   "data-agents-queue-count": ""
 }, it = ["data-agent-row"], ut = {
@@ -298,7 +298,7 @@ const Ne = {
       { key: "idle", label: "Idle" },
       { key: "retired", label: "Retired" },
       { key: "all", label: "All" }
-    ], $ = a, { rows: M } = qe("usage agents --closed", ["agent.*", "task.*"]), { rows: n } = ne("waits"), { rows: x } = ne("progress"), P = (e) => x.value.find((t) => t.agent_id === e.id) ?? null, Y = (e) => {
+    ], $ = a, { rows: M } = qe("usage agents --closed", ["agent.*", "task.*"]), { rows: n } = ne("waits"), { rows: T } = ne("progress"), P = (e) => T.value.find((t) => t.agent_id === e.id) ?? null, Y = (e) => {
       var t;
       return ((t = n.value.find((o) => o.agent_id === e.id)) == null ? void 0 : t.reason) ?? "";
     }, { rows: y } = ne("queue"), Z = /* @__PURE__ */ new Set(["queued", "running"]), ee = i(() => y.value.filter((e) => Z.has(e.state)).length), C = d("running"), p = d(""), D = me(), W = d([]), _ = d(""), O = d(!1), G = d(!1), q = d(25);

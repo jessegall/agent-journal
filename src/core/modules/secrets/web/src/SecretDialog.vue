@@ -21,7 +21,7 @@ const refusal = ref("");
 const saving = ref(false);
 
 const isFilled = (field) => props.row.filled.includes(field.name);
-const placeholder = (field) => (isFilled(field) ? "A value is saved. Type to replace it" : "Type the value");
+const placeholder = (field) => (isFilled(field) ? "Leave blank to keep the saved credential" : "Paste or type your credential");
 
 function addField() {
     const name = newField.value.trim();
@@ -74,10 +74,10 @@ async function save() {
     <Dialog :title="row.title" @close="emit('close')">
         <div class="sections">
             <template v-if="row.waiting">
-                <p class="lead">The agent asked for this. Type what it needs and save.</p>
+                <p class="lead">The agent requested these credentials. Add them below, then save.</p>
             </template>
             <section class="section">
-                <span class="label">Values</span>
+                <span class="label">Credentials</span>
                 <template v-for="field in fields" :key="field.name">
                     <div class="field">
                         <label :for="`secret-${field.name}`">{{ field.name }}</label>
@@ -97,7 +97,7 @@ async function save() {
                 </template>
             </section>
             <section class="section">
-                <span class="label">Programs that may use it</span>
+                <span class="label">Allowed programs</span>
                 <template v-if="programs.length">
                     <div class="chips">
                         <template v-for="program in programs" :key="program">
@@ -106,7 +106,7 @@ async function save() {
                     </div>
                 </template>
                 <template v-else>
-                    <span class="muted">None allowed yet. With none listed, no program gets this secret.</span>
+                    <span class="muted">No programs have access to this secret yet.</span>
                 </template>
                 <template v-for="program in proposed" :key="program">
                     <div class="proposal">
@@ -127,7 +127,7 @@ async function save() {
                 <template v-else>
                     <div class="proposal">
                         <span>Helpers and subagents cannot use it.</span>
-                        <Btn small bordered data-secret-helpers @click="helpers = true">Let helpers use it</Btn>
+                        <Btn small bordered data-secret-helpers @click="helpers = true">Allow helpers</Btn>
                     </div>
                 </template>
             </section>

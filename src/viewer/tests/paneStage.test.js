@@ -452,7 +452,7 @@ test("Dock returns a float to a pane", async () => {
     expect(holder(store, "a.tasks")).toBeDefined();
 });
 
-test("Send away opens the window in a view window, and the dock message brings it back as a float", async () => {
+test("Close window opens the window in a view window, and the dock message brings it back as a float", async () => {
     const opened = vi.fn(() => ({}));
     vi.stubGlobal("open", opened);
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});

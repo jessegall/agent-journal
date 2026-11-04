@@ -6,7 +6,7 @@ import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 const row = (fields) => ({module: "good", parent: null, description: "", secret: false, scope: "both", choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
 const TREE = [
-    row({key: "good.limit", title: "Limit", description: "How many rows a list shows.", type: "number", value: 50, shown: "50"}),
+    row({key: "good.limit", title: "Limit", description: "How many items a list shows.", type: "number", value: 50, shown: "50"}),
     row({key: "good.sharing", title: "Sharing", description: "Links that show one row.", type: "group", shown: "on"}),
     row({key: "good.sharing.tunnel", parent: "good.sharing", title: "Tunnel", description: "How a phone reaches this computer.", type: "group", toggleable: true, shown: "on", value: true}),
     row({key: "good.sharing.tunnel.address", parent: "good.sharing.tunnel", title: "Address", type: "text", scope: "project", value: "https://tunnel.example.com", shown: "https://tunnel.example.com"}),

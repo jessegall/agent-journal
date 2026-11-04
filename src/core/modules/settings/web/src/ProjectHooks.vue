@@ -74,7 +74,7 @@ onMounted(load);
           :disabled="readOnly || busy"
           data-hooks-give-back
           @click="asking = true"
-          >Give all back</Btn
+          >Stop managing all commands</Btn
         >
       </div>
       <template v-if="asking">
@@ -91,7 +91,7 @@ onMounted(load);
             :disabled="busy"
             data-hooks-confirm
             @click="restore"
-            >Give all back</Btn
+            >Stop managing all commands</Btn
           >
         </div>
       </template>

@@ -36,7 +36,7 @@ async function restore(row) {
             <Btn kind="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
         </div>
         <div class="body">
-            <p class="lead">A secret is a key or a login the agent may use without seeing it. You type a value in once and the page never shows it again. The values are kept in a file outside the project.</p>
+            <p class="lead">Secrets let the agent use keys and logins without seeing them. Add your credentials here. Saved credentials stay hidden and are stored in a file outside the project.</p>
             <template v-if="failure">
                 <p class="failure" role="alert">{{ failure }}</p>
             </template>
@@ -47,7 +47,7 @@ async function restore(row) {
                             <Icon :name="row.secret_type === 'login' ? 'lock' : 'key'" :size="18" />
                             <span class="names">
                                 <span class="ask-title">{{ row.title }}</span>
-                                <span class="ask-line">The agent asked for this. Click here to give it.</span>
+                                <span class="ask-line">Add credentials</span>
                             </span>
                         </button>
                     </template>
@@ -64,7 +64,7 @@ async function restore(row) {
                 </section>
             </template>
             <template v-else-if="!asked.length && !failure">
-                <EmptyState :loading="!loaded" title="No secrets yet">A key or a login you add shows here by its name, never by its value.</EmptyState>
+                <EmptyState :loading="!loaded" title="No secrets yet">Add a key or login to get started. Only its name will appear here.</EmptyState>
             </template>
             <template v-if="deleted.length">
                 <section class="group">
@@ -88,10 +88,10 @@ async function restore(row) {
         </template>
         <template v-if="removing">
             <Dialog :title="`Delete ${removing.title}`" fits @close="removing = null">
-                <p class="lead">The agent can no longer use it. You can bring it back with Restore, under Deleted secrets.</p>
+                <p class="lead">Deleting this secret stops the agent from using it. You can restore it from Deleted secrets.</p>
                 <template #foot>
-                    <Btn @click="removing = null">Keep it</Btn>
-                    <Btn kind="danger" data-secret-confirm @click="remove">Yes, delete</Btn>
+                    <Btn @click="removing = null">Cancel</Btn>
+                    <Btn kind="danger" data-secret-confirm @click="remove">Delete secret</Btn>
                 </template>
             </Dialog>
         </template>

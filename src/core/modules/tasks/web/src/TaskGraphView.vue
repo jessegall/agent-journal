@@ -38,7 +38,7 @@ load();
             <Skeleton shape="rows" />
         </template>
         <template v-else-if="!layout.nodes.length">
-            <p class="graph-note">No task waits on another. Block one with what it waits on and it shows here.</p>
+            <p class="graph-note">Task dependencies appear here when one task is blocked by another.</p>
         </template>
         <template v-else>
             <div class="graph-canvas" :style="{width: `${layout.width}px`, height: `${layout.height}px`}">

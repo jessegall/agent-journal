@@ -101,13 +101,13 @@ const uptime = computed(() => {
             </template>
             <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
             <template v-if="run">
-                <button type="button" class="fact" data-fact="skills" title="Skills of this agent: which it has read" @click="openSkills"><Icon name="book" :size="12" /> {{ skillsRead.length }}</button>
+                <button type="button" class="fact" data-fact="skills" title="View skills read by this agent" @click="openSkills"><Icon name="book" :size="12" /> {{ skillsRead.length }}</button>
             </template>
             <template v-if="fitness">
-                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="Fitness, how the agent is working: opens its measures" @click="emit('open', 'fitness', $event.currentTarget)">
+                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="View the agent’s performance measures" @click="emit('open', 'fitness', $event.currentTarget)">
                     <Icon name="heart" :size="12" /> {{ fitness.is_measured ? fitness.score : "–" }}
                 </button>
-                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Load, messages arriving against those answered" @click="emit('open', 'load', $event.currentTarget)"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
+                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Compare incoming messages with agent replies" @click="emit('open', 'load', $event.currentTarget)"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
             </template>
         </template>
         <template v-else-if="run && !loading">

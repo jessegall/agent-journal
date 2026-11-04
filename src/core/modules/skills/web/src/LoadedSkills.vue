@@ -11,7 +11,7 @@ const newestLast = computed(() => [...props.rows].reverse());
     <div class="skills" data-skills-loaded>
         <h2>Loaded by the main agent</h2>
         <p class="skills-note">The skills the main agent has read in this conversation.</p>
-        <RowList :rows="newestLast" :failure="failure" :loaded="answered" empty="No skill is loaded in this conversation." hint="A skill the agent reads shows here with when it read it.">
+        <RowList :rows="newestLast" :failure="failure" :loaded="answered" empty="No skill is loaded in this conversation." hint="Skills appear here with the time the agent read them.">
             <template #default="{row}">
                 <button type="button" class="skill-row" @click="emit('open', row.skill)">
                     <svg class="skill-book" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">

@@ -14,7 +14,7 @@ function when(row) {
     if (row.interval_tool_uses) parts.push(`Every ${row.interval_tool_uses} tool uses`);
     if (row.interval_tasks) parts.push(`Every ${row.interval_tasks} closed tasks`);
     if (row.single_use) parts.push("once");
-    if (row.block_condition) parts.push(`holds until ${row.block_condition}`);
+    if (row.block_condition) parts.push(`Waiting: ${row.block_condition}`);
     return parts.join(", ");
 }
 
@@ -32,14 +32,14 @@ async function make() {
             <form class="form" data-reminder-form @submit.prevent="make">
                 <input v-model="draft.text" placeholder="Reminder text" aria-label="Reminder text">
                 <label class="note">At<input v-model="draft.at" type="datetime-local" aria-label="At"></label>
-                <label class="note">Every minutes<input v-model="draft.minutes" type="number" min="1" aria-label="Every minutes"></label>
+                <label class="note">Interval (minutes)<input v-model="draft.minutes" type="number" min="1" aria-label="Interval (minutes)"></label>
                 <label class="note"><input v-model="draft.once" type="checkbox" aria-label="Once"> Once</label>
                 <Btn small kind="primary" type="submit" :disabled="!canMake">Add</Btn>
             </form>
             <template v-if="actionFailure">
                 <p class="failure">{{ actionFailure }}</p>
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet" hint="A reminder you set for the agent shows here with when it is due.">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No reminders yet" hint="Reminders appear here with their scheduled times.">
                 <template #default="{row}">
                     <div class="row" :data-reminder="row.id">
                         <span class="text">{{ row.text }}</span>

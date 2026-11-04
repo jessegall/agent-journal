@@ -1,11 +1,11 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-75ae212b1587")) { const style = document.createElement("style"); style.id = "window-styles-75ae212b1587"; style.textContent = ".profile-panel[data-v-94a79735]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-94a79735]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-94a79735]{flex:1}.profiles[data-v-04581f08]{padding:0 0 40px}.bar[data-v-04581f08]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-04581f08]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-04581f08]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-04581f08]{color:var(--danger)}.empty[data-v-04581f08]{margin:40px auto;max-width:480px}.rows[data-v-04581f08]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-04581f08]{text-align:left}.profile-meta[data-v-04581f08]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-04581f08]{color:var(--text-2)}.profile-used[data-v-04581f08]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-04581f08]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-04581f08]{flex:1 1 100%}.profile-meta[data-v-04581f08]{display:none}}\n"; document.head.appendChild(style); }
-import { computed as x, ref as S, watch as q, openBlock as u, createBlock as y, unref as e, withCtx as i, createElementVNode as b, createVNode as n, createCommentVNode as $, createElementBlock as g, createTextVNode as k, toDisplayString as m, Fragment as z, renderList as U, normalizeClass as K } from "vue";
-import { SidePanel as Y, FormField as c, TextInput as G, TextArea as L, Segmented as H, ModelPicker as O, Btn as T, useRows as J, matchesSearch as Q, SearchBar as X, EmptyState as V, ListRow as Z, ago as ee } from "@journal/window-kit";
+if (!document.getElementById("window-styles-7c802721efca")) { const style = document.createElement("style"); style.id = "window-styles-7c802721efca"; style.textContent = ".profile-panel[data-v-83ce8b10]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-83ce8b10]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-83ce8b10]{flex:1}.profiles[data-v-055b6826]{padding:0 0 40px}.bar[data-v-055b6826]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-055b6826]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-055b6826]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-055b6826]{color:var(--danger)}.empty[data-v-055b6826]{margin:40px auto;max-width:480px}.rows[data-v-055b6826]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-055b6826]{text-align:left}.profile-meta[data-v-055b6826]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-055b6826]{color:var(--text-2)}.profile-used[data-v-055b6826]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-055b6826]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-055b6826]{flex:1 1 100%}.profile-meta[data-v-055b6826]{display:none}}\n"; document.head.appendChild(style); }
+import { computed as x, ref as S, watch as j, openBlock as u, createBlock as y, unref as e, withCtx as i, createElementVNode as h, createVNode as n, createCommentVNode as $, createElementBlock as b, createTextVNode as k, toDisplayString as m, Fragment as q, renderList as z, normalizeClass as K } from "vue";
+import { SidePanel as Y, FormField as c, TextInput as G, TextArea as L, Segmented as H, ModelPicker as O, Btn as N, useRows as J, matchesSearch as Q, SearchBar as X, EmptyState as V, ListRow as Z, ago as ee } from "@journal/window-kit";
 const A = (f, _) => {
   const r = f.__vccOpts || f;
-  for (const [v, h] of _)
-    r[v] = h;
+  for (const [v, g] of _)
+    r[v] = g;
   return r;
 }, te = {
   class: "profile-panel",
@@ -18,23 +18,23 @@ const A = (f, _) => {
   props: { profile: { type: Object, required: !0 }, used: { type: String, default: "" }, types: { type: Array, default: () => [] } },
   emits: ["close", "save"],
   setup(f, { emit: _ }) {
-    const r = f, v = _, h = x(() => r.types.map((p) => ({ key: p, label: p.slice(0, 1).toUpperCase() + p.slice(1) }))), C = ["description", "tools", "profile_type", "model", "codex_model", "body"], l = S({});
-    q(
+    const r = f, v = _, g = x(() => r.types.map((p) => ({ key: p, label: p.slice(0, 1).toUpperCase() + p.slice(1) }))), w = ["description", "tools", "profile_type", "model", "codex_model", "body"], l = S({});
+    j(
       () => r.profile.name,
       () => {
-        l.value = { name: r.profile.name, ...Object.fromEntries(C.map((p) => [p, r.profile[p]])) };
+        l.value = { name: r.profile.name, ...Object.fromEntries(w.map((p) => [p, r.profile[p]])) };
       },
       { immediate: !0 }
     );
-    const I = x(() => C.some((p) => l.value[p] !== r.profile[p]) || !r.profile.name), R = x(() => I.value && /^[a-z0-9_-]+$/i.test(l.value.name || "") && l.value.description.trim());
+    const I = x(() => w.some((p) => l.value[p] !== r.profile[p]) || !r.profile.name), R = x(() => I.value && /^[a-z0-9_-]+$/i.test(l.value.name || "") && l.value.description.trim());
     return (p, t) => (u(), y(e(Y), {
       title: f.profile.name || "New profile",
       abstract: f.profile.name ? f.used : "Instructions, tools and a model for an agent",
       onClose: t[9] || (t[9] = (o) => v("close"))
     }, {
       foot: i(() => [
-        t[12] || (t[12] = b("span", { class: "profile-panel-grow" }, null, -1)),
-        n(e(T), {
+        t[12] || (t[12] = h("span", { class: "profile-panel-grow" }, null, -1)),
+        n(e(N), {
           kind: "ghost",
           small: "",
           "data-profile-cancel": "",
@@ -45,7 +45,7 @@ const A = (f, _) => {
           ])]),
           _: 1
         }),
-        n(e(T), {
+        n(e(N), {
           kind: "primary",
           small: "",
           disabled: !R.value,
@@ -59,7 +59,7 @@ const A = (f, _) => {
         }, 8, ["disabled"])
       ]),
       default: i(() => [
-        b("div", te, [
+        h("div", te, [
           f.profile.name ? $("", !0) : (u(), y(e(c), {
             key: 0,
             label: "Name",
@@ -113,7 +113,7 @@ const A = (f, _) => {
           }, {
             default: i(() => [
               n(e(H), {
-                options: h.value,
+                options: g.value,
                 value: l.value.profile_type,
                 onPick: t[3] || (t[3] = (o) => l.value.profile_type = o)
               }, null, 8, ["options", "value"])
@@ -167,13 +167,13 @@ const A = (f, _) => {
             ]),
             _: 1
           }),
-          f.profile.shipped ? (u(), g("p", le, "The journal ships this profile; setup puts it back as shipped.")) : $("", !0)
+          f.profile.shipped ? (u(), b("p", le, "This is a built-in profile. Running setup restores its original contents.")) : $("", !0)
         ])
       ]),
       _: 1
     }, 8, ["title", "abstract"]));
   }
-}, ae = /* @__PURE__ */ A(oe, [["__scopeId", "data-v-94a79735"]]), se = {
+}, ae = /* @__PURE__ */ A(oe, [["__scopeId", "data-v-83ce8b10"]]), se = {
   class: "profiles",
   "data-profiles": ""
 }, ne = {
@@ -194,28 +194,28 @@ const A = (f, _) => {
 }, ue = { class: "profile-meta" }, pe = { class: "profile-model" }, fe = {
   __name: "ProfileRows",
   setup(f) {
-    const _ = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1, uses: 0 }, { rows: r, listing: v, failure: h, loaded: C, act: l, actionFailure: I, context: R } = J("profile list", []), p = x(() => v.value ? v.value.types : []), t = S(""), o = S(""), P = S(""), w = S(!1), B = x(() => {
+    const _ = { name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: !1, uses: 0 }, { rows: r, listing: v, failure: g, loaded: w, act: l, actionFailure: I, context: R } = J("profile list", []), p = x(() => v.value ? v.value.types : []), t = S(""), o = S(""), P = S(""), C = S(!1), B = x(() => {
       const d = o.value.toLowerCase().split(/\s+/).filter(Boolean);
       return r.value.filter((s) => d.every((a) => {
-        var N;
-        return Q(s, a, (N = R.search) == null ? void 0 : N.fields);
+        var T;
+        return Q(s, a, (T = R.search) == null ? void 0 : T.fields);
       }));
-    }), E = x(() => w.value ? _ : r.value.find((d) => d.name === t.value) || null), F = (d) => d.uses ? `Dispatched ${d.uses} ${d.uses === 1 ? "time" : "times"}, last ${ee(new Date(d.last_used * 1e3).toISOString())}` : "Never dispatched here";
-    function D() {
-      w.value = !0, t.value = "";
+    }), E = x(() => C.value ? _ : r.value.find((d) => d.name === t.value) || null), F = (d) => d.uses ? `Uses: ${d.uses} ${d.uses === 1 ? "time" : "times"}, last ${ee(new Date(d.last_used * 1e3).toISOString())}` : "Uses: none";
+    function U() {
+      C.value = !0, t.value = "";
     }
     function W(d) {
-      w.value = !1, t.value = d.name;
+      C.value = !1, t.value = d.name;
     }
-    function j() {
-      w.value = !1, t.value = "";
+    function D() {
+      C.value = !1, t.value = "";
     }
     async function M(d, s) {
       P.value = "";
       const a = d.name || s.name;
-      (await l(["profile", "save", a, "--description", s.description, "--tools", s.tools, "--type", s.profile_type, "--model", s.model, "--codex-model", s.codex_model, "--body", s.body])).ok && (w.value = !1, t.value = a, P.value = `${a} saved; the agent reads it at its next dispatch.`);
+      (await l(["profile", "save", a, "--description", s.description, "--tools", s.tools, "--type", s.profile_type, "--model", s.model, "--codex-model", s.codex_model, "--body", s.body])).ok && (C.value = !1, t.value = a, P.value = `${a} saved. The agent will use it the next time it starts a helper with this profile.`);
     }
-    return (d, s) => (u(), g("section", se, [
+    return (d, s) => (u(), b("section", se, [
       n(e(X), {
         modelValue: o.value,
         "onUpdate:modelValue": s[0] || (s[0] = (a) => o.value = a),
@@ -223,51 +223,51 @@ const A = (f, _) => {
         "data-profile-find": ""
       }, {
         default: i(() => [
-          n(e(T), {
+          n(e(N), {
             kind: "ghost",
             small: "",
             "data-profile-new": "",
-            onClick: D
+            onClick: U
           }, {
             default: i(() => [...s[1] || (s[1] = [
               k("New profile", -1)
             ])]),
             _: 1
           }),
-          b("span", ne, m(e(r).length) + " " + m(e(r).length === 1 ? "profile" : "profiles") + " in .claude/agents", 1),
-          P.value ? (u(), g("span", ie, m(P.value), 1)) : $("", !0),
-          e(I) ? (u(), g("span", re, m(e(I)), 1)) : $("", !0)
+          h("span", ne, m(e(r).length) + " " + m(e(r).length === 1 ? "profile" : "profiles") + " in .claude/agents", 1),
+          P.value ? (u(), b("span", ie, m(P.value), 1)) : $("", !0),
+          e(I) ? (u(), b("span", re, m(e(I)), 1)) : $("", !0)
         ]),
         _: 1
       }, 8, ["modelValue"]),
-      e(h) ? (u(), y(e(V), {
+      e(g) ? (u(), y(e(V), {
         key: 0,
         class: "empty",
         title: "The profiles could not be read"
       }, {
         default: i(() => [
-          k(m(e(h)), 1)
+          k(m(e(g)), 1)
         ]),
         _: 1
-      })) : !e(C) || !e(r).length ? (u(), y(e(V), {
+      })) : !e(w) || !e(r).length ? (u(), y(e(V), {
         key: 1,
         class: "empty",
-        loading: !e(C),
+        loading: !e(w),
         title: "No profiles yet"
       }, {
         default: i(() => [...s[2] || (s[2] = [
           k(" A profile gives an agent its instructions, tools and model. Your suite supplies its standard profiles at setup. ", -1)
         ])]),
         _: 1
-      }, 8, ["loading"])) : B.value.length ? (u(), g("div", de, [
-        (u(!0), g(z, null, U(B.value, (a) => (u(), y(e(T), {
+      }, 8, ["loading"])) : B.value.length ? (u(), b("div", de, [
+        (u(!0), b(q, null, z(B.value, (a) => (u(), y(e(N), {
           key: a.name,
           kind: "text",
           fill: "",
           class: "profile-open",
           "aria-label": `Open ${a.name}`,
           "data-profile": a.name,
-          onClick: (N) => W(a)
+          onClick: (T) => W(a)
         }, {
           default: i(() => [
             n(e(Z), {
@@ -275,9 +275,9 @@ const A = (f, _) => {
               text: a.description
             }, {
               end: i(() => [
-                b("span", ue, [
-                  b("span", pe, m(a.profile_type) + " · " + m(a.model || "chosen at start") + " on Claude · " + m(a.codex_model || "chosen at start") + " on Codex", 1),
-                  b("span", {
+                h("span", ue, [
+                  h("span", pe, m(a.profile_type) + " · " + m(a.model || "chosen at start") + " on Claude · " + m(a.codex_model || "chosen at start") + " on Codex", 1),
+                  h("span", {
                     class: K(["profile-used", { never: !a.uses }])
                   }, m(F(a)), 3)
                 ])
@@ -302,12 +302,12 @@ const A = (f, _) => {
         types: p.value,
         profile: E.value,
         used: F(E.value),
-        onClose: j,
+        onClose: D,
         onSave: M
       }, null, 8, ["types", "profile", "used"])) : $("", !0)
     ]));
   }
-}, ce = /* @__PURE__ */ A(fe, [["__scopeId", "data-v-04581f08"]]);
+}, ce = /* @__PURE__ */ A(fe, [["__scopeId", "data-v-055b6826"]]);
 export {
   ce as default
 };

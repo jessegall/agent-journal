@@ -21,12 +21,12 @@ const limit = defineModel("limit", {type: String, required: true});
     <template v-else>
         <div class="two">
             <template v-if="time === 'every'">
-                <label class="field"><span class="label">Every how many minutes</span><input :value="every" type="number" min="1" data-trigger-every @input="every = $event.target.value"></label>
+                <label class="field"><span class="label">Interval (minutes)</span><input :value="every" type="number" min="1" data-trigger-every @input="every = $event.target.value"></label>
             </template>
             <template v-else>
                 <label class="field"><span class="label">Cron line</span><input v-model="cron" placeholder="0 9 * * 1-5" data-trigger-cron></label>
             </template>
-            <label class="field"><span class="label">Stop after how many times</span><input :value="limit" type="number" min="1" placeholder="Empty means no limit" data-trigger-limit @input="limit = $event.target.value"></label>
+            <label class="field"><span class="label">Maximum runs</span><input :value="limit" type="number" min="1" placeholder="Empty means no limit" data-trigger-limit @input="limit = $event.target.value"></label>
         </div>
     </template>
 </template>

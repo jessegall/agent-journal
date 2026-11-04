@@ -39,11 +39,11 @@ test("what waits on the user is one button, apart from the saved secrets, and op
     const {element, ran} = await drawn([SECRET, ASKED]);
     const ask = element.querySelector('[data-secret-ask="5"]');
     expect(ask.textContent).toContain("GitHub login");
-    expect(ask.textContent).toContain("The agent asked for this");
+    expect(ask.textContent).toContain("Add credentials");
     expect(element.querySelector('[data-row="5"]')).toBeNull();
     ask.click();
     await settle();
-    expect(document.body.textContent).toContain("Type what it needs");
+    expect(document.body.textContent).toContain("The agent requested these credentials");
     type(document.body.querySelector('[data-secret-value="password"]'), "hunter2");
     await settle();
     await save();

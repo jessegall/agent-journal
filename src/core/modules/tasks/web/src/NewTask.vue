@@ -48,12 +48,12 @@ onMounted(() => input.value.focus());
             <TaskStatusIcon status="open" />
             <input ref="input" v-model="title" class="title" placeholder="Task title" aria-label="Task title" @keydown.enter.prevent="file" />
         </div>
-        <textarea v-model="brief" class="brief" rows="1" placeholder="Add a brief: what done looks like. You can leave this empty." aria-label="Brief" @keydown.enter="fileOnCommand" />
+        <textarea v-model="brief" class="brief" rows="1" placeholder="Describe the work and how to tell it is done (optional)." aria-label="Brief" @keydown.enter="fileOnCommand" />
         <template v-if="failure">
             <p class="failure" role="alert">{{ failure }}</p>
         </template>
         <div class="foot">
-            <span class="hint">Enter to file it, Esc to cancel</span>
+            <span class="hint">Enter to create, Esc to cancel</span>
             <Btn small data-task-place @click="openPlaces">{{ place ? place.label : "Place in a plan" }}</Btn>
             <template v-if="anchor">
                 <MenuPanel :anchor="anchor" :min-width="260" @close="anchor = null">
@@ -64,7 +64,7 @@ onMounted(() => input.value.focus());
                 </MenuPanel>
             </template>
             <Btn small @click="emit('cancel')">Cancel</Btn>
-            <Btn small kind="primary" :disabled="!ready" data-file-task @click="file">File the task</Btn>
+            <Btn small kind="primary" :disabled="!ready" data-file-task @click="file">Create task</Btn>
         </div>
     </div>
 </template>

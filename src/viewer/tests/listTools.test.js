@@ -17,7 +17,7 @@ import SkillCatalogue from "../../core/modules/skills/web/src/SkillCatalogue.vue
 
 const ROWS = [{id: 3, title: "Zebra", open: true}, {id: 2, title: "Apple pie", open: false}, {id: 1, title: "Mango", open: true}];
 
-test("words keep the rows holding them, and the order sorts by title", () => {
+test("words keep the results matching them, and the order sorts by title", () => {
     const tools = useListTools(ref(ROWS), {title: (row) => row.title});
     tools.words.value = "APPLE";
     expect(tools.shown.value.map((row) => row.id)).toEqual([2]);

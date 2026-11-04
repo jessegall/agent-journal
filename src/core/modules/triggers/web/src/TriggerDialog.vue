@@ -113,7 +113,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
             </TriggerPart>
         </div>
         <template #foot>
-            <span class="note" role="status">{{ failure || missing || (isNew ? "" : "Saving changes it from the next time it fires.") }}</span>
+            <span class="note" role="status">{{ failure || missing || (isNew ? "" : "Changes apply the next time this trigger runs.") }}</span>
             <template v-if="!isNew">
                 <template v-if="confirming">
                     <Btn kind="danger" data-trigger-strike-sure @click="end">Yes, end it</Btn>
@@ -121,7 +121,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
                 <template v-else>
                     <Btn kind="danger" data-trigger-strike @click="confirming = true">End this trigger</Btn>
                 </template>
-                <Btn data-trigger-pause @click="pause">{{ held.paused_at ? "Go on" : "Pause" }}</Btn>
+                <Btn data-trigger-pause @click="pause">{{ held.paused_at ? "Resume" : "Pause" }}</Btn>
             </template>
             <Btn @click="emit('close')">Cancel</Btn>
             <Btn kind="primary" :disabled="Boolean(missing)" data-trigger-save @click="save">{{ isNew ? "Create trigger" : "Save" }}</Btn>

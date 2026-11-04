@@ -56,7 +56,7 @@ read(0);
             <Skeleton shape="rows" />
         </template>
         <template v-else-if="!rows.length && !words.trim()">
-            <EmptyState title="No files are stored on this environment yet. Files attached to a message show here." />
+            <EmptyState title="Files attached to messages in this environment appear here." />
         </template>
         <template v-else-if="!rows.length">
             <EmptyState :title="`No file matches ${words.trim()}`" />

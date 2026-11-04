@@ -30,9 +30,9 @@ function pick() {
         <p class="meta" data-secret-programs :title="programs">Programs: {{ programs }}</p>
         <p class="meta" data-secret-helpers-line>Helpers: {{ row.helpers ? "can use it" : "cannot use it" }}</p>
         <footer class="acts">
-            <Btn small bordered data-secret-update @click="emit('update')">Update</Btn>
+            <Btn small bordered data-secret-update @click="emit('update')">Edit secret</Btn>
             <span ref="more" class="more">
-                <Btn kind="icon" small title="Delete" data-secret-more @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
+                <Btn kind="icon" small title="Secret options" data-secret-more @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
             </span>
         </footer>
         <template v-if="menu">

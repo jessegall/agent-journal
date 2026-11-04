@@ -7,7 +7,7 @@ const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
 const WORKER_LIMIT = "journal.suites.coding.workers.worker-limit";
 const MODES = [
-    {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent builds it itself, and sends workers when a job is better done beside it."}},
+    {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
 ];
 const context = useWindow();

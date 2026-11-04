@@ -19,7 +19,7 @@ const matching = computed(() => {
     return rows.value.filter((row) => words.every((word) => matchesSearch(row, word, context.search?.fields)));
 });
 const panel = computed(() => (making.value ? NEW_PROFILE : rows.value.find((row) => row.name === opened.value) || null));
-const usedWords = (row) => (row.uses ? `Dispatched ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Never dispatched here");
+const usedWords = (row) => (row.uses ? `Uses: ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Uses: none");
 
 function make() {
     making.value = true;
@@ -43,7 +43,7 @@ async function save(profile, fields) {
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
-    notice.value = `${name} saved; the agent reads it at its next dispatch.`;
+    notice.value = `${name} saved. The agent will use it the next time it starts a helper with this profile.`;
 }
 </script>
 

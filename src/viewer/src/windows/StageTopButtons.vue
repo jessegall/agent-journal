@@ -10,7 +10,7 @@ const emit = defineEmits(["sidebar", "view", "count", "activity", "wide"]);
 <template>
 <Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="emit('sidebar')"><Icon name="list" :size="13" /></Btn>
 <Btn kind="icon" data-top-search aria-label="Search" title="Search" @click="emit('view', 'search.search')"><Icon name="search" :size="13" /></Btn>
-<Btn kind="icon" class="top-bell" data-top-bell aria-label="Waiting on you" title="Waiting on you" @click="emit('count', 'waiting')">
+<Btn kind="icon" class="top-bell" data-top-bell aria-label="Pending requests" title="Pending requests" @click="emit('count', 'waiting')">
     <Icon name="bell" :size="13" />
     <template v-if="waiting">
         <span class="top-bell-count" data-top-bell-count>{{ waiting }}</span>

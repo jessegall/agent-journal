@@ -8,7 +8,7 @@ const context = useWindow();
 const draft = ref(null);
 const refusal = ref("");
 const inHand = computed(() => new Set(props.runs.map((run) => run.step_number)));
-const problem = computed(() => (draft.value?.some((step) => !step.trim()) ? "Every step needs its text." : ""));
+const problem = computed(() => (draft.value?.some((step) => !step.trim()) ? "Add instructions for each step." : ""));
 const guards = computed(() => JSON.parse(props.sequence.step_guards || "[]"));
 const guardsDraft = ref([]);
 const guardOf = (index) => guards.value[index] ?? {file_edits_allowed: true, allowed_commands: []};

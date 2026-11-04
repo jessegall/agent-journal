@@ -35,7 +35,7 @@ onMounted(async () => (offered.value = await canOffer()));
 
 <template>
     <template v-if="offered">
-        <button type="button" class="phone-notify" @click="accept">Get notices when something waits for you</button>
+        <button type="button" class="phone-notify" @click="accept">Get notifications when your attention is needed</button>
     </template>
 </template>
 

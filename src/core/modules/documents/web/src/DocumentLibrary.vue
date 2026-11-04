@@ -107,14 +107,14 @@ load();
         <template v-if="drafting">
             <form class="library-draft" data-library-draft @submit.prevent="create">
                 <input v-model="draft.title" placeholder="Title" aria-label="Title">
-                <input v-model="draft.abstract" placeholder="One line on what it says" aria-label="Abstract">
+                <input v-model="draft.abstract" placeholder="A short summary" aria-label="Abstract">
                 <textarea v-model="draft.body" rows="4" placeholder="The text" aria-label="Text" />
                 <template v-if="refusal">
                     <p class="library-note" role="alert">{{ refusal }}</p>
                 </template>
                 <div class="library-draft-foot">
                     <Btn small @click="drafting = false">Cancel</Btn>
-                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || !draft.abstract.trim()" data-library-create>Make it</Btn>
+                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || !draft.abstract.trim()" data-library-create>Create</Btn>
                 </div>
             </form>
         </template>

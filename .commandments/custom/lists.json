@@ -587,7 +587,7 @@
         "\"<job>\"`; if not, repeat the command with `--why \"<why>\"`",
         "% of context: `journal memory weigh <numbers> <weights>` or `journal memory skip \"<why>\"`",
         "%: keep, raise or correct",
-        "&& \u2026 )` or pass the folder, such as `git -C`",
+        "&& … )` or pass the folder, such as `git -C`",
         "'[{\"ask\": \"<question>\", \"label\": \"<button>\"}]' --summary \"<what you filed and where>\"`, `'[]'` for no buttons",
         "'s and stays open",
         "'s queue: `journal worker queue",
@@ -1178,5 +1178,29 @@
         "memories.reminder",
         "memories.compaction",
         "chat.exception"
+    ],
+    "bad_viewer_phrases": [
+        "Enter the values",
+        "Needs a value",
+        "Type what it needs",
+        "Type the value",
+        "Make it",
+        "Make the secret",
+        "Make the dump",
+        "Remove, keep what it kept",
+        "Every minutes",
+        "Every how many minutes",
+        "A agent",
+        "row holds",
+        "rows hold",
+        "Clocked out",
+        "its own",
+        "their own",
+        "shows here with when",
+        "show here with when",
+        "every field needs its words",
+        "It printed nothing yet",
+        "Send away",
+        "ships this profile"
     ]
 }

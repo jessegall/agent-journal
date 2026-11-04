@@ -7,9 +7,9 @@ KEYWORD_LIMIT = f"{MODULE_KEY}.keyword-limit"
 MARKS_SETTING = f"{MODULE_KEY}.marks"
 TYPE_SETTINGS = f"{MODULE_KEY}.type."
 MEMORY_SETTINGS = [
-    SettingValue("keyword-limit", "Memories per keyword", "How many memories a keyword brings back at most.", SettingType.NUMBER, default=3),
-    SettingValue("marks", "Context marks", "At which percents of the context window the agent weighs its memories.", SettingType.NUMBER_LIST,
+    SettingValue("keyword-limit", "Memories per keyword", "Maximum memories recalled for each keyword.", SettingType.NUMBER, default=3),
+    SettingValue("marks", "Context marks", "Context usage percentages at which the agent reviews memory priorities.", SettingType.NUMBER_LIST,
                  default=(50, 80, 90)),
-    SettingGroup("type", "Memory types", "Which memory types are on, overriding the suite's switches.",
+    SettingGroup("type", "Memory types", "Enabled memory types. These choices override the suite defaults.",
                  any_key=SettingValue("*", "On", "Whether this memory type is on.", SettingType.FLAG)),
 ]

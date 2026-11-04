@@ -25,7 +25,7 @@ function outputWords(text) {
                 <p class="plugin-note" data-plugin-services>Keeps running: {{ record.services.map((service) => service.name).join(", ") }}</p>
             </template>
             <template v-if="!record.outputs.length">
-                <p class="plugin-note">It has done nothing yet.</p>
+                <p class="plugin-note">No activity yet.</p>
             </template>
             <template v-for="row in record.outputs" :key="row.id">
                 <p class="plugin-output" data-plugin-output>{{ outputWords(row.output) }}</p>

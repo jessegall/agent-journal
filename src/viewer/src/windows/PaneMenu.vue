@@ -29,7 +29,7 @@ const agents = computed(() => [{value: "main", agent: null, label: "Main agent",
     <template v-if="floats">
         <MenuItem data-menu="detach" @click="emit('detach')">Detach</MenuItem>
     </template>
-    <MenuItem data-menu="width" @click="emit('option', 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</MenuItem>
+    <MenuItem data-menu="width" @click="emit('option', 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Use full width" : "Limit width" }}</MenuItem>
     <template v-if="agentWindow">
         <PaneMenuInner option-key="agent" label="Agent" :items="agents" @pick="(item) => emit('option', 'agent', item.agent)" />
     </template>

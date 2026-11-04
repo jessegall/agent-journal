@@ -11,7 +11,7 @@ const props = defineProps({dump: Object, folded: Boolean});
 const scope = useScope();
 const line = computed(() => {
     const things = (props.dump.filed || []).length;
-    return `${things} thing${things === 1 ? "" : "s"} filed`;
+    return `${things} item${things === 1 ? "" : "s"} created`;
 });
 
 function open() {
@@ -29,7 +29,7 @@ function open() {
             <span class="dump-dock-acts chat-dock-acts">
                 <Btn small @click="open">Open the dump</Btn>
             </span>
-            <CloseButton title="Hide from chat; what it filed stays" @click="scope.api.act('dumps', dump.id, 'dismiss')" />
+            <CloseButton title="Hide from chat and keep the created items" @click="scope.api.act('dumps', dump.id, 'dismiss')" />
         </template>
     </ChatDock>
 </template>

@@ -22,7 +22,7 @@ export const TOUR = [
     },
     {
         title: "Detach a window",
-        text: "Detach opens this window in a window of its own that stays on screen on every page. Dock it back from its menu.",
+        text: "Detach opens a floating window that stays visible on every page. Use its menu to dock it again.",
         target: "[data-menu=\"detach\"]",
         fallback: ".pane-menu-button",
         menu: true,

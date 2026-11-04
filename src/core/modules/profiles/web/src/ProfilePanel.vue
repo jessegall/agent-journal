@@ -49,7 +49,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
             </FormField>
             <template v-if="profile.shipped">
-                <p class="profile-panel-note">The journal ships this profile; setup puts it back as shipped.</p>
+                <p class="profile-panel-note">This is a built-in profile. Running setup restores its original contents.</p>
             </template>
         </div>
         <template #foot>

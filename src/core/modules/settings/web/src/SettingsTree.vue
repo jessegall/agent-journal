@@ -85,7 +85,7 @@ function saved(words, change) {
                 <p class="settings-failure">{{ failure }}</p>
             </template>
             <template v-else-if="loaded && !rows.length">
-                <p class="settings-empty">No module declares a setting.</p>
+                <p class="settings-empty">No settings available.</p>
             </template>
             <div class="settings-body">
                 <nav class="settings-nav" aria-label="Modules">

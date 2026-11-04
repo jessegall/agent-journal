@@ -15,7 +15,7 @@ load();
                 <p class="fitness-note">{{ failure }}</p>
             </template>
             <template v-if="fitness">
-                <p class="fitness-head" data-fitness-head>{{ fitness.is_measured ? `Fitness ${fitness.score} of 100` : "Fitness not measured yet: an agent is measured after its first half hour" }}</p>
+                <p class="fitness-head" data-fitness-head>{{ fitness.is_measured ? `Fitness: ${fitness.score} of 100` : "Fitness not measured yet: an agent is measured after its first half hour" }}</p>
                 <template v-for="measure in fitness.measures" :key="measure.key">
                     <p class="fitness-measure" :data-measure="measure.key">
                         <span>{{ measure.label }}</span>

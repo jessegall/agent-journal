@@ -20,7 +20,7 @@ load();
 
 <template>
     <WindowRoom>
-        <RowList :rows="points" :failure="failure" :loaded="loaded" empty="This agent has no task brief to prove" hint="The points of the brief of the task it was given show here, each with its proof.">
+        <RowList :rows="points" :failure="failure" :loaded="loaded" empty="This agent has no task brief to prove" hint="Task requirements and the evidence for each appear here.">
             <template #default="{row}">
                 <span class="number">{{ row.id }}</span>
                 <span class="main">

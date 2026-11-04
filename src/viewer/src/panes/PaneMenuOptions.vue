@@ -23,7 +23,7 @@ const set = (key, value) => emit("set", key, value);
         <component :is="CONTROLS[option.control]" :option="option" :values="values" @set="set" />
     </template>
     <template v-if="marks.length">
-        <button type="button" class="pane-menu-fold" data-menu-marks :aria-expanded="marksOpen" @click="marksOpen = !marksOpen">Choose the marks <FoldSign :open="marksOpen" /></button>
+        <button type="button" class="pane-menu-fold" data-menu-marks :aria-expanded="marksOpen" @click="marksOpen = !marksOpen">Choose chat updates <FoldSign :open="marksOpen" /></button>
         <template v-if="marksOpen">
             <template v-for="option in marks" :key="option.key">
                 <component :is="CONTROLS[option.control]" :option="option" :values="values" @set="set" />

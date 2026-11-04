@@ -23,7 +23,7 @@ const open = (hit) => peekRef(`${tableOf(hit)}:${hit.id}`);
             </button>
         </template>
         <template v-if="!found.hits.length">
-            <p class="search-none" data-search-none>Nothing held all of: {{ found.terms.join(" ") }}</p>
+            <p class="search-none" data-search-none>No results match all these words: {{ found.terms.join(" ") }}</p>
         </template>
         <template v-if="hidden > 0">
             <button type="button" class="search-child search-more" data-search-more @click="context.open(SEARCH_PAGE)">

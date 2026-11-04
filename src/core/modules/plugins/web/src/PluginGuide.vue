@@ -26,19 +26,19 @@ const KEYS = [
     ["services", "Programs kept running while the plugin is on, each with a name and a command; when, restart and answers are optional."],
     ["health", "How a service answers a health check: socket_env, request and answer."],
     ["cards", "The tone of each kind of card it shows."],
-    ["skills", "The folder of the skills it ships."],
+    ["skills", "The folder containing its skills."],
     ["reaches", "For an event, which helpers besides the main agent it reaches."],
-    ["aliases", "The commands it ships under short names."],
+    ["aliases", "The commands it provides under short names."],
     ["dashboard", "A page it writes, with a name and a title."],
 ];
 const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';
 </script>
 
 <template>
-    <Dialog title="Make a plugin" @close="emit('close')">
+    <Dialog title="Create a plugin" @close="emit('close')">
         <div class="plugin-guide" data-plugin-guide>
             <h3>Manifest</h3>
-            <p>A plugin is a folder or a repository with a <code>journal-plugin.json</code>. The journal reads it, shows you everything it would run, and copies it when you install it, a repository at its newest version tag.</p>
+            <p>A plugin is a folder or a repository with a <code>journal-plugin.json</code>. The journal reads it, shows you everything it would run, and copies it when you install it, using the latest version tag for a repository.</p>
             <pre>{{ EXAMPLE }}</pre>
             <h3>Keys</h3>
             <dl>
@@ -50,9 +50,9 @@ const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the ag
             <h3>Answering an event</h3>
             <p>The program prints JSON, and printing nothing allows the event. Every key is optional:</p>
             <pre>{{ ANSWER }}</pre>
-            <h3>Its environment</h3>
+            <h3>Environment variables</h3>
             <p>A plugin runs as you, with <code>journal</code> on its path. <code>$JOURNAL_PLUGIN_DIR</code> is its folder, <code>$JOURNAL_PLUGIN_DATA</code> a folder for its data, and <code>$JOURNAL_SETTINGS</code> a file with its settings.</p>
-            <h3>Its dashboard</h3>
+            <h3>Dashboard</h3>
             <p>It writes <code>dashboards/&lt;name&gt;.json</code> in its data folder, stating <code>start</code> and <code>pages</code>. The journal draws that file; a plugin's own code never runs in the viewer.</p>
         </div>
     </Dialog>

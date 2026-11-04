@@ -9,7 +9,7 @@ SENDS_SUBAGENTS_SETTING = f"{MODULE_KEY}.builder-sends-subagents"
 AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
 COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
 CODING_SETTINGS = [
-    SettingValue("auto-mode", "Auto mode", "Whether a builder that stops with nothing in hand is given the next open task.", SettingType.FLAG, default=True,
+    SettingValue("auto-mode", "Auto mode", "Assign the next open task when the builder finishes its current work.", SettingType.FLAG, default=True,
                  scope=SettingScope.ENVIRONMENT),
     SettingValue("builder-sends-subagents", "Builder sends subagents", "Whether the builder may send the agent program's own subagents.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT),

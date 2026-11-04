@@ -36,6 +36,9 @@ says what it is about, or what happens when they press it, in the words a newcom
 - Say the thing the user sees: "item", "to-do", "message", "entry", not "row"; "comes with the journal",
   not "ships with".
 - A button says what happens when it is pressed: "Close the document", "Pause the plan".
+- Name the action and its object: "Add credentials", "Create secret", "Edit secret". Avoid vague prompts such as
+  "Enter the values", "Needs a value", "Type what it needs" and "Make it". Explain saved credentials with
+  "Leave blank to keep the saved credential". Name stored settings and data directly, without "its own".
 - A heading names what the user is choosing or reading, in a newcomer's words: "Trigger when",
   never "Where the words count" (rule 59). A heading never ends in a preposition, and an option finishes
   its heading's sentence: "Trigger when" -> "A word appears anywhere".

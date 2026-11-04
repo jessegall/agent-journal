@@ -64,7 +64,7 @@ async function fetchFrom(server) {
                 </form>
             </template>
             <ListTools :tools="tools" />
-            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="A recording you have transcribed shows here with its text." :searching="tools.filtering.value">
+            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="Transcripts of recordings appear here." :searching="tools.filtering.value">
                 <template #default="{row}">
                     <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
                         <span class="title">{{ row.title }}</span>
@@ -81,7 +81,7 @@ async function fetchFrom(server) {
                         <Btn small kind="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
                         <Btn small @click="opened = null">Close</Btn>
                     </div>
-                    <h3 class="note">Made from it</h3>
+                    <h3 class="note">Created from this transcript</h3>
                     <template v-if="!linked.length">
                         <p class="note">Nothing yet</p>
                     </template>

@@ -427,7 +427,7 @@ async function runCommand(pin) {
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Write to the agent below; what it answers shows here.">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Send a message below to start a conversation.">
                 <template #default="{row}">
                     <SwitchCase :value="row.kind">
                         <template #day>
@@ -448,7 +448,7 @@ async function runCommand(pin) {
         </div>
         <div class="jump-holder">
             <Transition name="rise">
-                <button v-show="awayFromFoot" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Back to the newest'" @click="scrollToFoot">
+                <button v-show="awayFromFoot" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Jump to latest'" @click="scrollToFoot">
                     <Icon name="down" />
                     {{ arrived ? `${arrived} new` : "Newest" }}
                 </button>
@@ -467,7 +467,7 @@ async function runCommand(pin) {
         <template v-if="replying || commenting || editing">
             <p class="composer-quote" data-composer-quote>
                 <span class="composer-quote-text">{{ composerQuote }}</span>
-                <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), (commenting = null), leaveEdit()">×</button>
+                <button type="button" class="composer-quote-drop" aria-label="Cancel" @click="(replying = null), (commenting = null), leaveEdit()">×</button>
             </p>
         </template>
         <form data-figure-home :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
