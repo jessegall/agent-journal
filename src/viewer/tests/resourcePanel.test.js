@@ -71,6 +71,8 @@ test("a plan shows how far it has come, the phase it is in and which phases are 
     const [first, second] = shown().querySelectorAll("[data-resource-phase]");
     expect(first.classList.contains("done")).toBe(true);
     expect(first.querySelector(".row").classList.contains("completed")).toBe(true);
+    expect(first.querySelector('[aria-label="completed"]').style.background).toBe("var(--tone-good)");
+    expect(second.querySelector('[aria-label="open"]').style.background).toBe("transparent");
     expect(second.classList.contains("current")).toBe(true);
     expect(second.textContent).toContain("checkpoint");
     expect(second.textContent).toContain("0/2");

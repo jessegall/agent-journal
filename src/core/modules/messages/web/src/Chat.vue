@@ -647,10 +647,10 @@ async function runCommand(pin) {
     text-align: center;
 }
 
-/* many docks scroll inside their own share of the chat, so the history keeps room and the Newest pill stays at its foot */
+/* docks stack up to the top of the chat and scroll once they are taller than it, so the composer stays in view */
 .chat-foot {
-    flex: none;
-    max-height: 40%;
+    flex: 0 1 auto;
+    min-height: 0;
     overflow-y: auto;
 }
 

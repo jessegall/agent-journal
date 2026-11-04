@@ -84,9 +84,10 @@ test("a list shows the skeleton in the shape it was given until its first read a
     expect(read("../src/windows/PageWindow.vue")).toContain('<WindowSkeleton :parts="entry.skeleton" />');
 });
 
-// task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the pins
-test("the docks at the foot of the chat scroll inside a share of its height", () => {
+// task 6443: the docks stack up to the top of the chat, and scroll only when they are taller than it
+test("the docks at the foot of the chat take the height they need and scroll past the top of the chat", () => {
     const chat = read("../../core/modules/messages/web/src/Chat.vue");
     expect(chat).toMatch(/<div data-figure-chat-foot class="chat-foot">/);
-    expect(chat).toMatch(/\.chat-foot \{[^}]*max-height: 40%;[^}]*overflow-y: auto;/);
+    expect(chat).toMatch(/\.chat-foot \{[^}]*flex: 0 1 auto;[^}]*min-height: 0;[^}]*overflow-y: auto;/);
+    expect(chat).not.toMatch(/\.chat-foot \{[^}]*max-height/);
 });

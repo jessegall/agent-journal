@@ -25,7 +25,19 @@ try {
     await run(["phase", "make", "--plan", "1", "Build"]);
     await card.getByText("Build", {exact: true}).waitFor();
     await run(["task", "make", "Lay the foundation", "--phase", "1", "--environment", "main"]);
-    await card.getByText("Lay the foundation", {exact: true}).waitFor();
+    await card.getByText("1 task", {exact: true}).waitFor();
+    assert.equal(await card.getByText("Lay the foundation", {exact: true}).count(), 0);
+    const stacked = ["Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh"];
+    for (const title of stacked) {
+        await run(["plan", "make", title, "--brief", "Rebuild it", "--environment", "main"]);
+    }
+    await page.locator('.chat-dock-card[aria-label="Seventh"]').waitFor();
+    await page.setViewportSize({width: 1280, height: 520});
+    const foot = await page.evaluate(() => {
+        const element = document.querySelector("[data-figure-chat-foot]");
+        return {hidden: element.scrollHeight - element.clientHeight, share: element.clientHeight / document.querySelector(".chat").clientHeight};
+    });
+    assert.ok(foot.hidden <= 1 && foot.share > 0.4, JSON.stringify(foot));
 } finally {
     await browser.close();
 }

@@ -124,7 +124,7 @@ watch(() => props.id, () => {
                                 <div class="when">{{ phase.goal }}</div>
                             </template>
                             <template v-for="task in phase.tasks" :key="task.id">
-                                <button type="button" :class="['row', {completed: CLOSED.has(task.state)}]" data-resource-task @click="emit('select', task.id)">
+                                <button type="button" :class="['row', task.state]" data-resource-task @click="emit('select', task.id)">
                                     <Dot :kind="task.state" />
                                     <span class="row-id">#{{ task.id }}</span>
                                     <span class="row-title">{{ task.title }}</span>
@@ -355,8 +355,12 @@ watch(() => props.id, () => {
     color: var(--text);
 }
 
-.row.completed .row-title {
+.row.completed .row-title,
+.row.cancelled .row-title {
     color: var(--text-3);
+}
+
+.row.cancelled .row-title {
     text-decoration: line-through;
 }
 

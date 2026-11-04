@@ -9,10 +9,13 @@ const COLOR = {
     delegated: "var(--delegated)",
     planned: "var(--text-3)",
     done: "var(--progress)",
+    completed: "var(--tone-good)",
     asked: "var(--blocking)",
     open: "var(--open)",
     struck: "var(--text-3)",
+    cancelled: "var(--text-3)",
 };
+const FILLED = new Set(["done", "completed"]);
 const props = defineProps({
     kind: {type: String, default: "open"},
     glow: {type: Boolean, default: false},
@@ -33,7 +36,7 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
     <template v-else>
         <span
             class="dot"
-            :style="{borderColor: color, background: kind === 'done' ? color : 'transparent'}"
+            :style="{borderColor: color, background: FILLED.has(kind) ? color : 'transparent'}"
             role="img"
             :aria-label="kind"
         />

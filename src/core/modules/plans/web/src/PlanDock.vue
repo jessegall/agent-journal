@@ -26,9 +26,6 @@ watch(() => item.value?.target_id, load, {immediate: true});
                 <span class="plan-dock-name">{{ phase.title }}</span>
                 <span class="plan-dock-tasks">{{ phase.tasks.length ? `${phase.tasks.length} task${phase.tasks.length === 1 ? "" : "s"}` : "" }}</span>
             </li>
-            <template v-for="task in phase.tasks" :key="task.id">
-                <li class="plan-dock-task">{{ task.title }}</li>
-            </template>
         </template>
         <template v-if="hidden">
             <li class="plan-dock-phase quiet">
@@ -76,11 +73,5 @@ watch(() => item.value?.target_id, load, {immediate: true});
 .plan-dock-tasks {
     color: var(--text-4);
     font-size: 11.5px;
-}
-
-.plan-dock-task {
-    padding: 2px 0 2px 26px;
-    color: var(--text-3);
-    font-size: 12px;
 }
 </style>
