@@ -12,6 +12,12 @@ const opened = computed(() => rows.value.find((row) => row.id === openedId.value
 const runningIds = ref(new Set());
 const refusal = ref("");
 
+async function start(row) {
+    refusal.value = "";
+    const answer = await context.run(["check", "start", String(row.id)]);
+    if (!answer.ok) refusal.value = answer.error;
+}
+
 async function run(row) {
     refusal.value = "";
     runningIds.value = new Set([...runningIds.value, row.id]);
@@ -47,6 +53,9 @@ async function run(row) {
                     </template>
                     <template v-if="!row.stopped">
                         <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
+                    </template>
+                    <template v-else>
+                        <Btn small bordered class="card-run" data-check-card-start @click.stop="start(row)">Start</Btn>
                     </template>
                     <span class="card-foot">{{ row.status }} · {{ row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand" }}</span>
                 </div>
