@@ -3,7 +3,8 @@ import AgentRows from "./AgentRows.vue";
 
 const TEXTS = {
     running: {title: "No helpers running", hint: "A helper shows here while it works: a worker the agent sends, a subagent it starts, or a reviewer."},
-    closed: {title: "No helper has ended yet", hint: "A helper that finished or was stopped shows here."},
+    idle: {title: "No helpers idle", hint: "Helpers ready for another job show here."},
+    retired: {title: "No helpers retired", hint: "Helpers that will not be used again show here."},
     all: {title: "No helpers yet", hint: "The workers, subagents and reviewers the agent sends show here."},
 };
 

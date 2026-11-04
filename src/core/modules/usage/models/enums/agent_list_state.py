@@ -3,5 +3,6 @@ from enum import StrEnum
 
 class AgentListState(StrEnum):
     RUNNING = "running"
-    CLOSED = "closed"
+    IDLE = "idle"
+    RETIRED = "retired"
     ALL = "all"

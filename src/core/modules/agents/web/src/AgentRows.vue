@@ -5,7 +5,8 @@ import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
     {key: "running", label: "Running"},
-    {key: "closed", label: "Closed"},
+    {key: "idle", label: "Idle"},
+    {key: "retired", label: "Retired"},
     {key: "all", label: "All"},
 ];
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows

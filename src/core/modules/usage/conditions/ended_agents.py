@@ -10,4 +10,5 @@ class EndedAgents:
 
     def statement(self) -> Statement:
         active = self.activity.statement()
-        return Statement(f"NOT ({active.sql})", active.parameters)
+        idle = self.activity.idle()
+        return Statement(f"NOT ({active.sql}) AND NOT ({idle.sql})", active.parameters + idle.parameters)

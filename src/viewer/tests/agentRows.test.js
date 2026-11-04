@@ -47,7 +47,8 @@ const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : r
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
     ...context({
         "agent list --show running": page(agents.filter((row) => !row.ended_at)),
-        "agent list --show closed": page(agents.filter((row) => row.ended_at)),
+        "agent list --show idle": page(agents.filter((row) => row.ended_at && row.role === "subagent")),
+        "agent list --show retired": page(agents.filter((row) => row.ended_at && row.role !== "subagent")),
         "agent list --show all": page(agents),
         ...answers, "usage agents --closed": page(facts),
     }),
@@ -57,16 +58,31 @@ const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
 const drawn = (facts, options, agents) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options, agents));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
-test("the agents window filters on running or closed", async () => {
+test("the agents window filters on running, idle, retired or all", async () => {
     const element = await drawn();
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).toBeNull();
-    await pickButton(element, "Closed");
+    await pickButton(element, "Idle");
+    expect(cardOf(element, 1)).toBeNull();
+    await pickButton(element, "Retired");
     expect(cardOf(element, 2)).toBeNull();
     expect(cardOf(element, 1)).not.toBeNull();
     await pickButton(element, "All");
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).not.toBeNull();
+});
+
+test("an idle subagent's card opens its report", async () => {
+    const subagent = {...AGENTS[1], ended_at: "2026-11-02T10:00:00Z"};
+    const held = window(FACTS, {}, [subagent]);
+    const read = held.read;
+    held.read = (line) => line.startsWith("agent transcript 3") ? Promise.resolve(page([{id: 1, author: "assistant", text: "The review is complete"}])) : read(line);
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, held);
+    document.body.append(element);
+    await pickButton(element, "Idle");
+    cardOf(element, subagent.id).click();
+    await settle();
+    expect(element.textContent).toContain("The review is complete");
 });
 
 test("a card is two lines: the profile, name and time, then the provider, model and kind, with no task or instruction", async () => {
