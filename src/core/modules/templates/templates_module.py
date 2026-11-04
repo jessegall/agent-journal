@@ -17,6 +17,7 @@ from core.modules.templates.listeners.standard_templates_listener import Standar
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.migrations.m002_template_module import TemplateModuleColumnMigration
 from core.modules.templates.models.template import Template
+from core.modules.templates.queries.template_query import TemplateQuery
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
 from core.modules.templates.upgrade.templates_move import TemplatesMove
 from core.modules.templates.support.skeletons import TEMPLATES_TEMPLATES_SKELETON
@@ -30,9 +31,9 @@ class TemplatesModule(Module):
     templates = [TemplateDeclaration(title="General critique", targets=tuple(["plan"]), purpose="critique",
                                      brief="Read it as a whole and say what you would change, and why.")]
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors"]
+    dependencies = ["journal.core.actors", "journal.core.drivers"]
     skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
-    models = [ModelDeclaration(Template, excluded_subcommands=["make", "edit", "show", "list"])]
+    models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "edit", "show", "list"])]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler]

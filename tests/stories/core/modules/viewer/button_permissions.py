@@ -9,6 +9,8 @@ from tests.stories.core.base.chat.support.mark_faults import PATH
 from tests.stories.core.modules.viewer.support.acme_buttons_module import PATH as ACME
 from tests.stories.core.modules.viewer.support.changed_acme_buttons_module import PATH as CHANGED_ACME
 from tests.stories.core.modules.viewer.support.wider_acme_buttons_module import PATH as WIDER_ACME
+from tests.stories.core.modules.viewer.support.coding_acme_buttons_module import PATH as CODING_ACME
+from tests.stories.core.modules.drivers.support.module_memberships import PATH as SUITE_MODULES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -121,3 +123,14 @@ def test_an_update_that_adds_a_choice_asks_again(allowed_button):
     allowed_button.expect_window_refusal(CHAT, ACME_PRESS, ACME_REFUSED)
     allowed_button.story.expect_success(ACME_ALLOW, actor=allowed_button.story.user)
     allowed_button.expect_window_allowed(CHAT, ACME_PRESS.replace("high", "low"))
+
+
+def test_an_allowed_button_of_an_inactive_module_is_refused(new_story):
+    window = WindowStory(new_story(CODING_ACME, f"{SUITE_MODULES}:SuiteModule", fixture=UserJoined))
+    window.story.expect_success("suite choose coding --environment main", actor=window.story.user)
+    window.story.expect_success(ACME_ALLOW, actor=window.story.user)
+    window.expect_window_allowed(CHAT, ACME_PRESS)
+    window.story.expect_success("suite choose acme --environment main", actor=window.story.user)
+    window.expect_window_refusal(CHAT, ACME_PRESS, "does not declare task edit")
+    window.story.expect_success("suite choose coding --environment main", actor=window.story.user)
+    window.expect_window_allowed(CHAT, ACME_PRESS)

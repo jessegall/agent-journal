@@ -5,6 +5,7 @@ from core.base.model.model import Model
 from core.base.page import Page
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
+from core.base.query.query import Query
 from core.base.viewer.window_searcher import WindowSearcher
 
 MAX_ROWS = 1000
@@ -19,8 +20,11 @@ class ModelSearcher(WindowSearcher):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def found(self, terms: Sequence[str]) -> Page[Model]:
-        query = self.queries.query(self.model)
+    def found(self, terms: Sequence[str], environment_id: int | None) -> Page[Model]:
+        query = self.query(environment_id)
         if terms:
             query = query.matching(ContainsEvery(self.model.search_fields, terms))
         return query.newest().page(1, MAX_ROWS)
+
+    def query(self, environment_id: int | None) -> Query[Model]:
+        return self.queries.query(self.model)
