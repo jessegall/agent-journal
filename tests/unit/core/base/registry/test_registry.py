@@ -18,6 +18,7 @@ from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration
+from core.base.registry.template_entry import TemplateEntry
 from core.base.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
@@ -154,3 +155,19 @@ def test_window_sources_links_and_components_survive_registry_storage(database):
     assert restored.tabs == tuple(window.tabs)
     assert restored.listing("current").sources == restored.sources
     assert restored.listing("current").links == restored.links
+
+
+def test_module_templates_survive_registry_storage(database):
+    declaration = TemplateDeclaration(title="Review notes", brief="Read the notes.", targets=("item", "worker"),
+                                      purpose="critique", parts=("Problems", "Changes"), commands=tuple(["journal item list"]))
+    entry = TemplateEntry("acme.review", declaration)
+    registry = replace(Registry.read(database), templates=tuple([entry]))
+    restored = Registry.parsed("module-templates", registry.entries_text())
+    assert restored.templates == tuple([entry])
+    assert isinstance(restored.templates[0].declaration.targets, tuple)
+    assert isinstance(restored.templates[0].declaration.parts, tuple)
+    assert isinstance(restored.templates[0].declaration.commands, tuple)
+
+
+def test_a_registry_saved_before_module_templates_has_no_entries(database):
+    assert Registry.read(database).templates == ()

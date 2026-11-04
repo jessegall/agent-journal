@@ -14,6 +14,7 @@ from core.modules.templates.commands.save_standard_templates.save_standard_templ
 from core.modules.templates.guards.standard_template_guard import StandardTemplateGuard
 from core.modules.templates.listeners.standard_templates_listener import StandardTemplatesListener
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
+from core.modules.templates.migrations.m002_template_module import TemplateModuleColumnMigration
 from core.modules.templates.models.template import Template
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
 from core.modules.templates.upgrade.templates_move import TemplatesMove
@@ -29,7 +30,7 @@ class TemplatesModule(Module):
     dependencies = ["journal.core.actors"]
     skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
     models = [ModelDeclaration(Template, excluded_subcommands=["make", "edit", "show", "list"])]
-    migrations = [TemplatesTableMigration]
+    migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler]
     subcommands = [MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand]

@@ -35,6 +35,7 @@ from core.base.ticker.tick_handler import TickHandler
 from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
 from core.base.performance.performance_tool import PerformanceTool
+from core.base.template.template_declaration import TemplateDeclaration
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -71,6 +72,7 @@ class Module:
     nudges: ClassVar[list[NudgeDeclaration]] = []
     tick_handlers: ClassVar[list[TickHandler]] = []
     docks: ClassVar[list[DockDeclaration]] = []
+    templates: ClassVar[list[TemplateDeclaration]] = []
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []

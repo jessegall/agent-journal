@@ -33,6 +33,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
+from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
@@ -134,6 +135,7 @@ class ModuleSync:
             marks=self.marks(modules),
             nudges=self.nudges(modules),
             docks=self.docks(modules),
+            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},

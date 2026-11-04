@@ -12,8 +12,11 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
+from core.base.registry.template_entry import TemplateEntry
+from core.base.template.template_declaration import TemplateDeclaration
 
 from tests.unit.core.base.samples.module_copy import items_module_copy
+from tests.unit.core.base.samples.sync_sample import ItemsModule
 
 ITEMS = "tests.unit.core.base.samples.sync_sample:ItemsModule"
 ITEM_COUNT = "tests.unit.core.base.samples.sync_sample:ItemCountModule"
@@ -48,6 +51,13 @@ def test_a_second_sync_changes_nothing(tmp_path):
     registry_first = Database.opened(home).rows(Statement("SELECT * FROM registry"))[0]
     registry_second = synced(home, ITEMS, ITEM_COUNT).get(Database).rows(Statement("SELECT * FROM registry"))[0]
     assert tuple(registry_first) == tuple(registry_second)
+
+
+def test_a_sync_keeps_module_template_entries(tmp_path, monkeypatch):
+    declaration = TemplateDeclaration(title="Review items", targets=tuple(["item"]), parts=tuple(["Problems"]))
+    monkeypatch.setattr(ItemsModule, "templates", [declaration])
+    container = synced(JournalHome(tmp_path), ITEMS)
+    assert Registry.read(container.get(Database)).templates == tuple([TemplateEntry("items", declaration)])
 
 
 def test_a_changed_module_changes_the_fingerprint_and_the_old_registry_is_refused(tmp_path, monkeypatch):
