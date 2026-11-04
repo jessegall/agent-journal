@@ -1,4 +1,4 @@
-export const CRITIQUE_AGENTS = [1, 2, 3, 5];
+export const CRITIQUE_AGENTS = [1, 2, 3, 4, 5];
 export const CRITIQUE_SIZES = ["a quick look", "a normal read", "a thorough review"];
 
 export const critiqueTemplates = (rows) => rows.filter((row) => row.purpose === "critique");
