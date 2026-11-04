@@ -1,26 +1,26 @@
 /* @code-commandments-generated */
 import { computed as m, openBlock as h, createBlock as f, unref as e, withCtx as d, createElementVNode as i, createVNode as p, toDisplayString as l } from "vue";
 import { useRows as g, WindowRoom as x, AutoScrollPane as w, RowList as v } from "@journal/window-kit";
-const y = (a, n) => {
-  const o = a.__vccOpts || a;
+const y = (o, n) => {
+  const a = o.__vccOpts || o;
   for (const [r, c] of n)
-    o[r] = c;
-  return o;
+    a[r] = c;
+  return a;
 }, R = { class: "transcript" }, S = ["data-author"], T = { class: "text" }, k = ["datetime"], N = {
   __name: "TranscriptRows",
   props: { line: { type: String, required: !0 }, padding: { type: String, default: "8px 22px 8px 27px" } },
-  setup(a) {
-    const n = a, { rows: o, failure: r, loaded: c } = g(n.line, ["hook_call.create"]), u = m(() => {
+  setup(o) {
+    const n = o, { rows: a, failure: r, loaded: c } = g(n.line, ["hook_call.create"]), u = m(() => {
       var t;
-      return ((t = o.value.at(-1)) == null ? void 0 : t.id) ?? 0;
+      return ((t = a.value.at(-1)) == null ? void 0 : t.id) ?? 0;
     }), _ = (t) => t.time ? new Date(t.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
-    return (t, B) => (h(), f(e(x), { padding: a.padding }, {
+    return (t, B) => (h(), f(e(x), { padding: o.padding }, {
       default: d(() => [
         i("div", R, [
           p(e(w), { "row-count": u.value }, {
             default: d(() => [
               p(e(v), {
-                rows: e(o),
+                rows: e(a),
                 failure: e(r),
                 loaded: e(c),
                 empty: "No conversation yet",
@@ -48,7 +48,7 @@ const y = (a, n) => {
       _: 1
     }, 8, ["padding"]));
   }
-}, O = /* @__PURE__ */ y(N, [["__scopeId", "data-v-96a297d3"]]);
+}, O = /* @__PURE__ */ y(N, [["__scopeId", "data-v-3d67c86c"]]);
 export {
   O as T,
   y as _

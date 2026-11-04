@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as l, createElementBlock as i, withModifiers as K, unref as g, createTextVNode as fe, toDisplayString as k, createVNode as b, createBlock as E, computed as c, ref as f, watch as ne, defineAsyncComponent as Se, onUnmounted as we, withKeys as ue, normalizeClass as re, createElementVNode as p, createCommentVNode as h, Fragment as H, withCtx as O, createSlots as $e, renderList as le, resolveDynamicComponent as Ce, nextTick as de } from "vue";
 import { peekRef as ye, Icon as ie, RunningCommand as Re, useNow as xe, age as Te, useWindow as ke, loadWindowComponent as _e, TimeAgo as Ae, FoldGroup as ge, InnerTabs as Ee, SwitchCase as Oe, EmptyState as qe, TaskStatusIcon as Be, useRows as Ie, useDeclaredRows as ve, SearchBar as Ne, Segmented as Le, RowList as De } from "@journal/window-kit";
-import { _ as ce, T as me } from "./TranscriptRows-D6C0YYQk.mjs";
+import { _ as ce, T as me } from "./TranscriptRows-CjXeMFF-.js";
 const je = {
   class: "agent-command",
   "data-agent-command": ""
@@ -33,7 +33,7 @@ const je = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, pe = /* @__PURE__ */ ce(We, [["__scopeId", "data-v-85dcf19e"]]), ze = ["data-agent-open", "aria-expanded", "role", "tabindex", "title"], Ue = { class: "agent-head" }, Fe = ["data-state"], Me = {
+}, pe = /* @__PURE__ */ ce(We, [["__scopeId", "data-v-70734c30"]]), ze = ["data-agent-open", "aria-expanded", "role", "tabindex", "title"], Ue = { class: "agent-head" }, Fe = ["data-state"], Me = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
@@ -298,7 +298,7 @@ const je = {
       ], 42, ze);
     };
   }
-}, it = /* @__PURE__ */ ce(rt, [["__scopeId", "data-v-7b879b0d"]]), ct = ["data-agent-row"], ae = "cubic-bezier(0.2, 0.9, 0.25, 1)", ut = {
+}, it = /* @__PURE__ */ ce(rt, [["__scopeId", "data-v-09e8419a"]]), ct = ["data-agent-row"], ae = "cubic-bezier(0.2, 0.9, 0.25, 1)", ut = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(n) {
@@ -421,7 +421,7 @@ const je = {
       }, k(D.value) + " more", 1)) : h("", !0)
     ], 2));
   }
-}, mt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-aae3aacb"]]);
+}, mt = /* @__PURE__ */ ce(ut, [["__scopeId", "data-v-e1ce2121"]]);
 export {
   mt as A
 };
