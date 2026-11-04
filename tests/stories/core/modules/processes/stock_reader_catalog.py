@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.database.database import Database
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
-from core.modules.processes.migrations.m035_stock_readers_of_more_tools import EARLIER_READERS, NEW_READERS
+from core.modules.processes.migrations.m035_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
@@ -101,7 +101,7 @@ def test_go_vet_output(new_story):
 def test_every_stock_reader_is_stored_and_none_is_a_default(new_story):
     story = new_story(fixture=BuilderStarted)
     stored = {reader.name: reader for reader in story.container.get(ReaderQuery).filter(creator_id=1).page(1, 500).rows}
-    added = [stock for stock in STOCK_READERS if stock.name in NEW_READERS + EARLIER_READERS]
+    new_readers = [stock for stock in STOCK_READERS if stock.name in NEW_READERS + FIRST_BATCH_READERS]
     story.expect_rows(sorted(stock.name for stock in STOCK_READERS if stock.name not in stored) == [])
-    story.expect_rows(sorted(stock.name for stock in added if (stored[stock.name].step_pattern, stored[stock.name].count_pattern) != (stock.step, stock.count)) == [])
+    story.expect_rows(sorted(stock.name for stock in new_readers if (stored[stock.name].step_pattern, stored[stock.name].count_pattern) != (stock.step, stock.count)) == [])
     story.expect_rows(sorted(name for name, reader in stored.items() if reader.is_default) == [])

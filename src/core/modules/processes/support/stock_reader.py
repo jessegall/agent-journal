@@ -19,6 +19,12 @@ class StockReader:
     step: str = ""
 
 
+DART_LINES = r"^[0-9]+:[0-9]+ \+[0-9]+"
+DART_SUMMARY = r"^[0-9]+:[0-9]+ \+[0-9]+.*: (?:All tests passed!|Some tests failed\.)"
+DART_FAILED = r"\[E\]$|: Some tests failed\."
+DART_COUNT = r"^[0-9]+:[0-9]+ \+([0-9]+)(?: [~-][0-9]+)*: (?:All tests passed!|Some tests failed\.)"
+DART_STEP = r"(?m)^[0-9]+:[0-9]+ \+[0-9]+(?: ~[0-9]+)?(?: -[0-9]+)?: (?:(?P<failed>.*\[E\]$)|(?P<passed>(?!All tests passed|Some tests failed|loading ).*))"
+
 STOCK_READERS = (
     StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Python tests",
                   r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$",
@@ -74,9 +80,8 @@ STOCK_READERS = (
                   r"^(?:Ok|Fail): +[0-9]+.*", count=r"^\s*[0-9]+/([0-9]+) \S+\s+(?:OK|FAIL|TIMEOUT|SKIP)", step=r"(?m)^\s*[0-9]+/[0-9]+ \S+\s+(?:(?P<passed>OK)|(?P<failed>FAIL|TIMEOUT))\b"),
     StockReader("deno-test", "deno test*", "Deno tests", r"^running [0-9]+ tests? from|\.\.\. (?:ok|FAILED|ignored)|^(?:ok|FAILED) \| |^test result: |^failures:|^error: ", finished=r"^(?:ok|FAILED) \| |^test result: ",
                   failed=r" \.\.\. FAILED|^FAILED \| |^test result: FAILED|^failures:", summary=r"^(?:ok|FAILED) \| .*|^test result: .*", count=r"^running ([0-9]+) tests? from", step=r"(?m) \.\.\. (?:(?P<passed>ok)|(?P<failed>FAILED))\b"),
-    StockReader("dart-test", "dart test*", "Dart tests", r"^[0-9]+:[0-9]+ \+[0-9]+", finished=r"^[0-9]+:[0-9]+ \+[0-9]+.*: (?:All tests passed!|Some tests failed\.)", failed=r"\[E\]$|: Some tests failed\.",
-                  summary=r"^[0-9]+:[0-9]+ \+[0-9]+.*: (?:All tests passed!|Some tests failed\.)", count=r"^[0-9]+:[0-9]+ \+([0-9]+)(?: [~-][0-9]+)*: (?:All tests passed!|Some tests failed\.)",
-                  step=r"(?m)^[0-9]+:[0-9]+ \+[0-9]+(?: ~[0-9]+)?(?: -[0-9]+)?: (?:(?P<failed>.*\[E\]$)|(?P<passed>(?!All tests passed|Some tests failed).*))"),
+    StockReader("dart-test", "dart test*", "Dart tests", DART_LINES, finished=DART_SUMMARY, failed=DART_FAILED, summary=DART_SUMMARY, count=DART_COUNT, step=DART_STEP),
+    StockReader("flutter-test", "flutter test*", "Flutter tests", DART_LINES, finished=DART_SUMMARY, failed=DART_FAILED, summary=DART_SUMMARY, count=DART_COUNT, step=DART_STEP),
     StockReader("dune-test", "dune test*,dune runtest*,dune build @runtest*", "OCaml tests", r"^\s*\[(?:OK|FAIL)\]|^Test Successful|^FAILED [0-9]+ / [0-9]+ tests|^File \"", finished=r"^Test Successful", failed=r"^FAILED [0-9]+ / [0-9]+ tests|^\s*\[FAIL\]",
                   summary=r"^Test Successful.*|^FAILED [0-9]+ / [0-9]+ tests", count=r"([0-9]+) tests? run\.|^FAILED [0-9]+ / ([0-9]+) tests", step=r"(?m)^\s*\[(?:(?P<passed>OK)|(?P<failed>FAIL))\]"),
     StockReader("cabal-test", "cabal test*,cabal v2-test*,cabal new-test*", "Haskell tests", r"^Test suite \S+: |^[0-9]+ of [0-9]+ test suites|^Running [0-9]+ test suites|^Error: |: error:", finished=r"^[0-9]+ of [0-9]+ test suites", failed=r"^Test suite \S+: FAIL|^Error: |: error:",
@@ -99,8 +104,8 @@ STOCK_READERS = (
                   step=r"(?m)\b[0-9]+ of [0-9]+ (?:(?P<passed>OK|PASS)|(?P<failed>ERROR|FAIL)) "),
     StockReader("dbt", "dbt run*,dbt build*,dbt seed*,dbt snapshot*", "Running dbt models", r"[0-9]+ of [0-9]+ (?:OK|PASS|WARN|ERROR|FAIL|SKIP)\b|^Done\.|^Completed |^Finished running|Database Error", r"\b([0-9]+) of ([0-9]+) (?:OK|PASS|WARN|ERROR|FAIL|SKIP)\b",
                   r"^Done\. |^Completed successfully", r"^Completed with [0-9]+ errors?|^Done\. .*ERROR=[1-9]|[0-9]+ of [0-9]+ (?:ERROR|FAIL) ", r"Done\. .*"),
-    StockReader("cabal-build", "cabal build*,cabal v2-build*,cabal new-build*", "Building Haskell", r"^\[[0-9]+ of [0-9]+\] Compiling|^(?:Building|Linking|Configuring|Preprocessing) |: error:|^Error: ", r"^\[([0-9]+) of ([0-9]+)\] Compiling", r"^Linking ", r": error:|^Error: ",
-                  r"^Linking .*|: error:.*|^Error: .*"),
+    StockReader("cabal-build", "cabal build*,cabal v2-build*,cabal new-build*,cabal install*,cabal v2-install*", "Building Haskell", r"^\[[0-9]+ of [0-9]+\] Compiling|^(?:Building|Linking|Configuring|Preprocessing) |: error:|^Error: |^Failed to build", r"^\[([0-9]+) of ([0-9]+)\] Compiling", r"^Linking ", r": error:|^Error: |^Failed to build",
+                  r"^Linking .*|: error:.*|^Error: .*|^Failed to build .*"),
     StockReader("stack-build", "stack build*", "Building Haskell", r"^\S+> (?:configure|build|copy/register)|^\[[0-9]+ of [0-9]+\] |: error:|^Error: ", r"^\[([0-9]+) of ([0-9]+)\] ", r"^\S+> copy/register|^Registering library", r": error:$|^Error: \[S-[0-9]+\]|Process exited with code: ExitFailure",
                   r"^Error: \[S-[0-9]+\]|^\S+> copy/register"),
     StockReader("sbt-build", "sbt compile*,sbt package*", "Building Scala", r"^\[(?:success|error|warn)\] |compiling [0-9]+ Scala sources?", finished=r"^\[success\]", failed=r"^\[error\]", summary=r"^\[success\] .*|^\[error\] .*"),
@@ -114,8 +119,8 @@ STOCK_READERS = (
     StockReader("nx", "nx build*,nx run-many*,nx run *", "Building with Nx", r"\sNX\s|^Failed tasks:|^- \S+:\S+|Nx read the output", finished=r"Successfully ran target", failed=r"NX .* failed$|^Failed tasks:",
                   summary=r"NX\s+(?:Successfully ran target .*|Running target .* failed)"),
     StockReader("moon", "moon run*,moon check*,moon ci*", "Running moon tasks", r"^▮▮▮▮ |^(?:pass|skip) |^(?:Tasks|Actions): |^\s?Time: ", finished=r"^(?:Tasks|Actions): [0-9]+ completed", summary=r"^(?:Tasks|Actions): [0-9]+ completed.*"),
-    StockReader("packer", "packer build*,packer validate*", "Building with Packer", r"^==> |^Build '.*' finished|^Template validation failed|^Errors validating|^\* ", finished=r"^==> Builds finished", failed=r"^Template validation failed|^Errors validating",
-                  summary=r"^==> Builds finished\..*|^Template validation failed\..*|^Build '[^']+' finished.*"),
+    StockReader("packer", "packer build*,packer validate*", "Building with Packer", r"^==> |^Build '.*' (?:finished|errored)|^Template validation failed|^Errors validating|^\* ", finished=r"^==> Builds finished", failed=r"^Template validation failed|^Errors validating|^Build '[^']+' errored",
+                  summary=r"^==> Builds finished.*|^Template validation failed\..*|^Build '[^']+' (?:finished|errored).*"),
     StockReader("terraform", "terraform *", "Running Terraform", r"^Plan: |^Apply complete!|^Destroy complete!|^No changes\.|^Success!|^Terraform has been successfully initialized|^│ Error: |: (?:Creation|Modifications|Destruction) complete|: (?:Creating|Modifying|Destroying)\.\.\.",
                   finished=r"^Apply complete!|^Destroy complete!|^Terraform has been successfully initialized|^Success!|^Plan: |^No changes\.", failed=r"^│ Error: ",
                   summary=r"^Apply complete! .*|^Plan: .*|^Destroy complete! .*|^No changes\. .*|^Success! .*|^│ Error: .*|^Terraform has been successfully initialized!"),
@@ -133,5 +138,11 @@ STOCK_READERS = (
                   failed=r"^error: ", summary=r"^(?:Installed|Audited) [0-9]+ packages? .*|^error: .*"),
     StockReader("yarn-install", "yarn,yarn install*,yarn add*", "Installing packages", r"^\[[0-9]/[0-9]\] |^(?:success|error|warning) |^Done in |^yarn install v", r"^\[([0-9]+)/([0-9]+)\] ", r"^Done in |^success ", r"^error ", r"^Done in .*|^error .*|^success .*"),
     StockReader("pnpm-install", "pnpm install*,pnpm i,pnpm i *,pnpm add*", "Installing packages", r"Progress: resolved|Packages: \+|ERR_PNPM_", r"Progress: (?=.*added ([0-9]+))resolved ([0-9]+)", failed=r"ERR_PNPM_", summary=r"Progress: resolved [0-9]+, .*|ERR_PNPM_\w+ .*"),
-    StockReader("brew-install", "brew install*,brew upgrade*,brew reinstall*", "Installing Homebrew packages", r"^==> |^Error: |^Warning: ", failed=r"^Error: |^Warning: No available formula", summary=r"^Error: .*"),
+    StockReader("brew-install", "brew install*,brew upgrade*,brew reinstall*", "Installing Homebrew packages", r"^==> |^Error: |^Warning: |^🍺", r"([0-9]+)(?:\.[0-9])?%$", r"^🍺 ", failed=r"^Error: |^Warning: No available formula", summary=r"^Error: .*|^🍺 .*"),
+    StockReader("git-clone", "git clone*", "Cloning repository", r"^Cloning into|^remote: |^(?:Receiving|Resolving|Unpacking) (?:objects|deltas)|^Checking out files|^fatal: ", r"\b([0-9]+)%", r"^Checking out files: 100%|^Unpacking objects: 100%|^Checking connectivity\.\.\. done",
+                  r"^fatal: |^remote: Repository not found", r"^fatal: .*|^Receiving objects: .*|^Unpacking objects: .*"),
+    StockReader("ctest", "ctest*", "CMake tests", r"^[0-9]+/[0-9]+ Test +#|^[0-9]+% tests passed|^The following tests FAILED", r"^([0-9]+)/([0-9]+) Test +#", r"^[0-9]+% tests passed", r"\*\*\*Failed|[1-9][0-9]* tests failed out of|^The following tests FAILED",
+                  r"tests passed, ([0-9]+ tests failed out of [0-9]+)", count=r"^[0-9]+/([0-9]+) Test +#", step=r"(?m)^[0-9]+/[0-9]+ Test +#[0-9]+: \S+ \.+\s*(?:(?P<passed>Passed)|(?P<failed>\*\*\*Failed))"),
+    StockReader("bazel-test", "bazel test*", "Bazel tests", r"^//\S+\s+(?:\(cached\) )?(?:PASSED|FAILED)|^Executed [0-9]+ out of|^FAIL: |^INFO: Build completed", finished=r"^Executed [0-9]+ out of", failed=r"\sFAILED in |^FAIL: |^INFO: Build completed, [0-9]+ tests? FAILED",
+                  summary=r"^Executed [0-9]+ out of [0-9]+ tests?.*", count=r"^Executed [0-9]+ out of ([0-9]+) tests?", step=r"(?m)^//\S+\s+(?:\(cached\) )?(?:(?P<passed>PASSED)|(?P<failed>FAILED))"),
 )
