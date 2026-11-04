@@ -22,7 +22,10 @@ class ReaderRequestQuery(Query[ReaderRequest]):
     def environment(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id)
 
-    def has_active_requests(self, agent_id: int, current_time: Timestamp) -> bool:
+    def agent(self, agent_id: int) -> Self:
         processes = Select("processes").matching(Equal("agent_id", agent_id))
         parts = Select("process_parts").matching(SubqueryMatch("process_id", processes.column("id")))
-        return any(request.expires_at > current_time for request in self.open().matching(SubqueryMatch("id", parts.column("reader_request_id"))).all_rows())
+        return self.matching(SubqueryMatch("id", parts.column("reader_request_id")))
+
+    def has_active_requests(self, agent_id: int, current_time: Timestamp) -> bool:
+        return any(request.expires_at > current_time for request in self.open().agent(agent_id).all_rows())

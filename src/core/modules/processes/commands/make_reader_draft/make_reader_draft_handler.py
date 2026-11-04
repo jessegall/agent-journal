@@ -10,6 +10,7 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.support.reader_draft import ReaderDraft
 from core.modules.processes.support.reader_drafting import ReaderDrafting
 from core.modules.processes.support.reader_writers import ReaderWriters
+from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
 
 
 class MakeReaderDraftHandler(Handler[MakeReaderDraft, ReaderDraft]):
@@ -21,15 +22,23 @@ class MakeReaderDraftHandler(Handler[MakeReaderDraft, ReaderDraft]):
         self.requests, self.drafting, self.writers, self.bus = requests, drafting, writers, bus
 
     def handle(self, command: MakeReaderDraft, context: Context) -> ReaderDraft:
-        if command.save:
-            self.writers.check(context.actor)
+        request = self.requests.find(command.request_id)
+        if not command.save:
+            return self.drafting.draft(request)
+        self.writers.check_request(context.actor, request)
+        try:
+            return self.save_draft(command, context)
+        except Refusal as refusal:
+            if self.writers.allows(context.actor):
+                raise
+            raise ReaderSaveRefusal.failed_save(request.id, refusal) from refusal
+
+    def save_draft(self, command: MakeReaderDraft, context: Context) -> ReaderDraft:
         draft = self.drafting.draft(self.requests.find(command.request_id))
-        if command.save:
-            if draft.missing:
-                raise Refusal("; ".join(f"could not fill {field}" for field in draft.missing), "write the missing fields on the reader add line")
-            self.bus.dispatch(AddReader(draft.name, commands=draft.commands, title=draft.title, lines=draft.lines,
-                                       progress=draft.progress, summary=draft.summary, count=draft.count, count_command=draft.count_command,
-                                       script=draft.script, step=draft.step, finished=draft.finished, failed=draft.failed,
-                                       topic=draft.topic, subject=draft.subject), context)
-            return replace(draft, matches=(*draft.matches, f"saved reader {draft.name}"))
-        return draft
+        if draft.missing:
+            raise Refusal("; ".join(f"could not fill {field}" for field in draft.missing), "write the missing fields on the reader add line")
+        self.bus.dispatch(AddReader(draft.name, commands=draft.commands, title=draft.title, lines=draft.lines,
+                                   progress=draft.progress, summary=draft.summary, count=draft.count, count_command=draft.count_command,
+                                   script=draft.script, step=draft.step, finished=draft.finished, failed=draft.failed,
+                                   topic=draft.topic, subject=draft.subject), context)
+        return replace(draft, matches=(*draft.matches, f"saved reader {draft.name}"))
