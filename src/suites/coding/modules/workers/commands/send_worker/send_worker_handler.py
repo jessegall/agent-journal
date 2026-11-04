@@ -13,6 +13,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
@@ -42,5 +43,5 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         conflicts = self.git.sync(worktree)
         job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
         self.repository.save(Message(environment_id=worktree.environment_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
-                                     recipient=f"worker {command.worker_id}"), context)
+                                     recipient=WorkerRecipient.text(command.worker_id)), context)
         return self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)

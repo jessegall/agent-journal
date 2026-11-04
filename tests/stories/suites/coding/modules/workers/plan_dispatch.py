@@ -2,6 +2,7 @@ import json
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
@@ -73,3 +74,19 @@ def test_a_dispatch_names_tasks_or_a_plan_and_not_both_nor_a_phase_alone(new_sto
     story.expect_refusal("worker dispatch --model sonnet --plan 1 2", "takes tasks or a plan, not both", actor=story.agent)
     story.expect_refusal("worker dispatch --model sonnet --phase 1", "--phase needs --plan", actor=story.agent)
     story.expect_refusal("worker dispatch --model sonnet", "tasks or to a plan", actor=story.agent)
+
+
+def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(new_story, monkeypatch):
+    story = planned_story(new_story)
+    recording_launch(monkeypatch)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
+    story.run_listeners()
+    expect_marks_text(story, f"Worker {worker.id} was handed plan 1")
+
+
+def test_a_dispatch_for_one_task_shows_no_plan_handed_over(new_story, monkeypatch):
+    story = planned_story(new_story)
+    recording_launch(monkeypatch)
+    story.run("worker dispatch --model sonnet 1", actor=story.agent)
+    story.run_listeners()
+    expect_absent_marks_text(story, "was handed plan")

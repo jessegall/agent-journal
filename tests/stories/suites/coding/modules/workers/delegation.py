@@ -68,6 +68,15 @@ def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_wo
     story.expect_hook_allowed("s-1", judge_sample("src"))
 
 
+def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('worker dispatch 1 --model sonnet --name "Noah Webster"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main --type workers.worker", "Noah Webster started task 1", actor=story.agent)
+    story.run("chat-mark main --environment main --type workers.tests", actor=story.agent).expect_no_text("Noah Webster started task 1")
+
+
 def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
