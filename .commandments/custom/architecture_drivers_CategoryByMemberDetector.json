@@ -18,7 +18,10 @@
             },
             {
                 "descendant": {
-                    "is": "literal"
+                    "all": [
+                        {"is": "literal"},
+                        {"type": "builtins.str"}
+                    ]
                 }
             }
         ],
