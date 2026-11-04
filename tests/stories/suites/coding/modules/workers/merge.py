@@ -14,6 +14,7 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from datetime import timedelta
 
+from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
@@ -200,6 +201,15 @@ def test_a_job_for_a_worker_comes_on_the_latest_of_its_base_branch(new_story):
     repository.committed("tax.py", "TAX = 21\n", "The tax")
     story.expect_success(f'worker send {worker.id} "one more thing"', actor=story.agent)
     expect_worktree_folder_repository_2(repository, worker, "tax.py", "TAX = 21\n")
+
+
+def test_a_job_sent_to_a_worker_shows_as_a_mark_naming_the_worker(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f'worker send {worker.id} "one more thing"', actor=story.agent)
+    story.run_listeners()
+    expect_marks_text(story, f"Worker {worker.id} was sent its next job")
 
 
 def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_each_hour_and_goes_through_once_it_is_back(new_story):

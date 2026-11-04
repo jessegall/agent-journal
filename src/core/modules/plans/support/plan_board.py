@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 
 from core.modules.plans.models.plan_card import PlanCard
@@ -22,4 +23,5 @@ class PlanBoard:
     def card_json(plan: PlanCard) -> PlanCardJsonRecord:
         agents = PlanAgent.listed(plan.agents)
         return {"id": plan.id, "title": plan.title, "state": plan.state.value, "task_count": plan.task_count, "completed_count": plan.completed_count,
-                "current_phase": plan.current_phase, "delegated": bool(agents), "agents": [agent.json() for agent in agents]}
+                "current_phase": plan.current_phase, "delegated": bool(agents), "agents": [agent.json() for agent in agents],
+                "working": json.loads(plan.working)}

@@ -18,7 +18,7 @@ async function load() {
     if (asked !== tab.value) return;
     failure.value = answer.ok ? "" : answer.error;
     loaded.value = true;
-    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, ...answer.value}]} : answer.value;
+    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, working: [], ...answer.value}]} : answer.value;
 }
 
 async function more() {
@@ -66,6 +66,14 @@ load();
                                 <span class="plan-agents" data-plan-agents>
                                     <template v-for="agent in row.agents" :key="`${agent.id}:${agent.task_id}`">
                                         <span class="plan-agent" data-plan-agent><strong>{{ agent.name }}</strong> task {{ agent.task_id }}: {{ agent.task_title }}</span>
+                                    </template>
+                                </span>
+                            </template>
+                            <template v-else-if="row.working.length">
+                                <span class="plan-agents" data-plan-working>
+                                    <span>Task being worked on</span>
+                                    <template v-for="task in row.working" :key="task.id">
+                                        <span class="plan-agent" data-plan-working-task><strong>{{ task.id }}</strong> {{ task.title }}</span>
                                     </template>
                                 </span>
                             </template>

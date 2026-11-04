@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 from core.modules.plans.support.plan_agent_json_record import PlanAgentJsonRecord
+from core.modules.plans.support.plan_working_task_json_record import PlanWorkingTaskJsonRecord
 
 
 class PlanCardJsonRecord(TypedDict):
@@ -14,3 +15,4 @@ class PlanCardJsonRecord(TypedDict):
     current_phase: int
     delegated: bool
     agents: list[PlanAgentJsonRecord]
+    working: list[PlanWorkingTaskJsonRecord]

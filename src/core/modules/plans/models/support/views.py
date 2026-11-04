@@ -22,7 +22,10 @@ PLAN_CARDS_SELECT = (
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
     " JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
-    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL) AS agents"
+    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL) AS agents,"
+    " (SELECT json_group_array(json_object('id', tasks.id, 'title', tasks.title))"
+    " FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
+    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'started') AS working"
     " FROM plans"
     " JOIN plan_progress ON plan_progress.plan_id = plans.id"
 )
