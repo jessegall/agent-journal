@@ -28,3 +28,12 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     story.expect_text("queue list --json --environment-id 1", '"waiting_count": 1', '"line": "make package"')
     with server_story(story) as server:
         expect_browser(server, "processQueue.browser.mjs", ["/tmp/journal-worker-464-process-queue.png"])
+
+
+def test_the_queue_reads_output_from_the_end_and_loads_earlier_pages(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    finished = start_process(story, "make long-output", category=CommandCategory.BUILD, is_queued=True)
+    end_run(story, finished, "".join(f"line {number} of the run\n" for number in range(250)))
+    with server_story(story) as server:
+        expect_browser(server, "processQueuePages.browser.mjs", [])
