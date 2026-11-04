@@ -4,7 +4,7 @@ import {chromium} from "playwright-core";
 const [address, worker, subagent, capture] = process.argv.slice(2);
 const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
 try {
-    const page = await browser.newPage({viewport: {width: 1000, height: 960}});
+    const page = await browser.newPage({viewport: {width: 1000, height: 960}, reducedMotion: "reduce"});
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(`${address}&windows=agents.agents`);
@@ -43,13 +43,13 @@ try {
     await page.setViewportSize({width: 1000, height: 960});
     await card.locator('[data-tab="transcript"]').click();
     await card.getByText("Transcript row 119", {exact: false}).waitFor();
-    await page.screenshot({path: capture, fullPage: true});
-    await card.getByRole("button", {name: "Back to the list"}).click();
+    await page.screenshot({path: capture, fullPage: true, animations: "disabled"});
     await page.setViewportSize({width: 390, height: 844});
+    await page.goto(`${address}&windows=agents.agents`);
     await window.locator(`[data-agent-open="${worker}"]`).click();
     await card.getByRole("button", {name: "Back to the list"}).waitFor();
     assert.ok(await window.evaluate((element) => element.scrollWidth <= element.clientWidth));
-    await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true});
+    await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true, animations: "disabled"});
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

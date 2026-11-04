@@ -43,7 +43,7 @@ const tasksPerHour = computed(() => {
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
     return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
-const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})));
+const sections = computed(() => tasks.value.length ? TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})) : []);
 const FOLDED_STATES = new Set(["completed"]);
 const folded = ref({});
 const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
@@ -119,7 +119,6 @@ readCommand();
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">This agent was given none.</EmptyState></template>
-                            <template v-else>
                             <template v-for="section in sections" :key="section.state">
                                 <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
                                     <template v-for="task in section.tasks" :key="task.id">
@@ -130,7 +129,6 @@ readCommand();
                                         </button>
                                     </template>
                                 </FoldGroup>
-                            </template>
                             </template>
                             <template v-if="facts?.instruction">
                                 <p class="agent-label">Instruction</p>
@@ -426,7 +424,7 @@ readCommand();
 .agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
 .agent-card.open .agent-title { font-weight: 600; }
 .agent-card.open .agent-line { padding: 0 14px 7px 50px; border-bottom: 1px solid var(--border); background: var(--side); }
-.agent-card.open .agent-command { order: 1; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-command { padding: 6px 14px; border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-more { order: 2; gap: 0; padding: 0; }
 .agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-tabs { height: 30px; flex: none; align-items: center; margin: 0; padding: 0 14px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
