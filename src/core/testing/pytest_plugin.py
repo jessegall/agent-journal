@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from core.testing.run_size import RunSize
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
@@ -13,6 +14,17 @@ from core.testing.template_databases import TemplateDatabases
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 STORY_STEPS_KEY = "journal_story_steps"
+SHARD_LIMIT_OPTION = "shard_limit_tests"
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addini(SHARD_LIMIT_OPTION, "the number of tests from which a run with -n starts its shards", default="50")
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_cmdline_main(config: pytest.Config) -> None:
+    if config.getoption("numprocesses", None) and RunSize(config.args, int(config.getini(SHARD_LIMIT_OPTION))).is_small():
+        config.option.numprocesses = 0
 
 
 def pytest_configure(config: pytest.Config) -> None:
