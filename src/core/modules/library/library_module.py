@@ -1,3 +1,9 @@
+from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
@@ -24,6 +30,7 @@ from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
+from core.modules.library.support.skeletons import LIBRARY_TEAMS_SKELETON
 
 
 class LibraryModule(Module):
@@ -42,3 +49,8 @@ class LibraryModule(Module):
     handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, SendLibraryItemHandler, RemoveLibraryItemHandler, RestoreLibraryItemHandler]
     subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand,
                    SendLibraryItemSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
+    skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
+                               keywords=("library", "team", "shared"), commands=["library"])]
+    windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
+                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library show", "library versions"],
+                                 runs=["library connect", "library share", "library remove", "library restore"], events=["library_connection.*", "library_copy.*"])]

@@ -37,4 +37,4 @@ class LibraryItem:
 
     def json(self) -> Mapping[str, object]:
         return {"kind": self.share, "id": self.item_id, "version": self.version, "fields": dict(self.fields), "creator": self.creator, "updated_by": self.author,
-                "updated_at": self.changed_at}
+                "updated_at": self.changed_at, "removed_at": self.removed_at}

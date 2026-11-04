@@ -22,6 +22,5 @@ class SendLibraryItemSubcommand(Subcommand[SendLibraryItem, SharedLibraryItem]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, SharedLibraryItem):
-            output.line(f"{value.copy.share} {value.copy.row_id} is now library {value.item.share} {value.item.item_id}, version {value.item.version}")
-            if value.warning:
-                output.line(value.warning)
+            line = f"{value.copy.share} {value.copy.row_id} is now library {value.item.share} {value.item.item_id}, version {value.item.version}"
+            output.write("\n".join([line, value.warning] if value.warning else [line]), {"line": line, "warning": value.warning, "copy_id": value.copy.id})
