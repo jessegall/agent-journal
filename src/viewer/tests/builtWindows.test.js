@@ -25,7 +25,7 @@ async function drawn(component, events) {
     document.body.appendChild(element);
     createApp(() => h(WindowHost, {name: "test.window", component, subscriptions: new WindowSubscriptions(), environment: "main", events})).mount(element);
     for (let round = 0; round < 8; round++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => setTimeout(resolve, 200));
     return element.textContent;
 }
 

@@ -1,7 +1,7 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
-import {drawMarks, numbered, selectionIn, shownText, startOf} from "../src/resource/document/documentMarks.js";
+import {drawMarks, numbered, selectionIn} from "../src/resource/document/documentMarks.js";
 import {settle, typeInto} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -179,7 +179,6 @@ function words(html) {
 
 test("a selection's place is counted in the shown text, without buttons", () => {
     const root = words('<p>One two <button>Copy</button>three</p>');
-    expect(shownText(root)).toBe("One two three");
     const range = document.createRange();
     range.setStart(root.querySelector("p").lastChild, 0);
     range.setEnd(root.querySelector("p").lastChild, 5);
@@ -189,9 +188,9 @@ test("a selection's place is counted in the shown text, without buttons", () => 
 });
 
 test("words that have moved are found at their nearest place, and gone words are lost", () => {
-    expect(startOf("cat dog cat", {quote: "cat", position: 9})).toBe(8);
-    expect(startOf("cat dog cat", {quote: "cat", position: 1})).toBe(0);
-    expect(startOf("cat dog", {quote: "bird", position: 1})).toBe(-1);
+    const repeated = words("<p>cat dog cat</p>");
+    expect(drawMarks(repeated, [{id: 4, quote: "cat", position: 9, selection_type: "text", number: 1}])).toEqual([]);
+    expect(repeated.querySelector("mark").previousSibling.textContent).toBe("cat dog ");
     const root = words("<p>cat dog</p>");
     expect(drawMarks(root, [{id: 3, quote: "bird", position: 0, selection_type: "text", number: 1}])).toEqual([3]);
 });

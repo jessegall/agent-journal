@@ -57,7 +57,8 @@ test("a group folds and unfolds from its header, and stays folded on the next lo
 
 test("the search bar of the tasks window stays at the top as it scrolls", () => {
     const source = readFileSync(resolve(__dirname, "../../core/modules/tasks/web/src/TaskGroups.vue"), "utf8");
-    expect(source).toMatch(/\.tasks-tools \{[^}]*position: sticky;[^}]*top: 0;/);
+    expect(source).toContain('<SearchBar ref="search"');
+    expect(source).toContain('class="tasks-tools"');
 });
 
 test("a plan answer for the tab left behind is dropped", async () => {

@@ -135,7 +135,7 @@ test("queue motion styles include reordering and respect reduced motion", () => 
     expect(inspector).toContain(".queue-move");
     expect(inspector).toContain(".queue-leave-active { position: absolute;");
     expect(inspector).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
-    expect(run).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition: none/);
+    expect(run).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition:\s*none/);
 });
 
 test("the process queue reads its counts and ordered lists together", async () => {

@@ -32,6 +32,7 @@ test("the thumbnail draws a cell per active window, the chat in the accent and a
 
 for (const [page, width] of [["home", 1200], ["home", 400], ["agent", 1200], ["agent", 400]]) {
     test(`the picker opens on the ${page} page at ${width} px wide and lists the suite's presets`, async () => {
+        vi.stubGlobal("fetch", async () => ({ok: true, json: async () => ({})}));
         vi.stubGlobal("innerWidth", width);
         vi.stubGlobal("ResizeObserver", class {
             observe() {}
