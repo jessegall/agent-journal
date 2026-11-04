@@ -30,8 +30,8 @@ class AliasesModule(Module):
     migrations = [AliasesTableMigration, AliasCategoryMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
-    subcommands = (AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand)
-    bindings = [(ShellAliases, AliasShellAliases)]
+    subcommands = [AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand]
+    bindings = {ShellAliases: AliasShellAliases}
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
     driver_rules = [AliasExpansionRule]

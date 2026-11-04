@@ -38,7 +38,7 @@ class SettingsModule(Module):
     name = "journal.core.settings"
     seed_reason = "its rows are the settings the other modules declare"
     requires_core = ">=5,<6"
-    file_events = ("managed-hook.changed", "managed-hook.scanned", "managed-hook.restored")
+    file_events = ["managed-hook.changed", "managed-hook.scanned", "managed-hook.restored"]
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
@@ -48,6 +48,6 @@ class SettingsModule(Module):
                                  reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"]),
                WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.create"])]
-    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand)
-    bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]
+    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
+    bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes}
     moves = [SettingsMove]

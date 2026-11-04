@@ -28,4 +28,4 @@ class PinsModule(Module):
     migrations = [PinsTableMigration]
     moves = [PinsMove]
     handlers = [MakePinHandler, ClosePinHandler]
-    subcommands = (MakePinSubcommand, ClosePinSubcommand, PinListSubcommand)
+    subcommands = [MakePinSubcommand, ClosePinSubcommand, PinListSubcommand]

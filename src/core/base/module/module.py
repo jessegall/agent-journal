@@ -1,5 +1,4 @@
 import inspect
-from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
 
@@ -45,35 +44,35 @@ class Module:
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
-    dependencies: ClassVar[Sequence[str]] = ()
-    models: ClassVar[Sequence[ModelDeclaration]] = ()
-    migrations: ClassVar[Sequence[type[Migration]]] = ()
-    views: ClassVar[Sequence[type[ViewModel]]] = ()
-    handlers: ClassVar[Sequence[HandlerClass]] = ()
-    subcommands: ClassVar[Sequence[SubcommandClass]] = ()
-    guards: ClassVar[Sequence[type[Guard]]] = ()
-    listeners: ClassVar[Sequence[ListenerClass]] = ()
-    file_events: ClassVar[Sequence[str]] = ()
+    dependencies: ClassVar[list[str]] = []
+    models: ClassVar[list[ModelDeclaration]] = []
+    migrations: ClassVar[list[type[Migration]]] = []
+    views: ClassVar[list[type[ViewModel]]] = []
+    handlers: ClassVar[list[HandlerClass]] = []
+    subcommands: ClassVar[list[SubcommandClass]] = []
+    guards: ClassVar[list[type[Guard]]] = []
+    listeners: ClassVar[list[ListenerClass]] = []
+    file_events: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
-    bindings: ClassVar[Sequence[tuple[type, type]]] = ()
-    suites: ClassVar[Sequence[type[Suite]]] = ()
-    drivers: ClassVar[Sequence[type[Driver]]] = ()
-    overlays: ClassVar[Sequence[type[Overlay]]] = ()
-    driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
-    windows: ClassVar[Sequence[WindowDeclaration]] = ()
-    marks: ClassVar[Sequence[MarkDeclaration]] = ()
-    block_conditions: ClassVar[Sequence[type[BlockCondition]]] = ()
-    performance_tools: ClassVar[Sequence[type[PerformanceTool]]] = ()
-    nudges: ClassVar[Sequence[NudgeDeclaration]] = ()
-    tick_handlers: ClassVar[Sequence[TickHandler]] = ()
-    docks: ClassVar[Sequence[DockDeclaration]] = ()
-    providers: ClassVar[Sequence[type[Provider]]] = ()
-    settings: ClassVar[Sequence[SettingNode]] = ()
-    tunnels: ClassVar[Sequence[type[Tunnel]]] = ()
-    shared_rows: ClassVar[Sequence[type[SharedRows]]] = ()
-    skills: ClassVar[Sequence[SkillDeclaration]] = ()
-    seeders: ClassVar[Sequence[type[Seeder]]] = ()
-    moves: ClassVar[Sequence[type[VersionFourMove]]] = ()
+    bindings: ClassVar[dict[type, type]] = {}
+    suites: ClassVar[list[type[Suite]]] = []
+    drivers: ClassVar[list[type[Driver]]] = []
+    overlays: ClassVar[list[type[Overlay]]] = []
+    driver_rules: ClassVar[list[type[DriverRule]]] = []
+    windows: ClassVar[list[WindowDeclaration]] = []
+    marks: ClassVar[list[MarkDeclaration]] = []
+    block_conditions: ClassVar[list[type[BlockCondition]]] = []
+    performance_tools: ClassVar[list[type[PerformanceTool]]] = []
+    nudges: ClassVar[list[NudgeDeclaration]] = []
+    tick_handlers: ClassVar[list[TickHandler]] = []
+    docks: ClassVar[list[DockDeclaration]] = []
+    providers: ClassVar[list[type[Provider]]] = []
+    settings: ClassVar[list[SettingNode]] = []
+    tunnels: ClassVar[list[type[Tunnel]]] = []
+    shared_rows: ClassVar[list[type[SharedRows]]] = []
+    skills: ClassVar[list[SkillDeclaration]] = []
+    seeders: ClassVar[list[type[Seeder]]] = []
+    moves: ClassVar[list[type[VersionFourMove]]] = []
     move_reason: ClassVar[str] = ""
     seed_reason: ClassVar[str] = ""
 

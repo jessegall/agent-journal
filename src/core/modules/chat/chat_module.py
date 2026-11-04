@@ -32,4 +32,4 @@ class ChatModule(Module):
     guards = [MarkTypeGuard, AgentChatGuard]
     marks = CHAT_MARKS
     listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
-    bindings = [(ExceptionSink, ChatExceptionSink)]
+    bindings = {ExceptionSink: ChatExceptionSink}

@@ -17,6 +17,6 @@ class EnvironmentsModule(Module):
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
     migrations = [EnvironmentsTableMigration]
-    bindings = [(EnvironmentNames, EnvironmentTableNames)]
+    bindings = {EnvironmentNames: EnvironmentTableNames}
     seeders = [EnvironmentsSeeder]
     moves = [EnvironmentsMove]

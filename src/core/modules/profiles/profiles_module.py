@@ -25,7 +25,7 @@ class ProfilesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.settings", "journal.core.drivers", "journal.core.usage"]
     settings = PROFILE_SETTINGS
     handlers = [SaveProfileHandler, CountProfileUseHandler]
-    subcommands = (ProfileListSubcommand, SaveProfileSubcommand)
+    subcommands = [ProfileListSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
     windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "profile_type", "model", "codex_model")),

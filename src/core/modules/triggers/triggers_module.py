@@ -55,7 +55,7 @@ class TriggersModule(Module):
     migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration]
     handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
     listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener]
-    subcommands = (EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand)
+    subcommands = [EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]
     driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
     windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, skeleton=TRIGGERS_TRIGGERS_SKELETON, icon=WindowIcon.TRIGGER,
                                  reads=["trigger list"], runs=["trigger make", "trigger schedule", "trigger edit", "trigger strike", "trigger pause", "trigger enable"], events=["trigger.*"])]

@@ -70,16 +70,16 @@ class PlansModule(Module):
     block_conditions = [PlanApproved, PlanFinished]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase"))]
-    models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
+    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"])]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration]
-    handlers = (MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler)
+    handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = (CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
-                   PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand)
+    subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+                   PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard]
-    listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener)
+    listeners = [ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]

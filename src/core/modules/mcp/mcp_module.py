@@ -38,6 +38,6 @@ class McpModule(Module):
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
-    subcommands = (AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand)
+    subcommands = [AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand]
     windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, skeleton=MCP_INTEGRATIONS_SKELETON, search=WindowSearch(ServerSearcher, "Search the servers"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
                                  reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

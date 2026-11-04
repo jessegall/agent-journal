@@ -32,7 +32,7 @@ class TemplatesModule(Module):
     migrations = [TemplatesTableMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler]
-    subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)
+    subcommands = [MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand]
     listeners = [StandardTemplatesListener]
     guards = [StandardTemplateGuard]
     seeders = [TemplatesSeeder]
