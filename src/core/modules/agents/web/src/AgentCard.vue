@@ -85,17 +85,22 @@ readCommand();
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
         </span>
-        <template v-if="job">
-            <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
-        </template>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
-            <template v-if="totalCount">
+            <template v-if="totalCount && !job">
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="job">
+            <span class="agent-line agent-work-start">
+                <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
+                <template v-if="totalCount">
+                    <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
+                </template>
+            </span>
+        </template>
         <template v-if="(showsCommand && !open) || (totalCount && tasksPerHour)">
-            <span class="agent-foot" data-agent-foot>
+            <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
                 <template v-if="showsCommand && !open">
                     <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
                 </template>
@@ -258,7 +263,8 @@ readCommand();
 }
 
 .agent-job {
-    padding-left: 15px;
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     color: var(--text-2);
     font-size: 12.5px;
@@ -272,6 +278,10 @@ readCommand();
     padding-left: 15px;
     color: var(--text-3);
     font-size: 10.5px;
+}
+
+.agent-work-start {
+    margin-top: 4px;
 }
 
 .agent-foot {

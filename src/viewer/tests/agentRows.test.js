@@ -428,6 +428,8 @@ test("a worker's card shows the task it works on as its job and no queued count,
     const tasks = [{id: 1, title: "Add the tax", state: "started"}, {id: 2, title: "Print the receipt", state: "open"}, {id: 3, title: "Ship it", state: "open"}];
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Add the tax");
+    expect(element.querySelector("[data-agent-identity]").compareDocumentPosition(element.querySelector("[data-agent-job]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(element.querySelector("[data-agent-job]").parentElement.querySelector("[data-agent-tasks]")).not.toBeNull();
     expect(element.textContent).not.toContain("Queued");
     const main = {id: 1, session: "s-main", program: "claude", role: "main", ended_at: null};
     const idle = await mounted({render: () => h(AgentCard, {row: main, facts: {task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
