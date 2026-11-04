@@ -45,7 +45,7 @@ load();
 </script>
 
 <template>
-    <WindowRoom>
+    <WindowRoom padding="0">
         <div class="plans">
             <template v-if="!loaded">
                 <Skeleton shape="cards" />
@@ -81,13 +81,12 @@ load();
 .plans {
     display: flex;
     flex-direction: column;
-    gap: 14px;
 }
 
 .plans-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
+    margin-right: -1px;
 }
 
 .plan {
@@ -96,10 +95,14 @@ load();
     flex-direction: column;
     gap: 8px;
     min-width: 0;
-    padding: 14px 16px 0;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
+    padding: 12px 14px 0;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.plan:hover {
+    background: var(--raised);
 }
 
 .plan-head {
@@ -140,7 +143,7 @@ load();
 .plan-bar {
     height: 4px;
     border-radius: 2px;
-    background: var(--raised);
+    background: var(--chip);
 }
 
 .plan-bar-fill {
@@ -155,5 +158,10 @@ load();
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.plans-note,
+[data-plans-more] {
+    padding: 8px 14px;
 }
 </style>

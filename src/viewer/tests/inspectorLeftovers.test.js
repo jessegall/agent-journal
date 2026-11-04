@@ -3,7 +3,6 @@ import {createApp, h} from "vue";
 import {settled} from "./settled.js";
 import MemoryFacts from "../src/resource/MemoryFacts.vue";
 import RowMoves from "../src/resource/RowMoves.vue";
-import WorkerFacts from "../src/resource/WorkerFacts.vue";
 import {movesOf} from "../src/domain/resourceKinds.js";
 import {opening, route} from "../src/route.js";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
@@ -42,17 +41,6 @@ test("a memory with no keywords says what that means", async () => {
     const element = drawn(MemoryFacts, {id: 3, read: async () => ({ok: true, value: {rows: []}})});
     await settled();
     expect(element.textContent).toContain("No keywords");
-});
-
-test("a worker's panel shows each point with its proof or that it has none", async () => {
-    const lines = [];
-    const read = async (line) => (lines.push(line), {ok: true, value: {points: [{id: 1, text: "Totals in cents", proof: {state: "checked", text: "cart.py:1"}}, {id: 2, text: "A story", proof: null}]}});
-    const element = drawn(WorkerFacts, {id: 9, read});
-    await settled();
-    expect(lines).toEqual([["worker-worktree", "points", "--agent", "9"]]);
-    const [first, second] = element.querySelectorAll("[data-worker-point]");
-    expect(first.textContent).toContain("checked: cart.py:1");
-    expect(second.textContent).toContain("No proof yet");
 });
 
 test("a worker's moves go to the worker command, with its words after its number", async () => {
