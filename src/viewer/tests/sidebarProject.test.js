@@ -16,18 +16,12 @@ function drawn(component, props) {
     return element;
 }
 
-test("the sidebar keeps project windows in their own group", () => {
+test("the sidebar shows every page in one list, under no heading", () => {
     const element = drawn(SidebarPages, {windows, environments: [], current: "main"});
-    expect(element.querySelector('[data-fold="project"]').textContent).toContain("Project");
-    expect(element.querySelector('[data-fold="environment"]').textContent).toContain("Environment");
-    const heads = [...element.querySelectorAll("[data-fold]")].map((head) => head.dataset.fold);
-    expect(heads.indexOf("environment")).toBeLessThan(heads.indexOf("project"));
-});
-
-test("a sidebar with no project windows has no project group", () => {
-    const element = drawn(SidebarPages, {windows: [windows[0]], environments: [], current: "main"});
-    expect(element.querySelectorAll('[data-sidebar-window]').length).toBe(1);
-    expect(element.querySelector('[data-fold="project"]').nextElementSibling?.matches("[data-sidebar-window]")).toBeFalsy();
+    expect(element.querySelector('[data-fold="project"]')).toBeNull();
+    expect(element.querySelector('[data-fold="environment"]')).toBeNull();
+    expect([...element.querySelectorAll("[data-sidebar-window]")].map((page) => page.textContent.trim())).toEqual(["Chat", "Files", "Settings"]);
+    expect(element.textContent).toContain("Home");
 });
 
 test("a new environment needs its name and folder, and is made with its branch", async () => {

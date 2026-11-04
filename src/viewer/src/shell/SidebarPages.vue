@@ -36,8 +36,7 @@ watch(() => props.environments, (environments) => environments.length && (lastEn
 // the windows in their groups, each in the order the suite lists them
 const inGroup = (group) => shownWindows.value.filter((window) => (window.group || "") === group);
 const sections = computed(() => [
-    {key: "environment", title: "Environment", windows: inGroup("")},
-    {key: "project", title: "Project", windows: inGroup("project")},
+    {key: "pages", title: "", windows: [...inGroup(""), ...inGroup("project")]},
     ...inGroup("developer").length ? [{key: "developer", title: "Developer", windows: inGroup("developer")}] : [],
 ]);
 
@@ -75,11 +74,13 @@ function fold(key) {
                 <Skeleton shape="rows" />
             </template>
             <template v-for="section in sections" :key="section.key">
-                <button type="button" class="fold-head" :data-fold="section.key" @click="fold(section.key)">
-                    {{ section.title }}<Icon :name="folded.has(section.key) ? 'right' : 'down'" :size="12" />
-                </button>
+                <template v-if="section.title">
+                    <button type="button" class="fold-head" :data-fold="section.key" @click="fold(section.key)">
+                        {{ section.title }}<Icon :name="folded.has(section.key) ? 'right' : 'down'" :size="12" />
+                    </button>
+                </template>
                 <template v-if="!folded.has(section.key)">
-                    <template v-if="section.key === 'environment'">
+                    <template v-if="section.key === 'pages'">
                         <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
                     </template>
                     <template v-for="window in section.windows" :key="window.name">
