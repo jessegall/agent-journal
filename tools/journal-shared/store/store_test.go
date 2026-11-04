@@ -61,13 +61,16 @@ func TestOpenRunsTheMigrationsOnAnEmptyFile(t *testing.T) {
 func TestOpenOnAnExistingFileKeepsItsRowsAndRunsNothingTwice(t *testing.T) {
 	folder := t.TempDir()
 	first := openIn(t, folder)
-	if _, err := first.DB.Exec("INSERT INTO server (id, server_key, name, created_at) VALUES (1, 'b3f1c9d2', 'Acme library', '2026-11-04T00:00:00Z')"); err != nil {
+	if _, err := first.DB.Exec("UPDATE server SET server_key = 'b3f1c9d2', name = 'Acme library'"); err != nil {
 		t.Fatal(err)
 	}
 	first.Close()
 	second := openIn(t, folder)
-	if count := countOf(t, second, "SELECT count(*) FROM server WHERE server_key = 'b3f1c9d2'"); count != 1 {
-		t.Errorf("the server row is gone: %d", count)
+	if second.ServerKey != "b3f1c9d2" || second.ServerName != "Acme library" {
+		t.Errorf("the server was made anew: %s %s", second.ServerKey, second.ServerName)
+	}
+	if count := countOf(t, second, "SELECT count(*) FROM server"); count != 1 {
+		t.Errorf("%d server rows", count)
 	}
 	if count := countOf(t, second, "SELECT count(*) FROM migrations"); count != 1 {
 		t.Errorf("%d migrations are recorded", count)

@@ -2,8 +2,10 @@
 package store
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"embed"
+	"encoding/hex"
 	"fmt"
 	"net/url"
 	"os"
@@ -22,8 +24,10 @@ const FileName = "shared.db"
 
 // Store is the open database of one data folder.
 type Store struct {
-	DB  *sql.DB
-	Now func() time.Time
+	DB         *sql.DB
+	Now        func() time.Time
+	ServerKey  string
+	ServerName string
 }
 
 // Open opens shared.db in the folder, made if it is not there, in WAL mode with foreign keys on, and runs the
@@ -46,12 +50,33 @@ func Open(folder string) (*Store, error) {
 		database.Close()
 		return nil, err
 	}
+	if err := store.identify(); err != nil {
+		database.Close()
+		return nil, err
+	}
 	return store, nil
 }
 
 // Close closes the database.
 func (store *Store) Close() error {
 	return store.DB.Close()
+}
+
+// identify makes the server's key and name the first time the file is opened, and reads them every time. The key tells
+// this server from a new one at the same address.
+func (store *Store) identify() error {
+	random := make([]byte, 4)
+	if _, err := rand.Read(random); err != nil {
+		return err
+	}
+	name, err := os.Hostname()
+	if err != nil || name == "" {
+		name = "journal-shared"
+	}
+	if _, err := store.DB.Exec("INSERT OR IGNORE INTO server (id, server_key, name, created_at) VALUES (1, ?, ?, ?)", hex.EncodeToString(random), name, store.timestamp()); err != nil {
+		return err
+	}
+	return store.DB.QueryRow("SELECT server_key, name FROM server WHERE id = 1").Scan(&store.ServerKey, &store.ServerName)
 }
 
 func (store *Store) migrate() error {

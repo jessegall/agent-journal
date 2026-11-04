@@ -90,6 +90,7 @@ func routeCases(made fixture) []routeCase {
 		{"GET", "/users/" + other + "/tokens", "", store.RoleAdmin, 200, nil},
 		{"POST", "/users/" + other + "/tokens", `{"label": "laptop"}`, store.RoleAdmin, 201, nil},
 		{"DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", store.RoleAdmin, 200, nil},
+		{"GET", "/state", "", store.RoleRead, 200, nil},
 		{"GET", "/items?kind=doc", "", store.RoleRead, 200, nil},
 		{"GET", "/items/doc/1", "", store.RoleRead, 200, nil},
 		{"POST", "/items/doc", checklist, store.RoleEdit, 201, nil},

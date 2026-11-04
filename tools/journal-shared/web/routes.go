@@ -33,6 +33,7 @@ func Routes(database *store.Store, protocol int) http.Handler {
 	routes.HandleFunc("GET /users/{id}/tokens", server.guard(store.RoleAdmin, server.listTokens))
 	routes.HandleFunc("POST /users/{id}/tokens", server.guard(store.RoleAdmin, server.addToken))
 	routes.HandleFunc("DELETE /tokens/{id}", server.guard(store.RoleRead, server.revokeToken))
+	routes.HandleFunc("GET /state", server.guard(store.RoleRead, server.state))
 	routes.HandleFunc("GET /items", server.guard(store.RoleRead, server.listItems))
 	routes.HandleFunc("POST /items/{kind}", server.guard(store.RoleEdit, server.createItem))
 	routes.HandleFunc("GET /items/{kind}/{id}", server.guard(store.RoleRead, server.readItem))
@@ -48,7 +49,7 @@ func Routes(database *store.Store, protocol int) http.Handler {
 }
 
 func (server *Server) info(response http.ResponseWriter, _ *http.Request) {
-	writeJSON(response, http.StatusOK, map[string]any{"protocol": server.protocol, "kinds": store.KindNames()})
+	writeJSON(response, http.StatusOK, map[string]any{"server_key": server.store.ServerKey, "name": server.store.ServerName, "protocol": server.protocol, "kinds": store.KindNames()})
 }
 
 func (server *Server) me(response http.ResponseWriter, _ *http.Request, caller store.Caller) {
