@@ -1,11 +1,20 @@
 from core.base.container import Container
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
+from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 
 
 def opened_container(home: JournalHome) -> Container:
     return database_container(home, Database.opened(home))
+
+
+def sync_modules(home: JournalHome) -> None:
+    container = opened_container(home)
+    try:
+        container.get(ModuleSync).run()
+    finally:
+        container.get(Database).close()
 
 
 def database_container(home: JournalHome, database: Database) -> Container:

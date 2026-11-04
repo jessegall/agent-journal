@@ -12,9 +12,9 @@ const emit = defineEmits(["pick"]);
 
 const items = computed(() => [
     ...MODELS[props.provider],
-    ...(props.inherits ? [{key: "", label: "the agent's model", note: "the model of the agent that starts it"}] : []),
+    ...(props.inherits ? [{key: "", label: "chosen at start", note: "the agent picks a model each time it starts this one"}] : []),
 ]);
-const label = computed(() => (items.value.find((item) => item.key === props.value) || {label: props.value || "the agent's model"}).label);
+const label = computed(() => (items.value.find((item) => item.key === props.value) || {label: props.value || "chosen at start"}).label);
 </script>
 
 <template>

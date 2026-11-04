@@ -39,6 +39,9 @@ var DrainLimit = 10 * time.Second
 // FailedStartPeriod is how long a failed start makes later clients run directly instead of starting a server.
 var FailedStartPeriod = 60 * time.Second
 
+// GoPrograms are the journal's programs a source tree may hold under tools.
+var GoPrograms = []string{"journal", "journal-hook", "journal-run"}
+
 func main() {
 	requestTiming := timing.Started()
 	os.Exit(Run(requestTiming, os.Args[1:], os.Stdout, os.Stderr))
@@ -60,6 +63,9 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 	}
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "stop" {
 		return StopServer(home, stdout, stderr)
+	}
+	if len(argv) == 2 && argv[0] == "server" && argv[1] == "update" {
+		return ServerUpdate(home, stdout, stderr)
 	}
 	if !ServerSupported || FailedRecently(home) {
 		return DirectRun(home, argv, stdout, stderr)
@@ -173,11 +179,42 @@ func ErrorLine(body io.Reader) string {
 	return strings.TrimSpace(string(text))
 }
 
+// ServerUpdate puts the project's own source tree in use: it builds the Go programs a source tree holds, then a new
+// server takes over from the running one. It runs in the client, on the code it installs, so neither a stopped server
+// nor a block can hold it.
+func ServerUpdate(home string, stdout, stderr io.Writer) int {
+	project := filepath.Dir(home)
+	source := filepath.Join(project, "src")
+	for _, program := range GoPrograms {
+		folder := filepath.Join(project, "tools", program)
+		if _, err := os.Stat(folder); err != nil {
+			continue
+		}
+		built := filepath.Join(home, "bin", program)
+		command := exec.Command("go", "-C", folder, "build", "-trimpath", "-o", built+".new", ".")
+		if code := CommandCode(command, stdout, stderr); code != SuccessCode {
+			return code
+		}
+		if err := os.Rename(built+".new", built); err != nil {
+			fmt.Fprintln(stderr, err)
+			return ErrorCode
+		}
+	}
+	command := exec.Command(PythonPath(), filepath.Join(source, "install", "working_tree_install.py"), project, source)
+	command.Env = append(os.Environ(), "PYTHONPATH="+source)
+	return CommandCode(command, stdout, stderr)
+}
+
 // DirectRun runs the command line in a Python process of its own, as the journal ran before the server.
 func DirectRun(home string, argv []string, stdout, stderr io.Writer) int {
 	source := SourceFolder(home)
 	command := exec.Command(PythonPath(), append([]string{filepath.Join(source, "core", "journal.py")}, argv...)...)
 	command.Env = append(os.Environ(), "JOURNAL_HOME="+home)
+	return CommandCode(command, stdout, stderr)
+}
+
+// CommandCode runs a command with this program's input and the given output, and gives its exit code.
+func CommandCode(command *exec.Cmd, stdout, stderr io.Writer) int {
 	command.Stdin, command.Stdout, command.Stderr = os.Stdin, stdout, stderr
 	if err := command.Run(); err != nil {
 		var exit *exec.ExitError

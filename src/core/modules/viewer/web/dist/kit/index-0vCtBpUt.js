@@ -1087,7 +1087,7 @@ async function Fc() {
 function Ha() {
   ze.starting || (ze.starting = !0, ze.offline = !navigator.onLine, Fs = setInterval(Fc, Nc), sr = setTimeout(() => ze.late = !0, Dc));
 }
-const Wc = () => ze.starting ? new Promise((e) => ar.push(e)) : Promise.resolve(), Ua = 2e4, Hc = 3e5, Ye = 6e5, bn = 6, Uc = 500, zc = "/journal/summary", Vc = "/api/server-state", Gc = 5e3, za = Jn ? { "X-Phone": "1" } : { "X-Journal-Viewer": "1" }, Kc = (e) => e.split("?")[0].endsWith(zc), or = (e, t) => Object.assign(new Error(t), { status: e });
+const Wc = () => ze.starting ? new Promise((e) => ar.push(e)) : Promise.resolve(), Ua = 2e4, Hc = 3e5, Ye = 6e5, bn = 6, Uc = 500, zc = "/journal/summary", Vc = "/api/server-state", Gc = 2e4, za = Jn ? { "X-Phone": "1" } : { "X-Journal-Viewer": "1" }, Kc = (e) => e.split("?")[0].endsWith(zc), or = (e, t) => Object.assign(new Error(t), { status: e });
 async function Yc(e, t, n = or) {
   const s = await e.json().catch(() => ({}));
   if (!e.ok) throw Object.assign(n(e.status, s.error || t), { blocked: !!s.blocked, details: s });
@@ -4305,8 +4305,8 @@ const v1 = ["data-incoming", "data-ref"], y1 = ["data-figure-mark", "data-figure
   setup(e, { emit: t }) {
     const n = e, s = t, a = B(() => [
       ...ym[n.provider],
-      ...n.inherits ? [{ key: "", label: "the agent's model", note: "the model of the agent that starts it" }] : []
-    ]), o = B(() => (a.value.find((r) => r.key === n.value) || { label: n.value || "the agent's model" }).label);
+      ...n.inherits ? [{ key: "", label: "chosen at start", note: "the agent picks a model each time it starts this one" }] : []
+    ]), o = B(() => (a.value.find((r) => r.key === n.value) || { label: n.value || "chosen at start" }).label);
     return (r, i) => (c(), K(Bm, {
       label: o.value,
       icon: "model",
@@ -10199,7 +10199,7 @@ const nb = /* @__PURE__ */ Q2(tb), sb = ["width", "height", "viewBox"], ab = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Ax = /* @__PURE__ */ J(ib, [["__scopeId", "data-v-47e67f04"]]), Cx = al(() => import("./VoiceFigure-DHSQjtIY.js").then((e) => e.V)), Ox = "1.0.0", Tx = "3.5";
+}, Ax = /* @__PURE__ */ J(ib, [["__scopeId", "data-v-47e67f04"]]), Cx = al(() => import("./VoiceFigure-BzEgiYTf.js").then((e) => e.V)), Ox = "1.0.0", Tx = "3.5";
 export {
   ql as $,
   Me as A,

@@ -27,14 +27,16 @@ from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake
 from server.peer_pid import peer_pid
+from server.successor_start import SuccessorStart
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
+HANDOVER_FAILED_STATUS = 422
 
 
 class RequestHandler(BaseHTTPRequestHandler):
     """Reads one HTTP request on the journal's socket and sends it to its endpoint: GET /health, POST /cli,
-    POST /hook and POST /stop; a request the server's code is older than is answered 409 and runs nothing,
+    POST /hook, POST /stop and POST /handover; a request the server's code is older than is answered 409 and runs nothing,
     and the server releases its files at once so a new one can start while it finishes its open requests.
     Each request's timing starts with the sender's stamps from its Journal-Timing header, and once its answer
     is flushed one line goes to the timing log; a line that cannot be written is noted in server.log and never
@@ -125,6 +127,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         if route == "/hook":
             self.answer_hook(body, parse_qs(query).get("program", [""])[0])
             return
+        if route == "/handover":
+            self.answer_handover(parse_qs(query).get("tag", [""])[0])
+            return
         if self.path != "/cli":
             self.answer_json(404, {"error": f"no route {self.path}"})
             return
@@ -135,6 +140,14 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         self.line = " ".join(request.argv[:2])
         self.answer_cli(request)
+
+    def answer_handover(self, tag: str) -> None:
+        server = self.journal_server()
+        if not SuccessorStart(server.context.home, server.context.files, server.socket, server.context.viewer.socket).run(tag):
+            self.answer_json(HANDOVER_FAILED_STATUS, {"error": f"code version {tag} failed its proof"})
+            return
+        server.begin_handover()
+        self.close_with_json(200, {"status": "handing over"})
 
     def answer_viewer_key(self, body: bytes) -> None:
         try:

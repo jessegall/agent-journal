@@ -219,6 +219,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
+        self.viewer().untrack_request()
         event_stream.follow(environment, request.cursor_id, self.stream_message, shared)
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:

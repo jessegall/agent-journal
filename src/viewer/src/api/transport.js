@@ -9,7 +9,7 @@ const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 const UPDATE_STATUS = "/journal/summary";
 const SERVER_STATE = "/api/server-state";
-const SERVER_STATE_WAIT_MS = 5000;
+const SERVER_STATE_WAIT_MS = 20000;
 // Every call says it is the viewer's, so the journal knows a tab is open and a plugin's program or the shim never counts as one.
 // the viewer names itself so the journal knows the desk is open; the phone names itself so its writes are trusted
 const VIEWER = onPhone ? {"X-Phone": "1"} : {"X-Journal-Viewer": "1"};

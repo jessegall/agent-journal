@@ -8,8 +8,8 @@ from core.modules.updates.models.release import Release
 
 
 class InstallReleaseSubcommand(Subcommand[InstallRelease, Release]):
-    """`journal update install`: the newest release put into .journal/src, which the journal runs from its
-    next request."""
+    """`journal update install`: the newest release copied beside the running code, which a new server takes
+    over from the running one."""
 
     cli_name = "update"
     name = "install"
@@ -23,4 +23,4 @@ class InstallReleaseSubcommand(Subcommand[InstallRelease, Release]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Release):
             tag = f" {value.tag}" if value.tag else ""
-            output.line(f"the newest release{tag} is installed in .journal/src: the journal runs it from its next request")
+            output.line(f"the newest release{tag} is installed: a new server takes over when it has proved the code")

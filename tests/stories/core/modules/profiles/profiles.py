@@ -65,12 +65,13 @@ def test_the_journals_start_writes_its_own_profiles(profiles_missing):
     assert (agents_folder(story) / "journal-senior.md").is_file()
 
 
-def test_a_shipped_profile_takes_its_model_from_the_setting_unless_it_names_its_own(new_story):
+def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
-    assert "model: haiku" in (agents_folder(story) / "journal-researcher.md").read_text()
+    assert "model: sonnet" in (agents_folder(story) / "journal-researcher.md").read_text()
     assert "model: opus" in (agents_folder(story) / "journal-senior.md").read_text()
+    assert all(profile.model and profile.codex_model for profile in SHIPPED_PROFILES)
 
 
 def test_a_saved_profile_is_listed_whether_a_person_or_an_agent_saved_it(new_story):

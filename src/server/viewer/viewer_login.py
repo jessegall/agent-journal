@@ -24,7 +24,14 @@ class ViewerLogin:
         self.phones, self.shares, self.kept = phones, shares, kept
         self.lock = threading.Lock()
         self.keys: dict[str, ViewerSession] = {}
-        self.sessions: dict[str, ViewerSession] = {token: ViewerSession(SessionType.PERSON, person_id=person) for token, person in (kept.load() if kept else {}).items()}
+        self.sessions: dict[str, ViewerSession] = self.kept_sessions()
+
+    def kept_sessions(self) -> dict[str, ViewerSession]:
+        return {token: ViewerSession(SessionType.PERSON, person_id=person) for token, person in (self.kept.load() if self.kept else {}).items()}
+
+    def reload_sessions(self) -> None:
+        with self.lock:
+            self.sessions = self.kept_sessions()
 
     def new_key(self, person_id: int, session_type: SessionType = SessionType.PERSON) -> str:
         return self.session_key(ViewerSession(session_type, person_id=person_id))

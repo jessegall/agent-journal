@@ -9,9 +9,8 @@ from core.base.change.event_log import EventLog
 from core.base.clock import Clock
 from core.base.container import Container
 from core.base.database.database import Database
-from core.base.journal_container import opened_container, synced_container
+from core.base.journal_container import sync_modules, synced_container
 from core.base.journal_home import JournalHome
-from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_runner import MoveRunner
@@ -114,7 +113,7 @@ class UpgradeJournal:
             return
         with tempfile.TemporaryDirectory() as folder:
             home = JournalHome(Path(folder))
-            self.sync(home)
+            sync_modules(home)
             self.dry_run(home, version_four, lines)
 
     def dry_run(self, home: JournalHome, version_four: Path, lines: list[str]) -> None:
@@ -129,7 +128,7 @@ class UpgradeJournal:
             container.get(Database).close()
 
     def upgrade(self, version_four: Path, lines: list[str]) -> None:
-        self.sync(self.home)
+        sync_modules(self.home)
         container = synced_container(self.home)
         try:
             finished = self.is_finished(container.get(Database), container.get(Registry))
@@ -155,13 +154,6 @@ class UpgradeJournal:
 
     def finish(self, container: Container, report: UpgradeReport, lines: list[str]) -> None:
         container.get(EventLog).write_upgrade_finished(CORE_ACTOR_ID, report.tables, "\n".join(lines), container.get(Clock).timestamp().text)
-
-    def sync(self, home: JournalHome) -> None:
-        container = opened_container(home)
-        try:
-            container.get(ModuleSync).run()
-        finally:
-            container.get(Database).close()
 
     def is_finished(self, database: Database, registry: Registry) -> bool:
         moved = MoveMap(database)
