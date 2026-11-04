@@ -13,6 +13,8 @@ from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliases
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
 from core.modules.aliases.models.alias import Alias
+from core.modules.aliases.models.saved_command import SavedCommand
+from core.modules.aliases.commands.support.alias_saved_subcommand import AliasSavedSubcommand
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
@@ -31,10 +33,11 @@ class AliasesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"])]
+    views = [SavedCommand]
     migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
-    subcommands = [AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]
+    subcommands = [AliasSavedSubcommand, AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]
     bindings = {ShellAliases: AliasShellAliases}
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]

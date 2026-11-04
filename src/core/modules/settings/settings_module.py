@@ -45,7 +45,7 @@ class SettingsModule(Module):
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, search=WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key")),
-                                 reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"]),
+                                 reads=["setting tree", "environment list", "environment cards", "alias saved"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*", "alias.*"]),
                WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.create"])]
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
