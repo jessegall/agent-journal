@@ -36,6 +36,7 @@ from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerAct
 from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
 from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
 from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
+from core.modules.triggers.listeners.trigger_process_removal_listener import TriggerProcessRemovalListener
 
 BUILT = ["make", "show", "list", "delete"]
 
@@ -54,7 +55,7 @@ class TriggersModule(Module):
     models = [ModelDeclaration(Trigger, query=TriggerQuery, excluded_subcommands=BUILT), ModelDeclaration(TriggerActionRun, excluded_subcommands=["make", "edit", "list", "show", "delete"])]
     migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration]
     handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
-    listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener]
+    listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener]
     subcommands = [EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]
     driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
     windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, skeleton=TRIGGERS_TRIGGERS_SKELETON, icon=WindowIcon.TRIGGER,

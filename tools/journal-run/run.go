@@ -21,6 +21,7 @@ type Options struct {
 	LimitSeconds   int
 	Background     bool
 	Queue          bool
+	QueueWait      time.Duration
 	OnlyReads      bool
 	Aliases        []string
 	Line           string

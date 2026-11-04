@@ -27,4 +27,4 @@ def test_the_windows_run_stop_and_watch_with_no_allowance_and_nothing_else(new_s
     for name in (OUTPUTS, OUTPUT):
         window.expect_window_allowed(name, "output stop 1")
         window.expect_window_allowed(name, "output watch 1")
-        window.expect_window_refusal(name, "output prune 1", "does not declare")
+        window.expect_window_refusal(name, "output timeout 1 5m", "does not declare")

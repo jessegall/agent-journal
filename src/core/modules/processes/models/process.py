@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
+from core.base.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
@@ -35,24 +36,31 @@ class Process(Model):
     moved_at: Timestamp | None = None
     ended_at: Timestamp | None = None
     is_full_test_run: bool = False
-    is_queued: bool = False
+    queued_at: Timestamp | None = None
     is_queue_run: bool = False
     started_at: Timestamp | None = None
     slot_assigned: bool = False
     owner_agent_id: int | None = None
     task_id: int | None = None
+    timeout_seconds: int | None = None
+    expired_at: Timestamp | None = None
+
+    def has_expired_timeout(self, timestamp: Timestamp) -> bool:
+        if self.timeout_seconds is None or self.started_at is None:
+            return False
+        return Duration(self.timeout_seconds).has_passed(self.started_at, timestamp)
 
     def background(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
-        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def fail(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
-        return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def stop(self, timestamp: Timestamp, actor: Actor) -> "Process":
-        return self.moved(ProcessLifecycle.stop, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.stop, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def orphan(self, timestamp: Timestamp, actor: Actor) -> "Process":
-        return self.moved(ProcessLifecycle.orphan, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.orphan, ended_at=timestamp, queued_at=None, slot_assigned=False)

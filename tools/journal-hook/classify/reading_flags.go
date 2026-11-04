@@ -11,21 +11,45 @@ var readingFlag = regexp.MustCompile(`(?:^|\s)--(tail|head)\s+(\d+)(?:\s|$)|(?:^
 // argumentsEnd is the bare -- after which every argument is the command's own.
 var argumentsEnd = regexp.MustCompile(`(?:^|\s)--(?:\s|$)`)
 
-// splitReading takes the reading flags off a saved command's arguments, up to a bare --: tail:5, head:5 or cut:100-160.
-func splitReading(arguments string) (string, string) {
+var timeoutFlag = regexp.MustCompile(`(?:^|\s)--timeout(?:=|\s+)(?:'([^']*)'|"([^"]*)"|([^\s]+))|(?:^|\s)--timeout$`)
+
+type savedOptions struct {
+	arguments       string
+	reading         string
+	timeoutDuration *string
+}
+
+func splitSavedOptions(arguments string) savedOptions {
 	flags, rest := arguments, ""
 	if place := argumentsEnd.FindStringIndex(arguments); place != nil {
 		flags, rest = arguments[:place[0]], arguments[place[1]:]
 	}
-	match := readingFlag.FindStringSubmatchIndex(flags)
+	options := savedOptions{arguments: arguments}
+	var reading []string
+	flags, reading = removeSavedFlag(flags, readingFlag)
+	if reading != nil {
+		options.reading = reading[1] + ":" + reading[2]
+		if reading[3] != "" {
+			options.reading = reading[3] + ":" + reading[4]
+		}
+	}
+	var timeout []string
+	flags, timeout = removeSavedFlag(flags, timeoutFlag)
+	if timeout != nil {
+		value := timeout[1] + timeout[2] + timeout[3]
+		options.timeoutDuration = &value
+	}
+	if reading != nil || timeout != nil {
+		options.arguments = strings.TrimSpace(flags + " " + rest)
+	}
+	return options
+}
+
+func removeSavedFlag(arguments string, pattern *regexp.Regexp) (string, []string) {
+	match := pattern.FindStringSubmatchIndex(arguments)
 	if match == nil {
-		return arguments, ""
+		return arguments, nil
 	}
-	groups := readingFlag.FindStringSubmatch(flags)
-	reading := groups[1] + ":" + groups[2]
-	if groups[3] != "" {
-		reading = groups[3] + ":" + groups[4]
-	}
-	kept := strings.TrimSpace(flags[:match[0]] + " " + flags[match[1]:] + " " + rest)
-	return kept, reading
+	groups := pattern.FindStringSubmatch(arguments)
+	return strings.TrimSpace(arguments[:match[0]] + " " + arguments[match[1]:]), groups
 }

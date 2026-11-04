@@ -43,7 +43,9 @@ class ProcessEndMarkListener(CommitListener):
         self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
 
     def handle(self, event: LoggedEvent) -> None:
-        process = self.queries.query(Process).find(event.row_id)
+        process = self.queries.query(Process).filter(id=event.row_id).first()
+        if process is None:
+            return
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
         if shown is not None and shown.state is ChatMarkState.ENDED:
@@ -53,7 +55,7 @@ class ProcessEndMarkListener(CommitListener):
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
         reader = self.queries.query(Reader).find(output.reader_id) if output and output.reader_id else None
-        variant = ProcessMarkVariant.QUEUED if process.is_queued else ProcessMarkVariant(process.state.value)
+        variant = ProcessMarkVariant.QUEUED if process.queued_at is not None else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
         text = self.text(process, output.title if output else "", ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS])
         if part.category is CommandCategory.TEST_RUN:
@@ -69,7 +71,7 @@ class ProcessEndMarkListener(CommitListener):
 
     @staticmethod
     def text(process: Process, title: str, line: str) -> str:
-        if process.is_queued:
+        if process.queued_at is not None:
             return f"Queued: {title or line}"
         return title or f"{PHRASES[process.state]} {line}"
 

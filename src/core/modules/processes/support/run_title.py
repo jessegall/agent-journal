@@ -21,7 +21,7 @@ class RunTitle:
     def tests(process: Process, output: Output | None, reader: Reader | None) -> str:
         title = reader.title if reader and not ReaderJudge.fields_missing(reader, CommandCategory.TEST_RUN) else "tests"
         title = title.removeprefix("Running ")
-        if process.is_queued:
+        if process.queued_at is not None:
             return f"Queued: {title}"
         if process.state in (ProcessState.RUNNING, ProcessState.BACKGROUND):
             return f"Running {title}"

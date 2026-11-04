@@ -13,7 +13,7 @@ class MoreToolStockReadersMigration(Migration):
     project's reader of the same name alone. Gives the first batch of new stock readers the count and step
     patterns their insert left out, and takes the default off the core's readers again."""
 
-    number = 35
+    number = 37
     readers = tuple(reader for reader in STOCK_READERS if reader.name in NEW_READERS + FIRST_BATCH_READERS)
     inserts = [insert(reader).replace("INSERT INTO", "INSERT OR IGNORE INTO") for reader in readers if reader.name in NEW_READERS]
     updates = [f"UPDATE readers SET count_pattern = {quoted(reader.count)}, count_command = {quoted(reader.count_command)}, "

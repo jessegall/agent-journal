@@ -1,14 +1,14 @@
 from core.modules.processes.models.output import Output
 from core.modules.processes.support.run_counts import RunCounts
-from collections.abc import Sequence
 from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.clock import Clock
 from core.base.query.conditions.among import Among
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting
@@ -19,38 +19,37 @@ from core.modules.processes.support.run_admission import RunAdmission
 
 
 class RunSlots:
-    """Gives the queued runs of an environment a spot, oldest first, while fewer of its runs hold one than its
-    batch size and the queue is not halted; a run that holds a spot goes on whatever the queue does. With
-    main-runs-take-slots on, the main agent's running runs, which hold no spot and never wait, count against
-    the batch size too."""
+    """Admits every run, granting immediate runs and giving waiting runs capacity in order."""
 
     def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
 
     def grant(self, environment_id: int, context: Context) -> None:
-        if self.halt.is_halted:
-            return
-        runs = tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
-        used_slots = sum(process.slot_assigned for process in runs) + self.main_runs_taking_spots(runs, environment_id)
-        room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
-        for waiting in [process for process in runs if process.is_queued and self.admission.may_start(process, self.clock.timestamp())][:max(room, 0)]:
+        runs = self.running(environment_id)
+        for waiting in [process for process in runs if process.queued_at is not None]:
+            agent = self.queries.query(Agent).find(waiting.agent_id)
+            needs_slot = self.admission.needs_slot(waiting, agent)
+            if not self.admission.may_start(waiting, agent, self.clock.timestamp()):
+                continue
             process = self.queries.query(Process).find(waiting.id)
             self.record_count(process, context)
             process = self.queries.query(Process).find(process.id)
-            if process.is_queued and process.state in RUNNING_STATES:
-                self.folder.write_slot(process.id)
-                self.repository.save(replace(process, is_queued=False, slot_assigned=True, started_at=context.timestamp), context)
+            if process.queued_at is None or process.state not in RUNNING_STATES:
+                continue
+            used_slots = sum(self.admission.uses_slot(run) for run in self.running(environment_id) if run.queued_at is None)
+            room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
+            if needs_slot and (self.halt.is_halted or room <= 0):
+                continue
+            self.folder.write_slot(process.id)
+            admitted = replace(process, queued_at=None, slot_assigned=needs_slot, started_at=context.timestamp)
+            self.repository.save(admitted, context)
 
-    def main_runs_taking_spots(self, runs: Sequence[Process], environment_id: int) -> int:
-        if not self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id):
-            return 0
-        running = [process for process in runs if not process.is_queued and not process.slot_assigned]
-        main = MainAgentFinder.main_ids(self.queries, tuple({process.agent_id for process in running})) if running else set[int]()
-        return sum(1 for process in running if process.agent_id in main)
+    def running(self, environment_id: int) -> tuple[Process, ...]:
+        return tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
 
     def grant_all_environments(self, context: Context) -> None:
-        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).filter(is_queued=True).oldest().all_rows()
+        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             self.grant(environment_id, context)
 

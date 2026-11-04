@@ -24,7 +24,7 @@ class RepeatReads:
             raise Refusal(f"you read output {command.process_id} this way already and it is still in your context", "add --again to read it anyway")
 
     def note(self, command: ReadOutput, actor: Actor, read_at: str) -> None:
-        if actor.type is ActorType.AGENT:
+        if actor.type is ActorType.AGENT and self.has_ended(command.process_id):
             self.folder.write_read_mark(command.process_id, self.mark(command, actor), read_at)
 
     def mark(self, command: ReadOutput, actor: Actor) -> str:

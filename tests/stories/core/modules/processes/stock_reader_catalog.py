@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.database.database import Database
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
-from core.modules.processes.migrations.m035_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
+from core.modules.processes.migrations.m037_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge

@@ -32,8 +32,8 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
-    first = start_process(story, "make package", category=CommandCategory.BUILD, is_queued=True)
-    second = start_process(story, "python check_cart.py", category=CommandCategory.CHECK, is_queued=True)
+    first = start_process(story, "make package", category=CommandCategory.BUILD)
+    second = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
     start_process(story, "ls cart", category=CommandCategory.READ)
     page = queue_page(story)
     story.expect_rows(page["parallel_limit"] == 1, page["total"] == 2,
@@ -41,22 +41,22 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
                       [row["id"] for row in page["running"]] == [first.id],
                       [row["id"] for row in page["waiting"]] == [second.id],
                       [row["id"] for row in page["rows"]] == [first.id, second.id],
-                      [row["is_queued"] for row in page["rows"]] == [False, True],
-                      [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.CHECK.value],
+                      [row["queued_at"] is not None for row in page["rows"]] == [False, True],
+                      [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.TEST_RUN.value],
                       all(row["owner_agent_id"] == story.agent.id and row["output_id"] == row["id"] for row in page["rows"]),
                       page["rows"][1]["line"] == "python check_cart.py")
     story.expect_rows([limit["title"] for limit in page["suite_limits"]] == ["Test limit per worker command"])
     story.expect_success(f"setting set {page['suite_limits'][0]['key']} 500 --environment main", actor=story.user)
     story.expect_rows(queue_page(story)["suite_limits"][0]["value"] == 500)
     story.expect_success(f"setting set {page['limit_setting']} 2 --environment main", actor=story.user)
-    third = start_process(story, "make site", category=CommandCategory.BUILD, is_queued=True)
+    third = start_process(story, "make site", category=CommandCategory.BUILD)
     page = queue_page(story)
     story.expect_rows(page["parallel_limit"] == 2,
-                      [row["is_queued"] for row in page["rows"]] == [False, False, True])
+                      [row["queued_at"] is not None for row in page["rows"]] == [False, False, True])
     end_run(story, first, "built\n")
     page = queue_page(story)
     story.expect_rows([row["id"] for row in page["rows"]] == [second.id, third.id],
-                      all(not row["is_queued"] for row in page["rows"]))
+                      all(row["queued_at"] is None for row in page["rows"]))
     limited = queue_page(story, "--limit 1 --page 2")
     story.expect_rows(limited["total"] == 2, limited["page"] == 2, limited["size"] == 1,
                       [row["id"] for row in limited["rows"]] == [third.id])
@@ -67,7 +67,7 @@ def test_the_inspector_lists_every_waiting_command_beyond_the_default_page(new_s
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.run-batch-size 0 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start long-queue-worker claude worker --environment main"), ActorType.AGENT)
-    processes = [start_process(story, f"make package-{number}", category=CommandCategory.BUILD, is_queued=True) for number in range(51)]
+    processes = [start_process(story, f"make package-{number}", category=CommandCategory.BUILD) for number in range(51)]
     page = queue_page(story)
     story.expect_rows(len(page["rows"]) == 50, page["waiting_count"] == 51,
                       [row["id"] for row in page["waiting"]] == [process.id for process in processes])
