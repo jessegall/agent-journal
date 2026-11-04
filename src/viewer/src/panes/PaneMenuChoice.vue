@@ -1,18 +1,14 @@
 <script setup>
-import Btn from "../kit/Btn.vue";
-import MenuLabel from "../kit/MenuLabel.vue";
+import {computed} from "vue";
+import PaneMenuInner from "./PaneMenuInner.vue";
 
 const props = defineProps({option: {type: Object, required: true}, values: {type: Object, default: () => ({})}});
 const emit = defineEmits(["set"]);
 
 const chosen = () => props.values[props.option.key] ?? props.option.default;
+const items = computed(() => props.option.choices.map(([value, label]) => ({value, label, chosen: chosen() === value})));
 </script>
 
 <template>
-    <div class="pane-menu-choice" :data-option="option.key">
-        <MenuLabel>{{ option.label }}</MenuLabel>
-        <template v-for="[value, label] in option.choices" :key="value">
-            <Btn small :data-choice="value" :aria-pressed="chosen() === value" @click="emit('set', option.key, value)">{{ label }}</Btn>
-        </template>
-    </div>
+    <PaneMenuInner :option-key="option.key" :label="option.label" :items="items" @pick="(item) => emit('set', option.key, item.value)" />
 </template>

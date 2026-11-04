@@ -94,7 +94,15 @@ test("the marks stay behind a fold until it is opened, and the figure and preset
     await settled();
     expect(element.querySelector('[data-option="show-tasks.tasks"]')).toBeNull();
     expect([...element.querySelectorAll("[data-option] > .menu-label")].map((label) => label.textContent)).toEqual(["Figure", "Show in chat"]);
-    expect([...element.querySelectorAll('[data-option="show-preset"] [data-choice]')].map((choice) => choice.textContent.trim())).toEqual(["Only chat", "Chat with context", "Every mark"]);
+    expect([...element.querySelectorAll('[data-option="show-preset"] [data-choice]')].map((choice) => choice.textContent.replace("✓", "").trim())).toEqual(["Only chat", "Chat with context", "Every mark"]);
+    const row = element.querySelector('[data-option="show-preset"]');
+    expect(row.querySelector("[data-menu-inner-list]").style.display).toBe("none");
+    row.querySelector("[data-menu-inner]").click();
+    await settled();
+    expect(row.querySelector("[data-menu-inner-list]").style.display).toBe("");
+    row.querySelector("[data-menu-back]").click();
+    await settled();
+    expect(row.querySelector("[data-menu-inner-list]").style.display).toBe("none");
     element.querySelector("[data-menu-marks]").click();
     await settled();
     expect(element.querySelector('[data-option="show-tasks.tasks"]')).not.toBeNull();

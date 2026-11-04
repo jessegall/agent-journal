@@ -1,12 +1,13 @@
 <script setup>
-import Btn from "../kit/Btn.vue";
+import {computed} from "vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
+import PaneMenuInner from "../panes/PaneMenuInner.vue";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 
 // one pane's menu in sections: what to do with the pane (split, detach, its width), the agent it follows, its window's options with the marks behind a fold,
 // then moving it, closing it and resetting the layout; it is one narrow column that scrolls when it is long
-defineProps({
+const props = defineProps({
     pane: {type: Object, required: true},
     floats: {type: Boolean, default: false},
     followable: {type: Array, required: true},
@@ -17,6 +18,8 @@ defineProps({
     canReset: {type: Boolean, default: false},
 });
 const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]);
+const agents = computed(() => [{value: "main", agent: null, label: "Main agent", chosen: !props.pane.options?.agent},
+    ...props.followable.map((row) => ({value: row.id, agent: row.id, label: `${row.role} ${row.id}`, chosen: props.pane.options?.agent === row.id}))]);
 </script>
 
 <template>
@@ -28,13 +31,7 @@ const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]
     </template>
     <MenuItem data-menu="width" @click="emit('option', 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</MenuItem>
     <template v-if="agentWindow">
-        <div class="pane-menu-choice" data-option="agent">
-            <MenuLabel>Agent</MenuLabel>
-            <Btn small data-choice="main" :aria-pressed="!pane.options?.agent" @click="emit('option', 'agent', null)">Main agent</Btn>
-            <template v-for="row in followable" :key="row.id">
-                <Btn small :data-choice="row.id" :aria-pressed="pane.options?.agent === row.id" @click="emit('option', 'agent', row.id)">{{ row.role }} {{ row.id }}</Btn>
-            </template>
-        </div>
+        <PaneMenuInner option-key="agent" label="Agent" :items="agents" @pick="(item) => emit('option', 'agent', item.agent)" />
     </template>
     <PaneMenuOptions :declared="declared" :values="pane.options || {}" @set="(key, value) => emit('option', key, value)" />
     <template v-if="others.length">
