@@ -1,6 +1,6 @@
 import {CHAT_WINDOW} from "../windows/chatOptions.js";
 import {lineResult, lineWords} from "../windows/windowContext.js";
-import {allowed} from "../domain/buttons.js";
+import {allowed} from "@journal/window-kit";
 
 export {CHAT_WINDOW};
 

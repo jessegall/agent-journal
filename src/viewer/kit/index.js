@@ -2,6 +2,10 @@ import {defineAsyncComponent} from "vue";
 export {default as EmptyState} from "../src/kit/EmptyState.vue";
 export {default as FoldGroup} from "../src/kit/FoldGroup.vue";
 export {default as Btn} from "../src/kit/Btn.vue";
+export {default as SplitButton} from "../src/kit/SplitButton.vue";
+export {default as ButtonSlot} from "../src/kit/ButtonSlot.vue";
+export {default as ButtonForm} from "../src/kit/ButtonForm.vue";
+export {allowed, buttonCatalogue, buttonsAt, startButtons} from "../src/domain/buttons.js";
 export {default as RunningCommand} from "./RunningCommand.vue";
 export {default as Switch} from "./Switch.vue";
 export {openInChat, peekRef} from "../src/route.js";
@@ -63,7 +67,7 @@ export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version
-export const KIT_VERSION = "1.0.0";
+export const KIT_VERSION = "1.1.0";
 export const KIT_VUE = "3.5";
 export {withDayLines} from "../src/domain/dayLines.js";
 export {arrivalQueue, arriveAtOnce, depart} from "../src/chat/arrival.js";

@@ -60,6 +60,16 @@ export function startButtons(environment, prompts) {
 
 export const buttonCatalogue = (environment) => catalogues.get(environment);
 
+export function buttonsAt(environment, slot, row) {
+    const catalogue = buttonCatalogue(environment);
+    if (!catalogue) return [];
+    return catalogue.offers.value.buttons.filter((button) => button.slots.includes(slot))
+        .filter((button) => row || !button.runs.includes("{row_id}"))
+        .filter((button) => !button.condition || !row || !Object.hasOwn(row, button.condition.field) || button.condition.values.includes(row[button.condition.field]))
+        .map((button) => ({...button, menu: button.menu.filter((item) => row || !item.runs.includes("{row_id}"))}))
+        .sort((first, second) => Number(Boolean(first.from)) - Number(Boolean(second.from)));
+}
+
 export async function allowed(module, environment) {
     if (!module) return true;
     const catalogue = buttonCatalogue(environment);

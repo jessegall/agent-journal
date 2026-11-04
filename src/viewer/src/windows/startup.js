@@ -1,7 +1,7 @@
 import {transport} from "../api/transport.js";
 import {shallowRef} from "vue";
 import {readMarkDeclarations} from "../domain/markRegistry.js";
-import {startButtons} from "../domain/buttons.js";
+import {startButtons} from "@journal/window-kit";
 import {AllowancePrompts} from "./allowancePrompts.js";
 import {lineResult} from "./windowContext.js";
 import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatalogue.js";
