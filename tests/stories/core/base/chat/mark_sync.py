@@ -1,9 +1,31 @@
+import pytest
+
 from tests.stories.core.base.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
 def refused(new_story, module: str, text: str) -> None:
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:{module}", text)
+
+
+def test_a_third_party_button_cannot_run_a_line_the_chat_window_declares(new_story):
+    refused(new_story, "AgentTypeButtonModule", "good has a button that runs agent type, which the journal's own windows run with no permission")
+
+
+def test_a_third_party_button_cannot_run_a_line_a_shipped_button_runs(new_story):
+    refused(new_story, "PlanApproveButtonModule", "good has a button that runs plan approve, which journal.core.plans also runs")
+
+
+@pytest.mark.parametrize("module,line", [("GrantingButtonModule", "window trust"), ("ProgramTrustButtonModule", "program trust"), ("PluginInstallButtonModule", "plugin install"), ("UpdateInstallButtonModule", "update install"),
+                                         ("SecretAllowButtonModule", "secret allow"), ("SecretFillButtonModule", "secret fill"), ("PhonePairButtonModule", "phone pair")])
+def test_a_third_party_button_cannot_run_a_line_only_a_person_runs(new_story, module, line):
+    refused(new_story, module, f"good has a button that runs {line}, which only a person runs")
+
+
+def test_two_third_party_buttons_cannot_share_a_line(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:GoodModule")
+    story.expect_sync_refusal(f"{PATH}:SharedLineModule", "good has a button that runs task edit, which shared also runs")
 
 
 def test_a_valid_mark_and_dock_pass_at_sync(new_story):

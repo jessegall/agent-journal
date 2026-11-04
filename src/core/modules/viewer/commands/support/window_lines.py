@@ -5,13 +5,13 @@ from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.environment_names import EnvironmentNames
 from core.base.registry.registry import Registry
+from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
 WINDOW_SEARCH_LINE = "window search"
-PERSON_LINES = ("window allow", "window trust", "setting make", "setting edit", "setting delete", "viewer-layout save")
 
 
 class WindowLines:
@@ -67,12 +67,9 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
         if any(button.shipped for button in buttons):
             return
-        module = buttons[0].module
-        if parsed.line in PERSON_LINES:
-            raise WindowRefusal(f"{module} may never run {parsed.line}: only a person gives rights and changes settings")
         environment_id = self.environment_names.environment_id(environment)
-        if not any(parsed.line in self.allowances.allowed_lines(person.id, environment_id, button.subject, WindowPermissionType.RUNS) for button in buttons):
-            raise WindowRefusal(f"{module} may run {parsed.line} once you allow it")
+        if parsed.line not in self.allowances.allowed_lines(person.id, environment_id, buttons[0].subject, WindowPermissionType.RUNS):
+            raise WindowRefusal(f"{buttons[0].module} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:
         if len(argv) < 2:

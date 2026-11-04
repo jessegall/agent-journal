@@ -7,7 +7,10 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
+from core.base.registry.button_line import ButtonLine
+from core.base.registry.button_window import ButtonWindow
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.viewer.person_lines import PERSON_LINES
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.module.window_extensions import WindowExtensions
@@ -18,7 +21,9 @@ class WindowCheck:
     """Checks the windows the modules declare before a sync writes anything: each name is used once and
     starts with its module's name, a file it loads is in its module's web/dist, it reads only read
     subcommands and runs only commands, and it follows only events of models it reads. A module the journal
-    does not ship adds no commands to a window the journal ships, which asks for no permission."""
+    does not ship adds no commands to a window the journal ships, which asks for no permission, and its
+    buttons run a line of their own: none a person alone runs, none a shipped window or button already
+    allows, none another module's button runs, since a press does not say which button it came from."""
 
     def __init__(self, finder: ModuleFinder) -> None:
         self.finder = finder
@@ -43,7 +48,23 @@ class WindowCheck:
                     problems += [f"{module.name} adds {line} to {extension.window}, which the journal ships" for line in extension.runs]
             for window in map(extensions.extend, module.windows):
                 problems += window.problems(module.name, module.web_folder(), provided)
-        return tuple(problems)
+        return (*problems, *self.button_problems(modules, shipped))
+
+    def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
+        extensions = WindowExtensions(modules)
+        allowed = {line for module in modules if module.name in shipped for window in map(extensions.extend, module.windows) if window.name in ButtonWindow
+                   for line in (*window.reads, *window.runs)}
+        buttons = [ButtonLine(module.name, button.runs, module.name in shipped) for module in modules
+                   for button in (*(button for mark in module.marks for button in (*mark.buttons, *mark.group_buttons)), *(button for dock in module.docks for button in dock.buttons))]
+        problems: list[str] = []
+        for button in (button for button in buttons if not button.shipped):
+            sharing = sorted({sharer.module for sharer in buttons if sharer.line == button.line and sharer.module != button.module})
+            if button.line in PERSON_LINES:
+                problems.append(f"{button.module} has a button that runs {button.line}, which only a person runs")
+            if button.line in allowed:
+                problems.append(f"{button.module} has a button that runs {button.line}, which the journal's own windows run with no permission")
+            problems += [f"{button.module} has a button that runs {button.line}, which {sharer} also runs" for sharer in sharing]
+        return problems
 
     @staticmethod
     def lines(modules: Sequence[type[Module]]) -> tuple[set[str], set[str]]:

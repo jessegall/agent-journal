@@ -8,8 +8,8 @@ ALLOW = "window allow button:good --type runs --environment main"
 REFUSED = "good may run task edit once you allow it"
 
 
-def window_story(new_story, module: str = "GoodModule") -> WindowStory:
-    return WindowStory(new_story(f"{PATH}:{module}", fixture=UserJoined))
+def window_story(new_story) -> WindowStory:
+    return WindowStory(new_story(f"{PATH}:GoodModule", fixture=UserJoined))
 
 
 def test_a_third_party_button_is_refused_until_the_person_allows_it(new_story):
@@ -23,11 +23,6 @@ def test_a_person_who_allows_a_module_buttons_allows_them_for_themselves_only(ne
     window = window_story(new_story)
     window.story.expect_success(ALLOW, actor=window.new_person("Bob"))
     window.expect_window_refusal(CHAT, PRESS, REFUSED)
-
-
-def test_a_third_party_button_never_runs_a_line_that_gives_rights(new_story):
-    window = window_story(new_story, "GrantingButtonModule")
-    window.expect_window_refusal(CHAT, "window trust 1", "good may never run window trust")
 
 
 def test_a_button_the_journal_ships_needs_no_allowance(new_story):

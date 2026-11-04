@@ -55,6 +55,61 @@ class GrantingButtonModule(GoodModule):
     marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Trust", "window trust {row_id}")], body="note.js")]
 
 
+def button_marks(runs: str) -> list[MarkDeclaration]:
+    return [mark(Plain.NOTE, buttons=[MarkButton("words", "Press", runs)], body="note.js")]
+
+
+class AgentTypeButtonModule(GoodModule):
+    marks = button_marks("agent type {row_id}")
+    docks = []
+
+
+class PlanApproveButtonModule(GoodModule):
+    marks = button_marks("plan approve {row_id}")
+    docks = []
+
+
+class ProgramTrustButtonModule(GoodModule):
+    marks = button_marks("program trust {row_id}")
+    docks = []
+
+
+class PluginInstallButtonModule(GoodModule):
+    marks = button_marks("plugin install {row_id}")
+    docks = []
+
+
+class UpdateInstallButtonModule(GoodModule):
+    marks = button_marks("update install {row_id}")
+    docks = []
+
+
+class SecretAllowButtonModule(GoodModule):
+    marks = button_marks("secret allow {row_id}")
+    docks = []
+
+
+class SecretFillButtonModule(GoodModule):
+    marks = button_marks("secret fill {row_id}")
+    docks = []
+
+
+class PhonePairButtonModule(GoodModule):
+    marks = button_marks("phone pair {row_id}")
+    docks = []
+
+
+class SharedLine(StrEnum):
+    NOTE = "shared.note"
+
+
+class SharedLineModule(Module):
+    name = "shared"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    marks = [mark(SharedLine.NOTE, buttons=[MarkButton("words", "Open", "task edit {row_id}")], body="note.js")]
+
+
 class DuplicateMarkModule(Module):
     name = "twice"
     requires_core = ">=5,<6"
