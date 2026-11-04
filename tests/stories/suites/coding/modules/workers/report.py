@@ -33,7 +33,7 @@ def test_a_worker_refused_its_stop_leaves_no_report(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker: Actor = dispatched_worker(story)
-    story.expect_hook_refusal(worker_session(story, worker), stop_with_text(REPORT), "journal worker deliver, or say why with journal wait stuck")
+    story.expect_hook_refusal(worker_session(story, worker), stop_with_text(REPORT), "go on, then journal worker next")
     story.expect_text("message feed", "nothing found")
 
 

@@ -20,4 +20,4 @@ class KeywordScopeGuard(Guard):
     def check(self, change: Change[Model]) -> None:
         keyword = change.row
         if change.actor.type is ActorType.AGENT and isinstance(keyword, MemoryKeyword):
-            self.scope.check(self.queries.query(Memory).find(keyword.memory_id), change.actor)
+            self.scope.check(self.queries.query(Memory).find(keyword.memory_id), change.actor, False)

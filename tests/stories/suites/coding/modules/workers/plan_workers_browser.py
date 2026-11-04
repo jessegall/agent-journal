@@ -10,7 +10,6 @@ def test_a_delegated_plan_shows_its_agent_on_the_plan_bar_the_plan_page_the_task
     story = planned_story(new_story)
     recording_launch(monkeypatch)
     worker = Actor(story.new_row_id('worker dispatch --model sonnet --plan 1 --phase 1 --name "Lady Lovelace"', actor=story.agent), ActorType.AGENT)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     with server_story(story) as server:
         expect_browser(server, "planWorkers.browser.mjs", [str(worker.id), "/tmp/journal-worker-530-plan-workers"])

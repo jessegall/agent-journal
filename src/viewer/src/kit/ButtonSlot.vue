@@ -52,7 +52,7 @@ async function press(button) {
                     </SplitButton>
                 </template>
                 <template v-else>
-                    <Btn small :kind="button.primary ? 'primary' : 'ghost'" :icon="button.icon" :disabled="sending" :title="tip(button)" :data-button="button.name" @click="press(button)">{{ button.label }}</Btn>
+                    <Btn small :kind="button.primary ? 'primary' : 'ghost'" :bordered="!button.primary" :icon="button.icon" :disabled="sending" :title="tip(button)" :data-button="button.name" @click="press(button)">{{ button.label }}</Btn>
                 </template>
             </template>
             <template v-if="failure && !readOnly">

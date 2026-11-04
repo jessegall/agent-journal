@@ -1,4 +1,5 @@
-from core.modules.memories.support.memory_nudges import START_MEMORIES
+from core.modules.memories.support.memory_nudges import START_MEMORIES, START_SHARED_MEMORIES
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -22,4 +23,5 @@ class StartDeliveryRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         count = self.memories.query(hook).start_memories().undated().count()
-        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()
+        line = START_MEMORIES if hook.role == AgentRole.MAIN else START_SHARED_MEMORIES
+        return RuleAnswer.with_nudges(line.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()

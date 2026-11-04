@@ -21,4 +21,4 @@ class AgentScopeGuard(Guard):
             return
         for memory in (change.old_row, change.new_row):
             if isinstance(memory, Memory):
-                self.scope.check(memory, change.actor)
+                self.scope.check(memory, change.actor, change.old_row is None)

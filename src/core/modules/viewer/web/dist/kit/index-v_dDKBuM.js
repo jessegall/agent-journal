@@ -1638,6 +1638,7 @@ const Ht = (e) => hn[e], yr = new Map(vr.flatMap((e) => [e, e.replace(/s$/, ""),
             key: 1,
             small: "",
             kind: S.primary ? "primary" : "ghost",
+            bordered: !S.primary,
             icon: S.icon,
             disabled: f.value,
             title: p(S),
@@ -1648,7 +1649,7 @@ const Ht = (e) => hn[e], yr = new Map(vr.flatMap((e) => [e, e.replace(/s$/, ""),
               se(b(S.label), 1)
             ]),
             _: 2
-          }, 1032, ["kind", "icon", "disabled", "title", "data-button", "onClick"]))
+          }, 1032, ["kind", "bordered", "icon", "disabled", "title", "data-button", "onClick"]))
         ], 64))), 128)),
         d.value && !e.readOnly ? (c(), h("span", Ou, b(d.value), 1)) : A("", !0),
         u.value && !e.readOnly ? (c(), V(Su, {
@@ -1662,7 +1663,7 @@ const Ht = (e) => hn[e], yr = new Map(vr.flatMap((e) => [e, e.replace(/s$/, ""),
       ], 64))
     ], 10, Cu));
   }
-}, Iu = /* @__PURE__ */ Y(Tu, [["__scopeId", "data-v-2da32260"]]), Ru = {
+}, Iu = /* @__PURE__ */ Y(Tu, [["__scopeId", "data-v-babd6653"]]), Ru = {
   class: "running",
   "data-running-command": ""
 }, Bu = ["title"], Lu = {
@@ -10735,7 +10736,7 @@ const Yb = /* @__PURE__ */ Vb(Kb), Jb = ["width", "height", "viewBox"], Zb = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, E$ = /* @__PURE__ */ Y(e5, [["__scopeId", "data-v-47e67f04"]]), A$ = pl(() => import("./VoiceFigure-C3cfvmgt.js").then((e) => e.V)), C$ = "1.1.0", O$ = "3.5";
+}, E$ = /* @__PURE__ */ Y(e5, [["__scopeId", "data-v-47e67f04"]]), A$ = pl(() => import("./VoiceFigure-DkyaRyIH.js").then((e) => e.V)), C$ = "1.1.0", O$ = "3.5";
 export {
   Wu as $,
   Me as A,

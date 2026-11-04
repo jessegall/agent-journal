@@ -5,7 +5,7 @@ import {allowed} from "@journal/window-kit";
 export {CHAT_WINDOW};
 
 // the command arguments a button sends, with its field values kept whole
-export const buttonLine = (button, row, values = {}) => lineWords(button.runs).map((word) =>
+const buttonLine = (button, row, values = {}) => lineWords(button.runs).map((word) =>
     word.replace(/\{(\w+)\}/g, (_, name) => name === "row_id" ? String(row?.id ?? "") : values[name]));
 
 // a button sends its declared command after the person allows its module
