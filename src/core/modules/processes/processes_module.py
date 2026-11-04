@@ -21,7 +21,7 @@ from core.base.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
-from core.modules.processes.ticks.run_folder_pruning import RunFolderPruning
+from core.modules.processes.ticks.process_pruning import ProcessPruning
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -62,9 +62,9 @@ from core.modules.processes.listeners.background_run_watch_listener import Backg
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
 from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
 from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
-from core.modules.processes.commands.prune_outputs.prune_outputs_handler import PruneOutputsHandler
-from core.modules.processes.commands.prune_run_folders.prune_run_folders_handler import PruneRunFoldersHandler
-from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
+from core.modules.processes.commands.prune_processes.prune_processes_handler import PruneProcessesHandler
+from core.modules.processes.listeners.process_prune_listener import ProcessPruneListener
+from core.modules.processes.listeners.process_removal_listener import ProcessRemovalListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.rules.leftover_run_rule import LeftoverRunRule
 from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
@@ -174,7 +174,7 @@ class ProcessesModule(Module):
     nudges = PROCESS_NUDGES
     tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots"),
                      TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery"),
-                     TickHandler(TickInterval(seconds=15 * 60), RunFolderPruning(), "run folder pruning")]
+                     TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
@@ -182,14 +182,14 @@ class ProcessesModule(Module):
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks"]
-    models = [ModelDeclaration(ReaderRequest, query=ReaderRequestQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"])]
+    models = [ModelDeclaration(ReaderRequest, query=ReaderRequestQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit", "delete", "prune"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"])]
     views = [ProcessRow, ProcessQueueRow]
     migrations = [ProcessQueueTimestampMigration, MoreStockReadersMigration, ProcessEndIndexMigration,ProcessOwnerMigration,StockReaderDefaultsMigration, StockReaderCatalogMigration, StockTestTitlesMigration,ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration,ProcessWorkMigration,ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
-    handlers = [PruneRunFoldersHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
+    handlers = [PruneProcessesHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
     subcommands = [PageOutputSubcommand, InspectRunQueueSubcommand,MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener]
+    listeners = [StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener]
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns}
     docks = PROCESS_DOCKS

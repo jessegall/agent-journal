@@ -26,10 +26,8 @@ class ProcessSetting(Enum):
                                   SettingType.NUMBER, default=2)
     MAIN_RUNS_USE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
                                         SettingType.FLAG, default=False)
-    OUTPUTS_KEPT_COUNT =SettingValue("outputs-kept", "Outputs kept", "How many outputs are kept before the oldest are removed.", SettingType.NUMBER, default=40)
-    OUTPUTS_KEPT_MINUTES = SettingValue("outputs-kept-minutes", "Minutes an output is kept", "How long an output that ended is kept, whatever the number of outputs.", SettingType.NUMBER, default=30)
-    SHORT_OUTPUT_BYTES = SettingValue("short-output", "Short output bytes", "Outputs smaller than this many bytes are shown in full without being saved.", SettingType.NUMBER,
-                                      default=200)
+    PROCESSES_KEPT = SettingValue("processes-kept", "Ended commands kept",
+                                 "How many ended commands each environment keeps, with at least one. Running commands stay.", SettingType.NUMBER, default=1000)
 
     MOST_OUTPUT_MEGABYTES = SettingValue("most-output-megabytes", "Output storage limit (MB)", "How many megabytes of one command's output stay on disk; past this the oldest lines go.",
                                          SettingType.NUMBER, default=10)

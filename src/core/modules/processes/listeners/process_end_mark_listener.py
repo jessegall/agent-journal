@@ -43,7 +43,9 @@ class ProcessEndMarkListener(CommitListener):
         self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
 
     def handle(self, event: LoggedEvent) -> None:
-        process = self.queries.query(Process).find(event.row_id)
+        process = self.queries.query(Process).filter(id=event.row_id).first()
+        if process is None:
+            return
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
         if shown is not None and shown.state is ChatMarkState.ENDED:

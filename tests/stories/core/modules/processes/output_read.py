@@ -36,11 +36,11 @@ def test_a_named_reader_reads_the_output_whatever_the_default_is(new_story):
     story.expect_absent(f"output read {process.id} --reader passes --again", "3: test_b FAILED", actor=story.agent)
 
 
-def test_a_pruned_output_says_so(new_story):
+def test_output_is_gone_when_its_process_is_removed(new_story):
     story = new_story(fixture=BuilderStarted)
     process = ended_run(story, PYTEST, REPORT)
-    story.run(f"output prune {process.id}", actor=story.agent)
-    story.expect_text(f"output read {process.id} --all", f"output {process.id} was pruned", actor=story.agent)
+    story.expect_success(f"process delete {process.id}", actor=story.agent)
+    story.expect_refusal(f"output read {process.id} --all", f"no process {process.id}", actor=story.agent)
 
 
 def test_the_status_of_an_output_is_running_finished_or_failed_with_its_code(new_story):
