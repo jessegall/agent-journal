@@ -1,0 +1,95 @@
+// Package store holds the shared server's SQLite database: it opens shared.db and runs the migrations.
+package store
+
+import (
+	"database/sql"
+	"embed"
+	"fmt"
+	"net/url"
+	"path/filepath"
+	"sort"
+	"time"
+
+	_ "modernc.org/sqlite"
+)
+
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
+
+// FileName is the one file in the data folder.
+const FileName = "shared.db"
+
+// Store is the open database of one data folder.
+type Store struct {
+	DB *sql.DB
+}
+
+// Open opens shared.db in the folder in WAL mode with foreign keys on, and runs the migrations not yet run.
+func Open(folder string) (*Store, error) {
+	query := url.Values{}
+	query.Add("_pragma", "journal_mode(WAL)")
+	query.Add("_pragma", "foreign_keys(1)")
+	query.Add("_pragma", "busy_timeout(5000)")
+	database, err := sql.Open("sqlite", "file:"+filepath.Join(folder, FileName)+"?"+query.Encode())
+	if err != nil {
+		return nil, err
+	}
+	store := &Store{DB: database}
+	if err := store.migrate(); err != nil {
+		database.Close()
+		return nil, err
+	}
+	return store, nil
+}
+
+// Close closes the database.
+func (store *Store) Close() error {
+	return store.DB.Close()
+}
+
+func (store *Store) migrate() error {
+	if _, err := store.DB.Exec("CREATE TABLE IF NOT EXISTS migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL) STRICT"); err != nil {
+		return err
+	}
+	files, err := migrationFiles.ReadDir("migrations")
+	if err != nil {
+		return err
+	}
+	names := make([]string, len(files))
+	for index, file := range files {
+		names[index] = file.Name()
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		if err := store.apply(name); err != nil {
+			return fmt.Errorf("migration %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
+func (store *Store) apply(name string) error {
+	transaction, err := store.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer transaction.Rollback()
+	var applied int
+	if err := transaction.QueryRow("SELECT count(*) FROM migrations WHERE name = ?", name).Scan(&applied); err != nil {
+		return err
+	}
+	if applied > 0 {
+		return nil
+	}
+	script, err := migrationFiles.ReadFile("migrations/" + name)
+	if err != nil {
+		return err
+	}
+	if _, err := transaction.Exec(string(script)); err != nil {
+		return err
+	}
+	if _, err := transaction.Exec("INSERT INTO migrations (name, applied_at) VALUES (?, ?)", name, time.Now().UTC().Format(time.RFC3339)); err != nil {
+		return err
+	}
+	return transaction.Commit()
+}

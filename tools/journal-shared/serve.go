@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/jessegall/agent-journal/tools/journal-shared/store"
 )
 
 // defaultListen keeps a new server reachable from its own machine only, until someone names another address.
 const defaultListen = "127.0.0.1:8740"
-
-// kinds are the kinds of item the server holds.
-var kinds = []string{"doc", "sequence", "check"}
 
 type info struct {
 	Protocol int      `json:"protocol"`
@@ -40,5 +39,5 @@ func handler() http.Handler {
 
 func answerInfo(response http.ResponseWriter, _ *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(response).Encode(info{Protocol: protocol, Kinds: kinds})
+	json.NewEncoder(response).Encode(info{Protocol: protocol, Kinds: store.KindNames()})
 }
