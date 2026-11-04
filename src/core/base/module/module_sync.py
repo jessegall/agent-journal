@@ -44,6 +44,7 @@ from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
+from core.base.module.button_slots import ButtonSlots
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.provider_entries import ProviderEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -193,10 +194,7 @@ class ModuleSync:
         return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.buttons)
 
     def button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
-        dock_slots = (f"dock.{dock.type.value}" for module in modules for dock in module.docks)
-        row_slots = (f"row.{declaration.model.cli_name}" for module in modules for declaration in module.models)
-        declared_slots = (slot for module in modules for slot in module.button_slots)
-        return tuple(sorted({*dock_slots, *row_slots, *declared_slots}))
+        return tuple(sorted(ButtonSlots(modules).owners))
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

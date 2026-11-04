@@ -10,3 +10,6 @@ class TextField:
 
     def accepts(self, value: str) -> bool:
         return True
+
+    def problems(self, owner: str, targets: frozenset[str]) -> list[str]:
+        return []

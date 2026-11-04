@@ -24,7 +24,7 @@ class ButtonLine:
 
     @property
     def line(self) -> str:
-        return " ".join(shlex.split(self.template)[:2])
+        return " ".join(self.template.split()[:2])
 
     @property
     def permission_line(self) -> str:

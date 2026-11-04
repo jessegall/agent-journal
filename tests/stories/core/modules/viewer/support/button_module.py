@@ -9,4 +9,4 @@ class NotesButtonsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.tasks"]
     button_slots = ["notes.toolbar"]
-    buttons = [ButtonDeclaration("notes.start", ("row.task", "notes.toolbar"), "Start", "task start {row_id}")]
+    buttons = [ButtonDeclaration("notes.edit", ("row.task", "notes.toolbar"), "Edit", "task edit {row_id}")]

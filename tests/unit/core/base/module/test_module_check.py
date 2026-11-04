@@ -129,5 +129,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))))
 

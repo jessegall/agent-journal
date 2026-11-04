@@ -14,6 +14,7 @@ from core.base.viewer.person_lines import PERSON_LINES
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.module.window_extensions import WindowExtensions
+from core.base.module.button_command_check import ButtonCommandCheck
 
 
 
@@ -51,20 +52,20 @@ class WindowCheck:
         return (*problems, *self.button_problems(modules, shipped))
 
     def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
+        buttons = self.mark_dock_lines(modules, shipped)
+        return ButtonCommandCheck().problems(buttons, buttons, self.allowed_button_lines(modules, shipped))
+
+    @staticmethod
+    def allowed_button_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> frozenset[str]:
         extensions = WindowExtensions(modules)
-        allowed = {line for module in modules if module.name in shipped for window in map(extensions.extend, module.windows) if window.name in ButtonWindow
-                   for line in (*window.reads, *window.runs)}
-        buttons = [ButtonLine(module.name, button.runs, module.name in shipped) for module in modules
-                   for button in (*(button for mark in module.marks for button in (*mark.buttons, *mark.group_buttons)), *(button for dock in module.docks for button in dock.buttons))]
-        problems: list[str] = []
-        for button in (button for button in buttons if not button.shipped):
-            sharing = sorted({sharer.module for sharer in buttons if sharer.line == button.line and sharer.module != button.module})
-            if button.line in PERSON_LINES:
-                problems.append(f"{button.module} has a button that runs {button.line}, which only a person runs")
-            if button.line in allowed:
-                problems.append(f"{button.module} has a button that runs {button.line}, which the journal's own windows run with no permission")
-            problems += [f"{button.module} has a button that runs {button.line}, which {sharer} also runs" for sharer in sharing]
-        return problems
+        return frozenset(line for module in modules if module.name in shipped for window in map(extensions.extend, module.windows) if window.name in ButtonWindow
+                         for line in (*window.reads, *window.runs))
+
+    @staticmethod
+    def mark_dock_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> tuple[ButtonLine, ...]:
+        return tuple(ButtonLine(module.name, button.runs, module.name in shipped) for module in modules
+                     for button in (*(button for mark in module.marks for button in (*mark.buttons, *mark.group_buttons)),
+                                    *(button for dock in module.docks for button in dock.buttons)))
 
     @staticmethod
     def lines(modules: Sequence[type[Module]]) -> tuple[set[str], set[str]]:

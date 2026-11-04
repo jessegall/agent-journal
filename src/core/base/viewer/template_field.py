@@ -13,3 +13,6 @@ class TemplateField:
 
     def accepts(self, value: str) -> bool:
         return value.isdigit()
+
+    def problems(self, owner: str, targets: frozenset[str]) -> list[str]:
+        return [] if self.target in targets else [f"{owner} targets {self.target}, which is neither a model nor the first word of a command"]
