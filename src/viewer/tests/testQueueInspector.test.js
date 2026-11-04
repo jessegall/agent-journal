@@ -111,7 +111,7 @@ test("the waiting status of an agent opens the test queue", async () => {
 
 const OUTPUT_LINES = ["building package", "package built"];
 const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
-const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES}} : {ok: true, value: SNAPSHOT});
+const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: SNAPSHOT});
 
 test("queue arrivals and departures keep their Vue transition classes", async () => {
     const frame = vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 0);
@@ -179,7 +179,7 @@ test("output opens under a process and collapses again", async () => {
     await settle();
     expect(row.querySelector("[data-queue-output-body]").textContent).toContain(OUTPUT_LINES.join("\n"));
     expect(row.querySelector(".toggle").getAttribute("aria-expanded")).toBe("true");
-    expect(read).toHaveBeenCalledWith(["output", "peek", "66", "--lines", "1-10"]);
+    expect(read).toHaveBeenCalledWith(["output", "page", "66", "--limit", "50"]);
     expect(row.querySelector('a[target="_blank"]').getAttribute("href")).toContain("page=processes.output&output=66");
     row.querySelector(".toggle").click();
     await settle();
@@ -262,7 +262,7 @@ test("a failed queue read shows its error", async () => {
 test("process events refresh the queue and output events refresh only an open output", async () => {
     let queue = SNAPSHOT;
     let output = ["building package"];
-    const read = vi.fn(async (line) => line[0] === "output" ? {ok: true, value: {lines: output}} : {ok: true, value: queue});
+    const read = vi.fn(async (line) => line[0] === "output" ? {ok: true, value: {lines: output, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: queue});
     await panel(read);
     subscriptions.dispatch({event: "task.update", row_id: 11});
     await settle();
@@ -273,11 +273,21 @@ test("process events refresh the queue and output events refresh only an open ou
     expect(read).toHaveBeenCalledTimes(2);
     await vi.waitFor(() => expect(rowsOf("waiting")).toHaveLength(0));
     const row = rowsOf("running")[0];
+    subscriptions.dispatch({event: "output.update", row_id: 70});
+    await settle();
+    expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(0);
+    await new Promise((resolve) => setTimeout(resolve, 150));
     row.querySelector(".toggle").click();
     await settle();
     output = ["package built"];
     subscriptions.dispatch({event: "output.update", row_id: 70});
     await settle();
     expect(row.querySelector("[data-queue-output-body]").textContent).toContain("package built");
+    expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
+    row.querySelector(".toggle").click();
+    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    subscriptions.dispatch({event: "output.update", row_id: 70});
+    await settle();
     expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
 });

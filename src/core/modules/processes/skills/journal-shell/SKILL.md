@@ -26,7 +26,9 @@ Every shell command you run goes through the journal's runner.
 
 ## Readers
 
-Only a main agent, a person or a module saves, removes or chooses a reader. Other agents ask the main agent.
+A main agent, a person or a module manages readers. An agent with its own open reader request may draft and
+save a reader matching that request, through the same checks and output proof. It cannot remove readers,
+choose defaults or skip a request.
 
 A reader selects useful output with `--lines <pattern>` or `--script <path>`. Every reader needs `--title`
 and `--summary <pattern>` too. The other requirements depend on the command:
@@ -45,7 +47,7 @@ Your suite can use `--count-command <line>` to count tests before a queued run g
 replaced with that part's command, not the whole chain; alias environment variables are not included, so
 put any variables the listing needs in its command.
 
-When the main agent receives a reader request:
+When an agent receives a reader request:
 
 1. Run `journal reader draft <request>`. It tries saved readers, then stock readers, then patterns on the
    sample. Read what each field found and the complete `journal reader add` line it prints.
@@ -53,6 +55,12 @@ When the main agent receives a reader request:
    that field in the printed `journal reader add` line and run it. A save always uses the normal writer
    check and output proof. `--save` refuses an incomplete draft.
 3. If the command needs no reader, run `journal reader-request waive <request> --reason "<why>"`.
+   Only the main agent, a person or a module may skip a request.
+
+A worker tries its own saves first. After `reader-save-tries` failed saves for that request (default 3),
+further worker saves stop and the main agent is asked to help. Drafting without `--save` does not use a try.
+The main agent can save the reader after the worker's tries run out. Set the limit to zero to ask the main
+agent immediately.
 
 A saved proper reader completes matching requests and frees the waiting agent and its run. Adding a
 reader whose commands do not match leaves the request open and says so. `journal reader list` shows the

@@ -13,7 +13,7 @@ READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", ToolUseSpan(5))
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader: journal reader-request waive {request} --reason "<why>"', longest_characters=400)
 
-READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads {command}: the main agent writes it. Stop; you are started again when it exists", longest_characters=240)
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads {command}: draft and save your reader. After failed tries, stop for the main agent to help", longest_characters=240)
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}')

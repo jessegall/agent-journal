@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
-PIPE_TOKENS = frozenset(("|", "|&", ">", ">>", ">&", "&>"))
+PIPE_TOKENS = frozenset(("|", "|&", ">", ">>", ">&", "&>", "--tail", "--head", "--cut"))
 
 
 class MakeProofHandler(Handler[MakeProof, Proof]):
@@ -27,7 +27,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         if self.is_piped(command.test_command):
-            raise Refusal("a proof's test runs without a pipe or a redirect, since a pipe hides its exit code", "give the bare test command")
+            raise Refusal("a proof's test runs without a pipe, a redirect or a reading flag such as --tail, since the journal reads its whole output", "give the bare test command")
         rows = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).page(1, 1).rows
         if not rows:
             return self.repository.save(Proof(task_id=worktree.task_id, worktree_id=worktree.id, creator_id=context.actor.id, point=command.point,

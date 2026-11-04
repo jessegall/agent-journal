@@ -49,6 +49,14 @@
         "tools/journal-hook/testdata"
     ],
     "base": "main",
+    "disable": {
+        "languages": [
+            "php",
+            "typescript",
+            "csharp",
+            "go"
+        ]
+    },
     "detectors": [
         "architecture_viewer_WindowFieldOutsideEntryDetector",
         "architecture_viewer_WindowLoadingPageDetector",

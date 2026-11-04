@@ -26,7 +26,10 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 ## Process rules
 
 A worker needs no Monitor for a background run. It can continue independent work or stop and receive the
-result when the run ends. A worker asks its main agent for a reader and cannot save one itself.
+result when the run ends. A worker drafts and saves a reader for its own open request with
+`journal reader draft <request> --save`, or edits the suggested `reader add` command. Every save uses the normal
+checks and output proof. After the configured failed-save limit (default 3), it stops and the main agent is
+asked to help. Drafts without `--save` use no try. A worker cannot remove readers, choose defaults or skip requests.
 
 A reader's `--count-command` lists tests before a queued run gets a spot when `worker-run-most-tests` is
 positive. Counts of test parts are added. A failed listing, a listing cut off after 120 seconds, or one
