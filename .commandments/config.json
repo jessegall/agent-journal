@@ -205,10 +205,18 @@
         "ArchitectureWorkersWorkerLaunchFunnelDetector",
         "WindowSearchBarDetector",
         "architecture_processes_ReaderSavedThroughAddReaderDetector",
-        "architecture_processes_ReaderDemandByPartDetector"
+        "architecture_processes_ReaderDemandByPartDetector",
+        "ModuleRegistrationDetector"
     ],
     "parallel": 2,
     "configure": {
+        "naming_LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
         "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
@@ -358,13 +366,6 @@
             {
                 "elements": [
                     50
-                ]
-            }
-        ],
-        "naming_LongDocstringLineDetector": [
-            {
-                "judges": [
-                    "tests"
                 ]
             }
         ]
