@@ -81,7 +81,7 @@ class Repository:
         if change.old_row is None:
             row_id = self.guarded(lambda: self.database.insert(statements.insert(table.row(model, table.columns), timestamp)), table, False)
             return model.saved(row_id, 1, timestamp)
-        changed = table.row(model, change.fields)
+        changed = table.row(model, change.stored_fields)
         updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, timestamp)), table, False)
         if updated_count == 0:
             raise StaleRowError(model.cli_name, model.id)

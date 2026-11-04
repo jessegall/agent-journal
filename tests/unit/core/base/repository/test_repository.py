@@ -17,6 +17,8 @@ from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
+from core.base.metadata import Metadata
+from core.base.query.queries import Queries
 from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
@@ -87,6 +89,23 @@ def test_a_save_that_changes_nothing_writes_and_logs_nothing(container: Containe
     saved = save(container, Item(title="Dune"))
     assert save(container, saved) == saved
     assert container.get(EventLog).newest_id() == 1
+
+
+def test_a_move_keeps_its_metadata_in_the_database(container: Container):
+    saved = save(container, Item(title="Dune"))
+    metadata = Metadata({"items": {"review": 7}})
+    moved = save(container, saved.moved(ItemLifecycle.pause, metadata=metadata))
+    assert container.get(Queries).query(Item).find(moved.id).metadata == metadata
+    assert container.get(EventLog).event(2).event == "item.pause"
+
+
+def test_a_metadata_only_change_is_saved_and_logged(container: Container):
+    saved = save(container, Item(title="Dune"))
+    metadata = Metadata({"items": {"review": 7}})
+    updated = save(container, saved.changed(metadata=metadata))
+    stored = container.get(Queries).query(Item).find(updated.id)
+    assert (stored.version, stored.metadata) == (2, metadata)
+    assert container.get(EventLog).event(2).event == "item.metadata"
 
 
 def test_guards_are_asked_before_anything_is_written(container: Container):

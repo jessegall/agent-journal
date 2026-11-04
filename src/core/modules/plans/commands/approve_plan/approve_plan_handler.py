@@ -8,6 +8,7 @@ from core.base.repository.repository import Repository
 from core.modules.documents.commands.comment_text.comment_text import CommentText
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.plan_approval import PlanApproval
 
 
 class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
@@ -24,7 +25,9 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
         plan = self.queries.query(Plan).find(command.row_id)
         if plan.environment_id != context.environment_id:
             raise Refusal(f"plan {plan.id} belongs to another environment", "approve it there")
-        message = command.message.strip()
-        if message:
-            self.bus.dispatch(CommentText(Plan, plan.id, message), context)
-        return self.repository.save(plan.moved(self.command.move), context)
+        message_text = command.message.strip()
+        metadata = plan.metadata
+        if message_text:
+            message = self.bus.dispatch(CommentText(Plan, plan.id, message_text), context)
+            metadata = PlanApproval.with_message(plan, message.id)
+        return self.repository.save(plan.moved(self.command.move, metadata=metadata), context)

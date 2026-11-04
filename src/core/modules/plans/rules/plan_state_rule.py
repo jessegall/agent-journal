@@ -4,14 +4,17 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge_declaration import NudgeDeclaration
+from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan import Plan
 from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_BLOCKED, PLAN_CANCELLED
+from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_BLOCKED, PLAN_CANCELLED
+from core.modules.plans.support.plan_approval import PlanApproval
 
 STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
     PlanState.APPROVED: PLAN_APPROVED,
@@ -37,4 +40,12 @@ class PlanStateRule(DriverRule):
         answered_at = self.hook_history.last_answer(self.name, hook)
         start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
         changed = self.plans.environment(hook.environment_id).matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).oldest().all_rows()
-        return RuleAnswer.with_nudges(*(STATE_NUDGES[plan.state].nudge(plan=plan.id) for plan in changed))
+        return RuleAnswer.with_nudges(*(self.plan_nudge(plan) for plan in changed))
+
+    def plan_nudge(self, plan: Plan) -> Nudge:
+        if plan.state is not PlanState.APPROVED:
+            return STATE_NUDGES[plan.state].nudge(plan=plan.id)
+        message_id = PlanApproval.message_id(plan)
+        if message_id is None:
+            return PLAN_APPROVED.nudge(plan=plan.id)
+        return PLAN_APPROVED_WITH_MESSAGE.nudge(plan=plan.id, message=message_id)

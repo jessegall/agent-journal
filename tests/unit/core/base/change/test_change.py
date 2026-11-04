@@ -5,6 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.timestamp import Timestamp
+from core.base.metadata import Metadata
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
@@ -40,3 +41,15 @@ def test_a_move_from_the_state_the_row_is_in_is_still_that_move():
     paused = Item(id=4, version=1, title="Dune", state=ItemState.PAUSED)
     change = Change(paused, paused.moved(ItemLifecycle.pause), CONTEXT)
     assert (change.event, change.is_empty) == ("item.pause", False)
+
+
+def test_a_metadata_change_is_stored_without_becoming_a_model_field():
+    metadata = Metadata({"items": {"review": 7}})
+    change = Change(STORED, STORED.changed(metadata=metadata), CONTEXT)
+    assert (change.event, change.fields, change.stored_fields, change.is_empty) == ("item.metadata", [], ["metadata"], False)
+
+
+def test_metadata_changed_with_a_move_keeps_the_move_event():
+    metadata = Metadata({"items": {"review": 7}})
+    change = Change(STORED, STORED.moved(ItemLifecycle.pause, metadata=metadata), CONTEXT)
+    assert (change.event, change.fields, change.stored_fields) == ("item.pause", ["state"], ["state", "metadata"])
