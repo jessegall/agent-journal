@@ -286,7 +286,7 @@ readCommand();
 
 .agent-foot {
     display: flex;
-    gap: 14px;
+    gap: 24px;
     align-items: center;
     min-width: 0;
 }
