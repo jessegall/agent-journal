@@ -9,8 +9,8 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class PruneWindowPermissionsHandler(Handler[PruneWindowPermissions, int]):
-    """Deletes every permission whose window no installed module declares, and every page trust of a module no
-    longer installed, so installing it again asks again; answers how many it deleted."""
+    """Deletes every permission whose window or buttons no installed module declares, and every page trust of a
+    module no longer installed, so installing it again asks again; answers how many it deleted."""
 
     command = PruneWindowPermissions
 
@@ -20,7 +20,10 @@ class PruneWindowPermissionsHandler(Handler[PruneWindowPermissions, int]):
     def handle(self, command: PruneWindowPermissions, context: Context) -> int:
         modules = {window.module for window in self.registry.windows}
         orphan_permissions = [permission for permission in self.queries.query(WindowPermission).all_rows()
-                if (permission.subject not in modules if permission.type is WindowPermissionType.COMPONENT else not self.registry.has_window(permission.subject))]
+                if (permission.subject not in modules if permission.type is WindowPermissionType.COMPONENT else not self.has_subject(permission.subject))]
         for permission in orphan_permissions:
             self.repository.delete(permission, context)
         return len(orphan_permissions)
+
+    def has_subject(self, subject: str) -> bool:
+        return self.registry.has_window(subject) or bool(self.registry.subject_button_lines(subject))

@@ -1,6 +1,6 @@
 from core.base.registry.button_line import ButtonLine
 
-LINE = ButtonLine("memories", "memory open {row_id}")
+LINE = ButtonLine("memories", "memory open {row_id}", True)
 
 
 def test_a_button_line_allows_its_own_line_with_a_row_number():

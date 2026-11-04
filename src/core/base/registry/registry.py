@@ -227,11 +227,14 @@ class Registry:
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
-            return (*(ButtonLine(mark.module, button["runs"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
-                    *(ButtonLine(dock.module, button["runs"]) for dock in self.docks for button in dock.buttons))
+            return (*(ButtonLine(mark.module, button["runs"], mark.shipped) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
+                    *(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons))
         if window == ButtonWindow.DOCK:
-            return tuple(ButtonLine(dock.module, button["runs"]) for dock in self.docks for button in dock.buttons)
+            return tuple(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons)
         return ()
+
+    def subject_button_lines(self, subject: str) -> tuple[str, ...]:
+        return tuple(button.line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
 
     def has_window(self, name: str) -> bool:
         return any(window.name == name for window in self.windows)

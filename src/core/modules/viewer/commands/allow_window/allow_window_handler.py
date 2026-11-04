@@ -12,8 +12,9 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
-    """Writes the caller's permission row for the window: the lines it declares added to those allowed before;
-    the guard viewer.person-gives-permissions refuses any caller but a person allowing for themselves."""
+    """Writes the caller's permission row for a window, or for the buttons of a module (button:<module>): the
+    lines it declares added to those allowed before; the guard viewer.person-gives-permissions refuses any
+    caller but a person allowing for themselves."""
 
     command = AllowWindow
 
@@ -23,11 +24,17 @@ class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
     def handle(self, command: AllowWindow, context: Context) -> WindowPermission:
         if context.environment_id is None:
             raise Refusal("a window is allowed in an environment", "name one with --environment")
-        if not self.registry.has_window(command.window) or command.type is WindowPermissionType.COMPONENT:
-            raise Refusal(f"no installed module declares the window {command.window} with {command.type} to allow", "journal window trust <module> trusts a module's page code")
-        window = self.registry.window(command.window)
-        declared = window.reads if command.type is WindowPermissionType.READS else window.runs
+        declared = self.declared(command)
         permission = self.allowances.permission(context.actor.id, context.environment_id, command.window, command.type)
         allowed = self.allowances.allowed_lines(context.actor.id, context.environment_id, command.window, command.type)
         return self.repository.merge(permission, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
                                                                       subject=command.window, type=command.type, lines=json.dumps(sorted({*allowed, *declared}))), context)
+
+    def declared(self, command: AllowWindow) -> tuple[str, ...]:
+        button_lines = self.registry.subject_button_lines(command.window)
+        if button_lines and command.type is WindowPermissionType.RUNS:
+            return button_lines
+        if not self.registry.has_window(command.window) or command.type is WindowPermissionType.COMPONENT:
+            raise Refusal(f"no installed module declares the window {command.window} with {command.type} to allow", "journal window trust <module> trusts a module's page code")
+        window = self.registry.window(command.window)
+        return window.reads if command.type is WindowPermissionType.READS else window.runs

@@ -51,6 +51,10 @@ class GoodModule(Module):
     docks = [DockDeclaration(Plain.NOTE, "words", "{row_title}", "note.js", reads=["task list"])]
 
 
+class GrantingButtonModule(GoodModule):
+    marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Trust", "window trust {row_id}")], body="note.js")]
+
+
 class DuplicateMarkModule(Module):
     name = "twice"
     requires_core = ">=5,<6"

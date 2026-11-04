@@ -17,8 +17,9 @@ PERSON_LINES = ("window allow", "window trust", "setting make", "setting edit", 
 class WindowLines:
     """Whether a window may run a command line for a person: the line parses, it is a read subcommand the
     window declares or a command it declares, or one of its own settings, it neither skips a guard nor names
-    another environment, and the person has allowed it unless the journal ships the window. It checks the
-    parsed line, never its raw words."""
+    another environment, and the person has allowed it unless the journal ships the window. A line only a
+    button allows answers to the module of that button, not the window. It checks the parsed line, never its
+    raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames) -> None:
         self.registry, self.line_parser, self.flags = registry, line_parser, flags
@@ -51,11 +52,25 @@ class WindowLines:
                 raise WindowRefusal(f"{window_name} may use only its own search")
             return
         declared = window.reads if parsed.is_read else window.runs
-        if parsed.line not in declared and not any(button.allows(argv) for button in self.registry.button_lines(window_name)):
-            raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
+        if parsed.line not in declared:
+            self.check_button(window_name, argv, parsed, person, environment)
+            return
         permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
         if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, self.environment_names.environment_id(environment), window_name, permission_type):
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
+
+    def check_button(self, window_name: str, argv: list[str], parsed: ParsedLine, person: Actor, environment: str) -> None:
+        buttons = [button for button in self.registry.button_lines(window_name) if button.allows(argv)]
+        if not buttons:
+            raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
+        if any(button.shipped for button in buttons):
+            return
+        module = buttons[0].module
+        if parsed.line in PERSON_LINES:
+            raise WindowRefusal(f"{module} may never run {parsed.line}: only a person gives rights and changes settings")
+        environment_id = self.environment_names.environment_id(environment)
+        if not any(parsed.line in self.allowances.allowed_lines(person.id, environment_id, button.subject, WindowPermissionType.RUNS) for button in buttons):
+            raise WindowRefusal(f"{module} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:
         if len(argv) < 2:
