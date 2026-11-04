@@ -23,3 +23,13 @@ func KindNames() []string {
 	}
 	return names
 }
+
+// KindByName finds the kind a name on the wire stands for.
+func KindByName(name string) (Kind, bool) {
+	for _, kind := range Kinds {
+		if kind.Name == name {
+			return kind, true
+		}
+	}
+	return Kind{}, false
+}

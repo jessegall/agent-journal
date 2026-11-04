@@ -1,0 +1,214 @@
+package web
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/jessegall/agent-journal/tools/journal-shared/store"
+)
+
+const checklist = `{"fields": {"title": "Release checklist", "abstract": "What to do before a release", "body": "Tag first."}}`
+
+func decode(t *testing.T, response *httptest.ResponseRecorder) map[string]any {
+	t.Helper()
+	var body map[string]any
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatalf("not JSON: %s", response.Body.String())
+	}
+	return body
+}
+
+func fieldsOf(body map[string]any) map[string]any {
+	fields, _ := body["fields"].(map[string]any)
+	return fields
+}
+
+func ifMatch(version string) map[string]string {
+	return map[string]string{"If-Match": version}
+}
+
+func createChecklist(t *testing.T, made fixture) map[string]any {
+	t.Helper()
+	response := made.send("POST", "/items/doc", checklist, made.tokens[store.RoleAdmin], nil)
+	if response.Code != http.StatusCreated {
+		t.Fatalf("create: %d %s", response.Code, response.Body.String())
+	}
+	return decode(t, response)
+}
+
+func TestAnItemIsCreatedThenReadWithItsVersionAndEtag(t *testing.T) {
+	made := newFixture(t)
+	created := createChecklist(t, made)
+	if created["version"] != float64(1) || created["creator"] != "Ada" || created["updated_by"] != "Ada" || created["kind"] != "doc" {
+		t.Fatalf("%v", created)
+	}
+	read := made.send("GET", "/items/doc/1", "", made.tokens[store.RoleRead], nil)
+	body := decode(t, read)
+	if read.Code != 200 || read.Header().Get("ETag") != `"1"` || fieldsOf(body)["body"] != "Tag first." || fieldsOf(body)["title"] != "Release checklist" {
+		t.Fatalf("%d %s %s", read.Code, read.Header().Get("ETag"), read.Body.String())
+	}
+}
+
+func TestAnUpdateAnswersTheVersionItWroteAndNamesWhoWroteIt(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	response := made.send("PUT", "/items/doc/1", `{"fields": {"body": "Tag first, then build."}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	body := decode(t, response)
+	if response.Code != 200 || body["version"] != float64(2) || body["updated_by"] != "Grace" || body["creator"] != "Ada" || response.Header().Get("ETag") != `"2"` {
+		t.Fatalf("%d %v", response.Code, body)
+	}
+	if fieldsOf(body)["body"] != "Tag first, then build." {
+		t.Fatalf("%v", body)
+	}
+}
+
+func TestAFieldLeftOutOfAnUpdateKeepsItsValue(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	response := made.send("PUT", "/items/doc/1", `{"fields": {"title": "Release steps", "unknown_field": "ignored"}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	fields := fieldsOf(decode(t, response))
+	if response.Code != 200 || fields["title"] != "Release steps" || fields["abstract"] != "What to do before a release" || fields["body"] != "Tag first." || fields["unknown_field"] != nil {
+		t.Fatalf("%d %v", response.Code, fields)
+	}
+}
+
+func TestAnUpdateThatChangesNothingWritesNoVersion(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	response := made.send("PUT", "/items/doc/1", `{"fields": {"body": "Tag first."}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	if response.Code != 200 || decode(t, response)["version"] != float64(1) {
+		t.Fatalf("%d %s", response.Code, response.Body.String())
+	}
+}
+
+func TestAStaleUpdateIs409AndCarriesTheNewestItem(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	made.send("PUT", "/items/doc/1", `{"fields": {"body": "Build, then tag."}}`, made.tokens[store.RoleAdmin], ifMatch(`"1"`))
+	response := made.send("PUT", "/items/doc/1", `{"fields": {"body": "Tag first, then build."}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	body := decode(t, response)
+	current, _ := body["current"].(map[string]any)
+	if response.Code != http.StatusConflict || response.Header().Get("ETag") != `"2"` || current["version"] != float64(2) || fieldsOf(current)["body"] != "Build, then tag." || current["updated_by"] != "Ada" {
+		t.Fatalf("%d %s", response.Code, response.Body.String())
+	}
+	expectErrorShape(t, response)
+	if read := decode(t, made.send("GET", "/items/doc/1", "", made.tokens[store.RoleRead], nil)); fieldsOf(read)["body"] != "Build, then tag." {
+		t.Errorf("the stale write was kept: %v", read)
+	}
+}
+
+func TestAnUpdateWithoutIfMatchIs428(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	response := made.send("PUT", "/items/doc/1", `{"fields": {"body": "x"}}`, made.tokens[store.RoleEdit], nil)
+	if response.Code != http.StatusPreconditionRequired {
+		t.Fatalf("%d", response.Code)
+	}
+	expectErrorShape(t, response)
+	if made.send("PUT", "/items/doc/1", `{"fields": {"body": "x"}}`, made.tokens[store.RoleEdit], ifMatch("later")).Code != http.StatusBadRequest {
+		t.Error("an If-Match that is no number was not refused with 400")
+	}
+}
+
+func TestACreateThatLacksAFieldOrBreaksARuleIs400(t *testing.T) {
+	made := newFixture(t)
+	admin := made.tokens[store.RoleAdmin]
+	bad := []struct{ path, body string }{
+		{"/items/doc", `{"fields": {"title": "No body", "abstract": "x"}}`},
+		{"/items/doc", `{"fields": {"title": "", "abstract": "x", "body": "y"}}`},
+		{"/items/check", `{"fields": {"title": "Suite", "command": "true", "brief": "", "interval_minutes": -5}}`},
+		{"/items/sequence", `{"fields": {"title": "Steps", "steps": "not json", "step_guards": "[]"}}`},
+		{"/items/doc", `{"fields": {"title": ["a"], "abstract": "x", "body": "y"}}`},
+		{"/items/doc", `{"fields": {"title": "T", "abstract": "x", "body": 1.5}}`},
+		{"/items/doc", `{}`},
+	}
+	for _, c := range bad {
+		response := made.send("POST", c.path, c.body, admin, nil)
+		if response.Code != http.StatusBadRequest {
+			t.Errorf("%s %s: %d %s", c.path, c.body, response.Code, response.Body.String())
+		}
+		expectErrorShape(t, response)
+	}
+}
+
+func TestABodyOver2MiBIs413OnCreateAndOnUpdate(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	large := `{"fields": {"title": "T", "abstract": "A", "body": "` + strings.Repeat("x", 3<<20) + `"}}`
+	if code := made.send("POST", "/items/doc", large, made.tokens[store.RoleEdit], nil).Code; code != http.StatusRequestEntityTooLarge {
+		t.Errorf("create: %d", code)
+	}
+	if code := made.send("PUT", "/items/doc/1", large, made.tokens[store.RoleEdit], ifMatch(`"1"`)).Code; code != http.StatusRequestEntityTooLarge {
+		t.Errorf("update: %d", code)
+	}
+}
+
+func TestAnItemOfEveryKindIsMadeAndReadWithItsTypes(t *testing.T) {
+	made := newFixture(t)
+	edit := made.tokens[store.RoleEdit]
+	sequence := made.send("POST", "/items/sequence", `{"fields": {"title": "Steps", "steps": "[{\"text\": \"one\"}]", "step_guards": "[]"}}`, edit, nil)
+	check := made.send("POST", "/items/check", `{"fields": {"title": "Suite", "command": "true", "brief": "runs the suite", "interval_minutes": 15}}`, edit, nil)
+	if sequence.Code != 201 || check.Code != 201 || fieldsOf(decode(t, check))["interval_minutes"] != float64(15) {
+		t.Fatalf("%d %d %s", sequence.Code, check.Code, check.Body.String())
+	}
+	if made.send("GET", "/items/check/1", "", edit, nil).Code != 200 || made.send("GET", "/items/sequence/1", "", edit, nil).Code != 200 {
+		t.Error("an item was not read back")
+	}
+}
+
+func TestAnUnknownKindOrItemIs404(t *testing.T) {
+	made := newFixture(t)
+	admin := made.tokens[store.RoleAdmin]
+	for _, path := range []string{"/items/note/1", "/items/doc/99", "/items/doc/one", "/items?kind=note"} {
+		if code := made.send("GET", path, "", admin, nil).Code; code != 404 {
+			t.Errorf("%s: %d", path, code)
+		}
+	}
+	if made.send("POST", "/items/note", checklist, admin, nil).Code != 404 || made.send("PUT", "/items/doc/99", checklist, admin, ifMatch(`"1"`)).Code != 404 {
+		t.Error("a write to an unknown kind or item was not 404")
+	}
+}
+
+func TestTheListPagesSearchesAndShowsAnExcerptAroundTheFirstTerm(t *testing.T) {
+	made := newFixture(t)
+	admin := made.tokens[store.RoleAdmin]
+	for _, body := range []string{
+		`{"fields": {"title": "Release checklist", "abstract": "Before a release", "body": "Tag first, then build the wheels and upload them."}}`,
+		`{"fields": {"title": "Onboarding", "abstract": "New people", "body": "Ask for a token. 100% of people need one_"}}`,
+		`{"fields": {"title": "Notes", "abstract": "Misc", "body": "Nothing about it"}}`,
+	} {
+		made.send("POST", "/items/doc", body, admin, nil)
+	}
+	all := decode(t, made.send("GET", "/items?kind=doc&size=2&page=1", "", admin, nil))
+	rows, _ := all["rows"].([]any)
+	if all["total"] != float64(3) || all["size"] != float64(2) || len(rows) != 2 || rows[0].(map[string]any)["title"] != "Notes" {
+		t.Fatalf("%v", all)
+	}
+	second := decode(t, made.send("GET", "/items?kind=doc&size=2&page=2", "", admin, nil))
+	if secondRows, _ := second["rows"].([]any); len(secondRows) != 1 {
+		t.Fatalf("%v", second)
+	}
+	found := decode(t, made.send("GET", "/items?kind=doc&search=BUILD+tag", "", admin, nil))
+	foundRows, _ := found["rows"].([]any)
+	row, _ := foundRows[0].(map[string]any)
+	if found["total"] != float64(1) || row["title"] != "Release checklist" || row["abstract"] != "Before a release" || !strings.Contains(row["excerpt"].(string), "build") || row["creator"] != "Ada" {
+		t.Fatalf("%v", found)
+	}
+	if _, hasText := row["fields"]; hasText {
+		t.Error("a list row carries the item's text")
+	}
+	for _, search := range []string{"100%25", "one_", "%25"} {
+		literal := decode(t, made.send("GET", "/items?kind=doc&search="+search, "", admin, nil))
+		if literal["total"] != float64(1) {
+			t.Errorf("search %q matched %v", search, literal["total"])
+		}
+	}
+	for _, query := range []string{"page=0", "size=0", "size=101", "page=two"} {
+		if code := made.send("GET", "/items?kind=doc&"+query, "", admin, nil).Code; code != 400 {
+			t.Errorf("%s: %d", query, code)
+		}
+	}
+}

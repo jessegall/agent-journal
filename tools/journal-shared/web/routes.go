@@ -33,6 +33,10 @@ func Routes(database *store.Store, protocol int) http.Handler {
 	routes.HandleFunc("GET /users/{id}/tokens", server.guard(store.RoleAdmin, server.listTokens))
 	routes.HandleFunc("POST /users/{id}/tokens", server.guard(store.RoleAdmin, server.addToken))
 	routes.HandleFunc("DELETE /tokens/{id}", server.guard(store.RoleRead, server.revokeToken))
+	routes.HandleFunc("GET /items", server.guard(store.RoleRead, server.listItems))
+	routes.HandleFunc("POST /items/{kind}", server.guard(store.RoleEdit, server.createItem))
+	routes.HandleFunc("GET /items/{kind}/{id}", server.guard(store.RoleRead, server.readItem))
+	routes.HandleFunc("PUT /items/{kind}/{id}", server.guard(store.RoleEdit, server.updateItem))
 	routes.HandleFunc("/", func(response http.ResponseWriter, _ *http.Request) {
 		writeError(response, http.StatusNotFound, "there is no such route", "see the routes in the design of the shared library")
 	})
@@ -59,7 +63,9 @@ func writeError(response http.ResponseWriter, status int, message, hint string) 
 
 // readJSON reads the body into target, or answers 413 or 400 and says so.
 func readJSON(response http.ResponseWriter, request *http.Request, target any) bool {
-	err := json.NewDecoder(http.MaxBytesReader(response, request.Body, maxBody)).Decode(target)
+	decoder := json.NewDecoder(http.MaxBytesReader(response, request.Body, maxBody))
+	decoder.UseNumber()
+	err := decoder.Decode(target)
 	var tooLarge *http.MaxBytesError
 	if errors.As(err, &tooLarge) {
 		writeError(response, http.StatusRequestEntityTooLarge, "the request is over 2 MiB", "send less in one request")
@@ -80,9 +86,11 @@ func pathNumber(request *http.Request, name string) (int64, bool) {
 // fail answers an error from the store with its status.
 func fail(response http.ResponseWriter, err error) {
 	switch {
+	case errors.Is(err, store.ErrRemoved):
+		writeError(response, http.StatusGone, "the item is removed", "ask an admin to restore it")
 	case errors.Is(err, store.ErrNotFound):
 		writeError(response, http.StatusNotFound, "there is no such item", "check the number")
-	case errors.Is(err, store.ErrBadRole), errors.Is(err, store.ErrBadName):
+	case errors.Is(err, store.ErrBadRole), errors.Is(err, store.ErrBadName), errors.Is(err, store.ErrBadFields):
 		writeError(response, http.StatusBadRequest, err.Error(), "fix the field and send it again")
 	case errors.Is(err, store.ErrNameTaken):
 		writeError(response, http.StatusBadRequest, err.Error(), "pick another name")

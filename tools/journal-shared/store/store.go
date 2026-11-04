@@ -36,6 +36,7 @@ func Open(folder string) (*Store, error) {
 	query.Add("_pragma", "journal_mode(WAL)")
 	query.Add("_pragma", "foreign_keys(1)")
 	query.Add("_pragma", "busy_timeout(5000)")
+	query.Add("_txlock", "immediate")
 	database, err := sql.Open("sqlite", "file:"+filepath.Join(folder, FileName)+"?"+query.Encode())
 	if err != nil {
 		return nil, err

@@ -22,6 +22,17 @@ type fixture struct {
 	otherID int64 // the number of the token of the other user
 }
 
+// seeded is a fixture with one document, number 1, made by Ada.
+func seeded(t *testing.T) fixture {
+	t.Helper()
+	made := newFixture(t)
+	ada, _ := made.store.UserByName("Ada")
+	if _, err := made.store.CreateItem(store.Kinds[0], store.Fields{"title": "Seed", "abstract": "Seed", "body": "Seed"}, store.Caller{User: ada}); err != nil {
+		t.Fatal(err)
+	}
+	return made
+}
+
 func newFixture(t *testing.T) fixture {
 	t.Helper()
 	database, err := store.Open(t.TempDir())
@@ -65,28 +76,33 @@ type routeCase struct {
 	method, path, body string
 	minimum            store.Role
 	success            int
+	headers            map[string]string
 }
 
 func routeCases(made fixture) []routeCase {
 	other := fmt.Sprint(made.other.ID)
 	return []routeCase{
-		{"GET", "/me", "", store.RoleRead, 200},
-		{"GET", "/users", "", store.RoleAdmin, 200},
-		{"POST", "/users", `{"name": "New", "role": "read"}`, store.RoleAdmin, 201},
-		{"PATCH", "/users/" + other, `{"role": "edit"}`, store.RoleAdmin, 200},
-		{"DELETE", "/users/" + other, "", store.RoleAdmin, 200},
-		{"GET", "/users/" + other + "/tokens", "", store.RoleAdmin, 200},
-		{"POST", "/users/" + other + "/tokens", `{"label": "laptop"}`, store.RoleAdmin, 201},
-		{"DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", store.RoleAdmin, 200},
+		{"GET", "/me", "", store.RoleRead, 200, nil},
+		{"GET", "/users", "", store.RoleAdmin, 200, nil},
+		{"POST", "/users", `{"name": "New", "role": "read"}`, store.RoleAdmin, 201, nil},
+		{"PATCH", "/users/" + other, `{"role": "edit"}`, store.RoleAdmin, 200, nil},
+		{"DELETE", "/users/" + other, "", store.RoleAdmin, 200, nil},
+		{"GET", "/users/" + other + "/tokens", "", store.RoleAdmin, 200, nil},
+		{"POST", "/users/" + other + "/tokens", `{"label": "laptop"}`, store.RoleAdmin, 201, nil},
+		{"DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", store.RoleAdmin, 200, nil},
+		{"GET", "/items?kind=doc", "", store.RoleRead, 200, nil},
+		{"GET", "/items/doc/1", "", store.RoleRead, 200, nil},
+		{"POST", "/items/doc", checklist, store.RoleEdit, 201, nil},
+		{"PUT", "/items/doc/1", `{"fields": {"body": "changed"}}`, store.RoleEdit, 200, map[string]string{"If-Match": `"1"`}},
 	}
 }
 
 func TestEveryRoleAgainstEveryRoute(t *testing.T) {
 	for _, role := range []store.Role{store.RoleAdmin, store.RoleEdit, store.RoleRead} {
 		for index := range routeCases(newFixture(t)) {
-			made := newFixture(t)
+			made := seeded(t)
 			route := routeCases(made)[index]
-			response := made.send(route.method, route.path, route.body, made.tokens[role], nil)
+			response := made.send(route.method, route.path, route.body, made.tokens[role], route.headers)
 			want := route.success
 			if !role.Allows(route.minimum) {
 				want = http.StatusForbidden
@@ -100,12 +116,12 @@ func TestEveryRoleAgainstEveryRoute(t *testing.T) {
 
 func TestEveryRouteRefusesNoTokenAWrongTokenAndARevokedToken(t *testing.T) {
 	for index := range routeCases(newFixture(t)) {
-		made := newFixture(t)
+		made := seeded(t)
 		route := routeCases(made)[index]
 		revokedText, revoked, _ := made.store.NewToken(1, "")
 		made.store.RevokeToken(revoked.ID)
 		for name, token := range map[string]string{"no token": "", "a wrong token": "jsl_wrong", "a revoked token": revokedText} {
-			response := made.send(route.method, route.path, route.body, token, nil)
+			response := made.send(route.method, route.path, route.body, token, route.headers)
 			if response.Code != http.StatusUnauthorized {
 				t.Errorf("%s %s with %s: %d", route.method, route.path, name, response.Code)
 			}
@@ -129,10 +145,10 @@ func TestARevokedTokenStopsWorkingOnTheNextRequest(t *testing.T) {
 }
 
 func TestEveryRouteButInfoRefusesAMissingOrUnsupportedProtocol(t *testing.T) {
-	made := newFixture(t)
+	made := seeded(t)
 	for _, route := range routeCases(made) {
 		for _, version := range []string{"", "2", "0"} {
-			response := made.send(route.method, route.path, route.body, made.tokens[store.RoleAdmin], map[string]string{"Journal-Protocol": version})
+			response := made.send(route.method, route.path, route.body, made.tokens[store.RoleAdmin], mergedHeaders(route.headers, "Journal-Protocol", version))
 			if response.Code != http.StatusUpgradeRequired {
 				t.Errorf("%s %s with protocol %q: %d", route.method, route.path, version, response.Code)
 			}
@@ -193,8 +209,16 @@ func TestTheServerNeverLogsTheAuthorizationHeader(t *testing.T) {
 
 func expectErrorShape(t *testing.T, response *httptest.ResponseRecorder) {
 	t.Helper()
-	var body map[string]string
-	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || body["error"] == "" || body["hint"] == "" {
+	var body map[string]any
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || body["error"] == nil || body["error"] == "" || body["hint"] == nil || body["hint"] == "" {
 		t.Errorf("not the error shape: %s", response.Body.String())
 	}
+}
+
+func mergedHeaders(headers map[string]string, name, value string) map[string]string {
+	merged := map[string]string{name: value}
+	for key, existing := range headers {
+		merged[key] = existing
+	}
+	return merged
 }
