@@ -28,3 +28,6 @@ class LibraryCopy(Model):
 
     def is_recorded(self, digest: str, version: int, role: LibraryRole) -> bool:
         return self.unsent_digest == digest and self.server_version == version and not (self.state is CopyState.DENIED and role.may_write)
+
+    def with_server_version(self) -> "LibraryCopy":
+        return self.changed(base_version=self.server_version)

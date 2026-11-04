@@ -14,7 +14,7 @@ from core.modules.library.support.library_errors import LibraryFailures
 from core.modules.library.support.library_item_removed import LibraryItemRemoved
 from core.modules.library.support.library_unreachable import LibraryUnreachable
 from core.testing.story import Story
-from tests.stories.core.modules.library.support import command_share
+from tests.stories.core.modules.library.support import command_share, paused_share
 from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, copy_line, copy_of_item, copy_with, made_copy, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
@@ -364,3 +364,137 @@ def test_a_new_server_version_that_must_be_read_first_waits_for_a_person(new_sto
     copy = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
     story.expect_rows(copy.state is CopyState.REVIEW, copy.note == command_share.COMMAND_CHANGED, story.row(Doc, 1).body == "echo hello", copy.server_version == 2)
     story.expect_text("library copies", "Status: New version to read", command_share.COMMAND_CHANGED, actor=story.agent)
+
+
+def conflicted_copy(story: Story, server: SharedServerBinary, tokens, title: str) -> LibraryCopy:
+    copy = made_copy(story, server, tokens.admin, title)
+    edit_body(story, copy, "Edited here.")
+    change_on_server(server, tokens.admin, copy.item_id, title, "Admin text.", 1)
+    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
+    assert stored_copy(story, copy).state is CopyState.CONFLICT
+    return copy
+
+
+def test_keeping_mine_sends_the_text_with_the_version_the_person_saw_and_ends_the_conflict(new_story, shared_server):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = conflicted_copy(story, server, tokens, "Quartz keep mine")
+    story.expect_success(f"library resolve {copy.id} --keep mine", f"doc {copy.row_id} follows library doc {copy.item_id}, version 3. Status: In sync", actor=story.user)
+    item = server_item(server, tokens.admin, copy)
+    story.expect_rows(item["version"] == 3, item["fields"]["body"] == "Edited here.", stored_copy(story, copy).state is CopyState.SYNCED, story.row(Doc, copy.row_id).body == "Edited here.")
+
+
+def test_keeping_mine_when_a_third_version_arrived_stays_a_conflict_with_the_newest_text(new_story, shared_server, monkeypatch):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = conflicted_copy(story, server, tokens, "Basalt keep mine third")
+    client = story.container.get(LibraryClient)
+    real_update = client.update
+
+    def update_after_third_version(*arguments: object) -> object:
+        change_on_server(server, tokens.admin, copy.item_id, "Basalt keep mine third", "Third text.", 2)
+        return real_update(*arguments)
+
+    monkeypatch.setattr(client, "update", update_after_third_version)
+    story.expect_text(f"library resolve {copy.id} --keep mine", "Status: Conflict", actor=story.user)
+    kept = stored_copy(story, copy)
+    story.expect_rows(kept.state is CopyState.CONFLICT, kept.server_version == 3, "Third text." in kept.server_fields, story.row(Doc, copy.row_id).body == "Edited here.")
+    story.expect_rows(server_item(server, tokens.admin, copy)["fields"]["body"] == "Third text.")
+
+
+def test_keeping_the_library_version_keeps_the_text_in_the_revisions_even_after_a_fresh_edit(new_story, shared_server):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = conflicted_copy(story, server, tokens, "Slate keep library")
+    edit_body(story, copy, "Edited again.")
+    story.expect_success(f"library resolve {copy.id} --keep library", f"doc {copy.row_id} follows library doc {copy.item_id}, version 2. Status: In sync", actor=story.user)
+    story.expect_rows(story.row(Doc, copy.row_id).body == "Admin text.", stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2)
+    story.expect_text(f"doc revision {copy.row_id} 2", "Edited again.", actor=story.user)
+    story.expect_text(f"doc revision {copy.row_id} 3", "Admin text.", actor=story.user)
+
+
+def test_an_agent_cannot_resolve_a_copy(new_story, shared_server):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = conflicted_copy(story, server, tokens, "Opal agent resolve")
+    story.expect_refusal(f"library resolve {copy.id} --keep library", "only a person chooses between a copy and its item", actor=story.agent)
+    story.expect_rows(stored_copy(story, copy).state is CopyState.CONFLICT)
+
+
+def test_a_copy_that_is_in_step_has_nothing_to_resolve(new_story, shared_server):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = made_copy(story, server, tokens.admin, "Garnet nothing to resolve")
+    story.expect_refusal(f"library resolve {copy.id} --keep mine", f"doc {copy.row_id} has nothing to resolve: it is synced", actor=story.user)
+
+
+def test_keeping_the_library_version_ends_a_refused_change(new_story, shared_server, monkeypatch):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = made_copy(story, server, tokens.admin, "Pearl refused then library")
+    edit_body(story, copy, "Refused text.")
+    client = story.container.get(LibraryClient)
+    real_update = client.update
+    failing_update(monkeypatch, client, LibraryFailures.classify(413, ERROR_BODY))
+    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
+    story.expect_rows(stored_copy(story, copy).state is CopyState.REJECTED)
+    monkeypatch.setattr(client, "update", real_update)
+    story.expect_text(f"library resolve {copy.id} --keep library", "Status: In sync", actor=story.user)
+    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, story.row(Doc, copy.row_id).body == "Tag first.", stored_copy(story, copy).note == "")
+
+
+def test_keeping_mine_for_a_refused_change_sends_it_again_and_a_reader_stays_refused(new_story, shared_server):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.reader)
+    copy = made_copy(story, server, tokens.admin, "Jasper reader keeps mine")
+    edit_body(story, copy, "Edited by a reader.")
+    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
+    story.expect_text(f"library resolve {copy.id} --keep mine", "Status: Local change, not sent", actor=story.user)
+    story.expect_rows(stored_copy(story, copy).state is CopyState.DENIED, server_item(server, tokens.admin, copy)["version"] == 1)
+
+
+def command_review(new_story, server: SharedServerBinary, tokens, title: str) -> tuple[Story, LibraryCopy]:
+    fields = {"title": title, "command": "echo hello", "brief": "Says hello", "interval_minutes": 5}
+    item = server.send(tokens.admin, "POST", "/items/check", {"fields": fields})[1]
+    story = connected(new_story, server, tokens.editor, f"{command_share.PATH}:CommandShareModule")
+    story.expect_text(f"library get check {item['id']} --read", "is now check 1", actor=story.user)
+    server.send(tokens.admin, "PUT", f"/items/check/{item['id']}", {"fields": {**fields, "command": "echo changed"}}, {"If-Match": '"1"'})
+    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
+    copy = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
+    assert copy.state is CopyState.REVIEW
+    return story, copy
+
+
+def test_keeping_the_library_version_ends_a_new_version_to_read(new_story, shared_server):
+    server, tokens = shared_server
+    story, copy = command_review(new_story, server, tokens, "Topaz review library")
+    story.expect_text(f"library resolve {copy.id} --keep library", "Status: In sync", actor=story.user)
+    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2, story.row(Doc, 1).body == "echo changed")
+
+
+def test_keeping_mine_ends_a_new_version_to_read_by_sending_the_text_here(new_story, shared_server):
+    server, tokens = shared_server
+    story, copy = command_review(new_story, server, tokens, "Agate review mine")
+    story.expect_text(f"library resolve {copy.id} --keep mine", "Status: In sync", actor=story.user)
+    item = server.send(tokens.admin, "GET", f"/items/check/{copy.item_id}")[1]
+    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, item["version"] == 3, item["fields"]["command"] == "echo hello", story.row(Doc, 1).body == "echo hello")
+
+
+def copy_of_item_in(story: Story, share: str) -> LibraryCopy:
+    return story.container.get(Queries).query(LibraryCopy).filter(share=share).first()
+
+
+def test_keeping_the_library_version_waits_while_the_item_is_running(new_story, shared_server):
+    server, tokens = shared_server
+    item = server.send(tokens.admin, "POST", "/items/sequence", {"fields": {"title": "Onyx running", "steps": '["one"]', "step_guards": "[]"}})[1]
+    story = connected(new_story, server, tokens.editor, f"{paused_share.PATH}:PausedShareModule")
+    story.expect_text(f"library get sequence {item['id']}", "is now sequence 1", actor=story.user)
+    edit_body(story, copy_of_item_in(story, "sequence"), "two")
+    server.send(tokens.admin, "PUT", f"/items/sequence/{item['id']}", {"fields": {"title": "Onyx running", "steps": '["three"]', "step_guards": "[]"}}, {"If-Match": '"1"'})
+    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
+    copy = copy_of_item_in(story, "sequence")
+    story.expect_success(f'doc edit 1 --abstract "{paused_share.RUN_OPEN}"', actor=story.user)
+    story.expect_refusal(f"library resolve {copy.id} --keep library", "this sequence is running: use the library's version when the run ends", actor=story.user)
+    story.expect_success('doc edit 1 --abstract "Steps"', actor=story.user)
+    story.expect_text(f"library resolve {copy.id} --keep library", "Status: In sync", actor=story.user)
+    story.expect_rows(story.row(Doc, 1).body == "three")

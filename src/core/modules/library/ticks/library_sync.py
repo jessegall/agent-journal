@@ -12,6 +12,7 @@ from core.modules.library.commands.merge_library_item.merge_library_item import 
 from core.modules.library.commands.update_library_connection.update_library_connection import UpdateLibraryConnection
 from core.modules.library.commands.update_library_copy.update_library_copy import UpdateLibraryCopy
 from core.modules.library.models.enums.copy_state import CopyState
+from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
@@ -90,10 +91,10 @@ class LibrarySync:
         if server_changed and not local_changed and share.is_paused(row):
             return copy.server_version != entry.version and self.save(UpdateLibraryCopy(copy.id, copy.state, server_version=entry.version))
         if server_changed:
-            return self.compare(copy, row, self.client.item(copy.share, copy.item_id), digest, state)
-        return self.send(copy, row, digest, state)
+            return self.compare(copy, row, self.client.item(copy.share, copy.item_id), digest, state.role)
+        return self.send(copy, row, digest, state.role)
 
-    def send(self, copy: LibraryCopy, row: Model, digest: str, state: ServerState) -> bool:
+    def send(self, copy: LibraryCopy, row: Model, digest: str, role: LibraryRole) -> bool:
         try:
             item = self.client.update(copy.share, copy.item_id, copy.base_version, self.shares.lookup(copy.share).fields(row))
         except LibraryDenied:
@@ -101,16 +102,16 @@ class LibrarySync:
         except LibraryRejected as refusal:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.REJECTED, note=str(refusal), unsent_digest=digest, server_version=copy.base_version))
         except LibraryStale as stale:
-            return self.compare(copy, row, stale.current, digest, state)
+            return self.compare(copy, row, stale.current, digest, role)
         return self.save(UpdateLibraryCopy.synced(copy.id, item.version, digest))
 
-    def compare(self, copy: LibraryCopy, row: Model, item: LibraryItem, digest: str, state: ServerState) -> bool:
+    def compare(self, copy: LibraryCopy, row: Model, item: LibraryItem, digest: str, role: LibraryRole) -> bool:
         share = self.shares.lookup(copy.share)
         if share.fields_digest(item.fields) == digest:
             return self.save(UpdateLibraryCopy.synced(copy.id, item.version, digest))
         stored = dict(unsent_digest=digest, server_version=item.version, server_fields=item.fields_text)
         if digest != copy.base_digest or item.version < copy.base_version:
-            return self.save(UpdateLibraryCopy(copy.id, CopyState.CONFLICT if state.role.may_write else CopyState.DENIED, **stored))
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.CONFLICT if role.may_write else CopyState.DENIED, **stored))
         reason = share.needs_reading(row, item.fields)
         if reason:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.REVIEW, note=reason, **stored))
