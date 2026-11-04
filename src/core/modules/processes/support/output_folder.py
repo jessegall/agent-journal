@@ -6,8 +6,10 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from core.modules.processes.support.colour_codes import ColourCodes
+from core.modules.processes.support.output_page import NEWLINE, OutputPage
 
 FOLDER_NAME = "processes"
+PAGE_BYTES = 1 << 20
 READS_FILE = "reads"
 LINE_FILE = "line"
 PARTS_FILE = "parts"
@@ -131,6 +133,50 @@ class OutputFolder:
                     collected += handle.read()
             passed += size
         return collected
+
+    def byte_range(self, process_id: int, first: int, last: int) -> bytes:
+        """The bytes of the parts' output from first up to last; only the part files that reach into them are opened."""
+        passed, collected = 0, b""
+        for path in self.output_paths(process_id):
+            size = path.stat().st_size if path.exists() else 0
+            if size and passed + size > first and passed < last:
+                with path.open("rb") as handle:
+                    handle.seek(max(0, first - passed))
+                    collected += handle.read(last - max(first, passed))
+            passed += size
+        return collected
+
+    def older_page(self, process_id: int, end: int, count: int) -> OutputPage:
+        """The last lines that end at a byte, or at the output's end when end is below 0, read in windows that double
+        until they hold the lines asked for."""
+        total = self.total_bytes(process_id)
+        last_byte = total if end < 0 else min(end, total)
+        window = TAIL_BYTES
+        while True:
+            first_byte = max(0, last_byte - window)
+            lines = self.byte_range(process_id, first_byte, last_byte).split(NEWLINE)
+            if first_byte and len(lines) > 1:
+                first_byte += len(lines.pop(0)) + 1
+            if lines and not lines[-1]:
+                lines.pop()
+            if not first_byte or len(lines) >= count:
+                kept = lines[-count:]
+                dropped = sum(len(line) + 1 for line in lines[:-count]) if len(lines) > count else 0
+                return OutputPage(self.page_text(kept), first_byte + dropped, last_byte, total)
+            window *= 2
+
+    def page_after(self, process_id: int, first: int, has_ended: bool) -> OutputPage:
+        """The lines after a byte, at most a window of them, so a following view reads only what is new; a line
+        still being written waits, and the last one of an ended run comes without its newline."""
+        total = self.total_bytes(process_id)
+        ready = self.byte_range(process_id, first, first + PAGE_BYTES)
+        ready = ready if has_ended and first + len(ready) >= total else ready[: ready.rfind(NEWLINE) + 1]
+        lines = ready.split(NEWLINE)
+        return OutputPage(self.page_text(lines if lines[-1] else lines[:-1]), first, first + len(ready), total)
+
+    @staticmethod
+    def page_text(lines: list[bytes]) -> list[str]:
+        return [ColourCodes.removed(line.decode(errors="replace")) for line in lines]
 
     def reader_offset(self, process_id: int, position: int, offset: int) -> int:
         """Where a reader goes on: at its offset, or at the start of a file the runner cut below that offset."""

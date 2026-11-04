@@ -1,4 +1,5 @@
 from core.base.container import Container
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.driver_rule import DriverRule
@@ -20,6 +21,7 @@ class BlockStopRule(DriverRule):
     name = "drivers.block-stop"
     hook = HookEventName.STOP
     drivers = ["*"]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, queries: Queries, conditions: BlockConditions, container: Container) -> None:
         self.queries, self.conditions, self.container = queries, conditions, container

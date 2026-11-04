@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
-import {FoldSign, Icon, useNow, usePoll, useWindow} from "@journal/window-kit";
+import {FoldSign, Icon, useNow, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
 
 // the card of a docked process, as version 4's watched output drew it: in the head a mark for where the run stands, its command, how far it has come
 // and how long it has run; along the foot a thin bar; opened, its terminal output in a scrolling box that follows the end; while the run is going it is read every two seconds when opened and every five when closed,
@@ -14,7 +14,8 @@ const context = useWindow();
 const item = context.option("row");
 const head = context.option("head");
 const run = ref(null);
-const lines = ref([]);
+const pages = useOutputPages((words) => context.read(words.join(" ")), () => item.value?.target_id);
+const lines = pages.lines;
 const opened = ref(false);
 const terminal = ref(null);
 const FOLLOW_PIXELS = 24;
@@ -46,8 +47,7 @@ async function load() {
     if (!opened.value) return;
     const box = terminal.value;
     const following = !box || box.scrollHeight - box.scrollTop - box.clientHeight < FOLLOW_PIXELS;
-    const text = await context.read(`output peek ${id} --all`);
-    lines.value = text.ok ? text.value.lines : [];
+    await pages.follow();
     await nextTick();
     if (following && terminal.value) terminal.value.scrollTop = terminal.value.scrollHeight;
 }
@@ -80,7 +80,7 @@ usePoll(load, isRunning, () => (opened.value ? OPENED_MILLISECONDS : CLOSED_MILL
         </template>
         <div :class="['output-dock-more', {open: opened}]">
             <div class="output-dock-inner">
-                <pre ref="terminal" class="output-dock-terminal" data-output-terminal>{{ lines.join("\n") }}</pre>
+                <pre ref="terminal" class="output-dock-terminal" data-output-terminal @scroll="pages.loadEarlier($event.target)">{{ lines.join("\n") }}</pre>
             </div>
         </div>
     </div>

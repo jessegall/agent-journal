@@ -9,11 +9,10 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_page import NEWLINE
 from core.modules.processes.support.reader_advance import ReaderAdvance
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.step_tally import StepTally
-
-NEWLINE = b"\n"
 
 
 class ReaderStep:

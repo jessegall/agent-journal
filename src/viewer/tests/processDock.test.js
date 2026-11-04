@@ -64,7 +64,7 @@ test("a chained run's temporary title never shows its script in the header or to
 test("a docked process's card shows the run live, and unfolded its whole terminal output", async () => {
     const window = context({
         "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "Running make", steps_passed: 0, steps_failed: 0}},
-        "output peek 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"]}},
+        "output page 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"], first_byte: 0, last_byte: 26, total: 26}},
     });
     const head = document.createElement("span");
     document.body.append(head);
@@ -72,10 +72,10 @@ test("a docked process's card shows the run live, and unfolded its whole termina
     const element = await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
     expect(head.querySelector(".output-dock-title").textContent).toBe("Running make");
-    expect(window.reads.some((line) => line.startsWith("output peek"))).toBe(false);
+    expect(window.reads.some((line) => line.startsWith("output page"))).toBe(false);
     head.querySelector("[data-output-toggle]").click();
     await settle();
-    expect(window.reads).toContain("output peek 3 --all");
+    expect(window.reads).toContain("output page 3");
     expect(element.querySelector("[data-output-terminal]").textContent).toBe("compiling the cart\n[ 40%]");
 });
 

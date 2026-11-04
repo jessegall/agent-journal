@@ -1,12 +1,13 @@
 <script setup>
 import {ref} from "vue";
-import {AutoScrollPane, EmptyState, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const outputId = ref(Number(new URLSearchParams(location.search).get("output")) || 0);
 const run = ref(null);
 const lines = ref([]);
 const isWhole = ref(false);
+const pages = useOutputPages((words) => context.read(words.join(" ")), () => outputId.value);
 
 const isRunning = () => run.value !== null && (run.value.state === "running" || run.value.state === "background");
 
@@ -19,7 +20,11 @@ async function load() {
     if (!outputId.value) return;
     const shown = await context.read(`process feed --id ${outputId.value}`);
     run.value = shown.ok && shown.value.rows.length ? shown.value.rows[0] : null;
-    const text = await context.read(`output peek ${outputId.value} ${isWhole.value ? "--all" : "--summary"}`);
+    if (isWhole.value) {
+        await pages.follow();
+        return;
+    }
+    const text = await context.read(`output peek ${outputId.value} --summary`);
     lines.value = text.ok ? text.value.lines : [text.error];
 }
 
@@ -47,9 +52,14 @@ usePoll(load, isRunning);
                         <button class="watch" type="button" @click="context.run(`output watch ${outputId}`)">Watch</button>
                     </template>
                 </div>
-                <AutoScrollPane :row-count="lines.length">
-                    <pre class="text" data-output-text>{{ lines.join("\n") }}</pre>
-                </AutoScrollPane>
+                <template v-if="isWhole">
+                    <OutputLines class="text" data-output-text :lines="pages.lines.value" @older="pages.loadEarlier" />
+                </template>
+                <template v-else>
+                    <AutoScrollPane :row-count="lines.length">
+                        <pre class="text" data-output-text>{{ lines.join("\n") }}</pre>
+                    </AutoScrollPane>
+                </template>
             </div>
         </template>
     </WindowRoom>

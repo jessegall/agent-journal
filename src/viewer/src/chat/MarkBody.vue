@@ -1,5 +1,6 @@
 <script setup>
 import {peekRef} from "../route.js";
+import {useOutputPages} from "../composables/outputPages.js";
 import {STOPPED_VARIANTS} from "../domain/markLook.js";
 import {computed, inject, onUnmounted, ref, watch} from "vue";
 import OutputLines from "../kit/OutputLines.vue";
@@ -16,15 +17,15 @@ const TASK_MODEL = "task";
 const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
 const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
 const POLL_MILLISECONDS = 2000;
-const outputLines = ref([]);
+const pages = useOutputPages((words) => context.run(words), () => props.mark.target_id);
+const outputLines = pages.lines;
 const outputLoaded = ref(false);
 const outputFailure = ref("");
 const hasOutput = computed(() => props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
-async function readOutput() {
-    const answer = await context.run(["output", "peek", String(props.mark.target_id), "--all"]);
+async function readOutput(step = pages.follow) {
+    const answer = await step();
     outputLoaded.value = true;
     outputFailure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) outputLines.value = answer.value.lines;
 }
 let poll = null;
 const stopPoll = () => clearInterval(poll);
@@ -34,7 +35,7 @@ watch(() => props.shown && hasOutput.value, (reading) => {
     readOutput();
     if (!props.mark.ended_at) poll = setInterval(readOutput, POLL_MILLISECONDS);
 }, {immediate: true});
-watch(() => props.mark.ended_at, (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput()));
+watch(() => props.mark.ended_at, (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput(pages.newest)));
 onUnmounted(stopPoll);
 </script>
 
@@ -54,7 +55,7 @@ onUnmounted(stopPoll);
                 </template>
                 <template v-else-if="hasOutput && outputLoaded">
                     <p class="mark-label">Output</p>
-                    <OutputLines class="mark-terminal" :lines="outputLines" />
+                    <OutputLines class="mark-terminal" :lines="outputLines" @older="pages.loadEarlier" />
                 </template>
                 <template v-else-if="lines.length">
                     <p class="mark-lines">{{ lines.join("\n") }}</p>

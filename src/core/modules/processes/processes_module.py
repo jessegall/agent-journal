@@ -48,6 +48,7 @@ from core.modules.processes.commands.end_process_part.end_process_part_subcomman
 from core.modules.processes.commands.start_process_part.start_process_part_handler import StartProcessPartHandler
 from core.modules.processes.commands.start_process_part.start_process_part_subcommand import StartProcessPartSubcommand
 from core.modules.processes.commands.end_process.end_process_subcommand import EndProcessSubcommand
+from core.modules.processes.commands.page_output.page_output_subcommand import PageOutputSubcommand
 from core.modules.processes.commands.peek_output.peek_output_subcommand import PeekOutputSubcommand
 from core.modules.processes.commands.read_output.read_output_handler import ReadOutputHandler
 from core.modules.processes.commands.read_output.read_output_subcommand import ReadOutputSubcommand
@@ -158,7 +159,7 @@ from core.modules.processes.support.block_conditions.output_monitored import Out
 from core.modules.processes.support.block_conditions.output_read import OutputRead
 from core.modules.processes.support.skeletons import PROCESSES_OUTPUTS_SKELETON, PROCESSES_OUTPUT_SKELETON
 
-WINDOW_READS = ["process card", "process show", "process feed", "output peek"]
+WINDOW_READS = ["process card", "process show", "process feed", "output peek", "output page"]
 WINDOW_RUNS = ["output stop", "output watch"]
 WINDOW_EVENTS = ["process.*", "output.*"]
 
@@ -183,7 +184,7 @@ class ProcessesModule(Module):
     views = [ProcessRow, ProcessQueueRow]
     migrations = [ProcessEndIndexMigration, ProcessOwnerMigration,StockReaderDefaultsMigration, StockReaderCatalogMigration, StockTestTitlesMigration,ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration,ProcessWorkMigration,ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
     handlers = [PruneRunFoldersHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
-    subcommands = [InspectRunQueueSubcommand, MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
+    subcommands = [PageOutputSubcommand, InspectRunQueueSubcommand,MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
     listeners = [StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener]
