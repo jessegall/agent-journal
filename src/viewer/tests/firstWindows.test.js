@@ -72,11 +72,11 @@ test("the plans window shows each plan's title and state", async () => {
     expect(text).toContain("started");
 });
 
-test("the agents window shows every agent's role", async () => {
-    const rows = page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 6, role: "worker", session: "s-3", program: "claude"}]);
+test("the agents window shows each helper's role", async () => {
+    const rows = page([{id: 6, role: "worker", session: "s-3", program: "claude"}, {id: 7, role: "subagent", session: "s-4", program: "claude"}]);
     const text = await drawn(AgentList, context({"agent cards": rows}));
     expect(text).toContain("Worker6");
-    expect(text).toContain("Main agent");
+    expect(text).toContain("Subagent");
 });
 
 test("the helpers window lists every agent but the main one", async () => {
