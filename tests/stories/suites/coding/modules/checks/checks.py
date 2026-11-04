@@ -63,10 +63,32 @@ def test_a_due_check_runs_on_the_periodic_round_and_never_in_a_hook(new_story):
 
 
 def test_a_stopped_check_is_not_run_by_hand(new_story):
+    story = new_story(fixture=StoppedCheck)
+    story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)
+
+
+def test_a_person_starts_a_stopped_check_and_the_next_due_round_runs_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 1', actor=story.user)
+    story.run("check stop 1", actor=story.user)
+    story.advance(timedelta(minutes=2))
+    story.container.get(PeriodicChecks).run()
+    story.expect_absent("check list", "passed", actor=story.user)
+    story.expect_text("check start 1", "check 1 started: it runs again", actor=story.user)
+    story.container.get(PeriodicChecks).run()
+    story.expect_text("check list", "passed", "Suite", actor=story.user)
+
+
+def test_an_agent_is_refused_when_it_starts_a_stopped_check(new_story):
+    story = new_story(fixture=StoppedCheck)
+    story.expect_refusal("check start 1", "only a person starts a stopped check", actor=story.agent)
+    story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)
+
+
+def test_a_check_that_is_not_stopped_is_not_started(new_story):
     story = new_story(fixture=UserJoined)
     story.run('check make "Suite" --command "true" --every 0', actor=story.user)
-    story.run("check stop 1", actor=story.user)
-    story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)
+    story.expect_refusal("check start 1", "check 1 is not stopped", actor=story.user)
 
 
 def test_a_check_that_ended_has_no_percent_left_on_its_row(new_story):
@@ -81,6 +103,14 @@ class SuiteCheck(StoryFixture):
 
     def steps(self, story):
         story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
+
+
+class StoppedCheck(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.run('check make "Suite" --command "true" --every 0', actor=story.user)
+        story.run("check stop 1", actor=story.user)
 
 
 def expect_output_runs_with(runs, expected) -> None:
