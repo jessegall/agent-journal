@@ -20,6 +20,7 @@ from tests.stories.support.story_checks import expect_absent_value, expect_answe
 PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
 PIPED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
 REDIRECTED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py > out.txt"'
+TAILED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "journal pytest-run tests/cart.py --tail 5"'
 
 
 def recording_launch(monkeypatch) -> list[int]:
@@ -51,8 +52,9 @@ def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch
     recording_launch(monkeypatch)
     repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
-    story.expect_refusal(PIPED_PROOF, "without a pipe or a redirect", actor=worker)
-    story.expect_refusal(REDIRECTED_PROOF, "without a pipe or a redirect", actor=worker)
+    story.expect_refusal(PIPED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
+    story.expect_refusal(REDIRECTED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
+    story.expect_refusal(TAILED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
 
 
 def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story, monkeypatch):

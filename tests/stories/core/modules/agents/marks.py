@@ -1,10 +1,12 @@
 from tests.stories.core.modules.chat.support.v4_looks import SUBAGENT, expect_declared_appearance
 import pytest
 
+from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
+from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.testing.hook_samples import HookSamples
@@ -20,6 +22,15 @@ def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place
     story.run_listeners()
     expect_mark_count(story, 1)
     expect_marks_text(story, "Finished journal-researcher: Read the cart")
+    story.expect_text("chat-mark show 1", "state: ended")
+
+
+def test_a_change_to_a_finished_dispatch_leaves_its_ended_mark_alone(researcher_dispatched):
+    story, sample = researcher_dispatched
+    story.hook("s-1", sample.with_fields(event="post_tool_use"))
+    story.run_listeners()
+    events = [event for event in story.container.get(EventLog).events_past(0) if event.event.startswith("subagent_dispatch")]
+    story.container.get(DispatchMarkListener).handle(events[-1])
     story.expect_text("chat-mark show 1", "state: ended")
 
 
