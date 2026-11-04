@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {SearchBar, Segmented, Skeleton, WindowRoom, matchesSearch, patchedWhere, useRows} from "@journal/window-kit";
+import CommandSettings from "./CommandSettings.vue";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 
@@ -46,7 +47,7 @@ function heading(module) {
 }
 
 const chosen = ref("");
-const current = computed(() => (modules.value.includes(chosen.value) ? chosen.value : (modules.value[0] ?? "")));
+const current = computed(() => (chosen.value === "commands" || modules.value.includes(chosen.value) ? chosen.value : (modules.value[0] ?? "")));
 
 function slashFocus(event) {
     if (event.key !== "/" || event.target.closest?.(TYPING)) return;
@@ -89,11 +90,13 @@ function saved(words, change) {
             </template>
             <div class="settings-body">
                 <nav class="settings-nav" aria-label="Modules">
+                    <button type="button" :class="['settings-nav-item', {current: current === 'commands'}]" data-jump="commands" @click="chosen = 'commands'">Command classification</button>
                     <template v-for="module in modules" :key="module">
                         <button type="button" :class="['settings-nav-item', {current: module === current}]" :data-jump="module" @click="chosen = module">{{ heading(module) }}</button>
                     </template>
                 </nav>
                 <div class="settings-sections" data-settings-sections>
+                    <template v-if="current === 'commands'"><CommandSettings /></template>
                     <template v-for="module in modules.filter((name) => name === current)" :key="module">
                         <section class="settings-module" :data-module="module">
                             <h3 class="settings-module-heading">{{ heading(module) }}</h3>

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Btn, peekRef, RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
+import {RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -16,9 +16,6 @@ const {rows: waits} = useDeclaredRows("waits");
 const {rows: progress} = useDeclaredRows("progress");
 const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;
 const waitReasonOf = (row) => waits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
-const {rows: queue} = useDeclaredRows("queue");
-const WAITING = new Set(["queued", "running"]);
-const waiting = computed(() => queue.value.filter((run) => WAITING.has(run.state)).length);
 const show = ref("running");
 const words = ref("");
 
@@ -79,7 +76,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <div ref="agents" :class="['agents', {focused: openRow}]" :style="{'--agent-row-offset': `${rowOffset}px`}">
         <template v-if="!openRow"><SearchBar v-model="words" placeholder="Search agents" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
-                <Btn small bordered title="Open the process queue" data-agents-queue @click="peekRef('test_queue:0')">Process queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
         </SearchBar></template>
         <Transition name="agents-view" mode="out-in">
         <div :key="openRow ? 'open' : 'list'" :class="['agents-view', {'agents-view-open': openRow}]">
@@ -160,12 +156,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .agents-held:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.agents-queue-count {
-    margin-left: 4px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
 }
 
 .agents-view-enter-active { transition: opacity 160ms ease; }

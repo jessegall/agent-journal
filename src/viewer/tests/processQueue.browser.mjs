@@ -7,7 +7,14 @@ try {
     const page = await browser.newPage({viewport: {width: 1280, height: 960}});
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(`${address}#/?open=test_queue:0`);
+    await page.goto(`${address}&windows=agents.agents`);
+    const bar = page.locator("[data-agent-bar]");
+    const button = bar.getByRole("button", {name: "Process queue"});
+    await button.waitFor();
+    await page.locator('[data-window="agents.agents"]').waitFor();
+    assert.equal(await page.locator('[data-window="agents.agents"]').getByRole("button", {name: "Process queue"}).count(), 0);
+    await bar.locator("[data-work-mode]").waitFor();
+    await button.click();
     const panel = page.locator("[data-resource-panel]");
     await page.locator("[data-queue-controls]").waitFor();
     assert.equal(Math.round((await panel.boundingBox()).width), 640);

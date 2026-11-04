@@ -3,6 +3,7 @@ import {computed, toRef} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
+import {peekRef} from "../route.js";
 import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
@@ -47,6 +48,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             </template>
             <span class="agent-space" />
         </template>
+        <button type="button" class="agent-helpers" data-process-queue title="Open the process queue" @click="peekRef('test_queue:0')">Process queue</button>
         <slot />
     </div>
 </template>
