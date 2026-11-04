@@ -5,15 +5,16 @@ from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
 
 ALIASES = [{"name": "sample-judge", "description": "Judge with the sample", "line": "bin/judge {args}", "env": {"LEVEL": "2"}, "background": True, "workers": True,
-            "reader": "sample-reader"},
+            "reader": "sample-reader", "category": "check"},
            {"name": "greet", "line": "bin/greet"}]
+INVENTED_CATEGORY = [{"name": "greet", "line": "bin/greet", "category": "magic"}]
 
 
-def plugin_with_aliases(new_story):
+def plugin_with_aliases(new_story, aliases=ALIASES):
     story = new_story(fixture=UserJoined)
     folder = sample_plugin_folder(story.home.folder.parent)
     manifest = json.loads((folder / "journal-plugin.json").read_text())
-    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "aliases": ALIASES}))
+    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "aliases": aliases}))
     (folder / "bin").mkdir(exist_ok=True)
     judge = folder / "bin" / "judge"
     judge.write_text('#!/bin/sh\necho "judged at level $LEVEL: $*"\n')
@@ -29,6 +30,18 @@ def test_a_plugin_s_aliases_arrive_on_install_running_from_the_plugin_s_folder(n
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
     story.expect_text("alias show 1", "name: sample-judge", "background: True", "agent_access: True", "LEVEL=2", actor=story.user)
     story.expect_success("sample-judge --changes", "judged at level 2: --changes", actor=story.user)
+
+
+def test_a_plugin_s_alias_keeps_the_category_its_manifest_declares(new_story):
+    story = plugin_with_aliases(new_story)
+    story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
+    story.expect_text("alias show 1", "name: sample-judge", "category: check", actor=story.user)
+    story.expect_absent("alias show 2", "category:", actor=story.user)
+
+
+def test_a_plugin_that_invents_an_alias_category_is_refused(new_story):
+    story = plugin_with_aliases(new_story, INVENTED_CATEGORY)
+    story.expect_refusal(f"plugin install {story.plugin_folder} --yes", "the alias greet declares the unknown category magic", actor=story.user)
 
 
 def test_an_alias_name_a_project_alias_holds_already_is_skipped_and_the_project_alias_kept(new_story):

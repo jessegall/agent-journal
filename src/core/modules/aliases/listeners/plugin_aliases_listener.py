@@ -33,4 +33,4 @@ class PluginAliasesListener(SaveListener):
                 continue
             self.repository.save(Alias(creator_id=change.actor.id, name=shipped.name, line=f"{folder}/{shipped.line}", description=shipped.description,
                                        variables=shipped.variables, reader_id=self.readers.existing_reader_id(shipped.reader_name), background=shipped.background,
-                                       agent_access=shipped.has_agent_access(self.registry.alias_permission_names), plugin_id=plugin.id), change.context)
+                                       agent_access=shipped.has_agent_access(self.registry.alias_permission_names), plugin_id=plugin.id, category=shipped.category), change.context)
