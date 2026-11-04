@@ -3,6 +3,7 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
+import ButtonSlot from "../kit/ButtonSlot.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
@@ -16,7 +17,7 @@ import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
-const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}});
+const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}, readOnly: Boolean});
 
 const opened = computed(() => route.value.open);
 const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
@@ -100,6 +101,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 :id="opened.id"
                                 :read="read"
                                 :environment="environment"
+                                :read-only="readOnly"
                                 @close="close"
                                 @back="unpeek"
                                 @select="(id) => peek('tasks', id)"
@@ -146,6 +148,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 </button>
                             </header>
                             <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
+                            <div class="row-buttons">
+                                <ButtonSlot :name="`row.${kind}`" :row="{...row, id: opened.id, kind}" :environment="environment" :read-only="readOnly" @done="load" />
+                            </div>
                             <div class="body">
                                 <template v-if="failure">
                                     <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -319,6 +324,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     flex: 1;
     overflow-y: auto;
     padding: 16px 16px 28px;
+}
+
+.row-buttons:has(button) {
+    padding: 10px 16px;
 }
 
 .text {
