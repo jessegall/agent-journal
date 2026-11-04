@@ -1,6 +1,7 @@
 import io
 import shlex
 
+from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.change.logged_event import LoggedEvent
 from core.base.cli.console import Console
@@ -8,6 +9,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
@@ -26,9 +28,9 @@ TONES = {tone.value: tone for tone in PluginCardTone}
 
 class PluginOutputListener(CommitListener):
     """Applies a plugin's answer after the reply, as the plugins module, which can never act as the person: a
-    chat mark for each card of a kind its manifest declares, keyed so a card with the same key is updated in
-    place, its journal command lines, at most twenty, and the skills it requires of the agent among those the
-    plugin publishes."""
+    chat mark for each card of a kind its manifest declares when the answer is for a main agent, keyed so a
+    card with the same key is updated in place, its journal command lines, at most twenty, and the skills it
+    requires of the agent among those the plugin publishes."""
 
     name = "plugins.output"
     event = "plugin_output.create"
@@ -40,7 +42,8 @@ class PluginOutputListener(CommitListener):
         row = self.queries.query(PluginOutput).find(event.row_id)
         plugin = self.queries.query(Plugin).find(row.plugin_id)
         manifest, answer, actor = PluginManifest.read(self.folders.code(plugin.name)), PluginAnswer.parsed(row.output), self.actors.actor(MODULE_NAME)
-        for card in answer.cards:
+        is_main = self.queries.query(Agent).find(row.agent_id).role == AgentRole.MAIN
+        for card in answer.cards if is_main else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
                 self.bus.run(ShowMark(row.environment_id, PluginMarkType.CARD, TONES[tone], f"plugin:{plugin.name}:{row.agent_id}:{card.key}", f"{plugin.name}: {card.label}",

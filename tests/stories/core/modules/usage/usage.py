@@ -94,6 +94,16 @@ def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_tas
     story.expect_text("usage bars --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', '"processes": 0', actor=story.user)
 
 
+def test_an_agents_task_names_its_plan_and_a_task_of_no_plan_names_none(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('plan make "Cart plan" --environment main', actor=story.agent)
+    story.run('phase make --plan 1 "Build"', actor=story.agent)
+    story.run('task make "Fix the cart" --environment main', actor=story.agent)
+    story.run("phase place 1 --phase 1", actor=story.agent)
+    story.run("task start 1", actor=story.agent)
+    story.expect_text("usage agents --environment main --json", '"plan_title": "Cart plan"', actor=story.user)
+
+
 def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
     story = new_story(fixture=UserJoined)
     story.hook("s-1", HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"])))

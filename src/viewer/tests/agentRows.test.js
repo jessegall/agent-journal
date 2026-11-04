@@ -165,6 +165,15 @@ test("the card counts what is completed and lists its tasks when opened, under t
     expect(card.getAttribute("aria-expanded")).toBe("true");
 });
 
+test("a task of a plan shows the plan after its title and a task of no plan shows nothing there", async () => {
+    const element = await drawn([{...FACTS[0], tasks: [{id: 12, title: "Add the totals", state: "started", plan_id: 7, plan_title: "Cart plan"}, {id: 13, title: "Print the receipt", state: "open", plan_id: null, plan_title: null}]}]);
+    cardOf(element, 2).click();
+    await settle();
+    const [planned, alone] = cardOf(element, 2).querySelectorAll("[data-agent-delegated]");
+    expect(planned.querySelector("[data-agent-task-plan]").textContent).toBe("Plan 7: Cart plan");
+    expect(alone.querySelector("[data-agent-task-plan]")).toBeNull();
+});
+
 test("the Completed section of the Tasks tab is folded until a click opens it", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
     let card = cardOf(element, 2);
