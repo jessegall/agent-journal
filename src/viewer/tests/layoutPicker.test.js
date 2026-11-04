@@ -55,7 +55,7 @@ for (const [page, width] of [["home", 1200], ["home", 400], ["agent", 1200], ["a
         const app = createApp(() => h(PaneStage, {store, catalogue, subscriptions: new WindowSubscriptions(), environment: "main", page, shellRead: shellLine}));
         app.mount(element);
         for (let round = 0; round < 6; round++) await new Promise((resolve) => setTimeout(resolve));
-        [...element.querySelectorAll("button")].find((button) => button.textContent.includes("Presets")).click();
+        element.querySelector('[data-presets][aria-label="Presets"]').click();
         await nextTick();
         await nextTick();
         const rows = [...document.body.querySelectorAll(".preset")];

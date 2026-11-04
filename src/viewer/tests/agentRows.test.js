@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, pickButton, settle as settleWindow} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settleTransition as settle} from "./support/windowContext.js";
 import {h} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
@@ -24,7 +24,6 @@ const AGENTS = [
     {id: 3, session: "s-sub", program: "claude", role: "subagent", state: "running", ended_at: null},
     {id: 1, session: "s-old", program: "codex", role: "worker", state: "retired", ended_at: "2026-11-01T10:00:00Z"},
 ];
-const settle = async () => { await settleWindow(); await new Promise((resolve) => setTimeout(resolve, 80)); };
 
 const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},

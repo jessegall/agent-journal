@@ -14,7 +14,7 @@ const opener = ref(null);
 
 <template>
     <span ref="opener">
-        <Btn small data-options title="Options for all windows" @click.stop="open = !open"><Icon name="settings" :size="13" />Options</Btn>
+        <Btn kind="icon" data-options title="Options" aria-label="Options" @click.stop="open = !open"><Icon name="settings" :size="13" /></Btn>
     </span>
     <template v-if="open">
         <MenuPanel :anchor="opener" align="end" :min-width="200" @click.stop @close="open = false">

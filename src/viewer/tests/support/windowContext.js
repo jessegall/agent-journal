@@ -33,6 +33,11 @@ export async function settle() {
     await new Promise((resolve) => setTimeout(resolve));
 }
 
+export async function settleTransition() {
+    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+}
+
 // the element a window component is drawn into once it has settled, given the props its host gives it
 // a component with no window around it, drawn in the page's body
 export function appended(component, props) {

@@ -57,14 +57,14 @@ const count = (events) => {
         <div class="activity-head"><span>Activity</span></div>
         <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
             <template v-for="item in items" :key="item.key">
-                <button v-if="item.events" type="button" class="activity-row activity-fold" data-activity-group @click="toggle(openedGroups, item.key)">
+                <template v-if="item.events"><button type="button" class="activity-row activity-fold" data-activity-group @click="toggle(openedGroups, item.key)">
                     <span class="activity-text">{{ count(item.events) }}</span><span class="activity-age">{{ when(item.events[0]) }}</span>
-                </button>
-                <div v-else :class="['activity-row', 'activity-link', {nested: item.nested}]" :data-activity-nested="item.nested ? '' : undefined" :data-activity-event="item.event.id" @click="toggle(openedEvents, item.event.id)">
-                    <span class="activity-text">{{ heading(item.event) }} <button v-if="meta(item.event.row_table)" type="button" class="activity-number" @click.stop="peekRef(`${item.event.row_table}:${item.event.row_id}`)">{{ item.event.row_id }}</button></span>
-                    <span v-if="openedEvents.has(item.event.id) && title(item.event)" class="activity-title">{{ title(item.event) }}</span>
+                </button></template>
+                <template v-else><div :class="['activity-row', 'activity-link', {nested: item.nested}]" :data-activity-nested="item.nested ? '' : undefined" :data-activity-event="item.event.id" @click="toggle(openedEvents, item.event.id)">
+                    <span class="activity-text">{{ heading(item.event) }} <template v-if="meta(item.event.row_table)"><button type="button" class="activity-number" @click.stop="peekRef(`${item.event.row_table}:${item.event.row_id}`)">{{ item.event.row_id }}</button></template></span>
+                    <template v-if="openedEvents.has(item.event.id) && title(item.event)"><span class="activity-title">{{ title(item.event) }}</span></template>
                     <span class="activity-age">{{ when(item.event) }}</span>
-                </div>
+                </div></template>
             </template>
         </TransitionGroup>
     </aside>

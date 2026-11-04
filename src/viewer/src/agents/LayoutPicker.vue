@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import PresetList from "../kit/PresetList.vue";
 
-const props = defineProps({list: {type: Object, required: true}, tip: {type: String, default: "Switch the layout of this page"}});
+const props = defineProps({list: {type: Object, required: true}});
 const open = ref(false);
 const opener = ref(null);
 
@@ -17,9 +17,8 @@ function pick(key) {
 
 <template>
     <span ref="opener">
-        <Btn small data-presets v-tip="tip" @click.stop="open = !open">
+        <Btn kind="icon" data-presets title="Presets" aria-label="Presets" @click.stop="open = !open">
             <Icon name="layout" :size="12" />
-            Presets
         </Btn>
     </span>
     <template v-if="open">
