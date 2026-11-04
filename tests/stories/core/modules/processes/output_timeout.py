@@ -41,6 +41,8 @@ def test_a_timeout_counts_from_the_start_and_not_when_it_was_set(new_story):
     timeout_tick(story)
     story.expect_success(f"process show {process.id}", "state: stopped", actor=story.agent)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "timed out", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --json", "It ran past its timeout of 120 seconds")
 
 
 def test_a_passed_limit_is_refused_and_the_run_keeps_going(new_story):

@@ -1,6 +1,6 @@
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NEVER_STARTED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_UNSTARTED
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -31,7 +31,7 @@ class UnstartedWorkerRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         workers = [self.queries.query(Agent).find(worktree.agent_id) for worktree in self.worktrees.main_worktrees(hook.agent_id) if worktree.state is WorktreeState.CUT]
-        return RuleAnswer.with_nudges(*(WORKER_NEVER_STARTED.nudge(worker=worker.id, seconds=START_SECONDS, hint=self.log_end(worker)) for worker in workers if self.is_unstarted(worker, hook)))
+        return RuleAnswer.with_nudges(*(WORKER_UNSTARTED.nudge(worker=worker.id, seconds=START_SECONDS, hint=self.log_end(worker)) for worker in workers if self.is_unstarted(worker, hook)))
 
     def is_unstarted(self, worker: Agent, hook: AgentHook) -> bool:
         started_at = worker.created_at

@@ -35,9 +35,6 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
                 </Btn>
                 <span class="agent-divider" />
             </template>
-            <button type="button" class="agent-helpers" data-helpers title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
-                {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
-            </button>
         </template>
         <template v-else>
             <template v-if="loading">
@@ -50,6 +47,12 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         </template>
         <button type="button" class="agent-helpers" data-process-queue title="Open the process queue" @click="peekRef('test_queue:0')">Process queue</button>
         <slot />
+        <template v-if="agent">
+            <button type="button" class="agent-helpers agent-helpers-count" data-helpers title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
+                <Icon name="agents" :size="12" />
+                {{ helpers }}
+            </button>
+        </template>
     </div>
 </template>
 
@@ -135,5 +138,12 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
 .agent-helpers:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.agent-helpers-count {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    font-variant-numeric: tabular-nums;
 }
 </style>

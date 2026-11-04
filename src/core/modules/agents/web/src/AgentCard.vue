@@ -41,7 +41,7 @@ const tasksPerHour = computed(() => {
     const finished = props.progress ? props.progress.finished_at : props.row.ended_at;
     const ended = finished ? Date.parse(finished) : now.value;
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
-    return props.row.role !== "main" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
+    return props.row.role !== "main" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)} per hour` : "";
 });
 const sections = computed(() => tasks.value.length ? TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})) : []);
 const FOLDED_STATES = new Set(["completed"]);
@@ -85,23 +85,29 @@ readCommand();
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
         </span>
-        <template v-if="job">
-            <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
-        </template>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
-            <template v-if="isWorker && queuedTasks.length">
-                <span class="agent-tasks" data-agent-queued data-agent-motion>Queued: {{ queuedTasks.length }}</span>
-            </template>
-            <template v-if="totalCount">
-                <template v-if="tasksPerHour">
-                    <span class="agent-tasks" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
-                </template>
+            <template v-if="totalCount && !job">
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
-        <template v-if="showsCommand && !open">
-            <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
+        <template v-if="job">
+            <span class="agent-line agent-work-start">
+                <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
+                <template v-if="totalCount">
+                    <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
+                </template>
+            </span>
+        </template>
+        <template v-if="(showsCommand && !open) || (totalCount && tasksPerHour)">
+            <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
+                <template v-if="showsCommand && !open">
+                    <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
+                </template>
+                <template v-if="totalCount && tasksPerHour">
+                    <span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
+                </template>
+            </span>
         </template>
         <template v-if="open">
             <div class="agent-more" data-agent-more @click.stop>
@@ -257,7 +263,8 @@ readCommand();
 }
 
 .agent-job {
-    padding-left: 15px;
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     color: var(--text-2);
     font-size: 12.5px;
@@ -270,6 +277,28 @@ readCommand();
     min-width: 0;
     padding-left: 15px;
     color: var(--text-3);
+    font-size: 10.5px;
+}
+
+.agent-work-start {
+    margin-top: 4px;
+}
+
+.agent-foot {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    min-width: 0;
+}
+
+.agent-foot .agent-command {
+    flex: 1;
+}
+
+.agent-pace {
+    flex: none;
+    margin-left: auto;
+    color: var(--text-4);
     font-size: 10.5px;
 }
 

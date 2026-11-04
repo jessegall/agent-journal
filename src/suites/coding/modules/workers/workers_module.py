@@ -140,7 +140,7 @@ from suites.coding.modules.workers.commands.worker_models.worker_models_subcomma
 from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
-from suites.coding.modules.workers.support.skeletons import WORKERS_COUNT_SKELETON, WORKERS_PLAN_DELEGATION_SKELETON, WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_MODELS_SKELETON, WORKERS_WORKTREES_SKELETON
+from suites.coding.modules.workers.support.skeletons import WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_MODELS_SKELETON, WORKERS_WORKTREES_SKELETON
 
 
 from core.modules.skills.support.skill_projects import SkillProjects
@@ -187,10 +187,6 @@ class WorkersModule(Module):
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, skeleton=WORKERS_TODOS_SKELETON, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),
-               WindowDeclaration("workers.count", "Workers out", "workers-count.js", WindowLoading.COMPONENT, skeleton=WORKERS_COUNT_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.HEADER,
-                                 reads=["worker waits", "agent list", "task list"], events=["agent.*", "task.*", "worker_worktree.*"]),
-               WindowDeclaration("workers.plan-delegation", "Plan delegation", "plan-delegation.js", WindowLoading.COMPONENT, skeleton=WORKERS_PLAN_DELEGATION_SKELETON, icon=WindowIcon.PLAN, place=WindowPlace.HEADER,
-                                 reads=["plan board", "task list"], events=["plan.*", "task.*"]),
                WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.DROPDOWN, reads=["agent list", "chat-mark main"], events=["agent.*", "chat_mark.*"],
                                  tabs=[WindowTab("workers", "Workers", "agent list --role worker"), WindowTab("recent", "Recent activity", "chat-mark main --type workers.worker")]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],

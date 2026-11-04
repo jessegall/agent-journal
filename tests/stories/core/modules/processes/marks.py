@@ -53,6 +53,24 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story.expect_text(MARKS, "80%")
 
 
+def test_a_mark_of_a_stopped_run_says_the_agent_stopped_it_and_not_its_last_line(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
+    story.container.get(OutputFolder).write_output(process.id, 1, "[ 1%]\n")
+    story.expect_success(f"output stop {process.id}", actor=story.agent)
+    story.run_listeners()
+    story.expect_text(f"{MARKS} --json", "The agent stopped it")
+    story.expect_absent(f"{MARKS} --json", "[ 1%]")
+
+
+def test_a_mark_of_a_run_a_person_stopped_says_so(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
+    story.expect_success(f"output stop {process.id}", actor=story.user)
+    story.run_listeners()
+    story.expect_text(f"{MARKS} --json", "You stopped it")
+
+
 def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     passing, failing = start_process(story, "make one", category=CommandCategory.BUILD), start_process(story, "make two", category=CommandCategory.BUILD)

@@ -48,11 +48,14 @@ test("fitness and load come last in the bar, each an icon and a number with no w
     }
 });
 
-test("the agent bar shows its state and a helpers button asking to open the helpers", () => {
+test("the agent bar shows its state and an icon button with the helpers count, after the bar's other buttons, asking to open the helpers", () => {
     const opened = [];
     const element = mounted(AgentBar, {agent: MAIN, helpers: 1, onOpen: (name) => opened.push(name)});
-    expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
-    element.querySelector("[data-helpers]").click();
+    const button = element.querySelector("[data-helpers]");
+    expect(button.textContent.trim()).toBe("1");
+    expect(button.querySelector("svg")).not.toBeNull();
+    expect(element.querySelector("[data-process-queue]").compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    button.click();
     expect(opened).toEqual(["helpers"]);
     expect(element.textContent).toContain("Working");
 });
@@ -113,7 +116,7 @@ test("the agent bar names a paused agent, says nothing of what waits, and has on
     expect(element.querySelector("[data-workers]")).toBeNull();
     expect(element.querySelector("[data-reviewers]")).toBeNull();
     const helpers = element.querySelector("[data-helpers]");
-    expect(helpers.textContent.trim()).toBe("3 helpers");
+    expect(helpers.textContent.trim()).toBe("3");
     helpers.click();
     expect(opened).toEqual([["helpers", helpers]]);
 });
