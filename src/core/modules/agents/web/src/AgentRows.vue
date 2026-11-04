@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
@@ -55,17 +55,25 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
 // one card is open at a time and takes the whole window: the others are held back, counted on a band at the foot, until it closes or a search starts
 const openId = ref(null);
 const agents = ref(null);
-const rowOffset = ref(0);
 const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const heldBack = computed(() => shown.value.length - visible.value.length);
-const toggle = (row) => {
-    if (openId.value !== row.id) {
-        const card = agents.value.querySelector(`[data-agent-open="${row.id}"]`);
-        rowOffset.value = card.getBoundingClientRect().top - agents.value.getBoundingClientRect().top;
-    }
-    openId.value = openId.value === row.id ? null : row.id;
-};
+const toggle = (row) => { openId.value = openId.value === row.id ? null : row.id; };
+watch(openId, async (id, previous) => {
+    const card = agents.value.querySelector(`[data-agent-open="${id ?? previous}"]`);
+    const elements = [card, ...card.querySelectorAll("[data-agent-motion]")];
+    const before = elements.map((element) => element.getBoundingClientRect());
+    elements.forEach((element) => element.getAnimations().forEach((animation) => animation.cancel()));
+    await nextTick();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const after = elements.map((element) => element.getBoundingClientRect());
+    const offset = before[0].top - after[0].top;
+    elements.forEach((element, index) => {
+        const x = before[index].left - after[index].left;
+        const y = before[index].top - after[index].top - (index ? offset : 0);
+        element.animate([{transform: `translate(${x}px, ${y}px)`}, {transform: "translate(0, 0)"}], {duration: 320, easing: "cubic-bezier(0.22, 0.7, 0.3, 1)"});
+    });
+});
 watch(words, (typed) => typed.trim() && (openId.value = null));
 const closeOnEscape = (event) => { if (event.key === "Escape" && openId.value) openId.value = null; };
 window.addEventListener("keydown", closeOnEscape);
@@ -73,12 +81,11 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
-    <div ref="agents" :class="['agents', {focused: openRow}]" :style="{'--agent-row-offset': `${rowOffset}px`}">
+    <div ref="agents" :class="['agents', {focused: openRow}]">
         <template v-if="!openRow"><SearchBar v-model="words" placeholder="Search agents" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
         </SearchBar></template>
-        <Transition name="agents-view" mode="out-in">
-        <div :key="openRow ? 'open' : 'list'" :class="['agents-view', {'agents-view-open': openRow}]">
+        <div :class="['agents-view', {'agents-view-open': openRow}]">
         <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
@@ -87,7 +94,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             </template>
         </RowList>
         </div>
-        </Transition>
         <template v-if="openRow && heldBack">
             <button type="button" class="agents-held" data-agents-held @click="openId = null">{{ heldBack }} more</button>
         </template>
@@ -157,19 +163,5 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     background: var(--hover);
     color: var(--text);
 }
-
-.agents-view-enter-active { transition: opacity 160ms ease; }
-.agents-view-leave-active { transition: opacity 140ms ease; }
-.agents-view-enter-from, .agents-view-leave-to { opacity: 0; }
-.agents-view-open.agents-view-enter-active { transition-duration: 280ms; }
-.agents-view-open.agents-view-enter-active :deep(.agent-head), .agents-view-open.agents-view-enter-active :deep(.agent-line) { animation: agent-band-in 280ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
-.agents-view-open.agents-view-leave-active { transition-duration: 280ms; }
-.agents-view-open.agents-view-leave-active :deep(.agent-head), .agents-view-open.agents-view-leave-active :deep(.agent-line) { animation: agent-band-out 280ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
-.agents-view-open.agents-view-leave-active :deep(.agent-more) { animation: agent-parts-out 120ms ease both; }
-@keyframes agent-band-in { from { transform: translateY(var(--agent-row-offset)); } to { transform: translateY(0); } }
-@keyframes agent-band-out { from { transform: translateY(0); } to { transform: translateY(var(--agent-row-offset)); } }
-@keyframes agent-parts-out { to { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .agents-view-enter-active, .agents-view-leave-active { transition: none; } }
-@media (prefers-reduced-motion: reduce) { .agents-view-open.agents-view-enter-active :deep(.agent-head), .agents-view-open.agents-view-enter-active :deep(.agent-line), .agents-view-open.agents-view-leave-active :deep(.agent-head), .agents-view-open.agents-view-leave-active :deep(.agent-line), .agents-view-open.agents-view-leave-active :deep(.agent-more) { animation: none; } }
 
 </style>

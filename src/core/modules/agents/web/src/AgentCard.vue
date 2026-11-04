@@ -69,24 +69,24 @@ readCommand();
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="row.session" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <span class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
-            <span class="agent-dot" :data-state="dotState" />
-            <span class="agent-title" data-agent-title>{{ title }}</span>
-            <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
+            <span class="agent-dot" :data-state="dotState" data-agent-motion />
+            <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
+            <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="row.ended_at && !stoppedWithWork">
-                <TimeAgo class="agent-time" :at="row.ended_at" />
+                <TimeAgo class="agent-time" :at="row.ended_at" data-agent-motion />
             </template>
             <template v-else>
-                <span class="agent-time">{{ runTime }}</span>
+                <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity>{{ identity }}</span>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
             <template v-if="totalCount">
                 <template v-if="tasksPerHour">
-                    <span class="agent-tasks" data-agent-pace>{{ tasksPerHour }}</span>
+                    <span class="agent-tasks" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
                 </template>
-                <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
+                <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
         <template v-if="showsCommand && !open">
