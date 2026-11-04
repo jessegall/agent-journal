@@ -16,6 +16,7 @@ from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
+from core.modules.library.support.agent_edits import AgentEdits
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.support.library_denied import LibraryDenied
 from core.modules.library.support.library_item_removed import LibraryItemRemoved
@@ -37,8 +38,10 @@ class LibrarySync:
     outside any transaction, and each result is saved in a short command of its own, so a slow server never
     holds the journal's write lock. One copy's failure stops no other."""
 
-    def __init__(self, client: LibraryClient, shares: LibraryShares, queries: Queries, connections: LibraryConnectionQuery, bus: Bus, actors: ModuleActors, clock: Clock) -> None:
+    def __init__(self, client: LibraryClient, shares: LibraryShares, queries: Queries, connections: LibraryConnectionQuery, bus: Bus, actors: ModuleActors, clock: Clock,
+                 agent_edits: AgentEdits) -> None:
         self.client, self.shares, self.queries, self.connections, self.bus, self.clock = client, shares, queries, connections, bus, clock
+        self.agent_edits = agent_edits
         self.actor = actors.actor(MODULE_NAME)
 
     def round(self, memory: RoundMemory) -> SyncOutcome:
@@ -92,6 +95,8 @@ class LibrarySync:
             return copy.server_version != entry.version and self.save(UpdateLibraryCopy(copy.id, copy.state, server_version=entry.version))
         if server_changed:
             return self.compare(copy, row, self.client.item(copy.share, copy.item_id), digest, state.role)
+        if self.agent_edits.edit_waits(row):
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.AGENT, note="", unsent_digest=digest, server_version=copy.base_version))
         return self.send(copy, row, digest, state.role)
 
     def send(self, copy: LibraryCopy, row: Model, digest: str, role: LibraryRole) -> bool:

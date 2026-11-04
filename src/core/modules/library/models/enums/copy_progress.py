@@ -14,6 +14,7 @@ class CopyProgress(StrEnum):
     CONFLICT = "conflict"
     REVIEW = "review"
     REMOVED = "removed"
+    AGENT = "agent"
 
     @property
     def label(self) -> str:
@@ -30,4 +31,5 @@ LABELS = {
     CopyProgress.CONFLICT: "Conflict",
     CopyProgress.REVIEW: "New version to read",
     CopyProgress.REMOVED: "Removed from the library",
+    CopyProgress.AGENT: "Agent change, not sent",
 }

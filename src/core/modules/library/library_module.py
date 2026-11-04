@@ -60,7 +60,9 @@ class LibraryModule(Module):
     move_reason = "version 4's team rows are not carried over"
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets"]
     settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
-                             SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
+                             SettingType.TEXT, default="", scope=SettingScope.PROJECT),
+                SettingValue("agent-edits-wait", "Agent edits wait for a person", "An agent's edit of an item that follows the library stays on this journal until a person sends it.",
+                             SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]

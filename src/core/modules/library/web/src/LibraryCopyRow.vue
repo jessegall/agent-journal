@@ -7,6 +7,7 @@ const BUTTONS = {
     compare: "Compare",
     read: "Read",
     mine: "Keep mine",
+    send: "Send",
     library: "Use the library's version",
     leave: "Stop following",
 };
@@ -20,6 +21,7 @@ const STATUS_BUTTONS = {
     conflict: ["compare", "mine", "library"],
     review: ["read", "library", "leave"],
     removed: ["leave"],
+    agent: ["compare", "send", "library"],
 };
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 
@@ -32,6 +34,7 @@ const lines = computed(() => {
     const extra = [];
     if (props.copy.status === "denied") extra.push(`Role: ${ROLE_WORDS[props.role]}`);
     if (props.copy.status === "denied" && props.copy.server_version > props.copy.version) extra.push("A newer version is in the library");
+    if (props.copy.status === "agent") extra.push("An agent changed this item. A person sends it to the team.");
     if (props.copy.status === "removed") extra.push("Your copy stays on this journal.");
     if (props.copy.note) extra.push(props.copy.note);
     return extra;

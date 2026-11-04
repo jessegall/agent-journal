@@ -29,6 +29,7 @@ async function compare(copy) {
 const ACTIONS = {
     compare,
     read: compare,
+    send: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "mine"]),
     mine: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "mine"]),
     library: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "library"]),
     leave: (copy) => run(["library", "leave", String(copy.copy_id)]),

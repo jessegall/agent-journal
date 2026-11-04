@@ -32,6 +32,7 @@ const STATUSES = [
     {copy: copy("conflict", "Conflict", {server_version: 9, server_fields: THEIRS}), buttons: ["compare", "mine", "library"], lines: []},
     {copy: copy("review", "New version to read", {note: "The command of this check changed."}), buttons: ["read", "library", "leave"], lines: ["The command of this check changed."]},
     {copy: copy("removed", "Removed from the library"), buttons: ["leave"], lines: ["Your copy stays on this journal."]},
+    {copy: copy("agent", "Agent change, not sent"), buttons: ["compare", "send", "library"], lines: ["An agent changed this item. A person sends it to the team."]},
 ];
 
 function window(rows, status = {}, extra = {}) {
@@ -95,6 +96,14 @@ test("Keep mine, Use the library's version and Stop following run their lines", 
     element.querySelector('[data-library-copy="9"] [data-copy-button="leave"]').click();
     await settle();
     expect(result.lines).toEqual([["library", "resolve", "7", "--keep", "mine"], ["library", "resolve", "7", "--keep", "library"], ["library", "leave", "9"]]);
+});
+
+test("Send puts an agent change up with the version the person saw", async () => {
+    const {result, element} = await onThisJournal([copy("agent", "Agent change, not sent")]);
+    element.querySelector('[data-copy-button="send"]').click();
+    await settle();
+    expect(result.lines).toEqual([["library", "resolve", "7", "--keep", "mine"]]);
+    expect(element.querySelector('[data-copy-button="send"]').textContent.trim()).toBe("Send");
 });
 
 test("Compare draws the text here against the stored library text with a diff card", async () => {
