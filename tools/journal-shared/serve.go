@@ -1,43 +1,32 @@
 package main
 
 import (
-	"encoding/json"
-	"flag"
-	"fmt"
+	"io"
 	"net/http"
-	"os"
+	"time"
 
-	"github.com/jessegall/agent-journal/tools/journal-shared/store"
+	"github.com/jessegall/agent-journal/tools/journal-shared/web"
 )
 
 // defaultListen keeps a new server reachable from its own machine only, until someone names another address.
 const defaultListen = "127.0.0.1:8740"
 
-type info struct {
-	Protocol int      `json:"protocol"`
-	Kinds    []string `json:"kinds"`
-}
-
-func serve(args []string) int {
-	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
+func serve(arguments []string, errs io.Writer) error {
+	flags, data := newFlags("serve", errs)
 	listen := flags.String("listen", defaultListen, "the host:port to listen on")
-	if err := flags.Parse(args); err != nil {
-		return 2
+	if _, err := parse(flags, arguments, 0); err != nil {
+		return err
 	}
-	if err := http.ListenAndServe(*listen, handler()); err != nil {
-		fmt.Fprintln(os.Stderr, "journal-shared: "+err.Error())
-		return 1
+	database, err := openData(*data)
+	if err != nil {
+		return err
 	}
-	return 0
-}
-
-func handler() http.Handler {
-	routes := http.NewServeMux()
-	routes.HandleFunc("GET /info", answerInfo)
-	return routes
-}
-
-func answerInfo(response http.ResponseWriter, _ *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(response).Encode(info{Protocol: protocol, Kinds: store.KindNames()})
+	defer database.Close()
+	server := &http.Server{
+		Addr:              *listen,
+		Handler:           web.Routes(database, protocol),
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+	}
+	return server.ListenAndServe()
 }

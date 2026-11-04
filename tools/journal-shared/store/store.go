@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"sort"
 	"time"
@@ -21,11 +22,16 @@ const FileName = "shared.db"
 
 // Store is the open database of one data folder.
 type Store struct {
-	DB *sql.DB
+	DB  *sql.DB
+	Now func() time.Time
 }
 
-// Open opens shared.db in the folder in WAL mode with foreign keys on, and runs the migrations not yet run.
+// Open opens shared.db in the folder, made if it is not there, in WAL mode with foreign keys on, and runs the
+// migrations not yet run.
 func Open(folder string) (*Store, error) {
+	if err := os.MkdirAll(folder, 0o700); err != nil {
+		return nil, err
+	}
 	query := url.Values{}
 	query.Add("_pragma", "journal_mode(WAL)")
 	query.Add("_pragma", "foreign_keys(1)")
@@ -34,7 +40,7 @@ func Open(folder string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	store := &Store{DB: database}
+	store := &Store{DB: database, Now: time.Now}
 	if err := store.migrate(); err != nil {
 		database.Close()
 		return nil, err

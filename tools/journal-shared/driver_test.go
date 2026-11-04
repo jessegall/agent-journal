@@ -2,35 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	_ "modernc.org/sqlite"
 )
-
-func TestInfoAnswersProtocolAndKindsWithoutAToken(t *testing.T) {
-	response := httptest.NewRecorder()
-	handler().ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/info", nil))
-	var got info
-	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
-		t.Fatal(err)
-	}
-	if response.Code != http.StatusOK || !reflect.DeepEqual(got, info{Protocol: 1, Kinds: []string{"doc", "sequence", "check"}}) {
-		t.Fatalf("status %d, body %s", response.Code, response.Body.String())
-	}
-}
-
-func TestAnythingButGetInfoIsRefused(t *testing.T) {
-	response := httptest.NewRecorder()
-	handler().ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/info", nil))
-	if response.Code != http.StatusMethodNotAllowed {
-		t.Fatalf("status %d", response.Code)
-	}
-}
 
 func TestTheDriverKeepsAStrictTableWithValidJson(t *testing.T) {
 	database, err := sql.Open("sqlite", filepath.Join(t.TempDir(), "shared.db"))
