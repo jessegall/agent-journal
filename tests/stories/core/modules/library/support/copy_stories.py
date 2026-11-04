@@ -1,4 +1,5 @@
 from dataclasses import dataclass, replace
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +11,7 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.testing.story import Story
+from core.testing.template_databases import TemplateDatabases
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
@@ -69,3 +71,12 @@ def copy_line(story: Story, copy: LibraryCopy) -> str:
 def change_on_server(server: SharedServerBinary, token: str, item_id: int, title: str, body: str, version: int) -> None:
     code = server.send(token, "PUT", f"/items/doc/{item_id}", {"fields": doc_fields(title, body)}, {"If-Match": f'"{version}"'})[0]
     assert code == 200
+
+
+def second_story(templates: TemplateDatabases, folder: Path) -> Story:
+    return templates.story(folder, (), BuilderWithUser)
+
+
+def connected_second(story: Story, server: SharedServerBinary, token: str) -> Story:
+    story.expect_text(f"library connect {server.address} --token {token}", "Connected: ", actor=story.user)
+    return story
