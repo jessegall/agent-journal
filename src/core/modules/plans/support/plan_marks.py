@@ -13,6 +13,6 @@ PLANS_FAMILY = MarkFamily("plans.plans", "Plans", "plan", MarkGroup.WORK)
 PLAN_MARKS = [MarkDeclaration(PlanMarkType.PLAN, PlanMarkVariant, PLANS_FAMILY, "Plan moves", "plan", click=MarkClick.OPEN_ROW)]
 
 PLAN_DOCK_READS = ["plan show", "plan progress", "plan outline"]
-PLAN_BADGES = {PlanDockType.DRAFT: "Draft", PlanDockType.STARTED: "Started", PlanDockType.PAUSED: "Paused", PlanDockType.COMPLETED: "Done", PlanDockType.CANCELLED: "Cancelled"}
+PLAN_BADGES = {PlanDockType.DRAFT: "Planned", PlanDockType.STARTED: "Started", PlanDockType.PAUSED: "Paused", PlanDockType.COMPLETED: "Done", PlanDockType.CANCELLED: "Cancelled"}
 PLAN_BUTTONS = {PlanDockType.WAITING: [MarkButton("check", "Approve", "plan approve {row_id}", primary=True)]}
 PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS, badge=PLAN_BADGES.get(dock_type, ""), buttons=PLAN_BUTTONS.get(dock_type, ())) for dock_type in PlanDockType]
