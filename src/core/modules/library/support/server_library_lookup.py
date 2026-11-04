@@ -23,13 +23,15 @@ class ServerLibraryLookup(LibraryLookup):
         self.client, self.browse, self.queries, self.failure = client, browse, queries, failure
 
     def hits(self, terms: Sequence[str], shares: Sequence[str]) -> LibraryHits:
-        if not self.can_reach():
+        if not self.client.is_connected:
             return LibraryHits()
+        if self.failure.is_kept():
+            return LibraryHits(is_unreachable=True)
         try:
             return LibraryHits(tuple(hit for share in shares for hit in self.client.page(PageRequest(share, " ".join(terms), 1), FIND_LIMIT_SECONDS).hits()))
         except LibraryFailure as failed:
             self.failure.keep(failed.reason)
-            return LibraryHits()
+            return LibraryHits(is_unreachable=True)
 
     def item(self, share: str, ref: LibraryRef) -> LibraryItem | None:
         return self.browse.item(share, ref.item_id)

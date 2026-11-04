@@ -69,7 +69,7 @@ def test_a_dead_server_is_waited_on_once_across_ten_searches(new_story):
         story = saved_connection(new_story, stub.address, "jsl_token")
         lookup = story.container.get(LibraryLookup)
         answers = [lookup.hits(["release"], ["doc"]) for _ in range(ASKS)]
-        story.expect_rows(answers == [LibraryHits()] * ASKS, len(stub.requests) == 1)
+        story.expect_rows(answers == [LibraryHits(is_unreachable=True)] * ASKS, len(stub.requests) == 1)
 
 
 def test_the_server_is_asked_again_after_a_minute(new_story):
@@ -91,7 +91,7 @@ def test_a_slow_server_is_waited_on_for_two_seconds_and_no_longer(new_story):
         lookup = story.container.get(LibraryLookup)
         started = time.monotonic()
         answer = lookup.hits(["release"], ["doc"])
-        story.expect_rows(answer == LibraryHits(), time.monotonic() - started < 3.5)
+        story.expect_rows(answer == LibraryHits(is_unreachable=True), time.monotonic() - started < 3.5)
 
 
 def test_a_server_that_answers_has_no_failure_kept(new_story):

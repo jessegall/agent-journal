@@ -1,6 +1,9 @@
 from argparse import ArgumentParser, Namespace
+from dataclasses import replace
 
 from core.base.caller.caller import Caller
+from core.base.library.library_lookup import LibraryLookup
+from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.search.support.row_search import RowSearch
@@ -14,16 +17,19 @@ class SearchFindSubcommand(ReadSubcommand[SearchResult]):
     cli_name = "search"
     name = "find"
 
-    def __init__(self, search: RowSearch) -> None:
-        self.search = search
+    def __init__(self, search: RowSearch, lookup: LibraryLookup, registry: Registry) -> None:
+        self.search, self.lookup, self.registry = search, lookup, registry
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("terms", nargs="+")
         parser.add_argument("--model", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> SearchResult:
-        return self.search.result(arguments.terms, [name for name in arguments.model.split(",") if name])
+        wanted = [model for model in arguments.model.split(",") if model]
+        local = self.search.result(arguments.terms, wanted)
+        shares = [share for share in self.registry.library_shares if not wanted or share in wanted]
+        return replace(local, library=self.lookup.hits(arguments.terms, shares)) if shares else local
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, SearchResult):
-            output.write("\n".join(value.lines()), {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in value.hits], "total": value.total})
+            output.write("\n".join(value.lines()), value.json())

@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 
@@ -9,3 +10,10 @@ class LibraryHit:
     item_id: int
     title: str
     excerpt: str
+
+    def line(self) -> str:
+        text = self.excerpt.removeprefix(self.title).lstrip(". ")
+        return f"library {self.share} {self.item_id}: {self.title} {text}".rstrip()
+
+    def json(self) -> Mapping[str, object]:
+        return {"cli_name": f"library {self.share}", "id": self.item_id, "title": self.title, "excerpt": self.excerpt}
