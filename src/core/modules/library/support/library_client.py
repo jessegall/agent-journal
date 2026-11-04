@@ -1,6 +1,7 @@
 import http.client
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Callable, Mapping
 from types import MappingProxyType
@@ -13,6 +14,9 @@ from core.modules.library.queries.library_connection_query import LibraryConnect
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_errors import LibraryFailures
 from core.modules.library.support.library_item import LibraryItem
+from core.modules.library.support.library_page import LibraryPage
+from core.modules.library.support.page_request import PageRequest
+from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.library_unchanged_error import LibraryUnchangedError
 from core.modules.library.support.library_stopped import LibraryStopped
 from core.modules.library.support.library_unreachable import LibraryUnreachable
@@ -52,6 +56,13 @@ class LibraryClient:
     def item(self, share: str, item_id: int) -> LibraryItem:
         return self.send(LibraryItem.parsed, "GET", f"/items/{share}/{item_id}")
 
+    def page(self, request: PageRequest) -> LibraryPage:
+        query = urllib.parse.urlencode({"kind": request.share, "search": request.search, "page": request.number})
+        return self.send(LibraryPage.parsed, "GET", f"/items?{query}")
+
+    def versions(self, share: str, item_id: int) -> LibraryVersions:
+        return self.send(LibraryVersions.parsed, "GET", f"/items/{share}/{item_id}/versions")
+
     def update(self, share: str, item_id: int, base_version: int, fields: Mapping[str, object]) -> LibraryItem:
         return self.send(LibraryItem.parsed, "PUT", f"/items/{share}/{item_id}", {"fields": fields}, {"If-Match": f'"{base_version}"'})
 
@@ -76,6 +87,8 @@ class LibraryClient:
         connection = self.connections.current()
         if connection is None:
             raise LibraryStopped.disconnected()
+        if connection.stopped:
+            raise LibraryStopped(connection.stopped)
         try:
             current = LibraryAddress(str(self.settings.project_value(ADDRESS_SETTING))).base
         except Refusal as invalid:

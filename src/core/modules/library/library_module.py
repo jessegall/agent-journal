@@ -7,6 +7,9 @@ from core.modules.library.commands.pair_library.pair_library_handler import Pair
 from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
 from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
 from core.modules.library.commands.unpair_library.unpair_library_subcommand import UnpairLibrarySubcommand
+from core.modules.library.commands.library_list.library_list_subcommand import LibraryListSubcommand
+from core.modules.library.commands.library_show.library_show_subcommand import LibraryShowSubcommand
+from core.modules.library.commands.library_versions.library_versions_subcommand import LibraryVersionsSubcommand
 from core.modules.library.commands.library_status.library_status_subcommand import LibraryStatusSubcommand
 from core.modules.library.commands.save_library_connection.save_library_connection_handler import SaveLibraryConnectionHandler
 from core.modules.library.guards.library_address_guard import LibraryAddressGuard
@@ -30,4 +33,4 @@ class LibraryModule(Module):
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
     handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler]
-    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand]
+    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand]

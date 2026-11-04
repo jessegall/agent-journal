@@ -10,4 +10,4 @@ class LibraryStopped(LibraryFailure):
 
     @classmethod
     def disconnected(cls) -> "LibraryStopped":
-        return cls("This journal is not connected to a shared server.", "journal library connect <address>")
+        return cls("This journal is not connected to a shared server.", "journal library connect <address> --token <token>")

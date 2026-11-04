@@ -11,6 +11,7 @@ from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.library.support.library_client import TOKEN_VARIABLE, LibraryClient
 from core.modules.library.support.library_stopped import LibraryStopped
 from core.testing.story import Story
+from tests.stories.core.modules.library.support.stored_text import every_stored_text
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
@@ -40,12 +41,6 @@ def encrypted_server(tmp_path_factory):
 
 def connection_of(story: Story) -> LibraryConnection | None:
     return story.container.get(LibraryConnectionQuery).current()
-
-
-def every_stored_text(story: Story) -> str:
-    database = story.container.get(Database)
-    tables = [row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE type = 'table'"))]
-    return "\n".join(str(tuple(row)) for table in tables for row in database.rows(Statement(f'SELECT * FROM "{table}"')))
 
 
 def test_a_person_connects_with_a_url_and_a_token_and_sees_the_server_and_their_role(new_story, shared_server):
