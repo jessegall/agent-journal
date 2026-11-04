@@ -79,3 +79,45 @@ def test_a_stock_draft_keeps_test_steps(draft_sample):
     story.expect_text(f"reader draft {request.id} --save", "saved reader go-test", actor=story.agent)
     reader = story.container.get(Queries).query(Reader).filter(name="go-test").page(1, 1).rows[0]
     story.expect_rows("?P<passed>" in reader.step_pattern, "?P<failed>" in reader.step_pattern)
+
+
+def test_a_vitest_request_saves_vitest_patterns(new_story):
+    story = new_story(fixture=ForcedReaders)
+    install_runner(story)
+    story.expect_success("reader remove vitest")
+    process = worker_run(story, "npx vitest run", CommandCategory.TEST_RUN)
+    end_run(story, process, " RUN  v2.1.8\n\n Test Files  1 passed (1)\n      Tests  2 passed (2)\n")
+    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
+    story.expect_text(f"reader draft {request.id} --save", "saved reader vitest", actor=story.agent)
+    reader = story.container.get(Queries).query(Reader).filter(name="vitest").page(1, 1).rows[0]
+    story.expect_rows("Test Files" in reader.lines_pattern, "Tests" in reader.summary_pattern)
+
+
+def test_a_draft_with_no_matching_lines_does_not_close_the_request(draft_sample):
+    story, request = draft_sample
+    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "nothing useful\n")
+    story.expect_refusal(f"reader draft {request.id} --save", "--lines picked none", actor=story.agent)
+    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is None)
+
+
+@pytest.fixture
+def saved_draft(draft_sample):
+    story, request = draft_sample
+    story.expect_success("reader remove pytest")
+    story.expect_success(f"reader draft {request.id} --save", actor=story.agent)
+    return story, request
+
+
+def test_removing_a_reader_clears_ended_history(saved_draft):
+    story, request = saved_draft
+    process = worker_run(story, "custom-test run", CommandCategory.TEST_RUN)
+    end_run(story, process, PYTEST_SAMPLE)
+    story.expect_success("reader remove pytest", actor=story.agent)
+    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).reader_id is None)
+
+
+def test_removing_a_reader_used_by_an_alias_is_refused(saved_draft):
+    story, request = saved_draft
+    story.expect_success('alias add saved-tests "pytest" --reader pytest', actor=story.agent)
+    story.expect_refusal("reader remove pytest", "referenced", actor=story.agent)
+    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).reader_id is not None)
