@@ -96,7 +96,7 @@ def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story)
     end_run(story, process, "built\n")
     story.advance(timedelta(minutes=2))
     timeout_tick(story)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timed_out_at is None)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).expired_at is None)
 
 
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):

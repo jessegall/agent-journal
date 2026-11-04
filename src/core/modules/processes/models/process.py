@@ -43,7 +43,7 @@ class Process(Model):
     owner_agent_id: int | None = None
     task_id: int | None = None
     timeout_seconds: int | None = None
-    timed_out_at: Timestamp | None = None
+    expired_at: Timestamp | None = None
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

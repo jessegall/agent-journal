@@ -6,4 +6,4 @@ class ProcessTimeoutMigration(Migration):
 
     number = 36
     statements = ["ALTER TABLE processes ADD COLUMN timeout_seconds INTEGER",
-                  "ALTER TABLE processes ADD COLUMN timed_out_at TEXT"]
+                  "ALTER TABLE processes ADD COLUMN expired_at TEXT"]
