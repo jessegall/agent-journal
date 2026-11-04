@@ -51,9 +51,10 @@ def test_draft_save_frees_the_held_worker(draft_sample):
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
-def test_a_worker_cannot_save_a_draft(draft_sample):
+def test_a_worker_can_save_its_own_draft(draft_sample):
     story, request = draft_sample
-    story.expect_refusal(f"reader draft {request.id} --save", "only the main agent writes readers", actor=reader_worker(story))
+    story.expect_text(f"reader draft {request.id} --save", "saved reader pytest", actor=reader_worker(story))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
 def test_a_build_draft_reads_a_running_sample_without_a_count(new_story):

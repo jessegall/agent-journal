@@ -43,6 +43,7 @@ def kept_reader_sample(new_story):
 @pytest.fixture
 def requested_reader_story(new_story):
     story = new_story(fixture=ForcedReaders)
+    story.run("setting set journal.core.processes.reader-save-tries 0 --environment main")
     install_runner(story)
     worker_run(story)
     return story
@@ -129,7 +130,7 @@ def test_a_run_with_no_sample_runs_as_the_sample_while_its_worker_is_held(new_st
 def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_reader(kept_reader_sample):
     story = kept_reader_sample
     process = worker_run(story)
-    reader = story.new_row_id('reader add proper --commands "custom-build*" --title Building --lines "done" --summary "done"', actor=story.agent)
+    reader = story.new_row_id('reader add proper --commands "custom-build*" --title Building --lines "done" --summary "done"', actor=reader_worker(story))
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
@@ -226,6 +227,7 @@ def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader
 
 def test_with_no_main_agent_the_worker_is_not_held_and_the_next_main_agent_is_told(new_story):
     story = new_story(fixture=ForcedReaders)
+    story.run("setting set journal.core.processes.reader-save-tries 0 --environment main")
     story.run(f"agent end {story.agent.id}", actor=story.agent)
     worker_run(story, "next-build run")
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
