@@ -44,6 +44,7 @@ from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
+from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
 from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
 
 BUILT = ["make", "edit", "list", "delete"]
@@ -60,6 +61,7 @@ class ChecksModule(Module):
     block_conditions = [CheckPassed]
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
     skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
+    library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]

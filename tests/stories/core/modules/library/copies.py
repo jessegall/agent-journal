@@ -7,12 +7,12 @@ from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
+from suites.coding.modules.checks.models.check import Check
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from tests.stories.core.modules.library.support import command_share, paused_share
 from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, connection_with, copy_line, copy_of_item, copy_with, made_copy, new_item,
                                                                      shared_server)
 from tests.stories.core.modules.library.support.stored_text import every_stored_text
@@ -47,7 +47,7 @@ def test_getting_an_item_again_is_refused_and_names_the_row_that_follows_it(new_
 def test_a_kind_this_journal_lacks_is_refused_in_plain_words_and_nothing_is_made(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
-    story.expect_refusal("library get sequence 1", "this journal shares no sequence with the library", actor=story.user)
+    story.expect_refusal("library get memo 1", "this journal shares no memo with the library", actor=story.user)
     story.expect_rows(len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 0)
 
 
@@ -63,11 +63,11 @@ def test_an_item_removed_from_the_library_is_not_got(new_story, shared_server):
 def test_an_item_that_warns_is_got_only_when_it_was_read_first(new_story, shared_server):
     server, tokens = shared_server
     code, item = server.send(tokens.admin, "POST", "/items/check", {"fields": {"title": "Granite check", "command": "echo hello", "brief": "Says hello", "interval_minutes": 5}})
-    story = connected(new_story, server, tokens.editor, f"{command_share.PATH}:CommandShareModule")
-    story.expect_refusal(f"library get check {item['id']}", command_share.WARNING, actor=story.user)
-    story.expect_rows(code == 201, len(list(story.container.get(Queries).query(Doc).all_rows())) == 0)
+    story = connected(new_story, server, tokens.editor)
+    story.expect_refusal(f"library get check {item['id']}", "this check runs on your computer: echo hello", actor=story.user)
+    story.expect_rows(code == 201, len(list(story.container.get(Queries).query(Check).all_rows())) == 0)
     story.expect_text(f"library get check {item['id']} --read", f"library check {item['id']}, version 1 is now check 1", actor=story.user)
-    story.expect_rows(story.row(Doc, 1).body == "echo hello")
+    story.expect_rows(story.row(Check, 1).command == "echo hello", story.row(Check, 1).stopped)
 
 
 def test_leaving_makes_the_row_a_plain_document_and_changes_nothing_on_the_server(new_story, shared_server):
@@ -196,9 +196,9 @@ def test_a_row_that_is_gone_from_this_journal_removes_its_copy_and_never_the_ite
 def test_a_check_that_was_removed_from_this_journal_loses_its_copy(new_story, shared_server):
     server, tokens = shared_server
     item = server.send(tokens.admin, "POST", "/items/check", {"fields": {"title": "Jasper check", "command": "echo hi", "brief": "Says hi", "interval_minutes": 5}})[1]
-    story = connected(new_story, server, tokens.editor, f"{command_share.PATH}:CommandShareModule")
+    story = connected(new_story, server, tokens.editor)
     story.expect_text(f"library get check {item['id']} --read", "is now check 1", actor=story.user)
-    story.expect_success('doc close 1 --why "no longer needed"', actor=story.user)
+    story.expect_text("check remove 1", "check 1", actor=story.user)
     story.expect_text("library sync", "Reached the library", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(LibraryCopy).filter(share="check", item_id=item["id"]).first() is None)
 
@@ -223,31 +223,15 @@ def test_a_local_edit_made_during_a_round_is_seen_by_the_next_round(new_story, s
     story.expect_rows(story.row(Doc, copy.row_id).body == "Typed during the round.", copy_of_item(story, copy.item_id).state is CopyState.CONFLICT)
 
 
-def test_a_newer_version_that_must_wait_for_a_run_arrives_when_the_run_has_ended(new_story, shared_server):
-    server, tokens = shared_server
-    item = server.send(tokens.admin, "POST", "/items/sequence", {"fields": {"title": "Agate steps", "steps": '["one"]', "step_guards": "[]"}})[1]
-    story = connected(new_story, server, tokens.editor, f"{paused_share.PATH}:PausedShareModule")
-    story.expect_text(f"library get sequence {item['id']}", "is now sequence 1", actor=story.user)
-    story.expect_success(f'doc edit 1 --abstract "{paused_share.RUN_OPEN}"', actor=story.user)
-    server.send(tokens.admin, "PUT", f"/items/sequence/{item['id']}", {"fields": {"title": "Agate steps", "steps": '["one", "two"]', "step_guards": "[]"}}, {"If-Match": '"1"'})
-    story.expect_text("library sync", "Reached the library. 1 copies followed, 1 changed.", actor=story.agent)
-    copy = story.container.get(Queries).query(LibraryCopy).filter(share="sequence").first()
-    story.expect_rows(story.row(Doc, 1).body == "one", copy.base_version == 1, copy_line(story, copy).endswith("Status: Waiting for its run to end"))
-    story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    story.expect_success('doc edit 1 --abstract "Steps"', actor=story.user)
-    story.expect_text("library sync", "Reached the library. 1 copies followed, 1 changed.", actor=story.agent)
-    story.expect_rows(story.row(Doc, 1).body == "one\ntwo", copy_line(story, copy).endswith("version 2. Status: In sync"))
-
-
 def test_one_copy_that_cannot_be_settled_stops_no_other_and_its_note_is_written_once(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Pearl beside a bad copy")
-    bad = story.container.get(Repository).save(LibraryCopy(creator_id=story.user.id, share="check", item_id=999, row_id=999, base_version=1, base_digest="x"),
+    bad = story.container.get(Repository).save(LibraryCopy(creator_id=story.user.id, share="memo", item_id=999, row_id=999, base_version=1, base_digest="x"),
                                                Context(story.user, story.clock.timestamp(), ReadMessage(1)))
     change_on_server(server, tokens.admin, copy.item_id, "Pearl beside a bad copy", "Server text.", 1)
     story.expect_text("library sync", "Reached the library. 2 copies followed, 2 changed.", actor=story.agent)
-    story.expect_rows(story.row(Doc, copy.row_id).body == "Server text.", story.row(LibraryCopy, bad.id).note == "this journal shares no check with the library")
+    story.expect_rows(story.row(Doc, copy.row_id).body == "Server text.", story.row(LibraryCopy, bad.id).note == "this journal shares no memo with the library")
     story.expect_text("library sync", "Reached the library. 2 copies followed, 0 changed.", actor=story.agent)
 
 
