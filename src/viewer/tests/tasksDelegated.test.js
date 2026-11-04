@@ -6,7 +6,7 @@ import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const task = (id, title, state, delegatedTo = null) => ({id, title, state, priority: 200, delegated_to: delegatedTo});
+const task = (id, title, state, delegatedTo = null) => ({id, title, state, priority: 200, delegated_to: delegatedTo, delegated_name: delegatedTo ? "Lady Lovelace" : null});
 const BOARD = {groups: [
     {state: "started", total: 1, rows: [task(3, "Mine", "started")]},
     {state: "testing", total: 1, rows: [task(4, "Being tested", "testing")]},
@@ -20,7 +20,7 @@ test("tasks delegated to a worker are listed in a section of their own, with the
     const delegated = element.querySelector('[data-state="delegated"]');
     expect(delegated.querySelector("[data-group-head]").textContent).toContain("Delegated");
     expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["1", "2"]);
-    expect([...delegated.querySelectorAll("[data-task-agent]")].map((agent) => agent.textContent)).toEqual(["Agent 12", "Agent 12"]);
+    expect([...delegated.querySelectorAll("[data-task-agent]")].map((agent) => agent.textContent)).toEqual(["Lady Lovelace", "Lady Lovelace"]);
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
     expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
     expect(element.querySelector('[data-state="open"]')).toBeNull();
@@ -49,4 +49,11 @@ test("the Testing section has a colour of its own, in both themes, apart from St
     expect(rule('.tasks-group[data-state="testing"] .tasks-fold')).toContain("var(--tone-sequence)");
     expect(read("../src/tokens.css")).toContain("--tone-sequence:");
     expect(read("../src/light.css")).toContain("--tone-sequence:");
+});
+
+test("a task queued for an agent shows the agent's name in its own group, and a task nobody holds shows none", async () => {
+    const board = {groups: [{state: "open", total: 2, rows: [task(5, "Queued job", "open", 12), task(6, "Free job", "open")]}]};
+    const element = await mounted(TaskGroups, context({"task board": {ok: true, value: board}}));
+    expect(element.querySelector('[data-row="5"] [data-task-agent]').textContent).toBe("Lady Lovelace");
+    expect(element.querySelector('[data-row="6"] [data-task-agent]')).toBeNull();
 });

@@ -13,7 +13,7 @@ def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
     answer = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
     expect_phases_answer(answer)
     expect_tasks_phases_answer("tasks", "title", answer)
-    expect_tasks_phase_phases("id", "title", "state", "helper_id", answer)
+    expect_tasks_phase_phases("id", "title", "state", "helper_id", "helper_name", answer)
 
 
 def test_the_board_brings_the_open_plans_cards_and_both_counts_in_one_answer(new_story):
@@ -63,13 +63,25 @@ def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(new_
     expect_holders(holders, None)
 
 
+def test_a_plan_whose_tasks_the_main_agent_holds_is_not_delegated(new_story):
+    story = new_story(fixture=PlanWithCheckpoint)
+    story.run(lines.TASK_START, actor=story.agent)
+    outline = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
+    expect_delegated(outline, False, [])
+
+
+def expect_delegated(answer, delegated, agents) -> None:
+    actual = (answer["delegated"], [(agent["id"], agent["task_id"]) for agent in answer["agents"]])
+    assert actual == (delegated, agents), actual
+
+
 def expect_holders(holders, expected) -> None:
     actual = holders[2]
     assert actual is expected, actual
 
 
-def expect_tasks_phase_phases(text, text_2, text_3, text_4, answer) -> None:
-    actual = any((phase['tasks'] and {text, text_2, text_3, text_4} == set(phase['tasks'][0]) for phase in answer['phases']))
+def expect_tasks_phase_phases(text, text_2, text_3, text_4, text_5, answer) -> None:
+    actual = any((phase['tasks'] and {text, text_2, text_3, text_4, text_5} == set(phase['tasks'][0]) for phase in answer['phases']))
     assert actual, actual
 
 

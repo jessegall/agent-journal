@@ -1,0 +1,55 @@
+import assert from "node:assert/strict";
+import {chromium} from "playwright-core";
+
+const [address, worker, shots] = process.argv.slice(2);
+const NAME = "Lady Lovelace";
+const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
+try {
+    const page = await browser.newPage({viewport: {width: 1440, height: 900}});
+    await page.goto(address);
+
+    // the plan bar names the one agent on the started plan and opens the agent with its task
+    const delegation = page.locator("[data-plan-bar-delegation]");
+    await delegation.waitFor();
+    assert.equal((await delegation.textContent()).trim(), `Worker: ${NAME}`);
+    await delegation.click();
+    await page.locator("[data-plan-bar-popover] [data-plan-bar-agent]").first().waitFor();
+    assert.ok((await page.locator("[data-plan-bar-popover]").textContent()).includes(NAME));
+    await page.screenshot({path: `${shots}-bar.png`});
+    await delegation.click();
+
+    // the counter says how many workers are out, and its click opens their list
+    const counter = page.locator("[data-workers-count]");
+    await counter.waitFor();
+    assert.equal(await counter.getAttribute("title"), "1 worker out");
+    await counter.click();
+    await page.locator('[data-dropdown="workers.workers"]').waitFor();
+    await page.keyboard.press("Escape");
+
+    // the agent card of the helpers dropdown has the job and the tasks queued behind it
+    await page.locator("[data-helpers]").click();
+    const card = page.locator(`[data-dropdown="agents.subagents"] [data-agent-open="${worker}"]`);
+    await card.waitFor();
+    assert.ok((await card.locator("[data-agent-job]").textContent()).length > 0);
+    assert.equal((await card.locator("[data-agent-queued]").textContent()).trim(), "Queued: 2");
+    await page.screenshot({path: `${shots}-card.png`});
+    await page.keyboard.press("Escape");
+
+    // the plan page names the agent under its phase and on each task it holds or has queued
+    await page.goto(`${address}#open=plans:1`);
+    await page.locator("[data-plan-inspector]").waitFor();
+    await page.locator("[data-plan-phase-agent]").first().waitFor();
+    assert.equal(await page.locator("[data-plan-agent]").count(), 3);
+    for (const text of await page.locator("[data-plan-agent]").allTextContents()) assert.equal(text, NAME);
+    assert.ok(!(await page.locator("[data-plan-inspector]").textContent()).includes("Agent "));
+    await page.screenshot({path: `${shots}-plan.png`});
+
+    // a task the agent holds and a task queued for it say so in the inspector
+    await page.goto(`${address}#open=tasks:2`);
+    const note = page.locator("[data-task-held-by]");
+    await note.waitFor();
+    assert.ok((await note.textContent()).startsWith(NAME));
+    await page.screenshot({path: `${shots}-task.png`});
+} finally {
+    await browser.close();
+}

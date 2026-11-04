@@ -6,24 +6,28 @@ import shlex
 import stat
 
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
+from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch <task> [<task> ...] --model <model> [--profile <profile>] [--name <name>]
-    [--library-link <folder>] [--library-copy <folder>]`: a worker for the tasks, which it takes one by
-    one."""
+    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>]) --model <model>
+    [--profile <profile>] [--name <name>] [--library-link <folder>] [--library-copy <folder>]`: a worker for
+    the tasks, or for the open tasks of a plan or of one of its phases, which it takes one by one."""
 
     cli_name = "worker"
     name = "dispatch"
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks) -> None:
+        self.home, self.plan_tasks = home, plan_tasks
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("task_ids", type=int, nargs="+")
+        parser.add_argument("task_ids", type=int, nargs="*")
+        parser.add_argument("--plan", type=int, default=None, help="hand the worker the open tasks of this plan, in its order, instead of listed tasks")
+        parser.add_argument("--phase", type=int, default=None, help="with --plan, only the tasks of this phase")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
@@ -33,7 +37,19 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--name", default="", help="the worker's name on its card")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
-        return DispatchWorker(arguments.task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, tuple(arguments.task_ids[1:]), arguments.model, arguments.profile, arguments.name)
+        task_ids = self.picked(arguments)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name)
+
+    def picked(self, arguments: Namespace) -> tuple[int, ...]:
+        if arguments.plan is None:
+            if arguments.phase is not None:
+                raise Refusal("--phase needs --plan", "add --plan <plan>")
+            if not arguments.task_ids:
+                raise Refusal("a worker is dispatched to tasks or to a plan", "list the tasks, or add --plan <plan>")
+            return tuple(arguments.task_ids)
+        if arguments.task_ids:
+            raise Refusal("a dispatch takes tasks or a plan, not both", "drop the task numbers or drop --plan")
+        return self.plan_tasks.task_ids(arguments.plan, arguments.phase)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, WorkerLaunch):

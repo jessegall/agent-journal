@@ -18,6 +18,7 @@ export {default as WindowSkeleton} from "../src/kit/WindowSkeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as PriorityIcon} from "../src/kit/PriorityIcon.vue";
 export {priorityLabel} from "../src/domain/taskPriority.js";
+export {delegationWord, agentNames} from "../src/domain/plans.js";
 export {ordered} from "../src/domain/orchestra.js";
 export {default as FoldSign} from "../src/kit/FoldSign.vue";
 export {default as Segmented} from "../src/kit/Segmented.vue";

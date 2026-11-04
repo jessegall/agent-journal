@@ -13,4 +13,6 @@ class PlanInspectionJsonRecord(TypedDict):
     finished: object
     current_phase: object
     document_id: object
+    delegated: object
+    agents: object
     phases: object

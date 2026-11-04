@@ -23,3 +23,4 @@ class TaskCard(ViewModel):
     reason: str
     closed_at: str | None
     delegated_to: int | None
+    delegated_name: str | None

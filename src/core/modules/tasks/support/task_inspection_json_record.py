@@ -12,6 +12,8 @@ class TaskInspectionJsonRecord(TypedDict):
     reason: object
     outcome: object
     holder_id: object
+    helper_id: object
+    helper_name: object
     created_at: object
     updated_at: object
     openers: object

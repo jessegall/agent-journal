@@ -62,6 +62,13 @@ load();
                         <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
                             <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span :class="['plan-state', row.state]" data-plan-state>{{ row.state }}</span></span>
                             <span class="plan-title">{{ row.title }}</span>
+                            <template v-if="row.delegated">
+                                <span class="plan-agents" data-plan-agents>
+                                    <template v-for="agent in row.agents" :key="`${agent.id}:${agent.task_id}`">
+                                        <span class="plan-agent" data-plan-agent><strong>{{ agent.name }}</strong> task {{ agent.task_id }}: {{ agent.task_title }}</span>
+                                    </template>
+                                </span>
+                            </template>
                             <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
                         </div>
@@ -105,6 +112,19 @@ load();
     align-items: center;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.plan-agents {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.plan-agent strong {
+    color: var(--text-2);
+    font-weight: 500;
 }
 
 .plan-state {
