@@ -12,7 +12,7 @@ PROJECT = Path(__file__).resolve().parents[5]
 
 
 @pytest.mark.parametrize("name,command,count", [
-    ("pytest", ".venv/bin/python3 -m pytest tests/stories/core/modules/processes/reader_draft.py -n 8", 7),
+    ("pytest", ".venv/bin/python3 -m pytest tests/stories/core/modules/processes/reader_draft.py -n 8", 8),
     ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --reporter=dot src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
 ])
 def test_stock_listing_counts_real_project_tests(new_story, name, command, count):
