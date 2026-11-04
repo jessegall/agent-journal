@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "loop",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "monotonic"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories|unit)/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)tests/stories/server/(handover|support/(client_binary|server_client|server_process))\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/unit/core/modules/demo/test_demo_start\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "clock-loop-in-a-test",
+        "description": "A test waits in a loop that compares a clock to a deadline.",
+        "rule": "Block on what the end of the wait releases, a process, a pipe or a thread; a loop on the clock is a sleep at full speed. Only stories of a real server process are left out, by file.",
+        "skill": "plain-code-words"
+    }
+}
