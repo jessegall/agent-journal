@@ -96,6 +96,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 @close="close"
                                 @back="unpeek"
                                 @select="(id) => peek('tasks', id)"
+                                @open="(row) => peek(row.table, row.id)"
                             />
                         </template>
                         <template #test-queue>

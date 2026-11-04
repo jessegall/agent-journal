@@ -1,6 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import PlanInspector from "../src/resource/PlanInspector.vue";
+import PlanLinks from "../src/resource/PlanLinks.vue";
 import PlanReviews from "../src/resource/PlanReviews.vue";
 import PlanTimeline from "../src/resource/PlanTimeline.vue";
 import {settle} from "./support/windowContext.js";
@@ -64,4 +65,21 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
     await settle();
     expect(lines).toContain("timeline");
     expect(element.querySelector("[data-plan-timeline]")).not.toBeNull();
+});
+
+test("the links to a plan list the design document first and open a row as its table and number", async () => {
+    const opened = [];
+    const incoming = [{source_model: "report", source_id: 4, source_title: "Review", link_type: "about"}, {source_model: "doc", source_id: 9, source_title: "Rebuild design", link_type: "about"}];
+    const read = async (line) => ({ok: true, value: {rows: line[2] === "--target" ? incoming : []}});
+    const element = await drawn(PlanLinks, null, {read, documentId: 9, onOpen: (row) => opened.push(row)});
+    const rows = element.querySelectorAll("[data-plan-link]");
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain("Design document 9");
+    expect(rows[0].textContent).toContain("Rebuild design");
+    rows[1].click();
+    expect(opened).toEqual([{table: "reports", id: 4}]);
+});
+
+test("a plan nothing links to shows no links", async () => {
+    expect((await drawn(PlanLinks, {ok: true, value: {rows: []}})).querySelector("[data-plan-links]")).toBeNull();
 });

@@ -33,3 +33,11 @@ test("sending writes the message and closes; a refusal stays open and says why",
     await settle();
     expect(document.querySelector("[data-critique-failure]").textContent).toBe("no agent");
 });
+
+test("the dialog offers 1, 2, 3, 4 and 5 agents", async () => {
+    document.body.innerHTML = "";
+    shown(async () => ({ok: true, value: {rows: []}}));
+    await settle();
+    const agentButtons = document.querySelector("[data-plan-critique] .segmented").querySelectorAll("button");
+    expect([...agentButtons].map((button) => button.textContent.trim())).toEqual(["1", "2", "3", "4", "5"]);
+});

@@ -10,7 +10,7 @@ from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 @dataclass(frozen=True, kw_only=True)
 class Plan(Model):
     """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then
-    followed."""
+    followed. Its design document, when it has one, is linked to it."""
 
     model_name = "plan"
     cli_name = "plan"
@@ -25,6 +25,7 @@ class Plan(Model):
     reason: str = ""
     started_at: Timestamp | None = None
     closed_at: Timestamp | None = None
+    document_id: int | None = None
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)

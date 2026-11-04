@@ -29,6 +29,7 @@ from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_card import PlanCard
 from core.modules.plans.migrations.m003_plan_state_index import PlanStateIndexMigration
 from core.modules.plans.migrations.m004_plan_start_time import PlanStartTimeMigration
+from core.modules.plans.migrations.m005_plan_document import PlanDocumentMigration
 from core.modules.plans.commands.plan_progress.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.models.plan_event_row import PlanEventRow
 from core.modules.plans.models.plan_outline_task import PlanOutlineTask
@@ -72,7 +73,7 @@ class PlansModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"])]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration]
     handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
