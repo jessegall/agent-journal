@@ -17,7 +17,7 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 class EndProcessHandler(Handler[EndProcess, Process]):
     """Ends the process, passes the rest of its output through its reader, and keeps the output, except for a
-    short run whose line pipes nothing."""
+    short run whose line pipes nothing. A line whose test run or build failed fails, whatever came after it."""
 
     command = EndProcess
 
@@ -26,7 +26,8 @@ class EndProcessHandler(Handler[EndProcess, Process]):
 
     def handle(self, command: EndProcess, context: Context) -> Process:
         process = self.queries.query(Process).find(command.row_id)
-        ended = process.finish(context.timestamp, context.actor, command.exit_code) if command.exit_code == 0 else process.fail(context.timestamp, context.actor, command.exit_code)
+        exit_code = command.exit_code or self.failed_test_code(process)
+        ended = process.finish(context.timestamp, context.actor, exit_code) if exit_code == 0 else process.fail(context.timestamp, context.actor, exit_code)
         ended = self.repository.save(ended, context)
         if not self.outputs.process(process.id).exists():
             return ended
@@ -37,6 +38,10 @@ class EndProcessHandler(Handler[EndProcess, Process]):
         else:
             self.repository.save(replace(output, byte_count=command.byte_count, line_count=command.line_count, ended_at=context.timestamp), context)
         return ended
+
+    def failed_test_code(self, process: Process) -> int:
+        parts = self.queries.query(ProcessPart).filter(process_id=process.id).all_rows()
+        return next((part.exit_code for part in parts if part.category.is_long_running and part.exit_code), 0)
 
     def is_short(self, process: Process, command: EndProcess) -> bool:
         is_piped = self.queries.query(ProcessPart).filter(process_id=process.id, piped=True).exists()

@@ -40,7 +40,7 @@ test("an agent not measured yet shows a dash, and no reading shows nothing", asy
 test("the panel lists each measure and says what it cannot count", async () => {
     const line = "usage fitness --agent 7";
     const element = await mounted(FitnessPanel, context({[line]: {ok: true, value: FITNESS}}, 7));
-    expect(element.querySelector("[data-fitness-head]").textContent).toBe("Fitness 60 of 100");
+    expect(element.querySelector("[data-fitness-head]").textContent).toBe("Fitness: 60 of 100");
     expect(element.querySelector('[data-measure="message_wait"]').textContent).toContain("15 of 5");
     expect(element.querySelector('[data-measure="load"]')).toBeNull();
     expect(element.textContent).toContain("does not record");

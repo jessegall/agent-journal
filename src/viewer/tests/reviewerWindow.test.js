@@ -5,10 +5,10 @@ import {context, mounted} from "./support/windowContext.js";
 const MINUTE = 60 * 1000;
 const at = (minutesAgo) => new Date(Date.now() - minutesAgo * MINUTE).toISOString();
 
-test("with no review the window says so, in the words of version 4", async () => {
+test("with no review the window says so", async () => {
     const element = await mounted(ReviewerSteps, context({"review board": {ok: true, value: {queued: 0, reviews: []}}}, 2));
     expect(element.textContent).toContain("No review yet");
-    expect(element.textContent).toContain("The reviewer shows here what it does with each agent's work");
+    expect(element.textContent).toContain("Reviews appear here with test results, requirement checks and the reviewer’s report.");
 });
 
 test("the steps of the latest review are drawn in order, a dot for each outcome and how long ago", async () => {

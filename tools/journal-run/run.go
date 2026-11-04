@@ -57,7 +57,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}
-	leader, err := start(options, folder)
+	leader, err := start(options, folder, PartCount(parts))
 	if err != nil {
 		fmt.Fprintf(stdout, "the shell of process %d did not start: %v\n", options.Process, err)
 		return 127
@@ -68,17 +68,20 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Stripped: map[int]bool{}}
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Stripped: map[int]bool{}, ShownBytes: map[int]int{}}
 	for _, part := range parts {
-		tracker.Stripped[part.Position] = part.Filters != ""
+		tracker.Stripped[part.Position] = part.Command != ""
+		if part.JoinedBy == "&" {
+			tracker.Background = append(tracker.Background, part.Position)
+		}
 	}
 	return tracker.Run(stdout)
 }
 
 // start runs the script in a shell of its own group; the outer shell writes the end when the inner one is dead, even
-// when the line execs.
-func start(options Options, folder Folder) (*exec.Cmd, error) {
-	command := exec.Command("/bin/sh", "-c", `"$1" "$2"; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path)
+// when the line execs. What the shell itself prints, as a line it cannot read, goes into the last part's output.
+func start(options Options, folder Folder, lastPosition int) (*exec.Cmd, error) {
+	command := exec.Command("/bin/sh", "-c", `"$1" "$2" >> "$4" 2>&1; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path, folder.outputPath(lastPosition))
 	command.Env = journalEnvironment(options.Home)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := command.Start(); err != nil {
@@ -111,6 +114,13 @@ func writeHeartbeats(folder Folder, pid int, interval time.Duration) {
 		folder.WriteHeartbeat()
 		time.Sleep(interval)
 	}
+}
+
+// StartCutting leaves a program behind that keeps a line's outputs under the limit once the line has ended.
+func StartCutting(options Options, parts int) {
+	command := exec.Command(os.Args[0], "--keep-cutting", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(parts), "--most-output", strconv.Itoa(options.MostOutputBytes))
+	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	_ = command.Start()
 }
 
 // Detach continues a moved run in a program of its own that no tool call waits for.

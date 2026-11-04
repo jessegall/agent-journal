@@ -28,5 +28,5 @@ test("choosing a kind reads that kind", async () => {
 
 test("nothing stored says so", async () => {
     const element = await mounted(Attachments, context({"attachment list": {ok: true, value: {rows: [], counts: {all: 0, images: 0, other: 0}, is_last_page: true}}}));
-    expect(element.textContent).toContain("No files are stored");
+    expect(element.textContent).toContain("Files attached to messages in this environment appear here.");
 });

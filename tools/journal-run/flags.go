@@ -20,7 +20,9 @@ type Flags struct {
 	OnlyReads  bool
 	Line       string
 	Follow     bool
-	Folder     string
+	// KeepCutting is the program that keeps a line's outputs under the limit while a part with & outlives the line.
+	KeepCutting bool
+	Folder      string
 	Parts      int
 	Aliases    []string
 	MostOutput int
@@ -31,6 +33,8 @@ type Flags struct {
 const (
 	strippedVariable   = "JOURNAL_RUN_STRIPPED"
 	mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
+	// strippedSeparator stands between the commands to strip; a command may hold a newline, never this control byte.
+	strippedSeparator = "\x1f"
 )
 
 // outputSettings reads the commands to strip and the most bytes one part may keep.
@@ -42,7 +46,7 @@ func outputSettings() ([]string, int) {
 	if stripped == "" {
 		return nil, bytes
 	}
-	return strings.Split(stripped, "\n"), bytes
+	return strings.Split(stripped, strippedSeparator), bytes
 }
 
 // binFolder is where a journal keeps this program, inside the journal's folder.
@@ -101,6 +105,8 @@ func ParseFlags(arguments []string) (Flags, error) {
 			flags.OnlyReads = true
 		case "--follow":
 			flags.Follow = true
+		case "--keep-cutting":
+			flags.KeepCutting = true
 		case "--count":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)
@@ -141,7 +147,7 @@ func ParseFlags(arguments []string) (Flags, error) {
 			return flags, fmt.Errorf("%q is not a flag of journal-run", argument)
 		}
 	}
-	if flags.Follow {
+	if flags.Follow || flags.KeepCutting {
 		return finished(flags, hasProcess)
 	}
 	return flags, errors.New("the line after -- is missing")

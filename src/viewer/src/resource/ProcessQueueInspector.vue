@@ -9,11 +9,15 @@ import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
 import ProcessQueueBand from "./ProcessQueueBand.vue";
 
+const RECENT_PAGE = 20;
+
 const props = defineProps({read: {type: Function, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back"]);
 const queue = ref(null);
 const failure = ref("");
 const open = ref([]);
+const recentCount = ref(RECENT_PAGE);
+const hasOlder = computed(() => (queue.value?.recent_total ?? 0) > (queue.value?.recent.length ?? 0));
 let reading = 0;
 const items = computed(() => {
     if (!queue.value) return [];
@@ -32,10 +36,14 @@ function toggle(id) {
 }
 async function load() {
     const turn = ++reading;
-    const answer = await props.read(["queue", "list"]);
+    const answer = await props.read(recentCount.value === RECENT_PAGE ? ["queue", "list"] : ["queue", "list", "--recent", String(recentCount.value)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) queue.value = answer.value;
+}
+function showOlder() {
+    recentCount.value += RECENT_PAGE;
+    load();
 }
 useResourceEvents(["process.*", "setting.*"], load);
 onMounted(load);
@@ -61,6 +69,7 @@ onMounted(load);
                         <template v-else><ProcessQueueBand :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.kind">{{ item.section.heading }}</ProcessQueueBand></template>
                     </template>
                 </TransitionGroup>
+                <template v-if="hasOlder"><button type="button" class="older" data-queue-older @click="showOlder">Show older commands</button></template>
             </template>
             <template v-else-if="!failure"><Skeleton /></template>
         </div>
@@ -77,6 +86,8 @@ h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-
 .queue-list { position: relative; border-top: 1px solid var(--border); }
 .empty { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
 .failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
+.older { display: block; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
+.older:hover { color: var(--text); }
 .queue-move { transition: transform 320ms cubic-bezier(.2,.9,.25,1); }
 .queue-enter-active { transition: opacity 200ms ease-out; }
 .queue-leave-active { position: absolute; left: 0; right: 0; transition: opacity 160ms ease-out; }

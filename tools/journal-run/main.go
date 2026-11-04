@@ -25,9 +25,14 @@ func main() {
 	}
 	home := flags.Home()
 	client := JournalClient{Home: home}
-	if flags.Follow {
+	if flags.Follow || flags.KeepCutting {
 		tracker := Tracker{Options: Options{Process: flags.Process, Home: home, MostOutputBytes: flags.MostOutput}, Client: client, Folder: NewFolder(home, flags.Process), Parts: flags.Parts, Reported: map[int]bool{}}
+		if flags.KeepCutting {
+			tracker.KeepCutting()
+			return
+		}
 		tracker.Watch()
+		tracker.KeepCutting()
 		return
 	}
 	os.Exit(Run(flags.runOptions(home, userShell()), client, os.Stdout))

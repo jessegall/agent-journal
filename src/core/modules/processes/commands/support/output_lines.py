@@ -19,6 +19,7 @@ class OutputLines:
         parser.add_argument("--lines", default="")
         parser.add_argument("--tail", type=int, default=0)
         parser.add_argument("--reader", default="")
+        parser.add_argument("--piped", action="store_true")
 
     def write(self, output: Output, empty: str = "") -> None:
         output.write("\n".join(self.lines) or empty, {"lines": list(self.lines)})

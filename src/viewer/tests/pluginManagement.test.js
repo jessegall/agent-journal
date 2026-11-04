@@ -184,7 +184,7 @@ test("what a plugin did lists its outputs and its last fault", async () => {
 
 test("a plugin that did nothing says so, and a refused read says why", async () => {
     await recordDrawn({ok: true, value: {name: "sins", outputs: [], fault_count: 0, last_fault: ""}});
-    expect(document.querySelector("[data-plugin-record-body]").textContent).toContain("It has done nothing yet");
+    expect(document.querySelector("[data-plugin-record-body]").textContent).toContain("No activity yet.");
     document.body.innerHTML = "";
     const {element} = await recordDrawn({ok: false, error: "no plugin is called sins"});
     expect(element.querySelector("[data-plugin-record-failure]").textContent).toContain("no plugin is called sins");

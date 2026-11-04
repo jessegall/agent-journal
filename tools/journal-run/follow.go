@@ -11,6 +11,9 @@ import (
 const (
 	reportAttempts      = 60
 	reportRetryInterval = time.Second
+	keepCuttingInterval = time.Second
+	// lateOutputWait gives a part with & that ends the line a moment to print before the agent is answered.
+	lateOutputWait = 100 * time.Millisecond
 )
 
 // Tracker reads a run's folder as the shell fills it: it shows what the agent sees as each part ends, reports each
@@ -26,6 +29,10 @@ type Tracker struct {
 	Shown       int
 	// Stripped holds the parts that reach the agent only through their pipes.
 	Stripped map[int]bool
+	// Background holds the parts that ended with &, which go on writing after their status, and ShownBytes how much
+	// of each part the agent has seen.
+	Background []int
+	ShownBytes map[int]int
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
@@ -136,7 +143,11 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	tracker.partStarted(position)
 	tracker.Reported[position] = true
 	if stdout != io.Discard {
+		tracker.showLateOutput(stdout)
 		tracker.showPart(stdout, position)
+	}
+	if commandCode, stripped := tracker.Folder.CommandCode(position); stripped {
+		code = commandCode
 	}
 	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
 }
@@ -148,8 +159,15 @@ func (tracker *Tracker) showPart(stdout io.Writer, position int) {
 		mostBytes = tracker.Options.MostOutputBytes
 	}
 	text, size := tracker.Folder.Result(position, mostBytes)
-	io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, uncapped))
-	if text == "" && tracker.Folder.CommandFailed(position) {
+	readFlag := "--summary"
+	if tracker.Stripped[position] {
+		readFlag = "--piped"
+	}
+	if tracker.ShownBytes != nil {
+		tracker.ShownBytes[position] = size.Bytes
+	}
+	io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, uncapped, readFlag))
+	if code, stripped := tracker.Folder.CommandCode(position); text == "" && stripped && code != 0 {
 		fmt.Fprintf(stdout, "the command failed and its pipes printed nothing: journal output read %d --summary\n", tracker.Options.Process)
 	}
 }
@@ -176,9 +194,41 @@ func (tracker *Tracker) finish(stdout io.Writer, code int) int {
 			break
 		}
 	}
+	if len(tracker.Background) > 0 {
+		time.Sleep(lateOutputWait)
+	}
+	tracker.showLateOutput(stdout)
 	bytes, lines := tracker.Folder.Sizes(tracker.Parts)
 	tracker.report("process", "end", strconv.Itoa(tracker.Options.Process), "--exit-code", strconv.Itoa(code), "--bytes", strconv.Itoa(bytes), "--lines", strconv.Itoa(lines))
+	if len(tracker.Background) > 0 && tracker.Options.Detach != nil {
+		StartCutting(tracker.Options, tracker.Parts)
+	}
 	return code
+}
+
+// KeepCutting keeps the outputs of a run under the limit for as long as anything of its process group lives, since a
+// part with & may write long after its line ended.
+func (tracker *Tracker) KeepCutting() {
+	pid, recorded := tracker.Folder.Pid()
+	for recorded && tracker.Folder.Exists() && syscall.Kill(-pid, 0) == nil {
+		for position := 1; position <= tracker.Parts; position++ {
+			tracker.Folder.CutOutput(position, tracker.Options.MostOutputBytes)
+		}
+		time.Sleep(keepCuttingInterval)
+	}
+}
+
+// showLateOutput shows what a part with & wrote since it was shown, since it goes on past its own status: before the
+// next part's output, so the order stays that of the line, and once more at the end.
+func (tracker *Tracker) showLateOutput(stdout io.Writer) {
+	for _, position := range tracker.Background {
+		shown, isShown := tracker.ShownBytes[position]
+		text, size := tracker.Folder.Result(position, mostReadBytes)
+		if isShown && size.Bytes > shown && size.Bytes <= len(text) {
+			io.WriteString(stdout, Shown(text[shown:], size, tracker.Options.Process, tracker.Options.CapCharacters, false, "--summary"))
+			tracker.ShownBytes[position] = size.Bytes
+		}
+	}
 }
 
 func (tracker *Tracker) startedOutput(position int) (string, bool) {
@@ -212,7 +262,7 @@ func (tracker *Tracker) move(stdout io.Writer) int {
 		if _, ended := tracker.Folder.Status(position); isPart && !ended && !tracker.Reported[position] {
 			if _, started := tracker.startedOutput(position); started && !stripped {
 				text, size := tracker.Folder.Result(position, mostReadBytes)
-				io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, false))
+				io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, false, "--summary"))
 			}
 			break
 		}

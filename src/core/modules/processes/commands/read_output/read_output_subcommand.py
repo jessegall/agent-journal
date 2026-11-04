@@ -8,8 +8,8 @@ from core.modules.processes.commands.read_output.read_output import ReadOutput
 
 
 class ReadOutputSubcommand(OutputLinesWriting, Subcommand[ReadOutput, OutputLines]):
-    """`journal output read <n> --summary|--all|--lines A-B|--tail K|--reader <name>`: reads what a run
-    printed, by one of five ways."""
+    """`journal output read <n> --summary|--all|--lines A-B|--tail K|--reader <name>|--piped`: reads what a run
+    printed, by one of six ways."""
 
     cli_name = "output"
     name = "read"
@@ -19,4 +19,4 @@ class ReadOutputSubcommand(OutputLinesWriting, Subcommand[ReadOutput, OutputLine
         parser.add_argument("--again", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReadOutput:
-        return ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader, arguments.again)
+        return ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader, arguments.piped, arguments.again)

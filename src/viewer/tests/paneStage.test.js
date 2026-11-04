@@ -299,11 +299,11 @@ test("the pane menu fills or contains a pane and closes it, keeping the last pan
     const own = holder(store, "a.tasks");
     element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
     await settled();
-    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Contain");
+    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Limit width");
     element.querySelector('[data-menu="width"]').click();
     await settled();
     expect(store.layout.value.panes[own].options.width).toBe("contained");
-    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Fill");
+    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Use full width");
     element.querySelector('[data-menu="close"]').click();
     await settled();
     expect(leaves(store.layout.value.tree)).toHaveLength(1);

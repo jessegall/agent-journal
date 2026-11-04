@@ -10,19 +10,19 @@ from core.modules.processes.support.output_access import OutputAccess
 from core.modules.processes.support.output_folder import OutputFolder
 
 
-FLAGS = "--summary, --all, --lines, --tail or --reader"
+FLAGS = "--summary, --all, --lines, --tail, --reader or --piped"
 ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
 
 
 class OutputTexts:
-    """What an output shows in the way asked, one of five: the summary, all of it, a range of its lines, its
-    tail or the lines a reader picks; it changes nothing."""
+    """What an output shows in the way asked, one of six: the summary, all of it, a range of its lines, its
+    tail, the lines a reader picks or what its pipes printed; it changes nothing."""
 
     def __init__(self, access: OutputAccess, folder: OutputFolder, outputs: OutputQuery, readers: ReaderQuery) -> None:
         self.access, self.folder, self.outputs, self.readers = access, folder, outputs, readers
 
     def lines(self, actor: Actor, command: ReadOutput) -> list[str]:
-        read_options = {"summary": command.summary, "all": command.all, "lines": command.lines, "tail": command.tail, "reader": command.reader}
+        read_options = {"summary": command.summary, "all": command.all, "lines": command.lines, "tail": command.tail, "reader": command.reader, "piped": command.piped}
         wanted = [option for option, value in read_options.items() if value]
         if len(wanted) != 1:
             raise Refusal(f"output {command.process_id} is read with one of {FLAGS}", f"journal output read {command.process_id} --summary")
@@ -30,8 +30,13 @@ class OutputTexts:
         kept = self.outputs.process(process.id).limited(1)
         if kept and kept[0].state is OutputState.PRUNED:
             return [f"output {process.id} was pruned"]
-        shown = {"summary": self.summary, "all": self.full_lines, "lines": self.range, "tail": self.tail, "reader": self.reader_lines}
+        shown = {"summary": self.summary, "all": self.full_lines, "lines": self.range, "tail": self.tail, "reader": self.reader_lines, "piped": self.piped_lines}
         return shown[wanted[0]](process, command)
+
+    def piped_lines(self, process: Process, command: ReadOutput) -> list[str]:
+        if not self.folder.has_piped_output(process.id):
+            raise Refusal(f"output {process.id} ran no pipes over its output", f"journal output read {process.id} --all")
+        return self.folder.piped_output(process.id).splitlines()
 
     def full_lines(self, process: Process, command: ReadOutput) -> list[str]:
         return self.folder.all_output(process.id).splitlines()

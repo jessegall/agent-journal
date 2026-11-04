@@ -12,9 +12,13 @@ import (
 )
 
 const (
+	outputSuffix   = "out"
+	stdoutSuffix   = "stdout"
+	stderrSuffix   = "stderr"
 	commandSuffix  = "command"
 	filteredSuffix = "filtered"
-	cutLine        = "[this output grew past its limit: the oldest lines were dropped]\n"
+	cutBytesSuffix = "cut-bytes"
+	cutLine      = "[this output grew past its limit: the oldest lines were dropped]\n"
 	// mostReadBytes is the end of an output the runner reads into memory, whatever the size of the file.
 	mostReadBytes = 16 << 20
 	countBuffer   = 1 << 16
@@ -112,10 +116,9 @@ func (folder Folder) Result(position, mostBytes int) (string, OutputSize) {
 	return string(text), fileSize(path)
 }
 
-// CommandFailed says a part stripped of its pipes ended with a code of its own that is not 0.
-func (folder Folder) CommandFailed(position int) bool {
-	code, written := folder.number(fmt.Sprintf("%d.%s", position, commandSuffix))
-	return written && code != 0
+// CommandCode is the code of a part stripped of its pipes, from its command and not from the pipes after it.
+func (folder Folder) CommandCode(position int) (int, bool) {
+	return folder.number(fmt.Sprintf("%d.%s", position, commandSuffix))
 }
 
 // Sizes are the bytes and the lines of every part's output.
@@ -132,24 +135,42 @@ func (folder Folder) Sizes(parts int) (int, int) {
 // CutOutput keeps a growing output under the limit: past it, only the last half stays in the file, under a line that
 // says so. The command goes on writing to the end of the file.
 func (folder Folder) CutOutput(position, mostBytes int) {
-	path := folder.outputPath(position)
-	info, err := os.Stat(path)
-	if mostBytes <= 0 || err != nil || info.Size() <= int64(mostBytes) {
-		return
+	if cut := cutFile(folder.outputPath(position), mostBytes); cut > 0 {
+		folder.addCutBytes(position, cut)
 	}
-	if _, err := os.Stat(folder.filteredPath(position)); err == nil {
-		return
+	if _, ended := folder.CommandCode(position); !ended {
+		cutFile(filepath.Join(folder.Path, fmt.Sprintf("%d.%s", position, stdoutSuffix)), mostBytes)
+		cutFile(filepath.Join(folder.Path, fmt.Sprintf("%d.%s", position, stderrSuffix)), mostBytes)
+	}
+}
+
+// cutFile cuts a file past the limit and returns how many bytes it became shorter by.
+func cutFile(path string, mostBytes int) int {
+	stats, err := os.Stat(path)
+	if mostBytes <= 0 || err != nil || stats.Size() <= int64(mostBytes) {
+		return 0
 	}
 	kept, err := readEnd(path, mostBytes/2)
 	if err != nil {
-		return
+		return 0
 	}
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0o644)
 	if err != nil {
-		return
+		return 0
 	}
 	defer file.Close()
 	_, _ = file.Write(append([]byte(cutLine), kept...))
+	return int(stats.Size()) - len(kept) - len(cutLine)
+}
+
+// addCutBytes keeps how many bytes a part has lost to cuts, so a reader can find its place again.
+func (folder Folder) addCutBytes(position, count int) {
+	name := fmt.Sprintf("%d.%s", position, cutBytesSuffix)
+	total, _ := folder.number(name)
+	path := filepath.Join(folder.Path, name)
+	if err := os.WriteFile(path+".new", []byte(strconv.Itoa(total+count)), 0o644); err == nil {
+		_ = os.Rename(path+".new", path)
+	}
 }
 
 func readEnd(path string, most int) ([]byte, error) {

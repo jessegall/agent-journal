@@ -23,6 +23,9 @@ class BackgroundCommands:
         options = self.aliases.options(argv[0]) if argv else None
         return PartCommand(self.aliases.named_line(argv) or part.text, options.reader_id if options else None)
 
+    def is_long_alias(self, part: Part, shell: ShellLine) -> bool:
+        return any(options.is_long_running and part.text.startswith(options.command) for options in self.alias_runs(shell))
+
     def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
         return shell.all_alias_names(lambda name: self.aliases.options(name) is not None)
 

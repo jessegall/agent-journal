@@ -100,6 +100,16 @@ class OutputFolder:
     def total_bytes(self, process_id: int) -> int:
         return sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
 
+    def piped_paths(self, process_id: int) -> list[Path]:
+        folder = self.home.folder / FOLDER_NAME / str(process_id)
+        return [path for position in range(1, len(self.part_texts(process_id)) + 1) if (path := folder / f"{position}.filtered").exists()]
+
+    def has_piped_output(self, process_id: int) -> bool:
+        return bool(self.piped_paths(process_id))
+
+    def piped_output(self, process_id: int) -> str:
+        return ColourCodes.removed("".join(path.read_text(errors="replace") for path in self.piped_paths(process_id)))
+
     def output_paths(self, process_id: int) -> list[Path]:
         return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
 
@@ -162,27 +172,38 @@ class OutputFolder:
             if not first_byte or len(lines) >= count:
                 kept = lines[-count:]
                 dropped = sum(len(line) + 1 for line in lines[:-count]) if len(lines) > count else 0
-                return OutputPage(self.page_text(kept), first_byte + dropped, last_byte, total)
+                return OutputPage(self.page_text(kept), first_byte + dropped, last_byte, total, self.cut_bytes(process_id))
             window *= 2
 
     def page_after(self, process_id: int, first: int, has_ended: bool) -> OutputPage:
         """The lines after a byte, at most a window of them, so a following view reads only what is new; a line
-        still being written waits, and the last one of an ended run comes without its newline."""
+        still being written waits, unless it fills the window alone, and the last one of an ended run comes
+        without its newline."""
         total = self.total_bytes(process_id)
         ready = self.byte_range(process_id, first, first + PAGE_BYTES)
-        ready = ready if has_ended and first + len(ready) >= total else ready[: ready.rfind(NEWLINE) + 1]
+        is_last = has_ended and first + len(ready) >= total
+        fills_window = NEWLINE not in ready and len(ready) >= PAGE_BYTES
+        ready = ready if is_last or fills_window else ready[: ready.rfind(NEWLINE) + 1]
         lines = ready.split(NEWLINE)
-        return OutputPage(self.page_text(lines if lines[-1] else lines[:-1]), first, first + len(ready), total)
+        return OutputPage(self.page_text(lines if lines[-1] else lines[:-1]), first, first + len(ready), total, self.cut_bytes(process_id))
 
     @staticmethod
     def page_text(lines: list[bytes]) -> list[str]:
         return [ColourCodes.removed(line.decode(errors="replace")) for line in lines]
 
+    def cut_bytes(self, process_id: int, position: int = 0) -> int:
+        """The bytes the runner dropped from a part, or from every part with no position."""
+        positions = [position] if position else range(1, len(self.part_texts(process_id)) + 1)
+        files = [self.home.folder / FOLDER_NAME / str(process_id) / f"{number}.cut-bytes" for number in positions]
+        return sum(int(path.read_text()) for path in files if path.exists())
+
     def reader_offset(self, process_id: int, position: int, offset: int) -> int:
-        """Where a reader goes on: at its offset, or at the start of a file the runner cut below that offset."""
+        """Where in the file a reader goes on. Its offset counts every byte ever written, so a cut moves the place
+        by the bytes dropped; a place that was dropped or lies past the file starts again at the top."""
         paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
         size = sum(path.stat().st_size for path in paths if path.exists())
-        return offset if offset <= size else 0
+        place = offset - self.cut_bytes(process_id, position)
+        return place if 0 <= place <= size else 0
 
     def reader_bytes_after(self, process_id: int, position: int, offset: int) -> bytes:
         if not position:

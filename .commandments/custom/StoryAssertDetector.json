@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "judges": ["tests"],
+    "find": {
+        "select": "kind:Assert",
+        "where": [
+            {"fileMatches": "(^|/)tests/stories/"},
+            {"inside": {"all": [{"is": "function"}, {"nameMatches": "^test_"}]}}
+        ]
+    },
+    "sin": {
+        "description": "A story checks a result directly.",
+        "name": "story-assert",
+        "rule": "Put the check in a named expectation step or support function and reuse it across stories.",
+        "skill": "plain-code-words"
+    }
+}

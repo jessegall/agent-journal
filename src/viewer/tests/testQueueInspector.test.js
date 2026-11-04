@@ -160,6 +160,17 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(rowsOf("recent")[0].querySelector(".dot").title).toBe("Passed");
 });
 
+test("Show older commands reads more of the Finished list, and shows only while there are older ones", async () => {
+    let total = 30;
+    const read = vi.fn(async () => ({ok: true, value: {...SNAPSHOT, recent_total: total}}));
+    await panel(read);
+    total = 1;
+    document.body.querySelector("[data-queue-older]").click();
+    await settle();
+    expect(read).toHaveBeenLastCalledWith(["queue", "list", "--recent", "40"]);
+    expect(document.body.querySelector("[data-queue-older]")).toBeNull();
+});
+
 test("output opens under a process and collapses again", async () => {
     const read = vi.fn(reader);
     await panel(read);

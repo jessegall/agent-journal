@@ -6,7 +6,6 @@
         "src/tunnels",
         "src/install",
         "src/server",
-        "tests",
         "tools/journal-hook",
         "src/viewer"
     ],
@@ -45,6 +44,7 @@
         "src/suites/coding/web/dist",
         "src/tunnels/tunler/web/dist",
         "src/viewer/tests/sample-window",
+        "tests",
         "tests",
         "tools/journal-hook/testdata"
     ],
@@ -209,7 +209,9 @@
         "ModuleRegistrationDetector",
         "CoreNamesNoSuiteDetector",
         "CoreNamesNoSuiteScriptDetector",
-        "CoreNamesNoSuiteViewDetector"
+        "CoreNamesNoSuiteViewDetector",
+        "StoryAssertDetector",
+        "architecture_corpus_CorpusOnlyInItsTestsDetector"
     ],
     "parallel": 2,
     "configure": {

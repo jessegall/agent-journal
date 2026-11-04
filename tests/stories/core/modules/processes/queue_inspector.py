@@ -32,6 +32,15 @@ def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output
     story.expect_text(f"output peek {first.id} --all", "package built", actor=story.user)
 
 
+def test_the_finished_list_reads_as_many_as_asked_and_counts_them_all(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    runs = [start_process(story, f"make step-{number}", category=CommandCategory.BUILD) for number in range(3)]
+    for run in runs:
+        end_run(story, run, "done\n")
+    queue = json.loads(story.run("queue list --environment-id 1 --recent 2 --json", actor=story.user).output_text)
+    story.expect_rows(len(queue["recent"]) == 2, queue["recent_total"] == 3)
+
+
 def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=story.user)

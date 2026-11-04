@@ -8,6 +8,7 @@ export function useOutputPages(read, processId) {
     const lines = ref([]);
     const firstByte = ref(0);
     let lastByte = -1;
+    let cutBytes = 0;
     let reading = false;
 
     async function newest() {
@@ -16,6 +17,7 @@ export function useOutputPages(read, processId) {
             lines.value = answer.value.lines;
             firstByte.value = answer.value.first_byte;
             lastByte = answer.value.last_byte;
+            cutBytes = answer.value.cut_bytes;
         }
         return answer;
     }
@@ -24,7 +26,7 @@ export function useOutputPages(read, processId) {
         if (lastByte < 0) return newest();
         const answer = await read(["output", "page", String(processId()), "--after", String(lastByte)]);
         if (!answer.ok) return answer;
-        if (answer.value.total < lastByte) return newest();
+        if (answer.value.cut_bytes !== cutBytes || answer.value.total < lastByte) return newest();
         if (answer.value.lines.length) lines.value = [...lines.value, ...answer.value.lines];
         lastByte = answer.value.last_byte;
         return answer;

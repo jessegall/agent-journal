@@ -2,7 +2,7 @@ import shlex
 from pathlib import Path
 
 from core.modules.processes.support.foreground_run import ForegroundRun
-from core.modules.processes.support.runner_line import MOST_OUTPUT_VARIABLE, STRIPPED_VARIABLE, RunnerLine
+from core.modules.processes.support.runner_line import MOST_OUTPUT_VARIABLE, STRIPPED_SEPARATOR, STRIPPED_VARIABLE, RunnerLine
 
 
 def built(run: ForegroundRun) -> list[str]:
@@ -13,9 +13,9 @@ def variable(tokens: list[str], name: str) -> str | None:
     return next((token.split("=", 1)[1] for token in tokens if token.startswith(f"{name}=")), None)
 
 
-def test_each_test_or_build_goes_to_the_runner_on_its_own_line_of_the_variable():
+def test_each_test_or_build_goes_to_the_runner_apart_in_the_variable():
     tokens = built(ForegroundRun(15, False, stripped=("npm test", "make 'a b'")))
-    assert variable(tokens, STRIPPED_VARIABLE) == "npm test\nmake 'a b'"
+    assert variable(tokens, STRIPPED_VARIABLE) == f"npm test{STRIPPED_SEPARATOR}make 'a b'"
 
 
 def test_a_line_with_no_test_or_build_has_no_stripped_variable():

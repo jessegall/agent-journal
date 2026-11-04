@@ -44,6 +44,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         parser.add_argument("--environment-id", type=int)
         parser.add_argument("--limit", type=int, default=50)
         parser.add_argument("--page", type=int, default=1)
+        parser.add_argument("--recent", type=int, default=RECENT_RUNS)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
         environment_id = arguments.environment_id if arguments.environment_id is not None else caller.environment_id
@@ -54,7 +55,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
-        recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, environment_id)]
+        recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, environment_id, max(1, arguments.recent))]
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
@@ -63,14 +64,14 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_reason": self.halt.reason,
-            "running": running, "waiting": waiting, "recent": recent}
+            "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).page(1, 1).total}
         queue_runs = tuple(row for row in active if row.is_queue_run)
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
 
-    def recent_rows(self, query: Query[ProcessQueueRow], environment_id: int) -> list[ProcessQueueRow]:
-        ended = self.queries.query(Process).filter(environment_id=environment_id).descending("ended_at", "id").limited(RECENT_RUNS)
-        return query.matching(Among("id", tuple(process.id for process in ended))).filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(RECENT_RUNS)
+    def recent_rows(self, query: Query[ProcessQueueRow], environment_id: int, count: int) -> list[ProcessQueueRow]:
+        ended = self.queries.query(Process).filter(environment_id=environment_id).descending("ended_at", "id").limited(count)
+        return query.matching(Among("id", tuple(process.id for process in ended))).filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(count)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):

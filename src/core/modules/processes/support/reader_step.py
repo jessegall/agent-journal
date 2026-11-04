@@ -34,6 +34,7 @@ class ReaderStep:
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         offset = self.folder.reader_offset(process.id, output.reader_position, output.read_offset)
+        cut_bytes = self.folder.cut_bytes(process.id, output.reader_position)
         raw = self.folder.reader_bytes_after(process.id, output.reader_position, offset)
         ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
         if not ready_bytes:
@@ -41,7 +42,7 @@ class ReaderStep:
         text = ColourCodes.removed(ready_bytes.decode(errors="replace"))
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
         steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
-        restarted = offset != output.read_offset
+        restarted = offset + cut_bytes != output.read_offset
         passed = steps.passed if restarted else output.steps_passed + steps.passed
         failed = steps.failed if restarted else output.steps_failed + steps.failed
         test_count = self.run.count(reader, text, output.test_count)
@@ -50,7 +51,7 @@ class ReaderStep:
             progress = min(100, (passed + failed) * 100 // test_count)
         first_line = 1 if restarted else output.read_lines + 1
         lines = self.run.lines(reader, text, process.state.value, first_line) if reader.type is ReaderType.PATTERN else []
-        return ReaderAdvance(lines, offset + len(ready_bytes), counted if restarted else output.read_lines + counted,
+        return ReaderAdvance(lines, offset + cut_bytes + len(ready_bytes), counted if restarted else output.read_lines + counted,
                              self.run.summary(reader, text) or output.reader_summary, progress,
                              steps_passed=passed, steps_failed=failed, test_count=test_count, replaces=restarted)
 

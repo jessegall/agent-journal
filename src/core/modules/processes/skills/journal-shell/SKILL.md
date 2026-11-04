@@ -13,6 +13,8 @@ Every shell command you run goes through the journal's runner.
 - `output N ended: <result>` means it finished. `output N unread` means you have not read it yet.
 - Read it with `journal output read N --summary`, which gives its reader's lines and how it ended.
 - Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
+- A test or build keeps its complete output whatever its pipes or a redirect to /dev/null cut: you get what the line
+  asked for, and `--piped` reads all of what the pipes printed.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
 - While you keep working you hear of a run's end on your next tool call, so a run needs no Monitor. Only when you

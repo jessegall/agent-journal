@@ -125,8 +125,10 @@ func unwrapped(commands []Command) []Command {
 			}
 			inner[position].PipedInto += len(expanded)
 		}
-		inner[len(inner)-1].JoinedBy = command.JoinedBy
+		last := &inner[len(inner)-1]
+		last.JoinedBy, last.PipedInto = command.JoinedBy, command.PipedInto
 		expanded = append(expanded, inner...)
+		outer[len(expanded)-1] = true
 	}
 	begins[len(commands)] = len(expanded)
 	for index := range expanded {
@@ -136,6 +138,22 @@ func unwrapped(commands []Command) []Command {
 		expanded[index].PipedInto = begins[expanded[index].PipedInto]
 	}
 	return expanded
+}
+
+// emptyBody is where a here-document with no lines stands, which the parser gives no node: its closing line right after
+// the line of its statement.
+func emptyBody(line string, redirect *syntax.Redirect, end int) (int, int) {
+	lineEnd := strings.IndexByte(line[end:], '\n')
+	if lineEnd < 0 {
+		return end, end
+	}
+	start := end + lineEnd + 1
+	closing, _, _ := strings.Cut(line[start:], "\n")
+	marker := strings.Trim(line[redirect.Word.Pos().Offset():redirect.Word.End().Offset()], `'"\`)
+	if strings.TrimLeft(closing, "\t") != marker {
+		return end, end
+	}
+	return start, start + len(closing)
 }
 
 // foreachJoined keeps a zsh foreach loop whole: the commands from its foreach to its end, which the parser reads as
@@ -206,10 +224,13 @@ func (reader *splitter) single(statement *syntax.Stmt, following string) {
 	var bodies []string
 	syntax.Walk(statement, func(node syntax.Node) bool {
 		redirect, present := node.(*syntax.Redirect)
-		if !present || redirect.Hdoc == nil {
+		if !present || (redirect.Op != syntax.Hdoc && redirect.Op != syntax.DashHdoc) {
 			return true
 		}
-		bodyStart, bodyEnd := int(redirect.Hdoc.Pos().Offset()), int(redirect.Hdoc.End().Offset())
+		bodyStart, bodyEnd := emptyBody(reader.line, redirect, end)
+		if redirect.Hdoc != nil {
+			bodyStart, bodyEnd = int(redirect.Hdoc.Pos().Offset()), int(redirect.Hdoc.End().Offset())
+		}
 		if bodyEnd <= end {
 			return true
 		}

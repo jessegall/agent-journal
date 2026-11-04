@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, BuilderWithStartedTask
+from tests.stories.suites.coding.support.task_expectations import expect_started_task_count
 
 
 # task 3 then task 2 sit in plan 1's first phase; task 4 is outside any plan and most urgent
@@ -22,14 +23,11 @@ def planned_tasks(story, *, started: bool) -> None:
             story.run(move)
 
 
-def state_of(story, task_id: int) -> str:
-    return story.run(f"task show {task_id}", actor=story.agent).output_text
-
-
 def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_lowest_id_at_one_priority(next_plan_task):
     story = next_plan_task
-    assert "state: started" in state_of(story, 2), state_of(story, 2)
-    assert "state: open" in state_of(story, 3) and "state: open" in state_of(story, 4)
+    story.expect_text("task show 2", "state: started", actor=story.agent)
+    story.expect_text("task show 3", "state: open", actor=story.agent)
+    story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
 def test_inside_a_phase_the_higher_priority_goes_first(new_story):
@@ -37,7 +35,7 @@ def test_inside_a_phase_the_higher_priority_goes_first(new_story):
     story.run("task edit 3 --priority high", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 3), state_of(story, 3)
+    story.expect_text("task show 3", "state: started", actor=story.agent)
 
 
 def test_a_critical_task_outside_the_plan_goes_before_the_started_plan(new_story):
@@ -45,13 +43,14 @@ def test_a_critical_task_outside_the_plan_goes_before_the_started_plan(new_story
     story.run("task edit 4 --priority critical", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 4), state_of(story, 4)
+    story.expect_text("task show 4", "state: started", actor=story.agent)
 
 
 def test_a_task_above_high_goes_before_the_started_plan_and_a_high_task_does_not(urgent_plan_task):
     story = urgent_plan_task
-    assert "state: started" in state_of(story, 5), state_of(story, 5)
-    assert "state: open" in state_of(story, 2) and "state: open" in state_of(story, 4)
+    story.expect_text("task show 5", "state: started", actor=story.agent)
+    story.expect_text("task show 2", "state: open", actor=story.agent)
+    story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
 def test_a_critical_task_goes_before_a_task_above_high(new_story):
@@ -59,8 +58,8 @@ def test_a_critical_task_goes_before_a_task_above_high(new_story):
     story.run('task make "Fire" --environment main --priority critical', actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 6), state_of(story, 6)
-    assert "state: open" in state_of(story, 5)
+    story.expect_text("task show 6", "state: started", actor=story.agent)
+    story.expect_text("task show 5", "state: open", actor=story.agent)
 
 
 def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
@@ -77,7 +76,7 @@ def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
         story.run(move)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: open" in state_of(story, 3), state_of(story, 3)
+    story.expect_text("task show 3", "state: open", actor=story.agent)
 
 
 def test_a_stop_with_empty_hands_is_handed_the_started_plans_next_task(new_story):
@@ -86,16 +85,17 @@ def test_a_stop_with_empty_hands_is_handed_the_started_plans_next_task(new_story
     planned_tasks(story, started=True)
     story.run('task release 3 --reason "later"', actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task")
-    assert sum("state: started" in state_of(story, task_id) for task_id in (2, 3)) == 1
-    assert "state: open" in state_of(story, 4)
+    expect_started_task_count(story, (2, 3), 1)
+    story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
 def test_the_tasks_of_a_plan_not_yet_started_are_never_handed_out(new_story):
     story = new_story(fixture=UnstartedPlanTasks)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 4), state_of(story, 4)
-    assert "state: open" in state_of(story, 2) and "state: open" in state_of(story, 3)
+    story.expect_text("task show 4", "state: started", actor=story.agent)
+    story.expect_text("task show 2", "state: open", actor=story.agent)
+    story.expect_text("task show 3", "state: open", actor=story.agent)
 
 
 def test_when_the_plan_has_nothing_free_the_next_task_outside_it_is_handed_out(new_story):
@@ -104,7 +104,7 @@ def test_when_the_plan_has_nothing_free_the_next_task_outside_it_is_handed_out(n
     story.run("task depend 2 --on 4", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 4), state_of(story, 4)
+    story.expect_text("task show 4", "state: started", actor=story.agent)
 
 
 def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
@@ -121,8 +121,8 @@ def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
     story.run("plan start 1")
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
-    assert "state: started" in state_of(story, 3), state_of(story, 3)
-    assert "state: open" in state_of(story, 2)
+    story.expect_text("task show 3", "state: started", actor=story.agent)
+    story.expect_text("task show 2", "state: open", actor=story.agent)
 
 
 class StartedPlanTasks(StoryFixture):

@@ -4778,23 +4778,23 @@ const ip = ["title", "data-figure-mark", "data-folded", "data-open"], lp = {
 }), Xr = /* @__PURE__ */ Y(xp, [["__scopeId", "data-v-b4038573"]]), $p = 60;
 function Mp(e, t) {
   const n = B([]), s = B(0);
-  let a = -1, o = !1;
-  async function r() {
-    const u = await e(["output", "page", String(t())]);
-    return u.ok && (n.value = u.value.lines, s.value = u.value.first_byte, a = u.value.last_byte), u;
-  }
+  let a = -1, o = 0, r = !1;
   async function i() {
-    if (a < 0) return r();
-    const u = await e(["output", "page", String(t()), "--after", String(a)]);
-    return u.ok ? u.value.total < a ? r() : (u.value.lines.length && (n.value = [...n.value, ...u.value.lines]), a = u.value.last_byte, u) : u;
+    const d = await e(["output", "page", String(t())]);
+    return d.ok && (n.value = d.value.lines, s.value = d.value.first_byte, a = d.value.last_byte, o = d.value.cut_bytes), d;
   }
-  async function l(u) {
-    if (o || s.value <= 0 || u.scrollTop > $p) return;
-    o = !0;
-    const d = u.scrollHeight, f = await e(["output", "page", String(t()), "--before", String(s.value)]);
-    o = !1, f.ok && (n.value = [...f.value.lines, ...n.value], s.value = f.value.first_byte, await $t(), u.scrollTop += u.scrollHeight - d);
+  async function l() {
+    if (a < 0) return i();
+    const d = await e(["output", "page", String(t()), "--after", String(a)]);
+    return d.ok ? d.value.cut_bytes !== o || d.value.total < a ? i() : (d.value.lines.length && (n.value = [...n.value, ...d.value.lines]), a = d.value.last_byte, d) : d;
   }
-  return { lines: n, newest: r, follow: i, loadEarlier: l };
+  async function u(d) {
+    if (r || s.value <= 0 || d.scrollTop > $p) return;
+    r = !0;
+    const f = d.scrollHeight, g = await e(["output", "page", String(t()), "--before", String(s.value)]);
+    r = !1, g.ok && (n.value = [...g.value.lines, ...n.value], s.value = g.value.first_byte, await $t(), d.scrollTop += d.scrollHeight - f);
+  }
+  return { lines: n, newest: i, follow: l, loadEarlier: u };
 }
 const Sp = { outputs: "output", skills: "skill", agents: "agent", subagents: "agent", pages: "page" };
 function Qr(e) {
@@ -10246,7 +10246,7 @@ const ib = /* @__PURE__ */ ab(rb), lb = ["width", "height", "viewBox"], cb = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-CP0d1d2t.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
+}, Lx = /* @__PURE__ */ Y(hb, [["__scopeId", "data-v-47e67f04"]]), Nx = cl(() => import("./VoiceFigure-CGPSa8z6.js").then((e) => e.V)), Dx = "1.0.0", Px = "3.5";
 export {
   zl as $,
   Me as A,

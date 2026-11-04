@@ -18,3 +18,4 @@ class QueueInspectorJson(TypedDict):
     running: list[dict[str, object]]
     waiting: list[dict[str, object]]
     recent: list[dict[str, object]]
+    recent_total: int

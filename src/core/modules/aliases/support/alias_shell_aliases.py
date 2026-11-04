@@ -32,7 +32,7 @@ class AliasShellAliases(ShellAliases):
 
     def options(self, name: str) -> AliasOptions | None:
         alias = self.alias(name)
-        return AliasOptions(alias.background, alias.reader_id, alias.category) if alias else None
+        return AliasOptions(alias.background, alias.reader_id, alias.category, self.resolved_line(alias.shell_line([])).strip()) if alias else None
 
     def named_line(self, argv: list[str]) -> str | None:
         alias = self.alias(argv[0]) if argv else None

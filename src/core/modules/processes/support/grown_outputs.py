@@ -10,4 +10,4 @@ class GrownOutputs:
 
     def has_new_bytes(self, process_id: int) -> bool:
         output = self.outputs.process(process_id).page(1, 1).rows
-        return bool(output) and output[0].reader_id is not None and self.folder.total_bytes(process_id) != output[0].read_offset
+        return bool(output) and output[0].reader_id is not None and self.folder.total_bytes(process_id) + self.folder.cut_bytes(process_id) != output[0].read_offset

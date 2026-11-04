@@ -34,5 +34,5 @@ test("the graph draws its cards and lines and picks a task", async () => {
 
 test("with nothing waiting the graph says so", async () => {
     const window = context({"task graph": {ok: true, value: {tasks: [], edges: []}}});
-    expect((await mounted(TaskGraphView, window)).textContent).toContain("No task waits on another");
+    expect((await mounted(TaskGraphView, window)).textContent).toContain("Task dependencies appear here when one task is blocked by another.");
 });

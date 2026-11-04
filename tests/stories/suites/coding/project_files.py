@@ -2,6 +2,7 @@ import subprocess
 
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from tests.stories.suites.coding.support.project_file_expectations import expect_project_files
 
 
 def files_story(new_story):
@@ -16,9 +17,7 @@ def files_story(new_story):
 
 def test_a_folder_lists_folders_first_and_hides_what_nobody_reads(new_story):
     story = files_story(new_story)
-    text = story.run("project-file list --environment main --json", actor=story.agent).output_text
-    assert '"name": "shop"' in text and '".git"' not in text
-    assert text.index('"shop"') < text.index('"notes.bin"')
+    expect_project_files(story)
     story.expect_text("project-file list shop --environment main", "shop/cart.py", actor=story.agent)
 
 

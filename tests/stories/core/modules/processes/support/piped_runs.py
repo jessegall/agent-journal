@@ -3,7 +3,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from core.modules.processes.support.runner_line import STRIPPED_VARIABLE
+from core.modules.processes.support.runner_line import STRIPPED_SEPARATOR, STRIPPED_VARIABLE
 from tests.stories.core.modules.processes.support.read_output import ReadOutput
 from tests.stories.server.support.alias_hook import AliasHook
 from tests.stories.server.support.go_build import GoBuild
@@ -22,6 +22,9 @@ class PipedRuns(ReadOutput):
         program.write_text(f"#!/bin/sh\nprintf '%s' '{TEST_OUTPUT}'\n")
         program.chmod(0o755)
 
+    def fail_the_tests(self) -> None:
+        (self.bin / "npm").write_text(f"#!/bin/sh\nprintf '%s' '{TEST_OUTPUT}'\nexit 1\n")
+
     def rewritten(self, line: str) -> list[str]:
         return shlex.split(str(self.hook.answer(line)["updatedInput"]["command"]))
 
@@ -38,5 +41,16 @@ class PipedRuns(ReadOutput):
         subprocess.run(["sh", "-c", 'while [ ! -e "$1" ]; do :; done', "wait", str(folder / "end")], timeout=RUN_LIMIT_SECONDS, check=True)
         return finished.stdout, folder
 
+    def expect_variable(self, line: str, name: str, value: str) -> None:
+        assert self.variable(line, name) == value, self.rewritten(line)
+
+    def expect_stripped(self, line: str, *commands: str) -> None:
+        assert self.stripped_commands(line) == list(commands), self.rewritten(line)
+
+    def expect_run_output(self, line: str, text: str) -> Path:
+        output, folder = self.run_line(line)
+        assert text.format(process=folder.name) in output, output
+        return folder
+
     def stripped_commands(self, line: str) -> list[str]:
-        return [command for command in self.variable(line, STRIPPED_VARIABLE).split("\n") if command]
+        return [command for command in self.variable(line, STRIPPED_VARIABLE).split(STRIPPED_SEPARATOR) if command]

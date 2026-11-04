@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
@@ -219,7 +224,7 @@ func TestTheAgentsCapStillCutsWhatThePipesPrint(t *testing.T) {
 	setup := stripped(t, "seq 1 500 | tail -400", "seq 1 500")
 	setup.CapCharacters = 100
 	output, _ := run(t, setup, newClient())
-	if len(output) > 200 || !strings.Contains(output, "journal output read 4 --summary") {
+	if len(output) > 200 || !strings.Contains(output, "journal output read 4 --piped") {
 		t.Fatalf("printed %d characters: %q", len(output), output)
 	}
 }
@@ -351,7 +356,7 @@ func TestAStrippedPartRunsItsCommandAndThenItsFiltersInTheScript(t *testing.T) {
 	if strings.Contains(script, "make | tail") {
 		t.Fatalf("the script runs the pipe with the command: %s", script)
 	}
-	checks := []string{"{ make\n", "> '/folder/1.command'", "{ tail -5\n", "< '/folder/1.out' > '/folder/1.filtered'"}
+	checks := []string{"( make\n", "> '/folder/1.command'", "{ tail -5\n", "< '/folder/1.stdout' >> '/folder/1.filtered'"}
 	for _, check := range checks {
 		if !strings.Contains(script, check) {
 			t.Errorf("no %q in %s", check, script)
@@ -359,8 +364,15 @@ func TestAStrippedPartRunsItsCommandAndThenItsFiltersInTheScript(t *testing.T) {
 	}
 }
 
+func TestTheOutputPipesLiveOutsideTheRunFolder(t *testing.T) {
+	script := Script([]Part{{Text: "make | tail -5", Command: "make", Filters: "tail -5", Position: 1}}, "/folder")
+	if strings.Contains(script, ".fifo") || !strings.Contains(script, `"${TMPDIR:-/tmp}/journal-run-$$-1"`) {
+		t.Fatalf("script %s", script)
+	}
+}
+
 func TestVariablesCarryTheStrippedCommandsAndTheOutputLimit(t *testing.T) {
-	t.Setenv(strippedVariable, "npm test\nmake")
+	t.Setenv(strippedVariable, "npm test"+strippedSeparator+"make")
 	t.Setenv(mostOutputVariable, "1024")
 	setup := Flags{}.runOptions("/home", "/bin/sh")
 	if fmt.Sprint(setup.Stripped) != "[npm test make]" || setup.MostOutputBytes != 1024 {
@@ -387,7 +399,7 @@ func TestParsingEdgeCasesOfAStrippedPipeline(t *testing.T) {
 		{"a pipe at the end of a line", "npm test |\n  tail -1", "npm test", "npm test", "tail -1"},
 		{"a pipe of stderr too", "npm test |& tail -1", "npm test", "npm test", "tail -1"},
 		{"a subshell", "(npm test) | tail -1", "(npm test)", "(npm test)", "tail -1"},
-		{"a dropped stderr", "npm test 2>/dev/null | tail -1", "npm test 2>/dev/null", "npm test 2>/dev/null", "tail -1"},
+		{"a dropped stderr", "npm test 2>/dev/null | tail -1", "npm test 2>/dev/null", "npm test", "tail -1"},
 		{"a variable before the command", "CI=1 npm test | tail -1", "CI=1 npm test", "CI=1 npm test", "tail -1"},
 		{"a variable before a filter", "npm test | LC_ALL=C sort", "npm test", "", ""},
 		{"sed in place written apart", "npm test | sed -e s/a/b/ -i f", "npm test", "", ""},
@@ -635,9 +647,16 @@ func TestTheAgentGetsPartsInOrderHoweverFastTheShellRuns(t *testing.T) {
 }
 
 func TestAFailedCommandWhosePipesPrintNothingNamesItsOutput(t *testing.T) {
-	setup := stripped(t, "(echo build error >&2; false) | grep FAIL", "(echo build error >&2; false)")
+	setup := stripped(t, "(echo build error; false) | grep FAIL", "(echo build error; false)")
 	output, _ := run(t, setup, newClient())
 	if !strings.Contains(output, "journal output read 4 --summary") || !strings.Contains(readFile(t, folderOf(setup)+"/1.out"), "build error") {
+		t.Fatalf("printed %q", output)
+	}
+}
+
+func TestAFailedCommandsStderrPassesItsPipes(t *testing.T) {
+	setup := stripped(t, "(echo build error >&2; false) | grep FAIL", "(echo build error >&2; false)")
+	if output, _ := run(t, setup, newClient()); output != "build error\n" {
 		t.Fatalf("printed %q", output)
 	}
 }
@@ -656,14 +675,53 @@ func TestAJournalLineReadsMoreThanTheCappedEnd(t *testing.T) {
 	}
 }
 
-func TestACommandFinishedWithItsPipesReadingIsNotCut(t *testing.T) {
+func TestACutKeepsTheBytesItDropped(t *testing.T) {
 	folder := outputFolder(t, strings.Repeat("x", 500))
-	if err := os.WriteFile(folder.filteredPath(1), nil, 0o644); err != nil {
+	folder.CutOutput(1, 100)
+	folder.CutOutput(1, 100)
+	if text := readFile(t, filepath.Join(folder.Path, "1."+cutBytesSuffix)); text != strconv.Itoa(500-50-len(cutLine)) {
+		t.Fatalf("the cut bytes are %s", text)
+	}
+}
+
+func TestAPartLeftBehindIsCutWhileItsGroupLives(t *testing.T) {
+	folder := outputFolder(t, strings.Repeat("x", 500))
+	sleeper := exec.Command("/bin/sh", "-c", "read line")
+	sleeper.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	stdin, err := sleeper.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := sleeper.Start(); err != nil {
+		t.Fatal(err)
+	}
+	if err := folder.WritePid(sleeper.Process.Pid); err != nil {
+		t.Fatal(err)
+	}
+	tracker := Tracker{Options: Options{MostOutputBytes: 100}, Folder: folder, Parts: 1}
+	stopped := make(chan struct{})
+	go func() {
+		tracker.KeepCutting()
+		close(stopped)
+	}()
+	waitFor(t, 5*time.Second, "the cut", func() bool { return strings.HasPrefix(folder.Output(1), cutLine) })
+	stdin.Close()
+	_ = sleeper.Wait()
+	bounded(t, 5*time.Second, func() { <-stopped })
+}
+
+func TestTheFileAFinishedCommandsPipesReadIsNotCut(t *testing.T) {
+	folder := outputFolder(t, strings.Repeat("x", 500))
+	stdout := filepath.Join(folder.Path, "1."+stdoutSuffix)
+	if err := os.WriteFile(stdout, []byte(strings.Repeat("x", 500)), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(folder.Path, "1."+commandSuffix), []byte("0"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	folder.CutOutput(1, 100)
-	if len(folder.Output(1)) != 500 {
-		t.Fatal("the output was cut under its pipes")
+	if len(readFile(t, stdout)) != 500 || !strings.HasPrefix(folder.Output(1), cutLine) {
+		t.Fatalf("stdout %d bytes, output %d bytes", len(readFile(t, stdout)), len(folder.Output(1)))
 	}
 }
 

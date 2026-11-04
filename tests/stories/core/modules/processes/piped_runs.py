@@ -35,6 +35,20 @@ def test_a_test_gets_a_limit_of_100_megabytes_and_a_read_one_of_10(piped_runs):
         assert piped_runs.variable(line, MOST_OUTPUT_VARIABLE) == str(megabytes << 20)
 
 
+def test_an_output_limit_of_zero_keeps_one_megabyte(piped_runs):
+    piped_runs.story.expect_success("setting set journal.core.processes.most-output-megabytes 0 --environment main", actor=piped_runs.story.user)
+    piped_runs.expect_variable("cat notes.txt", MOST_OUTPUT_VARIABLE, str(1 << 20))
+
+
+def test_a_declared_test_alias_strips_only_its_own_part(piped_runs):
+    piped_runs.story.expect_success('alias add all-tests "./check.sh" --category "test run"', actor=piped_runs.story.agent)
+    piped_runs.expect_stripped("yes | head -1; journal all-tests | tail -2", "./check.sh")
+
+
+def test_a_journal_line_gets_the_limit_of_a_read(piped_runs):
+    piped_runs.expect_variable("journal environment list", MOST_OUTPUT_VARIABLE, str(10 << 20))
+
+
 def test_a_setting_changes_the_output_limit(piped_runs):
     piped_runs.story.expect_success("setting set journal.core.processes.most-output-megabytes 2 --environment main", actor=piped_runs.story.user)
     assert piped_runs.variable("cat notes.txt", MOST_OUTPUT_VARIABLE) == str(2 << 20)
@@ -43,6 +57,34 @@ def test_a_setting_changes_the_output_limit(piped_runs):
 def test_a_piped_test_keeps_its_complete_output_for_its_reader(piped_runs):
     _, folder = piped_runs.run_line("npm test | tail -5")
     assert (folder / "1.out").read_text() == TEST_OUTPUT
+
+
+def test_a_failed_test_behind_a_passing_pipe_fails_the_run(piped_runs):
+    piped_runs.fail_the_tests()
+    folder = piped_runs.expect_run_output("npm test | tail -2", "line 40\n40 passed\n")
+    piped_runs.story.expect_text(f"process show {folder.name}", "state: failed", "exit_code: 1")
+
+
+def test_a_failed_test_before_a_passing_command_fails_the_run(piped_runs):
+    piped_runs.fail_the_tests()
+    _, folder = piped_runs.run_line("npm test; echo done")
+    piped_runs.story.expect_text(f"process show {folder.name}", "state: failed", "exit_code: 1")
+
+
+def test_a_passing_test_finishes_the_run(piped_runs):
+    _, folder = piped_runs.run_line("npm test | tail -2")
+    piped_runs.story.expect_text(f"process show {folder.name}", "state: finished", "exit_code: 0")
+
+
+def test_what_the_pipes_printed_reads_by_number_past_the_cap(piped_runs):
+    folder = piped_runs.expect_run_output("npm test | sed 's/line/a longer line of text/'", "journal output read {process} --piped")
+    piped_runs.story.expect_text(f"output read {folder.name} --piped", "a longer line of text 1\n", "a longer line of text 40", actor=piped_runs.story.agent)
+    piped_runs.story.expect_no_text(f"output read {folder.name} --piped", "\nline 1\n", actor=piped_runs.story.agent)
+
+
+def test_a_line_with_no_pipes_run_over_its_output_says_so(piped_runs):
+    _, folder = piped_runs.run_line("npm test")
+    piped_runs.story.expect_refusal(f"output read {folder.name} --piped", "ran no pipes", actor=piped_runs.story.agent)
 
 
 def test_a_quick_piped_test_returns_exactly_what_the_pipes_print(piped_runs):

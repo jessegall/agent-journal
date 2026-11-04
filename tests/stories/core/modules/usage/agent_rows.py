@@ -4,6 +4,25 @@ from datetime import timedelta
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 
+def cards(story, state: str) -> list[dict[str, object]]:
+    return json.loads(story.run(f"agent cards --environment main --show {state} --json", actor=story.user).output_text)["rows"]
+
+
+def expect_card_order(story, state: str, *agent_ids: int) -> None:
+    listed = [row["id"] for row in cards(story, state)]
+    assert listed == list(agent_ids), listed
+
+
+def expect_cards_hold(story, state: str, *agent_ids: int) -> None:
+    listed = {row["id"] for row in cards(story, state)}
+    assert set(agent_ids) <= listed, listed
+
+
+def expect_no_cards(story, *agent_ids: int) -> None:
+    listed = {row["id"] for row in cards(story, "all")}
+    assert not set(agent_ids) & listed, listed
+
+
 def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_story):
     story = new_story(fixture=BuilderWithUser)
     oldest = story.new_row_id("agent start oldest claude subagent --environment main")
@@ -13,11 +32,8 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
     newest = story.new_row_id("agent start newest claude reviewer --environment main")
     story.run(f"agent end {middle}")
     story.run(f"agent edit {oldest} --paused-at {story.clock.timestamp().text}")
-    outcome = story.run("agent cards --environment main --helpers --show all --json", actor=story.user)
-    assert outcome.code == 0, outcome.output_text
-    rows = json.loads(outcome.output_text)["rows"]
-    assert [row["id"] for row in rows] == [oldest, middle, newest]
-    assert [row["id"] for row in json.loads(story.run("agent cards --environment main --helpers --show running --json", actor=story.user).output_text)["rows"]] == [oldest, newest]
+    expect_card_order(story, "all", oldest, middle, newest)
+    expect_card_order(story, "running", oldest, newest)
 
 
 def test_agent_rows_filter_search_and_page_before_answering(new_story):
@@ -25,13 +41,13 @@ def test_agent_rows_filter_search_and_page_before_answering(new_story):
     for session in ("first", "second", "third"):
         story.run(f"agent start {session} claude subagent --environment main")
         story.advance(timedelta(seconds=1))
-    rows = json.loads(story.run("agent cards --environment main --helpers --show all --limit 1 --page 2 --json", actor=story.user).output_text)["rows"]
+    rows = json.loads(story.run("agent cards --environment main --show all --limit 1 --page 2 --json", actor=story.user).output_text)["rows"]
     assert [row["session"] for row in rows] == ["second"]
-    matching_rows = json.loads(story.run("agent cards --environment main --helpers --search third --json", actor=story.user).output_text)["rows"]
+    matching_rows = json.loads(story.run("agent cards --environment main --search third --json", actor=story.user).output_text)["rows"]
     assert [row["session"] for row in matching_rows] == ["third"]
 
 
-def test_agent_filters_include_main_agents_and_finished_helpers(new_story, tmp_path, monkeypatch):
+def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_story, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     transcript = tmp_path / "claude" / "projects" / "-work-journal" / "helper-session.jsonl"
     transcript.parent.mkdir(parents=True)
@@ -48,13 +64,12 @@ def test_agent_filters_include_main_agents_and_finished_helpers(new_story, tmp_p
     story.run(f"agent end {reviewer}")
     story.run(f"agent end {worker}")
     story.run(f"agent end {retired_main}")
-    rows = lambda state: json.loads(story.run(f"agent cards --environment main --show {state} --json", actor=story.user).output_text)["rows"]
-    assert {main, running_helper, running_worker} <= {row["id"] for row in rows("running")}
-    assert {helper, reviewer} <= {row["id"] for row in rows("idle")}
-    assert {worker, retired_main} <= {row["id"] for row in rows("retired")}
-    assert {main, helper, reviewer, worker, running_helper, running_worker, retired_main} <= {row["id"] for row in rows("all")}
-    states = {row["id"]: row["state"] for row in rows("all")}
-    assert states[main] == "running"
+    expect_cards_hold(story, "running", running_helper, running_worker)
+    expect_cards_hold(story, "idle", helper, reviewer)
+    expect_cards_hold(story, "retired", worker)
+    expect_cards_hold(story, "all", helper, reviewer, worker, running_helper, running_worker)
+    expect_no_cards(story, main, retired_main)
+    states = {row["id"]: row["state"] for row in cards(story, "all")}
     assert states[helper] == "idle"
     assert states[worker] == "retired"
     story.expect_text(f"agent transcript {helper}", "The review is complete", actor=story.user)
