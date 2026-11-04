@@ -100,6 +100,14 @@ def test_a_test_run_that_went_past_the_limit_before_goes_to_the_background_at_on
     assert limit(over_limit=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN))).background
 
 
+def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_background():
+    head = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", 1)
+    rows = Rows(over_limit=False)
+    rows.has_moved_run = lambda environment_id, text, seconds=0: text == "tail"
+    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False)).decide(1, line(head, part("tail", CommandCategory.READ)))  # type: ignore[arg-type]
+    assert not decided.background
+
+
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
     assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))).background
 

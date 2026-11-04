@@ -30,7 +30,7 @@ class ForegroundLimit:
         if shell.is_journal_line and (not alias_runs or all(part.classification.category is CommandCategory.JOURNAL for part in shell.parts)):
             return ForegroundRun(0, False, part_commands=part_commands)
         declared = self.background.declared_category(shell)
-        is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.parts)
+        is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.pipeline_heads)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
         stripped = tuple(part.text for part in shell.parts if part.classification.category.is_long_running or (declared is not None and declared.is_long_running))
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if stripped else ProcessSetting.MOST_OUTPUT_MEGABYTES
