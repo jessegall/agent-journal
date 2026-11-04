@@ -31,10 +31,11 @@ class DemoScratch:
         self.home = JournalHome(self.folder / ".journal")
         self.code = CodeCopy(SOURCE, self.home)
 
-    def start(self) -> DemoSession:
+    def start(self, module_folder: Path | None = None) -> DemoSession:
         self.home.folder.mkdir(parents=True, exist_ok=True)
         self.code.make()
-        self.journal(["module", "sync"])
+        arguments = ["module", "sync"] if module_folder is None else ["module", "add", str(module_folder.resolve())]
+        self.journal(arguments)
         self.journal(["demo", "seed"])
         server = subprocess.Popen([sys.executable, "-m", "server.server", "--home", str(self.home.folder)], cwd=self.folder, start_new_session=True,
                                   env={**os.environ, "PYTHONPATH": str(self.code.folder())}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

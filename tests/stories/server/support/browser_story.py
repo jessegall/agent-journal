@@ -27,6 +27,10 @@ stderr:
 def expect_browser(story: ServerStory, script: str, arguments: Sequence[str], login_name: str = "Ada") -> None:
     key = story.viewer_key(login_name)
     address = f"http://127.0.0.1:{story.viewer_port()}/?key={key}&environment=main"
+    expect_browser_at(address, script, arguments)
+
+
+def expect_browser_at(address: str, script: str, arguments: Sequence[str]) -> None:
     try:
         finished = subprocess.run(
             ["node", f"tests/{script}", address, *arguments], cwd=VIEWER_FOLDER, capture_output=True, text=True, timeout=60,
