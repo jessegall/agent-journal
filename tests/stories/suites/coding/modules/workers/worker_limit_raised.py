@@ -47,7 +47,7 @@ def test_raising_the_worker_limit_tells_the_main_agent_the_limit_the_workers_out
 
 def test_the_line_comes_once(new_story):
     story = new_story(fixture=LimitRaised)
-    assert len(limit_lines(story)) == 1
+    expect_limit_lines_2(story, 1)
     expect_limit_lines(story, [])
 
 
@@ -85,4 +85,9 @@ def test_another_setting_changing_tells_nothing(new_story):
 
 def expect_limit_lines(story, expected) -> None:
     actual = limit_lines(story)
+    assert actual == expected, actual
+
+
+def expect_limit_lines_2(story, expected) -> None:
+    actual = len(limit_lines(story))
     assert actual == expected, actual

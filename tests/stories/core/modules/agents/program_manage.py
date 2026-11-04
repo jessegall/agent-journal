@@ -4,6 +4,7 @@ from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_answers, expect_command_hooks, expect_program_hooks, expect_program_hooks_2
 
 
 @pytest.mark.parametrize("program,name", [("claude", ".claude/settings.json"), ("codex", ".codex/hooks.json")])
@@ -14,9 +15,11 @@ def test_program_manage_imports_the_selected_programs_hooks_into_the_project_sto
         "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "project-check", "timeout": 60}]}]}})
     story.expect_text(f'program manage {program} "{folder}"', "managed hooks: 1")
     hooks = story.container.get(ManagedHooks).all()
-    assert len(hooks) == 1 and hooks[0].program == program and hooks[0].command == "project-check"
+    expect_answers(hooks, 1)
+    expect_program_hooks_2(hooks, program)
+    expect_command_hooks(hooks, "project-check")
     expect_row(hooks[0], source=f"project with spaces/{name}")
-    assert ProgramHooks.read(folder / name) == {"permissions": {"allow": ["read"]}, "hooks": {}}
+    expect_program_hooks(folder, name, {"permissions": {"allow": ["read"]}, "hooks": {}})
     story.expect_text(f'program manage {program} "{folder}"', "managed hooks: 1")
 
 

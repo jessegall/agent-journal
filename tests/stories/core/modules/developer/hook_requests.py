@@ -32,7 +32,7 @@ def test_only_the_last_hooks_the_setting_names_are_kept_newest_first(new_story):
     log = story.container.get(HookRequestLog)
     for firing in ("first", "second", "third"):
         log.record("claude", HEADERS, {"firing": firing}, 1, HookAnswer.ALLOWED)
-    assert [(row.number, row.body["firing"]) for row in log.read()] == [(3, "third"), (2, "second")]
+    expect_number_firing_body(log, [(3, "third"), (2, "second")])
 
 
 def test_request_rows_include_millisecond_times_day_lines_durations_and_outcomes(new_story):
@@ -41,8 +41,8 @@ def test_request_rows_include_millisecond_times_day_lines_durations_and_outcomes
     log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "tool_name": "Bash"}, 812.5, HookAnswer.REFUSED)
     row = log.read()[0].json()
     expect_row(row, event="PreToolUse", tool="Bash", duration_ms=812.5, outcome="refused")
-    assert row["day_start"]
-    assert len(row["time"]) == 12
+    expect_day_start(row)
+    expect_time(row, 12)
     expect_row(row, day=row["received_at"][:10])
 
 
@@ -53,4 +53,24 @@ def test_only_the_first_request_of_each_day_has_a_day_line(new_story):
     log.record("claude", HEADERS, {"event": "stop"}, 0, HookAnswer.ALLOWED)
     story.clock.advance(timedelta(days=1))
     log.record("claude", HEADERS, {"event": "stop"}, 0, HookAnswer.ALLOWED)
-    assert [row.day_start for row in log.read()] == [True, True, False]
+    expect_day_start_log(log, [True, True, False])
+
+
+def expect_day_start_log(log, expected) -> None:
+    actual = [row.day_start for row in log.read()]
+    assert actual == expected, actual
+
+
+def expect_time(row, expected) -> None:
+    actual = len(row['time'])
+    assert actual == expected, actual
+
+
+def expect_day_start(row) -> None:
+    actual = row['day_start']
+    assert actual, actual
+
+
+def expect_number_firing_body(log, expected) -> None:
+    actual = [(row.number, row.body['firing']) for row in log.read()]
+    assert actual == expected, actual

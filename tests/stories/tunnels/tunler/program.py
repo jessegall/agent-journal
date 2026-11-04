@@ -11,6 +11,7 @@ from core.base.tunnel.tunnel_state import TunnelState
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_absent_exists_with_log, expect_file_2
 
 SCRIPT = """#!/bin/sh
 echo "$@" >> "$TUNLER_RECORD"
@@ -50,30 +51,33 @@ def record(tmp_path: Path) -> list[str]:
 def test_the_status_reads_the_programs_answer_and_a_login_it_no_longer_accepts(home):
     status = real_client(home).status()
     expect_row(status, installed=True, authenticated=False, rejected=True, account="ada", host="tunnels.example")
-    assert status.command.endswith("/bin/tunler")
+    expect_endswith_command_status(status, "/bin/tunler")
 
 
 def test_a_login_hands_the_passwords_through_the_environment_and_never_on_the_command_line(home, tmp_path):
-    assert real_client(home).login("tunnels.example", "ada", "right", None).connected
+    expect_connected_login_real(home, "tunnels.example", "ada", "right")
     expect_record(tmp_path, ["login ada --host=tunnels.example"])
-    assert (tmp_path / "record.secrets").read_text().splitlines() == ["right none"]
+    expect_tmp_path_record(tmp_path, "record.secrets", ["right none"])
 
 
 def test_a_login_for_an_account_that_does_not_exist_asks_for_the_master_password(home):
     login = real_client(home).login("tunnels.example", "ada", "new", None)
-    assert login.needs_master and not login.connected and "master password" in login.error
+    expect_needs_master_login(login)
+    expect_absent_connected_login(login)
+    expect_error_login_with(login, "master password")
 
 
 def test_a_login_refused_with_the_master_password_gives_the_programs_last_line(home):
     login = real_client(home).login("tunnels.example", "ada", "new", "top")
-    assert not login.needs_master and login.error == "no such account"
+    expect_absent_needs_master_login(login)
+    expect_error_login(login, "no such account")
 
 
 def test_the_domains_are_the_programs_lines_and_a_release_names_the_subdomain(home, tmp_path):
     client = real_client(home)
-    assert client.domains() == ["one.tunnels.example", "two.tunnels.example"]
+    expect_domains_client(client, ["one.tunnels.example", "two.tunnels.example"])
     client.release("one.tunnels.example")
-    assert record(tmp_path)[-1] == "release one"
+    expect_record_2(tmp_path, 1, "release one")
     with pytest.raises(Refusal, match="not yours"):
         client.release("two.tunnels.example")
 
@@ -82,7 +86,7 @@ def test_the_version_and_an_update_read_the_programs_answers(home):
     client = real_client(home)
     version = client.version()
     expect_row(version, current="v0.2.2", latest="v0.3.0", update_available=True)
-    assert client.update() == "updated to v0.3.0"
+    expect_update_client(client, "updated to v0.3.0")
 
 
 def test_a_tunler_started_by_one_client_is_seen_running_by_another_and_logging_out_stops_it(home):
@@ -90,10 +94,12 @@ def test_a_tunler_started_by_one_client_is_seen_running_by_another_and_logging_o
     server.start(PORT, "cart-team")
     server.log.write_text("tunnel up: cart-team.tunnels.example (https)\n")
     second = real_client(home)
-    assert second.state() is TunnelState.CONNECTED and second.address() == "cart-team.tunnels.example"
+    expect_state_second(second, TunnelState.CONNECTED)
+    expect_address_second(second, "cart-team.tunnels.example")
     second.logout()
     server.process.process.wait(timeout=10)
-    assert not server.running() and second.state() is TunnelState.DISCONNECTED
+    expect_absent_running_server(server)
+    expect_state_second(second, TunnelState.DISCONNECTED)
 
 
 class LocalInstaller(TunlerInstaller):
@@ -111,8 +117,9 @@ class LocalInstaller(TunlerInstaller):
 
 def test_an_install_puts_a_working_tunler_in_place_and_names_its_version(tmp_path):
     target = tmp_path / "local" / "tunler"
-    assert LocalInstaller(target, '#!/bin/sh\necho "tunler v9.9.9"\n').install("tunnels.example") == "tunler v9.9.9 is installed"
-    assert target.stat().st_mode & stat.S_IXUSR and "v9.9.9" in subprocess.run([str(target), "version"], capture_output=True, text=True, check=True).stdout
+    expect_install_local_installer(target, '#!/bin/sh\necho "tunler v9.9.9"\n', "tunnels.example", "tunler v9.9.9 is installed")
+    expect_st_mode_stat(target)
+    expect_stdout_subprocess_with(target, "version", "v9.9.9")
 
 
 def test_what_is_no_working_tunler_replaces_nothing(tmp_path):
@@ -121,9 +128,95 @@ def test_what_is_no_working_tunler_replaces_nothing(tmp_path):
     target.write_text("the old one")
     with pytest.raises(Refusal, match="not a working tunler"):
         LocalInstaller(target, "#!/bin/sh\necho nonsense\n").install("tunnels.example")
-    assert target.read_text() == "the old one" and not target.with_name("tunler.part").exists()
+    expect_file_2(target, "the old one")
+    expect_absent_exists_with_log(target, "tunler.part")
 
 
 def expect_record(tmp_path: Path, expected) -> None:
     actual = record(tmp_path)
     assert actual == expected, actual
+
+
+def expect_st_mode_stat(target) -> None:
+    actual = target.stat().st_mode & stat.S_IXUSR
+    assert actual, actual
+
+
+def expect_stdout_subprocess_with(target, text, expected) -> None:
+    actual = subprocess.run([str(target), text], capture_output=True, text=True, check=True).stdout
+    assert expected in actual, actual
+
+
+def expect_install_local_installer(target, text, text_2, expected) -> None:
+    actual = LocalInstaller(target, text).install(text_2)
+    assert actual == expected, actual
+
+
+def expect_absent_running_server(server) -> None:
+    actual = server.running()
+    assert not actual, actual
+
+
+def expect_state_second(second, expected) -> None:
+    actual = second.state()
+    assert actual is expected, actual
+
+
+def expect_address_second(second, expected) -> None:
+    actual = second.address()
+    assert actual == expected, actual
+
+
+def expect_update_client(client, expected) -> None:
+    actual = client.update()
+    assert actual == expected, actual
+
+
+def expect_record_2(tmp_path, number, expected) -> None:
+    actual = record(tmp_path)[-number]
+    assert actual == expected, actual
+
+
+def expect_domains_client(client, expected) -> None:
+    actual = client.domains()
+    assert actual == expected, actual
+
+
+def expect_absent_needs_master_login(login) -> None:
+    actual = login.needs_master
+    assert not actual, actual
+
+
+def expect_error_login(login, expected) -> None:
+    actual = login.error
+    assert actual == expected, actual
+
+
+def expect_needs_master_login(login) -> None:
+    actual = login.needs_master
+    assert actual, actual
+
+
+def expect_absent_connected_login(login) -> None:
+    actual = login.connected
+    assert not actual, actual
+
+
+def expect_error_login_with(login, expected) -> None:
+    actual = login.error
+    assert expected in actual, actual
+
+
+def expect_tmp_path_record(tmp_path, text, expected) -> None:
+    actual = (tmp_path / text).read_text().splitlines()
+    assert actual == expected, actual
+
+
+def expect_connected_login_real(home, text, text_2, text_3) -> None:
+    actual = real_client(home).login(text, text_2, text_3, None).connected
+    assert actual, actual
+
+
+def expect_endswith_command_status(status, text) -> None:
+    actual = status.command.endswith(text)
+    assert actual, actual

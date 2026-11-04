@@ -25,6 +25,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line
 
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = NOTHING.with_fields(event="post_tool_use")
@@ -53,8 +54,8 @@ def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_backgro
     bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
     bus.run(StartProcessPart(process.id, 2), story.agent, environment_id=1)
     bus.run(EndProcessPart(process.id, 2, 0), story.agent, environment_id=1)
-    assert "--background" in str(story.hook("s-1", HookSamples.shell("make build", ShellPart("make", CommandCategory.PROCESS, ["build"]))).updated_input)
-    assert "--background" not in str(story.hook("s-1", HookSamples.shell("cut -c1-9", ShellPart("cut", CommandCategory.PROCESS, ["-c1-9"]))).updated_input)
+    expect_updated_input_hook_with(story, "s-1", "make build", "make", "build", "--background")
+    expect_updated_input_hook_without(story, "s-1", "cut -c1-9", "cut", "-c1-9", "--background")
 
 
 def test_a_moved_run_with_work_going_on_needs_no_monitor(new_story):
@@ -76,40 +77,40 @@ def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
 
 def test_a_plain_command_is_not_asked_for_a_reader(ended_plain_output):
     lines = ended_plain_output
-    assert not any("no reader reads" in line for line in lines)
+    expect_value_without_line(lines, "no reader reads")
 
 
 def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(ended_chain_output):
     story, parts, command, process, lines = ended_chain_output
-    assert any("no reader reads cart-suite yet" in line for line in lines)
-    assert not any("no reader reads mkdir" in line for line in lines)
+    expect_value_line(lines, "no reader reads cart-suite yet")
+    expect_value_without_line(lines, "no reader reads mkdir")
 
 
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(unread_build_output):
     story, lines = unread_build_output
-    assert any("no reader reads deploy.sh yet: journal reader add deploy.sh" in line for line in lines)
+    expect_value_line(lines, "no reader reads deploy.sh yet: journal reader add deploy.sh")
     expect_absent_lines_of(story, NOTHING, "no reader reads")
 
 
 def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(ended_loop_output):
     lines = ended_loop_output
-    assert not any("no reader reads" in line for line in lines)
+    expect_value_without_line(lines, "no reader reads")
 
 
 def test_a_shell_running_a_script_is_not_told_to_draft_a_reader_for_the_shell(ended_script_output):
     lines = ended_script_output
-    assert not any("no reader reads" in line for line in lines)
+    expect_value_without_line(lines, "no reader reads")
 
 
 def test_a_run_a_reader_reads_gets_no_advice(read_test_output):
     lines = read_test_output
-    assert ENDED in lines
-    assert not any("no reader reads" in line for line in lines)
+    expect_value_with(lines, ENDED)
+    expect_value_without_line(lines, "no reader reads")
 
 
 def test_a_run_that_printed_nothing_gets_no_advice(empty_build_output):
     lines = empty_build_output
-    assert not any("no reader reads" in line for line in lines)
+    expect_value_without_line(lines, "no reader reads")
 
 
 def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
@@ -131,8 +132,8 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     lines = lines_of(story, NOTHING)
-    assert any("reader deploys kept 60 of 60 lines" in line for line in lines)
-    assert any("reader deploys found no summary" in line for line in lines)
+    expect_value_line(lines, "reader deploys kept 60 of 60 lines")
+    expect_value_line(lines, "reader deploys found no summary")
 
 
 def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
@@ -254,10 +255,10 @@ def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_ba
     story = new_story(fixture=BuilderWithUser)
     process = start_process(story, "sleep 60")
     folder = story.container.get(OutputFolder)
-    assert folder.text(process.id, "move") == ""
+    expect_folder(folder, process, "move", "")
     story.run('message send "are you there" --environment main', actor=story.user)
     story.run_listeners()
-    assert folder.text(process.id, "move") == "1"
+    expect_folder(folder, process, "move", "1")
 
 
 def test_an_agents_own_message_moves_nothing(new_story):
@@ -265,7 +266,7 @@ def test_an_agents_own_message_moves_nothing(new_story):
     process = start_process(story, "sleep 60")
     story.run('message send "working on it" --environment main', actor=story.agent)
     story.run_listeners()
-    assert story.container.get(OutputFolder).text(process.id, "move") == ""
+    expect_value_10(story, process, "move", "")
 
 
 @pytest.fixture
@@ -379,3 +380,23 @@ def expect_lines_of(story, sample, expected) -> None:
 
 def expect_absent_lines_of(story, sample, expected) -> None:
     expect_absent_reply_line(story.hook("s-1", sample), expected)
+
+
+def expect_value_10(story, process, text, expected) -> None:
+    actual = story.container.get(OutputFolder).text(process.id, text)
+    assert actual == expected, actual
+
+
+def expect_folder(folder, process, text, expected) -> None:
+    actual = folder.text(process.id, text)
+    assert actual == expected, actual
+
+
+def expect_updated_input_hook_without(story, text, text_2, text_3, text_4, expected) -> None:
+    actual = str(story.hook(text, HookSamples.shell(text_2, ShellPart(text_3, CommandCategory.PROCESS, [text_4]))).updated_input)
+    assert expected not in actual, actual
+
+
+def expect_updated_input_hook_with(story, text, text_2, text_3, text_4, expected) -> None:
+    actual = str(story.hook(text, HookSamples.shell(text_2, ShellPart(text_3, CommandCategory.PROCESS, [text_4]))).updated_input)
+    assert expected in actual, actual

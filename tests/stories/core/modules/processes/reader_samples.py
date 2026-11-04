@@ -3,6 +3,7 @@ from core.base.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less
 
 KEPT_RUNS = 30
 READ_LIMIT_POINTS = 5
@@ -29,4 +30,5 @@ def test_a_command_with_no_sample_reads_no_part_row_into_python(new_story):
     start = database.tally.points()
     rows = story.container.get(ProcessPartQuery).kept_samples(["cargo test*"], 1).page(1, 1).rows
     cost = database.tally.points().minus(start)
-    assert not rows and cost.total < READ_LIMIT_POINTS, cost.line()
+    expect_absent_value(rows)
+    expect_total_cost_less(cost, READ_LIMIT_POINTS)

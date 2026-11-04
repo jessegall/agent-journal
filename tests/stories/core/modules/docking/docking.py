@@ -13,18 +13,19 @@ from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockIte
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_events_window_with, expect_value_2
 
 
 def test_an_environment_has_one_dock_made_with_it(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()
-    assert story.container.get(Database).rows(Statement("SELECT count(*) FROM docks"))[0][0] == 1
+    expect_value_2(story, "SELECT count(*) FROM docks", 1)
     story.expect_refusal("dock make --environment main", "exists already")
 
 
 def test_items_are_added_within_the_types_limit(ended_pair):
     story, first, second = ended_pair
-    assert (docked_state(story, docked(story, first)), docked_state(story, docked(story, second))) == ("docked", "docked")
+    expect_docked_state_4(story, first, second, ("docked", "docked"))
 
 
 def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended_pair):
@@ -33,7 +34,7 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended
     oldest, newer = docked(story, first), docked(story, second)
     story.container.get(Bus).run(KeepDockItem(oldest.id), story.user)
     added = docked(story, third)
-    assert (docked_state(story, oldest), docked_state(story, newer), docked_state(story, added)) == ("docked", "undocked", "docked")
+    expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
 
 
 def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):
@@ -51,7 +52,7 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(leaving_dock):
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run('task make "Tick" --environment main', actor=story.user)
     story.run_listeners()
-    assert (docked_state(story, leaves), docked_state(story, stays)) == ("undocked", "docked")
+    expect_docked_state_2(story, leaves, stays, ("undocked", "docked"))
 
 
 def test_an_item_leaves_on_a_change_in_another_environment(leaving_dock):
@@ -106,7 +107,8 @@ def test_an_agent_undocks_an_item_a_person_kept(kept_dock):
 def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     window = Registry.read(story.container.get(Database)).window("messages.chat")
-    assert "dock-item main" in window.reads and "dock_item.*" in window.events
+    expect_reads_window_with(window, "dock-item main")
+    expect_events_window_with(window, "dock_item.*")
     WindowStory(story).expect_window_allowed("messages.chat", "dock-item main")
 
 
@@ -120,7 +122,8 @@ def test_a_docked_document_carries_its_abstract_to_read_when_the_card_is_expande
 def test_an_item_carries_the_title_and_the_text_of_its_row(running_cart_task):
     story, task_id = running_cart_task
     item = docked(story, task_id)
-    assert story.row(type(item), item.id).title == "Task 1" and "Task 1" in story.run("dock-item list").output_text
+    expect_title(story, item, "Task 1")
+    expect_output_with_2(story, "dock-item list", "Task 1")
 
 
 def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_it(running_cart_task):
@@ -131,7 +134,7 @@ def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_i
 
 def test_the_chat_window_may_run_the_buttons_of_its_docked_cards():
     chat = next(window for window in MessagesModule.windows if window.name == "messages.chat")
-    assert {"dock remove", "dock keep", "dock unkeep"} <= set(chat.runs)
+    expect_value_limit("dock remove", "dock keep", "dock unkeep", set(chat.runs))
 
 
 
@@ -159,3 +162,38 @@ def leaving_dock(new_story):
 def running_cart_task(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     return story, running_task(story, "Fix the cart")
+
+
+def expect_value_limit(text, text_2, text_3, expected) -> None:
+    actual = {text, text_2, text_3}
+    assert actual <= expected, actual
+
+
+def expect_title(story, item, expected) -> None:
+    actual = story.row(type(item), item.id).title
+    assert actual == expected, actual
+
+
+def expect_output_with_2(story, text, expected) -> None:
+    actual = story.run(text).output_text
+    assert expected in actual, actual
+
+
+def expect_reads_window_with(window, expected) -> None:
+    actual = window.reads
+    assert expected in actual, actual
+
+
+def expect_docked_state_2(story, leaves, stays, expected) -> None:
+    actual = (docked_state(story, leaves), docked_state(story, stays))
+    assert actual == expected, actual
+
+
+def expect_docked_state_3(story, oldest, newer, added, expected) -> None:
+    actual = (docked_state(story, oldest), docked_state(story, newer), docked_state(story, added))
+    assert actual == expected, actual
+
+
+def expect_docked_state_4(story, first, second, expected) -> None:
+    actual = (docked_state(story, docked(story, first)), docked_state(story, docked(story, second)))
+    assert actual == expected, actual

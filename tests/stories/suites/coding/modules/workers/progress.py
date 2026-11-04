@@ -5,6 +5,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value_5
 
 
 def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_story):
@@ -33,4 +34,4 @@ def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
     story.expect_success('worker report "The proof is ready"', actor=worker)
     story.expect_success(f'worker send {worker.id} "Correct the total"', actor=story.agent)
     current_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    assert json.loads(current_progress) == json.loads(initial_progress)
+    expect_value_5(current_progress, json.loads(initial_progress))

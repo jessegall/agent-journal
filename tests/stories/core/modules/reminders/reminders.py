@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
 from core.base.timestamp import Timestamp
+from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -73,10 +74,8 @@ def test_a_reminder_needs_a_time_or_an_interval_and_a_known_condition(new_story)
 
 
 def expect_absent_lines_of(story, expected) -> None:
-    actual = lines_of(story)
-    assert expected not in actual, actual
+    expect_absent_reply_line(story.hook("s-1", LISTING), expected)
 
 
 def expect_lines_of(story, expected) -> None:
-    actual = lines_of(story)
-    assert expected in actual, actual
+    expect_reply_line(story.hook("s-1", LISTING), expected)

@@ -7,6 +7,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_count_marks, expect_value_with
 
 FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 LOG_LINES = "1700000000 hook claude\n1700000005 hook claude\n"
@@ -25,13 +26,13 @@ def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_t
     story.expect_hook_allowed("s-1", FINISHED, "2 of your hooks went through unchecked")
     story.run_listeners()
     story.expect_absent_hook_line("s-1", FINISHED, "went through unchecked")
-    assert marks_text(story).count("went through unchecked") == 1, marks_text(story)
+    expect_count_marks(story, "went through unchecked", 1)
 
 
 def test_one_hook_is_said_in_the_singular_and_an_empty_log_says_nothing(single_bypassed_hook):
     story, initial_marks = single_bypassed_hook
-    assert "1 hook went through unchecked" in initial_marks
-    assert marks_text(story).count("went through unchecked") == 1, marks_text(story)
+    expect_value_with(initial_marks, "1 hook went through unchecked")
+    expect_count_marks(story, "went through unchecked", 1)
 
 
 def test_a_subagents_hook_leaves_the_log_for_the_main_agent(new_story):

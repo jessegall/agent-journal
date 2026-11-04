@@ -11,6 +11,7 @@ from core.testing.story_fixture import StoryFixture
 from core.testing.story import Story
 from tests.stories.core.support.fixtures import PlanWithTasks, UserJoined
 from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
+from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without
 
 SHARE_WINDOW = "sharing.shares"
 PLAN_WINDOW = "plans.plans"
@@ -93,7 +94,9 @@ def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(sha
     _, _, page = viewer_answer(story.viewer_port(), share.path, visitor, "")
     names = re.findall(r'(?:src|href)="(/viewer/[^"]+)"|"(?:vue|@journal/window-kit)": "([^"]+)"', page)
     paths = {first or second for first, second in names}
-    assert any("vendor/vue" in path for path in paths) and any("/assets/" in path for path in paths) and any("window-kit" in path for path in paths), page
+    expect_value_line(paths, "vendor/vue")
+    expect_value_line(paths, "/assets/")
+    expect_value_line(paths, "window-kit")
     for path in paths:
         story.expect_viewer_status(path, 200, visitor)
 
@@ -119,14 +122,15 @@ def test_the_plans_window_of_a_share_loads_and_reads_the_shared_plan_with_only_t
 def test_a_live_link_page_carries_no_gone_mark(shared_plan_link):
     story, ((_, share)) = shared_plan_link
     _, _, page = viewer_answer(story.viewer_port(), share.path, "", "")
-    assert "journal-share" not in page, page
+    expect_value_without(page, "journal-share")
 
 
 def test_a_dead_link_page_clears_the_share_cookie_a_visitor_holds(shared_plan_link):
     story, ((_, share)) = shared_plan_link
     visitor = opened(story, share)
     _, headers, _ = viewer_answer(story.viewer_port(), "/viewer/share/not-a-link", visitor, "")
-    assert "journal_share=;" in headers.get("Set-Cookie", "") and "Max-Age=0" in headers["Set-Cookie"], headers
+    expect_headers_with(headers, "Set-Cookie", "", "journal_share=;")
+    expect_cookie_headers_with(headers, "Max-Age=0")
 
 
 def test_a_revoked_link_ends_the_sessions_it_opened(shared_plan_link):
@@ -209,7 +213,7 @@ def test_a_share_session_follows_only_the_events_of_the_rows_it_shows_in_its_own
     story, ((_, share)) = shared_plan_link
     visitor = opened(story, share)
     followed = share_events(story, visitor, 4, "other")
-    assert all((event["row_table"], event["row_id"]) in {("plans", 1), ("phases", 1), ("phases", 2), ("phases", 3)} for event in followed), followed
+    expect_table_event_id("plans", 1, "phases", 1, "phases", 2, "phases", 3, followed)
 
 
 def test_a_share_session_cannot_ask_for_a_login_key(shared_plan_link):
@@ -222,9 +226,9 @@ def test_a_share_session_cannot_ask_for_a_login_key(shared_plan_link):
 def test_a_person_lists_and_revokes_their_links(shared_plan_link):
     story, ((cookie, share)) = shared_plan_link
     listed = story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})
-    assert [row["id"] for row in listed["rows"]] == [share.id], listed
+    expect_id_cancelled(listed, [share.id])
     story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "revoke", str(share.id)], "environment": "main"})
-    assert [row["state"] for row in story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})["rows"]] == ["revoked"]
+    expect_state_viewer(story, cookie, "window", "line", "environment", SHARE_WINDOW, "share", "list", "main", ["revoked"])
 
 
 def test_a_link_stays_open_when_the_server_restarts(new_story):
@@ -253,3 +257,23 @@ def plan_server(new_story):
 @pytest.fixture
 def shared_plan_link(plan_server):
     return plan_server, shared_link(plan_server)
+
+
+def expect_state_viewer(story, cookie, text, text_2, text_3, item, text_4, text_5, text_6, expected) -> None:
+    actual = [row['state'] for row in story.viewer_line_value(cookie, {text: item, text_2: [text_4, text_5], text_3: text_6})['rows']]
+    assert actual == expected, actual
+
+
+def expect_table_event_id(text, number, text_2, number_2, text_3, number_3, text_4, number_4, followed) -> None:
+    actual = all(((event['row_table'], event['row_id']) in {(text, number), (text_2, number_2), (text_3, number_3), (text_4, number_4)} for event in followed))
+    assert actual, actual
+
+
+def expect_headers_with(headers, text, text_2, expected) -> None:
+    actual = headers.get(text, text_2)
+    assert expected in actual, actual
+
+
+def expect_cookie_headers_with(headers, expected) -> None:
+    actual = headers['Set-Cookie']
+    assert expected in actual, actual

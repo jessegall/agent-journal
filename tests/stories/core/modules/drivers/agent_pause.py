@@ -19,6 +19,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_refusal_hook
 
 JOURNAL_LINE = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
@@ -52,7 +53,7 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
 def test_resume_types_that_it_may_carry_on(paused_typing_agent):
     story, typing = paused_typing_agent
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    assert [line.split(":")[0] for _, line in typing.typed] == ["[journal] the user paused you", "[journal] the user resumed you"]
+    expect_split_typed_typing(":", typing, ["[journal] the user paused you", "[journal] the user resumed you"])
 
 
 def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
@@ -111,11 +112,11 @@ def paused_story(new_story, fixture):
 
 def test_a_paused_agent_with_a_task_in_hand_may_stop(new_story):
     story = paused_story(new_story, BuilderWithStartedTask)
-    assert story.hook("s-1", HookSamples.stop()).refusal
+    expect_refusal_hook(story, "s-1")
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    assert story.hook("s-1", HookSamples.stop()).refusal
+    expect_refusal_hook(story, "s-1")
 
 
 def test_a_paused_agent_is_given_no_new_task_at_its_stop(new_story):
@@ -191,3 +192,8 @@ def paused_agent_without_terminal(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     return story
+
+
+def expect_split_typed_typing(text, typing, expected) -> None:
+    actual = [line.split(text)[0] for _, line in typing.typed]
+    assert actual == expected, actual

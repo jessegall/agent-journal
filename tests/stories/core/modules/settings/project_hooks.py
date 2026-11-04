@@ -8,6 +8,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_bytes_source
 
 
 def test_the_project_hooks_query_reports_every_kind_without_importing_pending_entries(new_story, tmp_path, monkeypatch):
@@ -32,16 +33,16 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     reply = story.run("managed-hook list --json")
     reply.expect_code(0)
     data = json.loads(reply.output_text)
-    assert len(data["managed"]) == 1
+    expect_managed_data(data, 1)
     expect_row(data["managed"][0]["history"], refused=1)
     expect_row(data["managed"][0]["history"]["last"], exit_code=2)
-    assert data["managed"][0]["history"]["last_at"] is not None
-    assert "can_refuse" in data["managed"][0]["hook"]["effects"]
-    assert [entry["command"] for entry in data["pending"]] == ["pending-check"]
-    assert {entry["reason"] for entry in data["unmanaged"]} == {"This entry is not a command.", "User-level files are listed without changes."}
+    expect_changed_last_history_managed(data, None)
+    expect_effects_hook_managed_with(data, "can_refuse")
+    expect_command_entry_pending(data, ["pending-check"])
+    expect_reason_entry_unmanaged(data, {"This entry is not a command.", "User-level files are listed without changes."})
     expect_row(data, fallback=True)
-    assert user_file.read_bytes() == user_bytes
-    assert len(story.container.get(ManagedHooks).all()) == 1
+    expect_bytes_source(user_file, user_bytes)
+    expect_value_12(story, 1)
 
 
 def test_the_project_hooks_window_is_a_settings_page_with_the_required_commands(new_story):
@@ -51,3 +52,33 @@ def test_the_project_hooks_window_is_a_settings_page_with_the_required_commands(
     window.expect_window_allowed("settings.project-hooks", "managed-hook set sample off 30")
     window.expect_window_allowed("settings.project-hooks", "managed-hook scan")
     window.expect_window_allowed("settings.project-hooks", "managed-hook give-back")
+
+
+def expect_value_12(story, expected) -> None:
+    actual = len(story.container.get(ManagedHooks).all())
+    assert actual == expected, actual
+
+
+def expect_reason_entry_unmanaged(data, expected) -> None:
+    actual = {entry['reason'] for entry in data['unmanaged']}
+    assert actual == expected, actual
+
+
+def expect_command_entry_pending(data, expected) -> None:
+    actual = [entry['command'] for entry in data['pending']]
+    assert actual == expected, actual
+
+
+def expect_effects_hook_managed_with(data, expected) -> None:
+    actual = data['managed'][0]['hook']['effects']
+    assert expected in actual, actual
+
+
+def expect_changed_last_history_managed(data, expected) -> None:
+    actual = data['managed'][0]['history']['last_at']
+    assert actual is not expected, actual
+
+
+def expect_managed_data(data, expected) -> None:
+    actual = len(data['managed'])
+    assert actual == expected, actual

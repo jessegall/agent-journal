@@ -31,17 +31,32 @@ def assigners(story, entry) -> SuiteTaskAssigners:
 
 def test_the_coding_suite_names_its_task_assigner(new_story):
     story = new_story(fixture=BuilderStarted)
-    assert isinstance(story.container.get(SuiteTaskAssigners).assigner(1), NextTask)
+    expect_isinstance_4(story, 1)
 
 
 def test_a_suite_names_its_own_task_assigner(new_story):
     story = new_story(fixture=BuilderStarted)
     coding = story.container.get(Registry).suite("coding")
     second = assigners(story, replace(coding, task_assigner=DottedPath.class_path(SecondAssigner).text))
-    assert isinstance(second.assigner(1), SecondAssigner)
+    expect_isinstance_3(second, 1)
 
 
 def test_a_suite_with_no_task_assigner_hands_out_nothing(new_story):
     story = new_story(fixture=BuilderStarted)
     coding = story.container.get(Registry).suite("coding")
-    assert assigners(story, replace(coding, task_assigner="")).assigner(1) is None
+    expect_assigner_assigners(story, coding, "", 1, None)
+
+
+def expect_assigner_assigners(story, coding, text, number, expected) -> None:
+    actual = assigners(story, replace(coding, task_assigner=text)).assigner(number)
+    assert actual is expected, actual
+
+
+def expect_isinstance_3(second, number) -> None:
+    actual = isinstance(second.assigner(number), SecondAssigner)
+    assert actual, actual
+
+
+def expect_isinstance_4(story, number) -> None:
+    actual = isinstance(story.container.get(SuiteTaskAssigners).assigner(number), NextTask)
+    assert actual, actual

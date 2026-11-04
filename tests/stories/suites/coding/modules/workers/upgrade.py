@@ -3,6 +3,7 @@ import sqlite3
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.fixtures.version_four import version_four_fixture
+from tests.stories.support.story_checks import expect_value_with
 
 
 def test_version_4_worker_history_stays_in_the_backup_with_its_counts(new_story):
@@ -22,4 +23,4 @@ def test_a_worker_whose_work_was_not_merged_is_named_in_the_report(new_story):
     with sqlite3.connect(database) as connection:
         connection.execute("UPDATE sent_agents SET state = 'reported'")
     text = UpgradeJournal(story.home).run(confirmed=True).text
-    assert "worker Ada had not finished (reported): fix the cart" in text
+    expect_value_with(text, "worker Ada had not finished (reported): fix the cart")

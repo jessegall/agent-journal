@@ -13,6 +13,7 @@ from tests.stories.core.modules.chat.support.mark_samples import mark_count, exp
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 from core.testing.expect_reply import expect_reply_allowed
+from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
 
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
 JOURNAL = HookSamples.shell("journal task show 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"))
@@ -23,14 +24,14 @@ BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD,
 def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_process_row(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", SERVER)
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, "node serve.js")}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, "node serve.js")})
     story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"agent_id: {story.agent.id}")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
 
 
 def test_a_journal_only_line_has_limit_0(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    assert dict(story.hook("s-1", JOURNAL).updated_input) == {"command": runner_line(story, 1, "journal task show 1", limit=0)}
+    expect_updated_input_hook(story, "s-1", JOURNAL, {"command": runner_line(story, 1, "journal task show 1", limit=0)})
 
 
 def test_a_test_run_and_a_build_run_in_line_and_keep_more_of_their_output(new_story):
@@ -48,19 +49,19 @@ def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_
     bus.run(StartProcessPart(1, 1), story.agent, environment_id=1)
     story.advance(timedelta(seconds=40))
     bus.run(EndProcessPart(1, 1, 0), story.agent, environment_id=1)
-    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 2, "node serve.js", background=True)}
+    expect_updated_input_hook(story, "s-1", SERVER, {"command": runner_line(story, 2, "node serve.js", background=True)})
 
 
 def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     user_waits(story)
-    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 1, "node serve.js", limit=10)}
+    expect_updated_input_hook(story, "s-1", SERVER, {"command": runner_line(story, 1, "node serve.js", limit=10)})
 
 
 def test_a_subagent_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story):
     story = install_runner(new_story(fixture=SubagentStarted))
     story.hook("s-1", SERVER)
-    assert dict(story.hook("s-1", SERVER.with_fields(subagent="sub-1")).updated_input) == {"command": runner_line(story, 2, "node serve.js", session="sub-1")}
+    expect_updated_input_hook_6(story, "s-1", SERVER, "sub-1", {"command": runner_line(story, 2, "node serve.js", session="sub-1")})
     story.expect_success("process show 2", "line: node serve.js", "state: running", f"agent_id: {story.subagent.id}")
     story.expect_success("process part-start 2 --position 1", actor=story.subagent)
     story.expect_refusal("process part-end 2 --position 1 --exit-code 0", "only the agent that ran a line reports on it", actor=story.agent)
@@ -69,7 +70,7 @@ def test_a_subagent_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story
 def test_a_line_with_a_parse_error_is_let_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.hook("s-1", SERVER)
-    assert dict(story.hook("s-1", with_parse_error(SERVER)).updated_input) == {}
+    expect_updated_input_hook_5(story, "s-1", SERVER, {})
     story.expect_refusal("process show 2", "no process 2")
 
 
@@ -83,15 +84,17 @@ def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(
 def test_a_background_bash_call_of_claude_runs_in_the_foreground_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     background = SERVER.with_raw({"tool_input": {"command": "node serve.js", "run_in_background": True, "description": "list"}})
-    assert dict(story.hook("s-1", background).updated_input) == {"command": runner_line(story, 1, "node serve.js"), "description": "list"}
+    expect_updated_input_hook(story, "s-1", background, {"command": runner_line(story, 1, "node serve.js"), "description": "list"})
 
 
 def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_is_told_once(new_story):
     story = new_story(fixture=BuilderStarted)
     first = story.hook("s-1", SERVER)
-    assert dict(first.updated_input) == {} and any("journal-run is not installed" in line for line in first.lines)
+    expect_updated_input_reply(first, {})
+    expect_lines_reply_line(first, "journal-run is not installed")
     second = story.hook("s-1", SERVER)
-    assert dict(second.updated_input) == {} and not any("journal-run is not installed" in line for line in second.lines)
+    expect_updated_input_reply(second, {})
+    expect_lines_second_without_line(second, "journal-run is not installed")
     story.expect_refusal("process show 1", "no process 1")
 
 
@@ -100,14 +103,14 @@ def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
     story.container.get(Bus).run(OpenMemoryMark(story.agent.id, 50), story.agent, environment_id=1)
     listing = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"]))
     expect_reply_allowed(story.hook("s-1", listing))
-    assert story.hook("s-1", SERVER).refusal
+    expect_refusal_hook_rule(story, "s-1", SERVER)
 
 
 def test_a_line_that_read_command_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py | tail -n 3"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, read_command=True)}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line, read_command=True)})
     story.expect_success("process show 1", f"line: {line}", "state: running")
 
 
@@ -115,7 +118,7 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line)})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
 
@@ -137,4 +140,24 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     follow = HookSamples.shell("tail -f server.log", ShellPart("tail", CommandCategory.READ, ["-f", "server.log"], effects=[CommandEffect.READS_FILES, CommandEffect.RUNS_LONG]))
-    assert story.hook("s-1", follow).updated_input
+    expect_updated_input_hook_4(story, "s-1", follow)
+
+
+def expect_updated_input_hook_4(story, text, follow) -> None:
+    actual = story.hook(text, follow).updated_input
+    assert actual, actual
+
+
+def expect_lines_second_without_line(second, expected) -> None:
+    actual = second.lines
+    assert not any(expected in line for line in actual), actual
+
+
+def expect_updated_input_hook_5(story, text, item, expected) -> None:
+    actual = dict(story.hook(text, with_parse_error(item)).updated_input)
+    assert actual == expected, actual
+
+
+def expect_updated_input_hook_6(story, text, item, text_2, expected) -> None:
+    actual = dict(story.hook(text, item.with_fields(subagent=text_2)).updated_input)
+    assert actual == expected, actual

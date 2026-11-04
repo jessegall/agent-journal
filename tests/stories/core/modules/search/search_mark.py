@@ -7,6 +7,7 @@ from tests.stories.core.modules.chat.support.mark_samples import marks_text, exp
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_total_closed
 
 
 def search_hook(line: str):
@@ -45,8 +46,8 @@ def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(
     [mark] = details(story)
     expect_row(mark, terms=["cart"])
     expect_row(mark, total=2)
-    assert [(hit["cli_name"], hit["id"]) for hit in mark["hits"]] == [("doc", 1), ("task", 1)]
-    assert all(hit["excerpt"] for hit in mark["hits"])
+    expect_cli_hit_id(mark, [("doc", 1), ("task", 1)])
+    expect_excerpt_hit_hits(mark)
 
 
 def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_story):
@@ -56,7 +57,8 @@ def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_stor
     story.hook("s-1", search_hook("journal search find cart"))
     story.run_listeners()
     [mark] = details(story)
-    assert len(mark["hits"]) == 10 and mark["total"] == 14
+    expect_hits_mark(mark, 10)
+    expect_total_closed(mark, 14)
     expect_marks_text(story, "Searched for cart: 14 rows")
 
 
@@ -67,7 +69,7 @@ def test_the_model_option_narrows_the_search_the_mark_shows(new_story):
     story.hook("s-1", search_hook("journal search find cart --model task"))
     story.run_listeners()
     [mark] = details(story)
-    assert [hit["cli_name"] for hit in mark["hits"]] == ["task"]
+    expect_cli_hit_hits(mark, ["task"])
 
 
 def test_a_command_that_is_no_search_and_a_search_of_an_unknown_model_leave_no_mark(new_story):
@@ -81,4 +83,24 @@ def test_a_command_that_is_no_search_and_a_search_of_an_unknown_model_leave_no_m
 
 def expect_details(story, expected) -> None:
     actual = details(story)
+    assert actual == expected, actual
+
+
+def expect_cli_hit_hits(mark, expected) -> None:
+    actual = [hit['cli_name'] for hit in mark['hits']]
+    assert actual == expected, actual
+
+
+def expect_hits_mark(mark, expected) -> None:
+    actual = len(mark['hits'])
+    assert actual == expected, actual
+
+
+def expect_excerpt_hit_hits(mark) -> None:
+    actual = all((hit['excerpt'] for hit in mark['hits']))
+    assert actual, actual
+
+
+def expect_cli_hit_id(mark, expected) -> None:
+    actual = [(hit['cli_name'], hit['id']) for hit in mark['hits']]
     assert actual == expected, actual

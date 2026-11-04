@@ -8,6 +8,7 @@ from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_updated_input_reply
 
 
 @pytest.mark.parametrize("exit_code,timed_out,terminal", [(7, False, "project-check: hook exited with code 7: details"),
@@ -21,8 +22,18 @@ def test_a_failed_project_hook_never_refuses_and_keeps_its_diagnostic_and_outcom
     hook = sample.with_fields(firing="failed-managed-hook", foreign=runs)
     reply = story.hook("s-1", hook)
     expect_reply_allowed(reply)
-    assert reply.terminal.splitlines() == [terminal]
-    assert dict(reply.updated_input) == {}
+    expect_terminal_reply(reply, [terminal])
+    expect_updated_input_reply(reply, {})
     call = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
     expect_row(call.metadata.module_part(DRIVERS_MODULE), foreign=runs)
-    assert story.hook("s-1", hook).terminal == terminal
+    expect_terminal_hook(story, "s-1", hook, terminal)
+
+
+def expect_terminal_hook(story, text, hook, expected) -> None:
+    actual = story.hook(text, hook).terminal
+    assert actual == expected, actual
+
+
+def expect_terminal_reply(reply, expected) -> None:
+    actual = reply.terminal.splitlines()
+    assert actual == expected, actual

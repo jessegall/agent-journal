@@ -5,6 +5,7 @@ from pathlib import Path
 
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.support.story_checks import expect_absent_exists_parent_stale, expect_changed_with, expect_exists_version_four
 
 GOOD = f"{PATH}:GoodSkillsModule"
 PROGRAM_FOLDERS = (".claude/skills", ".agents/skills")
@@ -48,8 +49,8 @@ def test_skill_write_puts_each_skill_in_both_program_folders(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     story.expect_success("skill write", "written: journal-notes", "written: journal-chores")
     for program_folder in PROGRAM_FOLDERS:
-        assert "Write a note for every decision." in skill_file(story, program_folder, "journal-notes").read_text()
-        assert "Start a task before you write." in skill_file(story, program_folder, "journal-chores").read_text()
+        expect_skill_file_with(story, program_folder, "journal-notes", "Write a note for every decision.")
+        expect_skill_file_with(story, program_folder, "journal-chores", "Start a task before you write.")
 
 
 def test_skill_write_rewrites_only_a_changed_file(installed_skill_files):
@@ -58,8 +59,8 @@ def test_skill_write_rewrites_only_a_changed_file(installed_skill_files):
     os.utime(unchanged, ns=(1, 1))
     changed.write_text("an old text")
     story.expect_success("skill write", "unchanged: journal-chores", "written: journal-notes")
-    assert unchanged.stat().st_mtime_ns == 1
-    assert "Write a note for every decision." in changed.read_text()
+    expect_st_mtime_ns(unchanged, 1)
+    expect_changed_with(changed, "Write a note for every decision.")
 
 
 def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_write(installed_skill_files):
@@ -69,8 +70,8 @@ def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text("kept or cleared")
     story.expect_success("skill write", "removed: journal-old")
-    assert not stale.parent.exists()
-    assert foreign.exists()
+    expect_absent_exists_parent_stale(stale)
+    expect_exists_version_four(foreign)
 
 
 def test_skill_list_prints_each_folder_with_its_description(new_story):
@@ -98,3 +99,13 @@ def test_skill_show_and_skill_list_answer_json_rows_for_a_window(new_story):
 @pytest.fixture
 def installed_skill_files(new_story):
     return story_with_skill_files(new_story)
+
+
+def expect_st_mtime_ns(unchanged, expected) -> None:
+    actual = unchanged.stat().st_mtime_ns
+    assert actual == expected, actual
+
+
+def expect_skill_file_with(story, program_folder, text, expected) -> None:
+    actual = skill_file(story, program_folder, text).read_text()
+    assert expected in actual, actual

@@ -17,6 +17,7 @@ from install.code_handover import CodeHandover
 from install.install_journal import InstallJournal
 from install.unix_connection import UnixConnection
 from server.server_files import ServerFiles
+from tests.stories.support.story_checks import expect_value_4
 
 pytestmark = pytest.mark.install_job
 
@@ -77,11 +78,12 @@ def test_an_update_hands_over_to_a_new_server_on_the_same_sockets_and_refuses_no
         finished.set()
         asking.join(START_LIMIT_SECONDS)
     wait_started(home)
-    assert ServerFiles(home).pid_file.read_text() != running_pid
-    assert home.viewer_port_file.read_text() == viewer_port
-    assert (home.folder / "src").is_symlink()
-    assert statuses and set(statuses) == {200}
-    assert not home.restart_mark.exists()
+    expect_changed_pid_file_server(home, running_pid)
+    expect_viewer_port_file(home, viewer_port)
+    expect_symlink_folder_home(home, "src")
+    expect_value_4(statuses)
+    expect_statuses(statuses, {200})
+    expect_absent_exists_restart_mark(home)
     with socket.create_connection(("127.0.0.1", int(viewer_port)), timeout=5):
         pass
 
@@ -93,9 +95,9 @@ def test_two_updates_in_a_row_leave_the_server_on_the_newest_code_with_the_one_b
         (source / "update_note.py").write_text(text)
         CodeHandover(home).run(source)
         wait_started(home)
-    assert ((home.folder / "src") / "update_note.py").read_text() == "# second update\n"
+    expect_folder_home_src(home, "src", "update_note.py", "# second update\n")
     expect_health_status(home, 200)
-    assert len([version for version in (home.folder / "versions").iterdir() if version.is_dir()]) == 2
+    expect_version_iterdir_folder(home, "versions", 2)
 
 
 def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_path):
@@ -105,12 +107,57 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
     (broken / "server" / "server.py").write_text("raise SystemExit(1)\n")
     with pytest.raises(Refusal):
         CodeHandover(home).run(broken)
-    assert ServerFiles(home).pid_file.read_text() == running_pid
+    expect_pid_file_server(home, running_pid)
     expect_health_status(home, 200)
-    assert not (home.folder / "src").is_symlink()
-    assert not home.restart_mark.exists()
+    expect_absent_symlink_folder_home(home, "src")
+    expect_absent_exists_restart_mark(home)
 
 
 def expect_health_status(home: JournalHome, expected) -> None:
     actual = health_status(home)
     assert actual == expected, actual
+
+
+def expect_absent_exists_restart_mark(home) -> None:
+    actual = home.restart_mark.exists()
+    assert not actual, actual
+
+
+def expect_absent_symlink_folder_home(home, text) -> None:
+    actual = (home.folder / text).is_symlink()
+    assert not actual, actual
+
+
+def expect_pid_file_server(home, expected) -> None:
+    actual = ServerFiles(home).pid_file.read_text()
+    assert actual == expected, actual
+
+
+def expect_version_iterdir_folder(home, text, expected) -> None:
+    actual = len([version for version in (home.folder / text).iterdir() if version.is_dir()])
+    assert actual == expected, actual
+
+
+def expect_folder_home_src(home, text, text_2, expected) -> None:
+    actual = (home.folder / text / text_2).read_text()
+    assert actual == expected, actual
+
+
+def expect_statuses(statuses, expected) -> None:
+    actual = set(statuses)
+    assert actual == expected, actual
+
+
+def expect_symlink_folder_home(home, text) -> None:
+    actual = (home.folder / text).is_symlink()
+    assert actual, actual
+
+
+def expect_viewer_port_file(home, expected) -> None:
+    actual = home.viewer_port_file.read_text()
+    assert actual == expected, actual
+
+
+def expect_changed_pid_file_server(home, expected) -> None:
+    actual = ServerFiles(home).pid_file.read_text()
+    assert actual != expected, actual

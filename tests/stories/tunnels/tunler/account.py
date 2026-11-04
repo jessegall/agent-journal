@@ -9,6 +9,7 @@ from tests.stories.tunnels.tunler.support.set_clock import SetClock
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value
 
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
 SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
@@ -32,58 +33,67 @@ def answer(story, line: str) -> dict:
 def test_the_status_says_who_is_logged_in_where_and_whether_this_journal_uses_tunler(new_story):
     story, _ = account_story(new_story)
     status = answer(story, "tunler status")
-    assert status["installed"] and status["authenticated"] and status["account"] == ACCOUNT and status["host"] == TUNLER_HOST
-    assert not status["is_used"] and status["subdomain"] == ""
+    expect_installed_status(status)
+    expect_authenticated_status(status)
+    expect_account_status(status, ACCOUNT)
+    expect_host_status(status, TUNLER_HOST)
+    expect_absent_used_status(status)
+    expect_subdomain_status(status, "")
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     story.expect_success(f"setting set {SERVICE_SETTING} tunler --project", actor=story.user)
     status = answer(story, "tunler status")
-    assert status["is_used"] and status["subdomain"] == "cart-team"
+    expect_used_status(status)
+    expect_subdomain_status(status, "cart-team")
 
 
 def test_a_machine_without_tunler_says_so_and_a_refused_login_says_it_was_refused(new_story):
     story, _ = account_story(new_story, FakeTunlerClient(installed=False))
-    assert not answer(story, "tunler status")["installed"]
+    expect_absent_installed_answer(story, "tunler status")
     refused, _ = account_story(new_story, FakeTunlerClient(authenticated=False, rejected=True))
     status = answer(refused, "tunler status")
-    assert status["rejected"] and not status["authenticated"]
+    expect_rejected_status(status)
+    expect_absent_authenticated_status(status)
 
 
 def test_logging_in_connects_this_machine(new_story):
     client = FakeTunlerClient(authenticated=False)
     story, _ = account_story(new_story, client)
-    assert answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")["connected"]
+    expect_connected_answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")
     expect_row(client, logins=[(TUNLER_HOST, ACCOUNT, "secret-one", None)])
-    assert answer(story, "tunler status")["authenticated"]
+    expect_authenticated_answer(story, "tunler status")
 
 
 def test_a_new_account_asks_for_the_master_password_and_then_logs_in(new_story):
     client = FakeTunlerClient(authenticated=False, master_needed=True)
     story, _ = account_story(new_story, client)
     first = answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")
-    assert first["needs_master"] and not first["connected"]
+    expect_needs_master(first)
+    expect_absent_connected(first)
     second = answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one --master top-secret")
-    assert second["connected"] and client.logins[-1][3] == "top-secret"
+    expect_connected_second(second)
+    expect_logins_client(client, 1, "top-secret")
 
 
 def test_a_wrong_password_gives_tunlers_own_words_and_leaves_the_machine_logged_out(new_story):
     client = FakeTunlerClient(authenticated=False, login_error="wrong password")
     story, _ = account_story(new_story, client)
     expect_row(answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} nope"), error="wrong password")
-    assert not answer(story, "tunler status")["authenticated"]
+    expect_absent_authenticated_answer(story, "tunler status")
 
 
 def test_logging_out_leaves_the_machine_logged_out(new_story):
     client = FakeTunlerClient()
     story, _ = account_story(new_story, client)
     story.expect_success("tunler logout", actor=story.user)
-    assert client.logged_out == 1 and not answer(story, "tunler status")["authenticated"]
+    expect_logged_client(client, 1)
+    expect_absent_authenticated_answer(story, "tunler status")
 
 
 def test_the_domains_name_the_one_this_journal_uses(new_story):
     story, _ = account_story(new_story, FakeTunlerClient(domains=[OWN_DOMAIN, SPARE_DOMAIN]))
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     rows = answer(story, "tunler domains")["domains"]
-    assert rows == [{"name": OWN_DOMAIN, "own": True}, {"name": SPARE_DOMAIN, "own": False}]
+    expect_value(rows, [{"name": OWN_DOMAIN, "own": True}, {"name": SPARE_DOMAIN, "own": False}])
 
 
 def test_releasing_a_domain_takes_it_off_the_account_and_a_failure_is_refused(new_story):
@@ -99,16 +109,17 @@ def test_the_version_says_when_a_newer_one_waits_and_an_update_takes_it(new_stor
     client = FakeTunlerClient(latest="v0.3.0")
     story, _ = account_story(new_story, client)
     version = answer(story, "tunler version")
-    assert version == {"current": "v0.2.0", "latest": "v0.3.0", "update_available": True}
+    expect_value(version, {"current": "v0.2.0", "latest": "v0.3.0", "update_available": True})
     story.expect_text("tunler update", "tunler is now v0.3.0", actor=story.user)
-    assert not answer(story, "tunler version")["update_available"]
+    expect_absent_update_available_answer(story, "tunler version")
 
 
 def test_installing_takes_the_server_address_without_its_scheme_or_path(new_story):
     client = FakeTunlerClient(installed=False)
     story, _ = account_story(new_story, client)
     story.expect_text(f"tunler install https://{TUNLER_HOST}/page", "tunler v0.2.0 is installed", actor=story.user)
-    assert client.installed_from == [TUNLER_HOST] and answer(story, "tunler status")["installed"]
+    expect_installed_client(client, [TUNLER_HOST])
+    expect_installed_answer(story, "tunler status")
 
 
 def test_only_a_person_logs_in_or_changes_tunler(new_story):
@@ -138,3 +149,108 @@ def test_a_tunnel_made_for_one_read_says_why_none_is_open(new_story):
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     new = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
     story.expect_rows(new.state() is TunnelState.DISCONNECTED, new.reason() == "this machine is not logged in to tunler: run tunler login")
+
+
+def expect_installed_client(client, expected) -> None:
+    actual = client.installed_from
+    assert actual == expected, actual
+
+
+def expect_installed_answer(story, text) -> None:
+    actual = answer(story, text)['installed']
+    assert actual, actual
+
+
+def expect_absent_update_available_answer(story, text) -> None:
+    actual = answer(story, text)['update_available']
+    assert not actual, actual
+
+
+def expect_logged_client(client, expected) -> None:
+    actual = client.logged_out
+    assert actual == expected, actual
+
+
+def expect_absent_authenticated_answer(story, text) -> None:
+    actual = answer(story, text)['authenticated']
+    assert not actual, actual
+
+
+def expect_connected_second(second) -> None:
+    actual = second['connected']
+    assert actual, actual
+
+
+def expect_logins_client(client, number, expected) -> None:
+    actual = client.logins[-number][3]
+    assert actual == expected, actual
+
+
+def expect_needs_master(first) -> None:
+    actual = first['needs_master']
+    assert actual, actual
+
+
+def expect_absent_connected(first) -> None:
+    actual = first['connected']
+    assert not actual, actual
+
+
+def expect_authenticated_answer(story, text) -> None:
+    actual = answer(story, text)['authenticated']
+    assert actual, actual
+
+
+def expect_connected_answer(story, text) -> None:
+    actual = answer(story, text)['connected']
+    assert actual, actual
+
+
+def expect_rejected_status(status) -> None:
+    actual = status['rejected']
+    assert actual, actual
+
+
+def expect_absent_authenticated_status(status) -> None:
+    actual = status['authenticated']
+    assert not actual, actual
+
+
+def expect_absent_installed_answer(story, text) -> None:
+    actual = answer(story, text)['installed']
+    assert not actual, actual
+
+
+def expect_used_status(status) -> None:
+    actual = status['is_used']
+    assert actual, actual
+
+
+def expect_subdomain_status(status, expected) -> None:
+    actual = status['subdomain']
+    assert actual == expected, actual
+
+
+def expect_absent_used_status(status) -> None:
+    actual = status['is_used']
+    assert not actual, actual
+
+
+def expect_installed_status(status) -> None:
+    actual = status['installed']
+    assert actual, actual
+
+
+def expect_authenticated_status(status) -> None:
+    actual = status['authenticated']
+    assert actual, actual
+
+
+def expect_account_status(status, expected) -> None:
+    actual = status['account']
+    assert actual == expected, actual
+
+
+def expect_host_status(status, expected) -> None:
+    actual = status['host']
+    assert actual == expected, actual

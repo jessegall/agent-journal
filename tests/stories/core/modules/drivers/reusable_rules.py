@@ -6,6 +6,7 @@ from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.access_rules import ACCESS_MODULE, AccessStarted
+from tests.stories.support.story_checks import expect_refusal_hook_rule
 
 READ = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 SEARCH = HookSamples.tool_use("Search", ToolType.SEARCH, ["cart.py"], None)
@@ -60,7 +61,7 @@ def test_a_suite_lists_a_core_rule_and_its_allowed_tools_still_run(rule_story, s
     ("read-commands", FILE_REMOVAL), ("read-commands", MIXED), ("no-curl", CURL),
 ], indirect=["rule_story"])
 def test_a_suite_lists_a_core_rule_and_its_refused_tools_do_not_run(rule_story, sample):
-    assert rule_story.hook("s-1", sample).refusal
+    expect_refusal_hook_rule(rule_story, "s-1", sample)
 
 
 @pytest.mark.parametrize("rule_story", ["reader", "journal", "no-shell", "no-subagents", "no-git", "named-tests"], indirect=True)

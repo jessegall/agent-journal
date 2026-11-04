@@ -7,6 +7,7 @@ from install.upgrade_journal import UpgradeJournal
 from install.upgrade_outcome import UpgradeOutcome
 from tests.stories.core.base.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_answers, expect_bytes_database_home, expect_changed_code_outcome, expect_outcome_with, expect_value
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
@@ -55,21 +56,23 @@ def test_the_upgrade_copies_the_version_4_database_into_the_backup_folder_first_
     story, version_four = upgrading(new_story, NOTES, TAGS)
     starting_content = content(version_four)
     outcome = expect_upgrade(story)
-    assert content(Path(line_value(outcome.text, "backup: "))) == starting_content and "backup checked" in outcome.text
+    expect_content_3(outcome, "backup: ", starting_content)
+    expect_outcome_with(outcome, "backup checked")
 
 
 def test_a_failed_run_still_leaves_the_backup(new_story):
     story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     outcome = upgrade(story)
-    assert outcome.code != 0 and "the move of movetags failed: the tags table could not be read" in outcome.text
-    assert any(path.name == "journal.db" and path != version_four and content(path) == content(version_four) for path in story.home.folder.rglob("*"))
+    expect_changed_code_outcome(outcome, 0)
+    expect_outcome_with(outcome, "the move of movetags failed: the tags table could not be read")
+    expect_path_rglob_folder("journal.db", version_four, story, "*")
 
 
 def test_the_version_4_database_is_opened_read_only_and_its_bytes_are_equal_after(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     original = version_four.read_bytes()
     expect_upgrade(story)
-    assert (story.home.folder / "version-4" / "journal.db").read_bytes() == original
+    expect_bytes_folder_home_2(story, "version-4", "journal.db", original)
 
 
 def test_a_dry_run_prints_the_counts_per_module_and_per_dropped_table_and_leaves_the_version_5_database_as_it_was(new_story):
@@ -78,34 +81,36 @@ def test_a_dry_run_prints_the_counts_per_module_and_per_dropped_table_and_leaves
     starting_bytes = story.home.database.read_bytes()
     expect_upgrade(story, "dry run: nothing was changed", "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "dropped note_drafts: 1 rows", dry_run=True)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    assert story.home.database.read_bytes() == starting_bytes and count(story, "notes") == 0
+    expect_bytes_database_home(story, starting_bytes)
+    expect_count(story, "notes", 0)
 
 
 def test_a_run_moves_every_declared_module_in_order(new_story):
     story, version_four = upgrading(new_story, TAGS, NOTES)
     expect_upgrade(story, "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "upgraded")
-    assert ORDER == ["notes", "tags"] and (count(story, "notes"), count(story, "tags")) == (2, 2)
+    expect_value(ORDER, ["notes", "tags"])
+    expect_table_counts(story, "notes", "tags", (2, 2))
 
 
 def test_a_second_run_says_nothing_is_left_to_move_and_moves_nothing(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     upgrade(story)
     expect_upgrade(story, "nothing left to move")
-    assert (count(story, "notes"), count(story, "tags")) == (2, 2)
+    expect_table_counts(story, "notes", "tags", (2, 2))
 
 
 def test_a_run_that_fails_in_the_tags_move_leaves_notes_moved_rolls_tags_back_and_a_rerun_finishes_from_tags(new_story):
     story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
-    assert upgrade(story).code == 1
-    assert (count(story, "notes"), count(story, "tags")) == (2, 0)
+    expect_upgrade_code(story, 1)
+    expect_table_counts(story, "notes", "tags", (2, 0))
     expect_upgrade(story, "movetags: moved 2, already moved 0")
-    assert (count(story, "notes"), count(story, "tags")) == (2, 2)
+    expect_table_counts(story, "notes", "tags", (2, 2))
 
 
 def test_a_version_4_table_no_module_claims_is_listed_and_not_lost(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     expect_upgrade(story, "not claimed: old_reports (1 rows)")
-    assert b"a report" in (story.home.folder / "version-4" / "journal.db").read_bytes()
+    expect_bytes_folder_home_with(story, "version-4", "journal.db", b"a report")
 
 
 def test_the_upgrade_of_an_empty_version_4_journal_works(new_story):
@@ -123,7 +128,7 @@ def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_
     first = upgrade(story)
     expect_row(first, code=1)
     backups = [path for path in story.home.folder.rglob("journal.db") if path != version_four]
-    assert len(backups) == 1
+    expect_answers(backups, 1)
     original = content(backups[0])
     connection = sqlite3.connect(version_four)
     connection.execute("INSERT INTO notes VALUES (11, 'Added after the first run')")
@@ -139,10 +144,13 @@ def test_after_a_good_upgrade_version_4s_files_are_in_version_4_with_the_backup_
     (story.home.folder / "src" / "journal").mkdir(parents=True)
     (story.home.folder / "src" / "journal" / "version.py").write_text('VERSION = "4.28.0"\n')
     outcome = expect_upgrade(story)
-    assert not version_four.exists() and not (story.home.folder / "src" / "journal").exists()
-    assert (story.home.folder / "version-4" / "journal.db").is_file() and (story.home.folder / "version-4" / "src" / "journal" / "version.py").is_file()
-    assert (story.home.folder / "version-4" / "4.28.0" / "journal.db").is_file() and "version 4's files moved into" in outcome.text
-    assert story.home.database.is_file()
+    expect_absent_exists_version_four(version_four)
+    expect_absent_exists_folder_home_2(story, "src", "journal")
+    expect_file_folder_home_2(story, "version-4", "journal.db")
+    expect_file_folder_home_3(story, "version-4", "src", "journal", "version.py")
+    expect_file_folder_home(story, "version-4", "4.28.0", "journal.db")
+    expect_outcome_with(outcome, "version 4's files moved into")
+    expect_file_database_home(story)
 
 
 def test_a_dropped_table_is_reported_and_stays_in_the_backup(new_story):
@@ -151,8 +159,8 @@ def test_a_dropped_table_is_reported_and_stays_in_the_backup(new_story):
     story = new_story()
     version_four_fixture(story.home.folder / "journal.db")
     outcome = expect_upgrade(story, "dropped collections: 1 rows")
-    assert "old_reports (1 rows)" in outcome.text
-    assert sqlite3.connect(next((story.home.folder / "version-4").rglob("journal.db"))).execute("SELECT count(*) FROM collections").fetchone()[0] == 1
+    expect_outcome_with(outcome, "old_reports (1 rows)")
+    expect_fetchone_execute_connect(story, "version-4", "journal.db", "SELECT count(*) FROM collections", 1)
 
 
 def test_a_module_added_later_runs_its_move_on_a_second_upgrade_from_the_retired_database(new_story):
@@ -177,4 +185,64 @@ def expect_count(story, table: str, expected) -> None:
 
 def expect_content(path: Path, expected) -> None:
     actual = content(path)
+    assert actual == expected, actual
+
+
+def expect_fetchone_execute_connect(story, text, text_2, text_3, expected) -> None:
+    actual = sqlite3.connect(next((story.home.folder / text).rglob(text_2))).execute(text_3).fetchone()[0]
+    assert actual == expected, actual
+
+
+def expect_file_database_home(story) -> None:
+    actual = story.home.database.is_file()
+    assert actual, actual
+
+
+def expect_file_folder_home(story, text, text_2, text_3) -> None:
+    actual = (story.home.folder / text / text_2 / text_3).is_file()
+    assert actual, actual
+
+
+def expect_file_folder_home_2(story, text, text_2) -> None:
+    actual = (story.home.folder / text / text_2).is_file()
+    assert actual, actual
+
+
+def expect_file_folder_home_3(story, text, text_2, text_3, text_4) -> None:
+    actual = (story.home.folder / text / text_2 / text_3 / text_4).is_file()
+    assert actual, actual
+
+
+def expect_absent_exists_folder_home_2(story, text, text_2) -> None:
+    actual = (story.home.folder / text / text_2).exists()
+    assert not actual, actual
+
+
+def expect_bytes_folder_home_with(story, text, text_2, expected) -> None:
+    actual = (story.home.folder / text / text_2).read_bytes()
+    assert expected in actual, actual
+
+
+def expect_table_counts(story, text, text_2, expected) -> None:
+    actual = (count(story, text), count(story, text_2))
+    assert actual == expected, actual
+
+
+def expect_upgrade_code(story, expected) -> None:
+    actual = upgrade(story).code
+    assert actual == expected, actual
+
+
+def expect_bytes_folder_home_2(story, text, text_2, expected) -> None:
+    actual = (story.home.folder / text / text_2).read_bytes()
+    assert actual == expected, actual
+
+
+def expect_path_rglob_folder(text, version_four, story, text_2) -> None:
+    actual = any((path.name == text and path != version_four and (content(path) == content(version_four)) for path in story.home.folder.rglob(text_2)))
+    assert actual, actual
+
+
+def expect_content_3(outcome, text, expected) -> None:
+    actual = content(Path(line_value(outcome.text, text)))
     assert actual == expected, actual

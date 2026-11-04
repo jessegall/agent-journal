@@ -10,6 +10,7 @@ from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_absent_last, expect_answers
 
 
 def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_in(new_story, tmp_path):
@@ -94,20 +95,21 @@ def test_the_notes_of_a_github_release_say_what_changed_and_a_full_page_has_olde
     source = GithubReleases(story.container.get(ReleaseSource).settings, story.container.get(ReleaseSource).home, story.container.get(ReleaseSource).clock, [note_row(f"v{n}") for n in range(PAGE_SIZE)])
     story.container.bind(ReleaseSource, source)
     answer = json.loads(story.run("update notes --page 2 --json", actor=story.user).output_text)
-    assert answer["notes"][0] == {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"} and not answer["is_last_page"]
+    expect_notes_answer(answer, {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"})
+    expect_absent_last(answer)
     expect_row(source, asked=[f"https://api.github.com/repos/shop/cart/releases?per_page={PAGE_SIZE}&page=2"])
     source.rows = [note_row("v1")]
-    assert json.loads(story.run("update notes --json", actor=story.user).output_text)["is_last_page"]
+    expect_last(story, "update notes --json")
 
 
 def test_a_release_address_outside_github_publishes_no_notes(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    assert json.loads(story.run("update notes --json", actor=story.user).output_text) == {"notes": [], "is_last_page": True}
+    expect_value_14(story, "update notes --json", {"notes": [], "is_last_page": True})
 
 
 def test_the_check_names_the_newest_release_for_the_update_button(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    assert "tag" in json.loads(story.run("update check --json", actor=story.user).output_text)
+    expect_value_with_2(story, "update check --json", "tag")
 
 
 def test_a_check_asked_again_within_the_hour_makes_no_second_network_read_and_an_install_reads_fresh(new_story, tmp_path):
@@ -119,6 +121,26 @@ def test_a_check_asked_again_within_the_hour_makes_no_second_network_read_and_an
     story.container.bind(ReleaseSource, source)
     story.expect_text("update check", "release", actor=story.agent)
     story.expect_text("update check", "release", actor=story.agent)
-    assert len(reads) == 1, reads
+    expect_answers(reads, 1)
     story.expect_success("update install", actor=story.user)
-    assert len(reads) == 2, reads
+    expect_answers(reads, 2)
+
+
+def expect_value_with_2(story, text, expected) -> None:
+    actual = json.loads(story.run(text, actor=story.user).output_text)
+    assert expected in actual, actual
+
+
+def expect_value_14(story, text, expected) -> None:
+    actual = json.loads(story.run(text, actor=story.user).output_text)
+    assert actual == expected, actual
+
+
+def expect_last(story, text) -> None:
+    actual = json.loads(story.run(text, actor=story.user).output_text)['is_last_page']
+    assert actual, actual
+
+
+def expect_notes_answer(answer, expected) -> None:
+    actual = answer['notes'][0]
+    assert actual == expected, actual

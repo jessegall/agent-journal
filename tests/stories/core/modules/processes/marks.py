@@ -82,7 +82,7 @@ def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_
     story = install_runner(new_story(fixture=BuilderStarted))
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
     expect_row(mark, family="processes.commands", family_title="Commands", group="work", click="unfold", process=True)
-    assert [(button["label"], button["runs"]) for button in mark.buttons] == [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")]
+    expect_label_button_runs(mark, [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")])
 
 
 def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_running_one(new_story):
@@ -91,7 +91,7 @@ def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_ru
     end_run(story, process, "a\n")
     story.expect_refusal(f"dock add processes.output process {process.id} --environment main", "has ended, so it cannot be docked", actor=story.agent)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
-    assert [button["variants"] for button in mark.buttons] == [["queued", "running", "background"], ["running", "background"]]
+    expect_variants_button_buttons(mark, [["queued", "running", "background"], ["running", "background"]])
 
 
 def test_a_docked_output_leaves_10_seconds_after_its_process_ends_unless_kept(new_story):
@@ -149,8 +149,8 @@ def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_
     process = start_process(story, "make one && make two")
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, "ran\n")
-    assert folder.bytes_after(process.id, 0) == b"ran\n"
-    assert folder.bytes_after(process.id, 2) == b"n\n"
+    expect_bytes_after_folder(folder, process, 0, b"ran\n")
+    expect_bytes_after_folder(folder, process, 2, b"n\n")
 
 
 def test_output_that_is_not_utf8_still_ends_its_mark(binary_output_mark):
@@ -180,7 +180,7 @@ def test_visibility_and_the_long_run_dock_agree(process_story):
     story.advance(timedelta(seconds=6))
     candidates = {process.id for process in story.container.get(ProcessQuery).running().long_run_candidates(story.clock.timestamp(), 5).all_rows()}
     visibility = story.container.get(RunVisibility)
-    assert [(visibility.is_visible(process), process.id in candidates) for process, _ in processes] == [(visible, visible) for _, visible in processes]
+    expect_visible_visibility_id(visibility, candidates, processes, [(visible, visible) for _, visible in processes])
     story.hook("s-1", HookSamples.stop())
     story.run_listeners()
     story.expect_text("dock-item list", "processes.output")
@@ -365,3 +365,23 @@ def running_docked_process(new_story):
     story.hook("s-1", HookSamples.stop())
     story.run_listeners()
     return story, ended
+
+
+def expect_visible_visibility_id(visibility, candidates, processes, expected) -> None:
+    actual = [(visibility.is_visible(process), process.id in candidates) for process, _ in processes]
+    assert actual == expected, actual
+
+
+def expect_bytes_after_folder(folder, process, number, expected) -> None:
+    actual = folder.bytes_after(process.id, number)
+    assert actual == expected, actual
+
+
+def expect_variants_button_buttons(mark, expected) -> None:
+    actual = [button['variants'] for button in mark.buttons]
+    assert actual == expected, actual
+
+
+def expect_label_button_runs(mark, expected) -> None:
+    actual = [(button['label'], button['runs']) for button in mark.buttons]
+    assert actual == expected, actual

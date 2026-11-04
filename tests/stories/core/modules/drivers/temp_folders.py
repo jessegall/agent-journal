@@ -26,7 +26,7 @@ def test_a_running_sessions_folder_stays(new_story, monkeypatch, tmp_path):
     story = new_story(fixture=BuilderStarted)
     folders = session_folders(story, monkeypatch, tmp_path, "s-1")
     prune(story)
-    assert folders["s-1"].exists()
+    expect_exists_1_folders(folders)
 
 
 def test_an_ended_sessions_folder_goes(new_story, monkeypatch, tmp_path):
@@ -34,7 +34,7 @@ def test_an_ended_sessions_folder_goes(new_story, monkeypatch, tmp_path):
     story.hook("s-1", HookSamples.sample("session_end"))
     folders = session_folders(story, monkeypatch, tmp_path, "s-1")
     prune(story)
-    assert not folders["s-1"].exists()
+    expect_absent_exists_1_folders(folders)
 
 
 def test_an_unknown_sessions_folder_stays_a_week(new_story, monkeypatch, tmp_path):
@@ -43,4 +43,25 @@ def test_an_unknown_sessions_folder_stays_a_week(new_story, monkeypatch, tmp_pat
     month_old = time.time() - 30 * 24 * 3600
     os.utime(folders["old"], (month_old, month_old))
     prune(story)
-    assert folders["young"].exists() and not folders["old"].exists()
+    expect_exists_young_folders(folders)
+    expect_absent_exists_old_folders(folders)
+
+
+def expect_exists_young_folders(folders) -> None:
+    actual = folders['young'].exists()
+    assert actual, actual
+
+
+def expect_absent_exists_old_folders(folders) -> None:
+    actual = folders['old'].exists()
+    assert not actual, actual
+
+
+def expect_absent_exists_1_folders(folders) -> None:
+    actual = folders['s-1'].exists()
+    assert not actual, actual
+
+
+def expect_exists_1_folders(folders) -> None:
+    actual = folders['s-1'].exists()
+    assert actual, actual

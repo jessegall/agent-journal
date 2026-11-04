@@ -56,8 +56,8 @@ def test_a_task_move_of_the_journal_itself_has_no_scope_and_shows(new_story):
 def test_a_line_another_agent_caused_is_hidden_and_its_own_is_not(new_story):
     story = new_story(fixture=SubagentStarted)
     line = AgentLine(agent_id=story.agent.id, creator_id=story.subagent.id, text="words")
-    assert line.scoped(story.subagent.id).state is AgentLineState.HIDDEN
-    assert line.scoped(story.agent.id).state is AgentLineState.WAITING
+    expect_state_scoped_2(line, story, AgentLineState.HIDDEN)
+    expect_state_scoped(line, story, AgentLineState.WAITING)
 
 
 def test_when_lets_only_the_events_its_function_says_true_to_through(new_story):
@@ -142,7 +142,8 @@ def test_a_main_agents_question_still_reaches_the_chat(new_story):
 def test_an_edit_of_a_shown_mark_under_an_agent_leaves_it_in_the_main_chat(new_story):
     story = new_story(fixture=GlobalTaskMark)
     mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
-    assert mark.agent_id is None and mark.changed(text="new").scoped(story.subagent.id).agent_id is None
+    expect_agent_id_mark(mark, None)
+    expect_agent_id_scoped(mark, "new", story, None)
 
 
 def test_a_helpers_reaction_still_reaches_the_main_agent(new_story):
@@ -158,3 +159,23 @@ class GlobalTaskMark(StoryFixture):
     def steps(self, story):
         story.run(TASK_LINE)
         story.run_listeners()
+
+
+def expect_agent_id_mark(mark, expected) -> None:
+    actual = mark.agent_id
+    assert actual is expected, actual
+
+
+def expect_agent_id_scoped(mark, text, story, expected) -> None:
+    actual = mark.changed(text=text).scoped(story.subagent.id).agent_id
+    assert actual is expected, actual
+
+
+def expect_state_scoped(line, story, expected) -> None:
+    actual = line.scoped(story.agent.id).state
+    assert actual is expected, actual
+
+
+def expect_state_scoped_2(line, story, expected) -> None:
+    actual = line.scoped(story.subagent.id).state
+    assert actual is expected, actual

@@ -3,6 +3,7 @@ import pytest
 from core.testing.story_fixture import StoryFixture
 
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_count_output
 
 TRANSCRIPTION_LINE = 'transcription make "Cart meeting" --text "Ada: the cart rounds twice." --environment main'
 
@@ -28,21 +29,21 @@ def test_a_pasted_transcription_makes_a_task_linked_to_it_and_tells_the_agent(ne
 def test_a_persons_edit_tells_the_agent_again_and_keeps_the_unfinished_task(new_story):
     story = transcribed(new_story)
     story.expect_success('transcription edit 1 --text "Ada: the cart rounds once."', actor=story.user)
-    assert story.run("task list --environment main", actor=story.user).output_text.count("Summarize transcript") == 1
-    assert story.run("agent-line list", actor=story.user).output_text.count("transcription:1 has new text") == 2
+    expect_count_output(story, "task list --environment main", "Summarize transcript", 1)
+    expect_count_output(story, "agent-line list", "transcription:1 has new text", 2)
 
 
 def test_an_edit_after_the_task_is_closed_makes_a_new_one(transcription_task):
     story = transcription_task
     story.run('task close 1 --outcome "summarized"', actor=story.agent)
     story.expect_success('transcription edit 1 --text "Ada: one more thing."', actor=story.user)
-    assert story.run("task list --environment main", actor=story.user).output_text.count("Summarize transcript") == 2
+    expect_count_output(story, "task list --environment main", "Summarize transcript", 2)
 
 
 def test_an_agents_own_edit_makes_no_new_line(new_story):
     story = transcribed(new_story)
     story.run('transcription edit 1 --text "Ada: tidied."', actor=story.agent)
-    assert story.run("agent-line list", actor=story.user).output_text.count("transcription:1 has new text") == 1
+    expect_count_output(story, "agent-line list", "transcription:1 has new text", 1)
 
 
 def test_a_row_made_from_it_stays_linked(new_story):
@@ -73,7 +74,7 @@ def test_a_second_transcription_uses_the_same_sequence(transcription_task):
     story.run('task close 1 --outcome "summarized"', actor=story.agent)
     story.expect_success('transcription make "Second" --text "Ada: more." --environment main', actor=story.user)
     story.expect_success("task start 2", actor=story.agent)
-    assert story.run("sequence list", actor=story.user).output_text.count("Handle a transcript") == 1
+    expect_count_output(story, "sequence list", "Handle a transcript", 1)
 
 
 def test_another_task_starts_no_sequence(new_story):

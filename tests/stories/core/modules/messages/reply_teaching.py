@@ -12,6 +12,7 @@ from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_reply_line
+from tests.stories.support.story_checks import expect_lines_reply_line
 
 
 def journal_line(line):
@@ -58,7 +59,7 @@ def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out
 
 def test_reading_a_message_says_how_a_reply_goes_out(read_message):
     _, reply = read_message
-    assert any("journal message reply <n>" in line for line in reply.lines)
+    expect_lines_reply_line(reply, "journal message reply <n>")
 
 
 def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):

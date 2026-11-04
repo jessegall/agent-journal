@@ -3,6 +3,7 @@ from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
+from tests.stories.support.story_checks import expect_command_folder_chosen, expect_value_without
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 
@@ -24,7 +25,7 @@ def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_s
     hooks.parent.mkdir(parents=True)
     hooks.write_text('{"hooks": {}}')
     worker = dispatched_worker(story)
-    assert (repository.worktree_folder(worker.id) / ".codex" / "hooks.json").read_text() == '{"hooks": {}}'
+    expect_worktree_folder_repository(repository, worker, ".codex", "hooks.json", '{"hooks": {}}')
     repository.expect_excluded(worker.id, ".codex/hooks.json")
 
 
@@ -34,7 +35,7 @@ def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_
     worker = dispatched_worker(story)
     launch_name = story.container.get(Queries).query(Agent).find(worker.id).session
     story.hook("real-codex-session", HookSamples.sample("session_start").with_fields(launch=launch_name))
-    assert story.container.get(Queries).query(Agent).find(worker.id).session == "real-codex-session"
+    expect_session(story, worker, "real-codex-session")
 
 
 def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
@@ -82,14 +83,47 @@ def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environmen
                          "key: journal.suites.coding.workers.worktree-commands")
     repository.git("worktree", "add", "-b", "worktree-cart", str(folder))
     story.expect_success(f"worktree prepare {folder} {repository.folder} cart", actor=story.user)
-    assert (folder / "node_modules").is_symlink() and (folder / "node_modules").resolve() == (repository.folder / "node_modules").resolve()
-    assert (folder / "vendor" / LIBRARY_FILE).read_text() == LIBRARY_TEXT and not (folder / "vendor").is_symlink()
-    assert (folder / "prepared.txt").read_text().strip() == "worktree-cart"
+    expect_symlink_folder_node(folder, "node_modules")
+    expect_resolve_folder_node(folder, "node_modules", (repository.folder / "node_modules").resolve())
+    expect_folder_vendor_library(folder, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
+    expect_absent_symlink_folder_vendor(folder, "vendor")
+    expect_command_folder_chosen(folder, "prepared.txt", "worktree-cart")
     status = repository.git("status", "--porcelain", "--untracked-files=all", folder=folder).stdout
-    assert "node_modules" not in status and "vendor" not in status, status
+    expect_value_without(status, "node_modules")
+    expect_value_without(status, "vendor")
 
 
 def test_a_launch_worktree_of_an_environment_that_does_not_exist_is_refused(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     story.expect_refusal(f"worktree prepare {repository.folder} {repository.folder} nowhere", "no environment named nowhere", actor=story.user)
+
+
+def expect_folder_vendor_library(folder, text, item, expected) -> None:
+    actual = (folder / text / item).read_text()
+    assert actual == expected, actual
+
+
+def expect_absent_symlink_folder_vendor(folder, text) -> None:
+    actual = (folder / text).is_symlink()
+    assert not actual, actual
+
+
+def expect_symlink_folder_node(folder, text) -> None:
+    actual = (folder / text).is_symlink()
+    assert actual, actual
+
+
+def expect_resolve_folder_node(folder, text, expected) -> None:
+    actual = (folder / text).resolve()
+    assert actual == expected, actual
+
+
+def expect_session(story, worker, expected) -> None:
+    actual = story.container.get(Queries).query(Agent).find(worker.id).session
+    assert actual == expected, actual
+
+
+def expect_worktree_folder_repository(repository, worker, text, text_2, expected) -> None:
+    actual = (repository.worktree_folder(worker.id) / text / text_2).read_text()
+    assert actual == expected, actual

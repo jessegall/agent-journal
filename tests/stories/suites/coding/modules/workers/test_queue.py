@@ -15,6 +15,7 @@ from tests.stories.core.modules.chat.support.mark_samples import marks_text, exp
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value_with
 
 PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
 PIPED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
@@ -56,7 +57,7 @@ def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch
 
 def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story, monkeypatch):
     story, _, worker, started = queued_story(new_story, monkeypatch)
-    assert len(started) == 1
+    expect_answers(started, 1)
     story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
     expect_marks_text(story, "queued")
     queue = json.loads(story.run("queue list --environment-id 1 --json").output_text)
@@ -85,7 +86,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
-    assert len(started) == 2
+    expect_answers(started, 2)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
@@ -130,7 +131,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story.expect_success('proof make 1 "cart.py:1, looked at it"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
-    assert not started
+    expect_absent_value(started)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
@@ -140,7 +141,9 @@ def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monk
     monkeypatch.setattr("subprocess.Popen", lambda command, **options: calls.append((command, options)))
     story.container.get(WorkerTestLaunch).start(7, "pytest tests/cart.py", "/work/worktree", "s-1")
     command, options = calls[0]
-    assert "--process 7" in command and "--background" in command and options["cwd"] == "/work/worktree"
+    expect_value_with(command, "--process 7")
+    expect_value_with(command, "--background")
+    expect_cwd_options(options, "/work/worktree")
 
 
 def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
@@ -263,3 +266,8 @@ def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, settin
     ended(story, started[0], 0)
     story.expect_rows(len(started) == 1)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def expect_cwd_options(options, expected) -> None:
+    actual = options['cwd']
+    assert actual == expected, actual

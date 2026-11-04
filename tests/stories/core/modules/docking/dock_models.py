@@ -5,6 +5,7 @@ from core.base.database.statement import Statement
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_output
 
 
 def dock_count(story) -> int:
@@ -36,7 +37,7 @@ def test_docking_a_task_changes_no_task_row(new_story):
     story.run_listeners()
     dock_id = 1
     story.new_row_id(f'dock-item make {dock_id} docksample.task task {task_id} --title "Fix it"')
-    assert story.run(f"task show {task_id}").output_text == starting_text
+    expect_output(story, f"task show {task_id}", starting_text)
 
 
 def test_an_environment_made_gets_its_dock_from_the_listener(new_story):
@@ -67,7 +68,7 @@ def test_the_migration_makes_the_dock_of_every_environment_that_has_none(new_sto
     database.update(Statement("DELETE FROM docks"))
     for sql in ExistingEnvironmentDocksMigration.statements:
         database.update(Statement(sql))
-    assert database.rows(Statement("SELECT count(*) FROM docks"))[0][0] == 2
+    expect_database_2(database, "SELECT count(*) FROM docks", 2)
 
 
 @pytest.fixture
@@ -81,4 +82,9 @@ def task_dock(new_story):
 
 def expect_dock_count(story, expected) -> None:
     actual = dock_count(story)
+    assert actual == expected, actual
+
+
+def expect_database_2(database, text, expected) -> None:
+    actual = database.rows(Statement(text))[0][0]
     assert actual == expected, actual

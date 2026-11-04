@@ -7,6 +7,7 @@ import pytest
 
 from core.base.journal_home import JournalHome
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
+from tests.stories.support.story_checks import expect_absent_exists_folder_repository, expect_poll_second
 
 SCRIPT = "#!/bin/sh\nsleep 300 &\ntrap 'kill $!; exit 0' TERM\nwait\n"
 PORT = 8000
@@ -42,9 +43,11 @@ def test_a_server_killed_with_its_tunler_up_finds_one_tunler_after_it_starts_aga
     second = real_client(home)
     second.start(PORT, SUBDOMAIN)
     first.process.wait(STOP_LIMIT_SECONDS)
-    assert running_tunlers(program) == [second.process.pid] and leftover != second.process.pid
+    expect_running_tunlers(program, [second.process.pid])
+    expect_changed_value_2(leftover, second.process.pid)
     second.stop()
-    assert running_tunlers(program) == [] and not (home.folder / "tunnel.pid").exists()
+    expect_running_tunlers(program, [])
+    expect_absent_exists_folder_repository(home, "tunnel.pid")
 
 
 def test_a_pid_that_names_some_other_program_is_left_alone(program, tmp_path):
@@ -55,7 +58,7 @@ def test_a_pid_that_names_some_other_program_is_left_alone(program, tmp_path):
         (home.folder / "tunnel.pid").write_text(str(unrelated_process.pid))
         client = real_client(home)
         client.start(PORT, SUBDOMAIN)
-        assert unrelated_process.poll() is None
+        expect_poll_second(unrelated_process, None)
         client.stop()
     finally:
         unrelated_process.kill()
@@ -65,3 +68,7 @@ def test_a_pid_that_names_some_other_program_is_left_alone(program, tmp_path):
 def expect_running_tunlers(program: Path, expected) -> None:
     actual = running_tunlers(program)
     assert actual == expected, actual
+
+
+def expect_changed_value_2(actual, expected) -> None:
+    assert actual != expected, actual

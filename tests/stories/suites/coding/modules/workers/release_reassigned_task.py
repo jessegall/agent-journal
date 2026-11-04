@@ -19,6 +19,11 @@ def test_releasing_the_first_worker_leaves_the_second_workers_started_task_uncha
 
     story.expect_success(f'worker release {first_worker.id} "old worker stopped"', actor=story.agent)
 
-    assert tasks.find(1) == task
+    expect_tasks(tasks, 1, task)
     story.expect_success("worker-worktree show 1", "state: removed")
     repository.expect_no_folder(first_worker.id)
+
+
+def expect_tasks(tasks, number, expected) -> None:
+    actual = tasks.find(number)
+    assert actual == expected, actual

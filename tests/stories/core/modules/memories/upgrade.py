@@ -3,6 +3,7 @@ import re
 
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text, expect_upgrade_without_text
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value_4, expect_value_with
 
 
 def test_a_memory_moves_as_a_fact_with_its_text_weight_and_environment(new_story):
@@ -45,7 +46,8 @@ def test_a_memory_longer_than_version_5_allows_moves_whole_into_a_document_and_k
     story = upgraded_story(new_story)
     memory = story.run("memory show 6").output_text
     document = re.search(r"whole text in doc (\d+)", memory)
-    assert "text: A long fact. A long fact." in memory and document, memory
+    expect_value_with(memory, "text: A long fact. A long fact.")
+    expect_value_4(document)
     story.expect_text(f"doc show {document.group(1)} --all", ("A long fact. " * 40).strip())
 
 
@@ -72,5 +74,5 @@ def test_a_long_project_wide_rule_moves_into_a_document_of_no_environment(new_st
     story = upgraded_story(new_story)
     rule = next(memory for memory in json.loads(story.run("memory list --json").output_text)["rows"] if memory["text"].startswith("A long project rule."))
     document = re.search(r"whole text in doc (\d+)", rule["text"])
-    assert document, rule
+    expect_value_4(document)
     expect_row(json.loads(story.run(f"doc show {document.group(1)} --json").output_text), environment_id=None)

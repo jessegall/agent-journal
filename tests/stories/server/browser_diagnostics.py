@@ -17,14 +17,29 @@ def test_a_browser_timeout_keeps_the_script_output_and_playwright_action(monkeyp
     monkeypatch.setattr(subprocess, "run", run)
     with pytest.raises(AssertionError, match="waiting for locator") as failure:
         expect_browser(story, "example.browser.mjs", [])
-    assert "example.browser.mjs" in str(failure.value)
+    expect_failure_with_2(failure, "example.browser.mjs")
     if output is not None:
-        assert "before navigation" in str(failure.value)
-    assert "pw:api" in run.call_args.kwargs["env"]["DEBUG"]
+        expect_failure_with_2(failure, "before navigation")
+    expect_debug_env_kwargs_with(run, "pw:api")
 
 
 def test_a_browser_timeout_can_report_missing_output_and_invalid_bytes():
     error = subprocess.TimeoutExpired("node", 60, stderr=b"last action \xff")
     failure = BrowserStoryTimeout.for_script("example.browser.mjs", error)
-    assert "last action \ufffd" in str(failure)
-    assert "stdout:\n\nstderr:" in str(failure)
+    expect_failure_with(failure, "last action \ufffd")
+    expect_failure_with(failure, "stdout:\n\nstderr:")
+
+
+def expect_failure_with(failure, expected) -> None:
+    actual = str(failure)
+    assert expected in actual, actual
+
+
+def expect_debug_env_kwargs_with(run, expected) -> None:
+    actual = run.call_args.kwargs['env']['DEBUG']
+    assert expected in actual, actual
+
+
+def expect_failure_with_2(failure, expected) -> None:
+    actual = str(failure.value)
+    assert expected in actual, actual

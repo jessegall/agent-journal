@@ -27,6 +27,7 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook, expect_value_with
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
@@ -61,7 +62,7 @@ def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks
     reply = story.hook("s-1", HookSamples.stop())
     expect_reply_line(reply, "new message 1")
     expect_absent_reply_line(reply, "Fix the cart")
-    assert "read_at: None" in story.run("message show 1 ", actor=story.user).output_text or "read_at:" not in story.run("message show 1", actor=story.user).output_text
+    expect_value_7("read_at: None", story, "message show 1 ", "read_at:", "message show 1")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_text("message show 1", "text: Fix the cart first", "read_at: 2026", actor=story.user)
 
@@ -112,7 +113,7 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    expect_typed_typing(typing, ["[journal] new message 1"])
 
 
 def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_interrupted_turn_sends_no_stop(delivery_typing):
@@ -120,7 +121,7 @@ def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_
     story.hook("s-1", HookSamples.edit("cart.py"))
     story.advance(timedelta(seconds=31))
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    expect_typed_typing(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick(delivery_typing):
@@ -131,7 +132,7 @@ def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick
     story.advance(timedelta(seconds=61))
     story.tick("s-1")
     story.run_listeners()
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    expect_typed_typing(typing, ["[journal] new message 1"])
 
 
 def tool_failure(interrupted: bool):
@@ -142,7 +143,7 @@ def test_a_message_sent_right_after_the_user_interrupted_a_tool_is_typed_since_t
     story, typing = delivery_typing
     story.hook("s-1", tool_failure(interrupted=True))
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    expect_typed_typing(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_after_a_tool_failed_without_an_interrupt_is_not_typed(delivery_typing):
@@ -182,7 +183,7 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     story.hook("s-1", READ_MESSAGE_HOOK)
     for _ in range(4):
         story.run_listeners()
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
+    expect_typed_typing(typing, ["[journal] new message 1"])
 
 
 class HookDuringTerminalLine(KeptTyping):
@@ -205,8 +206,8 @@ def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
     agent = story.agent
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run_listeners()
-    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
-    assert not any("new message 1" in line for line in typing.hook_lines)
+    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_hook_lines_typing_without_line(typing, "new message 1")
     story.expect_text(f"agent-line list --agent {agent.id} --state entered", "new message 1", actor=story.user)
 
 
@@ -246,7 +247,7 @@ def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(delivery_typing):
     story, typing = delivery_typing
     story.run('message send "First" --environment main', actor=story.user)
-    assert story.hook("s-1", HookSamples.stop()).refusal
+    expect_refusal_hook(story, "s-1")
     story.run('message send "Second" --environment main', actor=story.user)
     expect_row(typing, typed=[])
 
@@ -308,7 +309,7 @@ ACT_ON_IT = "act on what you read:"
 
 def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
-    assert story.run("message read 1", actor=story.user).output_text.strip() == "Fix the cart first"
+    expect_output_5(story, "message read 1", "Fix the cart first")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_text("message show 1", "read_at: 2026", actor=story.user)
 
@@ -317,15 +318,16 @@ def test_only_read_tells_the_agent_how_to_act_and_only_the_first_time(new_story)
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
     reply = story.hook("s-1", READ_MESSAGE_HOOK)
     line = next(line for line in reply.lines if line.startswith(ACT_ON_IT))
-    assert "steering" in line and "update" in line
-    assert not any(line.startswith(ACT_ON_IT) for line in story.hook("s-1", READ_MESSAGE_HOOK).lines)
+    expect_value_with(line, "steering")
+    expect_value_with(line, "update")
+    expect_absent_startswith_lines_hook(ACT_ON_IT, story, "s-1", READ_MESSAGE_HOOK)
 
 
 def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story):
     story = new_story(SAMPLES, fixture=ReadCartMessage)
     story.run('message send "And the checkout" --environment main', actor=story.user)
     reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
-    assert any(line.startswith(ACT_ON_IT) for line in reply.lines)
+    expect_startswith_lines_reply(ACT_ON_IT, reply)
 
 
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
@@ -347,7 +349,7 @@ def test_the_agent_can_show_its_own_message(agent_message):
 def test_a_reply_read_names_the_message_it_replies_on(new_story):
     story = new_story(SAMPLES, fixture=CartMessage)
     story.run('message reply 1 "And the totals"', actor=story.user)
-    assert story.run("message read 2", actor=story.user).output_text.splitlines() == ["And the totals", "reply on: message:1"]
+    expect_output_4(story, "message read 2", ["And the totals", "reply on: message:1"])
 
 
 def test_a_reply_lands_in_the_environment_of_the_message_it_answers(new_story):
@@ -364,8 +366,8 @@ def test_a_comment_read_names_its_text_once_and_the_other_links_under_it(new_sto
     story.run('report comment 1 "See task:1 for this" --environment main', actor=story.user)
     story.run_listeners()
     lines = story.run("message read 1", actor=story.user).output_text.splitlines()
-    assert lines[1] == "comment on: report:1"
-    assert not any("report:1" in line for line in lines[2:])
+    expect_lines_2(lines, "comment on: report:1")
+    expect_lines_without_line(lines, 2, "report:1")
 
 
 def test_a_message_read_as_one_part_of_a_chain_is_marked_read(new_story):
@@ -379,8 +381,8 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(image_message):
     story = image_message
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    assert any(line == 'message:1 has an image: journal message tag 1 "shot.png" "<what it shows>"' for line in lines)
-    assert not any("notes.txt" in line and "attaches an image" in line for line in lines)
+    expect_lines_5('message:1 has an image: journal message tag 1 "shot.png" "<what it shows>"', lines)
+    expect_absent_notes_lines("notes.txt", "attaches an image", lines)
 
 
 def test_a_tagged_image_is_not_asked_for_again_and_a_missing_file_is_refused(image_message):
@@ -403,7 +405,7 @@ def test_unread_prints_every_unread_message_and_marks_them_read(new_story):
     text.expect_text("message 1:\nFix the cart")
     text.expect_text("message 2:\nAnd the totals")
     lines = story.hook("s-1", UNREAD_MESSAGE_HOOK).lines
-    assert sum(line.startswith(ACT_ON_IT) for line in lines) == 1
+    expect_sum_startswith_lines(ACT_ON_IT, lines, 1)
     story.expect_text("message show 2", "read_at: 2026", actor=story.user)
 
 
@@ -537,7 +539,7 @@ def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks
 def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(untyped_message_after_tick):
     story = untyped_message_after_tick
     lines = story.hook("s-1", HookSamples.prompt("Carry on")).lines
-    assert [line for line in lines if "new message 1" in line] == ["new message 1"]
+    expect_lines_3(lines, "new message 1", ["new message 1"])
     story.expect_absent_hook_line("s-1", HookSamples.edit("cart.py"), "new message 1")
 
 
@@ -639,3 +641,58 @@ def untyped_message_after_tick(new_story):
     story.tick("s-1")
     story.run_listeners()
     return story
+
+
+def expect_sum_startswith_lines(item, lines, expected) -> None:
+    actual = sum((line.startswith(item) for line in lines))
+    assert actual == expected, actual
+
+
+def expect_absent_notes_lines(text, text_2, lines) -> None:
+    actual = any((text in line and text_2 in line for line in lines))
+    assert not actual, actual
+
+
+def expect_lines_5(text, lines) -> None:
+    actual = any((line == text for line in lines))
+    assert actual, actual
+
+
+def expect_lines_without_line(lines, number, expected) -> None:
+    actual = lines[number:]
+    assert not any(expected in line for line in actual), actual
+
+
+def expect_output_4(story, text, expected) -> None:
+    actual = story.run(text, actor=story.user).output_text.splitlines()
+    assert actual == expected, actual
+
+
+def expect_startswith_lines_reply(item, reply) -> None:
+    actual = any((line.startswith(item) for line in reply.lines))
+    assert actual, actual
+
+
+def expect_absent_startswith_lines_hook(item, story, text, item_2) -> None:
+    actual = any((line.startswith(item) for line in story.hook(text, item_2).lines))
+    assert not actual, actual
+
+
+def expect_output_5(story, text, expected) -> None:
+    actual = story.run(text, actor=story.user).output_text.strip()
+    assert actual == expected, actual
+
+
+def expect_hook_lines_typing_without_line(typing, expected) -> None:
+    actual = typing.hook_lines
+    assert not any(expected in line for line in actual), actual
+
+
+def expect_typed_typing(typing, expected) -> None:
+    actual = [line for _, line in typing.typed]
+    assert actual == expected, actual
+
+
+def expect_value_7(text, story, text_2, text_3, text_4) -> None:
+    actual = text in story.run(text_2, actor=story.user).output_text or text_3 not in story.run(text_4, actor=story.user).output_text
+    assert actual, actual

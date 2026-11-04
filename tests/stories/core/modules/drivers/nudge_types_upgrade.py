@@ -3,6 +3,7 @@ import re
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value
 
 OLD_NAMES = (("info", "instruction"), ("steering", "nudge"))
 
@@ -24,7 +25,8 @@ def test_a_database_that_holds_the_old_type_names_holds_the_new_ones_after_a_syn
     old_registry(story)
     expect_registered_types(story, {"instruction", "nudge", "refusal"})
     code, _ = story.synced()
-    assert code == 0 and registered_types(story) == {"info", "steering", "refusal"}
+    expect_value(code, 0)
+    expect_registered_types(story, {"info", "steering", "refusal"})
 
 
 def test_the_nudge_list_names_the_new_types_after_the_sync(new_story):

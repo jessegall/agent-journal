@@ -7,6 +7,7 @@ from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.support.story_checks import expect_value
 
 SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
 
@@ -36,7 +37,7 @@ def test_the_journal_writes_its_own_profiles_at_every_start_and_keeps_a_saved_on
     (agents_folder(story) / "journal-gone.md").write_text("an old profile")
     story.container.get(ProfileFiles).publish()
     names = {path.stem for path in agents_folder(story).glob("*.md")}
-    assert names == {*(profile.name for profile in SHIPPED_PROFILES), "critic"}
+    expect_value(names, {*(profile.name for profile in SHIPPED_PROFILES), "critic"})
 
 
 def test_a_saved_profile_that_names_no_model_leaves_the_model_out_of_its_files(new_story):
@@ -55,23 +56,23 @@ def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
     with story.container.get(Database).transaction():
         story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
     story.run_listeners()
-    assert (agents_folder(story) / "journal-senior.md").is_file()
+    expect_file_agents_folder(story, "journal-senior.md")
 
 
 def test_the_journals_start_writes_its_own_profiles(profiles_missing):
     story = profiles_missing
     BootingWork().run(story.container)
     story.run_listeners()
-    assert (agents_folder(story) / "journal-senior.md").is_file()
+    expect_file_agents_folder(story, "journal-senior.md")
 
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
-    assert "model: sonnet" in (agents_folder(story) / "journal-researcher.md").read_text()
-    assert "model: opus" in (agents_folder(story) / "journal-senior.md").read_text()
-    assert all(profile.model and profile.codex_model for profile in SHIPPED_PROFILES)
+    expect_agents_folder_journal_with(story, "journal-researcher.md", "model: sonnet")
+    expect_agents_folder_journal_with(story, "journal-senior.md", "model: opus")
+    expect_profile_model(SHIPPED_PROFILES)
 
 
 def test_a_saved_profile_is_listed_whether_a_person_or_an_agent_saved_it(new_story):
@@ -90,10 +91,10 @@ def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
 
 def test_codex_gets_a_toml_only_where_it_has_a_folder(new_story):
     story = saved_profile_story(new_story)
-    assert not (story.home.project_folder / ".codex" / "agents" / "critic.toml").exists()
+    expect_absent_exists_project_folder_2(story, ".codex", "agents", "critic.toml")
     (story.home.project_folder / ".codex").mkdir()
     story.expect_success(SAVE_PROFILE, actor=story.user)
-    assert 'sandbox_mode = "read-only"' in (story.home.project_folder / ".codex" / "agents" / "critic.toml").read_text()
+    expect_project_folder_home_with(story, ".codex", "agents", "critic.toml", 'sandbox_mode = "read-only"')
 
 
 def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
@@ -106,3 +107,28 @@ def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
 def test_a_person_cannot_save_a_profile_under_a_shipped_name(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal('profile save journal-mine --description "Mine" --body "Read."', "a profile starting with journal- is reserved", actor=story.user)
+
+
+def expect_project_folder_home_with(story, text, text_2, text_3, expected) -> None:
+    actual = (story.home.project_folder / text / text_2 / text_3).read_text()
+    assert expected in actual, actual
+
+
+def expect_absent_exists_project_folder_2(story, text, text_2, text_3) -> None:
+    actual = (story.home.project_folder / text / text_2 / text_3).exists()
+    assert not actual, actual
+
+
+def expect_profile_model(item) -> None:
+    actual = all((profile.model and profile.codex_model for profile in item))
+    assert actual, actual
+
+
+def expect_agents_folder_journal_with(story, text, expected) -> None:
+    actual = (agents_folder(story) / text).read_text()
+    assert expected in actual, actual
+
+
+def expect_file_agents_folder(story, text) -> None:
+    actual = (agents_folder(story) / text).is_file()
+    assert actual, actual

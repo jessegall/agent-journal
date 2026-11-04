@@ -21,4 +21,15 @@ def test_a_hook_to_the_server_answers_within_the_budget_that_the_measuring_scrip
             started = time.perf_counter()
             story.expect_hook_answer("/hook", example(EXAMPLES[position % len(EXAMPLES)]), 200, '"refusal": ""')
             durations_ms.append((time.perf_counter() - started) * 1000)
-        assert statistics.median(durations_ms) < MEDIAN_BUDGET_MS and max(durations_ms) < WORST_BUDGET_MS, (statistics.median(durations_ms), max(durations_ms))
+        expect_median_statistics_less(durations_ms, MEDIAN_BUDGET_MS)
+        expect_max_less(durations_ms, WORST_BUDGET_MS)
+
+
+def expect_median_statistics_less(durations_ms, expected) -> None:
+    actual = statistics.median(durations_ms)
+    assert actual < expected, actual
+
+
+def expect_max_less(durations_ms, expected) -> None:
+    actual = max(durations_ms)
+    assert actual < expected, actual

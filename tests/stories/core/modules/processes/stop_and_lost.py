@@ -12,6 +12,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_handler, expect_poll_second, expect_value_4
 
 GROUP_END_SECONDS = 5
 
@@ -83,7 +84,7 @@ def test_a_pid_gone_to_another_program_is_not_killed(reused_process_pid):
     story, second = reused_process_pid
     story.expect_success('process show 1', 'state: orphaned', actor=story.agent)
     story.run_listeners()
-    assert second.poll() is None, 'another program with the pid was killed'
+    expect_poll_second(second, None)
 
 
 def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_story):
@@ -97,7 +98,7 @@ def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_st
     folder.write_status(process.id, 1, 0)
     folder.write_end(process.id, 0)
     story.advance(timedelta(seconds=11))
-    assert RunEndRecovery()(story.container) is True
+    expect_end_recovery(story, True)
     story.expect_success("process show 1", "state: finished", "exit_code: 0", actor=story.agent)
     story.expect_text("process-part list --process 1", "finished")
 
@@ -151,8 +152,9 @@ def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
 def test_a_lost_run_whose_leader_died_still_has_its_children_killed(orphaned_process_child):
     child_pid, child_output = orphaned_process_child
     readable, _, _ = select.select([child_output], [], [], GROUP_END_SECONDS)
-    assert readable and not child_output.read(), 'the child of the dead leader is still alive'
-    assert not LeftoverProcess.command_line(child_pid)
+    expect_value_4(readable)
+    expect_absent_child_output(child_output)
+    expect_absent_command_leftover_process(child_pid)
 
 
 @pytest.fixture
@@ -215,9 +217,9 @@ def orphaned_process_child(background_build):
 def test_a_run_no_runner_ever_started_is_lost_past_the_limit_with_no_tick_of_its_agent(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     start_process(story, "make build")
-    assert RunEndRecovery()(story.container) is False
+    expect_end_recovery(story, False)
     story.advance(timedelta(seconds=120))
-    assert RunEndRecovery()(story.container) is True
+    expect_end_recovery(story, True)
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
@@ -242,5 +244,20 @@ def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end
         return commands
 
     handler.commands = stale_commands
-    assert handler(story.container) is True
+    expect_handler(handler, story, True)
     story.expect_success(f"process show {second.id}", "state: finished", actor=story.agent)
+
+
+def expect_end_recovery(story, expected) -> None:
+    actual = RunEndRecovery()(story.container)
+    assert actual is expected, actual
+
+
+def expect_absent_command_leftover_process(child_pid) -> None:
+    actual = LeftoverProcess.command_line(child_pid)
+    assert not actual, actual
+
+
+def expect_absent_child_output(child_output) -> None:
+    actual = child_output.read()
+    assert not actual, actual

@@ -6,6 +6,7 @@ from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.support.story_checks import expect_total_cost_less
 
 QUEUE_READ_POINTS = 60
 
@@ -22,7 +23,8 @@ def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
     start = database.tally.points()
     page = queue_page(story)
     cost = database.tally.points().minus(start)
-    assert page["running"] == [] and cost.total < QUEUE_READ_POINTS, cost.line()
+    expect_running_2(page, [])
+    expect_total_cost_less(cost, QUEUE_READ_POINTS)
 
 
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):
@@ -43,7 +45,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
                       [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.CHECK.value],
                       all(row["owner_agent_id"] == story.agent.id and row["output_id"] == row["id"] for row in page["rows"]),
                       page["rows"][1]["line"] == "python check_cart.py")
-    story.expect_rows([limit["title"] for limit in page["suite_limits"]] == ["Tests per worker run"])
+    story.expect_rows([limit["title"] for limit in page["suite_limits"]] == ["Test limit per worker command"])
     story.expect_success(f"setting set {page['suite_limits'][0]['key']} 500 --environment main", actor=story.user)
     story.expect_rows(queue_page(story)["suite_limits"][0]["value"] == 500)
     story.expect_success(f"setting set {page['limit_setting']} 2 --environment main", actor=story.user)
@@ -69,3 +71,8 @@ def test_the_inspector_lists_every_waiting_command_beyond_the_default_page(new_s
     page = queue_page(story)
     story.expect_rows(len(page["rows"]) == 50, page["waiting_count"] == 51,
                       [row["id"] for row in page["waiting"]] == [process.id for process in processes])
+
+
+def expect_running_2(page, expected) -> None:
+    actual = page['running']
+    assert actual == expected, actual

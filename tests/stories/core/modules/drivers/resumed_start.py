@@ -1,5 +1,6 @@
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_output_2
 
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
@@ -16,7 +17,7 @@ def test_a_resumed_session_gets_no_start_lines(new_story):
     story = kept_memory_story(new_story)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run("task start 1", actor=story.agent)
-    assert story.hook("s-1", RESUME).lines == []
+    expect_lines_hook(story, "s-1", RESUME, [])
 
 
 def test_a_first_start_gets_the_memories(new_story):
@@ -35,4 +36,9 @@ def test_a_resumed_session_makes_no_start_skill_due(new_story):
     listed_rows = story.run(f"agent-skill list --agent {story.agent.id}", actor=story.agent).output_text
     story.hook("s-1", RESUME)
     story.run_listeners()
-    assert story.run(f"agent-skill list --agent {story.agent.id}", actor=story.agent).output_text == listed_rows
+    expect_output_2(story, f"agent-skill list --agent {story.agent.id}", listed_rows)
+
+
+def expect_lines_hook(story, text, item, expected) -> None:
+    actual = story.hook(text, item).lines
+    assert actual == expected, actual

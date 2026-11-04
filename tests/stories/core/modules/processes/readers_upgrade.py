@@ -5,6 +5,7 @@ from core.modules.processes.migrations.m021_stock_reader_test_counts import Stoc
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_output_2
 
 
 def with_reader_files(folder):
@@ -20,7 +21,9 @@ def test_version_4_reader_files_move_into_version_5_readers(new_story):
     expect_row(rows["cart-test"], type="pattern")
     expect_row(rows["cart-test"], lines_pattern="^(ok|FAIL)\\s")
     expect_row(rows["cart-test"], title="Cart tests")
-    assert rows["merge"]["type"] == "script" and rows["merge"]["script"].endswith("readers/merge.sh") and rows["merge"]["commands"] == "journal worker merge", rows["merge"]
+    expect_type_merge(rows, "script")
+    expect_endswith_script_merge(rows, "readers/merge.sh")
+    expect_commands_merge(rows, "journal worker merge")
 
 
 def test_a_reader_file_named_as_a_reader_version_5_ships_keeps_version_5_s_and_is_counted(new_story):
@@ -41,8 +44,38 @@ def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(ne
     rows = {row["name"]: row for row in json.loads(story.run("reader list --json --limit 100").output_text)["rows"]}
     expect_row(rows["pytest"], commands="custom-pytest*")
     expect_row(rows["pytest"], count_command="{part} --collect-only -q")
-    assert rows["pytest"]["count_pattern"] != "old-pytest"
+    expect_changed_count_pattern_pytest(rows, "old-pytest")
     expect_row(rows["vitest"], commands="custom-vitest*")
-    assert "(?:test|spec)" in rows["vitest"]["count_pattern"]
-    assert rows["vitest"]["count_command"] != "old-list"
-    assert story.run(f"reader show {project_id} --json", actor=story.agent).output_text == previous
+    expect_count_pattern_vitest_with(rows, "(?:test|spec)")
+    expect_changed_count_command_vitest(rows, "old-list")
+    expect_output_2(story, f"reader show {project_id} --json", previous)
+
+
+def expect_changed_count_command_vitest(rows, expected) -> None:
+    actual = rows['vitest']['count_command']
+    assert actual != expected, actual
+
+
+def expect_count_pattern_vitest_with(rows, expected) -> None:
+    actual = rows['vitest']['count_pattern']
+    assert expected in actual, actual
+
+
+def expect_changed_count_pattern_pytest(rows, expected) -> None:
+    actual = rows['pytest']['count_pattern']
+    assert actual != expected, actual
+
+
+def expect_type_merge(rows, expected) -> None:
+    actual = rows['merge']['type']
+    assert actual == expected, actual
+
+
+def expect_endswith_script_merge(rows, text) -> None:
+    actual = rows['merge']['script'].endswith(text)
+    assert actual, actual
+
+
+def expect_commands_merge(rows, expected) -> None:
+    actual = rows['merge']['commands']
+    assert actual == expected, actual

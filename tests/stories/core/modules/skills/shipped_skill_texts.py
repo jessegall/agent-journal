@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_absent_value
 
 SOURCE = Path(__file__).parents[5] / "src"
 COMMAND_IN_TEXT = re.compile(r"`journal ([a-z-]+)(?: ([a-z-]+))?([^`]*)`")
@@ -28,6 +29,11 @@ def faults_of(story, group: str, subcommand: str, flags: tuple[str, ...]) -> lis
 def test_every_command_and_flag_a_shipped_skill_names_exists(new_story):
     story = new_story(fixture=BuilderStarted)
     commands = commands_in_skill_files()
-    assert len(commands) > 50
+    expect_commands_more(commands, 50)
     faults = sorted(fault for group, subcommand, flags in commands for fault in faults_of(story, group, subcommand, flags))
-    assert not faults, "\n".join(faults)
+    expect_absent_value(faults)
+
+
+def expect_commands_more(commands, expected) -> None:
+    actual = len(commands)
+    assert actual > expected, actual

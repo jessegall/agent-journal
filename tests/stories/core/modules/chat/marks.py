@@ -55,14 +55,14 @@ def test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id(n
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     first = bus.run(show(SampleMarkType.PROCESS, "run:2", "Running"), actor)
     second = bus.run(show(SampleMarkType.PROCESS, "run:2", "Passed", ended=True), actor)
-    assert (second.id, second.text, second.state.value) == (first.id, "Passed", "ended")
+    expect_id_second(second, (first.id, "Passed", "ended"))
 
 
 def test_the_detail_is_cut_to_80_characters_and_the_lines_keep_all_of_it(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     text = "first line " + "x" * 100 + "\nsecond line"
     mark = story.container.get(Bus).run(ShowMark(1, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:9", "A mark", detail=text), module_actor(story, "chatsample"))
-    assert (len(mark.detail), mark.lines) == (80, text)
+    expect_detail_mark_lines(mark, (80, text))
 
 
 def test_a_mark_naming_a_variant_its_type_does_not_list_is_refused(new_story):
@@ -85,3 +85,13 @@ def test_a_mark_for_an_agent_of_another_environment_is_refused(new_story):
     story.run("environment make elsewhere /work/elsewhere")
     with pytest.raises(Refusal, match="works in another environment"):
         story.container.get(Bus).run(ShowMark(2, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:3", "A mark", agent_id=story.agent.id), module_actor(story, "chatsample"))
+
+
+def expect_detail_mark_lines(mark, expected) -> None:
+    actual = (len(mark.detail), mark.lines)
+    assert actual == expected, actual
+
+
+def expect_id_second(second, expected) -> None:
+    actual = (second.id, second.text, second.state.value)
+    assert actual == expected, actual

@@ -187,11 +187,11 @@ test("output opens under a process and collapses again", async () => {
 });
 
 test("a limit a suite names shows beside the commands at once and saves its setting", async () => {
-    const limit = {key: "journal.suites.coding.workers.worker-run-most-tests", title: "Tests per worker run", description: "Stop worker commands above this test count.", value: 0};
+    const limit = {key: "journal.suites.coding.workers.worker-run-most-tests", title: "Test limit per worker command", description: "Stop worker commands above this test count.", value: 0};
     const read = vi.fn(async () => ({ok: true, value: {...SNAPSHOT, suite_limits: [limit]}}));
     await panel(read);
     const input = document.body.querySelector("[data-queue-suite-limit]");
-    expect(document.body.textContent).toContain("Tests per worker run");
+    expect(document.body.textContent).toContain("Test limit per worker command");
     input.value = "500";
     input.dispatchEvent(new Event("change"));
     await settle();

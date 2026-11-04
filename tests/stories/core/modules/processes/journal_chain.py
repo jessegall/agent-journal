@@ -8,6 +8,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_reply import expect_absent_reply_line
+from tests.stories.support.story_checks import expect_updated_input_reply
 
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")
 LISTING_PART = ShellPart("ls", CommandCategory.SEARCH, ["build"])
@@ -23,7 +24,7 @@ def test_a_journal_command_after_a_test_run_is_refused(new_story):
 def test_a_journal_command_after_a_read_goes_on_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "ls build && journal task show 1"
-    assert dict(story.hook("s-1", HookSamples.shell(line, LISTING_PART, JOURNAL_PART)).updated_input) == {"command": runner_line(story, 1, line)}
+    expect_updated_input_hook_3(story, "s-1", line, LISTING_PART, JOURNAL_PART, {"command": runner_line(story, 1, line)})
 
 
 def test_a_journal_command_after_journal_and_a_test_run_is_refused(new_story):
@@ -41,21 +42,21 @@ def test_journal_commands_first_and_then_other_commands_go_on_through_the_runner
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "journal task show 1 && journal task show 1 && ls build"
     reply = story.hook("s-1", HookSamples.shell(line, JOURNAL_PART, JOURNAL_PART, LISTING_PART))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line)})
 
 
 def test_a_loop_that_only_names_a_path_with_journal_in_it_goes_on_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "for f in .journal/a; do cat $f; done"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("for", CommandCategory.PROCESS, ["f"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line)})
 
 
 def test_a_loop_whose_commit_message_holds_the_words_journal_agent_stays_allowed(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = 'for f in a b; do git commit -m "fix it; journal agent main now do journal agent main" $f; done'
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("for", CommandCategory.PROCESS, ["f"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line)})
 
 
 def test_a_sleep_poll_followed_by_another_command_is_refused(new_story):
@@ -107,9 +108,9 @@ def test_a_run_keeping_its_standard_output_or_a_command_that_is_no_run_stays_all
 
 def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():
     schema = json.loads((Path(__file__).parents[5] / "tools/journal-hook/event/hook_event.schema.json").read_text())
-    assert '"write_paths"' in json.dumps(schema)
+    expect_dumps_with(schema, '"write_paths"')
     part = {"text": "cat > notes.txt", "program": "cat", "arguments": [], "classification": {"category": CommandCategory.EDIT.value, "effects": []}, "write_paths": ["notes.txt"]}
-    assert list(Part.parsed(part).output_paths) == ["notes.txt"]
+    expect_output_paths_parsed(part, ["notes.txt"])
 
 
 def test_a_test_run_with_a_pipe_gets_no_warning_since_its_output_stays_whole(new_story):
@@ -118,3 +119,18 @@ def test_a_test_run_with_a_pipe_gets_no_warning_since_its_output_stays_whole(new
     cut = ShellPart("tail", CommandCategory.READ, ["-5"])
     reply = story.hook("s-1", HookSamples.shell("pytest -q && tail -5", piped, cut))
     expect_absent_reply_line(reply, "cut by a pipe")
+
+
+def expect_output_paths_parsed(part, expected) -> None:
+    actual = list(Part.parsed(part).output_paths)
+    assert actual == expected, actual
+
+
+def expect_dumps_with(schema, expected) -> None:
+    actual = json.dumps(schema)
+    assert expected in actual, actual
+
+
+def expect_updated_input_hook_3(story, text, line, item, item_2, expected) -> None:
+    actual = dict(story.hook(text, HookSamples.shell(line, item, item_2)).updated_input)
+    assert actual == expected, actual

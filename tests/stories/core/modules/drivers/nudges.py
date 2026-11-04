@@ -30,6 +30,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
 
 
 def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
@@ -39,17 +40,19 @@ def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
 
 def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays():
     nudge = NudgeDeclaration("shop.long", NudgeType.STEERING, "{text} do this", longest_characters=30).nudge(text="x" * 50)
-    assert len(nudge.text) == 30 and nudge.text.endswith("do this") and "…" in nudge.text
+    expect_nudge(nudge, 30)
+    expect_endswith_nudge(nudge, "do this")
+    expect_outcome_with(nudge, "…")
 
 
 def test_a_steering_line_and_a_refusal_are_cut_at_120_characters_and_only_info_may_be_longer():
     template = "{text} " + "w" * 700
     lengths = {nudge_type: len(NudgeDeclaration("shop.kind", nudge_type, template).nudge(text="x").text) for nudge_type in NudgeType}
-    assert lengths == {NudgeType.NOTICE: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120}
+    expect_value(lengths, {NudgeType.NOTICE: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120})
 
 
 def test_each_type_can_be_declared():
-    assert [item.value for item in NudgeType] == ["info", "steering", "refusal"]
+    expect_item_nudge_type(["info", "steering", "refusal"])
 
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
@@ -60,7 +63,7 @@ def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
 
 def test_no_two_nudges_share_a_key(new_story):
     keys = [entry.key for entry in new_story(fixture=UserJoined).container.get(Registry).nudges]
-    assert len(keys) == len(set(keys))
+    expect_answers(keys, len(set(keys)))
 
 
 def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
@@ -68,12 +71,12 @@ def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
     window = WindowStory(story)
     window.expect_window_allowed("drivers.nudges", "nudge list")
     rows = json.loads(story.run("nudge list --json", actor=story.user).output_text)["rows"]
-    assert {"id": RUN_NAME.key, "key": RUN_NAME.key, "module": "journal.core.processes", "type": "steering", "text": RUN_NAME.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""} in rows
+    expect_value_with(rows, {"id": RUN_NAME.key, "key": RUN_NAME.key, "module": "journal.core.processes", "type": "steering", "text": RUN_NAME.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""})
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
     declared = NudgeDeclaration("shop.reminder", NudgeType.STEERING, "check the cart", turn_limited=False)
-    assert declared.nudge().turn_limited is False
+    expect_turn_limited_nudge(declared, False)
 
 
 def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(new_story):
@@ -90,4 +93,29 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
     write(Nudge("sample.clock", NudgeType.STEERING, "second text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", interval=Interval(Seconds(60)), turn_limited=False))
     rows = story.container.get(Queries).query(NudgeRecord).filter(agent_id=story.agent.id, key="sample.clock").all_rows()
-    assert sorted((row.text, row.delivery_count) for row in rows) == [("first text", 2), ("second text", 1)]
+    expect_delivery_count(rows, [("first text", 2), ("second text", 1)])
+
+
+def expect_delivery_count(rows, expected) -> None:
+    actual = sorted(((row.text, row.delivery_count) for row in rows))
+    assert actual == expected, actual
+
+
+def expect_turn_limited_nudge(declared, expected) -> None:
+    actual = declared.nudge().turn_limited
+    assert actual is expected, actual
+
+
+def expect_item_nudge_type(expected) -> None:
+    actual = [item.value for item in NudgeType]
+    assert actual == expected, actual
+
+
+def expect_nudge(nudge, expected) -> None:
+    actual = len(nudge.text)
+    assert actual == expected, actual
+
+
+def expect_endswith_nudge(nudge, text) -> None:
+    actual = nudge.text.endswith(text)
+    assert actual, actual

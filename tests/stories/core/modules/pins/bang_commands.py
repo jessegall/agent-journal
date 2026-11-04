@@ -1,5 +1,6 @@
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_answers, expect_lines_with
 
 BUTTON_REQUEST = "a button runs your ! command"
 
@@ -11,9 +12,9 @@ def button_lines(hook_answer) -> list[str]:
 def test_a_bang_command_the_agent_asks_the_user_to_run_is_answered_with_a_request_to_pin_it_as_a_button(new_story):
     story = new_story(fixture=UserJoined)
     lines = button_lines(story.hook("s-1", HookSamples.message_display("Run this yourself: `! npm run build`")))
-    assert len(lines) == 1
-    assert '--link "! <command>"' in lines[0]
-    assert '--label "Run"' in lines[0]
+    expect_answers(lines, 1)
+    expect_lines_with(lines, '--link "! <command>"')
+    expect_lines_with(lines, '--label "Run"')
 
 
 def test_a_bang_command_on_a_line_of_its_own_is_found(new_story):

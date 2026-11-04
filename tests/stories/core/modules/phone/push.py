@@ -13,6 +13,7 @@ from core.modules.phone.support.p256 import P256
 from tests.stories.core.modules.phone.phone_rows import TOKEN_DIGEST, paired_story
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_endswith_authorization, expect_value
 
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
 SUBSCRIPTION = json.dumps({"endpoint": ENDPOINT, "keys": {"p256dh": "x", "auth": "y"}})
@@ -57,8 +58,9 @@ def tick(story) -> None:
 def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_story):
     story = new_story(fixture=UserJoined)
     first = story.run("phone push-key", actor=Actor.core()).output_text.strip()
-    assert len(base64.urlsafe_b64decode(first + "=" * (-len(first) % 4))) == 65 and not first.startswith(("0x", "{"))
-    assert story.run("phone push-key", actor=Actor.core()).output_text.strip() == first
+    expect_urlsafe_b64decode_base64(first, "=", 4, 65)
+    expect_absent_startswith(first, "0x", "{")
+    expect_output_7(story, "phone push-key", first)
     for key in (PUBLIC, PRIVATE):
         shown = story.run(f"setting show {key}", actor=story.user)
         shown.expect_text(key)
@@ -71,8 +73,8 @@ def test_a_signature_made_with_a_secret_verifies_against_its_public_key():
     token = pair.token(ENDPOINT, "https://example.test", 1000.0)
     head, claims, signature = token.split(".")
     raw = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
-    assert P256.is_signed(pair.public, f"{head}.{claims}".encode(), raw)
-    assert not P256.is_signed(pair.public, f"{head}.{claims}x".encode(), raw)
+    expect_signed_p256_2(P256, pair, f"{head}.{claims}", raw)
+    expect_absent_signed_p256(P256, pair, f"{head}.{claims}x", raw)
 
 
 def test_a_phone_subscription_is_kept_and_never_shown(new_story):
@@ -183,21 +185,71 @@ def built_service(story, address: str | None):
 def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_tunnels_address(new_story):
     story = paired_story(new_story)
     requests, service = built_service(story, "journal.example.test")
-    assert service.send(ENDPOINT) == 201
+    expect_send_service(service, ENDPOINT, 201)
     [(endpoint, headers)] = requests.posts
     public = story.run("phone push-key", actor=Actor.core()).output_text.strip()
     authorization = headers["Authorization"]
     token = authorization.split("vapid t=", 1)[1].split(",", 1)[0]
     head, claims, signature = token.split(".")
-    assert authorization.endswith(f"k={public}") and endpoint == ENDPOINT and headers["Content-Length"] == "0"
+    expect_endswith_authorization(authorization, f"k={public}")
+    expect_value(endpoint, ENDPOINT)
+    expect_content_length_headers(headers, "0")
     expect_row(json.loads(base64.urlsafe_b64decode(claims + "=" * (-len(claims) % 4))), sub="https://journal.example.test")
     raw_public = base64.urlsafe_b64decode(public + "=" * (-len(public) % 4))
-    assert P256.is_signed(raw_public, f"{head}.{claims}".encode(), base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4)))
+    expect_signed_p256(P256, raw_public, f"{head}.{claims}", signature, "=", 4)
 
 
 def test_the_real_push_sends_only_to_a_known_push_service_and_only_with_a_tunnel_address(new_story):
     story = paired_story(new_story)
     requests, service = built_service(story, "journal.example.test")
-    assert service.send("https://evil.example.test/push") == 0 and service.send("http://fcm.googleapis.com/x") == 0 and requests.posts == []
+    expect_send_service(service, "https://evil.example.test/push", 0)
+    expect_send_service(service, "http://fcm.googleapis.com/x", 0)
+    expect_posts_requests(requests, [])
     requests, service = built_service(story, None)
-    assert service.send(ENDPOINT) == 0 and requests.posts == []
+    expect_send_service(service, ENDPOINT, 0)
+    expect_posts_requests(requests, [])
+
+
+def expect_send_service(service, item, expected) -> None:
+    actual = service.send(item)
+    assert actual == expected, actual
+
+
+def expect_posts_requests(requests, expected) -> None:
+    actual = requests.posts
+    assert actual == expected, actual
+
+
+def expect_signed_p256(item, raw_public, text, signature, text_2, number) -> None:
+    actual = item.is_signed(raw_public, text.encode(), base64.urlsafe_b64decode(signature + text_2 * (-len(signature) % number)))
+    assert actual, actual
+
+
+def expect_content_length_headers(headers, expected) -> None:
+    actual = headers['Content-Length']
+    assert actual == expected, actual
+
+
+def expect_absent_signed_p256(item, pair, text, raw) -> None:
+    actual = item.is_signed(pair.public, text.encode(), raw)
+    assert not actual, actual
+
+
+def expect_signed_p256_2(item, pair, text, raw) -> None:
+    actual = item.is_signed(pair.public, text.encode(), raw)
+    assert actual, actual
+
+
+def expect_output_7(story, text, expected) -> None:
+    actual = story.run(text, actor=Actor.core()).output_text.strip()
+    assert actual == expected, actual
+
+
+def expect_urlsafe_b64decode_base64(first, text, number, expected) -> None:
+    actual = len(base64.urlsafe_b64decode(first + text * (-len(first) % number)))
+    assert actual == expected, actual
+
+
+def expect_absent_startswith(first, text, text_2) -> None:
+    actual = first.startswith((text, text_2))
+    assert not actual, actual

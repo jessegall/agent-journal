@@ -5,6 +5,7 @@ import pytest
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.fixtures.version_four import SHARE_TOKEN
 from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.support.story_checks import expect_startswith_listed, expect_value, expect_value_with
 
 PAIR_LINE = {"window": "phone.phones", "line": ["phone", "pair"], "environment": "main"}
 SHARE_PATH = "/viewer/share/"
@@ -22,7 +23,7 @@ def test_after_the_upgrade_a_version_4_share_link_opens_as_the_second_person_wit
     story = upgraded_server
     status, headers, body = viewer_answer(story.viewer_port(), f"{SHARE_PATH}{SHARE_TOKEN}", "", "")
     cookie = headers.get("Set-Cookie", "")
-    assert status == 200 and '<div id="app">' in body and cookie.startswith("journal_share="), (status, headers)
+    expect_value(status, 200)
+    expect_value_with(body, '<div id="app">')
+    expect_startswith_listed(cookie, "journal_share=")
     story.expect_viewer_status("/api/session", 200, cookie.split(";", 1)[0], text='"type": "share"')
-
-

@@ -3,6 +3,7 @@ from collections import Counter
 from pathlib import Path
 
 from tests.unit.source_tree import source_tree
+from tests.stories.support.story_checks import expect_absent_value
 
 STORY_FOLDERS = (Path(__file__).parent.parent / "modules", Path(__file__).parent.parent / "base")
 STORY_CALLS = {"run", "expect_success", "expect_refusal", "expect_usage_error", "expect_absent", "new_row_id"}
@@ -30,4 +31,4 @@ def test_no_command_line_is_written_out_by_hand_more_than_three_times():
     repeated = [f"{line!r} is written {count} times ({', '.join(sorted(files[line]))}): name it in tests/stories/core/support/story_lines.py, such as"
                 f" story.run(lines.NEW_ENVIRONMENT), or move it into a fixture the stories start from"
                 for line, count in totals.most_common() if count > REPEAT_LIMIT]
-    assert not repeated, "\n".join(repeated)
+    expect_absent_value(repeated)

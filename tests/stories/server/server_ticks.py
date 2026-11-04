@@ -22,10 +22,10 @@ def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenc
 def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
     story = new_story(fixture=UserJoined)
     intervals = {handler.label: (handler.interval.seconds, handler.starts_immediately) for handler in Ticker.module_handlers(ModuleFinder(story.home))}
-    assert intervals["read running outputs"] == (1, False)
-    assert intervals["agent ticks"] == (60, True)
-    assert intervals["hook pruning"] == (24 * 60 * 60, True)
-    assert intervals["phone notices"] == (60, True)
+    expect_running_outputs_intervals(intervals, (1, False))
+    expect_agent_ticks_intervals(intervals, (60, True))
+    expect_hook_pruning_intervals(intervals, (24 * 60 * 60, True))
+    expect_phone_notices_intervals(intervals, (60, True))
 
 
 def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_story):
@@ -37,3 +37,23 @@ def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_sto
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
     story.expect_text("message list --environment main", "A tick of the journal's clock cost 51 points")
+
+
+def expect_phone_notices_intervals(intervals, expected) -> None:
+    actual = intervals['phone notices']
+    assert actual == expected, actual
+
+
+def expect_hook_pruning_intervals(intervals, expected) -> None:
+    actual = intervals['hook pruning']
+    assert actual == expected, actual
+
+
+def expect_agent_ticks_intervals(intervals, expected) -> None:
+    actual = intervals['agent ticks']
+    assert actual == expected, actual
+
+
+def expect_running_outputs_intervals(intervals, expected) -> None:
+    actual = intervals['read running outputs']
+    assert actual == expected, actual

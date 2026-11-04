@@ -211,6 +211,7 @@
         "CoreNamesNoSuiteScriptDetector",
         "CoreNamesNoSuiteViewDetector",
         "StoryAssertDetector",
+        "StoryStepDuplicateDetector",
         "architecture_corpus_CorpusOnlyInItsTestsDetector"
     ],
     "parallel": 2,

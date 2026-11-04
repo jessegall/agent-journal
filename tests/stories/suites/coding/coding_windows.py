@@ -2,6 +2,7 @@ from core.base.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value_with
 
 
 def window_story(new_story) -> WindowStory:
@@ -72,11 +73,16 @@ def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story
 def test_the_coding_suite_offers_output_and_keeps_internal_renderers_private(new_story):
     story = new_story(fixture=CodingEnvironment)
     names = {window.name for window in story.container.get(SuiteWindows).windows("coding")}
-    assert "processes.output" in names
-    assert not {"questions.question", "viewer.shell"} & names
+    expect_value_with(names, "processes.output")
+    expect_absent_questions_viewer_names("questions.question", "viewer.shell", names)
 
 
 def test_agent_dropdowns_declare_that_they_need_one_agent(new_story):
     window = window_story(new_story)
     for name in ("schedules.jobs", "usage.fitness", "usage.load"):
         window.expect_declared_window(name, "component", "dropdown", "one-agent")
+
+
+def expect_absent_questions_viewer_names(text, text_2, names) -> None:
+    actual = {text, text_2} & names
+    assert not actual, actual

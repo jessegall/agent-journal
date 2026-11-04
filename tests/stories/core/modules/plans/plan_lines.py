@@ -14,6 +14,7 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line
+from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
 
 
 def task_end(task_id):
@@ -51,8 +52,8 @@ def closed_lines(story, task_id):
 
 def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(completed_cart_phase):
     story, lines = completed_cart_phase
-    assert [line for line in lines if "task:2" in line] == ["back to task:2: carry on, close it, or release it"]
-    assert "plan 1: phase Build done" in lines
+    expect_lines_3(lines, "task:2", ["back to task:2: carry on, close it, or release it"])
+    expect_value_with(lines, "plan 1: phase Build done")
 
 
 def test_a_checkpoint_phase_says_to_wait_for_the_users_word(new_story):
@@ -70,8 +71,8 @@ def test_a_plan_whose_tasks_cannot_start_says_so(started_cart_plan):
     story = started_cart_plan
     story.run('task block 2 --reason "waits for a key"')
     lines = closed_lines(story, 1)
-    assert "plan 1: no task can start; 1 wait or are blocked" in lines
-    assert "plan 1: phase Build done" in lines
+    expect_value_with(lines, "plan 1: no task can start; 1 wait or are blocked")
+    expect_value_with(lines, "plan 1: phase Build done")
 
 
 def test_a_task_refused_its_close_says_nothing(started_cart_plan):
@@ -121,7 +122,7 @@ def test_a_plan_with_a_task_still_in_hand_is_not_stalled(started_cart_plan):
     story.run("phase place 3 --phase 1")
     story.expect_success("task start 3", "state: started", actor=story.agent)
     lines = closed_lines(story, 1)
-    assert not any("no task can start" in line for line in lines), lines
+    expect_value_without_line(lines, "no task can start")
 
 
 def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_story):

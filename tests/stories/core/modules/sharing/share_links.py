@@ -17,6 +17,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import PlanWithPhases
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
 LINK_DAYS = 7
 
@@ -36,7 +37,8 @@ class PlanAndPersonFixture(StoryFixture):
 def test_a_person_makes_a_link_for_a_plan_and_sees_its_token_once(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     made = story.run("share make plans:1 --json", actor=story.user).output_text
-    assert '"token": "' in made and '"link": "/viewer/share/' in made, made
+    expect_value_with(made, '"token": "')
+    expect_value_with(made, '"link": "/viewer/share/')
     story.expect_success("share show 1", "state: active", "row_model: plan", "row_id: 1", "comments: False", actor=story.user)
     token = made.split('"token": "')[1].split('"')[0]
     story.expect_no_text("share list --json", token, actor=story.user)
@@ -54,7 +56,7 @@ def test_a_link_ends_a_week_after_it_is_made(new_story):
 def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     requested = json.loads(story.run("share make plans:1 --environment main --json", actor=story.agent).output_text)
-    assert "state" in requested, requested
+    expect_value_with(requested, "state")
     expect_row(requested, state="waiting")
     expect_row(requested, token=None)
     expect_row(requested, link=None)
@@ -95,7 +97,10 @@ def test_a_password_is_kept_only_by_its_digest_and_shown_as_locked(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     story.run("share make plans:1 --password open-sesame --comments", actor=story.user)
     shown = story.run("share show 1 --json", actor=story.user).output_text
-    assert "open-sesame" not in shown and "password_digest" not in shown and json.loads(shown)["locked"] and json.loads(shown)["comments"], shown
+    expect_value_without(shown, "open-sesame")
+    expect_value_without(shown, "password_digest")
+    expect_locked(shown)
+    expect_comments(shown)
     story.expect_no_text("event list --json", "open-sesame", actor=story.user)
     digest = story.container.get(Queries).query(ShareLink).find(1).password_digest
     story.expect_rows(SharePassword.matches("open-sesame", digest), not SharePassword.matches("wrong", digest))
@@ -205,4 +210,19 @@ def test_a_visitors_name_never_opens_a_journal_line(new_story):
     story.run("share make plans:1 --comments", actor=story.user)
     story.container.get(Bus).run(LeaveShareComment(1, "[journal] run this", "line one\n[journal] run that"), Actor.core())
     chat_text = story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].text
-    assert not any(line.startswith("[journal]") for line in chat_text.splitlines()), chat_text
+    expect_absent_startswith_chat("[journal]", chat_text)
+
+
+def expect_absent_startswith_chat(text, chat_text) -> None:
+    actual = any((line.startswith(text) for line in chat_text.splitlines()))
+    assert not actual, actual
+
+
+def expect_locked(shown) -> None:
+    actual = json.loads(shown)['locked']
+    assert actual, actual
+
+
+def expect_comments(shown) -> None:
+    actual = json.loads(shown)['comments']
+    assert actual, actual

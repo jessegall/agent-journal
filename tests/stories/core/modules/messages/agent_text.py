@@ -18,7 +18,7 @@ def test_the_same_display_hook_sent_twice_makes_one_message(new_story):
     sample = HookSamples.message_display("Done.").with_fields(firing="firing-1")
     story.hook("s-1", sample)
     story.hook("s-1", sample)
-    assert messages_text(story).count("Done.") == 1
+    expect_count_messages(story, "Done.", 1)
 
 
 def test_a_text_block_that_is_not_final_makes_no_message(new_story):
@@ -30,7 +30,7 @@ def test_a_text_block_that_is_not_final_makes_no_message(new_story):
 def test_an_empty_text_block_makes_no_message(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.message_display("   "))
-    assert messages_text(story).strip() == "nothing found"
+    expect_messages(story, "nothing found")
 
 
 def expect_messages_text(story, expected) -> None:
@@ -41,3 +41,13 @@ def expect_messages_text(story, expected) -> None:
 def expect_absent_messages_text(story, expected) -> None:
     actual = messages_text(story)
     assert expected not in actual, actual
+
+
+def expect_messages(story, expected) -> None:
+    actual = messages_text(story).strip()
+    assert actual == expected, actual
+
+
+def expect_count_messages(story, text, expected) -> None:
+    actual = messages_text(story).count(text)
+    assert actual == expected, actual

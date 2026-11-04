@@ -1,5 +1,6 @@
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_outcome_with
 
 
 def test_a_setting_a_module_declares_moves_under_its_full_name_with_its_value(new_story):
@@ -41,7 +42,7 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     expect_row(outcome, code=0)
-    assert "skipped settings 12: the key moveprefs.limit is already moved for that scope" in outcome.text
+    expect_outcome_with(outcome, "skipped settings 12: the key moveprefs.limit is already moved for that scope")
     listing = story.run("setting list")
     listing.expect_text("moveprefs.limit  7")
     listing.expect_text("moveprefs.limit  9")

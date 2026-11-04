@@ -7,6 +7,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from core.testing.expect_reply import expect_reply_line
+from tests.stories.support.story_checks import expect_value_with
 
 
 def posted(line):
@@ -51,8 +52,8 @@ def test_with_empty_hands_nothing_is_named_and_the_next_task_starts(new_story):
 def test_a_stop_names_every_task_in_hand_at_once_newest_first(started_tasks):
     story = started_tasks
     refusal = story.hook("s-1", HookSamples.stop()).refusal
-    assert "task:2, task:3, task:1" in refusal
-    assert "close, release or block each" in refusal
+    expect_value_with(refusal, "task:2, task:3, task:1")
+    expect_value_with(refusal, "close, release or block each")
 
 
 @pytest.fixture

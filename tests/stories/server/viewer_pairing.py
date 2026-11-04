@@ -20,8 +20,8 @@ def paired_code(story: ServerStory) -> tuple[str, dict[str, object]]:
 def test_a_person_pairs_a_phone_with_a_short_code_and_a_link_that_carries_it(person_server):
     story = person_server
     _, pairing = paired_code(story)
-    assert CODE_SHAPE.match(str(pairing["code"])), pairing
-    assert str(pairing["link"]).endswith(f"/pair#code={pairing['code']}"), pairing
+    expect_match_code_shape(CODE_SHAPE, pairing)
+    expect_endswith_link_pairing(pairing, f"/pair#code={pairing['code']}")
     phone = story.expect_phone_paired(str(pairing["code"]))
     story.expect_viewer_status("/api/session", 200, phone, text='"type": "phone"')
 
@@ -68,3 +68,11 @@ def test_a_phone_stays_paired_when_the_server_restarts(new_story):
         story.expect_viewer_status("/api/session", 200, phone, text='"type": "phone"')
 
 
+def expect_endswith_link_pairing(pairing, text) -> None:
+    actual = str(pairing['link']).endswith(text)
+    assert actual, actual
+
+
+def expect_match_code_shape(item, pairing) -> None:
+    actual = item.match(str(pairing['code']))
+    assert actual, actual

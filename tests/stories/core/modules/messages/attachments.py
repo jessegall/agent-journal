@@ -4,6 +4,7 @@ import json
 
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_absent_last, expect_last_answer
 
 
 def attached_story(new_story):
@@ -23,29 +24,33 @@ def listed(story, flags: str = "") -> dict:
 
 def test_every_attached_file_is_listed_newest_first_with_the_counts_of_each_kind(message_attachments):
     answer = listed(message_attachments)
-    assert [row["name"] for row in answer["rows"]] == ["shop.jpg", "notes.txt", "cart.png"]
-    assert answer["counts"] == {"all": 3, "images": 2, "other": 1} and answer["is_last_page"]
-    assert answer["rows"][0]["is_image"] and not answer["rows"][1]["is_image"]
+    expect_answer_3(answer, ["shop.jpg", "notes.txt", "cart.png"])
+    expect_counts_answer_2(answer, {"all": 3, "images": 2, "other": 1})
+    expect_last_answer(answer)
+    expect_image_answer(answer)
+    expect_absent_image_answer(answer)
 
 
 def test_the_kinds_keep_images_or_the_rest(message_attachments):
     story = message_attachments
-    assert [row["name"] for row in listed(story, "--kind images")["rows"]] == ["shop.jpg", "cart.png"]
-    assert [row["name"] for row in listed(story, "--kind other")["rows"]] == ["notes.txt"]
+    expect_listed_2(story, "--kind images", ["shop.jpg", "cart.png"])
+    expect_listed_2(story, "--kind other", ["notes.txt"])
 
 
 def test_a_search_finds_a_file_by_its_name_or_its_message_and_counts_only_what_it_found(message_attachments):
     story = message_attachments
-    assert [row["name"] for row in listed(story, "--search notes")["rows"]] == ["notes.txt"]
+    expect_listed_2(story, "--search notes", ["notes.txt"])
     answer = listed(story, '--search "the shop"')
-    assert [row["name"] for row in answer["rows"]] == ["shop.jpg"] and answer["counts"]["all"] == 1
+    expect_answer_3(answer, ["shop.jpg"])
+    expect_counts_answer(answer, 1)
 
 
 def test_files_are_paged(message_attachments):
     story = message_attachments
     first = listed(story, "--limit 2")
-    assert len(first["rows"]) == 2 and not first["is_last_page"]
-    assert [row["name"] for row in listed(story, "--limit 2 --skip 2")["rows"]] == ["cart.png"]
+    expect_value_6(first, 2)
+    expect_absent_last(first)
+    expect_listed_2(story, "--limit 2 --skip 2", ["cart.png"])
 
 
 def test_the_window_declares_its_read(new_story):
@@ -55,3 +60,38 @@ def test_the_window_declares_its_read(new_story):
 @pytest.fixture
 def message_attachments(new_story):
     return attached_story(new_story)
+
+
+def expect_listed_2(story, text, expected) -> None:
+    actual = [row['name'] for row in listed(story, text)['rows']]
+    assert actual == expected, actual
+
+
+def expect_value_6(first, expected) -> None:
+    actual = len(first['rows'])
+    assert actual == expected, actual
+
+
+def expect_answer_3(answer, expected) -> None:
+    actual = [row['name'] for row in answer['rows']]
+    assert actual == expected, actual
+
+
+def expect_counts_answer(answer, expected) -> None:
+    actual = answer['counts']['all']
+    assert actual == expected, actual
+
+
+def expect_image_answer(answer) -> None:
+    actual = answer['rows'][0]['is_image']
+    assert actual, actual
+
+
+def expect_absent_image_answer(answer) -> None:
+    actual = answer['rows'][1]['is_image']
+    assert not actual, actual
+
+
+def expect_counts_answer_2(answer, expected) -> None:
+    actual = answer['counts']
+    assert actual == expected, actual

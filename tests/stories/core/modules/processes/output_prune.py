@@ -13,7 +13,8 @@ def test_outputs_past_the_number_kept_are_pruned_oldest_first_and_their_folders_
     story, number = pruned_short_outputs
     story.expect_success("output show 2", "state: kept", actor=story.agent)
     story.expect_success("output show 3", "state: kept", actor=story.agent)
-    assert story.container.get(OutputFolder).line(1) == "" and story.container.get(OutputFolder).line(3) == "make step2"
+    expect_value_11(story, 1, "")
+    expect_value_11(story, 3, "make step2")
 
 
 def test_an_output_is_kept_its_minutes_whatever_the_count_says(new_story):
@@ -76,3 +77,8 @@ def last_ended_output(new_story):
     end_run(story, long_run, "all passed\n")
     story.expect_success(f"output show {long_run.id}", "state: kept", actor=story.agent)
     return story, long_run, number
+
+
+def expect_value_11(story, number, expected) -> None:
+    actual = story.container.get(OutputFolder).line(number)
+    assert actual == expected, actual

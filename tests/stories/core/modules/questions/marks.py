@@ -63,7 +63,8 @@ def test_a_failed_ask_shows_no_mark(new_story):
 def test_the_question_mark_is_declared_as_a_process_in_its_family(new_story):
     story = new_story(fixture=BuilderStarted)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "questions.question")
-    assert mark.family == "questions.questions" and mark.process
+    expect_family_mark(mark, "questions.questions")
+    expect_process_mark(mark)
 
 
 class AgentQuestion(StoryFixture):
@@ -78,3 +79,13 @@ class PersonQuestion(StoryFixture):
 
     def steps(self, story):
         with_question(story)
+
+
+def expect_family_mark(mark, expected) -> None:
+    actual = mark.family
+    assert actual == expected, actual
+
+
+def expect_process_mark(mark) -> None:
+    actual = mark.process
+    assert actual, actual

@@ -4,6 +4,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTriggers, RunSignal, extra_command_runner
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from tests.stories.support.story_checks import expect_command_folder_chosen
 
 
 def test_command_folder_and_printed_output_save_in_the_live_viewer(new_story, tmp_path):
@@ -20,4 +21,4 @@ def test_command_folder_and_printed_output_save_in_the_live_viewer(new_story, tm
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
     marker.wait()
-    assert (command_folder / "chosen.txt").read_text().strip() == str(command_folder)
+    expect_command_folder_chosen(command_folder, "chosen.txt", str(command_folder))

@@ -3,6 +3,7 @@ import json
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value
 
 
 def inspected(story, task_id):
@@ -19,7 +20,7 @@ def test_the_inspector_reads_a_task_with_what_it_waits_on_and_its_log_in_one_ans
     answer = inspected(story, 1)
     expect_row(answer, title="Fix the cart", brief="The total adds up", state="open", priority=200)
     expect_row(answer, waits=[{"id": 2, "title": "Fix the totals", "state": "open"}])
-    assert [log["line"] for log in answer["logs"]] == ["Found the rounding", "Wrote the test"]
+    expect_log_logs_answer(answer, ["Found the rounding", "Wrote the test"])
 
 
 def test_the_inspector_shows_why_a_task_stopped_and_how_it_ended(new_story):
@@ -41,7 +42,7 @@ def test_a_tasks_place_names_its_plan_and_phase(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
     story.run("phase place 1 --phase 2", actor=story.agent)
     place = json.loads(story.run("plan place 1 --json", actor=story.user).output_text)
-    assert place == {"plan_id": 1, "plan_title": "Checkout", "phase_number": 2, "phase_total": 2, "phase_title": "Second"}
+    expect_value(place, {"plan_id": 1, "plan_title": "Checkout", "phase_number": 2, "phase_total": 2, "phase_title": "Second"})
 
 
 def test_a_task_in_no_plan_has_no_place(new_story):
@@ -73,3 +74,8 @@ def test_the_tasks_window_and_the_shell_may_read_and_change_a_task(new_story):
     window.expect_window_allowed("viewer.shell", "plan place 1")
     window.expect_window_allowed("viewer.shell", "plan inspect 1")
     window.expect_window_allowed("viewer.shell", "task edit 1 --priority high")
+
+
+def expect_log_logs_answer(answer, expected) -> None:
+    actual = [log['line'] for log in answer['logs']]
+    assert actual == expected, actual

@@ -18,6 +18,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask,
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_reply import expect_absent_reply_refusal
+from tests.stories.support.story_checks import expect_id_cancelled
 
 
 def delegated_story(new_story):
@@ -268,7 +269,7 @@ def test_releasing_a_worker_gives_its_delegated_tasks_back(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_success(f'worker release {worker.id} "not needed"', actor=story.agent)
     story.expect_text("task show 1", "state: open", actor=story.agent)
-    assert "delegated_to" not in story.run("task show 2", actor=story.agent).output_text or "delegated_to: None" in story.run("task show 2", actor=story.agent).output_text
+    expect_delegated("delegated_to", story, "task show 2", "delegated_to: None", "task show 2")
 
 
 def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
@@ -283,7 +284,7 @@ def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(ne
     story.expect_success("task depend 2 --on 1", actor=story.agent)
     tasks = story.container.get(TaskQuery)
     story.expect_success("task test 1", actor=worker)
-    assert tasks.next_delegated(worker.id).id == 2
+    expect_id_next_delegated(tasks, worker, 2)
     story.expect_success("task start 2", actor=worker)
 
 
@@ -293,27 +294,29 @@ def test_a_plan_hands_out_only_its_tasks_that_no_worker_was_given(new_story):
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "First" --goal "It counts"', actor=story.agent)
     story.expect_success(f"phase place 2 --phase {phase_id}", actor=story.agent)
     plans = story.container.get(NextPlanTasks)
-    assert plans.following(plan_id) is None
+    expect_following_plans_2(plans, plan_id, None)
     free_id = story.new_row_id('task make "Fix the till" --environment main', actor=story.agent)
     story.expect_success(f"phase place {free_id} --phase {phase_id}", actor=story.agent)
-    assert plans.following(plan_id) == free_id
+    expect_following_plans(plans, plan_id, free_id)
 
 
 def test_the_assigner_leaves_a_delegated_task_alone(new_story):
     story, _, _ = delegated_story(new_story)
     tasks = story.container.get(TaskQuery)
-    assert tasks.next_open(1, None, IsNull("closed_at")) is None
+    expect_next_open_tasks(tasks, 1, "closed_at", None)
 
 
 def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apart_from_the_states(new_story):
     story, _, worker = delegated_story(new_story)
     story.run('task make "My own job" --environment main', actor=story.agent)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
-    assert [row["id"] for row in groups["delegated"]["rows"]] == [2, 1] and groups["delegated"]["total"] == 2
-    assert {row["delegated_to"] for row in groups["delegated"]["rows"]} == {worker.id}
-    assert groups["started"]["total"] == 0 and [row["id"] for row in groups["open"]["rows"]] == [3]
+    expect_id_delegated_groups(groups, [2, 1])
+    expect_total_delegated_groups(groups, 2)
+    expect_delegated_groups(groups, {worker.id})
+    expect_total_started_groups(groups, 0)
+    expect_id_open_groups(groups, [3])
     page = json.loads(story.run("task board --environment main --state delegated --before-id 2 --json", actor=story.user).output_text)["groups"][0]
-    assert [row["id"] for row in page["rows"]] == [1]
+    expect_id_cancelled(page, [1])
 
 
 def test_a_dispatch_with_no_model_is_refused(new_story):
@@ -327,3 +330,53 @@ def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(ne
     repository_environment(story)
     worker = story.new_row_id("worker dispatch --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
     story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-medior"', '"given_name": "Lovelace"', actor=story.agent)
+
+
+def expect_total_started_groups(groups, expected) -> None:
+    actual = groups['started']['total']
+    assert actual == expected, actual
+
+
+def expect_id_open_groups(groups, expected) -> None:
+    actual = [row['id'] for row in groups['open']['rows']]
+    assert actual == expected, actual
+
+
+def expect_delegated_groups(groups, expected) -> None:
+    actual = {row['delegated_to'] for row in groups['delegated']['rows']}
+    assert actual == expected, actual
+
+
+def expect_id_delegated_groups(groups, expected) -> None:
+    actual = [row['id'] for row in groups['delegated']['rows']]
+    assert actual == expected, actual
+
+
+def expect_total_delegated_groups(groups, expected) -> None:
+    actual = groups['delegated']['total']
+    assert actual == expected, actual
+
+
+def expect_next_open_tasks(tasks, number, text, expected) -> None:
+    actual = tasks.next_open(number, None, IsNull(text))
+    assert actual is expected, actual
+
+
+def expect_following_plans(plans, plan_id, expected) -> None:
+    actual = plans.following(plan_id)
+    assert actual == expected, actual
+
+
+def expect_following_plans_2(plans, plan_id, expected) -> None:
+    actual = plans.following(plan_id)
+    assert actual is expected, actual
+
+
+def expect_id_next_delegated(tasks, worker, expected) -> None:
+    actual = tasks.next_delegated(worker.id).id
+    assert actual == expected, actual
+
+
+def expect_delegated(text, story, text_2, text_3, text_4) -> None:
+    actual = text not in story.run(text_2, actor=story.agent).output_text or text_3 in story.run(text_4, actor=story.agent).output_text
+    assert actual, actual

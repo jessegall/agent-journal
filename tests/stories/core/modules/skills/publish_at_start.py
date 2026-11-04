@@ -2,6 +2,7 @@ from core.base.change.event_log import EventLog
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import installed_story
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_absent_exists_parent_stale, expect_changed_with, expect_file_2
 
 
 def skill_file(story, folder):
@@ -13,7 +14,7 @@ def test_a_start_logs_journal_booting(new_story):
     newest_event_id = story.container.get(EventLog).newest_id()
     BootingWork().run(story.container)
     story.run_listeners()
-    assert "journal.booting" in [event.event for event in story.container.get(EventLog).events_past(newest_event_id)]
+    expect_event_events_past_with(story, newest_event_id, "journal.booting")
 
 
 def test_a_start_writes_a_declared_skill_that_is_missing(new_story):
@@ -21,7 +22,7 @@ def test_a_start_writes_a_declared_skill_that_is_missing(new_story):
     skill_file(story, "journal-messages").unlink(missing_ok=True)
     BootingWork().run(story.container)
     story.run_listeners()
-    assert skill_file(story, "journal-messages").is_file()
+    expect_file_skill(story, "journal-messages")
 
 
 def test_a_start_replaces_a_skill_whose_text_went_stale(new_story):
@@ -31,7 +32,7 @@ def test_a_start_replaces_a_skill_whose_text_went_stale(new_story):
     stale_file.write_text("old words")
     BootingWork().run(story.container)
     story.run_listeners()
-    assert "old words" not in stale_file.read_text()
+    expect_stale_file_without(stale_file, "old words")
 
 
 def test_a_start_removes_a_journal_skill_no_module_declares(new_story):
@@ -41,7 +42,7 @@ def test_a_start_removes_a_journal_skill_no_module_declares(new_story):
     stale_file.write_text("old words")
     BootingWork().run(story.container)
     story.run_listeners()
-    assert not stale_file.parent.exists()
+    expect_absent_exists_parent_stale(stale_file)
 
 
 def test_a_start_leaves_a_skill_that_is_not_the_journals(new_story):
@@ -51,7 +52,7 @@ def test_a_start_leaves_a_skill_that_is_not_the_journals(new_story):
     own_file.write_text("my words")
     BootingWork().run(story.container)
     story.run_listeners()
-    assert own_file.read_text() == "my words"
+    expect_file_2(own_file, "my words")
 
 
 def test_a_start_republishes_the_skills_of_a_plugin_that_is_on(new_story):
@@ -60,7 +61,7 @@ def test_a_start_republishes_the_skills_of_a_plugin_that_is_on(new_story):
     stale_file.write_text("old words")
     BootingWork().run(story.container)
     story.run_listeners()
-    assert "plugin: sample" in stale_file.read_text()
+    expect_changed_with(stale_file, "plugin: sample")
 
 
 def test_a_start_does_not_bring_back_the_skills_of_a_plugin_that_is_off(new_story):
@@ -68,4 +69,24 @@ def test_a_start_does_not_bring_back_the_skills_of_a_plugin_that_is_off(new_stor
     story.run("plugin disable sample", actor=story.user)
     BootingWork().run(story.container)
     story.run_listeners()
-    assert not skill_file(story, "sample-rules").exists()
+    expect_absent_exists_skill_file(story, "sample-rules")
+
+
+def expect_absent_exists_skill_file(story, text) -> None:
+    actual = skill_file(story, text).exists()
+    assert not actual, actual
+
+
+def expect_stale_file_without(stale_file, expected) -> None:
+    actual = stale_file.read_text()
+    assert expected not in actual, actual
+
+
+def expect_file_skill(story, text) -> None:
+    actual = skill_file(story, text).is_file()
+    assert actual, actual
+
+
+def expect_event_events_past_with(story, newest_event_id, expected) -> None:
+    actual = [event.event for event in story.container.get(EventLog).events_past(newest_event_id)]
+    assert expected in actual, actual

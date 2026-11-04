@@ -11,7 +11,7 @@ def test_an_ended_worker_waiting_for_a_job_shows_in_the_idle_agents_list(new_sto
     story.expect_success('task cancel 1 --reason "Withdrawn"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     idle = json.loads(story.run("agent cards --environment main --show idle --json", actor=story.agent).output_text)["rows"]
-    assert [row["id"] for row in idle] == [worker.id]
+    expect_id_cards(idle, [worker.id])
 
 
 def test_the_agent_cards_list_a_worker_and_never_the_main_agent(new_story):
@@ -19,10 +19,15 @@ def test_the_agent_cards_list_a_worker_and_never_the_main_agent(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     cards = json.loads(story.run("agent cards --environment main --show all --json", actor=story.agent).output_text)["rows"]
-    assert [row["id"] for row in cards] == [worker.id]
+    expect_id_cards(cards, [worker.id])
 
 
 def test_the_agent_cards_list_a_subagent_and_never_the_main_agent(new_story):
     story = new_story(fixture=SubagentStarted)
     cards = json.loads(story.run("agent cards --environment main --show all --json", actor=story.agent).output_text)["rows"]
-    assert [row["id"] for row in cards] == [story.subagent.id]
+    expect_id_cards(cards, [story.subagent.id])
+
+
+def expect_id_cards(cards, expected) -> None:
+    actual = [row['id'] for row in cards]
+    assert actual == expected, actual

@@ -20,9 +20,9 @@ def test_the_counts_keep_the_average_and_slowest_of_each_hook_and_sort_by_the_sl
     counts.add("stop", 4)
     counts.add("stop", 6)
     counts.add("prompt", 20)
-    assert numbers(story)[1] == {"id": "stop", "hook": "stop", "count": 2, "most_points": 6, "average_points": 5}
-    assert [row["hook"] for row in numbers(story)] == ["prompt", "stop"]
-    assert [row["hook"] for row in numbers(story, "--slowest ")] == ["prompt", "stop"]
+    expect_numbers_2(story, {"id": "stop", "hook": "stop", "count": 2, "most_points": 6, "average_points": 5})
+    expect_hook_numbers_2(story, ["prompt", "stop"])
+    expect_hook_numbers(story, "--slowest ", ["prompt", "stop"])
 
 
 def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
@@ -55,4 +55,19 @@ def test_a_reset_starts_the_counts_again_and_the_window_may_read_and_reset(new_s
 
 def expect_numbers(story, expected, flags="") -> None:
     actual = numbers(story, flags)
+    assert actual == expected, actual
+
+
+def expect_hook_numbers(story, text, expected) -> None:
+    actual = [row['hook'] for row in numbers(story, text)]
+    assert actual == expected, actual
+
+
+def expect_hook_numbers_2(story, expected) -> None:
+    actual = [row['hook'] for row in numbers(story)]
+    assert actual == expected, actual
+
+
+def expect_numbers_2(story, expected) -> None:
+    actual = numbers(story)[1]
     assert actual == expected, actual

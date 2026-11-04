@@ -11,6 +11,7 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
+from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
@@ -50,8 +51,8 @@ def digest_of(story, skill: str) -> str:
 def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which_default_to_the_three(started_skill_environment):
     story = started_skill_environment
     skill_lines = due_lines(story)
-    assert all(f"  {folder}  due" in skill_lines for folder in DEFAULTS)
-    assert all(f"  {folder}  due" not in skill_lines for folder in ("journal-notes", "journal-chores"))
+    expect_defaults(skill_lines, DEFAULTS)
+    expect_journal_notes_chores(skill_lines, "journal-notes", "journal-chores")
 
 
 def test_the_session_start_setting_names_the_skills_instead(skill_environment):
@@ -128,8 +129,8 @@ def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(task_skill
 def test_a_skill_already_loaded_at_the_same_digest_is_never_due(prompt_skill_loaded):
     story = prompt_skill_loaded
     skill_lines = due_lines(story)
-    assert "  journal-notes  due" not in skill_lines
-    assert f"journal-notes  {digest_of(story, 'journal-notes')}  loaded" in skill_lines
+    expect_value_without(skill_lines, "  journal-notes  due")
+    expect_value_with(skill_lines, f"journal-notes  {digest_of(story, 'journal-notes')}  loaded")
 
 
 @pytest.fixture
@@ -178,3 +179,13 @@ def task_skill_loaded(started_skill_environment):
     story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()
     return story
+
+
+def expect_journal_notes_chores(skill_lines, text, text_2) -> None:
+    actual = all((f'  {folder}  due' not in skill_lines for folder in (text, text_2)))
+    assert actual, actual
+
+
+def expect_defaults(skill_lines, item) -> None:
+    actual = all((f'  {folder}  due' in skill_lines for folder in item))
+    assert actual, actual

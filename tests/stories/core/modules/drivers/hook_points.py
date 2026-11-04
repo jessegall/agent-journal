@@ -12,6 +12,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
 from tests.stories.core.modules.processes.support.process_samples import moved_run
+from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_value_more
 
 ROW_COUNT = 40
 READS_MEASURED = 60
@@ -40,7 +41,7 @@ def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_t
     start = database.tally.points()
     story.hook("s-1", SAMPLES["post_tool_use"])
     cost = database.tally.points().minus(start)
-    assert cost.total < HOOK_LIMIT_POINTS, f"{cost.total} points ({cost.line()}): {cost.statements.most_common(10)}"
+    expect_total_cost_less(cost, HOOK_LIMIT_POINTS)
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
@@ -51,7 +52,7 @@ def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_
         cost = database.tally.points().minus(start)
         if cost.total >= HOOK_LIMIT_POINTS:
             over[name] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
-    assert not over, "\n".join(f"{name}: {line}" for name, line in over.items())
+    expect_absent_value(over)
 
 
 def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(filled_hook_points):
@@ -68,8 +69,8 @@ def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_
             if cost.total >= HOOK_LIMIT_POINTS:
                 over[line] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
             break
-    assert measured > READS_MEASURED, f"only {measured} reads ran"
-    assert not over, "\n".join(f"{line}: {text}" for line, text in over.items())
+    expect_value_more(measured, READS_MEASURED)
+    expect_absent_value(over)
 
 
 @pytest.fixture

@@ -19,6 +19,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
+from tests.stories.support.story_checks import expect_requests_launcher
 
 MAIN_SESSION = "s-1"
 BUILT_FILE = "app/web/dist/chat.js"
@@ -85,7 +86,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_text(f"agent-line list --agent {worker.id}", f"{ENVIRONMENT_BRANCH} is merged into your worktree and clashes on cart.py: settle the markers there, then journal worker deliver")
-    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "cart.py").read_text()
+    expect_worktree_folder_repository_with(repository, worker, "cart.py", "<<<<<<<")
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
@@ -115,8 +116,8 @@ def test_a_clash_of_committed_work_with_a_moved_base_leaves_the_uncommitted_chan
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
-    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "cart.py").read_text()
-    assert (repository.worktree_folder(worker.id) / "extra.py").read_text() == "EXTRA = 1\n"
+    expect_worktree_folder_repository_with(repository, worker, "cart.py", "<<<<<<<")
+    expect_worktree_folder_repository_2(repository, worker, "extra.py", "EXTRA = 1\n")
     repository.expect_no_stash()
 
 
@@ -131,7 +132,7 @@ def test_uncommitted_changes_that_clash_with_a_moved_base_go_back_to_the_worker_
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_text(f"worker merge {worker.id}", "clashed on tax.py", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "tax.py").read_text()
+    expect_worktree_folder_repository_with(repository, worker, "tax.py", "<<<<<<<")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     repository.expect_no_stash()
 
@@ -146,7 +147,7 @@ def test_uncommitted_changes_whose_stash_cannot_apply_stay_in_the_stash_and_refu
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", "git stash apply failed", actor=story.agent)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
-    assert subprocess.run(["git", "stash", "list"], cwd=repository.worktree_folder(worker.id), capture_output=True, text=True).stdout.strip()
+    expect_stdout_subprocess("git", "stash", "list", repository, worker)
 
 
 def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_base_branch(new_story):
@@ -198,7 +199,7 @@ def test_a_job_for_a_worker_comes_on_the_latest_of_its_base_branch(new_story):
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("tax.py", "TAX = 21\n", "The tax")
     story.expect_success(f'worker send {worker.id} "one more thing"', actor=story.agent)
-    assert (repository.worktree_folder(worker.id) / "tax.py").read_text() == "TAX = 21\n"
+    expect_worktree_folder_repository_2(repository, worker, "tax.py", "TAX = 21\n")
 
 
 def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_each_hour_and_goes_through_once_it_is_back(new_story):
@@ -261,8 +262,8 @@ def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_s
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     story.run_listeners()
     launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
-    assert "--resume" in launcher.requests[-1]["command"]
-    assert any("clashes on cart.py" in word for word in launcher.requests[-1]["command"])
+    expect_command_requests_launcher_with(launcher, 1, "--resume")
+    expect_command_requests_launcher_line_2(launcher, 1, "clashes on cart.py")
     story.expect_text(f"agent-line list --agent {worker.id}", "entered")
 
 
@@ -309,7 +310,7 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.run_listeners()
     launcher.thread.join(10)
     story.expect_rows(len(launcher.requests) == 2)
-    assert any("And the receipt" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
+    expect_command_requests_launcher_line(launcher, "And the receipt")
 
 
 def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_one_reads_it_at_its_next_hook(new_story):
@@ -331,7 +332,7 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
     story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
     launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
-    assert "--resume" in launcher.requests[-1]["command"]
+    expect_command_requests_launcher_with(launcher, 1, "--resume")
 
 
 def test_a_worker_with_no_worktree_is_not_sent_a_job(new_story):
@@ -371,7 +372,7 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
     story.advance(timedelta(seconds=1))
     story.run(f'worker send {worker.id} "Second job"', actor=story.agent)
     story.run_listeners()
-    assert len(launcher.requests) == 1
+    expect_requests_launcher(launcher, 1)
     story.expect_text(f"agent-line list --agent {worker.id}", "Second job", "waiting")
 
 
@@ -419,7 +420,7 @@ def test_a_job_refused_because_the_program_still_runs_starts_the_worker_when_the
     WorkerResumeRetry()(story.container)
     launcher.thread.join(10)
     story.expect_rows(len(launcher.requests) == 2)
-    assert any("Add the tax as well" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
+    expect_command_requests_launcher_line(launcher, "Add the tax as well")
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "entered")
     WorkerResumeRetry()(story.container)
     story.expect_rows(len(launcher.requests) == 2)
@@ -439,4 +440,34 @@ def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(ne
     story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent)
     launcher.thread.join(10)
     story.expect_rows(len(launcher.requests) == 2)
-    assert any("Add the tax as well" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
+    expect_command_requests_launcher_line(launcher, "Add the tax as well")
+
+
+def expect_command_requests_launcher_line(launcher, expected) -> None:
+    actual = launcher.requests[1]['command']
+    assert any(expected in line for line in actual), actual
+
+
+def expect_command_requests_launcher_with(launcher, number, expected) -> None:
+    actual = launcher.requests[-number]['command']
+    assert expected in actual, actual
+
+
+def expect_command_requests_launcher_line_2(launcher, number, expected) -> None:
+    actual = launcher.requests[-number]['command']
+    assert any(expected in line for line in actual), actual
+
+
+def expect_worktree_folder_repository_2(repository, worker, text, expected) -> None:
+    actual = (repository.worktree_folder(worker.id) / text).read_text()
+    assert actual == expected, actual
+
+
+def expect_stdout_subprocess(text, text_2, text_3, repository, worker) -> None:
+    actual = subprocess.run([text, text_2, text_3], cwd=repository.worktree_folder(worker.id), capture_output=True, text=True).stdout.strip()
+    assert actual, actual
+
+
+def expect_worktree_folder_repository_with(repository, worker, text, expected) -> None:
+    actual = (repository.worktree_folder(worker.id) / text).read_text()
+    assert expected in actual, actual

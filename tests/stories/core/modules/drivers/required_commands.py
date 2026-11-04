@@ -19,6 +19,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value_with
 
 EDIT_HOOK = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
@@ -59,17 +60,17 @@ def test_a_line_that_names_its_command_opens_one_block_however_often_it_is_said(
 def test_the_tool_uses_count_down_and_the_last_three_say_so(counted_required_command):
     story, _, hooks = counted_required_command
     countdown_lines = [[line for line in hook.lines if "due:" in line] for hook in hooks]
-    assert [bool(lines) for lines in countdown_lines] == [False, False, True, True, True]
-    assert "title output 1 due: 2 tool uses" in countdown_lines[2][0]
-    assert "title output 1 due: 0 tool uses" in countdown_lines[4][0]
-    assert not any(hook.refusal for hook in hooks)
+    expect_bool_countdown_lines(countdown_lines, [False, False, True, True, True])
+    expect_countdown_lines_with_2(countdown_lines, "title output 1 due: 2 tool uses")
+    expect_countdown_lines_with(countdown_lines, "title output 1 due: 0 tool uses")
+    expect_absent_refusal_hook_hooks(hooks)
 
 
 def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(counted_required_command):
     story, process, _ = counted_required_command
     refusal = story.hook("s-1", EDIT_HOOK).refusal
-    assert f"title output {process.id} is due" in refusal
-    assert f"journal agent-block skip {TITLE_BLOCK} --reason" in refusal
+    expect_value_with(refusal, f"title output {process.id} is due")
+    expect_value_with(refusal, f"journal agent-block skip {TITLE_BLOCK} --reason")
 
 
 def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(required_command_limit):
@@ -110,7 +111,8 @@ def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
 
 def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(grace_countdown):
     story, refusal, countdown, first, second, third = grace_countdown
-    assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines
+    expect_lines_with_2(first, "fee due: 1 tool uses")
+    expect_lines_with_2(second, "fee due: 0 tool uses")
     expect_row(third, refusal="pay the 1 fee: journal agent-block skip 1 --reason '<why>'")
 
 
@@ -140,3 +142,28 @@ def grace_countdown(new_story):
     story.container.get(Bus).run(BlockUntil(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
     first, second, third = spend(story, 3)
     return story, refusal, countdown, first, second, third
+
+
+def expect_lines_with_2(first, expected) -> None:
+    actual = first.lines
+    assert expected in actual, actual
+
+
+def expect_absent_refusal_hook_hooks(hooks) -> None:
+    actual = any((hook.refusal for hook in hooks))
+    assert not actual, actual
+
+
+def expect_countdown_lines_with(countdown_lines, expected) -> None:
+    actual = countdown_lines[4][0]
+    assert expected in actual, actual
+
+
+def expect_countdown_lines_with_2(countdown_lines, expected) -> None:
+    actual = countdown_lines[2][0]
+    assert expected in actual, actual
+
+
+def expect_bool_countdown_lines(countdown_lines, expected) -> None:
+    actual = [bool(lines) for lines in countdown_lines]
+    assert actual == expected, actual

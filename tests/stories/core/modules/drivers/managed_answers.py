@@ -8,6 +8,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import REMOVAL, SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
+from tests.stories.support.story_checks import expect_refusal_reply, expect_updated_input_reply
 
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))
 
@@ -19,7 +20,7 @@ def managed(sample, answer):
 def test_a_project_hook_refuses_a_tool_and_the_call_names_it(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"refusal": "unsafe"}))
-    assert reply.refusal == "project-check: unsafe"
+    expect_refusal_reply(reply, "project-check: unsafe")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "refused", "project-check")
 
 
@@ -36,7 +37,7 @@ def test_a_project_hook_allow_does_not_override_a_journal_refusal(new_story):
 def test_a_project_hook_rewrites_the_tool_input(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"updated_input": {"command": "safe"}}))
-    assert dict(reply.updated_input) == {"command": "safe"}
+    expect_updated_input_reply(reply, {"command": "safe"})
 
 
 def test_two_rewriters_are_refused_by_name(new_story):
@@ -64,4 +65,9 @@ def test_project_context_is_dropped_on_an_event_without_lines(new_story):
     expect_absent_reply_line(reply, "project guidance")
     call = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
     rules = call.metadata.module_part(DRIVERS_MODULE)["rules"]
-    assert any(rule.get("rule") == "drivers.managed-hooks" and rule.get("dropped_lines") == 1 for rule in rules)
+    expect_rule_rules("rule", "drivers.managed-hooks", "dropped_lines", 1, rules)
+
+
+def expect_rule_rules(text, text_2, text_3, number, rules) -> None:
+    actual = any((rule.get(text) == text_2 and rule.get(text_3) == number for rule in rules))
+    assert actual, actual

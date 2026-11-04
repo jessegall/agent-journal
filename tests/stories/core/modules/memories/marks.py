@@ -8,13 +8,10 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_row import expect_row
+from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text, marks_text
 
 FACT = 'memory make "The cart total is in cents" --type fact --environment main'
 CART_EDIT = HookSamples.edit("src/cart.py")
-
-
-def marks_text(story) -> str:
-    return story.run("chat-mark list --environment 1 --oldest").output_text
 
 
 def shown_after_commit(story, line: str, text: str, actor=None) -> None:
@@ -55,7 +52,8 @@ def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
     starting_count = mark_count(story)
     story.hook("s-1", HookSamples.sample("compact"))
     story.run_listeners()
-    assert mark_count(story) > starting_count and "Memories faded by one: 1 of 2 still shown" in marks_text(story), marks_text(story)
+    expect_mark_count_more(story, starting_count)
+    expect_marks_text(story, "Memories faded by one: 1 of 2 still shown")
 
 
 def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
@@ -125,11 +123,6 @@ def fact_memory(new_story):
     return story, memory_id
 
 
-def expect_marks_text(story, expected) -> None:
-    actual = marks_text(story)
-    assert expected in actual, actual
-
-
-def expect_absent_marks_text(story, expected) -> None:
-    actual = marks_text(story)
-    assert expected not in actual, actual
+def expect_mark_count_more(story, expected) -> None:
+    actual = mark_count(story)
+    assert actual > expected, actual

@@ -14,6 +14,7 @@ from tests.stories.core.modules.chat.support.mark_samples import mark_count, mar
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_output
 
 
 def test_a_task_started_shows_a_mark_after_the_commit(new_story):
@@ -59,7 +60,7 @@ def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     starting_text = story.run("task show 1").output_text
     story.expect_success("dock add tasks.task task 1 --environment main", actor=story.user)
-    assert story.run("task show 1").output_text == starting_text
+    expect_output(story, "task show 1", starting_text)
 
 
 def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):

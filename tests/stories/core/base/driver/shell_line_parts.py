@@ -32,30 +32,85 @@ def test_a_line_that_skips_the_saved_commands_is_no_full_test_run():
 
 
 def test_a_chain_tests_when_any_of_its_parts_tests_whichever_comes_first():
-    assert line_of("cat notes && pytest -q", LISTING, TESTING).has_test_run_part
-    assert line_of("pytest -q && cat notes", TESTING, LISTING).has_test_run_part
-    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_test_run_part
+    expect_test_part("cat notes && pytest -q", LISTING, TESTING)
+    expect_test_part("pytest -q && cat notes", TESTING, LISTING)
+    expect_absent_test_part("cat notes && grep cart", LISTING, SEARCHING)
 
 
 def test_a_chain_builds_or_writes_when_any_of_its_parts_does():
-    assert line_of("cat notes && make", LISTING, BUILDING).has_build_part
-    assert line_of("cat notes && sed -i", LISTING, EDITING).has_part_writing_files
-    assert not line_of("cat notes && grep cart", LISTING, SEARCHING).has_part_writing_files
+    expect_build_part("cat notes && make", LISTING, BUILDING)
+    expect_part_writing_files_2("cat notes && sed -i", LISTING, EDITING)
+    expect_absent_part_writing_files("cat notes && grep cart", LISTING, SEARCHING)
 
 
 def test_a_redirect_makes_a_chain_write():
-    assert line_of("cat notes", LISTING, redirects=["> copy.txt"]).has_part_writing_files
+    expect_part_writing_files("cat notes", LISTING, "> copy.txt")
 
 
 def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).is_readonly
-    assert not line_of("cat notes && pytest -q", LISTING, TESTING).is_readonly
-    assert not line_of("cat notes", LISTING, redirects=["> copy.txt"]).is_readonly
-    assert line_of("cat notes", LISTING, redirects=["2>&1"]).is_readonly
-    assert line_of("cat notes", LISTING, redirects=["2>/dev/null"]).is_readonly
-    assert line_of("cat notes", LISTING, redirects=["< input.txt"]).is_readonly
+    expect_readonly_2("cat notes && grep cart", LISTING, SEARCHING)
+    expect_absent_readonly_2("cat notes && pytest -q", LISTING, TESTING)
+    expect_absent_readonly("cat notes", LISTING, "> copy.txt")
+    expect_readonly("cat notes", LISTING, "2>&1")
+    expect_readonly("cat notes", LISTING, "2>/dev/null")
+    expect_readonly("cat notes", LISTING, "< input.txt")
 
 
 def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():
-    assert line_of("cat notes && pytest -q", LISTING, TESTING).watched_part_category is CommandCategory.TEST_RUN
-    assert line_of("cat notes && grep cart", LISTING, SEARCHING).watched_part_category is CommandCategory.READ
+    expect_watched_part_category("cat notes && pytest -q", LISTING, TESTING, CommandCategory.TEST_RUN)
+    expect_watched_part_category("cat notes && grep cart", LISTING, SEARCHING, CommandCategory.READ)
+
+
+def expect_watched_part_category(text, item, item_2, expected) -> None:
+    actual = line_of(text, item, item_2).watched_part_category
+    assert actual is expected, actual
+
+
+def expect_readonly(text, item, text_2) -> None:
+    actual = line_of(text, item, redirects=[text_2]).is_readonly
+    assert actual, actual
+
+
+def expect_absent_readonly(text, item, text_2) -> None:
+    actual = line_of(text, item, redirects=[text_2]).is_readonly
+    assert not actual, actual
+
+
+def expect_absent_readonly_2(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).is_readonly
+    assert not actual, actual
+
+
+def expect_readonly_2(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).is_readonly
+    assert actual, actual
+
+
+def expect_part_writing_files(text, item, text_2) -> None:
+    actual = line_of(text, item, redirects=[text_2]).has_part_writing_files
+    assert actual, actual
+
+
+def expect_absent_part_writing_files(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).has_part_writing_files
+    assert not actual, actual
+
+
+def expect_part_writing_files_2(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).has_part_writing_files
+    assert actual, actual
+
+
+def expect_build_part(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).has_build_part
+    assert actual, actual
+
+
+def expect_absent_test_part(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).has_test_run_part
+    assert not actual, actual
+
+
+def expect_test_part(text, item, item_2) -> None:
+    actual = line_of(text, item, item_2).has_test_run_part
+    assert actual, actual

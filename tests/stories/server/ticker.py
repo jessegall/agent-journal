@@ -9,6 +9,7 @@ from core.base.ticker.tick_interval import TickInterval
 from server.ticker import Ticker
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_answers, expect_error_log_with, expect_value, expect_wait_arrived
 
 JOIN_SECONDS = 5.0
 
@@ -72,7 +73,9 @@ def test_a_lambda_registered_on_the_ticker_runs_on_a_fresh_container_of_the_jour
     ticker, clock = ticker_of(story)
     ticker.register(TickHandler(TickInterval(seconds=1), lambda container: containers.append(container), "lambda"))
     tick_at(ticker, clock, 1)
-    assert len(containers) == 1 and isinstance(containers[0], Container) and containers[0] is not story.container
+    expect_answers(containers, 1)
+    expect_isinstance_2(containers)
+    expect_changed_containers(containers, story.container)
 
 
 def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(new_story):
@@ -88,8 +91,8 @@ def test_each_module_declares_the_handlers_it_needs_and_the_ticker_takes_them(ne
     story = new_story(fixture=UserJoined)
     declared = Ticker.module_handlers(ModuleFinder(story.home))
     names = [handler.label for handler in declared]
-    assert {"read running outputs", "agent ticks", "hook pruning", "phone notices"} <= set(names)
-    assert len(names) == len(set(names))
+    expect_value_limit_2("read running outputs", "agent ticks", "hook pruning", "phone notices", set(names))
+    expect_answers(names, len(set(names)))
 
 
 def test_a_handler_with_the_name_of_another_is_refused(new_story):
@@ -111,12 +114,12 @@ def test_a_slow_handler_runs_on_its_own_thread_and_holds_up_no_other_handler(new
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), slow, "slow"), TickHandler(TickInterval(seconds=1), quick, "quick"))
     clock.now = 1
     ticker.tick()
-    assert started.wait(JOIN_SECONDS)
+    expect_wait_arrived(started, JOIN_SECONDS)
     clock.now = 2
     ticker.tick()
     release.set()
     ticker.join(JOIN_SECONDS)
-    assert quick.runs >= 1
+    expect_runs_quick_minimum(quick, 1)
 
 
 def test_a_handler_still_running_is_not_started_again(new_story):
@@ -131,13 +134,13 @@ def test_a_handler_still_running_is_not_started_again(new_story):
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), slow, "slow"))
     clock.now = 1
     ticker.tick()
-    assert started.wait(JOIN_SECONDS)
+    expect_wait_arrived(started, JOIN_SECONDS)
     for second in (2, 3, 4):
         clock.now = second
         ticker.tick()
     release.set()
     ticker.join(JOIN_SECONDS)
-    assert runs == [1]
+    expect_value(runs, [1])
 
 
 def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
@@ -149,7 +152,9 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
 
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), broken, "broken"), TickHandler(TickInterval(seconds=1), after, "after"))
     tick_at(ticker, clock, 1)
-    assert after.runs == 1 and "ValueError: the copy broke" in story.error_log_text() and "journal broken" in story.error_log_text()
+    expect_runs_after(after, 1)
+    expect_error_log_with(story, "ValueError: the copy broke")
+    expect_error_log_with(story, "journal broken")
     tick_at(ticker, clock, 2)
     expect_row(after, runs=2)
 
@@ -159,7 +164,32 @@ def test_a_handler_that_answers_true_wakes_the_listeners_and_one_that_does_not_l
     wake_calls = []
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: wake_calls.append(True))
     tick_at(ticker, clock, 1)
-    assert wake_calls == []
+    expect_value(wake_calls, [])
     ticker.register(TickHandler(TickInterval(seconds=1), lambda container: True, "wrote"))
     tick_at(ticker, clock, 2)
-    assert wake_calls == [True]
+    expect_value(wake_calls, [True])
+
+
+def expect_runs_after(after, expected) -> None:
+    actual = after.runs
+    assert actual == expected, actual
+
+
+def expect_runs_quick_minimum(quick, expected) -> None:
+    actual = quick.runs
+    assert actual >= expected, actual
+
+
+def expect_value_limit_2(text, text_2, text_3, text_4, expected) -> None:
+    actual = {text, text_2, text_3, text_4}
+    assert actual <= expected, actual
+
+
+def expect_isinstance_2(containers) -> None:
+    actual = isinstance(containers[0], Container)
+    assert actual, actual
+
+
+def expect_changed_containers(containers, expected) -> None:
+    actual = containers[0]
+    assert actual is not expected, actual

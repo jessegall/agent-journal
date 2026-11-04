@@ -23,8 +23,18 @@ def test_a_short_run_loses_its_folder_once_it_ended_a_while_ago_and_a_kept_outpu
     running = moved_run(story, "make build", category=CommandCategory.BUILD)
     folder.write(running.id, "1.out", "building\n")
     bus.run(EndProcess(short.id, 0, 6, 1), story.agent, environment_id=1)
-    assert bus.run(PruneRunFolders(), Actor.core(), environment_id=1) == 0
-    assert folder.process_ids() == [short.id, kept.id, running.id]
+    expect_bus(bus, 1, 0)
+    expect_process_ids_folder(folder, [short.id, kept.id, running.id])
     story.advance(timedelta(minutes=11))
-    assert bus.run(PruneRunFolders(), Actor.core(), environment_id=1) == 1
-    assert folder.process_ids() == [kept.id, running.id]
+    expect_bus(bus, 1, 1)
+    expect_process_ids_folder(folder, [kept.id, running.id])
+
+
+def expect_process_ids_folder(folder, expected) -> None:
+    actual = folder.process_ids()
+    assert actual == expected, actual
+
+
+def expect_bus(bus, number, expected) -> None:
+    actual = bus.run(PruneRunFolders(), Actor.core(), environment_id=number)
+    assert actual == expected, actual

@@ -7,6 +7,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line
 
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 VITEST_RUN = "npm --prefix src/viewer run test"
@@ -24,8 +25,8 @@ def ended(new_story, line: str, text: str, category: CommandCategory):
 
 def test_a_vitest_run_with_colour_codes_gives_its_counts_as_the_summary_with_no_escape(ended_vitest):
     story, lines = ended_vitest
-    assert "output 1 ended: 12 passed" in lines
-    assert not any("\x1b" in line for line in lines)
+    expect_value_with(lines, "output 1 ended: 12 passed")
+    expect_value_without_line(lines, "\x1b")
 
 
 def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(ended_vitest):
@@ -39,7 +40,7 @@ def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(
 
 def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(ended_custom_tests):
     story, lines = ended_custom_tests
-    assert any("no reader reads check-cart.sh yet: journal reader add check-cart.sh" in line for line in lines)
+    expect_value_line(lines, "no reader reads check-cart.sh yet: journal reader add check-cart.sh")
     story.expect_absent_hook_line("s-1", NOTHING, "no reader reads")
 
 

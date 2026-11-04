@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "judges": ["tests"],
+    "find": {
+        "select": "function",
+        "where": [
+            {"fileMatches": "(^|/)(tests/stories|src/core/testing)/"},
+            {"nameMatches": "^expect_"},
+            {"duplicated": {"atLeast": 2}}
+        ]
+    },
+    "sin": {
+        "description": "Two expect steps check the same thing under different names.",
+        "name": "story-step-duplicate",
+        "rule": "Keep one step and call it from every story; a value that differs is its argument.",
+        "skill": "plain-code-words"
+    }
+}

@@ -29,8 +29,9 @@ def test_the_runs_of_a_check_are_listed_newest_first_with_what_each_printed(new_
     story.run('check edit 1 --command "echo clean"', actor=story.user)
     story.run("check run 1", actor=story.user)
     runs = json.loads(story.run("check runs 1 --json", actor=story.user).output_text)["rows"]
-    assert [run["passed"] for run in runs] == [True, False]
-    assert "clean" in runs[0]["output"] and "two problems" in runs[1]["output"]
+    expect_passed_runs(runs, [True, False])
+    expect_output_runs_with(runs, "clean")
+    expect_output_runs_with_2(runs, "two problems")
 
 
 def test_a_check_that_never_ran_has_no_runs(new_story):
@@ -80,3 +81,18 @@ class SuiteCheck(StoryFixture):
 
     def steps(self, story):
         story.run('check make "Lint" --command "echo two problems; false" --every 0', actor=story.user)
+
+
+def expect_output_runs_with(runs, expected) -> None:
+    actual = runs[0]['output']
+    assert expected in actual, actual
+
+
+def expect_output_runs_with_2(runs, expected) -> None:
+    actual = runs[1]['output']
+    assert expected in actual, actual
+
+
+def expect_passed_runs(runs, expected) -> None:
+    actual = [run['passed'] for run in runs]
+    assert actual == expected, actual

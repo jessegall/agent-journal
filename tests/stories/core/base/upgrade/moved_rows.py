@@ -1,12 +1,13 @@
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.support.story_checks import expect_value_with
 
 
 def test_each_module_that_moved_rows_logs_one_upgrade_moved_event_with_its_counts(new_story):
     story = upgraded_story(new_story)
     events = story.run("event list --json --limit 100").output_text
     for module in ("journal.core.tasks", "journal.core.questions", "journal.core.memories"):
-        assert events.count(f'"{module}"') >= 1, module
-    assert "upgrade.moved" in events
+        expect_count_events_minimum(events, f'"{module}"', 1)
+    expect_value_with(events, "upgrade.moved")
 
 
 def test_no_create_listener_runs_for_a_moved_row_so_history_announces_nothing(new_story):
@@ -17,3 +18,8 @@ def test_no_create_listener_runs_for_a_moved_row_so_history_announces_nothing(ne
     marks.expect_no_text("Ship on Friday?")
     story.expect_success("question show 2", "state: open")
     story.expect_success("review list", "nothing found")
+
+
+def expect_count_events_minimum(events, text, expected) -> None:
+    actual = events.count(text)
+    assert actual >= expected, actual

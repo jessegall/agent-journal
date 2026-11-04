@@ -4,6 +4,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_reply import expect_absent_reply_refusal
+from tests.stories.support.story_checks import expect_updated_input_hook
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 SLEEP_LOOP = HookSamples.shell("until pgrep -f build; do sleep 5; done", ShellPart("until", CommandCategory.PROCESS, ["pgrep"]))
@@ -24,7 +25,7 @@ def test_a_plain_sleep_is_refused(new_story):
 
 def test_a_loop_that_does_real_work_between_its_sleeps_goes_on_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    assert dict(story.hook("s-1", BUSY_LOOP).updated_input) == {"command": runner_line(story, 1, "until pgrep -f build; do tail -n 1 build.log; sleep 5; done")}
+    expect_updated_input_hook(story, "s-1", BUSY_LOOP, {"command": runner_line(story, 1, "until pgrep -f build; do tail -n 1 build.log; sleep 5; done")})
 
 
 def monitor_on(command):

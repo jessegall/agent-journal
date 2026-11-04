@@ -7,6 +7,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from tests.stories.support.story_checks import expect_count_shown, expect_requests_launcher
 
 
 @pytest.mark.parametrize("answer", [None, b"failed\n"])
@@ -36,7 +37,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
     launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
-    assert len(launcher.requests) == 4
+    expect_requests_launcher(launcher, 4)
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    assert lines.count(f"worker:{worker.id} could not start") == 1
+    expect_count_shown(lines, f"worker:{worker.id} could not start", 1)
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax", "waiting")

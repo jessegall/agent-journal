@@ -5,6 +5,7 @@ from core.testing.story_fixture import StoryFixture
 from datetime import timedelta
 
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
+from tests.stories.support.story_checks import expect_count_output
 
 
 class RepliedCartMessage(StoryFixture):
@@ -99,7 +100,7 @@ def test_a_row_is_linked_once_however_often_it_is_edited(replied_task):
     story = replied_task
     story.run('task edit 1 --brief "Also round it"', actor=story.agent)
     story.run_listeners()
-    assert story.run("message read 1", actor=story.user).output_text.count("task:1") == 1
+    expect_count_output(story, "message read 1", "task:1", 1)
 
 
 @pytest.fixture

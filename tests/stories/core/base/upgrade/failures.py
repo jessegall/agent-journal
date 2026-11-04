@@ -11,6 +11,8 @@ from install.upgrade_journal import UpgradeJournal
 from install.version_four_files import VersionFourFiles
 from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, TagsMove
 from tests.stories.core.base.upgrade.upgrade import expect_upgrade, upgrade, upgrading
+from tests.stories.support.story_checks import expect_code_outcome, expect_outcome_with
+from tests.stories.core.base.upgrade.upgrade import expect_upgrade_code
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
@@ -43,7 +45,9 @@ def test_a_full_disk_while_the_backup_is_made_changes_nothing_and_leaves_no_half
 
     monkeypatch.setattr(shutil, "copy2", full_disk)
     outcome = upgrade(story)
-    assert outcome.code == 1 and "No space left on device" in outcome.text and "nothing was changed" in outcome.text, outcome.text
+    expect_code_outcome(outcome, 1)
+    expect_outcome_with(outcome, "No space left on device")
+    expect_outcome_with(outcome, "nothing was changed")
     expect_version_four_working(story, original)
     expect_backups(story, [])
 
@@ -96,7 +100,7 @@ def test_an_interrupted_move_leaves_version_4_in_place_and_a_second_run_finishes
 def test_a_second_run_after_a_partial_one_finishes_and_a_restore_after_it_matches_the_first_backup(new_story):
     story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     original = version_four.read_bytes()
-    assert upgrade(story).code == 1
+    expect_upgrade_code(story, 1)
     expect_version_four_working(story, original)
     del ORDER[:]
     expect_upgrade(story, "upgraded")

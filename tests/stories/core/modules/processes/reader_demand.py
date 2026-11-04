@@ -16,6 +16,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value_line
 
 
 def test_an_alias_counts_as_the_line_it_names_and_its_reader_reads_it(new_story):
@@ -169,8 +170,8 @@ def test_a_quiet_run_and_an_empty_output_do_not_make_the_stock_test_reader_poor(
     story = new_story(fixture=BuilderStarted)
     judge = story.container.get(ReaderJudge)
     reader = story.container.get(ReaderQuery).filter(name="pytest").page(1, 1).rows[0]
-    assert judge.misses(reader, CommandCategory.TEST_RUN, "") == ()
-    assert judge.misses(reader, CommandCategory.TEST_RUN, "...  [100%]\n3 passed, 11 deselected in 1.15s\n") == ()
+    expect_misses_judge(judge, reader, "", ())
+    expect_misses_judge(judge, reader, "...  [100%]\n3 passed, 11 deselected in 1.15s\n", ())
 
 
 def test_a_test_reader_title_cannot_contain_a_path_or_flag(new_story):
@@ -178,4 +179,9 @@ def test_a_test_reader_title_cannot_contain_a_path_or_flag(new_story):
     reader_id = story.new_row_id('reader add titled --commands "go*test*" --title "Go tests ./..." --lines "FAIL" --summary "FAIL" --count "total ([0-9]+)" --progress "([0-9]+)%"', actor=story.agent)
     reader = story.container.get(ReaderQuery).find(reader_id)
     missing = story.container.get(ReaderJudge).fields_missing(reader, CommandCategory.TEST_RUN)
-    assert any("without paths, flags or command arguments" in reason for reason in missing)
+    expect_value_line(missing, "without paths, flags or command arguments")
+
+
+def expect_misses_judge(judge, reader, text, expected) -> None:
+    actual = judge.misses(reader, CommandCategory.TEST_RUN, text)
+    assert actual == expected, actual

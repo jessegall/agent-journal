@@ -8,6 +8,7 @@ import time
 
 from server.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
 
 HOUR_SECONDS = 3600
 
@@ -26,9 +27,9 @@ def age(backup: ServerBackup) -> None:
 def test_the_first_check_writes_a_copy_that_opens_with_the_journals_rows(new_story):
     story, backup = journal(new_story)
     backup.follow()
-    assert len(backup.copies()) == 1
+    expect_copies_backup(backup, 1)
     connection = sqlite3.connect(backup.copies()[0])
-    assert connection.execute("select count(*) from actors").fetchone()[0] > 0
+    expect_fetchone_execute_connection_more(connection, "select count(*) from actors", 0)
     connection.close()
 
 
@@ -36,7 +37,7 @@ def test_a_copy_younger_than_the_setting_is_not_written_again(new_story):
     story, backup = journal(new_story)
     backup.follow()
     backup.follow()
-    assert len(backup.copies()) == 1
+    expect_copies_backup(backup, 1)
 
 
 def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, monkeypatch):
@@ -48,14 +49,15 @@ def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, mo
     monkeypatch.setattr(Path, "replace", interrupted)
     with pytest.raises(OSError):
         backup.follow()
-    assert backup.copies() == [] and list(backup.folder().iterdir()) == []
+    expect_copies_backup_2(backup, [])
+    expect_iterdir_folder_backup(backup, [])
 
 
 def test_keeping_no_copies_still_keeps_the_one_just_written(new_story):
     story, backup = journal(new_story)
     story.expect_success("setting set journal.core.settings.backup-count 0 --project", actor=story.user)
     backup.follow()
-    assert len(backup.copies()) == 1
+    expect_copies_backup(backup, 1)
 
 
 def test_only_the_newest_copies_stay(new_story):
@@ -66,14 +68,15 @@ def test_only_the_newest_copies_stay(new_story):
     age(backup)
     backup.follow()
     names = [copy.name for copy in backup.copies()]
-    assert len(names) == 2 and names[1] == "version-5-20260103-000000.db"
+    expect_answers(names, 2)
+    expect_lines_2(names, "version-5-20260103-000000.db")
 
 
 def test_zero_minutes_writes_no_copy(new_story):
     story, backup = journal(new_story)
     story.expect_success("setting set journal.core.settings.backup-minutes 0 --project", actor=story.user)
     backup.follow()
-    assert backup.copies() == []
+    expect_copies_backup_2(backup, [])
 
 
 def test_version_4s_copies_are_left_alone(new_story):
@@ -82,4 +85,25 @@ def test_version_4s_copies_are_left_alone(new_story):
     kept = backup.folder() / "journal-20261101-061659.db"
     kept.write_text("old")
     backup.follow()
-    assert kept.exists() and len(backup.copies()) == 1
+    expect_exists_version_four(kept)
+    expect_copies_backup(backup, 1)
+
+
+def expect_copies_backup(backup, expected) -> None:
+    actual = len(backup.copies())
+    assert actual == expected, actual
+
+
+def expect_copies_backup_2(backup, expected) -> None:
+    actual = backup.copies()
+    assert actual == expected, actual
+
+
+def expect_iterdir_folder_backup(backup, expected) -> None:
+    actual = list(backup.folder().iterdir())
+    assert actual == expected, actual
+
+
+def expect_fetchone_execute_connection_more(connection, text, expected) -> None:
+    actual = connection.execute(text).fetchone()[0]
+    assert actual > expected, actual

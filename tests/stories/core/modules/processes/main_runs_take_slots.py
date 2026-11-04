@@ -42,7 +42,7 @@ def test_with_the_setting_on_the_main_agents_running_runs_count_against_the_batc
 
 def test_with_the_setting_on_the_main_agents_runs_still_never_wait_and_hold_no_spot(new_story):
     story, runs = story_with_main_runs(new_story, setting=True, main_runs=2)
-    assert not any(waits(story, run) or has_slot(story, run) for run in runs)
+    expect_absent_waits_runs(story, runs)
     queued_run = queued(story, "make one")
     expect_waits(story, queued_run)
 
@@ -62,5 +62,21 @@ def test_a_run_holding_a_spot_is_never_stopped_when_the_setting_goes_on_or_the_m
     for number in range(3):
         start_process(story, f"make main {number}", category=CommandCategory.TEST_RUN)
     waiting = queued(story, "make two")
-    assert has_slot(story, running_process) and state_of(story, running_process).state is ProcessState.RUNNING
+    expect_slot_2(story, running_process)
+    expect_state(story, running_process, ProcessState.RUNNING)
     expect_waits(story, waiting)
+
+
+def expect_slot_2(story, running_process) -> None:
+    actual = has_slot(story, running_process)
+    assert actual, actual
+
+
+def expect_state(story, running_process, expected) -> None:
+    actual = state_of(story, running_process).state
+    assert actual is expected, actual
+
+
+def expect_absent_waits_runs(story, runs) -> None:
+    actual = any((waits(story, run) or has_slot(story, run) for run in runs))
+    assert not actual, actual

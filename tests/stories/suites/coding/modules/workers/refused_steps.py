@@ -6,6 +6,7 @@ from core.modules.plugins.support.plugin_step_check import PluginStepCheck
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from tests.stories.support.story_checks import expect_count_output_2
 
 REASON = "[plugin sample] the checks need a fix"
 
@@ -27,7 +28,7 @@ def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(new_
     story.expect_refusal(step, REASON, actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{worker.id} refused 5 times on task:1: {REASON}")
     story.expect_refusal(step, REASON, actor=worker)
-    assert story.run(f"agent-line list --agent {story.agent.id}").output_text.count("refused 5 times") == 1
+    expect_count_output_2(story, f"agent-line list --agent {story.agent.id}", "refused 5 times", 1)
     story.advance(timedelta(minutes=10))
     story.expect_refusal(step, REASON, actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "refused 7 times")

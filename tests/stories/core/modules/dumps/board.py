@@ -16,7 +16,7 @@ def test_the_board_gives_each_dump_with_its_items_in_order(new_story):
     dump = answer["dumps"][0]
     expect_row(dump, title="")
     expect_row(dump, outcome="")
-    assert [(item["text"], item["state"], item["note"]) for item in dump["items"]] == [("The cart rounds twice", "noted", "a fault in the cart"), ("Ship on Friday", "new", "")]
+    expect_item_state_dump(dump, [("The cart rounds twice", "noted", "a fault in the cart"), ("Ship on Friday", "new", "")])
 
 
 def test_an_item_filed_carries_its_summary_and_the_rows_it_became(new_story):
@@ -31,5 +31,20 @@ def test_an_item_filed_carries_its_summary_and_the_rows_it_became(new_story):
 def test_the_board_pages_back_from_the_number_it_is_given(new_story):
     story = dump_story(new_story)
     story.run('dump make "Second" --parts "One"', actor=story.user)
-    assert [dump["id"] for dump in board(story)["dumps"]] == [2, 1]
-    assert [dump["id"] for dump in board(story, "dump board --before 2")["dumps"]] == [1]
+    expect_id_dump_dumps_2(story, [2, 1])
+    expect_id_dump_dumps(story, "dump board --before 2", [1])
+
+
+def expect_id_dump_dumps(story, text, expected) -> None:
+    actual = [dump['id'] for dump in board(story, text)['dumps']]
+    assert actual == expected, actual
+
+
+def expect_id_dump_dumps_2(story, expected) -> None:
+    actual = [dump['id'] for dump in board(story)['dumps']]
+    assert actual == expected, actual
+
+
+def expect_item_state_dump(dump, expected) -> None:
+    actual = [(item['text'], item['state'], item['note']) for item in dump['items']]
+    assert actual == expected, actual

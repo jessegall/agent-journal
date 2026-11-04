@@ -12,18 +12,35 @@ def skills(new_story) -> tuple:
 
 def test_both_start_settings_default_to_the_journals_own_skills(new_story):
     story, start = skills(new_story)
-    assert start.session_start(1) == DEFAULT_SKILLS and start.after_compaction(1) == DEFAULT_SKILLS
+    expect_session_start(start, 1, DEFAULT_SKILLS)
+    expect_after_compaction_start(start, 1, DEFAULT_SKILLS)
 
 
 def test_a_changed_setting_is_used_by_the_next_start_and_leaves_the_other_alone(new_story):
     story, start = skills(new_story)
     story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start = story.container.get(StartSkills)
-    assert start.session_start(1) == ["journal-notes"] and start.after_compaction(1) == DEFAULT_SKILLS
+    expect_session_start(start, 1, ["journal-notes"])
+    expect_after_compaction_start(start, 1, DEFAULT_SKILLS)
 
 
 def test_an_environment_setting_wins_over_the_projects(new_story):
     story, _ = skills(new_story)
     story.run("setting make journal.core.skills.after-compaction '[\"journal\"]'")
     story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]' --environment main")
-    assert story.container.get(StartSkills).after_compaction(1) == ["journal-chores"]
+    expect_after_compaction(story, 1, ["journal-chores"])
+
+
+def expect_after_compaction(story, number, expected) -> None:
+    actual = story.container.get(StartSkills).after_compaction(number)
+    assert actual == expected, actual
+
+
+def expect_session_start(start, number, expected) -> None:
+    actual = start.session_start(number)
+    assert actual == expected, actual
+
+
+def expect_after_compaction_start(start, number, expected) -> None:
+    actual = start.after_compaction(number)
+    assert actual == expected, actual

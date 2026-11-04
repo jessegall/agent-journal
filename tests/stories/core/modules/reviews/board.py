@@ -13,8 +13,8 @@ def test_a_review_in_progress_is_on_the_board_with_its_steps(new_story):
     story.run_listeners()
     answer = board(story)
     expect_row(answer, queued=0)
-    assert [review["title"] for review in answer["reviews"]] == ["task 1"]
-    assert [step["text"] for step in answer["reviews"][0]["steps"]] == ["Started reviewing task 1"]
+    expect_title_review_reviews(answer, ["task 1"])
+    expect_step_steps_reviews(answer, ["Started reviewing task 1"])
 
 
 def test_a_review_that_has_reported_leaves_the_board(new_story):
@@ -22,3 +22,13 @@ def test_a_review_that_has_reported_leaves_the_board(new_story):
     story.run('review record "1 passed"', actor=reviewer_of(story))
     story.run_listeners()
     expect_row(board(story), reviews=[])
+
+
+def expect_step_steps_reviews(answer, expected) -> None:
+    actual = [step['text'] for step in answer['reviews'][0]['steps']]
+    assert actual == expected, actual
+
+
+def expect_title_review_reviews(answer, expected) -> None:
+    actual = [review['title'] for review in answer['reviews']]
+    assert actual == expected, actual

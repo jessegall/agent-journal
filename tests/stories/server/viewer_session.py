@@ -48,6 +48,9 @@ def test_a_dead_installers_file_and_an_old_restart_file_end_the_cover(person_ser
     os.utime(files.restart_mark, (old, old))
     story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
     story.expect_viewer_status("/api/server-state", 200, text='"updating": false')
-    assert not RunQueueHalt(story.story.home).is_halted
+    expect_absent_halted_queue_halt(story)
 
 
+def expect_absent_halted_queue_halt(story) -> None:
+    actual = RunQueueHalt(story.story.home).is_halted
+    assert not actual, actual

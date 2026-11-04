@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
+from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -53,10 +54,8 @@ def test_a_new_failure_with_no_pass_between_comes_again_only_after_an_hour(new_s
 
 
 def expect_lines_of(story, expected) -> None:
-    actual = lines_of(story)
-    assert expected in actual, actual
+    expect_reply_line(story.hook("s-1", HookSamples.prompt("go on")), expected)
 
 
 def expect_absent_lines_of(story, expected) -> None:
-    actual = lines_of(story)
-    assert expected not in actual, actual
+    expect_absent_reply_line(story.hook("s-1", HookSamples.prompt("go on")), expected)

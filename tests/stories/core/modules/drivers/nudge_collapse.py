@@ -33,7 +33,8 @@ def test_two_kinds_make_two_lines_and_one_of_a_kind_stays_as_it_is():
 
 def test_a_single_nudge_is_left_whole():
     nudge = QUEUED.nudge(task=5817, worker=425)
-    assert answers_of(nudge).delivered_nudges == [nudge] and answers_of(nudge).lines == ["task 5817 is still queued for worker 425"]
+    expect_delivered_nudges_answers(nudge, [nudge])
+    expect_lines_answers(nudge, ["task 5817 is still queued for worker 425"])
 
 
 def test_a_kind_without_words_for_many_says_its_one_line_with_the_values_joined():
@@ -53,7 +54,8 @@ def test_a_field_that_differs_is_listed_once_per_value():
 
 def test_the_collapsed_line_keeps_its_key_type_and_labelled_words():
     answers = answers_of(QUEUED.nudge(task=1, worker=425), QUEUED.nudge(task=2, worker=425))
-    assert [(nudge.key, nudge.type) for nudge in answers.delivered_nudges] == [("shop.queued", NudgeType.STEERING)] and answers.labelled_lines == ["journal: tasks 1, 2 are still queued for worker 425"]
+    expect_key_nudge_type(answers, [("shop.queued", NudgeType.STEERING)])
+    expect_labelled_lines_answers(answers, ["journal: tasks 1, 2 are still queued for worker 425"])
 
 
 def test_a_line_that_names_a_command_to_run_is_never_merged():
@@ -76,3 +78,23 @@ def test_a_collapsed_line_that_was_skipped_is_not_delivered():
     answers = RuleAnswers(["lead"], rules, skipped_lines=frozenset({("shop.queued", "tasks 1, 2 are still queued for worker 4")}))
     expect_row(answers, lines=[])
     expect_row(answers, delivered_nudges=[])
+
+
+def expect_key_nudge_type(answers, expected) -> None:
+    actual = [(nudge.key, nudge.type) for nudge in answers.delivered_nudges]
+    assert actual == expected, actual
+
+
+def expect_labelled_lines_answers(answers, expected) -> None:
+    actual = answers.labelled_lines
+    assert actual == expected, actual
+
+
+def expect_delivered_nudges_answers(nudge, expected) -> None:
+    actual = answers_of(nudge).delivered_nudges
+    assert actual == expected, actual
+
+
+def expect_lines_answers(nudge, expected) -> None:
+    actual = answers_of(nudge).lines
+    assert actual == expected, actual

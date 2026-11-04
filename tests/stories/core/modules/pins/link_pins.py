@@ -12,7 +12,7 @@ def shell_call(line: str, output: str = ""):
 
 def test_a_link_in_a_commands_output_is_offered_as_a_pin(new_story):
     story = new_story(fixture=UserJoined)
-    assert any("pin this link if the user will return to it" in line and "https://docs.example.com/pages/4" in line for line in story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/4\n")).lines)
+    expect_lines_hook_2("pin this link if the user will return to it", "https://docs.example.com/pages/4", story, "s-1", "gh pr create", "https://docs.example.com/pages/4\n")
 
 
 def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
@@ -86,3 +86,8 @@ def expect_pin_lines(hook_answer) -> None:
 
 def expect_absent_pin_lines(hook_answer) -> None:
     assert not pin_lines(hook_answer)
+
+
+def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:
+    actual = any((text in line and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
+    assert actual, actual

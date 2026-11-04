@@ -70,7 +70,8 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
         search = windows[name].search
         expect_row(search, read=read)
         expect_row(search, placeholder=placeholder)
-        assert search["fields"] == fields and read in windows[name].reads
+        expect_fields_search(search, fields)
+        expect_reads_windows_with(windows, name, read)
 
 
 def test_worker_and_subagent_windows_declare_the_same_agent_search(new_story):
@@ -85,3 +86,13 @@ class DatabaseQuestions(StoryFixture):
     def steps(self, story):
         story.run('question ask "Which database?" --environment main', actor=story.agent)
         story.run('question ask "Which cache?" --environment main', actor=story.agent)
+
+
+def expect_fields_search(search, expected) -> None:
+    actual = search['fields']
+    assert actual == expected, actual
+
+
+def expect_reads_windows_with(windows, name, expected) -> None:
+    actual = windows[name].reads
+    assert expected in actual, actual

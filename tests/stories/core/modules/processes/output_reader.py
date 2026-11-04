@@ -49,7 +49,7 @@ def test_a_running_output_keeps_its_count_for_pattern_and_script_readers(new_sto
     story.expect_text(f"process show {process.id}", "state: running", "progress: 50", actor=story.agent)
     story.expect_text(f"output show {process.id}", "test_count: 4", "steps_passed: 1", "steps_failed: 1", actor=story.agent)
     if scripted:
-        assert story.container.get(OutputFolder).reader_lines(process.id) == []
+        expect_reader_lines(story, process, [])
     append(story, process.id, ".\n")
     tick(story)
     story.expect_text(f"output show {process.id}", "test_count: 4", "progress: 75", actor=story.agent)
@@ -58,7 +58,7 @@ def test_a_running_output_keeps_its_count_for_pattern_and_script_readers(new_sto
     bus.run(EndProcess(process.id, 0, BYTES_LONG, 4), story.agent, environment_id=1)
     story.expect_text(f"output show {process.id}", "test_count: 4", "steps_passed: 2", "steps_failed: 1", actor=story.agent)
     if scripted:
-        assert story.container.get(OutputFolder).reader_lines(process.id) == ["collected 4 items", ".F", "."]
+        expect_reader_lines(story, process, ["collected 4 items", ".F", "."])
 
 
 def test_a_long_run_read_twice_runs_the_reader_once_for_each_new_chunk(new_story):
@@ -89,10 +89,10 @@ def test_the_readers_lines_are_kept_in_a_file_of_the_outputs_folder_with_their_n
     append(story, process.id, FIRST)
     tick(story)
     folder = story.container.get(OutputFolder)
-    assert folder.reader_lines(process.id) == ["2: FAILED a"]
+    expect_reader_lines_folder(folder, process, ["2: FAILED a"])
     append(story, process.id, SECOND)
     tick(story)
-    assert folder.reader_lines(process.id) == ["2: FAILED a", "4: error b"]
+    expect_reader_lines_folder(folder, process, ["2: FAILED a", "4: error b"])
     story.expect_text(f"output read {process.id} --summary", "2: FAILED a", "4: error b", "summary: 3 failed", actor=story.agent)
 
 
@@ -150,16 +150,31 @@ def test_a_script_reader_runs_once_when_the_output_ends(new_story, tmp_path):
         bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
         bus.run(EndProcess(process.id, 0, BYTES_LONG, 2), story.agent, environment_id=1)
         expect_row(reader_mock, call_count=1)
-    assert story.container.get(OutputFolder).reader_lines(process.id) == ["2:FAILED a"]
+    expect_reader_lines(story, process, ["2:FAILED a"])
 
 
 def test_a_summary_pattern_with_a_group_inside_a_group_says_each_word_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     stock = story.container.get(Queries).query(Reader).filter(name="pytest").page(1, 1).rows[0]
     reader = replace(stock, summary_pattern="([0-9]+ (passed|failed).*)")
-    assert story.container.get(ReaderRun).summary(reader, "13 passed in 2.94s\n") == "13 passed in 2.94s"
+    expect_summary(story, reader, "13 passed in 2.94s\n", "13 passed in 2.94s")
 
 
 def expect_reader_texts(reader_mock, expected) -> None:
     actual = reader_texts(reader_mock)
+    assert actual == expected, actual
+
+
+def expect_summary(story, reader, text, expected) -> None:
+    actual = story.container.get(ReaderRun).summary(reader, text)
+    assert actual == expected, actual
+
+
+def expect_reader_lines(story, process, expected) -> None:
+    actual = story.container.get(OutputFolder).reader_lines(process.id)
+    assert actual == expected, actual
+
+
+def expect_reader_lines_folder(folder, process, expected) -> None:
+    actual = folder.reader_lines(process.id)
     assert actual == expected, actual

@@ -1,6 +1,7 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.support.story_checks import expect_value
 
 PLACEHOLDERS = {
     "tasks.tasks": "Search the tasks",
@@ -34,7 +35,7 @@ PLACEHOLDERS = {
 def test_every_window_with_a_search_declares_the_placeholder_its_bar_draws(new_story):
     story = new_story(fixture=BuilderWithUser)
     declared = {window.name: window.search.get("placeholder") for window in Registry.read(story.container.get(Database)).windows if window.search}
-    assert declared == PLACEHOLDERS
+    expect_value(declared, PLACEHOLDERS)
 
 
 def test_the_tasks_window_finds_the_tasks_that_hold_the_words(new_story):

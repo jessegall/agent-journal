@@ -8,7 +8,7 @@ def test_a_new_task_is_appended_to_its_phase_in_one_command(new_story):
     story.expect_success('task make "Fourth" --phase 1 --brief "Keep the order" --priority high --environment main',
                          "title: Fourth", "brief: Keep the order", "priority: high")
     outline = json.loads(story.run("plan outline 1 --json").output_text)
-    assert any(task["title"] == "Fourth" for task in outline["phases"][0]["tasks"])
+    expect_title_task_tasks("Fourth", outline)
     story.expect_text("phase-task list --phase 1", "4  1  4  4")
 
 
@@ -32,3 +32,8 @@ def test_a_completed_plan_refuses_a_new_task_in_its_phase(new_story):
     story.run("plan close 1")
     story.expect_refusal('task make "Too late" --phase 1 --environment main', "plan 1 is completed")
     story.expect_success("task list", "nothing found")
+
+
+def expect_title_task_tasks(text, outline) -> None:
+    actual = any((task['title'] == text for task in outline['phases'][0]['tasks']))
+    assert actual, actual

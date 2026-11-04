@@ -31,7 +31,7 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
     story.run_listeners()
     story.expect_text(f"output read {process.id} --summary", "73 passed", actor=worker)
     reader = story.container.get(ReaderQuery).with_name("python3").page(1, 1).rows[0]
-    assert story.container.get(ReaderDemands).reason(parts[1], reader) == ""
+    expect_reason_2(story, parts, reader, "")
     bus.run(StartProcess.single_part(worker.id, parts[1].text, "/work", CommandCategory.TEST_RUN, 30, is_queued=True), worker, environment_id=1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
@@ -41,7 +41,7 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     sample = worker_run(story)
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30, is_queued=True), second, environment_id=1)
-    assert story.container.get(ReaderRequestQuery).open().count() == 1
+    expect_count_open(story, 1)
     end_run(story, sample, "compile\n" * 8 + "done\n")
     story.expect_success('reader add custom --commands "custom-build*" --title Building --lines done --summary done', actor=story.agent)
     story.run_listeners()
@@ -56,3 +56,13 @@ def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
     story.container.get(Bus).run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", "zsh", CommandCategory.TEST_RUN, 30, parts, is_queued=True), worker, environment_id=1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+
+
+def expect_count_open(story, expected) -> None:
+    actual = story.container.get(ReaderRequestQuery).open().count()
+    assert actual == expected, actual
+
+
+def expect_reason_2(story, parts, reader, expected) -> None:
+    actual = story.container.get(ReaderDemands).reason(parts[1], reader)
+    assert actual == expected, actual

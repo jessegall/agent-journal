@@ -25,17 +25,17 @@ def test_a_test_run_keeps_the_file_until_it_ends(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
     story.run_listeners()
-    assert tools_of(story).marker.exists()
+    expect_exists_marker_tools(story)
     end_run(story, process, "1 passed\n")
     story.run_listeners()
-    assert not tools_of(story).marker.exists()
+    expect_absent_exists_marker_tools(story)
 
 
 def test_a_run_that_is_no_test_writes_no_file(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     start_process(story, "make build", category=CommandCategory.BUILD)
     story.run_listeners()
-    assert not tools_of(story).marker.exists()
+    expect_absent_exists_marker_tools(story)
 
 
 def test_a_lost_test_run_clears_the_file(new_story):
@@ -44,20 +44,45 @@ def test_a_lost_test_run_clears_the_file(new_story):
     story.run_listeners()
     story.expect_success(f"process orphan {process.id}", actor=story.agent)
     story.run_listeners()
-    assert not tools_of(story).marker.exists()
+    expect_absent_exists_marker_tools(story)
 
 
 def test_every_registered_tool_stays_quiet_while_tests_run(new_story):
     story = new_story(fixture=BuilderStarted)
     tools = tools_of(story)
     tools.registered = {*tools.registered, SampleTool}
-    assert tools.run(SampleTool) == "measured"
+    expect_tools_3(tools, "measured")
     tools.keep_tests_running(True)
-    assert tools.run(SampleTool) is None
-    assert tools.run(SlowTickTool, 9.0) is None
+    expect_tools_2(tools, None)
+    expect_tools(tools, 9.0, None)
 
 
 def test_a_tool_no_module_registers_does_not_run(new_story):
     story = new_story(fixture=BuilderStarted)
     with pytest.raises(ValueError, match="registers the performance tool sample.tool"):
         tools_of(story).run(SampleTool)
+
+
+def expect_tools(tools, number, expected) -> None:
+    actual = tools.run(SlowTickTool, number)
+    assert actual is expected, actual
+
+
+def expect_tools_2(tools, expected) -> None:
+    actual = tools.run(SampleTool)
+    assert actual is expected, actual
+
+
+def expect_tools_3(tools, expected) -> None:
+    actual = tools.run(SampleTool)
+    assert actual == expected, actual
+
+
+def expect_absent_exists_marker_tools(story) -> None:
+    actual = tools_of(story).marker.exists()
+    assert not actual, actual
+
+
+def expect_exists_marker_tools(story) -> None:
+    actual = tools_of(story).marker.exists()
+    assert actual, actual

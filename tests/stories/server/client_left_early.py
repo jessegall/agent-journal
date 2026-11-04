@@ -4,6 +4,7 @@ from install.unix_connection import UnixConnection
 from server.request_handler import RequestHandler
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import request_answer, running_server
+from tests.stories.support.story_checks import expect_wait_arrived
 
 WAIT_SECONDS = 10
 ANSWER_SIZE = 200000
@@ -29,11 +30,26 @@ def test_a_client_that_leaves_before_its_answer_writes_no_traceback(new_story, m
     with running_server(story.home) as (_, socket_path, _):
         leaving = UnixConnection(str(socket_path))
         leaving.request("GET", "/held")
-        assert arrived.wait(WAIT_SECONDS)
+        expect_wait_arrived(arrived, WAIT_SECONDS)
         leaving.close()
         released.set()
-        assert answered.wait(WAIT_SECONDS)
-        assert request_answer(socket_path, "GET", "/health").status == 200
+        expect_wait_arrived(answered, WAIT_SECONDS)
+        expect_status_request_answer(socket_path, "GET", "/health", 200)
     log = story.home.folder / "runtime" / "server.log"
-    assert "Traceback" not in (log.read_text() if log.is_file() else "")
-    assert "BrokenPipeError" not in capsys.readouterr().err
+    expect_value_without_2(log, "", "Traceback")
+    expect_err_readouterr_capsys_without(capsys, "BrokenPipeError")
+
+
+def expect_err_readouterr_capsys_without(capsys, expected) -> None:
+    actual = capsys.readouterr().err
+    assert expected not in actual, actual
+
+
+def expect_value_without_2(log, text, expected) -> None:
+    actual = log.read_text() if log.is_file() else text
+    assert expected not in actual, actual
+
+
+def expect_status_request_answer(socket_path, text, text_2, expected) -> None:
+    actual = request_answer(socket_path, text, text_2).status
+    assert actual == expected, actual

@@ -42,9 +42,9 @@ def test_agent_rows_filter_search_and_page_before_answering(new_story):
         story.run(f"agent start {session} claude subagent --environment main")
         story.advance(timedelta(seconds=1))
     rows = json.loads(story.run("agent cards --environment main --show all --limit 1 --page 2 --json", actor=story.user).output_text)["rows"]
-    assert [row["session"] for row in rows] == ["second"]
+    expect_session_matching(rows, ["second"])
     matching_rows = json.loads(story.run("agent cards --environment main --search third --json", actor=story.user).output_text)["rows"]
-    assert [row["session"] for row in matching_rows] == ["third"]
+    expect_session_matching(matching_rows, ["third"])
 
 
 def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_story, tmp_path, monkeypatch):
@@ -70,6 +70,16 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     expect_listed(story, "all", helper, reviewer, worker, running_helper, running_worker)
     expect_unlisted(story, main, retired_main)
     states = {row["id"]: row["state"] for row in cards(story, "all")}
-    assert states[helper] == "idle"
-    assert states[worker] == "retired"
+    expect_states_2(states, helper, "idle")
+    expect_states_2(states, worker, "retired")
     story.expect_text(f"agent transcript {helper}", "The review is complete", actor=story.user)
+
+
+def expect_states_2(states, worker, expected) -> None:
+    actual = states[worker]
+    assert actual == expected, actual
+
+
+def expect_session_matching(matching_rows, expected) -> None:
+    actual = [row['session'] for row in matching_rows]
+    assert actual == expected, actual

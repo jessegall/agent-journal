@@ -16,7 +16,7 @@ def test_history_counts_each_outcome_and_returns_the_last_run(new_story):
         answer = {"refusal": "details"} if outcome is ForeignOutcome.REFUSED else {"updated_input": {"command": "safe"}} if outcome is ForeignOutcome.REWRITTEN else {}
         run = {"id": hook.id, "exit_code": exit_code, "stdout": stdout, "stderr": "details", "milliseconds": index, "timed_out": timed_out, "answer": answer}
         story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing=f"managed-{index}", foreign=[run]))
-        assert story.container.get(ManagedHookHistoryQuery).read(hook).last_outcome is outcome
+        expect_last_outcome(story, hook, outcome)
     history = story.container.get(ManagedHookHistoryQuery).read(hook)
     expect_row(history, runs=5, refused=1, rewritten=1, failed=1, timed_out=1)
     expect_row(history.last, id=hook.id)
@@ -43,3 +43,8 @@ def test_history_reads_the_last_hundred_runs_of_this_hook(new_story):
     expect_row(history, runs=100)
     expect_row(history, failed=0)
     expect_row(history.last, milliseconds=101)
+
+
+def expect_last_outcome(story, hook, expected) -> None:
+    actual = story.container.get(ManagedHookHistoryQuery).read(hook).last_outcome
+    assert actual is expected, actual

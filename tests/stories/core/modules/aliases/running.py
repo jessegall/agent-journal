@@ -17,6 +17,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_updated_input_hook
 
 ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", CommandCategory.PROCESS, ["sins", "--changes"], subcommand="sins"))
 
@@ -24,7 +25,7 @@ ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", Co
 def test_an_agent_line_that_runs_an_alias_runs_as_a_shell_line_with_the_normal_limit(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('alias add sins "echo judged"', actor=story.agent)
-    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes").replace(" -- ", " --aliases sins -- ", 1)}
+    expect_updated_input_hook(story, "s-1", ALIAS_LINE, {"command": runner_line(story, 1, "journal sins --changes").replace(" -- ", " --aliases sins -- ", 1)})
 
 
 def test_an_alias_into_the_journals_folder_runs_from_any_folder_in_that_folder(new_story):
@@ -36,13 +37,13 @@ def test_an_alias_into_the_journals_folder_runs_from_any_folder_in_that_folder(n
     judged = aliases.shell_run(["sins", "--changes"], caller, worktree)
     expect_row(judged, line=f"{shlex.quote(str(story.home.folder.resolve()))}/plugins/judge/bin/judge judge --changes")
     expect_row(judged, folder="/work/worktrees/worker-1")
-    assert aliases.shell_run(["lint", "src"], caller, worktree).line == "ruff check src"
+    expect_shell_aliases(aliases, "lint", "src", caller, worktree, "ruff check src")
 
 
 def test_a_background_alias_moves_to_the_background_at_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('alias add sins "echo judged" --background', actor=story.agent)
-    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes", background=True).replace(" -- ", " --aliases sins -- ", 1)}
+    expect_updated_input_hook(story, "s-1", ALIAS_LINE, {"command": runner_line(story, 1, "journal sins --changes", background=True).replace(" -- ", " --aliases sins -- ", 1)})
 
 
 def test_the_alias_reader_reads_the_output_of_its_line(new_story):
@@ -92,7 +93,7 @@ def test_the_file_the_hook_reads_names_each_aliass_shell_line(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success('alias add go-tests "go test ./..."', actor=story.agent)
     story.run_listeners()
-    assert json.loads(story.home.alias_file.read_text())["go-tests"] == "go test ./..."
+    expect_tests(story, "go test ./...")
 
 
 def test_an_alias_of_a_journal_command_stays_in_the_foreground(new_story):
@@ -100,5 +101,19 @@ def test_an_alias_of_a_journal_command_stays_in_the_foreground(new_story):
     story.run('alias add tasks "journal task list" --background', actor=story.agent)
     line = HookSamples.shell("journal tasks", ShellPart("journal", CommandCategory.JOURNAL, ["tasks"]))
     reply = story.hook("s-1", line)
-    assert "--background" not in str(reply.updated_input), reply.updated_input
+    expect_updated_input_reply_without(reply, "--background")
 
+
+def expect_updated_input_reply_without(reply, expected) -> None:
+    actual = str(reply.updated_input)
+    assert expected not in actual, actual
+
+
+def expect_tests(story, expected) -> None:
+    actual = json.loads(story.home.alias_file.read_text())['go-tests']
+    assert actual == expected, actual
+
+
+def expect_shell_aliases(aliases, text, text_2, caller, worktree, expected) -> None:
+    actual = aliases.shell_run([text, text_2], caller, worktree).line
+    assert actual == expected, actual

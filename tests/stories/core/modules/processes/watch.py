@@ -9,6 +9,7 @@ from core.modules.processes.ticks.output_reading import OutputReading
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.modules.processes.support.process_samples import moved_run
+from tests.stories.support.story_checks import expect_handler
 
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 READER = 'reader add watched --commands "make*" --lines "FAILED|error"'
@@ -68,7 +69,7 @@ def test_an_explicit_watch_on_a_background_run_makes_no_second_watch(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make test")
     story.run(f"output watch {process.id}", actor=story.agent)
-    assert story.hook("s-1", AFTER).lines.count(f"output {process.id}: running") == 1
+    expect_count_lines_hook(story, "s-1", AFTER, f"output {process.id}: running", 1)
 
 
 def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
@@ -77,9 +78,9 @@ def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
     process_id = start_process(story, "make test").id
     story.container.get(OutputFolder).write_output(process_id, 1, "[ 42%]\n")
     output_tick = OutputReading()
-    assert output_tick(story.container) is True
-    assert story.container.get(ProcessQuery).find(process_id).progress == 42
-    assert output_tick(story.container) is False
+    expect_handler(output_tick, story, True)
+    expect_progress(story, process_id, 42)
+    expect_handler(output_tick, story, False)
 
 
 @pytest.fixture
@@ -87,3 +88,13 @@ def watched_process(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process_id = watched(story)
     return story, process_id
+
+
+def expect_progress(story, process_id, expected) -> None:
+    actual = story.container.get(ProcessQuery).find(process_id).progress
+    assert actual == expected, actual
+
+
+def expect_count_lines_hook(story, text, item, text_2, expected) -> None:
+    actual = story.hook(text, item).lines.count(text_2)
+    assert actual == expected, actual

@@ -35,7 +35,7 @@ def test_four_loaded_skills_show_four_marks_which_the_group_label_folds_into_one
         read_skill(story, folder)
     expect_mark_count(story, 4)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "skills.skill")
-    assert (mark.family, mark.grouping, mark.group_label.format(count=4)) == ("skills.skills", "family", "4 skills loaded")
+    expect_family_mark_grouping(mark, 4, ("skills.skills", "family", "4 skills loaded"))
 
 
 def test_a_skill_read_twice_shows_once(cleared_skill_requirements):
@@ -48,3 +48,8 @@ def test_a_skill_read_twice_shows_once(cleared_skill_requirements):
 @pytest.fixture
 def cleared_skill_requirements(new_story):
     return nothing_due(new_story)
+
+
+def expect_family_mark_grouping(mark, number, expected) -> None:
+    actual = (mark.family, mark.grouping, mark.group_label.format(count=number))
+    assert actual == expected, actual

@@ -3,6 +3,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.support.story_checks import expect_value_with
 
 HOT_QUERIES = ("SELECT * FROM processes WHERE state IN ('running', 'background') ORDER BY id",
                "SELECT * FROM processes WHERE environment_id = 1 ORDER BY id DESC",
@@ -21,7 +22,8 @@ def query_plan(new_story, query: str) -> str:
 @pytest.mark.parametrize("query", HOT_QUERIES)
 def test_a_hot_query_uses_an_index(new_story, query):
     plan = query_plan(new_story, query)
-    assert "USING" in plan and "INDEX" in plan, plan
+    expect_value_with(plan, "USING")
+    expect_value_with(plan, "INDEX")
 
 
 def test_the_oldest_ended_output_is_read_with_no_sort(new_story):

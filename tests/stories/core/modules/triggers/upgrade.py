@@ -1,4 +1,5 @@
 from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story, expect_upgrade_text
+from tests.stories.support.story_checks import expect_repeated_upgrade
 
 
 def test_version_4_triggers_move_with_their_numbers_phrases_and_actions(new_story):
@@ -20,4 +21,4 @@ def test_a_trigger_with_no_text_is_skipped_with_its_number_and_reason(new_story)
 def test_the_triggers_moved_are_counted_and_a_second_run_moves_none(new_story):
     story = upgraded_story(new_story)
     expect_upgrade_text(story, "journal.core.triggers: moved 4, already moved 0")
-    assert repeated_upgrade(story).text == "nothing left to move"
+    expect_repeated_upgrade(story, "nothing left to move")

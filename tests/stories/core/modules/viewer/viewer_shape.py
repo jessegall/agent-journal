@@ -7,6 +7,7 @@ from core.modules.viewer.viewer_module import ViewerModule
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
 from core.base.module.window_extensions import WindowExtensions
+from tests.stories.support.story_checks import expect_absent_value
 
 ROOT = Path(__file__).resolve().parents[5]
 VIEWER = ROOT / "src/viewer"
@@ -45,7 +46,7 @@ def test_every_viewer_file_is_imported_by_something():
         imported = re.compile(rf"""[/"']{re.escape(path.stem)}(\.(vue|js))?["']""")
         if not any(second != path and imported.search(text) for second, text in readers.items()):
             orphans.append(str(path.relative_to(ROOT)))
-    assert not orphans, f"nothing imports {orphans}"
+    expect_absent_value(orphans)
 
 
 def test_a_window_declares_each_line_it_reads_or_runs():
@@ -56,14 +57,14 @@ def test_a_window_declares_each_line_it_reads_or_runs():
             text = path.read_text(errors="ignore")
             missing += [f"{path.name} reads {line}" for line in READ_LINE.findall(text) if line not in reads]
             missing += [f"{path.name} runs {target_type} {action}" for target_type, action in RUN_LINE.findall(text) if f"{target_type} {action}" not in runs]
-    assert not missing, "\n".join(missing)
+    expect_absent_value(missing)
 
 
 def test_the_shell_declares_each_line_it_reads():
     viewer = EXTENSIONS.extend(next(window for window in ViewerModule.windows if window.name == "viewer.shell"))
     declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
     missing = {f"{target_type} {action}" for path in source_files(VIEWER / "src") for target_type, action in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
-    assert not missing, sorted(missing)
+    expect_absent_value(missing)
 
 
 def test_the_coding_suite_offers_every_window_a_module_declares():
@@ -74,4 +75,4 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
         declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows}
     text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
     missing = {name for name in declared if f'"{name}"' not in text} - INTERNAL_WINDOWS
-    assert not missing, sorted(missing)
+    expect_absent_value(missing)

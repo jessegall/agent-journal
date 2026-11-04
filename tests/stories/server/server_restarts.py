@@ -15,6 +15,7 @@ from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.server_process import ServerProcess
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_absent_exists_with_log, expect_changed_with, expect_exists_version_four
 
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 SCHEMA_EDIT = json.loads((SCHEMA_EXAMPLES / "edit.json").read_text())
@@ -32,10 +33,10 @@ def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_s
     code_file.write_text("x = 22\n")
     story.expect_stale_answer_and_released_files('task make "Fourth" --environment main', task_listing)
     restart_mark = ServerFiles(story.story.home).restart_mark
-    assert restart_mark.exists()
+    expect_exists_version_four(restart_mark)
     with ServerProcess(story.story.home) as server:
         server.expect_health()
-        assert not restart_mark.exists()
+        expect_absent_exists_version_four(restart_mark)
 
 
 def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(new_story):
@@ -56,7 +57,7 @@ def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_sto
     with ServerProcess(story.home) as server:
         server.expect_health()
     expect_row(RegistryTable(database).row(), fingerprint=CodeFingerprint().text(ModuleFinder(story.home).modules()))
-    assert "core.gone" not in RegistryTable(database).row()["entries"]
+    expect_entries_registry_table_without(database, "core.gone")
 
 
 def test_a_hook_on_code_newer_than_the_registry_goes_through_unchecked_and_a_stop_is_held(new_story):
@@ -102,8 +103,10 @@ def test_a_server_that_starts_past_the_log_limit_leaves_a_small_log_and_one_old_
         log.write_text("x" * size)
         with ServerProcess(home, logged=True) as server:
             server.expect_health()
-        assert old_log.stat().st_size == size and log.stat().st_size < SERVER_LOG_LIMIT_BYTES // 100
-        assert "listening on" in log.read_text() and not log.with_name("server.log.2").exists()
+        expect_st_size_stat(old_log, size)
+        expect_st_size_stat_less(log, SERVER_LOG_LIMIT_BYTES // 100)
+        expect_changed_with(log, "listening on")
+        expect_absent_exists_with_log(log, "server.log.2")
 
 
 
@@ -115,3 +118,18 @@ def changing_code_server(new_story, tmp_path):
     code_file.write_text("x = 1\n")
     with server_story(new_story(fixture=ThreeTasks), SampleCodeFolders([code_file.parent])) as story:
         yield story, code_file, story.story.run("task list --environment main")
+
+
+def expect_st_size_stat(old_log, expected) -> None:
+    actual = old_log.stat().st_size
+    assert actual == expected, actual
+
+
+def expect_st_size_stat_less(log, expected) -> None:
+    actual = log.stat().st_size
+    assert actual < expected, actual
+
+
+def expect_entries_registry_table_without(database, expected) -> None:
+    actual = RegistryTable(database).row()['entries']
+    assert expected not in actual, actual

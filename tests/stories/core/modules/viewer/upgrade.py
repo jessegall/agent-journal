@@ -17,4 +17,9 @@ def test_a_saved_layout_becomes_a_layout_of_the_person_in_window_names_and_a_vie
     shown.expect_text("messages.chat")
     shown.expect_text("tasks.tasks")
     shown.expect_text("gone.weather")
-    assert "skipped settings" not in "\n".join(line for line in story.upgrade_text.splitlines() if "layout" in line)
+    expect_join_without("\n", story, "layout", "skipped settings")
+
+
+def expect_join_without(text, story, text_2, expected) -> None:
+    actual = text.join((line for line in story.upgrade_text.splitlines() if text_2 in line))
+    assert expected not in actual, actual

@@ -180,20 +180,20 @@ def test_a_turn_with_no_tool_yet_is_thinking_until_it_begins_one_or_stops(new_st
     story = new_story(fixture=UserJoined)
     thinking = lambda: json.loads(story.run("usage tool --environment main --json", actor=story.user).output_text)["thinking"]
     story.hook("s-1", HookSamples.prompt("fix the cart"))
-    assert thinking() is True
+    expect_asking(thinking, True)
     story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1))
-    assert thinking() is False
+    expect_asking(thinking, False)
     story.hook("s-1", HookSamples.stop())
-    assert thinking() is False
+    expect_asking(thinking, False)
 
 
 def test_an_open_question_says_it_asks(new_story):
     story = new_story(fixture=UserJoined)
     asking = lambda: json.loads(story.run("usage tool --environment main --json", actor=story.user).output_text)["asking"]
     story.hook("s-1", HookSamples.stop())
-    assert asking() is False
+    expect_asking(asking, False)
     story.run('question ask "Which database?" --environment main', actor=story.agent)
-    assert asking() is True
+    expect_asking(asking, True)
 
 
 def test_the_agents_row_facts_name_the_task_an_agent_works_on(new_story):
@@ -278,12 +278,13 @@ def ended_worker_without_windows(ended_worker_report):
 
 def test_the_status_file_of_an_ended_session_is_removed_and_its_plan_windows_stay_in_plan_json(ended_worker_report):
     story = ended_worker_report
-    assert not (story.home.status_folder / "s-2.json").exists() and (story.home.status_folder / "plan.json").is_file()
+    expect_absent_exists_status_folder(story, "s-2.json")
+    expect_file_status_folder(story, "plan.json")
 
 
 def test_the_status_file_of_a_session_with_no_plan_windows_is_removed_and_leaves_plan_json_as_it_was(ended_worker_without_windows):
     story = ended_worker_without_windows
-    assert not (story.home.status_folder / "s-3.json").exists()
+    expect_absent_exists_status_folder(story, "s-3.json")
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used", actor=story.user)
 
 
@@ -291,18 +292,48 @@ def test_the_plan_windows_are_still_shown_after_many_ended_sessions(ended_worker
     story = ended_worker_report
     for number in range(3, 12):
         ended_helper(story, f"s-{number}", windows=True)
-    assert sorted(path.name for path in story.home.status_folder.glob("*.json")) == ["plan.json"]
+    expect_path_status(story, "*.json", ["plan.json"])
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used, starts again 2026-11-01 15:00 UTC; 7 days 65% used", actor=story.user)
 
 
 def test_an_ended_sessions_report_stays_readable_for_its_card(ended_worker_report):
     story = ended_worker_report
-    assert (story.home.status_folder / "ended" / "s-2.json").is_file()
-    assert story.container.get(StatusFiles).status("s-2").windows
+    expect_file_status_folder_2(story, "ended", "s-2.json")
+    expect_windows_status(story, "s-2")
 
 
 def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(ended_worker_report):
     story = ended_worker_report
     save_status_file(story, "s-1", {"rate_limits": {"seven_day": {"used_percentage": 17, "resets_at": SEVEN_DAYS_RESET}}})
     story.expect_text("usage show --environment main", "plan: 7 days 17% used", actor=story.user)
-    assert (story.home.status_folder / "s-1.json").is_file()
+    expect_file_status_folder(story, "s-1.json")
+
+
+def expect_file_status_folder(story, text) -> None:
+    actual = (story.home.status_folder / text).is_file()
+    assert actual, actual
+
+
+def expect_windows_status(story, text) -> None:
+    actual = story.container.get(StatusFiles).status(text).windows
+    assert actual, actual
+
+
+def expect_file_status_folder_2(story, text, text_2) -> None:
+    actual = (story.home.status_folder / text / text_2).is_file()
+    assert actual, actual
+
+
+def expect_path_status(story, text, expected) -> None:
+    actual = sorted((path.name for path in story.home.status_folder.glob(text)))
+    assert actual == expected, actual
+
+
+def expect_absent_exists_status_folder(story, text) -> None:
+    actual = (story.home.status_folder / text).exists()
+    assert not actual, actual
+
+
+def expect_asking(asking, expected) -> None:
+    actual = asking()
+    assert actual is expected, actual

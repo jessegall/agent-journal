@@ -3,6 +3,7 @@ import json
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.support.story_checks import expect_count_shown, expect_value_with
 
 ENVELOPE = '<cross-session-message from-name="shop-e6" from-mode="bypass">\nCheck 138 failed\n</cross-session-message>'
 
@@ -27,8 +28,9 @@ def test_a_message_from_another_session_shows_in_the_chat_once(new_story, tmp_pa
     hook_with(story, transcript)
     hook_with(story, transcript)
     listed = story.run("message list --json", actor=story.user).output_text
-    assert listed.count("Check 138 failed") == 1, listed
-    assert '"peer": "shop-e6"' in listed and '"type": "peer"' in listed, listed
+    expect_count_shown(listed, "Check 138 failed", 1)
+    expect_value_with(listed, '"peer": "shop-e6"')
+    expect_value_with(listed, '"type": "peer"')
 
 
 def test_a_queued_prompt_of_the_user_is_no_peer_message(new_story, tmp_path):

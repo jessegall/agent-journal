@@ -7,6 +7,7 @@ from core.base.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from tests.stories.support.story_checks import expect_value_with
 
 SLEEP_SECONDS = 300
 
@@ -31,8 +32,8 @@ def typing_story(new_story):
 def test_the_controls_list_the_programs_choices_without_their_lines(new_story):
     story, _ = typing_story(new_story)
     groups = json.loads(story.run(f"agent controls {story.agent.id} --json", actor=story.user).output_text)["groups"]
-    assert [group["key"] for group in groups] == ["model", "effort", "context"]
-    assert {"value": "opus", "label": "Opus"} in groups[0]["choices"]
+    expect_key_group_groups(groups, ["model", "effort", "context"])
+    expect_choices_groups_with(groups, {"value": "opus", "label": "Opus"})
 
 
 def test_a_choice_types_the_programs_own_line(new_story):
@@ -54,7 +55,7 @@ def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(new_
 def test_the_programs_are_listed_by_name_and_title(new_story):
     story = new_story(fixture=UserJoined)
     rows = json.loads(story.run("agent programs --json", actor=story.user).output_text)["rows"]
-    assert {"name": "claude", "title": "Claude Code"} in rows
+    expect_value_with(rows, {"name": "claude", "title": "Claude Code"})
 
 
 def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, tmp_path):
@@ -126,4 +127,25 @@ def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
 
 def test_the_agent_windows_hear_task_changes_so_their_cards_update_without_a_refresh():
     declared = {window.name: window for window in AgentsModule.windows}
-    assert "task.*" in declared["agents.agents"].events and "task.*" in declared["agents.subagents"].events
+    expect_events_agents_declared_with(declared, "task.*")
+    expect_events_agents_subagents_with(declared, "task.*")
+
+
+def expect_events_agents_declared_with(declared, expected) -> None:
+    actual = declared['agents.agents'].events
+    assert expected in actual, actual
+
+
+def expect_events_agents_subagents_with(declared, expected) -> None:
+    actual = declared['agents.subagents'].events
+    assert expected in actual, actual
+
+
+def expect_choices_groups_with(groups, expected) -> None:
+    actual = groups[0]['choices']
+    assert expected in actual, actual
+
+
+def expect_key_group_groups(groups, expected) -> None:
+    actual = [group['key'] for group in groups]
+    assert actual == expected, actual

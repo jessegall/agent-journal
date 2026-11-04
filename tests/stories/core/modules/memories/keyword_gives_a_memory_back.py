@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_count_shown, expect_value_without
 
 CART_EDIT = HookSamples.edit("src/cart.py")
 
@@ -44,4 +45,5 @@ def test_a_start_memory_a_keyword_gave_before_the_listener_ran_is_given_once(new
     story.hook("s-1", HookSamples.prompt("Look at the cart"))
     story.run_listeners()
     delivered = story.run("memory-delivery list", actor=story.user).output_text
-    assert delivered.count("keyword") == 1 and "start" not in delivered, delivered
+    expect_count_shown(delivered, "keyword", 1)
+    expect_value_without(delivered, "start")

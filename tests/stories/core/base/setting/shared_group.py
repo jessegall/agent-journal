@@ -1,6 +1,7 @@
 from core.base.module.module_removal import ModuleRemoval
 from tests.stories.core.base.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_count_output, expect_count_shown, expect_value
 
 OWN_ADDRESS = "good.sharing.tunnel.address"
 PLACED_ADDRESS = "remote.access.tunnel.address"
@@ -16,9 +17,9 @@ def shared_story(new_story):
 def test_the_tree_shows_a_group_in_the_module_that_places_it_and_in_its_own(new_story):
     story = shared_story(new_story)
     shown = story.run("setting tree", actor=story.user).output_text
-    assert shown.count(OWN_ADDRESS) == 2, shown
+    expect_count_shown(shown, OWN_ADDRESS, 2)
     placed = shown.split("remote.access: ")[1]
-    assert placed.index("good.sharing.tunnel:") < placed.index(OWN_ADDRESS)
+    expect_index_placed_less(placed, "good.sharing.tunnel:", placed.index(OWN_ADDRESS))
 
 
 def test_a_value_saved_through_the_place_shows_in_the_owners_group_with_one_key(new_story):
@@ -34,7 +35,7 @@ def test_a_value_saved_in_the_owners_group_shows_where_the_group_is_placed(new_s
     story = shared_story(new_story)
     story.run(f"setting set {OWN_ADDRESS} {TUNNEL} --project", actor=story.user)
     story.expect_success(f"setting show {PLACED_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
-    assert story.run("setting tree", actor=story.user).output_text.count(TUNNEL) == 2
+    expect_count_output(story, "setting tree", TUNNEL, 2)
 
 
 def test_a_reference_to_a_group_its_module_does_not_declare_is_refused_naming_the_module(new_story):
@@ -51,5 +52,10 @@ def test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_remove
     story = shared_story(new_story)
     story.container.get(ModuleRemoval).remove("good")
     code, report = story.synced()
-    assert code == 0, report
+    expect_value(code, 0)
     story.expect_no_text("setting tree", OWN_ADDRESS, actor=story.user)
+
+
+def expect_index_placed_less(placed, text, expected) -> None:
+    actual = placed.index(text)
+    assert actual < expected, actual

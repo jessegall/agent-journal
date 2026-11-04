@@ -8,6 +8,7 @@ from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_count_marks, expect_error_log_with, expect_value
 
 STAMP = "2026-01-01T00:00:00+00:00"
 OLD_TABLE_STATEMENTS = (
@@ -27,15 +28,16 @@ OLD_TABLE_STATEMENTS = (
 def test_the_chat_module_declares_the_exception_and_upgrade_marks_under_the_journal_group(new_story):
     story = new_story(fixture=UserJoined)
     marks = [mark for mark in Registry.read(story.container.get(Database)).marks if mark.module == "journal.core.chat"]
-    assert [(mark.type, mark.family, mark.group, mark.shipped) for mark in marks] == [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True)]
+    expect_type_mark_family(marks, [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True)])
 
 
 def test_a_failing_command_shows_one_exception_mark_and_the_file_keeps_the_trace(new_story):
     story = new_story(EXCEPTION_SAMPLE, fixture=UserJoined)
     story.run("chat-mark fail", environment_id=1)
     story.run_listeners()
-    assert marks_text(story).count("RuntimeError: the sample command broke") == 1, marks_text(story) + story.error_log_text()
-    assert "the sample command broke" in story.error_log_text() and "Traceback" in story.error_log_text()
+    expect_count_marks(story, "RuntimeError: the sample command broke", 1)
+    expect_error_log_with(story, "the sample command broke")
+    expect_error_log_with(story, "Traceback")
     story.expect_text("journal-exception list", "RuntimeError")
 
 
@@ -55,8 +57,8 @@ def test_a_failing_hook_rule_shows_one_exception_mark_and_the_file_keeps_the_tra
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.hook("s-1", HookSamples.stop())
     story.run_listeners()
-    assert marks_text(story).count("samples.failing-rule") == 1, marks_text(story) + story.error_log_text()
-    assert "the sample rule failed" in story.error_log_text()
+    expect_count_marks(story, "samples.failing-rule", 1)
+    expect_error_log_with(story, "the sample rule failed")
 
 
 def test_a_database_that_holds_faults_upgrades_to_exceptions_with_its_marks_events_and_cursor(new_story):
@@ -65,10 +67,35 @@ def test_a_database_that_holds_faults_upgrades_to_exceptions_with_its_marks_even
     for sql in OLD_TABLE_STATEMENTS:
         database.update(Statement(sql))
     code, output = story.synced()
-    assert code == 0, output
+    expect_value(code, 0)
     database = story.container.get(Database)
     story.expect_text("journal-exception list", "KeyError: gone", "task start 3")
-    assert [(row["type"], row["target_model"]) for row in database.rows(Statement("SELECT type, target_model FROM chat_marks WHERE key = 'command failed:1:1'"))] == [("chat.exception", "journal-exception")]
-    assert [(row["name"], row["row_table"], row["command"]) for row in database.rows(Statement("SELECT name, row_table, command FROM events WHERE row_id = 1 AND name LIKE 'journal_%'"))] == [("journal_exception.create", "journal_exceptions", "RecordJournalException")]
-    assert [row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE name = 'journal_faults'"))] == []
-    assert [row["listener"] for row in database.rows(Statement("SELECT listener FROM listener_cursors WHERE listener IN ('chat.exception-mark', 'chat.fault-mark')"))] == ["chat.exception-mark"]
+    expect_type_target_model(database, "SELECT type, target_model FROM chat_marks WHERE key = 'command failed:1:1'", [("chat.exception", "journal-exception")])
+    expect_table_database(database, "SELECT name, row_table, command FROM events WHERE row_id = 1 AND name LIKE 'journal_%'", [("journal_exception.create", "journal_exceptions", "RecordJournalException")])
+    expect_database(database, "SELECT name FROM sqlite_master WHERE name = 'journal_faults'", [])
+    expect_listener_database(database, "SELECT listener FROM listener_cursors WHERE listener IN ('chat.exception-mark', 'chat.fault-mark')", ["chat.exception-mark"])
+
+
+def expect_listener_database(database, text, expected) -> None:
+    actual = [row['listener'] for row in database.rows(Statement(text))]
+    assert actual == expected, actual
+
+
+def expect_database(database, text, expected) -> None:
+    actual = [row['name'] for row in database.rows(Statement(text))]
+    assert actual == expected, actual
+
+
+def expect_table_database(database, text, expected) -> None:
+    actual = [(row['name'], row['row_table'], row['command']) for row in database.rows(Statement(text))]
+    assert actual == expected, actual
+
+
+def expect_type_target_model(database, text, expected) -> None:
+    actual = [(row['type'], row['target_model']) for row in database.rows(Statement(text))]
+    assert actual == expected, actual
+
+
+def expect_type_mark_family(marks, expected) -> None:
+    actual = [(mark.type, mark.family, mark.group, mark.shipped) for mark in marks]
+    assert actual == expected, actual

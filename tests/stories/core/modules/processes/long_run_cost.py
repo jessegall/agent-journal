@@ -5,6 +5,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value_with
 
 
 def test_a_long_run_hook_does_not_scan_old_parts(new_story):
@@ -23,7 +24,12 @@ def test_a_long_run_hook_does_not_scan_old_parts(new_story):
     finally:
         connection.set_progress_handler(None, 0)
         connection.set_trace_callback(None)
-    assert len(steps) < 100, len(steps)
+    expect_steps_less(steps, 100)
     query = next(statement for statement in statements if "process_parts" in statement and "started_at" in statement and statement.startswith("SELECT"))
     plan = " ".join(row[3] for row in connection.execute(f"EXPLAIN QUERY PLAN {query}"))
-    assert "SEARCH process_parts USING INDEX sqlite_autoindex_process_parts_1" in plan, plan
+    expect_value_with(plan, "SEARCH process_parts USING INDEX sqlite_autoindex_process_parts_1")
+
+
+def expect_steps_less(steps, expected) -> None:
+    actual = len(steps)
+    assert actual < expected, actual

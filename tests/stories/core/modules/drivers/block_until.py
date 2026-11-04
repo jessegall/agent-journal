@@ -57,7 +57,7 @@ def test_a_block_ends_when_its_condition_is_true(new_story):
 def test_conditions_combine(condition_story, ends):
     story = condition_story
     edit = story.hook("s-1", HookSamples.edit("src/cart.py"))
-    assert bool(edit.refusal) is not ends
+    expect_changed_bool(edit, ends)
 
 
 @pytest.fixture
@@ -65,3 +65,8 @@ def condition_story(new_story, condition, line):
     story = blocked_story(new_story, condition)
     story.hook("s-1", shell(line, ShellPart("journal", CommandCategory.JOURNAL, [line.split()[1]], subcommand=line.split()[1])))
     return story
+
+
+def expect_changed_bool(edit, expected) -> None:
+    actual = bool(edit.refusal)
+    assert actual is not expected, actual

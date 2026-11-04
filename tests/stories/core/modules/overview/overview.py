@@ -7,23 +7,27 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
 
 def test_the_overview_shows_each_default_command_under_its_heading(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     text = story.run("overview", actor=story.user).output_text
-    assert "## task list --state open" in text and "Fix the cart" in text
-    assert "## question list" in text
-    assert "has no" not in text and "journal failed" not in text and "unrecognized arguments" not in text
-    assert "Fix the cart  " not in text.replace("Fix the cart\n", "")
+    expect_value_with(text, "## task list --state open")
+    expect_value_with(text, "Fix the cart")
+    expect_value_with(text, "## question list")
+    expect_value_without(text, "has no")
+    expect_value_without(text, "journal failed")
+    expect_value_without(text, "unrecognized arguments")
+    expect_replace_without(text, "Fix the cart\n", "", "Fix the cart  ")
 
 
 def test_the_user_chooses_what_the_overview_shows(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('setting set journal.core.overview.commands "task board" --project', actor=story.user)
     answer = json.loads(story.run("overview --json", actor=story.user).output_text)
-    assert [section["command"] for section in answer["sections"]] == ["task board"]
+    expect_command_section_sections(answer, ["task board"])
     story.expect_no_text("overview", "question list", actor=story.user)
 
 
@@ -69,3 +73,13 @@ def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):
     story.expect_hook_allowed("s-1", EDIT)
     story.hook("s-1", COMPACTION)
     story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
+
+
+def expect_command_section_sections(answer, expected) -> None:
+    actual = [section['command'] for section in answer['sections']]
+    assert actual == expected, actual
+
+
+def expect_replace_without(text, text_2, text_3, expected) -> None:
+    actual = text.replace(text_2, text_3)
+    assert expected not in actual, actual

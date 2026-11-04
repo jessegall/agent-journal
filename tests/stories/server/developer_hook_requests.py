@@ -11,6 +11,7 @@ from tests.stories.core.modules.developer.support.hook_recording_fixture import 
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value
 
 
 @pytest.fixture
@@ -27,11 +28,11 @@ def test_hook_navigation_requires_both_developer_tools_and_recording(recording_s
                  ["setting", "set", "journal.core.developer.tools.hooks.request-log", recording, "--project"]):
         server.viewer_line_value(cookie, {"line": line, "environment": "main", "window": "settings.settings"})
     status, body, _ = server.viewer_download("/api/windows?environment=main", cookie)
-    assert status == 200
+    expect_value(status, 200)
     windows = json.loads(body)["windows"]
-    assert ('"developer.hook-requests"' in body.decode()) is visible
-    assert ('"developer.numbers"' in body.decode()) is (tools == "on")
-    assert all(window["group"] == "developer" for window in windows if window["name"].startswith("developer."))
+    expect_value_15('"developer.hook-requests"', body, visible)
+    expect_value_15('"developer.numbers"', body, tools == "on")
+    expect_group_window_windows("developer", windows, "developer.")
 
 
 @pytest.mark.parametrize("event,outcome", [("post_tool_use", HookAnswer.ALLOWED), ("stop", HookAnswer.REFUSED)])
@@ -46,7 +47,7 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     request = value["rows"][0]
-    assert request["duration_ms"] > 0
+    expect_duration_ms_request_more(request, 0)
     expect_row(request, outcome=outcome.value)
     expect_row(request, body=dict(sample.body))
 
@@ -60,7 +61,7 @@ def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
         server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
-    assert [row["part_count"] for row in value["rows"]] == [0, 2]
+    expect_part_count(value, [0, 2])
 
 
 def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recording_server):
@@ -72,3 +73,23 @@ def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recordi
         log.record("claude", {"X-Journal-Hook-Id": f"request-{number}"}, {"event": "pre_tool_use", "tool": {"name": "Bash", "shell": shell}, "text": "x" * 4000},
                    number * 20, HookAnswer.REFUSED if number == 69 else HookAnswer.ALLOWED)
     expect_browser(recording_server, "hookRequests.browser.mjs", [])
+
+
+def expect_part_count(value, expected) -> None:
+    actual = [row['part_count'] for row in value['rows']]
+    assert actual == expected, actual
+
+
+def expect_duration_ms_request_more(request, expected) -> None:
+    actual = request['duration_ms']
+    assert actual > expected, actual
+
+
+def expect_group_window_windows(text, windows, text_2) -> None:
+    actual = all((window['group'] == text for window in windows if window['name'].startswith(text_2)))
+    assert actual, actual
+
+
+def expect_value_15(text, body, expected) -> None:
+    actual = text in body.decode()
+    assert actual is expected, actual

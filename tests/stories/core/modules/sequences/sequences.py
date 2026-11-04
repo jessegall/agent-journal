@@ -148,7 +148,7 @@ def test_a_record_a_subagent_makes_starts_the_sequence_on_that_subagent_and_not_
     helper_id = story.new_row_id(f"agent start s-2 claude subagent --parent {story.agent.id} --environment main")
     story.run('plan make "The rebuild" --environment main', actor=Actor(helper_id, ActorType.AGENT))
     story.run_listeners()
-    assert story.container.get(Queries).query(SequenceRun).find(1).agent_id == helper_id
+    expect_agent_id(story, 1, helper_id)
 
 
 def test_a_running_sequence_is_not_started_again(new_story):
@@ -200,3 +200,8 @@ def expect_running(story) -> None:
 
 def expect_absent_running(story) -> None:
     assert not running(story)
+
+
+def expect_agent_id(story, number, expected) -> None:
+    actual = story.container.get(Queries).query(SequenceRun).find(number).agent_id
+    assert actual == expected, actual

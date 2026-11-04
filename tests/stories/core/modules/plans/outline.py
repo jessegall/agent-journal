@@ -5,13 +5,15 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import PlanWithCheckpoint, UserJoined
+from tests.stories.support.story_checks import expect_index, expect_lines_2
 
 
 def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
     story = new_story(fixture=PlanWithCheckpoint)
     answer = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
-    assert answer["phases"] and all("tasks" in phase and "title" in phase for phase in answer["phases"])
-    assert any(phase["tasks"] and {"id", "title", "state", "helper_id"} == set(phase["tasks"][0]) for phase in answer["phases"])
+    expect_phases_answer(answer)
+    expect_tasks_phases_answer("tasks", "title", answer)
+    expect_tasks_phase_phases("id", "title", "state", "helper_id", answer)
 
 
 def test_the_board_brings_the_open_plans_cards_and_both_counts_in_one_answer(new_story):
@@ -41,7 +43,7 @@ def test_the_timeline_says_when_each_task_was_made_logged_and_ended_newest_first
     story.advance(timedelta(seconds=5))
     story.run('task close 1 --outcome "Cart works"', actor=story.agent)
     text = story.run("plan timeline 1", actor=story.agent).output_text
-    assert text.index("completed  task 1  Cart works") < text.index("logged  task 1  The cart adds up") < text.index("made  task 1")
+    expect_index(text, "completed  task 1  Cart works", "logged  task 1  The cart adds up", "made  task 1")
 
 
 def test_a_plan_with_nothing_placed_has_an_empty_timeline(new_story):
@@ -57,5 +59,25 @@ def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(new_
     story.run("task start 2", actor=story.agent)
     phases = json.loads(story.run("plan inspect 1 --json", actor=story.agent).output_text)["phases"]
     holders = {task["id"]: task["helper_id"] for phase in phases for task in phase["tasks"]}
-    assert holders[1] == worker.id
-    assert holders[2] is None
+    expect_lines_2(holders, worker.id)
+    expect_holders(holders, None)
+
+
+def expect_holders(holders, expected) -> None:
+    actual = holders[2]
+    assert actual is expected, actual
+
+
+def expect_tasks_phase_phases(text, text_2, text_3, text_4, answer) -> None:
+    actual = any((phase['tasks'] and {text, text_2, text_3, text_4} == set(phase['tasks'][0]) for phase in answer['phases']))
+    assert actual, actual
+
+
+def expect_phases_answer(answer) -> None:
+    actual = answer['phases']
+    assert actual, actual
+
+
+def expect_tasks_phases_answer(text, text_2, answer) -> None:
+    actual = all((text in phase and text_2 in phase for phase in answer['phases']))
+    assert actual, actual

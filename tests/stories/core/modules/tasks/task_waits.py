@@ -95,17 +95,17 @@ def test_a_block_nothing_opens_is_named_again_after_five_closed_tasks_or_45_minu
     story = new_story(fixture=TwoTasks)
     story.run('task block 2 --reason "needs a key"')
     has_block_line = lambda: any("blocked with nothing to open them: 2:" in line for line in story.hook("s-1", posted("journal task list")).lines)
-    assert has_block_line()
+    expect_block(has_block_line)
     for number in range(3, 8):
         story.expect_success(f'task make "job {number}" --brief "a job" --environment main')
         story.clock.advance(timedelta(seconds=1))
         story.expect_success(f"task start {number}", actor=story.agent)
         story.expect_success(f"task close {number} --outcome done", actor=story.agent)
-        assert has_block_line() == (number == 7), number
+        expect_block_2(has_block_line, number == 7)
     story.clock.advance(timedelta(seconds=2699))
-    assert not has_block_line()
+    expect_absent_block(has_block_line)
     story.clock.advance(timedelta(seconds=1))
-    assert has_block_line()
+    expect_block(has_block_line)
 
 
 def test_a_stop_does_not_refuse_over_a_task_that_opens_by_itself(new_story):
@@ -215,8 +215,8 @@ def test_the_inspector_says_what_opens_a_blocked_task_and_nothing_when_nothing_d
     story.run('task block 1 --on task:2 --reason "needs the cart"')
     story.run('task block 2 --reason "needs a key"')
     openers = lambda task: json.loads(story.run(f"task inspect {task} --json", actor=story.user).output_text)["openers"]
-    assert openers(1) == ["task 2 is settled"]
-    assert openers(2) == []
+    expect_openers(openers, 1, ["task 2 is settled"])
+    expect_openers(openers, 2, [])
 
 
 @pytest.fixture
@@ -242,3 +242,23 @@ def reopened_waiting_task(waiting_task_hook):
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
     return story, entered
+
+
+def expect_block(has_block_line) -> None:
+    actual = has_block_line()
+    assert actual, actual
+
+
+def expect_absent_block(has_block_line) -> None:
+    actual = has_block_line()
+    assert not actual, actual
+
+
+def expect_block_2(has_block_line, expected) -> None:
+    actual = has_block_line()
+    assert actual == expected, actual
+
+
+def expect_openers(openers, number, expected) -> None:
+    actual = openers(number)
+    assert actual == expected, actual

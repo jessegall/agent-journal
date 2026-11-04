@@ -13,6 +13,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
+from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"])).with_fields(program="codex")
 STOP = HookSamples.stop().with_fields(program="codex")
@@ -41,7 +42,8 @@ def test_a_stop_holds_a_codex_agent_until_it_runs_the_monitor_command_in_its_she
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     refusal = story.hook("s-1", STOP).refusal
-    assert f"run journal output monitor {process.id}" in refusal and "Monitor" not in refusal
+    expect_value_with(refusal, f"run journal output monitor {process.id}")
+    expect_value_without(refusal, "Monitor")
 
 
 def test_the_monitor_command_in_its_shell_lets_a_codex_agent_stop(new_story):
@@ -75,7 +77,7 @@ def test_a_codex_agent_that_asks_for_a_runs_status_is_told_to_run_the_monitor_co
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     lines = story.hook("s-1", shell_line(f"journal output status {process.id}")).lines
-    assert any(f"run journal output monitor {process.id}" in line and "Monitor on" not in line for line in lines)
+    expect_lines_6(f"run journal output monitor {process.id}", "Monitor on", lines)
 
 
 def test_a_claude_agent_still_may_not_run_the_monitor_command_in_its_shell(new_story):
@@ -83,3 +85,8 @@ def test_a_claude_agent_still_may_not_run_the_monitor_command_in_its_shell(new_s
     process = moved_run(story, "make test")
     claude_line = HookSamples.shell(f"journal output monitor {process.id}", ShellPart("journal", CommandCategory.JOURNAL, ["output", "monitor", str(process.id)], subcommand="output"))
     story.expect_hook_refusal("s-1", claude_line, "runs only in a Monitor")
+
+
+def expect_lines_6(text, text_2, lines) -> None:
+    actual = any((text in line and text_2 not in line for line in lines))
+    assert actual, actual

@@ -1,4 +1,5 @@
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit
 
 LONG_BRIEF = "Before " + "words " * 20 + "the cents   rounding\n\nbreaks " + "after " * 30
 
@@ -33,9 +34,12 @@ def test_a_hit_shows_a_short_passage_around_the_first_word_with_its_spaces_folde
     story.run(f'task make "Long one" --brief "{LONG_BRIEF}" --environment main', actor=story.user)
     hit = story.run('search find rounding', actor=story.agent).output_text.strip()
     excerpt = hit.removeprefix("task 1: ")
-    assert excerpt.startswith("…") and excerpt.endswith("…"), hit
-    assert "the cents rounding breaks" in excerpt and "  " not in excerpt and "\n" not in excerpt, hit
-    assert len(excerpt) <= 162, len(excerpt)
+    expect_startswith_listed(excerpt, "…")
+    expect_endswith_authorization(excerpt, "…")
+    expect_value_with(excerpt, "the cents rounding breaks")
+    expect_value_without(excerpt, "  ")
+    expect_value_without(excerpt, "\n")
+    expect_visited_limit(excerpt, 162)
 
 
 def test_the_model_option_keeps_the_hits_to_the_models_named(new_story):
@@ -56,4 +60,10 @@ def test_at_most_forty_hits_are_shown_and_the_line_says_more_were_found(new_stor
     for number in range(45):
         story.run(f'task make "Cart task {number}" --environment main', actor=story.user)
     output = story.run('search find cart', actor=story.agent).output_text
-    assert sum(line.startswith("task ") for line in output.splitlines()) == 40 and "45 rows hold all of: cart, the newest 40 are shown" in output, output
+    expect_sum_startswith_output("task ", output, 40)
+    expect_value_with(output, "45 rows hold all of: cart, the newest 40 are shown")
+
+
+def expect_sum_startswith_output(text, output, expected) -> None:
+    actual = sum((line.startswith(text) for line in output.splitlines()))
+    assert actual == expected, actual

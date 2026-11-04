@@ -4,6 +4,7 @@ from pathlib import Path
 from core.base.database.database import Database
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.support.story_checks import expect_count_shown, expect_value, expect_value_more, expect_visited_limit
 
 PROMPT = HookSamples.prompt("go on")
 REMINDERS = 12
@@ -70,7 +71,7 @@ def test_a_hook_reads_the_open_reminders_and_counts_tool_uses_in_a_few_queries(n
         story.expect_success(f'reminder make "Log {number}" --every-tool-uses 1000 --every-tasks 1000 --environment main', actor=story.agent)
     story.hook("s-1", PROMPT)
     reads = selects_during(story, lambda: story.hook("s-1", PROMPT))
-    assert len(reads) <= REMINDER_READS_ALLOWED, len(reads)
+    expect_visited_limit(reads, REMINDER_READS_ALLOWED)
 
 
 def transcript_story(new_story, tmp_path):
@@ -89,7 +90,8 @@ def test_a_second_hook_over_an_unchanged_transcript_reads_none_of_it(new_story, 
     story, path, hook = transcript_story(new_story, tmp_path)
     first = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
     second = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
-    assert first > 0 and second == 0, (first, second)
+    expect_value_more(first, 0)
+    expect_value(second, 0)
 
 
 def test_a_hook_over_a_transcript_that_grew_reads_only_what_was_added(new_story, tmp_path, monkeypatch):
@@ -99,7 +101,7 @@ def test_a_hook_over_a_transcript_that_grew_reads_only_what_was_added(new_story,
     with path.open("a") as transcript:
         transcript.write(added)
     read = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
-    assert read == len(added.encode()), read
+    expect_value(read, len(added.encode()))
 
 
 def test_a_note_in_the_added_part_still_reaches_the_chat_once(new_story, tmp_path):
@@ -110,7 +112,8 @@ def test_a_note_in_the_added_part_still_reaches_the_chat_once(new_story, tmp_pat
     story.hook("s-1", hook)
     story.hook("s-1", hook)
     text = listed(story)
-    assert text.count("look at the cart") == 1 and text.count("and the totals") == 1
+    expect_count_shown(text, "look at the cart", 1)
+    expect_count_shown(text, "and the totals", 1)
 
 
 def test_a_line_written_in_two_parts_is_read_once_it_is_whole(new_story, tmp_path):
@@ -124,9 +127,14 @@ def test_a_line_written_in_two_parts_is_read_once_it_is_whole(new_story, tmp_pat
     with path.open("a") as transcript:
         transcript.write(full_line[40:])
     story.hook("s-1", hook)
-    assert listed(story).count("in two parts") == 1
+    expect_count_listed(story, "in two parts", 1)
 
 
 def expect_absent_listed(story, expected) -> None:
     actual = listed(story)
     assert expected not in actual, actual
+
+
+def expect_count_listed(story, text, expected) -> None:
+    actual = listed(story).count(text)
+    assert actual == expected, actual

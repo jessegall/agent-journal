@@ -1,4 +1,5 @@
 from tests.stories.core.modules.questions.fixtures import OpenQuestion
+from tests.stories.support.story_checks import expect_count_output_2
 
 
 def test_an_open_question_docks_from_its_inspector(new_story):
@@ -18,10 +19,10 @@ def test_while_questions_are_open_one_card_waits_above_the_chat_and_it_leaves_wi
     story.expect_text("dock-item list", "questions.open")
     story.run('question ask "And the cache?" --environment main', actor=story.agent)
     story.run_listeners()
-    assert story.run("dock-item list").output_text.count("questions.open") == 1
+    expect_count_output_2(story, "dock-item list", "questions.open", 1)
     story.run('question answer 1 --answer sqlite', actor=story.user)
     story.run_listeners()
-    assert story.run("dock-item list").output_text.count("questions.open") == 1
+    expect_count_output_2(story, "dock-item list", "questions.open", 1)
     story.run('question answer 2 --answer yes', actor=story.user)
     story.run_listeners()
     story.expect_absent("dock-item list --state docked", "questions.open")

@@ -4,6 +4,7 @@ from install.unix_connection import UnixConnection
 from server.request_handler import RequestHandler
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import request_answer, running_server
+from tests.stories.support.story_checks import expect_value, expect_wait_arrived
 
 WAIT_SECONDS = 10
 DRAIN_SECONDS = 10
@@ -29,15 +30,31 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
         idle.getresponse().read()
         runner = threading.Thread(target=lambda: statuses.append(request_answer(socket_path, "GET", "/held").status))
         runner.start()
-        assert arrived.wait(WAIT_SECONDS)
+        expect_wait_arrived(arrived, WAIT_SECONDS)
         server.request_stop()
         draining = threading.Thread(target=lambda: server.drain(DRAIN_SECONDS))
         draining.start()
-        assert idle.sock is not None
+        expect_changed_sock_idle(idle, None)
         idle.sock.settimeout(WAIT_SECONDS)
-        assert idle.sock.recv(1) == b"", "the idle connection was not closed"
+        expect_recv_sock_idle(idle, 1, b"")
         released.set()
         draining.join(WAIT_SECONDS)
         runner.join(WAIT_SECONDS)
         idle.close()
-    assert statuses == [200] and not draining.is_alive(), "the running request was cut off by the stop"
+    expect_value(statuses, [200])
+    expect_absent_draining(draining)
+
+
+def expect_absent_draining(draining) -> None:
+    actual = draining.is_alive()
+    assert not actual, actual
+
+
+def expect_recv_sock_idle(idle, number, expected) -> None:
+    actual = idle.sock.recv(number)
+    assert actual == expected, actual
+
+
+def expect_changed_sock_idle(idle, expected) -> None:
+    actual = idle.sock
+    assert actual is not expected, actual

@@ -12,8 +12,9 @@ MODULES = (f"{PATH}:GoodSkillsModule", f"{PATH}:PlanSkillsModule")
 def test_the_registry_keeps_a_skill_entry_for_every_declaration_of_two_modules(new_story):
     story = new_story(*MODULES, fixture=UserJoined)
     skills = {skill.folder: skill for skill in Registry.read(story.container.get(Database)).skills}
-    assert {"journal-flowcharts", "journal-messages", "journal-notes", "journal-roadmaps", "journal-shell", "journal-chores"} <= set(skills)
-    assert skills["journal-roadmaps"].module == "planskills" and not skills["journal-roadmaps"].shipped
+    expect_journal_flowcharts_messages_limit("journal-flowcharts", "journal-messages", "journal-notes", "journal-roadmaps", "journal-shell", "journal-chores", set(skills))
+    expect_module_journal_roadmaps(skills, "planskills")
+    expect_absent_journal_roadmaps(skills)
     expect_row(skills["journal-notes"], digest=SkillDigest.digest("---\nname: journal-notes\ndescription: How to take notes\n---\n\nWrite a note for every decision.\n"))
 
 
@@ -23,3 +24,18 @@ def test_api_skills_lists_the_skills_of_two_modules_behind_the_login(new_story):
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
         story.expect_viewer_status("/api/skills", 200, cookie, text='"folder": "journal-roadmaps"')
         story.expect_viewer_status("/api/skills", 200, cookie, text='"folder": "journal-notes"')
+
+
+def expect_module_journal_roadmaps(skills, expected) -> None:
+    actual = skills['journal-roadmaps'].module
+    assert actual == expected, actual
+
+
+def expect_absent_journal_roadmaps(skills) -> None:
+    actual = skills['journal-roadmaps'].shipped
+    assert not actual, actual
+
+
+def expect_journal_flowcharts_messages_limit(text, text_2, text_3, text_4, text_5, text_6, expected) -> None:
+    actual = {text, text_2, text_3, text_4, text_5, text_6}
+    assert actual <= expected, actual
