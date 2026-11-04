@@ -24,3 +24,17 @@ def test_the_feed_pages_by_id(new_story):
     older = story.run(f"hook-call feed --agent-id {story.agent.id} --before-id 3 --json", actor=story.user)
     older.expect_text('"id": 2')
     older.expect_no_text('"id": 3')
+
+
+def test_the_feed_gives_a_hundred_calls_in_one_page_and_the_older_ones_in_the_next(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    for number in range(105):
+        story.hook("s-1", HookSamples.stop().with_fields(firing=f"f-{number}"))
+    newest = story.run(f"hook-call feed --agent-id {story.agent.id} --limit 100 --json", actor=story.user)
+    newest.expect_text('"id": 106,')
+    newest.expect_text('"id": 7,')
+    newest.expect_no_text('"id": 6,')
+    older = story.run(f"hook-call feed --agent-id {story.agent.id} --limit 100 --before-id 7 --json", actor=story.user)
+    older.expect_text('"id": 6,')
+    older.expect_text('"id": 1,')
+    older.expect_no_text('"id": 7,')
