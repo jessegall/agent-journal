@@ -46,13 +46,13 @@ class Process(Model):
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
-        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def fail(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
-        return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def stop(self, timestamp: Timestamp, actor: Actor) -> "Process":
-        return self.moved(ProcessLifecycle.stop, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.stop, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
     def orphan(self, timestamp: Timestamp, actor: Actor) -> "Process":
-        return self.moved(ProcessLifecycle.orphan, ended_at=timestamp, slot_assigned=False)
+        return self.moved(ProcessLifecycle.orphan, ended_at=timestamp, queued_at=None, slot_assigned=False)

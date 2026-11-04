@@ -21,7 +21,8 @@ class BackgroundCommands:
     def part_command(self, part: Part) -> PartCommand:
         argv = list(part.arguments) if part.program == JOURNAL else []
         options = self.aliases.options(argv[0]) if argv else None
-        return PartCommand(self.aliases.named_line(argv) or part.text, options.reader_id if options else None)
+        category = options.category if options is not None and options.category is not None else part.classification.category
+        return PartCommand(self.aliases.named_line(argv) or part.text, category, options.reader_id if options else None)
 
     def is_long_alias(self, part: Part, shell: ShellLine) -> bool:
         return any(options.is_long_running and part.text.startswith(options.command) for options in self.alias_runs(shell))

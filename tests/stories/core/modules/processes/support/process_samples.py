@@ -24,11 +24,11 @@ BYTES_LONG = 5000
 BYTES_SHORT = 12
 
 
-def start_process(story: Story, line: str = "make test && echo done", piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None, is_queued: bool = False) -> Process:
+def start_process(story: Story, line: str = "make test && echo done", piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None) -> Process:
     """Runs StartProcess the way the runner rule does in a hook call's transaction: one part for each command of the line."""
     texts = [text.strip() for text in line.split("&&")]
     parts = tuple(PartSpec(text, text.split()[0], piped and index == 0, CommandCategory.READ if text.startswith("cd ") else category or (CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN)) for index, text in enumerate(texts))
-    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts, is_queued=is_queued)
+    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
@@ -36,7 +36,7 @@ def runner_line(story: Story, process_id: int, line: str, limit: int = 15, backg
     """The line the rule gives the agent's tool to run in place of its own."""
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
     variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
-    if limit > 0 and not read_command and queue_run:
+    if limit > 0 and has_long_part and not read_command and queue_run:
         flag += " --queue"
         variables += " JOURNAL_RUN_QUEUE_WAIT=5"
     return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"

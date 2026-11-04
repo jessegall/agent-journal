@@ -27,7 +27,7 @@ class ForegroundLimit:
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         alias_runs = self.background.alias_runs(shell)
         part_commands = tuple(self.background.part_command(part) for part in shell.parts)
-        if shell.is_journal_line and (not alias_runs or all(part.classification.category is CommandCategory.JOURNAL for part in shell.parts)):
+        if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands):
             return ForegroundRun(0, False, part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES, environment_id))
         declared = self.background.declared_category(shell)
         is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.pipeline_heads)
@@ -36,11 +36,10 @@ class ForegroundLimit:
         has_long_part = any(part.classification.category.is_long_running or self.background.is_long_alias(part, shell) for part in shell.parts)
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if has_long_part else ProcessSetting.MOST_OUTPUT_MEGABYTES
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands,
+                             queued=bool(part_commands) and all(command.category.is_long_running for command in part_commands),
                              most_output_bytes=self.output_limit(output_setting, environment_id),
                              read_flags=tuple(f"{position}:{part.read_flag}" for position, part in enumerate(shell.parts, start=1) if part.read_flag),
-                             queue_wait_seconds=self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS, environment_id),
-                             queue_positions=tuple(position for position, part in enumerate(shell.parts, start=1)
-                                                   if part.classification.category.is_long_running or self.background.is_long_alias(part, shell)))
+                             queue_wait_seconds=self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS, environment_id))
 
     def output_limit(self, setting: ProcessSetting, environment_id: int) -> int:
         return max(1, self.settings.integer(setting, environment_id)) * MEGABYTE

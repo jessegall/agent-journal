@@ -2,6 +2,7 @@ import json
 
 from core.base.query.queries import Queries
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.tool_type import ToolType
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.story_fixture import StoryFixture
@@ -72,7 +73,7 @@ def test_plain_journal_hook_never_waits_even_while_worker_queue_is_halted(new_st
 def test_saved_journal_command_enters_queue_as_its_real_command(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
     story.expect_success('alias add cart-build "make package" --category build --agents', actor=story.agent)
-    reply = story.hook("s-1", HookSamples.shell("journal cart-build", ShellPart("journal", CommandCategory.BUILD, ["cart-build"], subcommand="cart-build")))
+    reply = story.hook("s-1", HookSamples.shell("journal cart-build", ShellPart("journal", CommandCategory.JOURNAL, ["cart-build"], subcommand="cart-build")))
     expect_reply_allowed(reply)
     process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
     story.expect_rows("--queue" in str(reply.updated_input), "--limit 15" in str(reply.updated_input),
@@ -84,18 +85,50 @@ def test_reads_and_journal_commands_in_one_line_never_queue(new_story):
     output = start_process(story, "make sample", category=CommandCategory.BUILD)
     end_run(story, output, "sample\n")
     line = f"rg cart src; journal output read {output.id} --summary"
-    reply = story.hook("s-1", HookSamples.shell(line,
-                       ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
-                       ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", str(output.id), "--summary"], subcommand="output")))
+    parts = [ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]).prepared("rg cart src"),
+             ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", str(output.id), "--summary"], subcommand="output").prepared(f"journal output read {output.id} --summary")]
+    parts[0]["joined_by"] = ";"
+    reply = story.hook("s-1", HookSamples.tool_use("Bash", ToolType.SHELL, [], None,
+                       shell={"line": line, "parts": parts, "redirects": [], "is_journal_only": False, "parse_error": ""}))
     expect_reply_allowed(reply)
     process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
     story.expect_rows("--queue" not in str(reply.updated_input), not process.is_queue_run)
 
 
-def test_only_the_build_part_of_a_mixed_line_is_marked_for_waiting(new_story):
+def test_a_mixed_read_and_build_line_never_queues(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
-    reply = story.hook("s-1", HookSamples.shell("rg cart src; make package",
+    reply = story.hook("s-1", HookSamples.shell("rg cart src && make package",
                        ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
                        ShellPart("make", CommandCategory.BUILD, ["package"])))
     expect_reply_allowed(reply)
-    story.expect_rows("JOURNAL_RUN_QUEUE_PARTS=2" in str(reply.updated_input))
+    story.expect_rows("--queue" not in str(reply.updated_input))
+
+
+def test_a_line_of_tests_and_builds_queues_as_a_whole(new_story):
+    story = install_runner(new_story(fixture=AdmissionQueue))
+    reply = story.hook("s-1", HookSamples.shell("pytest tests/cart.py && make package",
+                       ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]),
+                       ShellPart("make", CommandCategory.BUILD, ["package"])))
+    expect_reply_allowed(reply)
+    process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
+    story.expect_rows("--queue" in str(reply.updated_input), process.is_queue_run)
+
+
+def test_a_saved_build_keeps_the_read_before_it_out_of_the_queue(new_story):
+    story = install_runner(new_story(fixture=AdmissionQueue))
+    story.expect_success('alias add cart-package "make package" --category build --agents', actor=story.agent)
+    reply = story.hook("s-1", HookSamples.shell("rg cart src && journal cart-package",
+                       ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
+                       ShellPart("journal", CommandCategory.JOURNAL, ["cart-package"], subcommand="cart-package")))
+    expect_reply_allowed(reply)
+    process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
+    story.expect_rows("--queue" not in str(reply.updated_input), not process.is_queue_run)
+
+
+def test_stopping_a_waiting_run_clears_its_queue_timestamp(new_story):
+    story = new_story(fixture=AdmissionQueue)
+    worker_run(story, "make active")
+    waiting = worker_run(story, "make waiting")
+    story.expect_success(f"output stop {waiting.id}", actor=story.user)
+    process = story.container.get(Queries).query(Process).find(waiting.id)
+    story.expect_rows(process.queued_at is None)

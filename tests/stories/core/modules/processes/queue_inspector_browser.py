@@ -18,10 +18,10 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
     task_id = story.new_row_id('task make "Build the package" --brief "Build and check the package" --environment main', actor=story.user)
     story.expect_success(f"task start {task_id}", actor=story.agent)
-    finished = start_process(story, "make previous", category=CommandCategory.BUILD, is_queued=True)
+    finished = start_process(story, "make previous", category=CommandCategory.BUILD)
     end_run(story, finished, "package built\n")
-    running = start_process(story, "make package", category=CommandCategory.BUILD, is_queued=True)
-    waiting = start_process(story, "make checks", category=CommandCategory.CHECK, is_queued=True)
+    running = start_process(story, "make package", category=CommandCategory.BUILD)
+    waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
     for process in (running, waiting):
         story.container.get(OutputFolder).beat(process.id, Timestamp(datetime.now(timezone.utc)))
     story.run_listeners()

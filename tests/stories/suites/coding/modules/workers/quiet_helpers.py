@@ -1,4 +1,5 @@
 from datetime import timedelta
+from core.base.driver.command_category import CommandCategory
 
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -40,11 +41,12 @@ def test_the_inactive_line_names_the_commands_that_answer_it(new_story):
 def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     story, worker = idle_worker(new_story)
     main = story.agent
-    start_process(story, "make first", is_queued=True)
-    start_process(story, "make second", is_queued=True)
+    story.expect_success("setting set journal.core.processes.readers-forced off --environment main", actor=main)
+    start_process(story, "make first", category=CommandCategory.TEST_RUN)
+    start_process(story, "make second", category=CommandCategory.TEST_RUN)
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=main)
     story.agent = worker
-    process = start_process(story, "make third", is_queued=True)
+    process = start_process(story, "make third", category=CommandCategory.TEST_RUN)
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {main.id}", f"its run {process.id} waits for a spot, 2 runs ahead", f"journal worker send {worker.id}", f"journal worker release {worker.id}", actor=main)

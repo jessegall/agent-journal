@@ -134,7 +134,7 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True))
+    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True, queue_run=False))
 
 
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):

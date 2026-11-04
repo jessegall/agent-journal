@@ -176,7 +176,7 @@ def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
     story.run("setting set journal.core.processes.readers-forced on --environment main", actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
-    process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30, is_queued=True), worker, environment_id=1)
+    process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)
     story.run(f"agent end {worker.id}", actor=worker)
     story.run_listeners()
@@ -195,7 +195,7 @@ def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
 def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_command(requested_reader_story):
     story = requested_reader_story
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
-    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30, is_queued=True), second, environment_id=1)
+    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30), second, environment_id=1)
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     story.expect_rows(sum("reader request" in line for line in reply.lines) == 1)
     story.run_listeners()

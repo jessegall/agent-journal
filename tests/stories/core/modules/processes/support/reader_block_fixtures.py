@@ -28,4 +28,4 @@ def reader_worker(story: Story) -> Actor:
 
 def worker_run(story: Story, line: str = "custom-build run", category: CommandCategory = CommandCategory.BUILD) -> Process:
     worker = reader_worker(story)
-    return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work/main", category, 30, is_queued=True), worker, environment_id=1)
+    return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work/main", category, 30), worker, environment_id=1)

@@ -17,7 +17,7 @@ def queued(story, line: str, category: CommandCategory = CommandCategory.TEST_RU
     agent = queries.query(Agent).find(story.agent.id)
     workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingAgentRole.WORKER).oldest().all_rows())
     worker = Actor(workers[0].id, ActorType.AGENT)
-    return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work", category, 30, is_queued=True), story.agent, environment_id=agent.environment_id)
+    return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work", category, 30), story.agent, environment_id=agent.environment_id)
 
 
 def has_slot(story, process: Process) -> bool:

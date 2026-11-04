@@ -24,4 +24,3 @@ class ForegroundRun:
     most_output_bytes: int = 0
     read_flags: tuple[str, ...] = ()
     queue_wait_seconds: int = 5
-    queue_positions: tuple[int, ...] = ()

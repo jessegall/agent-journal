@@ -39,31 +39,6 @@ func SlotWait(home string, process int, queued bool) string {
 	return fmt.Sprintf("__journal_slot=0\nwhile [ ! -e %s ] && [ \"$__journal_slot\" -lt %d ]; do sleep 1; __journal_slot=$((__journal_slot + 1)); done\n", mark, SlotWaitLimitSeconds)
 }
 
-func SlotWaits(options Options, parts []Part) map[int]string {
-	positions := options.QueuePositions
-	if len(positions) == 0 && (options.Queue || options.Count != "") {
-		positions = []int{1}
-	}
-	waits := map[int]string{}
-	countLine := options.Count
-	folder := NewFolder(options.Home, options.Process)
-	for index, part := range parts {
-		for _, position := range positions {
-			if position < part.Position || (index+1 < len(parts) && position >= parts[index+1].Position) {
-				continue
-			}
-			marker := ""
-			if options.Queue {
-				marker = fmt.Sprintf(": > %s\n", quoted(filepath.Join(folder.Path, "slot-wait")))
-			}
-			waits[part.Position] = marker + CountWait(folder.Path, countLine) + SlotWait(options.Home, options.Process, options.Queue)
-			countLine = ""
-			break
-		}
-	}
-	return waits
-}
-
 func isJournalLine(parts []Part, aliases []string) bool {
 	for _, part := range parts {
 		words := strings.Fields(part.Text)

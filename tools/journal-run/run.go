@@ -21,7 +21,6 @@ type Options struct {
 	LimitSeconds   int
 	Background     bool
 	Queue          bool
-	QueuePositions []int
 	QueueWait      time.Duration
 	OnlyReads      bool
 	Aliases        []string
@@ -55,7 +54,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		options.MostOutputBytes = DefaultMostOutputBytes
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+ScriptWithWaits(parts, folder.Path, SlotWaits(options, parts))); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}

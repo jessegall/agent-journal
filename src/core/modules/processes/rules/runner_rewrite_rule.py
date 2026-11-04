@@ -41,7 +41,7 @@ class RunnerRewriteRule(DriverRule):
         if not self.runner.is_installed():
             return self.missing(hook)
         decided = self.limits.decide(hook.environment_id, shell)
-        run = replace(decided, queued=bool(decided.queue_positions), read_command=shell.is_readonly)
+        run = replace(decided, read_command=shell.is_readonly)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
