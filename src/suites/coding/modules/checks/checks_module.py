@@ -14,6 +14,7 @@ from suites.coding.modules.checks.support.passed_checks import PassedChecks
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
+from suites.coding.modules.checks.commands.check_show.check_show_subcommand import CheckShowSubcommand
 from suites.coding.modules.checks.commands.edit_check.edit_check_handler import EditCheckHandler
 from suites.coding.modules.checks.commands.edit_check.edit_check_subcommand import EditCheckSubcommand
 from suites.coding.modules.checks.commands.make_check.make_check_handler import MakeCheckHandler
@@ -44,9 +45,10 @@ from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
+from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
 from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
 
-BUILT = ["make", "edit", "list", "delete"]
+BUILT = ["make", "edit", "show", "list", "delete"]
 
 
 class ChecksModule(Module):
@@ -60,11 +62,12 @@ class ChecksModule(Module):
     block_conditions = [CheckPassed]
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
     skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
+    library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
-    subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand]
+    subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,

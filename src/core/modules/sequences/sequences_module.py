@@ -31,6 +31,7 @@ from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
+from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
 from core.modules.sequences.rules.step_guard_rule import StepGuardRule
 from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
@@ -54,6 +55,7 @@ class SequencesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents"]
     block_conditions = [SequenceStepStarted]
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
+    library_shares = [SequenceLibraryShare]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration]
     moves = [SequencesMove]

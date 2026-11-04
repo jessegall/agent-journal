@@ -22,6 +22,12 @@ from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.library_unchanged_error import LibraryUnchangedError
 from core.modules.library.support.library_stopped import LibraryStopped
 from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.models.enums.library_role import LibraryRole
+from core.modules.library.support.library_token import LibraryToken
+from core.modules.library.support.library_tokens import LibraryTokens
+from core.modules.library.support.library_user import LibraryUser
+from core.modules.library.support.library_users import LibraryUsers
+from core.modules.library.support.new_library_user import NewLibraryUser
 from core.modules.library.support.server_state import ServerState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -79,6 +85,24 @@ class LibraryClient:
 
     def update(self, share: str, item_id: int, base_version: int, fields: Mapping[str, object]) -> LibraryItem:
         return self.send(LibraryItemBody.parsed, "PUT", f"/items/{share}/{item_id}", {"fields": fields}, {"If-Match": f'"{base_version}"'})
+
+    def users(self) -> LibraryUsers:
+        return self.send(LibraryUsers.parsed, "GET", "/users")
+
+    def tokens(self, user_id: int) -> LibraryTokens:
+        return self.send(LibraryTokens.parsed, "GET", f"/users/{user_id}/tokens")
+
+    def new_user(self, name: str, role: LibraryRole) -> NewLibraryUser:
+        return self.send(NewLibraryUser.parsed, "POST", "/users", {"name": name, "role": role.value})
+
+    def changed_user(self, user_id: int, role: LibraryRole) -> LibraryUser:
+        return self.send(LibraryUser.answered, "PATCH", f"/users/{user_id}", {"role": role.value})
+
+    def removed_user(self, user_id: int) -> LibraryUser:
+        return self.send(LibraryUser.answered, "DELETE", f"/users/{user_id}")
+
+    def revoked_token(self, token_id: int) -> LibraryToken:
+        return self.send(LibraryToken.answered, "DELETE", f"/tokens/{token_id}")
 
     def send(self, parse: Callable[[object], T], method: str, path: str, body: Mapping[str, object] | None = None, headers: Mapping[str, str] = EMPTY_HEADERS,
              limit_seconds: float = LIMIT_SECONDS) -> T:

@@ -7,7 +7,7 @@ from core.base.cli.row_links import RowLinks
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.documents.commands.support.library_reading import LibraryReading
+from core.base.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.text_lines import TextLines
