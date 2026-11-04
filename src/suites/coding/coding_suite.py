@@ -2,6 +2,7 @@ from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
+from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
 from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from suites.coding.support.standard_templates import STANDARD_TEMPLATES
 from core.base.agent_policy import AgentPolicy
@@ -27,6 +28,7 @@ class CodingSuite(Suite):
         project_skill_roles=tuple(["worker"]),
         pause_retention_roles=tuple(["worker"]),
         restricted_alias_roles=tuple(["worker"]),
+        queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
     )
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}

@@ -175,6 +175,18 @@ test("output opens under a process and collapses again", async () => {
     expect(row.querySelector(".drop").classList.contains("open")).toBe(false);
 });
 
+test("a limit a suite names shows beside the commands at once and saves its setting", async () => {
+    const limit = {key: "journal.suites.coding.workers.worker-run-most-tests", title: "Tests per worker run", description: "Stop worker commands above this test count.", value: 0};
+    const read = vi.fn(async () => ({ok: true, value: {...SNAPSHOT, suite_limits: [limit]}}));
+    await panel(read);
+    const input = document.body.querySelector("[data-queue-suite-limit]");
+    expect(document.body.textContent).toContain("Tests per worker run");
+    input.value = "500";
+    input.dispatchEvent(new Event("change"));
+    await settle();
+    expect(read).toHaveBeenCalledWith(["setting", "set", limit.key, "500"]);
+});
+
 test("the stepper and switch save their declared settings and refresh the queue", async () => {
     let queue = {...SNAPSHOT};
     const read = vi.fn(async (line) => {

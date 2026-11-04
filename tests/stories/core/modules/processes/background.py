@@ -74,7 +74,7 @@ def test_a_plain_command_is_not_asked_for_a_reader(ended_plain_output):
 
 def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(ended_chain_output):
     story, parts, command, process, lines = ended_chain_output
-    assert any("no reader reads make yet" in line for line in lines)
+    assert any("no reader reads cart-suite yet" in line for line in lines)
     assert not any("no reader reads mkdir" in line for line in lines)
 
 
@@ -224,8 +224,8 @@ def ended_plain_output(new_story):
 @pytest.fixture
 def ended_chain_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
-    command = StartProcess(story.agent.id, None, "mkdir build && make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts)
+    parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("cart-suite test", "cart-suite", False, CommandCategory.TEST_RUN))
+    command = StartProcess(story.agent.id, None, "mkdir build && cart-suite test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts)
     process = story.container.get(Bus).run(command, story.agent, environment_id=1)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     end_run(story, process, "one\ntwo\n")

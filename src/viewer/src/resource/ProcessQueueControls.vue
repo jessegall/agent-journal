@@ -29,6 +29,11 @@ async function save(key, value) {
         <div class="control"><div><label id="queue-limit-label">Commands at once</label><p>How many of the workers' commands may run at the same time. The rest wait. Lowering it stops none that are running.</p></div>
             <div class="stepper"><button type="button" aria-label="One fewer command at once" :disabled="saving || queue.parallel_limit <= 1" @click="save(queue.limit_setting, queue.parallel_limit - 1)">−</button><output aria-labelledby="queue-limit-label" data-queue-limit>{{ queue.parallel_limit }}</output><button type="button" aria-label="One more command at once" :disabled="saving" @click="save(queue.limit_setting, queue.parallel_limit + 1)">+</button></div>
         </div>
+        <template v-for="limit in queue.suite_limits" :key="limit.key">
+            <div class="control"><div><label :for="limit.key">{{ limit.title }}</label><p>{{ limit.description }}</p></div>
+                <input :id="limit.key" class="limit" type="number" min="0" :value="limit.value" :disabled="saving" data-queue-suite-limit @change="save(limit.key, $event.target.value)" />
+            </div>
+        </template>
         <div class="control"><div><label id="main-spots-label">Main agent's commands take a place</label><p>Count the main agent's commands in that number.</p></div>
             <button type="button" role="switch" aria-labelledby="main-spots-label" :aria-checked="queue.count_main_runs" :disabled="saving" data-queue-main-spots @click="save(queue.main_spots_setting, queue.count_main_runs ? 'off' : 'on')"><span /></button>
         </div>
@@ -52,6 +57,7 @@ p { margin:3px 0 0; color:var(--text-3); font-size:12px; }
 label { font-size:12.5px; font-weight:500; }
 .control p { font-size:11.5px; line-height:1.4; }
 .stepper { display:flex; flex:none; height:28px; overflow:hidden; border:1px solid var(--border-2); border-radius:7px; }
+.limit { flex:none; width:72px; height:28px; padding:0 8px; border:1px solid var(--border-2); border-radius:6px; background:none; color:var(--text); font:inherit; }
 .stepper button { width:30px; border:0; background:none; color:var(--text-2); font-size:15px; cursor:pointer; }
 .stepper button:hover { background:var(--hover); color:var(--text); }
 .stepper output { display:grid; place-items:center; min-width:36px; border-inline:1px solid var(--border); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; }

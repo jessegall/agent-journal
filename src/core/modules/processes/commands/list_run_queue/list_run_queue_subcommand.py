@@ -9,6 +9,7 @@ from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.environments.models.environment import Environment
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
@@ -18,9 +19,11 @@ from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
 MAX_PAGE_SIZE = 100
-RECENT_RUNS = 10
+RECENT_RUNS = 20
 
 
 class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
@@ -29,8 +32,13 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     cli_name = "queue"
     name = "list"
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt) -> None:
+    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues) -> None:
         self.queries, self.settings, self.halt = queries, settings, halt
+        self.suites, self.catalogue, self.values = suites, catalogue, values
+
+    def suite_limits(self, environment_id: int) -> list[dict[str, object]]:
+        entries = (self.catalogue.value(key) for key in self.suites.agent_policy(environment_id).queue_limit_settings)
+        return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key, environment_id)} for entry in entries]
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment-id", type=int)
@@ -51,7 +59,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
             "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id),
-            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key,
+            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(environment_id),
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_reason": self.halt.reason,

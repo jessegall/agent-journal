@@ -100,7 +100,7 @@ def busy_hook_points(filled_hook_points):
         story.expect_success(f'task block {task_id} --reason "Waiting on a decision"', actor=story.user)
     story.container.get(DueCheckRuns).run()
     for number in range(10):
-        process = moved_run(story, f"make build-{number}")
+        process = moved_run(story, f"deploy build-{number}")
         story.container.get(OutputFolder).write_output(process.id, 1, "building\n")
         monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}})
         story.hook("s-1", monitor)

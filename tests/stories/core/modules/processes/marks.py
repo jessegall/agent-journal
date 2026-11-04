@@ -74,7 +74,7 @@ def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(ended_short_mar
 def test_a_run_moved_to_the_background_updates_its_mark_in_place(background_build_mark):
     story, process, starting_count = background_build_mark
     assert mark_count(story) == starting_count
-    story.expect_text(MARKS, "process:1", "Running make build")
+    story.expect_text(MARKS, "process:1", "Building")
 
 
 def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_a_dock_button(new_story):
@@ -195,15 +195,15 @@ def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(ne
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
-    first = start_process(story, "make one", category=CommandCategory.BUILD, is_queued=True)
-    start_process(story, "make two", category=CommandCategory.BUILD, is_queued=True)
+    first = start_process(story, "deploy one", category=CommandCategory.BUILD, is_queued=True)
+    start_process(story, "deploy two", category=CommandCategory.BUILD, is_queued=True)
     story.run_listeners()
-    story.expect_text(MARKS, "Queued: make two")
+    story.expect_text(MARKS, "Queued: deploy two")
     story.advance(timedelta(seconds=20))
     end_run(story, first, "built\n")
     story.run_listeners()
-    story.expect_absent(MARKS, "Queued: make two")
-    story.expect_text(MARKS, "Running make two")
+    story.expect_absent(MARKS, "Queued: deploy two")
+    story.expect_text(MARKS, "Running deploy two")
     story.tick("queue-worker")
     story.run_listeners()
     story.expect_absent("dock-item list", "processes.output")

@@ -35,7 +35,7 @@ def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(ne
     project_id = story.new_row_id('reader add project-tests --commands "pytest*" --lines "done" --count "project-count" --count-command "project-list"', actor=story.agent)
     previous = story.run(f"reader show {project_id} --json", actor=story.agent).output_text
     StockReaderTestCountsMigration().run(story.container.get(Database))
-    rows = {row["name"]: row for row in json.loads(story.run("reader list --json").output_text)["rows"]}
+    rows = {row["name"]: row for row in json.loads(story.run("reader list --json --limit 100").output_text)["rows"]}
     assert rows["pytest"]["commands"] == "custom-pytest*"
     assert rows["pytest"]["count_command"] == "{part} --collect-only -q"
     assert rows["pytest"]["count_pattern"] != "old-pytest"
