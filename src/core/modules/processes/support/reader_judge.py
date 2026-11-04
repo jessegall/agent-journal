@@ -18,6 +18,8 @@ WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
 TEST_ABSENCE_PATTERN = re.compile(r"^(?:=+ )?no tests ran\b", re.MULTILINE)
+CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |: command not found$|^\S+ command not found$", re.MULTILINE)
+CRASHING_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
 SAMPLE_PARTS = 50
@@ -80,6 +82,8 @@ class ReaderJudge:
             return ()
         count = self.run.count(reader, text, 0)
         if category is CommandCategory.TEST_RUN and count == 0 and TEST_ABSENCE_PATTERN.search(text):
+            return ()
+        if category in CRASHING_CATEGORIES and count == 0 and CRASHED_START_PATTERN.search(text):
             return ()
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)
