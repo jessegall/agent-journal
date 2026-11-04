@@ -4,6 +4,7 @@ from core.base.agent_role import AgentRole
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_chain import ProcessChain
+from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
 from core.base.query.conditions.among import Among
@@ -23,7 +24,8 @@ class AgentCallerResolver(CallerResolver):
     variable of its agent program names, in its environment; else the person the login name names, in the
     environment whose folder holds the working folder. A shell of an agent program is never taken for the
     person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
-    agent is refused, never run as anyone else. With no session variable, an agent with an open subagent
+    agent is refused, never run as anyone else, except in a run the journal started for that agent, such as a
+    worker's test that runs on after the worker has stopped. With no session variable, an agent with an open subagent
     cannot be told from that subagent, so the command is recorded as the journal's."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
@@ -51,7 +53,8 @@ class AgentCallerResolver(CallerResolver):
         session = request.variables.get(SESSION_VARIABLE)
         if not session:
             return None
-        agent = next(iter(self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).all_rows()), None)
+        session_agents = self.queries.query(Agent).filter(session=session)
+        agent = next(iter((session_agents if RUNNER_VARIABLE in request.variables else session_agents.matching(IsNull("ended_at"))).all_rows()), None)
         if agent is None:
             raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
         return agent
