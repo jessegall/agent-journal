@@ -46,10 +46,10 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
             self.bus.dispatch(StartTask(following.id), context)
             self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
             return self.queries.query(Task).find(following.id)
-        self.task_commit.commit(worktree, task)
+        committed = self.task_commit.commit(worktree, task, context)
         tested = self.repository.save(task.moved(TaskLifecycle.test), context)
-        if self.proof_queue.queue(worktree, context):
+        if self.proof_queue.queue(committed, context):
             return tested
         self.bus.dispatch(StartTask(following.id), context)
-        self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        self.repository.save(committed.moved(WorktreeLifecycle.advance, task_id=following.id), context)
         return self.queries.query(Task).find(following.id)

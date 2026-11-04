@@ -33,9 +33,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         following = self.tasks.next_delegated(context.actor.id)
         if following is not None:
             raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
-        self.task_commit.commit(worktree, self.queries.query(Task).find(worktree.task_id))
+        committed = self.task_commit.commit(worktree, self.queries.query(Task).find(worktree.task_id), context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save(started.moved(TaskLifecycle.test), context)
-        self.repository.save(worktree.moved(WorktreeLifecycle.deliver), context)
-        self.proof_queue.queue(worktree, context)
+        self.proof_queue.queue(self.repository.save(committed.moved(WorktreeLifecycle.deliver), context), context)
         return self.queries.query(Task).find(worktree.task_id)

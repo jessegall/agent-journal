@@ -46,12 +46,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
                           f"worker {worktree.agent_id} changes them too: commit or stash them, then merge again")
-        moved = self.git.tip(environment.folder, worktree.base_branch) != worktree.base_commit
-        rebased = moved and self.git.rebase(worktree)
-        conflicts = self.git.conflict_files(worktree) if rebased else ()
-        if not conflicts:
-            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
-            conflicts = self.git.sync(worktree) if moved and not rebased else ()
+        conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
         self.git.rebuild(worktree, environment.folder)
