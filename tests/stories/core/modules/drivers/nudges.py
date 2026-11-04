@@ -39,7 +39,7 @@ def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
 
 
 def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays():
-    nudge = NudgeDeclaration("shop.long", NudgeType.STEERING, "{text} do this {other}").nudge(text="x" * 50, other="y" * 50)
+    nudge = NudgeDeclaration("shop.long", NudgeType.STEERING, "{text} {other} do this").nudge(text="x" * 70, other="y" * 70)
     expect_nudge(nudge, 120)
     expect_endswith_nudge(nudge, "do this")
     expect_outcome_with(nudge, "…")

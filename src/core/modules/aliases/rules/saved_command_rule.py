@@ -68,7 +68,7 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
         if role == AgentRole.SUBAGENT:
             return SAVED_COMMAND_SUBAGENT.nudge(category=category.value)
-        return SAVED_COMMAND_UNKNOWN.nudge(category=category.value)
+        return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 
     @staticmethod
     def saved_refusal(part: Part) -> Nudge | None:

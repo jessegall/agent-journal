@@ -173,7 +173,7 @@ def expect_streaming_line(story, text: str) -> None:
 
 def expect_without_hint(story) -> None:
     lines = lines_of(story, NOTHING)
-    assert not any("not streaming" in line or "still runs" in line for line in lines), lines
+    assert not any("no reader sees it" in line or "still runs" in line for line in lines), lines
 
 
 def expect_without_failure_line(story) -> None:
@@ -186,13 +186,13 @@ def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_strea
     process = moved_run(story, "python3 tools/deploy.py staging", category=CommandCategory.BUILD)
     expect_without_hint(story)
     story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, f"output {process.id} printed nothing for 30 seconds, so its output is not streaming: it may hold its output back")
+    expect_streaming_line(story, f"output {process.id} printed nothing for 30 seconds, so no reader sees it: journal output read {process.id} --tail 20")
 
 
-def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_story):
+def test_a_silent_test_is_told_once_and_again_when_it_stops_printing(new_story):
     story = new_story(fixture=SilentVitestRun)
     story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, "run vitest with --reporter=verbose")
+    expect_streaming_line(story, "printed nothing for 30 seconds, so no reader sees it")
     story.advance(timedelta(seconds=31))
     expect_without_hint(story)
     folder = story.container.get(OutputFolder)
@@ -200,14 +200,14 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     folder.write_output(process_id, 1, "first line\n")
     modified_at = story.clock.timestamp().value.timestamp() - STALLED_SECONDS
     os.utime(folder.home.folder / "processes" / str(process_id) / "1.out", (modified_at, modified_at))
-    expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: run vitest with --reporter=verbose")
+    expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: journal output read {process_id} --tail 20")
 
 
 def test_a_silent_saved_command_is_told_to_fix_the_saved_command(new_story):
     story = new_story(fixture=SavedBuildMoved)
     story.expect_text("process show 1", "state: background", actor=story.agent)
     story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, "saved command build-npm printed nothing for 30 seconds, fix it with journal alias edit build-npm --line")
+    expect_streaming_line(story, "saved command build-npm printed nothing for 30 seconds: fix it with journal alias edit build-npm --line")
 
 
 def test_a_saved_command_that_fails_and_prints_nothing_is_told_to_fix_the_saved_command(new_story):
