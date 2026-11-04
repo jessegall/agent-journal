@@ -1,11 +1,16 @@
 import {dated, elapsed, perHour} from "../../format/time.js";
 
 const MAIN_TITLE = "Main agent";
+const NOT_KNOWN = "Not known";
 const HIGH_CONTEXT_PERCENT = 80;
 const MILLISECONDS_PER_SECOND = 1000;
 const WORKER_ROLE = "worker";
 const MAIN_ROLE = "main";
 const WAITING_STATES = new Set(["waiting", "blocked"]);
+
+// the rows a list read gave, and how many rows the list holds in all; a read that failed gave none
+export const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
+export const totalOf = (answer) => (answer.ok ? answer.value.total : 0);
 
 const capital = (word) => word.slice(0, 1).toUpperCase() + word.slice(1);
 
@@ -28,7 +33,7 @@ export function stripCells({row, facts, inspection, now}) {
     const seconds = ((ended ? Date.parse(row.ended_at) : now) - Date.parse(row.process_started_at || row.created_at)) / MILLISECONDS_PER_SECOND;
     const cells = [{key: "time", label: ended ? "Ran for" : "Running for", value: elapsed(seconds)}];
     if (Number.isFinite(facts?.context_percent)) cells.push({key: "context", label: "Context used", value: `${facts.context_percent}%`, meter: facts.context_percent, high: facts.context_percent > HIGH_CONTEXT_PERCENT});
-    if (facts) cells.push({key: "cost", label: "Cost", value: `$${facts.cost_dollars.toFixed(2)}`});
+    if (facts) cells.push({key: "cost", label: "Cost", value: facts.cost_dollars === null ? NOT_KNOWN : `$${facts.cost_dollars.toFixed(2)}`});
     if (row.role === WORKER_ROLE) cells.push({key: "pace", label: "Tasks an hour", value: String(perHour(completedCount(facts), row.process_started_at || row.created_at, row.ended_at, now))});
     if (row.role === MAIN_ROLE && inspection.plan) cells.push({key: "done", label: "Tasks done", value: `${inspection.plan.done} of ${inspection.plan.total}`});
     cells.push({key: "failed", label: "Failed runs", value: String(inspection.failed_runs), bad: inspection.failed_runs > 0});

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -125,7 +125,7 @@ readCommand();
                 </template>
                 <template v-else>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
-                <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
+                <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
@@ -152,7 +152,7 @@ readCommand();
                             <component :is="component" :agent="row.id" />
                         </template>
                     </SwitchCase>
-                </div>
+                </TabBody>
                 </template>
             </div>
         </template>
@@ -461,14 +461,14 @@ readCommand();
 .agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
 .agent-card.open .agent-title { font-weight: 600; }
 .agent-card.open .agent-dot { display: none; }
-.agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border); background: var(--side); }
+.agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
-.agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }
 .agent-card.open .agent-more { order: 2; gap: 0; min-width: 0; max-width: 100%; padding: 0; }
-.agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border-inner); }
 .agent-card.open .agent-tab-body { gap: 0; margin: 0; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
-.agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }
 .agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.row-list-row) { gap: 8px; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }

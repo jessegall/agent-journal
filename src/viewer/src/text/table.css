@@ -19,6 +19,12 @@
     overflow-wrap: normal;
 }
 
+/* a column of sentences keeps a width that reads; the table scrolls sideways in its own box when the columns do not fit */
+.md th.text-column,
+.md td.text-column {
+    min-width: 14em;
+}
+
 .md th {
     color: var(--text);
     background: var(--raised);

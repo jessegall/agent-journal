@@ -28,6 +28,8 @@
     --tip-edge: var(--border-3);
     --tip-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
     --border: #25272b;
+    /* the line inside a card: fainter than the --border between cards, so a part reads as belonging to its card */
+    --border-inner: #1d1f23;
     --border-2: #2f3136;
     --border-3: #3a3d44;
     --line: #22252b;

@@ -125,6 +125,9 @@ class Provider(ABC):
     def session_effort(self, home: JournalHome, session: str) -> str:
         return ""
 
+    def session_model(self, home: JournalHome, session: str) -> str:
+        return ""
+
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
 

@@ -18,8 +18,8 @@ defineProps({cells: {type: Array, required: true}});
 </template>
 
 <style scoped>
-.strip { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
-.cell { flex: 1 1 100px; min-width: 100px; padding: 10px 14px; border-right: 1px solid var(--border); }
+.strip { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border-inner); }
+.cell { flex: 1 1 100px; min-width: 100px; padding: 10px 14px; border-right: 1px solid var(--border-inner); }
 .cell:last-child { border-right: 0; }
 small { display: block; color: var(--text-3); font-size: 11.5px; }
 b { display: block; margin-top: 2px; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }

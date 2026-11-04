@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Icon, InnerTabs, Skeleton, WindowRoom, peekRef, useWindow} from "@journal/window-kit";
+import {Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
@@ -10,6 +10,7 @@ const tab = ref(context.tabs?.[0]);
 const board = ref({open_total: 0, closed_total: 0, plans: []});
 const failure = ref("");
 const loaded = ref(false);
+const startedAt = performance.now();
 const tabLine = () => tab.value.read;
 
 async function load() {
@@ -18,7 +19,7 @@ async function load() {
     const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : `${tabLine()}${held > PAGE_ROWS ? ` --limit ${held}` : ""}`);
     if (asked !== tab.value) return;
     failure.value = answer.ok ? "" : answer.error;
-    loaded.value = true;
+    afterSkeletonMinimum(startedAt, () => (loaded.value = true));
     if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...answer.value}]} : answer.value;
 }
 
@@ -55,6 +56,7 @@ load();
             </template>
             <template v-else>
                 <InnerTabs :active="tab" :answer="board" @choose="choose" />
+                <TabBody :tab="tab" shape="cards">
                 <template v-if="!shown.length">
                     <p class="plans-note">No {{ tab?.label.toLowerCase() }} plans</p>
                 </template>
@@ -72,6 +74,7 @@ load();
                 <template v-if="shown.length && shown.length < total">
                     <Btn kind="text" data-plans-more @click="more">Show more</Btn>
                 </template>
+                </TabBody>
             </template>
         </div>
     </WindowRoom>

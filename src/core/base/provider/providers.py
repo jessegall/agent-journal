@@ -20,6 +20,9 @@ class Providers:
     def session_effort(self, program: str, home: JournalHome, session: str) -> str:
         return self.provider(program).session_effort(home, session)
 
+    def session_model(self, program: str, home: JournalHome, session: str) -> str:
+        return self.provider(program).session_model(home, session)
+
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
 

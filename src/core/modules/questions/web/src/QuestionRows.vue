@@ -20,8 +20,12 @@ const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row
 </template>
 
 <style scoped>
+.questions {
+    background: var(--side);
+}
+
 .questions :deep(.row-list) {
-    gap: 0;
+    gap: 16px;
 }
 
 .questions :deep(.row-list-row) {
