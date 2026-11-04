@@ -27,7 +27,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=4)
     worker = checked_worker(story, repository)
     story.run_listeners()
-    assert "could not start" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not start")
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     story.advance(timedelta(seconds=1))

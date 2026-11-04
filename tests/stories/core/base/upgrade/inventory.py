@@ -17,10 +17,15 @@ def unaccounted(tables: list[str]) -> list[str]:
 
 
 def test_every_table_of_the_version_4_fixture_is_moved_dropped_waits_for_a_task_or_is_kept_as_version_4s_own_records(tmp_path):
-    assert unaccounted(table_names(version_four_fixture(tmp_path / "journal.db", with_rows=False))) == []
+    expect_unaccounted(table_names(version_four_fixture(tmp_path / "journal.db", with_rows=False)), [])
 
 
 def test_a_table_added_to_the_fixture_with_no_move_drop_or_waiting_entry_is_found(tmp_path):
     fixture = version_four_fixture(tmp_path / "journal.db", with_rows=False)
     with_unknown_table(fixture)
-    assert unaccounted(table_names(fixture)) == [ADDED_TABLE]
+    expect_unaccounted(table_names(fixture), [ADDED_TABLE])
+
+
+def expect_unaccounted(tables: list[str], expected) -> None:
+    actual = unaccounted(tables)
+    assert actual == expected, actual

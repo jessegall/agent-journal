@@ -1,6 +1,7 @@
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.base.upgrade.upgrade import content, count
+from tests.stories.core.base.upgrade.upgrade import content, count, expect_count
 from tests.stories.fixtures.version_four import version_four_fixture, with_message_rows, with_unknown_table, strip_release_columns
+from core.testing.expect_row import expect_row
 
 MESSAGE_COUNT = 20000
 
@@ -9,7 +10,7 @@ def test_a_journal_of_an_older_version_4_release_without_later_columns_upgrades_
     story = new_story()
     strip_release_columns(version_four_fixture(story.home.folder / "journal.db"))
     outcome = UpgradeJournal(story.home).run(confirmed=True)
-    assert outcome.code == 0, outcome.text
+    expect_row(outcome, code=0)
     story.expect_success("task show 3", "state: blocked")
 
 
@@ -17,7 +18,8 @@ def test_an_empty_version_4_journal_upgrades_and_moves_nothing(new_story):
     story = new_story()
     version_four_fixture(story.home.folder / "journal.db", with_rows=False)
     outcome = UpgradeJournal(story.home).run(confirmed=True)
-    assert outcome.code == 0 and count(story, "version_four_map") == 0, outcome.text
+    expect_row(outcome, code=0)
+    expect_count(story, "version_four_map", 0)
 
 
 def test_a_very_large_version_4_journal_upgrades(new_story):

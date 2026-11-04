@@ -16,15 +16,15 @@ def prompt_lines(story) -> list[str]:
 def test_an_agents_trigger_stays_quiet_until_the_user_enables_it(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(TRIGGER_LINE, actor=story.agent)
-    assert TRIGGER_TEXT not in prompt_lines(story)
+    expect_absent_prompt_lines(story, TRIGGER_TEXT)
     story.expect_success("trigger enable 1", actor=story.user)
-    assert TRIGGER_TEXT in prompt_lines(story)
+    expect_prompt_lines(story, TRIGGER_TEXT)
 
 
 def test_a_trigger_the_user_makes_is_on_at_once(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(TRIGGER_LINE, actor=story.user)
-    assert TRIGGER_TEXT in prompt_lines(story)
+    expect_prompt_lines(story, TRIGGER_TEXT)
 
 
 def test_an_agent_cannot_enable_a_trigger(new_story):
@@ -43,7 +43,7 @@ def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"setting set {AGENTS_ENABLE_SETTING} true --project", actor=story.user)
     story.expect_success(TRIGGER_LINE, actor=story.agent)
-    assert TRIGGER_TEXT in prompt_lines(story)
+    expect_prompt_lines(story, TRIGGER_TEXT)
 
 
 def test_an_agents_trigger_shows_in_the_main_chat_until_it_is_removed(new_story):
@@ -55,3 +55,13 @@ def test_an_agents_trigger_shows_in_the_main_chat_until_it_is_removed(new_story)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main", "Trigger removed")
     story.expect_absent("chat-mark main --environment main", "waits for you")
+
+
+def expect_absent_prompt_lines(story, expected) -> None:
+    actual = prompt_lines(story)
+    assert expected not in actual, actual
+
+
+def expect_prompt_lines(story, expected) -> None:
+    actual = prompt_lines(story)
+    assert expected in actual, actual

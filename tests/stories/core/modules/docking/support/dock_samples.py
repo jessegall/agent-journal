@@ -48,3 +48,8 @@ def docked(story: Story, task_id: int, type: SampleDockType = SampleDockType.TAS
 
 def docked_state(story: Story, item: DockItem) -> str:
     return story.row(DockItem, item.id).state.value
+
+
+def expect_docked_state(story: Story, item: DockItem, expected) -> None:
+    actual = docked_state(story, item)
+    assert actual == expected, actual

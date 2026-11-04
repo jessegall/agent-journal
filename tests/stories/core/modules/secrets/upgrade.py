@@ -1,6 +1,6 @@
 from functools import partial
 
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.fixtures.version_four import GITHUB_VALUE, with_private_values
 
@@ -23,4 +23,4 @@ def test_a_secret_deleted_in_version_4_moves_deleted_and_a_browser_login_waits_f
     story = upgraded_story(new_story, partial(with_private_values, secrets_folder=private_folder))
     story.expect_text("secret show 3", "secret 3: Old token (custom), deleted")
     story.expect_refusal("secret show 4", "no secret 4")
-    assert "skipped secrets 4: a browser login moves after the switch" in story.upgrade_text
+    expect_upgrade_text(story, "skipped secrets 4: a browser login moves after the switch")

@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_a_version_4_document_keeps_its_number_title_abstract_and_text_and_a_project_one_has_no_environment(new_story):
@@ -27,4 +27,4 @@ def test_a_report_moves_with_the_rows_it_is_about_and_a_document_keeps_its_menti
 
 def test_links_to_a_row_that_did_not_move_are_counted(new_story):
     story = upgraded_story(new_story)
-    assert "dropped links to a row that did not move: 1 rows" in story.upgrade_text
+    expect_upgrade_text(story, "dropped links to a row that did not move: 1 rows")

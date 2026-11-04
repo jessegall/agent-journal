@@ -8,6 +8,7 @@ from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from server.ticker import Ticker
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 JOIN_SECONDS = 5.0
 
@@ -46,12 +47,12 @@ def test_a_handler_runs_once_its_interval_has_passed_and_then_again_each_interva
     counting = Counting()
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=10), counting, "counting"))
     tick_at(ticker, clock, 9)
-    assert counting.runs == 0
+    expect_row(counting, runs=0)
     tick_at(ticker, clock, 10)
     tick_at(ticker, clock, 15)
-    assert counting.runs == 1
+    expect_row(counting, runs=1)
     tick_at(ticker, clock, 20)
-    assert counting.runs == 2
+    expect_row(counting, runs=2)
 
 
 def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
@@ -60,9 +61,9 @@ def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=60), counting, "counting", starts_immediately=True))
     tick_at(ticker, clock, 0)
     tick_at(ticker, clock, 30)
-    assert counting.runs == 1
+    expect_row(counting, runs=1)
     tick_at(ticker, clock, 60)
-    assert counting.runs == 2
+    expect_row(counting, runs=2)
 
 
 def test_a_lambda_registered_on_the_ticker_runs_on_a_fresh_container_of_the_journal(new_story):
@@ -80,7 +81,7 @@ def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(new_st
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), counting, "counting"))
     for second in (1, 2, 3):
         tick_at(ticker, clock, second)
-    assert counting.runs == 3
+    expect_row(counting, runs=3)
 
 
 def test_each_module_declares_the_handlers_it_needs_and_the_ticker_takes_them(new_story):
@@ -150,7 +151,7 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
     tick_at(ticker, clock, 1)
     assert after.runs == 1 and "ValueError: the copy broke" in story.error_log_text() and "journal broken" in story.error_log_text()
     tick_at(ticker, clock, 2)
-    assert after.runs == 2
+    expect_row(after, runs=2)
 
 
 def test_a_handler_that_answers_true_wakes_the_listeners_and_one_that_does_not_leaves_them(new_story):

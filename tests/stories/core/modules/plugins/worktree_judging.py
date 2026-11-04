@@ -9,6 +9,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from core.testing.expect_row import expect_row
 
 SIN = "def total(items=[]):\n    return len(items)\n"
 
@@ -69,8 +70,8 @@ def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):
     story.expect_rows((story.worktree / "main_only.py").read_text() == SIN)
     story.expect_success("worker next", actor=story.worker)
     data = json.loads((story.home.folder / "plugin-data/worktree-judge/delivery.json").read_text())
-    assert data["base"] == story.repository.tip(ENVIRONMENT_BRANCH)
-    assert data["files"] == ["cart.py"]
+    expect_row(data, base=story.repository.tip(ENVIRONMENT_BRANCH))
+    expect_row(data, files=["cart.py"])
 
 
 def test_a_resumed_workers_new_sin_still_holds_its_handoff(worktree_story):

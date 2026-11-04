@@ -4,6 +4,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 class LibraryStocked(StoryFixture):
@@ -26,20 +27,20 @@ def library(story, line: str) -> dict:
 
 def test_the_library_lists_the_documents_with_no_text(new_story):
     answer = library(new_story(fixture=LibraryStocked), "document library")
-    assert answer["total"] == 2
+    expect_row(answer, total=2)
     assert [row["title"] for row in answer["rows"]] == ["Cart rules", "Shipping"]
     assert all(set(row) == {"id", "title", "abstract", "close_reason", "updated_at"} for row in answer["rows"])
 
 
 def test_the_library_lists_the_reports_when_asked_for_them(new_story):
     answer = library(new_story(fixture=LibraryStocked), "document library --kind report")
-    assert answer["total"] == 1
+    expect_row(answer, total=1)
     assert [row["title"] for row in answer["rows"]] == ["Cart review"]
 
 
 def test_the_library_pages_by_the_last_number_it_gave(new_story):
     answer = library(new_story(fixture=LibraryStocked), "document library --after 1")
-    assert answer["total"] == 2
+    expect_row(answer, total=2)
     assert [row["title"] for row in answer["rows"]] == ["Shipping"]
 
 
@@ -49,7 +50,7 @@ def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
     closed = library(story, "document library --state closed")
     assert closed["total"] == 1 and [row["title"] for row in closed["rows"]] == ["Cart rules"] and closed["rows"][0]["close_reason"] == "It shipped"
     assert [row["title"] for row in library(story, "document library --state open")["rows"]] == ["Shipping"]
-    assert library(story, "document library")["total"] == 2
+    expect_row(library(story, "document library"), total=2)
 
 
 def test_the_documents_window_reads_the_library_and_a_text_by_number(new_story):

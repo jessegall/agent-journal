@@ -21,4 +21,4 @@ def test_making_a_task_with_one_in_hand_says_to_carry_on_with_that_one(new_story
 
 def test_another_task_command_says_nothing_of_it(new_story):
     story = new_story(fixture=BuilderStarted)
-    assert not any("filed:" in line for line in story.hook("s-1", TASK_LISTED).lines)
+    story.expect_absent_hook_line("s-1", TASK_LISTED, "filed:")

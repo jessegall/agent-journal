@@ -44,7 +44,7 @@ def test_a_heartbeat_older_than_90_seconds_ends_the_run_lost_and_tells_the_agent
     story.advance(timedelta(seconds=40))
     story.tick("s-1")
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
-    assert any(ORPHAN_LINE in line for line in story.hook("s-1", NOTHING).lines)
+    story.expect_hook_allowed("s-1", NOTHING, ORPHAN_LINE)
 
 
 def test_a_run_whose_runner_pid_is_gone_is_lost_at_the_next_tick_after_ten_seconds(new_story):

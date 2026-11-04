@@ -113,8 +113,9 @@ def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story)
     story.run("secret update 1 --add-field region --add-field token", actor=story.user)
     story.expect_text("secret list --json", '"region"', '"token"', actor=story.user)
     story.run("secret update 1 --remove-field region", actor=story.user)
-    text = story.run("secret list --json", actor=story.user).output_text
-    assert '"region"' not in text and '"token"' in text
+    text = story.run("secret list --json", actor=story.user)
+    text.expect_no_text('"region"')
+    text.expect_text('"token"')
     story.run("secret delete 1", actor=story.user)
     story.expect_text("secret list --deleted", "Own", actor=story.user)
     story.expect_absent("secret list", "Own", actor=story.user)

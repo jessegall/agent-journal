@@ -3,6 +3,7 @@ from core.modules.processes.models.process import Process
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTriggers
 from core.testing.hook_samples import HookSamples
+from core.testing.expect_row import expect_row
 
 
 def test_saved_words_can_start_with_dashes(new_story):
@@ -18,8 +19,8 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
     process = next(story.container.get(Queries).query(Process).all_rows())
-    assert process.folder == str(tmp_path)
-    assert process.agent_id == story.agent.id
+    expect_row(process, folder=str(tmp_path))
+    expect_row(process, agent_id=story.agent.id)
     end_run(story, process, "chosen folder output\ncommand warning\n", exit_code=3)
     story.run_listeners()
     story.expect_hook_allowed("s-1", HookSamples.prompt("Continue"), "chosen folder output", "command warning", "exit 3")

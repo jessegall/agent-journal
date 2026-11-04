@@ -60,7 +60,7 @@ def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(
     story.container.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     for allowed in (READ_SAMPLE, LISTING_SAMPLE, JOURNAL_SAMPLE):
-        assert not any("the user paused you" in line for line in story.hook("s-1", allowed).lines)
+        story.expect_absent_hook_line("s-1", allowed, "the user paused you")
         story.expect_hook_allowed("s-1", allowed)
     story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the user paused you")
     story.expect_hook_refusal("s-1", WRITING_LISTING_SAMPLE, "the user paused you")

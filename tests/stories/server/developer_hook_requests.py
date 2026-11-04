@@ -10,6 +10,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.testing.expect_row import expect_row
 
 
 @pytest.fixture
@@ -46,8 +47,8 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     request = value["rows"][0]
     assert request["duration_ms"] > 0
-    assert request["outcome"] == outcome.value
-    assert request["body"] == dict(sample.body)
+    expect_row(request, outcome=outcome.value)
+    expect_row(request, body=dict(sample.body))
 
 
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):

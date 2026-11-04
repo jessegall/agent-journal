@@ -7,7 +7,7 @@ from core.base.command.bus import Bus
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.run_queue import has_slot, queued, waits
+from tests.stories.core.modules.processes.run_queue import has_slot, queued, waits, expect_absent_slot, expect_absent_waits, expect_slot, expect_waits
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -30,7 +30,9 @@ def reminders(story) -> list[str]:
 def test_work_can_still_join_a_halted_queue_and_waits_there(new_story):
     story = halted_story(new_story)
     first, second = queued(story, "make one"), queued(story, "make two")
-    assert waits(story, first) and waits(story, second) and not has_slot(story, first)
+    expect_waits(story, first)
+    expect_waits(story, second)
+    expect_absent_slot(story, first)
 
 
 def test_nothing_starts_while_the_queue_is_halted_not_even_when_a_spot_frees(new_story):
@@ -38,14 +40,16 @@ def test_nothing_starts_while_the_queue_is_halted_not_even_when_a_spot_frees(new
     first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
     story.expect_success(HALT, actor=story.agent)
     end_run(story, first, "ok\n")
-    assert not has_slot(story, third) and waits(story, third)
+    expect_absent_slot(story, third)
+    expect_waits(story, third)
 
 
 def test_runs_already_holding_a_spot_go_on_while_the_queue_is_halted(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     first = queued(story, "make one")
     story.expect_success(HALT, actor=story.agent)
-    assert has_slot(story, first) and not waits(story, first)
+    expect_slot(story, first)
+    expect_absent_waits(story, first)
     end_run(story, first, "ok\n")
 
 
@@ -65,10 +69,12 @@ def test_a_restart_holds_the_queue_and_releases_it_by_itself_when_the_restart_is
     story = install_runner(new_story(fixture=BuilderStarted))
     story.home.restart_mark.write_text("1")
     first, second = queued(story, "make one"), queued(story, "make two")
-    assert waits(story, first) and waits(story, second)
+    expect_waits(story, first)
+    expect_waits(story, second)
     story.home.restart_mark.unlink()
     story.container.get(Bus).run(GrantRunSlots(), Actor.core())
-    assert has_slot(story, first) and has_slot(story, second)
+    expect_slot(story, first)
+    expect_slot(story, second)
 
 
 def test_a_restart_does_not_release_a_queue_a_command_halted(new_story):
@@ -77,7 +83,7 @@ def test_a_restart_does_not_release_a_queue_a_command_halted(new_story):
     first = queued(story, "make one")
     story.home.restart_mark.unlink()
     story.container.get(Bus).run(GrantRunSlots(), Actor.core())
-    assert waits(story, first)
+    expect_waits(story, first)
 
 
 def test_the_ticker_declares_the_handler_that_grants_spots(new_story):
@@ -93,10 +99,15 @@ def test_the_main_agent_is_reminded_every_five_minutes_while_the_queue_is_halted
     assert len(reminders(story)) == 1
     story.expect_success("queue resume", actor=story.agent)
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    assert reminders(story) == []
+    expect_reminders(story, [])
 
 
 def test_a_restart_alone_sends_no_reminder(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.home.restart_mark.write_text("1")
-    assert reminders(story) == []
+    expect_reminders(story, [])
+
+
+def expect_reminders(story, expected) -> None:
+    actual = reminders(story)
+    assert actual == expected, actual

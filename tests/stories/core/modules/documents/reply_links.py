@@ -31,8 +31,10 @@ def test_a_plan_a_document_and_a_report_link_too(new_story):
     story.run('doc make "Cart rules" --abstract "Rules" --body "Rules" --environment main', actor=story.agent)
     story.run('report make "Cart review" --abstract "Review" --body "Review" --environment main', actor=story.agent)
     story.run_listeners()
-    lines = story.run("message read 1", actor=story.user).output_text
-    assert "plan:1" in lines and "doc:" in lines and "report:" in lines
+    lines = story.run("message read 1", actor=story.user)
+    lines.expect_text("plan:1")
+    lines.expect_text("doc:")
+    lines.expect_text("report:")
 
 
 def test_a_task_made_more_than_two_minutes_after_the_reply_is_not_linked(new_story):
@@ -40,7 +42,7 @@ def test_a_task_made_more_than_two_minutes_after_the_reply_is_not_linked(new_sto
     story.advance(timedelta(seconds=121))
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run_listeners()
-    assert "links:" not in story.run("message read 1", actor=story.user).output_text
+    story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
 def test_a_task_made_with_no_reply_to_a_person_is_not_linked(new_story):
@@ -49,14 +51,14 @@ def test_a_task_made_with_no_reply_to_a_person_is_not_linked(new_story):
     story.run('message send "Working on it" --environment main', actor=story.agent)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run_listeners()
-    assert "links:" not in story.run("message read 1", actor=story.user).output_text
+    story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
 def test_a_task_the_person_makes_is_not_linked(new_story):
     story = replied_story(new_story)
     story.run('task make "Fix the totals" --environment main', actor=story.user)
     story.run_listeners()
-    assert "links:" not in story.run("message read 1", actor=story.user).output_text
+    story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
 def test_an_edit_of_a_tasks_text_right_after_a_reply_links_it(old_task):
@@ -74,7 +76,7 @@ def test_a_change_of_a_task_that_is_not_its_text_does_not_link_it(old_task):
     story.run('message reply 1 "Starting"', actor=story.agent)
     story.run("task start 1", actor=story.agent)
     story.run_listeners()
-    assert "links:" not in story.run("message read 1", actor=story.user).output_text
+    story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
 def test_a_task_a_reply_names_links_to_the_message_it_answers(old_task):
@@ -90,7 +92,7 @@ def test_a_reply_naming_a_task_that_does_not_exist_links_nothing(new_story):
     story.run('message send "Is it filed" --environment main', actor=story.user)
     story.run('message reply 1 "No, task 99 is gone"', actor=story.agent)
     story.run_listeners()
-    assert "links:" not in story.run("message read 1", actor=story.user).output_text
+    story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
 def test_a_row_is_linked_once_however_often_it_is_edited(replied_task):

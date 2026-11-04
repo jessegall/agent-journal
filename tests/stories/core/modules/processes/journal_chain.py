@@ -7,6 +7,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_reply import expect_absent_reply_line
 
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")
 LISTING_PART = ShellPart("ls", CommandCategory.SEARCH, ["build"])
@@ -116,4 +117,4 @@ def test_a_test_run_with_a_pipe_gets_no_warning_since_its_output_stays_whole(new
     piped = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], pipe_target=1)
     cut = ShellPart("tail", CommandCategory.READ, ["-5"])
     reply = story.hook("s-1", HookSamples.shell("pytest -q && tail -5", piped, cut))
-    assert not any("cut by a pipe" in line for line in reply.lines)
+    expect_absent_reply_line(reply, "cut by a pipe")

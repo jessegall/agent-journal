@@ -4,6 +4,7 @@ from datetime import timedelta
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from core.testing.expect_row import expect_row
 
 
 def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_story):
@@ -17,9 +18,9 @@ def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_sto
     second = dispatched_worker(story, "worker dispatch --model sonnet 2")
     rows = json.loads(story.run("worker progress --environment main --json", actor=story.agent).output_text)["rows"]
     progress = next(row for row in rows if row["agent_id"] == second.id)
-    assert (progress["completed_count"], progress["task_count"]) == (0, 1)
-    assert progress["started_at"] == story.clock.timestamp().text
-    assert progress["finished_at"] is None
+    expect_row(progress, completed_count=0, task_count=1)
+    expect_row(progress, started_at=story.clock.timestamp().text)
+    expect_row(progress, finished_at=None)
 
 
 def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
@@ -27,7 +28,7 @@ def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     initial_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    assert json.loads(initial_progress)["rows"][0]["task_count"] == 1
+    expect_row(json.loads(initial_progress)["rows"][0], task_count=1)
     story.advance(timedelta(hours=1))
     story.expect_success('worker report "The proof is ready"', actor=worker)
     story.expect_success(f'worker send {worker.id} "Correct the total"', actor=story.agent)

@@ -10,14 +10,15 @@ from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
 from core.modules.messages.models.enums.message_mark_variant import MessageMarkVariant
-from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor
+from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor, expect_absent_marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
+from core.testing.expect_row import expect_row
 
 
 def test_a_task_started_shows_a_mark_after_the_commit(new_story):
     story = new_story(fixture=StartedTaskMark)
-    assert "Task 1 started" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Task 1 started")
 
 
 def test_a_task_closed_shows_a_mark(new_story):
@@ -25,7 +26,7 @@ def test_a_task_closed_shows_a_mark(new_story):
     story.run(lines.TASK_START, actor=story.agent)
     story.expect_success(lines.TASK_CLOSE, actor=story.agent)
     story.run_listeners()
-    assert "Task 1 closed" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Task 1 closed")
 
 
 def test_a_task_blocked_shows_a_mark(new_story):
@@ -33,7 +34,7 @@ def test_a_task_blocked_shows_a_mark(new_story):
     story.run(lines.TASK_START, actor=story.agent)
     story.expect_success('task block 1 --reason "waits on the user"', actor=story.agent)
     story.run_listeners()
-    assert "Task 1 blocked" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Task 1 blocked")
 
 
 def test_a_refused_move_shows_no_task_mark(new_story):
@@ -41,7 +42,7 @@ def test_a_refused_move_shows_no_task_mark(new_story):
     starting_text = mark_count(story)
     story.expect_refusal(lines.TASK_CLOSE, "is open", actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == starting_text
+    expect_mark_count(story, starting_text)
 
 
 def test_the_tasks_module_writes_only_its_own_marks(new_story):
@@ -65,9 +66,10 @@ def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
-    assert "Task 1 created" in marks_text(story) and mark.click == "open row", marks_text(story)
-    assert "Task 1 made" not in marks_text(story), marks_text(story)
-    assert "tasks.task  made" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Task 1 created")
+    expect_row(mark, click="open row")
+    expect_absent_marks_text(story, "Task 1 made")
+    expect_marks_text(story, "tasks.task  made")
 
 
 def test_a_task_edited_by_an_agent_shows_a_mark_that_opens_the_task(new_story):
@@ -75,20 +77,21 @@ def test_a_task_edited_by_an_agent_shows_a_mark_that_opens_the_task(new_story):
     story.expect_success('task edit 1 --title "Fix the cart total"', actor=story.agent)
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
-    assert "Task 1 edited: Fix the cart total" in marks_text(story) and mark.click == "open row", marks_text(story)
-    assert "tasks.task  edited" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Task 1 edited: Fix the cart total")
+    expect_row(mark, click="open row")
+    expect_marks_text(story, "tasks.task  edited")
 
 
 def test_a_task_edited_by_the_user_shows_no_edited_mark(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success('task edit 1 --title "Fix the cart total"', actor=story.user)
     story.run_listeners()
-    assert "edited" not in marks_text(story), marks_text(story)
+    expect_absent_marks_text(story, "edited")
 
 
 def test_a_task_started_shows_a_started_mark_and_no_edited_mark(new_story):
     story = new_story(fixture=StartedTaskMark)
-    assert "edited" not in marks_text(story), marks_text(story)
+    expect_absent_marks_text(story, "edited")
 
 
 class StartedTaskMark(StoryFixture):

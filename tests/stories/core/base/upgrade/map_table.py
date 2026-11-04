@@ -2,6 +2,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.upgrade.move_map import MoveMap
 from tests.stories.core.support.fixtures import MainEnvironment
+from core.testing.expect_row import expect_row
 
 
 def test_the_synced_database_holds_the_two_upgrade_tables_and_a_row_moved_twice_is_one_row_and_one_entry(new_story):
@@ -19,4 +20,4 @@ def test_the_synced_database_holds_the_two_upgrade_tables_and_a_row_moved_twice_
     assert moved.transfer("settings", 5, "settings", insert) is True
     assert moved.transfer("settings", 5, "settings", insert) is False
     assert inserts == [1] and moved.count() == 1
-    assert database.rows(Statement("SELECT count(*) AS total FROM settings WHERE key = 'upgrade.sample'"))[0]["total"] == 1
+    expect_row(database.rows(Statement("SELECT count(*) AS total FROM settings WHERE key = 'upgrade.sample'"))[0], total=1)

@@ -22,7 +22,7 @@ def registered_types(story) -> set[str]:
 def test_a_database_that_holds_the_old_type_names_holds_the_new_ones_after_a_sync(new_story):
     story = new_story(fixture=UserJoined)
     old_registry(story)
-    assert registered_types(story) == {"instruction", "nudge", "refusal"}
+    expect_registered_types(story, {"instruction", "nudge", "refusal"})
     code, _ = story.synced()
     assert code == 0 and registered_types(story) == {"info", "steering", "refusal"}
 
@@ -33,3 +33,8 @@ def test_the_nudge_list_names_the_new_types_after_the_sync(new_story):
     story.synced()
     story.expect_absent("nudge list --json", '"type": "instruction"', actor=story.user)
     story.expect_text("nudge list --json", '"type": "steering"', '"type": "info"', actor=story.user)
+
+
+def expect_registered_types(story, expected) -> None:
+    actual = registered_types(story)
+    assert actual == expected, actual

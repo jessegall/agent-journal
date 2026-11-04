@@ -12,11 +12,12 @@ from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from core.testing.expect_reply import expect_absent_reply_refusal
 
 
 def delegated_story(new_story):
@@ -37,7 +38,8 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story.run('proof make 1 "cart.py:1, the cart total story"', actor=worker)
     story.run("worker next", actor=worker)
     story.run_listeners()
-    assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
+    expect_marks_text(story, f"Worker {worker.id} started task 1")
+    expect_marks_text(story, f"Worker {worker.id} started task 2")
 
 
 def judge_sample(*arguments: str):
@@ -52,7 +54,7 @@ def judge_worker(new_story):
 def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker):
     story, _, worker = judge_worker
     line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
-    assert "a worker judges only its own changes" not in story.hook(worker_session(story, worker), line).refusal
+    expect_absent_reply_refusal(story.hook(worker_session(story, worker), line), "a worker judges only its own changes")
 
 
 def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_worker):
@@ -71,7 +73,7 @@ def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_s
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('worker dispatch 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
     story.run_listeners()
-    assert "Noah Webster started task 1" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Noah Webster started task 1")
     story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
 
 
@@ -176,8 +178,8 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_s
     story = new_story(fixture=OrchestratorWithOpenTask)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
-    assert "sent_to" not in story.run(f"link list --source message:{last_message_id(story)}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "was also told")
+    story.expect_no_text(f"link list --source message:{last_message_id(story)}", "sent_to")
 
 
 def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
@@ -194,7 +196,7 @@ def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(
     story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_success("worker next", actor=worker)
     story.run_listeners()
-    assert "handed in" not in marks_text(story), marks_text(story)
+    expect_absent_marks_text(story, "handed in")
     story.expect_refusal("worker next", "task 2 is your last", actor=worker)
 
 
@@ -252,7 +254,7 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: testing", actor=story.agent)
     story.run_listeners()
-    assert "handed in task 1, task 2" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "handed in task 1, task 2")
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)

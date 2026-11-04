@@ -12,6 +12,7 @@ from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.support.p256 import P256
 from tests.stories.core.modules.phone.phone_rows import TOKEN_DIGEST, paired_story
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
 SUBSCRIPTION = json.dumps({"endpoint": ENDPOINT, "keys": {"p256dh": "x", "auth": "y"}})
@@ -59,8 +60,10 @@ def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_
     assert len(base64.urlsafe_b64decode(first + "=" * (-len(first) % 4))) == 65 and not first.startswith(("0x", "{"))
     assert story.run("phone push-key", actor=Actor.core()).output_text.strip() == first
     for key in (PUBLIC, PRIVATE):
-        shown = story.run(f"setting show {key}", actor=story.user).output_text
-        assert key in shown and first not in shown and "set" in shown
+        shown = story.run(f"setting show {key}", actor=story.user)
+        shown.expect_text(key)
+        shown.expect_no_text(first)
+        shown.expect_text("set")
 
 
 def test_a_signature_made_with_a_secret_verifies_against_its_public_key():
@@ -74,8 +77,8 @@ def test_a_signature_made_with_a_secret_verifies_against_its_public_key():
 
 def test_a_phone_subscription_is_kept_and_never_shown(new_story):
     story = subscribed_story(new_story)
-    assert ENDPOINT not in story.run("phone show 1", actor=story.user).output_text
-    assert ENDPOINT not in story.run("event list --json", actor=story.user).output_text
+    story.expect_no_text("phone show 1", ENDPOINT, actor=story.user)
+    story.expect_no_text("event list --json", ENDPOINT, actor=story.user)
 
 
 def test_a_question_asked_only_records_the_notice_and_the_ticker_round_pushes_the_subscribed_phone_once(new_story):
@@ -83,11 +86,11 @@ def test_a_question_asked_only_records_the_notice_and_the_ticker_round_pushes_th
     story = subscribed_story(new_story, service)
     ask(story)
     story.run_listeners()
-    assert service.sent == []
+    expect_row(service, sent=[])
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
 
 
 def test_two_notices_before_a_round_make_one_push(new_story):
@@ -96,7 +99,7 @@ def test_two_notices_before_a_round_make_one_push(new_story):
     ask(story)
     ask(story)
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
 
 
 def test_a_plan_made_ready_is_pushed_by_the_ticker_round(new_story):
@@ -105,12 +108,12 @@ def test_a_plan_made_ready_is_pushed_by_the_ticker_round(new_story):
     story.run('plan make "Checkout" --environment main', actor=story.user)
     story.run_listeners()
     tick(story)
-    assert service.sent == []
+    expect_row(service, sent=[])
     story.expect_success("plan ready 1", actor=story.user)
     story.run_listeners()
-    assert service.sent == []
+    expect_row(service, sent=[])
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
 
 
 def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
@@ -119,7 +122,7 @@ def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
     story.container.bind(PushService, service)
     ask(story)
     tick(story)
-    assert service.sent == []
+    expect_row(service, sent=[])
 
 
 def test_an_unpaired_phone_is_not_pushed(new_story):
@@ -128,7 +131,7 @@ def test_an_unpaired_phone_is_not_pushed(new_story):
     story.expect_success("phone unpair 1", actor=story.user)
     ask(story)
     tick(story)
-    assert service.sent == []
+    expect_row(service, sent=[])
 
 
 def test_a_push_service_that_no_longer_knows_the_phone_clears_its_subscription(new_story):
@@ -136,10 +139,10 @@ def test_a_push_service_that_no_longer_knows_the_phone_clears_its_subscription(n
     story = subscribed_story(new_story, service)
     ask(story)
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
     ask(story)
     tick(story)
-    assert service.sent == [ENDPOINT]
+    expect_row(service, sent=[ENDPOINT])
 
 
 def test_a_failed_push_keeps_the_subscription_for_the_next_notice(new_story):
@@ -149,7 +152,7 @@ def test_a_failed_push_keeps_the_subscription_for_the_next_notice(new_story):
     tick(story)
     ask(story)
     tick(story)
-    assert service.sent == [ENDPOINT, ENDPOINT]
+    expect_row(service, sent=[ENDPOINT, ENDPOINT])
 
 
 class FakeTunnel:
@@ -187,7 +190,7 @@ def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_
     token = authorization.split("vapid t=", 1)[1].split(",", 1)[0]
     head, claims, signature = token.split(".")
     assert authorization.endswith(f"k={public}") and endpoint == ENDPOINT and headers["Content-Length"] == "0"
-    assert json.loads(base64.urlsafe_b64decode(claims + "=" * (-len(claims) % 4)))["sub"] == "https://journal.example.test"
+    expect_row(json.loads(base64.urlsafe_b64decode(claims + "=" * (-len(claims) % 4))), sub="https://journal.example.test")
     raw_public = base64.urlsafe_b64decode(public + "=" * (-len(public) % 4))
     assert P256.is_signed(raw_public, f"{head}.{claims}".encode(), base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4)))
 

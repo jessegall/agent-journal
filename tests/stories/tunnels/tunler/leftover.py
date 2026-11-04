@@ -38,7 +38,7 @@ def test_a_server_killed_with_its_tunler_up_finds_one_tunler_after_it_starts_aga
     first = real_client(home)
     first.start(PORT, SUBDOMAIN)
     leftover = first.process.pid
-    assert running_tunlers(program) == [leftover]
+    expect_running_tunlers(program, [leftover])
     second = real_client(home)
     second.start(PORT, SUBDOMAIN)
     first.process.wait(STOP_LIMIT_SECONDS)
@@ -60,3 +60,8 @@ def test_a_pid_that_names_some_other_program_is_left_alone(program, tmp_path):
     finally:
         unrelated_process.kill()
         unrelated_process.wait()
+
+
+def expect_running_tunlers(program: Path, expected) -> None:
+    actual = running_tunlers(program)
+    assert actual == expected, actual

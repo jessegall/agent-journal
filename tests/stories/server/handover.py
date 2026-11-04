@@ -94,7 +94,7 @@ def test_two_updates_in_a_row_leave_the_server_on_the_newest_code_with_the_one_b
         CodeHandover(home).run(source)
         wait_started(home)
     assert ((home.folder / "src") / "update_note.py").read_text() == "# second update\n"
-    assert health_status(home) == 200
+    expect_health_status(home, 200)
     assert len([version for version in (home.folder / "versions").iterdir() if version.is_dir()]) == 2
 
 
@@ -106,6 +106,11 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
     with pytest.raises(Refusal):
         CodeHandover(home).run(broken)
     assert ServerFiles(home).pid_file.read_text() == running_pid
-    assert health_status(home) == 200
+    expect_health_status(home, 200)
     assert not (home.folder / "src").is_symlink()
     assert not home.restart_mark.exists()
+
+
+def expect_health_status(home: JournalHome, expected) -> None:
+    actual = health_status(home)
+    assert actual == expected, actual

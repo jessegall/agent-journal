@@ -17,14 +17,18 @@ def three_messages(new_story):
 
 def test_a_list_after_an_id_holds_only_the_rows_newer_than_it(new_story):
     story = three_messages(new_story)
-    output = story.run("message list --after-id 2", actor=story.user).output_text
-    assert " third " in output and " second " not in output and " first " not in output
+    output = story.run("message list --after-id 2", actor=story.user)
+    output.expect_text(" third ")
+    output.expect_no_text(" second ")
+    output.expect_no_text(" first ")
 
 
 def test_a_list_before_an_id_holds_only_the_rows_older_than_it(new_story):
     story = three_messages(new_story)
-    output = story.run("message list --before-id 3", actor=story.user).output_text
-    assert " second " in output and " first " in output and " third " not in output
+    output = story.run("message list --before-id 3", actor=story.user)
+    output.expect_text(" second ")
+    output.expect_text(" first ")
+    output.expect_no_text(" third ")
 
 
 def test_a_list_after_the_newest_id_is_empty(new_story):

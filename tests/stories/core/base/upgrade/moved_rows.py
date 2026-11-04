@@ -12,7 +12,8 @@ def test_each_module_that_moved_rows_logs_one_upgrade_moved_event_with_its_count
 def test_no_create_listener_runs_for_a_moved_row_so_history_announces_nothing(new_story):
     story = upgraded_story(new_story)
     story.run_listeners()
-    marks = story.run("chat-mark list").output_text
-    assert "Which database?" not in marks and "Ship on Friday?" not in marks
+    marks = story.run("chat-mark list")
+    marks.expect_no_text("Which database?")
+    marks.expect_no_text("Ship on Friday?")
     story.expect_success("question show 2", "state: open")
     story.expect_success("review list", "nothing found")

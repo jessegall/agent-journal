@@ -8,6 +8,7 @@ from tests.stories.tunnels.tunler.support.fake_tunler_client import ACCOUNT, TUN
 from tests.stories.tunnels.tunler.support.set_clock import SetClock
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
+from core.testing.expect_row import expect_row
 
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
 SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
@@ -51,7 +52,7 @@ def test_logging_in_connects_this_machine(new_story):
     client = FakeTunlerClient(authenticated=False)
     story, _ = account_story(new_story, client)
     assert answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")["connected"]
-    assert client.logins == [(TUNLER_HOST, ACCOUNT, "secret-one", None)]
+    expect_row(client, logins=[(TUNLER_HOST, ACCOUNT, "secret-one", None)])
     assert answer(story, "tunler status")["authenticated"]
 
 
@@ -67,7 +68,7 @@ def test_a_new_account_asks_for_the_master_password_and_then_logs_in(new_story):
 def test_a_wrong_password_gives_tunlers_own_words_and_leaves_the_machine_logged_out(new_story):
     client = FakeTunlerClient(authenticated=False, login_error="wrong password")
     story, _ = account_story(new_story, client)
-    assert answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} nope")["error"] == "wrong password"
+    expect_row(answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} nope"), error="wrong password")
     assert not answer(story, "tunler status")["authenticated"]
 
 
@@ -89,7 +90,7 @@ def test_releasing_a_domain_takes_it_off_the_account_and_a_failure_is_refused(ne
     client = FakeTunlerClient(domains=[OWN_DOMAIN, SPARE_DOMAIN])
     story, _ = account_story(new_story, client)
     story.expect_success(f"tunler release {SPARE_DOMAIN}", actor=story.user)
-    assert client.domain_names == [OWN_DOMAIN]
+    expect_row(client, domain_names=[OWN_DOMAIN])
     client.release_error = "the server said no"
     story.expect_refusal(f"tunler release {OWN_DOMAIN}", "the server said no", actor=story.user)
 

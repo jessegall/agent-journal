@@ -1,27 +1,28 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from core.testing.expect_row import expect_row
 
 
 def test_a_setting_a_module_declares_moves_under_its_full_name_with_its_value(new_story):
     story = upgraded_story(new_story)
-    assert "journal.core.memories.keyword-limit  4" in story.run("setting list").output_text
+    story.expect_text("setting list", "journal.core.memories.keyword-limit  4")
 
 
 def test_version_4s_profile_model_setting_moves_under_its_new_name(new_story):
     story = upgraded_story(new_story)
-    assert 'journal.core.profiles.model-claude  "haiku"' in story.run("setting list").output_text
+    story.expect_text("setting list", 'journal.core.profiles.model-claude  "haiku"')
 
 
 def test_version_4s_voice_settings_move_under_the_voices_module_names(new_story):
     story = upgraded_story(new_story)
-    shown = story.run("setting list").output_text
-    assert 'journal.core.voices.profile  "coach"' in shown
-    assert 'journal.core.voices.avatar-shown  "working"' in shown
+    shown = story.run("setting list")
+    shown.expect_text('journal.core.voices.profile  "coach"')
+    shown.expect_text('journal.core.voices.avatar-shown  "working"')
     story.expect_text("voice list", "* coach")
 
 
 def test_a_setting_no_module_declares_is_skipped_with_its_number_and_reason(new_story):
     story = upgraded_story(new_story)
-    assert "skipped settings 2: no module declares the key no.such.key" in story.upgrade_text
+    expect_upgrade_text(story, "skipped settings 2: no module declares the key no.such.key")
 
 
 def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for_the_same_scope_is_skipped(new_story):
@@ -39,25 +40,28 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.commit()
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
-    assert outcome.code == 0, outcome.text
+    expect_row(outcome, code=0)
     assert "skipped settings 12: the key moveprefs.limit is already moved for that scope" in outcome.text
-    listing = story.run("setting list").output_text
-    assert "moveprefs.limit  7" in listing and "moveprefs.limit  9" in listing and "moveprefs.limit  8" not in listing
+    listing = story.run("setting list")
+    listing.expect_text("moveprefs.limit  7")
+    listing.expect_text("moveprefs.limit  9")
+    listing.expect_no_text("moveprefs.limit  8")
 
 
 def test_a_version_4_key_with_a_version_5_counterpart_moves_under_the_full_key(new_story):
     story = upgraded_story(new_story)
-    shown = story.run("setting list").output_text
-    assert "journal.suites.coding.workers.worker-limit  3" in shown
-    assert "journal.suites.coding.workers.builder-dispatches-workers  false" in shown
+    shown = story.run("setting list")
+    shown.expect_text("journal.suites.coding.workers.worker-limit  3")
+    shown.expect_text("journal.suites.coding.workers.builder-dispatches-workers  false")
 
 
 def test_a_version_4_text_of_kinds_becomes_the_list_version_5_declares(new_story):
     story = upgraded_story(new_story)
-    assert "journal.suites.coding.worker-command-types  " in story.run("setting list").output_text
+    story.expect_text("setting list", "journal.suites.coding.worker-command-types  ")
     story.expect_text("setting show journal.suites.coding.worker-command-types", "read")
 
 
 def test_a_version_4_key_with_no_counterpart_is_listed_by_its_key_as_not_carried(new_story):
     story = upgraded_story(new_story)
-    assert "skipped settings" in story.upgrade_text and "no module declares the key features.aliases" in story.upgrade_text
+    expect_upgrade_text(story, "skipped settings")
+    expect_upgrade_text(story, "no module declares the key features.aliases")

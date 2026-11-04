@@ -32,8 +32,8 @@ def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_sto
     story = new_story(fixture=BuilderWithUser)
     tools = story.container.get(PerformanceTools)
     tools.run(SlowTickTool, 51)
-    assert "over its limit" not in story.run("message list --environment main").output_text
+    story.expect_no_text("message list --environment main", "over its limit")
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
-    assert "A tick of the journal's clock cost 51 points" in story.run("message list --environment main").output_text
+    story.expect_text("message list --environment main", "A tick of the journal's clock cost 51 points")

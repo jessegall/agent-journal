@@ -4,6 +4,7 @@ from core.modules.drivers.queries.managed_hook_history_query import ManagedHookH
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
+from core.testing.expect_row import expect_row
 
 
 def test_history_counts_each_outcome_and_returns_the_last_run(new_story):
@@ -17,16 +18,17 @@ def test_history_counts_each_outcome_and_returns_the_last_run(new_story):
         story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing=f"managed-{index}", foreign=[run]))
         assert story.container.get(ManagedHookHistoryQuery).read(hook).last_outcome is outcome
     history = story.container.get(ManagedHookHistoryQuery).read(hook)
-    assert (history.runs, history.refused, history.rewritten, history.failed, history.timed_out) == (5, 1, 1, 1, 1)
-    assert history.last.id == hook.id and history.last.milliseconds == 4
+    expect_row(history, runs=5, refused=1, rewritten=1, failed=1, timed_out=1)
+    expect_row(history.last, id=hook.id)
+    expect_row(history.last, milliseconds=4)
 
 
 def test_a_hook_without_runs_has_empty_history(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "never"}, "settings.json", False)
     history = story.container.get(ManagedHookHistoryQuery).read(hook)
-    assert (history.runs, history.refused, history.rewritten, history.failed, history.timed_out) == (0, 0, 0, 0, 0)
-    assert history.last is None
+    expect_row(history, runs=0, refused=0, rewritten=0, failed=0, timed_out=0)
+    expect_row(history, last=None)
 
 
 def test_history_reads_the_last_hundred_runs_of_this_hook(new_story):
@@ -38,5 +40,6 @@ def test_history_reads_the_last_hundred_runs_of_this_hook(new_story):
     unrelated = {"id": "different-hook", "exit_code": 7, "stdout": "", "stderr": "", "milliseconds": 200, "timed_out": False, "answer": {}}
     story.hook("s-1", HookSamples.stop().with_fields(firing="different-hook", foreign=[unrelated]))
     history = story.container.get(ManagedHookHistoryQuery).read(hook)
-    assert history.runs == 100 and history.failed == 0
-    assert history.last.milliseconds == 101
+    expect_row(history, runs=100)
+    expect_row(history, failed=0)
+    expect_row(history.last, milliseconds=101)

@@ -6,6 +6,7 @@ from datetime import timedelta
 from core.base.periodic_checks import PeriodicChecks
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def test_a_check_is_made_run_by_hand_and_listed_with_its_verdict(new_story):
@@ -71,7 +72,7 @@ def test_a_check_that_ended_has_no_percent_left_on_its_row(new_story):
     story = new_story(fixture=UserJoined)
     story.run('check make "Suite" --command "echo 1/4"', actor=story.user)
     story.run("check run 1", actor=story.user)
-    assert json.loads(story.run("check show 1 --json", actor=story.user).output_text)["run_percent"] is None
+    expect_row(json.loads(story.run("check show 1 --json", actor=story.user).output_text), run_percent=None)
 
 
 class SuiteCheck(StoryFixture):

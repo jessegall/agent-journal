@@ -8,17 +8,18 @@ from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor
+from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor, expect_absent_marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
 def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place(researcher_dispatched):
     story, sample = researcher_dispatched
-    assert "Dispatched journal-researcher . haiku: Read the cart" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Dispatched journal-researcher . haiku: Read the cart")
     story.expect_text("chat-mark show 1", "detail: Find where totals are counted", "state: shown")
     story.hook("s-1", sample.with_fields(event="post_tool_use"))
     story.run_listeners()
-    assert mark_count(story) == 1 and "Finished journal-researcher: Read the cart" in marks_text(story), marks_text(story)
+    expect_mark_count(story, 1)
+    expect_marks_text(story, "Finished journal-researcher: Read the cart")
     story.expect_text("chat-mark show 1", "state: ended")
 
 
@@ -37,7 +38,8 @@ def test_a_dispatch_mark_opens_its_subagent_once_that_has_started(researcher_dis
 def test_a_main_agent_started_shows_no_subagent_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run_listeners()
-    assert "Subagent" not in marks_text(story) and "Dispatched" not in marks_text(story), marks_text(story)
+    expect_absent_marks_text(story, "Subagent")
+    expect_absent_marks_text(story, "Dispatched")
 
 
 def test_the_agents_module_writes_only_its_own_marks(new_story):

@@ -120,8 +120,13 @@ def test_a_line_written_in_two_parts_is_read_once_it_is_whole(new_story, tmp_pat
     with path.open("a") as transcript:
         transcript.write(full_line[:40])
     story.hook("s-1", hook)
-    assert "in two parts" not in listed(story)
+    expect_absent_listed(story, "in two parts")
     with path.open("a") as transcript:
         transcript.write(full_line[40:])
     story.hook("s-1", hook)
     assert listed(story).count("in two parts") == 1
+
+
+def expect_absent_listed(story, expected) -> None:
+    actual = listed(story)
+    assert expected not in actual, actual

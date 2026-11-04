@@ -7,6 +7,7 @@ from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def test_the_project_hooks_query_reports_every_kind_without_importing_pending_entries(new_story, tmp_path, monkeypatch):
@@ -29,16 +30,16 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     ProgramHooks.store(root / ".claude/settings.local.json", {"hooks": {"PreToolUse": [{"hooks": [
         {"type": "command", "command": "sh /project/.journal/hooks/hook.sh"}]}]}})
     reply = story.run("managed-hook list --json")
-    assert reply.code == 0, reply.output_text
+    reply.expect_code(0)
     data = json.loads(reply.output_text)
     assert len(data["managed"]) == 1
-    assert data["managed"][0]["history"]["refused"] == 1
-    assert data["managed"][0]["history"]["last"]["exit_code"] == 2
+    expect_row(data["managed"][0]["history"], refused=1)
+    expect_row(data["managed"][0]["history"]["last"], exit_code=2)
     assert data["managed"][0]["history"]["last_at"] is not None
     assert "can_refuse" in data["managed"][0]["hook"]["effects"]
     assert [entry["command"] for entry in data["pending"]] == ["pending-check"]
     assert {entry["reason"] for entry in data["unmanaged"]} == {"This entry is not a command.", "User-level files are listed without changes."}
-    assert data["fallback"] is True
+    expect_row(data, fallback=True)
     assert user_file.read_bytes() == user_bytes
     assert len(story.container.get(ManagedHooks).all()) == 1
 

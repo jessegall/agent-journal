@@ -80,7 +80,7 @@ def test_another_task_starts_no_sequence(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Other work" --environment main', actor=story.agent)
     story.expect_success("task start 1", actor=story.agent)
-    assert "Handle a transcript" not in story.run("sequence list", actor=story.user).output_text
+    story.expect_no_text("sequence list", "Handle a transcript", actor=story.user)
 
 
 def test_only_an_installed_server_with_transcripts_can_be_fetched_from(new_story):

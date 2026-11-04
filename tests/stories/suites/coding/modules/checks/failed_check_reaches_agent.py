@@ -24,11 +24,11 @@ def test_each_pass_to_fail_reaches_the_agent(new_story, tmp_path):
     for _ in range(2):
         switch.unlink()
         story.run("check run 1", actor=story.user)
-        assert FAILED in lines_of(story)
-        assert FAILED not in lines_of(story)
+        expect_lines_of(story, FAILED)
+        expect_absent_lines_of(story, FAILED)
         switch.write_text("first problem")
         story.run("check run 1", actor=story.user)
-        assert FAILED not in lines_of(story)
+        expect_absent_lines_of(story, FAILED)
 
 
 def test_a_failure_reaches_an_agent_waiting_on_a_question(new_story, tmp_path):
@@ -37,7 +37,7 @@ def test_a_failure_reaches_an_agent_waiting_on_a_question(new_story, tmp_path):
     story.run('question ask "Which database?" --options sqlite postgres --environment main', actor=story.agent)
     switch.unlink()
     story.run("check run 1", actor=story.user)
-    assert FAILED in lines_of(story)
+    expect_lines_of(story, FAILED)
 
 
 def test_a_new_failure_with_no_pass_between_comes_again_only_after_an_hour(new_story, tmp_path):
@@ -45,8 +45,18 @@ def test_a_new_failure_with_no_pass_between_comes_again_only_after_an_hour(new_s
     switch = failing_on_demand(story, tmp_path)
     switch.unlink()
     story.run("check run 1", actor=story.user)
-    assert FAILED in lines_of(story)
+    expect_lines_of(story, FAILED)
     story.run("check run 1", actor=story.user)
-    assert FAILED not in lines_of(story)
+    expect_absent_lines_of(story, FAILED)
     story.advance(timedelta(minutes=61))
-    assert FAILED in lines_of(story)
+    expect_lines_of(story, FAILED)
+
+
+def expect_lines_of(story, expected) -> None:
+    actual = lines_of(story)
+    assert expected in actual, actual
+
+
+def expect_absent_lines_of(story, expected) -> None:
+    actual = lines_of(story)
+    assert expected not in actual, actual

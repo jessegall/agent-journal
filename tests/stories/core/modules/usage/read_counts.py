@@ -40,7 +40,7 @@ def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(n
     with story.container.get(Database).transaction():
         for number in range(6):
             repository.save(NudgeRecord(agent_id=story.agent.id, creator_id=story.agent.id, key="samples.said", text=f"said {number}", delivery_count=1, last_delivered_at=story.clock.timestamp()), context)
-    assert rows_loaded(story, "nudge list --json") == previous_count + 1
+    expect_rows_loaded(story, "nudge list --json", previous_count + 1)
 
 
 def test_the_plan_outline_reads_its_tasks_with_their_titles_and_workers_from_one_view(new_story):
@@ -78,3 +78,8 @@ def test_the_agents_window_reads_the_same_number_of_queries_for_one_agent_and_fo
         story.run(HELPER_START.format(parent=story.agent.id).replace("s-2", f"s-{number + 1}"), actor=story.agent)
     five = selects_of(story, "usage agents --environment main --json")
     assert len(five) == len(first_run) and len(first_run) <= READS_ALLOWED, (len(first_run), len(five))
+
+
+def expect_rows_loaded(story, line: str, expected) -> None:
+    actual = rows_loaded(story, line)
+    assert actual == expected, actual

@@ -2,6 +2,7 @@ import json
 
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 ALIASES = [{"name": "sample-judge", "description": "Judge with the sample", "line": "bin/judge {args}", "env": {"LEVEL": "2"}, "background": True, "workers": True,
             "reader": "sample-reader"},
@@ -48,7 +49,9 @@ def test_a_plugin_s_readers_arrive_on_install_for_its_aliases_and_go_with_the_pl
     story = plugin_with_aliases(new_story)
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
     reader = next(row for row in json.loads(story.run("reader list --json", actor=story.user).output_text)["rows"] if row["name"] == "sample-reader")
-    assert reader["lines_pattern"] == "^judged" and reader["title"] == "Judging with the sample" and reader["plugin_name"] == "sample", reader
+    expect_row(reader, lines_pattern="^judged")
+    expect_row(reader, title="Judging with the sample")
+    expect_row(reader, plugin_name="sample")
     story.expect_text("alias show 1", f"reader_id: {reader['id']}", actor=story.user)
     story.run("plugin remove sample", actor=story.user)
     story.expect_absent("reader list", "sample-reader", actor=story.user)

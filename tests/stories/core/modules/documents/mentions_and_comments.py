@@ -2,6 +2,7 @@ import json
 
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def test_a_document_naming_a_task_by_its_number_links_to_it_once(new_story):
@@ -49,13 +50,13 @@ def test_a_person_s_comment_is_a_message_of_type_comment_naming_the_document_and
     story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "All of it"', actor=story.user)
     story.expect_text('doc comment 1 "Use cents everywhere" --environment main', "comment written as message", actor=story.user)
     shown = json.loads(story.run("message show 1 --json", actor=story.user).output_text)
-    assert shown["type"] == "comment"
-    assert shown["metadata"]["journal.core.messages"]["commented_row"] == {"model": "doc", "id": 1}
-    assert "new message 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
+    expect_row(shown, type="comment")
+    expect_row(shown["metadata"]["journal.core.messages"], commented_row={"model": "doc", "id": 1})
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Carry on"), "new message 1")
 
 
 def test_an_agent_s_comment_stays_an_agent_message_and_is_not_told_back_to_it(new_story):
     story = new_story(fixture=UserJoined)
     story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "All of it"', actor=story.user)
     story.run('doc comment 1 "Noted" --environment main', actor=story.agent)
-    assert json.loads(story.run("message show 1 --json", actor=story.user).output_text)["type"] == "agent"
+    expect_row(json.loads(story.run("message show 1 --json", actor=story.user).output_text), type="agent")

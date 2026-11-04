@@ -9,7 +9,7 @@ def messages_text(story) -> str:
 def test_the_final_text_block_of_an_agent_turn_becomes_a_chat_message_of_the_agent(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.message_display("The totals are fixed."))
-    assert "The totals are fixed." in messages_text(story)
+    expect_messages_text(story, "The totals are fixed.")
     story.expect_success("message list", f"1  {story.agent.id}  agent  The totals are fixed.  []  {{}}  []  []")
 
 
@@ -24,10 +24,20 @@ def test_the_same_display_hook_sent_twice_makes_one_message(new_story):
 def test_a_text_block_that_is_not_final_makes_no_message(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.message_display("Still thinking", final=False))
-    assert "Still thinking" not in messages_text(story)
+    expect_absent_messages_text(story, "Still thinking")
 
 
 def test_an_empty_text_block_makes_no_message(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.message_display("   "))
     assert messages_text(story).strip() == "nothing found"
+
+
+def expect_messages_text(story, expected) -> None:
+    actual = messages_text(story)
+    assert expected in actual, actual
+
+
+def expect_absent_messages_text(story, expected) -> None:
+    actual = messages_text(story)
+    assert expected not in actual, actual

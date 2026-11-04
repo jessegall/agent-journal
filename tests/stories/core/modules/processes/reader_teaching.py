@@ -42,7 +42,7 @@ def test_a_line_run_often_teaches_an_alias_and_a_rare_one_does_not(new_story):
     story.expect_absent_hook_line("s-1", IDENTICAL_LINE, "add an alias")
     for _ in range(5):
         start_process(story, "make build fast")
-    assert any("you ran make build fast 8 times" in line for line in story.hook("s-1", IDENTICAL_LINE).lines)
+    story.expect_hook_allowed("s-1", IDENTICAL_LINE, "you ran make build fast 8 times")
     story.expect_absent_hook_line("s-1", VIEW_LINE, "add an alias")
 
 
@@ -51,7 +51,7 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
     story.run('reader add tally --commands "make*" --lines "passed"')
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
-    assert any(f"reader tally already reads output {process.id}" in line for line in story.hook("s-1", posted(f"journal output read {process.id} --all")).lines)
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"reader tally already reads output {process.id}")
     story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), "already reads output")
 
 
@@ -68,7 +68,7 @@ def test_a_title_that_holds_a_flag_or_a_path_is_refused_and_a_readers_title_is_n
 
 def test_two_running_outputs_with_one_title_are_named(new_story):
     story = new_story(fixture=TwoRunsWithSameTitle)
-    assert any("outputs 1, 2 share one title" in line for line in story.hook("s-1", VIEW_LINE).lines)
+    story.expect_hook_allowed("s-1", VIEW_LINE, "outputs 1, 2 share one title")
 
 
 def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
@@ -76,13 +76,13 @@ def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new
     shared = "outputs 1, 2 share one title"
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(seconds=1))
-    assert any(shared in line for line in story.hook("s-1", VIEW_LINE).lines)
+    story.expect_hook_allowed("s-1", VIEW_LINE, shared)
     story.advance(timedelta(minutes=11))
     story.expect_absent_hook_line("s-1", VIEW_LINE, shared)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", HookSamples.prompt("and again"))
     story.advance(timedelta(seconds=1))
-    assert any(shared in line for line in story.hook("s-1", VIEW_LINE).lines)
+    story.expect_hook_allowed("s-1", VIEW_LINE, shared)
 
 
 def test_a_title_in_words_says_nothing(new_story):

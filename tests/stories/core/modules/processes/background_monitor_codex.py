@@ -12,6 +12,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"])).with_fields(program="codex")
 STOP = HookSamples.stop().with_fields(program="codex")
@@ -33,7 +34,7 @@ def codex_story(new_story):
 def test_a_codex_agent_with_a_run_going_keeps_working(new_story):
     story = codex_story(new_story)
     moved_run(story, "make test")
-    assert not story.hook("s-1", BUILD).refusal
+    expect_reply_allowed(story.hook("s-1", BUILD))
 
 
 def test_a_stop_holds_a_codex_agent_until_it_runs_the_monitor_command_in_its_shell(new_story):
@@ -46,8 +47,8 @@ def test_a_stop_holds_a_codex_agent_until_it_runs_the_monitor_command_in_its_she
 def test_the_monitor_command_in_its_shell_lets_a_codex_agent_stop(new_story):
     story = codex_story(new_story)
     process = moved_run(story, "make test")
-    assert not story.hook("s-1", shell_line(f"journal output monitor {process.id}")).refusal
-    assert "journal output monitor" not in story.hook("s-1", STOP).refusal
+    expect_reply_allowed(story.hook("s-1", shell_line(f"journal output monitor {process.id}")))
+    expect_absent_reply_refusal(story.hook("s-1", STOP), "journal output monitor")
 
 
 def test_the_monitor_command_on_another_run_does_not_let_a_codex_agent_stop(new_story):
@@ -61,13 +62,13 @@ def test_a_run_that_ended_no_longer_holds_a_codex_agents_stop(new_story):
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     end_run(story, process, "done\n")
-    assert "journal output monitor" not in story.hook("s-1", STOP).refusal
+    expect_absent_reply_refusal(story.hook("s-1", STOP), "journal output monitor")
 
 
 def test_reads_and_journal_commands_still_go_through_while_a_codex_agent_is_held(new_story):
     story = codex_story(new_story)
     moved_run(story, "make test")
-    assert not story.hook("s-1", shell_line("journal task list")).refusal
+    expect_reply_allowed(story.hook("s-1", shell_line("journal task list")))
 
 
 def test_a_codex_agent_that_asks_for_a_runs_status_is_told_to_run_the_monitor_command(new_story):

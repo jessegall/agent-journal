@@ -24,14 +24,15 @@ def test_the_user_chooses_what_the_overview_shows(new_story):
     story.expect_success('setting set journal.core.overview.commands "task board" --project', actor=story.user)
     answer = json.loads(story.run("overview --json", actor=story.user).output_text)
     assert [section["command"] for section in answer["sections"]] == ["task board"]
-    assert "question list" not in story.run("overview", actor=story.user).output_text
+    story.expect_no_text("overview", "question list", actor=story.user)
 
 
 def test_a_command_that_fails_shows_why_and_the_others_still_run(new_story):
     story = new_story(fixture=UserJoined)
     story.run('setting set journal.core.overview.commands "nothing here,task board" --project', actor=story.user)
-    text = story.run("overview", actor=story.user).output_text
-    assert "## nothing here" in text and "## task board" in text
+    text = story.run("overview", actor=story.user)
+    text.expect_text("## nothing here")
+    text.expect_text("## task board")
 
 
 OVERVIEW_HOOK = HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview"))

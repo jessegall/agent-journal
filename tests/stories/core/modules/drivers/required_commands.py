@@ -14,9 +14,11 @@ from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_reply import expect_reply_allowed
+from core.testing.expect_row import expect_row
 
 EDIT_HOOK = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
@@ -72,15 +74,15 @@ def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(counted
 
 def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(required_command_limit):
     story, _ = required_command_limit
-    assert not story.hook("s-1", READ).refusal
-    assert not story.hook("s-1", journal_line("journal task list")).refusal
-    assert not story.hook("s-1", journal_line("journal agent-block list")).refusal
+    expect_reply_allowed(story.hook("s-1", READ))
+    expect_reply_allowed(story.hook("s-1", journal_line("journal task list")))
+    expect_reply_allowed(story.hook("s-1", journal_line("journal agent-block list")))
 
 
 def test_running_the_command_settles_it_and_writes_run_again(required_command_limit):
     story, process = required_command_limit
-    assert not story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')).refusal
-    assert not story.hook("s-1", EDIT_HOOK).refusal
+    expect_reply_allowed(story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')))
+    expect_reply_allowed(story.hook("s-1", EDIT_HOOK))
     story.expect_text(f"agent-block show {TITLE_BLOCK}", "closed_at:", actor=story.agent)
 
 
@@ -89,9 +91,9 @@ def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(required_command
     story.expect_usage_error(f"agent-block skip {TITLE_BLOCK}", actor=story.agent)
     story.expect_refusal(f'agent-block skip {TITLE_BLOCK} --reason "  "', "say why", actor=story.agent)
     story.expect_success(f'agent-block skip {TITLE_BLOCK} --reason "a one-off command"', actor=story.agent)
-    assert not story.hook("s-1", EDIT_HOOK).refusal
+    expect_reply_allowed(story.hook("s-1", EDIT_HOOK))
     story.run_listeners()
-    assert "a one-off command" in marks_text(story)
+    expect_marks_text(story, "a one-off command")
 
 
 def test_a_line_that_names_no_command_opens_no_debt(new_story):
@@ -109,7 +111,7 @@ def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
 def test_a_block_with_a_grace_span_holds_only_after_the_span_and_says_its_countdown(grace_countdown):
     story, refusal, countdown, first, second, third = grace_countdown
     assert "fee due: 1 tool uses" in first.lines and "fee due: 0 tool uses" in second.lines
-    assert third.refusal == "pay the 1 fee: journal agent-block skip 1 --reason '<why>'"
+    expect_row(third, refusal="pay the 1 fee: journal agent-block skip 1 --reason '<why>'")
 
 
 @pytest.fixture

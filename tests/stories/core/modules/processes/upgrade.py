@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text, expect_upgrade_without_text
 
 
 def test_a_finished_command_output_moves_as_a_finished_process_under_its_number_with_its_output(new_story):
@@ -16,10 +16,11 @@ def test_a_failed_a_stopped_and_a_never_ended_command_output_keep_how_they_ended
 
 def test_a_command_output_of_a_session_with_no_version_4_agent_row_moves_with_that_sessions_ended_agent(new_story):
     story = upgraded_story(new_story)
-    assert "skipped command_outputs 5" not in story.upgrade_text
-    assert "processes: moved 5" in story.upgrade_text
+    expect_upgrade_without_text(story, "skipped command_outputs 5")
+    expect_upgrade_text(story, "processes: moved 5")
 
 
 def test_the_readers_reports_and_suggestions_are_dropped_and_counted(new_story):
     story = upgraded_story(new_story)
-    assert "dropped reader_reports: 1 rows" in story.upgrade_text and "dropped reader_suggestions: 1 rows" in story.upgrade_text
+    expect_upgrade_text(story, "dropped reader_reports: 1 rows")
+    expect_upgrade_text(story, "dropped reader_suggestions: 1 rows")

@@ -15,6 +15,7 @@ from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 HELPER_START = "agent start s-2 claude worker --parent {parent} --environment main"
 
@@ -162,7 +163,7 @@ def test_a_session_says_when_it_was_last_compacted(new_story):
 def test_the_usage_names_the_effort_the_session_reported(new_story):
     story = new_story(fixture=UserJoined)
     save_status_file(story, "s-1", {"model": {"display_name": "Opus"}, "effort": {"level": "high"}})
-    assert json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["effort"] == "high"
+    expect_row(json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0], effort="high")
 
 
 def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):

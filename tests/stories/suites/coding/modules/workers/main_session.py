@@ -24,7 +24,7 @@ def test_a_new_main_session_hears_a_workers_report(new_story):
     main = replacement_main(story)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
     story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} reports in message:1")
-    assert "reports in message:1" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "reports in message:1")
 
 
 def test_a_new_main_session_is_held_for_a_delivered_workers_proof(new_story):
@@ -49,7 +49,7 @@ def test_a_new_main_session_hears_a_comment_sent_to_its_worker(new_story):
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} was also told message:1")
-    assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "was also told")
 
 
 def test_a_main_session_in_another_environment_does_not_take_over_a_worker(new_story):

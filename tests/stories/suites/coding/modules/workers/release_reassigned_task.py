@@ -2,6 +2,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from core.testing.expect_row import expect_row
 
 
 def test_releasing_the_first_worker_leaves_the_second_workers_started_task_unchanged(new_story):
@@ -12,9 +13,9 @@ def test_releasing_the_first_worker_leaves_the_second_workers_started_task_uncha
     second_worker = dispatched_worker(story)
     tasks = story.container.get(TaskQuery)
     task = tasks.find(1)
-    assert task.state is TaskState.STARTED
-    assert task.holder_id == second_worker.id
-    assert task.delegated_to == second_worker.id
+    expect_row(task, state=TaskState.STARTED)
+    expect_row(task, holder_id=second_worker.id)
+    expect_row(task, delegated_to=second_worker.id)
 
     story.expect_success(f'worker release {first_worker.id} "old worker stopped"', actor=story.agent)
 

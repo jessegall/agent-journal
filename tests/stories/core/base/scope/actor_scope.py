@@ -16,6 +16,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.modules.processes.worker_outputs import worker_run
 from tests.stories.core.support.coding_fixtures import SubagentStarted
+from core.testing.expect_row import expect_row
 
 TASK_LINE = 'task make "Fix the cart" --environment main'
 MAIN_CHAT = "chat-mark main --environment main"
@@ -37,7 +38,7 @@ def test_a_subagents_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_o
     story = subagent_task
     story.expect_absent(MAIN_CHAT, MADE)
     mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
-    assert mark.agent_id == story.subagent.id
+    expect_row(mark, agent_id=story.subagent.id)
 
 
 def test_a_main_agents_task_move_still_shows_in_the_main_chat(new_story):
@@ -66,11 +67,11 @@ def test_when_lets_only_the_events_its_function_says_true_to_through(new_story):
     log = story.container.get(EventLog)
     event = log.event(log.newest_id())
     with scopes.event_scope([ActorScope.when(lambda logged: logged.event == event.event)], event):
-        assert scopes.actor_id is None
+        expect_row(scopes, actor_id=None)
     with scopes.event_scope([ActorScope.when(lambda logged: False)], event):
-        assert scopes.actor_id == story.subagent.id
+        expect_row(scopes, actor_id=story.subagent.id)
     with scopes.event_scope([ActorScope], event):
-        assert scopes.actor_id is None
+        expect_row(scopes, actor_id=None)
 
 
 def test_a_subagents_document_still_docks_above_the_main_chat(new_story):
@@ -123,7 +124,7 @@ def test_a_helpers_reminder_does_not_fire_at_the_main_agent(new_story):
     story = new_story(fixture=SubagentStarted)
     story.expect_success('reminder make "Log the task" --every-minutes 10 --environment main', actor=story.subagent)
     story.advance(timedelta(minutes=11))
-    assert "reminder:1: Log the task" not in story.hook("s-1", HookSamples.edit("src/cart.py")).lines
+    story.expect_absent_hook_line("s-1", HookSamples.edit("src/cart.py"), "reminder:1: Log the task")
 
 
 def test_a_helpers_question_is_refused_and_it_reports_to_the_agent_that_sent_it_instead(new_story):

@@ -8,4 +8,4 @@ def test_an_environment_moves_with_its_number_name_and_branch_and_the_project_as
 
 def test_the_environments_key_of_version_4_is_not_carried(new_story):
     story = upgraded_story(new_story)
-    assert "key-main" not in story.run("environment show 1").output_text
+    story.expect_no_text("environment show 1", "key-main")

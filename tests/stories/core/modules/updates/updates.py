@@ -9,6 +9,7 @@ from core.modules.updates.support.release_notes import PAGE_SIZE
 from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
+from core.testing.expect_row import expect_row
 
 
 def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_in(new_story, tmp_path):
@@ -94,7 +95,7 @@ def test_the_notes_of_a_github_release_say_what_changed_and_a_full_page_has_olde
     story.container.bind(ReleaseSource, source)
     answer = json.loads(story.run("update notes --page 2 --json", actor=story.user).output_text)
     assert answer["notes"][0] == {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"} and not answer["is_last_page"]
-    assert source.asked == [f"https://api.github.com/repos/shop/cart/releases?per_page={PAGE_SIZE}&page=2"]
+    expect_row(source, asked=[f"https://api.github.com/repos/shop/cart/releases?per_page={PAGE_SIZE}&page=2"])
     source.rows = [note_row("v1")]
     assert json.loads(story.run("update notes --json", actor=story.user).output_text)["is_last_page"]
 

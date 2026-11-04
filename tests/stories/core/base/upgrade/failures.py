@@ -45,7 +45,7 @@ def test_a_full_disk_while_the_backup_is_made_changes_nothing_and_leaves_no_half
     outcome = upgrade(story)
     assert outcome.code == 1 and "No space left on device" in outcome.text and "nothing was changed" in outcome.text, outcome.text
     expect_version_four_working(story, original)
-    assert backups(story) == []
+    expect_backups(story, [])
 
 
 def test_a_failure_while_the_finish_is_written_leaves_version_4_in_place_and_the_restore_matches_the_backup(new_story, monkeypatch):
@@ -101,3 +101,8 @@ def test_a_second_run_after_a_partial_one_finishes_and_a_restore_after_it_matche
     del ORDER[:]
     expect_upgrade(story, "upgraded")
     expect_restore_matches_backup(story, original)
+
+
+def expect_backups(story, expected) -> None:
+    actual = backups(story)
+    assert actual == expected, actual

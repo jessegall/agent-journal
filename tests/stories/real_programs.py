@@ -33,7 +33,7 @@ def test_a_real_claude_code_runs_on_the_cheapest_model_it_was_given(new_story, t
     model, session, _ = launched(new_story, tmp_path, "claude")
     transcripts = list((Path.home() / ".claude" / "projects").rglob(f"{session}.jsonl"))
     assert transcripts, f"no transcript of session {session}"
-    assert any(model in name for name in transcript_models(transcripts[0])), transcript_models(transcripts[0])
+    expect_transcript_models(transcripts[0], model)
 
 
 def test_a_real_codex_runs_on_the_cheapest_model_it_was_given(new_story, tmp_path):
@@ -42,3 +42,8 @@ def test_a_real_codex_runs_on_the_cheapest_model_it_was_given(new_story, tmp_pat
     transcripts = list((Path.home() / ".codex" / "sessions").rglob(f"*{thread}.jsonl"))
     assert transcripts, f"no transcript of thread {thread}"
     assert model in transcripts[0].read_text()
+
+
+def expect_transcript_models(path: Path, expected) -> None:
+    actual = transcript_models(path)
+    assert expected in actual, actual

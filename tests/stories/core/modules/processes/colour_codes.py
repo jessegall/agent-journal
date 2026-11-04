@@ -40,7 +40,7 @@ def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(
 def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(ended_custom_tests):
     story, lines = ended_custom_tests
     assert any("no reader reads check-cart.sh yet: journal reader add check-cart.sh" in line for line in lines)
-    assert not any("no reader reads" in line for line in story.hook("s-1", NOTHING).lines)
+    story.expect_absent_hook_line("s-1", NOTHING, "no reader reads")
 
 
 @pytest.fixture

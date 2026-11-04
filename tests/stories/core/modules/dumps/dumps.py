@@ -45,6 +45,6 @@ def test_a_new_dump_tells_the_main_agent_to_file_it(new_story):
 
 def test_after_a_tool_a_dump_left_open_says_what_is_left_and_a_stop_stays_silent(new_story):
     story = dump_story(new_story)
-    assert not any("dump 1 is not filed" in line for line in story.hook("s-1", HookSamples.stop()).lines)
-    assert any("dump 1 is not filed" in line for line in story.hook("s-1", HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")).lines)
+    story.expect_absent_hook_line("s-1", HookSamples.stop(), "dump 1 is not filed")
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py").with_fields(event="post_tool_use"), "dump 1 is not filed")
 

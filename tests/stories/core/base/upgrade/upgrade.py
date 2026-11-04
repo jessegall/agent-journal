@@ -6,6 +6,7 @@ from core.base.database.statement import Statement
 from install.upgrade_journal import UpgradeJournal
 from install.upgrade_outcome import UpgradeOutcome
 from tests.stories.core.base.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
+from core.testing.expect_row import expect_row
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
@@ -120,7 +121,7 @@ def test_the_upgrade_of_a_project_with_no_version_4_journal_is_refused_with_what
 def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_to_version_4_since(new_story):
     story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     first = upgrade(story)
-    assert first.code == 1
+    expect_row(first, code=1)
     backups = [path for path in story.home.folder.rglob("journal.db") if path != version_four]
     assert len(backups) == 1
     original = content(backups[0])
@@ -129,7 +130,8 @@ def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_
     connection.commit()
     connection.close()
     expect_upgrade(story, "movetags: moved 2, already moved 0", "upgraded")
-    assert content(backups[0]) == original and count(story, "notes") == 2
+    expect_content(backups[0], original)
+    expect_count(story, "notes", 2)
 
 
 def test_after_a_good_upgrade_version_4s_files_are_in_version_4_with_the_backup_and_only_version_5_is_live(new_story):
@@ -164,5 +166,15 @@ def test_a_module_added_later_runs_its_move_on_a_second_upgrade_from_the_retired
     story.home.module_list.write_text(json.dumps([NOTES]))
     sqlite3.connect(story.home.folder / "version-4" / "journal.db").executescript("CREATE TABLE notes (id INTEGER PRIMARY KEY, text TEXT); INSERT INTO notes VALUES (7, 'First');")
     expect_upgrade(story, "movenotes: moved 1, already moved 0", "upgraded")
-    assert count(story, "notes") == 1
+    expect_count(story, "notes", 1)
     expect_upgrade(story, "nothing left to move")
+
+
+def expect_count(story, table: str, expected) -> None:
+    actual = count(story, table)
+    assert actual == expected, actual
+
+
+def expect_content(path: Path, expected) -> None:
+    actual = content(path)
+    assert actual == expected, actual

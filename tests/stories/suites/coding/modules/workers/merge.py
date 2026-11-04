@@ -352,7 +352,7 @@ def test_a_resumed_worker_comes_back_as_a_worker_with_its_number(new_story):
     session = worker_session(story, worker)
     story.hook(session, HookSamples.session_start())
     story.expect_success(f"agent show {worker.id}", "role: worker")
-    assert "ended_at:" not in story.run(f"agent show {worker.id}").output_text
+    story.expect_no_text(f"agent show {worker.id}", "ended_at:")
 
 
 def test_with_no_launcher_a_job_stays_waiting_and_the_sender_is_told(new_story):

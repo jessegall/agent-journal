@@ -15,6 +15,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_row import expect_row
 
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 READER = 'reader add steps --commands "make*" --lines "FAILED|error" --progress "\\[ *([0-9]+)%\\]" --summary "([0-9]+ failed)"'
@@ -67,18 +68,18 @@ def test_a_long_run_read_twice_runs_the_reader_once_for_each_new_chunk(new_story
     with patch.object(ReaderRun, "lines", autospec=True, side_effect=ReaderRun.lines) as reader_mock:
         append(story, process.id, FIRST)
         story.hook("s-1", AFTER)
-        assert reader_texts(reader_mock) == []
+        expect_reader_texts(reader_mock, [])
         tick(story)
         story.hook("s-1", AFTER)
-        assert reader_texts(reader_mock) == [FIRST]
+        expect_reader_texts(reader_mock, [FIRST])
         story.run(f"output read {process.id} --summary", actor=story.agent)
         story.run(f"output read {process.id} --summary", actor=story.agent)
-        assert reader_texts(reader_mock) == [FIRST]
+        expect_reader_texts(reader_mock, [FIRST])
         append(story, process.id, SECOND)
         story.hook("s-1", AFTER)
-        assert reader_texts(reader_mock) == [FIRST]
+        expect_reader_texts(reader_mock, [FIRST])
         tick(story)
-        assert reader_texts(reader_mock) == [FIRST, SECOND]
+        expect_reader_texts(reader_mock, [FIRST, SECOND])
 
 
 def test_the_readers_lines_are_kept_in_a_file_of_the_outputs_folder_with_their_numbers(new_story):
@@ -144,11 +145,11 @@ def test_a_script_reader_runs_once_when_the_output_ends(new_story, tmp_path):
     append(story, process.id, "ok\nFAILED a\n")
     with patch.object(ReaderRun, "script_lines", autospec=True, side_effect=ReaderRun.script_lines) as reader_mock:
         tick(story)
-        assert reader_mock.call_count == 0
+        expect_row(reader_mock, call_count=0)
         bus = story.container.get(Bus)
         bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
         bus.run(EndProcess(process.id, 0, BYTES_LONG, 2), story.agent, environment_id=1)
-        assert reader_mock.call_count == 1
+        expect_row(reader_mock, call_count=1)
     assert story.container.get(OutputFolder).reader_lines(process.id) == ["2:FAILED a"]
 
 
@@ -157,3 +158,8 @@ def test_a_summary_pattern_with_a_group_inside_a_group_says_each_word_once(new_s
     stock = story.container.get(Queries).query(Reader).filter(name="pytest").page(1, 1).rows[0]
     reader = replace(stock, summary_pattern="([0-9]+ (passed|failed).*)")
     assert story.container.get(ReaderRun).summary(reader, "13 passed in 2.94s\n") == "13 passed in 2.94s"
+
+
+def expect_reader_texts(reader_mock, expected) -> None:
+    actual = reader_texts(reader_mock)
+    assert actual == expected, actual

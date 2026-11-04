@@ -3,6 +3,7 @@ import json
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
+from core.testing.expect_row import expect_row
 
 
 def test_a_task_is_shown_whole(new_story):
@@ -38,4 +39,4 @@ def test_a_priority_is_a_number_given_by_name_or_number_and_a_level_reads_by_its
     story.expect_success("task show 1", "priority: critical")
     story.expect_success("task edit 1 --priority 250", "priority: 250")
     story.expect_success("task edit 1 --priority high", "priority: high")
-    assert json.loads(story.run("task inspect 1 --json", actor=story.user).output_text)["priority"] == 300
+    expect_row(json.loads(story.run("task inspect 1 --json", actor=story.user).output_text), priority=300)

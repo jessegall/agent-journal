@@ -18,17 +18,19 @@ def test_the_board_brings_the_open_plans_cards_and_both_counts_in_one_answer(new
     story = new_story(fixture=UserJoined)
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
     story.expect_text("plan board --environment main", "1 open, 0 closed", actor=story.user)
-    assert "The rebuild" in story.run("plan board --environment main --json", actor=story.user).output_text
+    story.expect_text("plan board --environment main --json", "The rebuild", actor=story.user)
 
 
 def test_the_plan_board_pages_older_plans_by_id(new_story):
     story = new_story(fixture=UserJoined)
     for title in ("First plan", "Second plan"):
         story.run(f'plan make "{title}" --environment main', actor=story.user)
-    older = story.run("plan board --environment main --before-id 2 --json", actor=story.user).output_text
-    assert "First plan" in older and "Second plan" not in older
-    newest = story.run("plan board --environment main --limit 1 --json", actor=story.user).output_text
-    assert "Second plan" in newest and "First plan" not in newest
+    older = story.run("plan board --environment main --before-id 2 --json", actor=story.user)
+    older.expect_text("First plan")
+    older.expect_no_text("Second plan")
+    newest = story.run("plan board --environment main --limit 1 --json", actor=story.user)
+    newest.expect_text("Second plan")
+    newest.expect_no_text("First plan")
 
 
 def test_the_timeline_says_when_each_task_was_made_logged_and_ended_newest_first(new_story):

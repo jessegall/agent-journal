@@ -11,7 +11,7 @@ from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.base.refusal import Refusal
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
-from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task
+from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -60,7 +60,7 @@ def test_an_item_leaves_on_a_change_in_another_environment(leaving_dock):
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run('task make "Tick" --environment other', actor=story.user)
     story.run_listeners()
-    assert docked_state(story, leaves) == "undocked"
+    expect_docked_state(story, leaves, "undocked")
 
 
 def test_a_row_is_docked_once_per_type(new_story):

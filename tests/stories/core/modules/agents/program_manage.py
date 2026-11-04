@@ -3,6 +3,7 @@ import pytest
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
+from core.testing.expect_row import expect_row
 
 
 @pytest.mark.parametrize("program,name", [("claude", ".claude/settings.json"), ("codex", ".codex/hooks.json")])
@@ -14,7 +15,7 @@ def test_program_manage_imports_the_selected_programs_hooks_into_the_project_sto
     story.expect_text(f'program manage {program} "{folder}"', "managed hooks: 1")
     hooks = story.container.get(ManagedHooks).all()
     assert len(hooks) == 1 and hooks[0].program == program and hooks[0].command == "project-check"
-    assert hooks[0].source == f"project with spaces/{name}"
+    expect_row(hooks[0], source=f"project with spaces/{name}")
     assert ProgramHooks.read(folder / name) == {"permissions": {"allow": ["read"]}, "hooks": {}}
     story.expect_text(f'program manage {program} "{folder}"', "managed hooks: 1")
 

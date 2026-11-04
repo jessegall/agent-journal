@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -20,7 +20,7 @@ def log_file(story):
 
 def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_the_agent(two_bypassed_hooks):
     story = two_bypassed_hooks
-    assert "2 hooks went through unchecked while the journal did not answer" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "2 hooks went through unchecked while the journal did not answer")
     story.expect_rows(not log_file(story).exists())
     story.expect_hook_allowed("s-1", FINISHED, "2 of your hooks went through unchecked")
     story.run_listeners()

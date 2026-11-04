@@ -23,6 +23,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.testing.expect_reply import expect_reply_refusal
 
 
 class TestLimitSetup(StoryFixture):
@@ -58,7 +59,7 @@ def test_a_part_that_ran_over_the_limit_last_time_is_refused_at_the_hook(limited
     OutputReading()(story.container)
     reply = story.hook("s-reader", HookSamples.shell("cat notes && pytest tests/cart.py", ShellPart("cat", CommandCategory.READ, ["notes"]),
                                                ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"])))
-    assert "8 tests" in reply.refusal, reply
+    expect_reply_refusal(reply, "8 tests")
 
 
 @pytest.mark.parametrize("limit,count", [(5, 4), (0, 8)])

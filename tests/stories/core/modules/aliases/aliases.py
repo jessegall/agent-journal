@@ -34,7 +34,7 @@ def test_an_alias_runs_with_its_variables(new_story):
 def test_an_alias_gives_back_the_exit_code_of_its_line(new_story):
     story = new_story(fixture=UserJoined)
     story.run('alias add fail "exit 4"', actor=story.agent)
-    assert story.run("fail", actor=story.agent).code == 4
+    story.run("fail", actor=story.agent).expect_code(4)
 
 
 def test_a_name_of_other_than_lower_case_letters_digits_and_dashes_is_refused(new_story):

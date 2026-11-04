@@ -10,6 +10,7 @@ from core.base.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
+from core.testing.expect_row import expect_row
 
 SCRIPT = """#!/bin/sh
 echo "$@" >> "$TUNLER_RECORD"
@@ -48,13 +49,13 @@ def record(tmp_path: Path) -> list[str]:
 
 def test_the_status_reads_the_programs_answer_and_a_login_it_no_longer_accepts(home):
     status = real_client(home).status()
-    assert (status.installed, status.authenticated, status.rejected, status.account, status.host) == (True, False, True, "ada", "tunnels.example")
+    expect_row(status, installed=True, authenticated=False, rejected=True, account="ada", host="tunnels.example")
     assert status.command.endswith("/bin/tunler")
 
 
 def test_a_login_hands_the_passwords_through_the_environment_and_never_on_the_command_line(home, tmp_path):
     assert real_client(home).login("tunnels.example", "ada", "right", None).connected
-    assert record(tmp_path) == ["login ada --host=tunnels.example"]
+    expect_record(tmp_path, ["login ada --host=tunnels.example"])
     assert (tmp_path / "record.secrets").read_text().splitlines() == ["right none"]
 
 
@@ -80,7 +81,7 @@ def test_the_domains_are_the_programs_lines_and_a_release_names_the_subdomain(ho
 def test_the_version_and_an_update_read_the_programs_answers(home):
     client = real_client(home)
     version = client.version()
-    assert (version.current, version.latest, version.update_available) == ("v0.2.2", "v0.3.0", True)
+    expect_row(version, current="v0.2.2", latest="v0.3.0", update_available=True)
     assert client.update() == "updated to v0.3.0"
 
 
@@ -121,3 +122,8 @@ def test_what_is_no_working_tunler_replaces_nothing(tmp_path):
     with pytest.raises(Refusal, match="not a working tunler"):
         LocalInstaller(target, "#!/bin/sh\necho nonsense\n").install("tunnels.example")
     assert target.read_text() == "the old one" and not target.with_name("tunler.part").exists()
+
+
+def expect_record(tmp_path: Path, expected) -> None:
+    actual = record(tmp_path)
+    assert actual == expected, actual

@@ -24,23 +24,26 @@ def test_runs_over_the_batch_size_wait_and_start_as_a_spot_frees(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     first, second, third = queued(story, "make one"), queued(story, "make two", CommandCategory.BUILD), queued(story, "make three")
     assert (has_slot(story, first), has_slot(story, second), has_slot(story, third)) == (True, True, False)
-    assert waits(story, third)
+    expect_waits(story, third)
     end_run(story, first, "ok\n")
-    assert has_slot(story, third) and not waits(story, third)
+    expect_slot(story, third)
+    expect_absent_waits(story, third)
 
 
 def test_the_batch_size_is_a_setting(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     first, second = queued(story, "make one"), queued(story, "make two")
-    assert has_slot(story, first) and not has_slot(story, second)
+    expect_slot(story, first)
+    expect_absent_slot(story, second)
 
 
 def test_a_main_agents_run_neither_waits_nor_holds_a_spot(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     start_process(story, "make main", category=CommandCategory.TEST_RUN)
     first, second = queued(story, "make one"), queued(story, "make two")
-    assert has_slot(story, first) and has_slot(story, second)
+    expect_slot(story, first)
+    expect_slot(story, second)
 
 
 def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):
@@ -53,4 +56,21 @@ def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):
     assert (has_slot(story, main_first), has_slot(story, main_second), has_slot(story, main_third)) == (True, True, False)
     assert (has_slot(story, web_first), has_slot(story, web_second)) == (True, False)
     end_run(story, web_first, "ok\n")
-    assert has_slot(story, web_second) and not has_slot(story, main_third)
+    expect_slot(story, web_second)
+    expect_absent_slot(story, main_third)
+
+
+def expect_slot(story, process: Process) -> None:
+    assert has_slot(story, process)
+
+
+def expect_absent_slot(story, process: Process) -> None:
+    assert not has_slot(story, process)
+
+
+def expect_waits(story, process: Process) -> None:
+    assert waits(story, process)
+
+
+def expect_absent_waits(story, process: Process) -> None:
+    assert not waits(story, process)

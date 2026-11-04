@@ -2,6 +2,7 @@ import json
 
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def inspected(story, task_id):
@@ -16,8 +17,8 @@ def test_the_inspector_reads_a_task_with_what_it_waits_on_and_its_log_in_one_ans
     story.run('task log 1 "Found the rounding"', actor=story.agent)
     story.run('task log 1 "Wrote the test"', actor=story.agent)
     answer = inspected(story, 1)
-    assert (answer["title"], answer["brief"], answer["state"], answer["priority"]) == ("Fix the cart", "The total adds up", "open", 200)
-    assert answer["waits"] == [{"id": 2, "title": "Fix the totals", "state": "open"}]
+    expect_row(answer, title="Fix the cart", brief="The total adds up", state="open", priority=200)
+    expect_row(answer, waits=[{"id": 2, "title": "Fix the totals", "state": "open"}])
     assert [log["line"] for log in answer["logs"]] == ["Found the rounding", "Wrote the test"]
 
 
@@ -25,11 +26,11 @@ def test_the_inspector_shows_why_a_task_stopped_and_how_it_ended(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
     story.run('task block 1 --reason "Waiting on the supplier"', actor=story.agent)
-    assert inspected(story, 1)["reason"] == "Waiting on the supplier"
+    expect_row(inspected(story, 1), reason="Waiting on the supplier")
     story.run("task unblock 1", actor=story.agent)
     story.run("task start 1", actor=story.agent)
     story.run('task close 1 --outcome "Rounded at the end"', actor=story.agent)
-    assert inspected(story, 1)["outcome"] == "Rounded at the end"
+    expect_row(inspected(story, 1), outcome="Rounded at the end")
 
 
 def test_a_tasks_place_names_its_plan_and_phase(new_story):
@@ -46,7 +47,7 @@ def test_a_tasks_place_names_its_plan_and_phase(new_story):
 def test_a_task_in_no_plan_has_no_place(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
-    assert json.loads(story.run("plan place 1 --json", actor=story.user).output_text)["plan_id"] == 0
+    expect_row(json.loads(story.run("plan place 1 --json", actor=story.user).output_text), plan_id=0)
 
 
 def test_the_plan_inspector_reads_a_plan_with_its_phases_and_how_far_it_has_come_in_one_answer(new_story):
@@ -56,9 +57,9 @@ def test_the_plan_inspector_reads_a_plan_with_its_phases_and_how_far_it_has_come
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
     story.run("phase place 1 --phase 1", actor=story.agent)
     answer = json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)
-    assert (answer["title"], answer["brief"], answer["state"], answer["total"], answer["finished"], answer["current_phase"]) == ("Checkout", "Why it moves", "draft", 1, 0, 0)
-    assert answer["phases"][0]["title"] == "First"
-    assert answer["phases"][0]["tasks"][0]["title"] == "Fix the cart"
+    expect_row(answer, title="Checkout", brief="Why it moves", state="draft", total=1, finished=0, current_phase=0)
+    expect_row(answer["phases"][0], title="First")
+    expect_row(answer["phases"][0]["tasks"][0], title="Fix the cart")
 
 
 def test_the_tasks_window_and_the_shell_may_read_and_change_a_task(new_story):

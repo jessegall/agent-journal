@@ -23,7 +23,7 @@ def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(new_
     monkeypatch.setattr(PluginStepCheck, "refusal", lambda *_args, **_kwargs: REASON)
     for _ in range(4):
         story.expect_refusal(step, REASON, actor=worker)
-    assert "refused" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_refusal(step, REASON, actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{worker.id} refused 5 times on task:1: {REASON}")
     story.expect_refusal(step, REASON, actor=worker)
@@ -44,7 +44,7 @@ def test_a_worker_refused_its_stop_five_times_is_named_to_the_main_agent(new_sto
 def test_a_single_refusal_tells_the_main_agent_nothing(new_story):
     story, worker = working_story(new_story)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "journal worker deliver")
-    assert "refused" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
 
 
 def test_an_allowed_stop_clears_the_refusal_count(new_story):
@@ -57,6 +57,6 @@ def test_an_allowed_stop_clears_the_refusal_count(new_story):
     story.expect_success("wait end 1", actor=worker)
     for _ in range(4):
         story.expect_hook_refusal(session, HookSamples.stop(), "journal worker deliver")
-    assert "refused" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_hook_refusal(session, HookSamples.stop(), "journal worker deliver")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "refused 5 times")

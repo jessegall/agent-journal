@@ -9,9 +9,10 @@ from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.modules.chat.support.mark_samples import mark_count
+from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
+from core.testing.expect_reply import expect_reply_allowed
 
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
 JOURNAL = HookSamples.shell("journal task show 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"))
@@ -98,7 +99,7 @@ def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.container.get(Bus).run(OpenMemoryMark(story.agent.id, 50), story.agent, environment_id=1)
     listing = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"]))
-    assert not story.hook("s-1", listing).refusal
+    expect_reply_allowed(story.hook("s-1", listing))
     assert story.hook("s-1", SERVER).refusal
 
 
@@ -115,7 +116,7 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
     assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
-    assert not reply.refusal
+    expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
 
 
@@ -123,7 +124,7 @@ def test_a_read_that_went_through_the_runner_makes_no_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.hook("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
     story.run_listeners()
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_story):

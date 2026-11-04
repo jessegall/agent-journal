@@ -12,39 +12,49 @@ def test_words_after_a_reply_by_command_stay_out_of_the_chat(new_story):
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run('message reply 1 "yes"', actor=story.agent)
     story.hook("s-1", HookSamples.message_display("I told you where it stands."))
-    assert "I told you where it stands" not in chat(story)
+    expect_absent_chat(story, "I told you where it stands")
 
 
 def test_a_turn_with_no_reply_reaches_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.hook("s-1", HookSamples.message_display("Here is what I found."))
-    assert "Here is what I found" in chat(story)
+    expect_chat(story, "Here is what I found")
 
 
 def test_a_few_words_answering_a_journal_line_stay_out_of_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     story.hook("s-1", HookSamples.message_display("The stories are running."))
-    assert "The stories are running" not in chat(story)
+    expect_absent_chat(story, "The stories are running")
 
 
 def test_a_question_after_a_journal_line_reaches_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     story.hook("s-1", HookSamples.message_display("Should I go on?"))
-    assert "Should I go on?" in chat(story)
+    expect_chat(story, "Should I go on?")
 
 
 def test_a_plain_answer_to_a_new_message_line_reaches_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("[journal] new message 7"))
     story.hook("s-1", HookSamples.message_display("Yes, done."))
-    assert "Yes, done" in chat(story)
+    expect_chat(story, "Yes, done")
 
 
 def test_a_plain_answer_to_an_answered_question_line_reaches_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("[journal] question:58 is answered"))
     story.hook("s-1", HookSamples.message_display("Going with your choice."))
-    assert "Going with your choice" in chat(story)
+    expect_chat(story, "Going with your choice")
+
+
+def expect_absent_chat(story, expected) -> None:
+    actual = chat(story)
+    assert expected not in actual, actual
+
+
+def expect_chat(story, expected) -> None:
+    actual = chat(story)
+    assert expected in actual, actual

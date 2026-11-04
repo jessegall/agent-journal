@@ -5,6 +5,7 @@ from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.managed_state import ManagedState
 from core.base.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
+from core.testing.expect_row import expect_row
 
 
 @pytest.fixture
@@ -23,7 +24,8 @@ def test_a_managed_hook_state_and_timeout_are_saved_and_raise_a_change_event(imp
     start = events.newest_id()
     story.expect_text(f'managed-hook set "{hook.id}" off 17', "off", "17")
     saved = story.container.get(ManagedHooks).all()[0]
-    assert saved.state is ManagedState.DISABLED and saved.timeout == 17
+    expect_row(saved, state=ManagedState.DISABLED)
+    expect_row(saved, timeout=17)
     assert any(event.event == "managed-hook.changed" for event in events.events_past(start))
 
 

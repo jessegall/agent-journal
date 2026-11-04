@@ -3,9 +3,10 @@ import json
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from core.testing.expect_row import expect_row
 
 
 def search_hook(line: str):
@@ -18,7 +19,7 @@ def test_a_search_in_a_chain_has_its_mark_too(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.shell("ls src && journal search find cart", ShellPart("ls", CommandCategory.READ, ["src"]), ShellPart("journal", CommandCategory.JOURNAL, ["search", "find", "cart"], subcommand="search")))
     story.run_listeners()
-    assert "Searched for cart: 1 row" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Searched for cart: 1 row")
 
 
 def details(story) -> list[dict]:
@@ -32,7 +33,7 @@ def test_an_agent_that_searches_has_one_mark_with_its_words_and_how_many_rows_he
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.hook("s-1", search_hook("journal search find cart"))
     story.run_listeners()
-    assert "Searched for cart: 1 row" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "Searched for cart: 1 row")
 
 
 def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(new_story):
@@ -42,7 +43,8 @@ def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(
     story.hook("s-1", search_hook("journal search find cart"))
     story.run_listeners()
     [mark] = details(story)
-    assert mark["terms"] == ["cart"] and mark["total"] == 2
+    expect_row(mark, terms=["cart"])
+    expect_row(mark, total=2)
     assert [(hit["cli_name"], hit["id"]) for hit in mark["hits"]] == [("doc", 1), ("task", 1)]
     assert all(hit["excerpt"] for hit in mark["hits"])
 
@@ -55,7 +57,7 @@ def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_stor
     story.run_listeners()
     [mark] = details(story)
     assert len(mark["hits"]) == 10 and mark["total"] == 14
-    assert "Searched for cart: 14 rows" in marks_text(story)
+    expect_marks_text(story, "Searched for cart: 14 rows")
 
 
 def test_the_model_option_narrows_the_search_the_mark_shows(new_story):
@@ -74,4 +76,9 @@ def test_a_command_that_is_no_search_and_a_search_of_an_unknown_model_leave_no_m
     story.hook("s-1", search_hook("journal task list"))
     story.hook("s-1", search_hook("journal search find cart --model ghost"))
     story.run_listeners()
-    assert details(story) == []
+    expect_details(story, [])
+
+
+def expect_details(story, expected) -> None:
+    actual = details(story)
+    assert actual == expected, actual

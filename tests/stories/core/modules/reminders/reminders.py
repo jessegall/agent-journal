@@ -17,12 +17,12 @@ def lines_of(story) -> list[str]:
 def test_a_reminder_on_an_interval_of_time_comes_again_and_again(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success('reminder make "Read the review" --every-minutes 10 --environment main', actor=story.agent)
-    assert "reminder:1: Read the review" not in lines_of(story)
+    expect_absent_lines_of(story, "reminder:1: Read the review")
     story.advance(timedelta(minutes=11))
-    assert "reminder:1: Read the review" in lines_of(story)
-    assert "reminder:1: Read the review" not in lines_of(story)
+    expect_lines_of(story, "reminder:1: Read the review")
+    expect_absent_lines_of(story, "reminder:1: Read the review")
     story.advance(timedelta(minutes=11))
-    assert "reminder:1: Read the review" in lines_of(story)
+    expect_lines_of(story, "reminder:1: Read the review")
 
 
 def test_a_reminder_on_an_interval_of_tool_uses_comes_after_that_many(new_story):
@@ -39,19 +39,19 @@ def test_a_reminder_at_a_date_comes_once_and_ends(new_story):
     story = new_story(fixture=BuilderStarted)
     later = Timestamp(story.clock.timestamp().value + timedelta(hours=1)).text
     story.expect_success(f'reminder make "Ship it" --at {later} --environment main', actor=story.agent)
-    assert "reminder:1: Ship it" not in lines_of(story)
+    expect_absent_lines_of(story, "reminder:1: Ship it")
     story.advance(timedelta(hours=2))
-    assert "reminder:1: Ship it" in lines_of(story)
-    assert "reminder:1: Ship it" not in lines_of(story)
+    expect_lines_of(story, "reminder:1: Ship it")
+    expect_absent_lines_of(story, "reminder:1: Ship it")
 
 
 def test_a_once_reminder_on_an_interval_comes_one_time(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success('reminder make "Stretch" --every-minutes 5 --once --environment main', actor=story.agent)
     story.advance(timedelta(minutes=6))
-    assert "reminder:1: Stretch" in lines_of(story)
+    expect_lines_of(story, "reminder:1: Stretch")
     story.advance(timedelta(minutes=6))
-    assert "reminder:1: Stretch" not in lines_of(story)
+    expect_absent_lines_of(story, "reminder:1: Stretch")
 
 
 def test_a_reminder_with_a_block_holds_the_agent_until_its_condition_comes_true(new_story):
@@ -70,3 +70,13 @@ def test_a_reminder_needs_a_time_or_an_interval_and_a_known_condition(new_story)
     story = new_story(fixture=BuilderStarted)
     story.expect_refusal('reminder make "Nothing" --environment main', "a reminder needs a time or an interval", actor=story.agent)
     story.expect_refusal('reminder make "Nothing" --every-minutes 5 --block ghost --environment main', "no block condition is named ghost", actor=story.agent)
+
+
+def expect_absent_lines_of(story, expected) -> None:
+    actual = lines_of(story)
+    assert expected not in actual, actual
+
+
+def expect_lines_of(story, expected) -> None:
+    actual = lines_of(story)
+    assert expected in actual, actual

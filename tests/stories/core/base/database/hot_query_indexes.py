@@ -25,4 +25,9 @@ def test_a_hot_query_uses_an_index(new_story, query):
 
 
 def test_the_oldest_ended_output_is_read_with_no_sort(new_story):
-    assert "TEMP B-TREE" not in query_plan(new_story, HOT_QUERIES[2])
+    expect_absent_query_plan(new_story, HOT_QUERIES[2], "TEMP B-TREE")
+
+
+def expect_absent_query_plan(new_story, query: str, expected) -> None:
+    actual = query_plan(new_story, query)
+    assert expected not in actual, actual

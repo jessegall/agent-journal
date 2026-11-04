@@ -16,6 +16,7 @@ from core.modules.sharing.support.share_password import SharePassword
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import PlanWithPhases
+from core.testing.expect_row import expect_row
 
 LINK_DAYS = 7
 
@@ -38,9 +39,9 @@ def test_a_person_makes_a_link_for_a_plan_and_sees_its_token_once(new_story):
     assert '"token": "' in made and '"link": "/viewer/share/' in made, made
     story.expect_success("share show 1", "state: active", "row_model: plan", "row_id: 1", "comments: False", actor=story.user)
     token = made.split('"token": "')[1].split('"')[0]
-    assert token not in story.run("share list --json", actor=story.user).output_text
-    assert token not in story.run("share show 1 --json", actor=story.user).output_text
-    assert token not in story.run("event list --json", actor=story.user).output_text
+    story.expect_no_text("share list --json", token, actor=story.user)
+    story.expect_no_text("share show 1 --json", token, actor=story.user)
+    story.expect_no_text("event list --json", token, actor=story.user)
 
 
 def test_a_link_ends_a_week_after_it_is_made(new_story):
@@ -54,7 +55,9 @@ def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     requested = json.loads(story.run("share make plans:1 --environment main --json", actor=story.agent).output_text)
     assert "state" in requested, requested
-    assert requested["state"] == "waiting" and requested["token"] is None and requested["link"] is None, requested
+    expect_row(requested, state="waiting")
+    expect_row(requested, token=None)
+    expect_row(requested, link=None)
     story.expect_success("share show 1", "state: waiting", actor=story.user)
     story.expect_text("message list", "I ask to share plan 1", "Nothing opens until you accept it", actor=story.user)
 
@@ -64,7 +67,8 @@ def test_a_person_accepts_an_agents_link_owns_it_and_sees_its_token_once(new_sto
     story.run("share make plans:1 --environment main", actor=story.agent)
     story.expect_refusal("share accept 1", "only a person accepts", actor=story.agent)
     accepted = json.loads(story.run("share accept 1 --json", actor=story.user).output_text)
-    assert accepted["state"] == "active" and accepted["link"] == f"/viewer/share/{accepted['token']}", accepted
+    expect_row(accepted, state="active")
+    expect_row(accepted, link=f"/viewer/share/{accepted['token']}")
     story.expect_success("share show 1", f"creator_id: {story.user.id}", actor=story.user)
     story.expect_refusal("share accept 1", "accept", actor=story.user)
 
@@ -83,7 +87,7 @@ def test_a_link_can_end_when_asked_or_never(new_story):
     expected = story.clock.timestamp().value + timedelta(days=30)
     story.expect_text("share show 1", f"expires_at: {expected.strftime('%Y-%m-%d')}", actor=story.user)
     never = json.loads(story.run("share make plans:1 --ends never --json", actor=story.user).output_text)
-    assert never["expires_at"] is None, never
+    expect_row(never, expires_at=None)
     story.expect_refusal("share make plans:1 --ends soon", "cannot end after", actor=story.user)
 
 
@@ -92,7 +96,7 @@ def test_a_password_is_kept_only_by_its_digest_and_shown_as_locked(new_story):
     story.run("share make plans:1 --password open-sesame --comments", actor=story.user)
     shown = story.run("share show 1 --json", actor=story.user).output_text
     assert "open-sesame" not in shown and "password_digest" not in shown and json.loads(shown)["locked"] and json.loads(shown)["comments"], shown
-    assert "open-sesame" not in story.run("event list --json", actor=story.user).output_text
+    story.expect_no_text("event list --json", "open-sesame", actor=story.user)
     digest = story.container.get(Queries).query(ShareLink).find(1).password_digest
     story.expect_rows(SharePassword.matches("open-sesame", digest), not SharePassword.matches("wrong", digest))
 

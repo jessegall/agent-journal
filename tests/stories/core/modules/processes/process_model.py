@@ -8,6 +8,7 @@ from core.modules.processes.commands.stop_process.stop_process import StopProces
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, BYTES_SHORT, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_row import expect_row
 
 PROCESS = "process show 1"
 PARTS = "process-part list --process 1 --oldest"
@@ -21,7 +22,7 @@ def bus(story) -> Bus:
 def test_starting_a_process_makes_it_running_with_one_part_for_each_command_of_its_line(new_story):
     story = new_story(fixture=BuilderStarted)
     started = start_process(story)
-    assert started.id == 1
+    expect_row(started, id=1)
     story.expect_success(PROCESS, "state: running", "line: make test && echo done", "limit_seconds: 30")
     story.expect_ordered_lines(PARTS, "make test", "echo done")
     story.expect_text(PARTS, "waiting")

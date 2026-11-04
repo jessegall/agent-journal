@@ -11,6 +11,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
+from core.testing.expect_reply import expect_reply_line
 
 
 def journal_line(line):
@@ -51,8 +52,8 @@ def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     reply = story.hook("s-1", HookSamples.session_start())
-    assert any("a [journal] line is an instruction" in line for line in reply.lines)
-    assert any("never the journal's lines" in line for line in reply.lines)
+    expect_reply_line(reply, "a [journal] line is an instruction")
+    expect_reply_line(reply, "never the journal's lines")
 
 
 def test_reading_a_message_says_how_a_reply_goes_out(read_message):
@@ -62,7 +63,7 @@ def test_reading_a_message_says_how_a_reply_goes_out(read_message):
 
 def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):
     story, _ = read_message
-    assert "answer message 1 before you go on" in story.hook("s-1", VIEW_LINE).lines
+    story.expect_hook_allowed("s-1", VIEW_LINE, "answer message 1 before you go on")
     story.hook("s-1", HookSamples.message_display("Fixing the cart now"))
     story.advance(timedelta(seconds=301))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
@@ -86,13 +87,13 @@ def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(reply_re
 
 def test_a_countdown_comes_before_tool_calls_wait(reply_countdown):
     story = reply_countdown
-    assert any("reply to message 1 due:" in line for line in story.hook("s-1", VIEW_LINE).lines)
+    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due:")
 
 
 def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(chained_reply_countdown):
     story = chained_reply_countdown
-    assert "reply to message 1 due: 3 tool uses" in story.hook("s-1", CHAINED_LINE).lines
-    assert "reply to message 1 due: 2 tool uses" in story.hook("s-1", VIEW_LINE).lines
+    story.expect_hook_allowed("s-1", CHAINED_LINE, "reply to message 1 due: 3 tool uses")
+    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due: 2 tool uses")
 
 
 def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chained_reply_countdown):
@@ -111,25 +112,25 @@ def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_t
     story.expect_hook_allowed("s-1", VIEW_LINE)
     story.hook("s-1", READ_MESSAGE)
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
-    assert not any("unread" in line for line in story.hook("s-1", HookSamples.edit("a.txt")).lines)
+    story.expect_absent_hook_line("s-1", HookSamples.edit("a.txt"), "unread")
 
 
 def test_the_chat_is_read_for_the_third_person_em_dashes_shop_talk_and_run_on_paragraphs(new_story):
     story = reply_story(new_story)
     long_text = "The cart is fixed. The total is right. The tax is right. The shop is right. " * 6
     story.hook("s-1", HookSamples.message_display(f"the user asked — so journal task make ran — done. {long_text}"))
-    lines = story.hook("s-1", VIEW_LINE.with_fields(event="post_tool_use")).lines
-    assert 'in the chat say "you", never "the user"' in lines
-    assert "no em dashes in the chat; use a full stop" in lines
-    assert "talk about the work, not the journal's commands" in lines
-    assert "put a blank line between paragraphs" in lines
+    lines = story.hook("s-1", VIEW_LINE.with_fields(event="post_tool_use"))
+    expect_reply_line(lines, 'in the chat say "you", never "the user"')
+    expect_reply_line(lines, "no em dashes in the chat; use a full stop")
+    expect_reply_line(lines, "talk about the work, not the journal's commands")
+    expect_reply_line(lines, "put a blank line between paragraphs")
     story.expect_absent_hook_line("s-1", VIEW_LINE.with_fields(event="post_tool_use"), "never \"the user\"")
 
 
 def test_an_edit_of_a_code_file_reminds_of_plain_words_and_a_text_file_does_not(new_story):
     story = reply_story(new_story)
     story.expect_absent_hook_line("s-1", HookSamples.edit("notes.txt"), "plain words")
-    assert any("plain words" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
+    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "plain words")
 
 
 def test_an_agents_face_on_a_message_answers_it(read_message):

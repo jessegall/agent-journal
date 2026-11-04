@@ -6,6 +6,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from core.testing.expect_reply import expect_reply_line
 
 
 def posted(line):
@@ -27,15 +28,15 @@ def three_started_tasks(new_story):
 
 def test_the_newest_started_task_is_the_current_one_whatever_its_number(started_tasks):
     story = started_tasks
-    assert any("task:2 is in hand" in line for line in story.hook("s-1", HookSamples.session_start()).lines)
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), "task:2 is in hand")
 
 
 def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_starts(started_tasks):
     story = started_tasks
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
-    lines = story.hook("s-1", posted("journal task close 2 --outcome done")).lines
-    assert any("back to task:3" in line for line in lines)
+    lines = story.hook("s-1", posted("journal task close 2 --outcome done"))
+    expect_reply_line(lines, "back to task:3")
     story.expect_success("task show 4", "state: open", actor=story.agent)
 
 

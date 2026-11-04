@@ -11,7 +11,7 @@ from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDock
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.queries.process_query import ProcessQuery
-from tests.stories.core.modules.chat.support.mark_samples import mark_count
+from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -23,6 +23,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 MARKS = "chat-mark list --environment 1 --oldest"
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
@@ -43,12 +44,12 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n")
     tick(story)
     story.run_listeners()
-    assert mark_count(story) == starting_count
+    expect_mark_count(story, starting_count)
     story.expect_text(MARKS, "40%")
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n[ 80%]\n")
     tick(story)
     story.run_listeners()
-    assert mark_count(story) == starting_count
+    expect_mark_count(story, starting_count)
     story.expect_text(MARKS, "80%")
 
 
@@ -73,14 +74,14 @@ def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(ended_short_mar
 
 def test_a_run_moved_to_the_background_updates_its_mark_in_place(background_build_mark):
     story, process, starting_count = background_build_mark
-    assert mark_count(story) == starting_count
+    expect_mark_count(story, starting_count)
     story.expect_text(MARKS, "process:1", "Building")
 
 
 def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_a_dock_button(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
-    assert (mark.family, mark.family_title, mark.group, mark.click, mark.process) == ("processes.commands", "Commands", "work", "unfold", True)
+    expect_row(mark, family="processes.commands", family_title="Commands", group="work", click="unfold", process=True)
     assert [(button["label"], button["runs"]) for button in mark.buttons] == [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")]
 
 
@@ -116,7 +117,7 @@ def test_a_plain_command_that_ends_well_in_the_foreground_makes_no_mark(new_stor
     process = start_process(story, "cat notes")
     end_run(story, process, "text\n")
     story.run_listeners()
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_failed_plain_command_makes_no_mark(new_story):
@@ -124,12 +125,12 @@ def test_a_failed_plain_command_makes_no_mark(new_story):
     process = start_process(story, "cat notes")
     end_run(story, process, "no such file\n", exit_code=1)
     story.run_listeners()
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_plain_command_moved_to_the_background_makes_no_mark(background_plain_mark):
     story, process = background_plain_mark
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(command_chain_mark):
@@ -228,8 +229,8 @@ def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
 
 def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(untitled_docked_run):
     story, process, wanted = untitled_docked_run
-    assert any(wanted in line for line in story.hook("s-1", monitor(f"journal output monitor {process.id}")).lines)
-    assert not any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), wanted)
+    story.expect_absent_hook_line("s-1", HookSamples.stop(), wanted)
 
 
 def test_only_a_real_long_run_docks_and_not_one_whose_folder_says_it_ended(running_docked_process):

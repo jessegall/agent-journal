@@ -13,7 +13,7 @@ def test_reading_all_of_a_large_output_names_the_flags_once_for_that_output(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make test")
     end_run(story, process, "x\n" * 300)
-    assert any(f"output {process.id} has 300 lines" in line for line in story.hook("s-1", posted(f"journal output read {process.id} --all")).lines)
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"output {process.id} has 300 lines")
     story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --all"), "lines: read it with")
 
 
@@ -29,4 +29,4 @@ def test_the_limit_is_a_setting(new_story):
     story.run("setting make journal.core.processes.large-output-lines 2")
     process = moved_run(story, "make test")
     end_run(story, process, "x\n" * 5)
-    assert any(f"output {process.id} has 5 lines" in line for line in story.hook("s-1", posted(f"journal output read {process.id} --all")).lines)
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"output {process.id} has 5 lines")

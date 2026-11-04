@@ -17,6 +17,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import expect_timing_lines, server_story
+from core.testing.expect_row import expect_row
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
@@ -39,7 +40,7 @@ def test_a_hook_is_recorded_as_it_was_sent_while_the_developer_option_is_on(new_
     started.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=started.user)
     with server_story(started) as story:
         story.expect_hook_answer("/hook", example("edit"), 200, '"refusal": ""')
-    assert started.container.get(HookRequestLog).read()[0].body == example("edit")
+    expect_row(started.container.get(HookRequestLog).read()[0], body=example("edit"))
 
 
 def test_a_raw_body_with_no_version_is_read_the_old_way(task_server):

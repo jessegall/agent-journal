@@ -5,7 +5,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_absent_marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -102,12 +102,12 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")
-    assert "handed in" not in marks_text(story), marks_text(story)
+    expect_absent_marks_text(story, "handed in")
     story.expect_refusal("worker next", "the tests of task 1 are running", actor=worker)
 
     # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
     ended(story, started[0], 1)
-    assert "1 failed, back with the worker" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "1 failed, back with the worker")
     story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {started[0]} --summary")
     expect_states(story, task1="started", task2="open", task3="open")
 
@@ -133,9 +133,9 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     expect_states(story, task1="completed", task2="completed", task3="testing")
-    assert "handed in task 1, task 2, task 3" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "handed in task 1, task 2, task 3")
     ended(story, started[3], 0)
-    assert "passed" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "passed")
     expect_states(story, task1="completed", task2="completed", task3="completed")
 
     # all pass: the main agent is told to merge, and the merge closes all three

@@ -2,7 +2,7 @@ import json
 
 from core.base.query.queries import Queries
 from suites.coding.modules.checks.models.check import Check
-from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story, expect_upgrade_text
 
 
 def test_version_4_checks_move_with_their_numbers_verdicts_and_intervals(new_story):
@@ -19,13 +19,13 @@ def test_a_retired_check_moves_removed_and_is_not_listed(new_story):
 
 def test_a_check_with_no_title_is_skipped_and_the_wait_target_flag_is_counted_as_dropped(new_story):
     story = upgraded_story(new_story)
-    assert "skipped checks 4:" in story.upgrade_text
-    assert "dropped check wait targets: 1 rows" in story.upgrade_text
+    expect_upgrade_text(story, "skipped checks 4:")
+    expect_upgrade_text(story, "dropped check wait targets: 1 rows")
 
 
 def test_the_checks_moved_are_counted_and_a_second_run_moves_none(new_story):
     story = upgraded_story(new_story)
-    assert "journal.suites.coding.checks: moved 6, already moved 0" in story.upgrade_text
+    expect_upgrade_text(story, "journal.suites.coding.checks: moved 6, already moved 0")
     assert repeated_upgrade(story).text == "nothing left to move"
 
 

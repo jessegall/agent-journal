@@ -15,7 +15,12 @@ def test_the_settings_are_read_once_and_again_only_when_one_changes(new_story):
     story.expect_success(SETTING_READ_LINE, "value: 20", actor=story.user)
     first_read_rows = settings_rows_read(story)
     story.expect_success(SETTING_READ_LINE, "value: 20", actor=story.user)
-    assert settings_rows_read(story) == first_read_rows
+    expect_settings_rows_read(story, first_read_rows)
     story.run(f"setting set {KEY} 30 --project", actor=story.user)
     story.expect_success(SETTING_READ_LINE, "value: 30", actor=story.user)
     assert settings_rows_read(story) > first_read_rows
+
+
+def expect_settings_rows_read(story, expected) -> None:
+    actual = settings_rows_read(story)
+    assert actual == expected, actual

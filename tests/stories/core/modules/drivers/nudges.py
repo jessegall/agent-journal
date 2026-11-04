@@ -29,11 +29,12 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
     nudge = NudgeDeclaration("shop.total", NudgeType.STEERING, "the total is {total}").nudge(total=12)
-    assert (nudge.key, nudge.type, nudge.text, nudge.labelled) == ("shop.total", NudgeType.STEERING, "the total is 12", "journal: the total is 12")
+    expect_row(nudge, key="shop.total", type=NudgeType.STEERING, text="the total is 12", labelled="journal: the total is 12")
 
 
 def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays():
@@ -54,7 +55,7 @@ def test_each_type_can_be_declared():
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
     story = new_story(fixture=UserJoined)
     entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == RUN_NAME.key)
-    assert (entry.module, entry.type, entry.text) == ("journal.core.processes", "steering", RUN_NAME.text)
+    expect_row(entry, module="journal.core.processes", type="steering", text=RUN_NAME.text)
 
 
 def test_no_two_nudges_share_a_key(new_story):

@@ -39,7 +39,7 @@ def test_a_failing_command_keeps_the_task_blocked_without_a_failed_check_line(du
 def test_a_command_that_cannot_run_is_named_to_the_agent(new_story):
     story = waiting_story(new_story, "no-such-command-here")
     run_due(story)
-    assert any("task:1 waits on a command that cannot run" in line for line in story.hook("s-1", VIEW_LINE).lines)
+    story.expect_hook_allowed("s-1", VIEW_LINE, "task:1 waits on a command that cannot run")
 
 
 def test_the_check_of_a_wait_stays_out_of_the_list(new_story):

@@ -3,7 +3,7 @@ import pytest
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, StrangeVariant, mark_count, module_actor
+from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, StrangeVariant, mark_count, module_actor, expect_mark_count
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -16,20 +16,20 @@ def test_a_mark_of_a_type_no_module_declares_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="no installed module declares the mark chatsample.ghost"):
         story.container.get(Bus).run(show(SampleMarkType.UNKNOWN_TYPE, "ghost:1"), module_actor(story, "chatsample"))
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_mark_written_by_another_modules_actor_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="only chatsample writes a mark of chatsample.moment"):
         story.container.get(Bus).run(show(SampleMarkType.EVENT_TYPE, "moment:1"), module_actor(story, "journal.core.memories"))
-    assert mark_count(story) == 0
+    expect_mark_count(story, 0)
 
 
 def test_a_mark_written_by_its_own_modules_actor_is_shown(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.container.get(Bus).run(show(SampleMarkType.EVENT_TYPE, "moment:1"), module_actor(story, "chatsample"))
-    assert mark_count(story) == 1
+    expect_mark_count(story, 1)
 
 
 def test_a_process_mark_with_the_same_key_is_edited_in_place(new_story):
@@ -37,7 +37,7 @@ def test_a_process_mark_with_the_same_key_is_edited_in_place(new_story):
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     bus.run(show(SampleMarkType.PROCESS, "run:1", "Running"), actor)
     bus.run(show(SampleMarkType.PROCESS, "run:1", "Still running"), actor)
-    assert mark_count(story) == 1
+    expect_mark_count(story, 1)
     story.expect_text("chat-mark list --environment 1", "Still running")
 
 
@@ -77,7 +77,7 @@ def test_a_listener_run_twice_for_one_event_leaves_one_mark(new_story):
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     for _ in range(2):
         bus.run(ShowMark(1, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:event-7", "Event 7"), actor)
-    assert mark_count(story) == 1
+    expect_mark_count(story, 1)
 
 
 def test_a_mark_for_an_agent_of_another_environment_is_refused(new_story):

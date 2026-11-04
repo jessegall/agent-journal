@@ -18,6 +18,7 @@ from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
@@ -37,8 +38,8 @@ def lines_of(story, sample) -> list[str]:
 
 def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summary(ended_test_output):
     story, process = ended_test_output
-    assert ENDED in lines_of(story, NOTHING)
-    assert ENDED not in lines_of(story, NOTHING)
+    expect_lines_of(story, NOTHING, ENDED)
+    expect_absent_lines_of(story, NOTHING, ENDED)
 
 
 def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_background(new_story):
@@ -87,7 +88,7 @@ def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(end
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(unread_build_output):
     story, lines = unread_build_output
     assert any("no reader reads deploy.sh yet: journal reader add deploy.sh" in line for line in lines)
-    assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
+    expect_absent_lines_of(story, NOTHING, "no reader reads")
 
 
 def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(ended_loop_output):
@@ -114,12 +115,12 @@ def test_a_run_that_printed_nothing_gets_no_advice(empty_build_output):
 def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     ended_run(story, "pytest -q", TESTS_REPORT, exit_code=1)
-    assert not any("ended" in line for line in lines_of(story, NOTHING))
+    expect_absent_lines_of(story, NOTHING, "ended")
 
 
 def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(unmatched_reader_output):
     story, process = unmatched_reader_output
-    assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+    expect_lines_of(story, NOTHING, "reader deploys picked none")
 
 
 def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
@@ -141,7 +142,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    assert any("prints a count with no bar" in line for line in lines_of(story, NOTHING))
+    expect_lines_of(story, NOTHING, "prints a count with no bar")
 
 
 class SilentVitestRun(StoryFixture):
@@ -223,17 +224,17 @@ def test_a_saved_command_that_fails_with_output_is_only_told_how_it_ended(new_st
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):
     story, process = program_reader_output
-    assert not any("no reader reads pytest" in line for line in lines_of(story, NOTHING))
+    expect_absent_lines_of(story, NOTHING, "no reader reads pytest")
 
 
 def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_reader_output):
     story, process = chain_reader_output
-    assert any("reader deploys picked none" in line for line in lines_of(story, NOTHING))
+    expect_lines_of(story, NOTHING, "reader deploys picked none")
 
 
 def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(unshown_output):
     story, process = unshown_output
-    assert not any("reader deploys" in line for line in lines_of(story, NOTHING))
+    expect_absent_lines_of(story, NOTHING, "reader deploys")
 
 
 def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):
@@ -370,3 +371,11 @@ def unshown_output(deploy_reader):
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
     return story, process
+
+
+def expect_lines_of(story, sample, expected) -> None:
+    expect_reply_line(story.hook("s-1", sample), expected)
+
+
+def expect_absent_lines_of(story, sample, expected) -> None:
+    expect_absent_reply_line(story.hook("s-1", sample), expected)

@@ -1,6 +1,7 @@
 import json
 
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_row import expect_row
 
 
 def test_making_a_resource_prints_only_what_was_created(new_story):
@@ -23,7 +24,8 @@ def test_deleting_a_resource_prints_what_was_deleted(new_story):
 def test_json_keeps_the_whole_row(new_story):
     story = new_story(fixture=BuilderStarted)
     row = json.loads(story.run('task make "Fix the totals" --environment main --json', actor=story.agent).output_text)
-    assert row["id"] == 1 and row["title"] == "Fix the totals"
+    expect_row(row, id=1)
+    expect_row(row, title="Fix the totals")
 
 
 def test_a_show_still_prints_the_whole_row(new_story):

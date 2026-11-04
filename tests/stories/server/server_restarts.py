@@ -14,6 +14,7 @@ from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.server_process import ServerProcess
+from core.testing.expect_row import expect_row
 
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 SCHEMA_EDIT = json.loads((SCHEMA_EXAMPLES / "edit.json").read_text())
@@ -44,7 +45,7 @@ def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(ne
     database.connection.commit()
     with ServerProcess(story.home) as server:
         server.expect_health()
-    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
+    expect_row(RegistryTable(database).row(), fingerprint=CodeFingerprint().text(ModuleFinder(story.home).modules()))
 
 
 def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_story):
@@ -54,7 +55,7 @@ def test_a_server_syncs_when_its_old_registry_binds_a_class_that_is_gone(new_sto
     database.connection.commit()
     with ServerProcess(story.home) as server:
         server.expect_health()
-    assert RegistryTable(database).row()["fingerprint"] == CodeFingerprint().text(ModuleFinder(story.home).modules())
+    expect_row(RegistryTable(database).row(), fingerprint=CodeFingerprint().text(ModuleFinder(story.home).modules()))
     assert "core.gone" not in RegistryTable(database).row()["entries"]
 
 

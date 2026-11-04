@@ -27,7 +27,7 @@ def test_a_value_saved_through_the_place_shows_in_the_owners_group_with_one_key(
     story.expect_success(f"setting show {OWN_ADDRESS}", f"value: {TUNNEL}", "from: project", actor=story.user)
     story.expect_success(f"setting show {PLACED_ADDRESS}", f"key: {OWN_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
     story.expect_text("setting list", OWN_ADDRESS)
-    assert PLACED_ADDRESS not in story.run("setting list", actor=story.user).output_text
+    story.expect_no_text("setting list", PLACED_ADDRESS, actor=story.user)
 
 
 def test_a_value_saved_in_the_owners_group_shows_where_the_group_is_placed(new_story):
@@ -52,4 +52,4 @@ def test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_remove
     story.container.get(ModuleRemoval).remove("good")
     code, report = story.synced()
     assert code == 0, report
-    assert OWN_ADDRESS not in story.run("setting tree", actor=story.user).output_text
+    story.expect_no_text("setting tree", OWN_ADDRESS, actor=story.user)

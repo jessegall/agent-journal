@@ -30,7 +30,7 @@ def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
     tools = story.container.get(PerformanceTools)
     tools.run(ReaderTimeTool, "vitest", 12, 1)
     tools.run(ReaderTimeTool, "vitest", 30, 1)
-    assert numbers(story) == [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "most_points": 30, "average_points": 21}], numbers(story)
+    expect_numbers(story, [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "most_points": 30, "average_points": 21}])
 
 
 def test_an_http_route_is_counted_in_points_while_call_costs_are_on(new_story):
@@ -39,8 +39,8 @@ def test_an_http_route_is_counted_in_points_while_call_costs_are_on(new_story):
     tools.run(RouteCostTool, "/cli", Points(rows=4))
     tools.run(RouteCostTool, "/cli", Points(rows=10))
     tools.run(RouteCostTool, "/hook", Points(rows=20))
-    assert numbers(story) == [{"id": "route /cli", "hook": "route /cli", "count": 2, "most_points": 10, "average_points": 7},
-                               {"id": "route /hook", "hook": "route /hook", "count": 1, "most_points": 20, "average_points": 20}], numbers(story)
+    expect_numbers(story, [{"id": "route /cli", "hook": "route /cli", "count": 2, "most_points": 10, "average_points": 7},
+                               {"id": "route /hook", "hook": "route /hook", "count": 1, "most_points": 20, "average_points": 20}])
 
 
 def test_a_reset_starts_the_counts_again_and_the_window_may_read_and_reset(new_story):
@@ -50,4 +50,9 @@ def test_a_reset_starts_the_counts_again_and_the_window_may_read_and_reset(new_s
     window.expect_window_allowed("developer.numbers", "developer reset-numbers")
     story.container.get(HookNumbersFile).add("stop", 4)
     story.run("developer reset-numbers", actor=story.user)
-    assert numbers(story) == []
+    expect_numbers(story, [])
+
+
+def expect_numbers(story, expected, flags="") -> None:
+    actual = numbers(story, flags)
+    assert actual == expected, actual

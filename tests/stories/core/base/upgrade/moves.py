@@ -7,6 +7,7 @@ from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, version_four_database
+from core.testing.expect_row import expect_row
 
 NOTES, TAGS, BROKEN_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:BrokenTagsModule"
 
@@ -45,7 +46,8 @@ def test_a_second_run_skips_every_row_the_map_holds(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     upgrade.run(source)
     second_run = upgrade.run(source)
-    assert sample(second_run.moved) == {"movenotes": 0, "movetags": 0} and sample(second_run.repeated) == {"movenotes": 2, "movetags": 2}
+    expect_sample(second_run.moved, {"movenotes": 0, "movetags": 0})
+    expect_sample(second_run.repeated, {"movenotes": 2, "movetags": 2})
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
@@ -66,9 +68,9 @@ def test_a_version_4_table_no_module_claims_is_listed(new_story, tmp_path):
 def test_a_dry_run_gives_the_real_counts_and_leaves_nothing_behind(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     report = upgrade.run(source, dry_run=True)
-    assert sample(report.moved) == {"movenotes": 2, "movetags": 2}
+    expect_sample(report.moved, {"movenotes": 2, "movetags": 2})
     assert (count(story, "notes"), count(story, "tags")) == (0, 0) and MoveMap(story.container.get(Database)).count() == 0
-    assert sample(upgrade.run(source).moved) == {"movenotes": 2, "movetags": 2}
+    expect_sample(upgrade.run(source).moved, {"movenotes": 2, "movetags": 2})
 
 
 def test_a_dry_run_leaves_the_database_file_byte_equal(new_story, tmp_path):
@@ -95,4 +97,9 @@ def test_moved_rows_write_one_upgrade_moved_event_per_module_and_no_event_of_the
     moved = [row["data"] for row in rows if row["name"] == "upgrade.moved"]
     assert sum('"module": [null, "movenotes"]' in data for data in moved) == 1 and sum('"module": [null, "movetags"]' in data for data in moved) == 1
     assert "note.create" not in names and "tag.create" not in names and any('"moved": {"notes": 2}' in data for data in moved)
-    assert story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM chat_marks"))[0]["total"] == 0
+    expect_row(story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM chat_marks"))[0], total=0)
+
+
+def expect_sample(counts: dict[str, int], expected) -> None:
+    actual = sample(counts)
+    assert actual == expected, actual

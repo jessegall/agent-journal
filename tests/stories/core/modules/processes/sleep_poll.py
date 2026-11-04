@@ -3,6 +3,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_reply import expect_absent_reply_refusal
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 SLEEP_LOOP = HookSamples.shell("until pgrep -f build; do sleep 5; done", ShellPart("until", CommandCategory.PROCESS, ["pgrep"]))
@@ -39,7 +40,7 @@ def test_the_monitor_command_is_refused_as_a_plain_command(new_story):
 def test_a_line_that_only_names_the_monitor_command_is_not_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     grep_line = HookSamples.shell('grep -n "journal output monitor" notes.md', ShellPart("grep", CommandCategory.SEARCH, ["-n", "journal output monitor", "notes.md"]))
-    assert "runs only in a Monitor" not in story.hook("s-1", grep_line).refusal
+    expect_absent_reply_refusal(story.hook("s-1", grep_line), "runs only in a Monitor")
 
 
 def test_a_hand_made_wait_on_an_output_is_refused_naming_the_command_and_that_command_goes_through(new_story):

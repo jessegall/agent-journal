@@ -2,6 +2,7 @@ from core.base.database.database import Database
 from install.restore_version_four import RestoreVersionFour
 from tests.stories.core.base.upgrade.upgrade import expect_upgrade, upgrading
 from tests.stories.core.base.upgrade.support.move_samples import PATH
+from core.testing.expect_row import expect_row
 
 NOTES, TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule"
 
@@ -12,7 +13,7 @@ def test_an_upgrade_then_a_restore_gives_back_version_4s_bytes_and_puts_version_
     expect_upgrade(story)
     story.container.get(Database).close()
     outcome = RestoreVersionFour(story.home).run()
-    assert outcome.code == 0, outcome.text
+    expect_row(outcome, code=0)
     assert (story.home.folder / "journal.db").read_bytes() == original and not story.home.database.exists()
     assert len(list(story.home.folder.glob("version-5.*.db"))) == 1 and "restored from" in outcome.text
 

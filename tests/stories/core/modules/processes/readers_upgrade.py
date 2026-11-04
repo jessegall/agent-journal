@@ -2,8 +2,9 @@ import json
 
 from core.base.database.database import Database
 from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_row import expect_row
 
 
 def with_reader_files(folder):
@@ -16,7 +17,9 @@ def with_reader_files(folder):
 def test_version_4_reader_files_move_into_version_5_readers(new_story):
     story = upgraded_story(new_story, prepare=with_reader_files)
     rows = {row["name"]: row for row in json.loads(story.run("reader list --json").output_text)["rows"]}
-    assert rows["cart-test"]["type"] == "pattern" and rows["cart-test"]["lines_pattern"] == "^(ok|FAIL)\\s" and rows["cart-test"]["title"] == "Cart tests", rows["cart-test"]
+    expect_row(rows["cart-test"], type="pattern")
+    expect_row(rows["cart-test"], lines_pattern="^(ok|FAIL)\\s")
+    expect_row(rows["cart-test"], title="Cart tests")
     assert rows["merge"]["type"] == "script" and rows["merge"]["script"].endswith("readers/merge.sh") and rows["merge"]["commands"] == "journal worker merge", rows["merge"]
 
 
@@ -25,7 +28,7 @@ def test_a_reader_file_named_as_a_reader_version_5_ships_keeps_version_5_s_and_i
         (folder / "readers").mkdir()
         (folder / "readers" / "pytest.pattern").write_text("# old pytest\n^old\n")
     story = upgraded_story(new_story, prepare=with_pytest_file)
-    assert "reader files version 5 ships a reader of the same name for: 1 rows" in story.upgrade_text
+    expect_upgrade_text(story, "reader files version 5 ships a reader of the same name for: 1 rows")
 
 
 def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(new_story):
@@ -36,10 +39,10 @@ def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(ne
     previous = story.run(f"reader show {project_id} --json", actor=story.agent).output_text
     StockReaderTestCountsMigration().run(story.container.get(Database))
     rows = {row["name"]: row for row in json.loads(story.run("reader list --json --limit 100").output_text)["rows"]}
-    assert rows["pytest"]["commands"] == "custom-pytest*"
-    assert rows["pytest"]["count_command"] == "{part} --collect-only -q"
+    expect_row(rows["pytest"], commands="custom-pytest*")
+    expect_row(rows["pytest"], count_command="{part} --collect-only -q")
     assert rows["pytest"]["count_pattern"] != "old-pytest"
-    assert rows["vitest"]["commands"] == "custom-vitest*"
+    expect_row(rows["vitest"], commands="custom-vitest*")
     assert "(?:test|spec)" in rows["vitest"]["count_pattern"]
     assert rows["vitest"]["count_command"] != "old-list"
     assert story.run(f"reader show {project_id} --json", actor=story.agent).output_text == previous

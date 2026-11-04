@@ -102,45 +102,45 @@ def running(story) -> bool:
 
 def test_words_in_a_prompt_start_a_sequence_and_tell_the_agent(new_story):
     story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
-    assert any("sequence:1 started" in line for line in story.hook("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now")).lines)
-    assert running(story)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now"), "sequence:1 started")
+    expect_running(story)
 
 
 def test_other_words_start_nothing(new_story):
     story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
     story.hook("s-1", HookSamples.prompt("carry on"))
-    assert not running(story)
+    expect_absent_running(story)
 
 
 def test_an_edited_file_a_glob_names_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file", "pattern": "src/*.py"})
     story.hook("s-1", post_tool("Edit", "edit", tuple(["docs/a.md"])))
-    assert not running(story)
+    expect_absent_running(story)
     story.hook("s-1", post_tool("Edit", "edit", tuple(["src/cart.py"])))
-    assert running(story)
+    expect_running(story)
 
 
 def test_a_text_an_edit_adds_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file-text", "pattern": "*.py", "text": "TODO"})
     story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "del", "line": 1, "text": "TODO old"}])))
-    assert not running(story)
+    expect_absent_running(story)
     story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "add", "line": 1, "text": "# TODO new"}])))
-    assert running(story)
+    expect_running(story)
 
 
 def test_a_tool_used_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
     story.hook("s-1", post_tool("Edit", "edit", tuple(["src/a.py"])))
-    assert not running(story)
+    expect_absent_running(story)
     story.hook("s-1", post_tool("Edit", "edit", tuple(["migrations/a.py"])))
-    assert running(story)
+    expect_running(story)
 
 
 def test_a_record_made_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "row", "event": "plan.create"})
     story.run('plan make "The rebuild" --environment main', actor=story.user)
     story.run_listeners()
-    assert running(story)
+    expect_running(story)
 
 
 def test_a_record_a_subagent_makes_starts_the_sequence_on_that_subagent_and_not_the_main_agent(new_story):
@@ -154,7 +154,7 @@ def test_a_record_a_subagent_makes_starts_the_sequence_on_that_subagent_and_not_
 def test_a_running_sequence_is_not_started_again(new_story):
     story = triggered_story(new_story, {"trigger_type": "phrase", "text": "update"})
     story.hook("s-1", HookSamples.prompt("update"))
-    assert not any("started by what just happened" in line for line in story.hook("s-1", HookSamples.prompt("update")).lines)
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("update"), "started by what just happened")
 
 
 def test_a_trigger_of_no_known_kind_a_bad_pattern_and_a_missing_field_are_refused(new_story):
@@ -192,3 +192,11 @@ def running_release(new_story):
     story = sequence_story(new_story)
     story.run("sequence run 1", actor=story.agent)
     return story
+
+
+def expect_running(story) -> None:
+    assert running(story)
+
+
+def expect_absent_running(story) -> None:
+    assert not running(story)

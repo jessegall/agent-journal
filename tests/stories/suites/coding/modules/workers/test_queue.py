@@ -11,7 +11,7 @@ from core.base.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
-from tests.stories.core.modules.chat.support.mark_samples import marks_text
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -58,7 +58,7 @@ def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_stor
     story, _, worker, started = queued_story(new_story, monkeypatch)
     assert len(started) == 1
     story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
-    assert "queued" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "queued")
     queue = json.loads(story.run("queue list --environment-id 1 --json").output_text)
     story.expect_rows(queue["total"] == 1, queue["rows"][0]["owner_agent_id"] == worker.id,
                       queue["rows"][0]["output_id"] == started[0])
@@ -69,7 +69,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
-    assert "passed" in marks_text(story), marks_text(story)
+    expect_marks_text(story, "passed")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
@@ -106,10 +106,10 @@ def mixed_proof_story(new_story, monkeypatch):
 def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(new_story, monkeypatch):
     story, repository, worker, started = mixed_proof_story(new_story, monkeypatch)
     ended(story, started[0], 0)
-    lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    assert PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text in lines
-    assert f"journal worker merge {worker.id}" not in lines
-    assert "passed" in marks_text(story), marks_text(story)
+    lines = story.run(f"agent-line list --agent {story.agent.id}")
+    lines.expect_text(PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text)
+    lines.expect_no_text(f"journal worker merge {worker.id}")
+    expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)

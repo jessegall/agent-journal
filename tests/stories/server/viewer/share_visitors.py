@@ -6,6 +6,7 @@ import json
 
 from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
 from tests.stories.server.viewer.share import plan_server
+from core.testing.expect_row import expect_row
 
 TIMEOUT_SECONDS = 10
 
@@ -31,7 +32,8 @@ def test_a_waiting_link_opens_nothing_until_it_is_accepted(plan_server):
     story = plan_server
     story.expect_viewer_login(story.viewer_key("Ada"))
     request = json.loads(story.story.run("share make plans:1 --environment main --json", actor=story.story.agent).output_text)
-    assert request["token"] is None and request["link"] is None, request
+    expect_row(request, token=None)
+    expect_row(request, link=None)
     accepted = json.loads(story.story.run("share accept 1 --json", actor=story.story.user).output_text)
     assert viewer_answer(story.viewer_port(), accepted["link"], "", "")[0] == 200
 
@@ -72,7 +74,8 @@ def test_a_link_that_never_ends_opens_and_says_so(plan_server):
     cookie = f"journal_share={made['token']}"
     assert viewer_answer(story.viewer_port(), made["link"], "", "")[0] == 200
     session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
-    assert session["share"]["ends_at"] is None and session["share"]["comments"] is False, session
+    expect_row(session["share"], ends_at=None)
+    expect_row(session["share"], comments=False)
 
 
 def test_a_visitor_comments_through_a_link_that_takes_them(plan_server):
@@ -81,7 +84,7 @@ def test_a_visitor_comments_through_a_link_that_takes_them(plan_server):
     cookie = f"journal_share={made['token']}"
     status, _, body = viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "", {"name": "--Bo", "text": "--Nice"})
     assert status == 200 and json.loads(body)["rows"][0]["visitor_name"] == "--Bo", (status, body)
-    assert json.loads(viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "")[2])["rows"][0]["text"] == "--Nice"
+    expect_row(json.loads(viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "")[2])["rows"][0], text="--Nice")
     status, _, body = viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "", {"name": "", "text": "x"})
     assert status == 409 and "a name of up to 40" in body, (status, body)
 

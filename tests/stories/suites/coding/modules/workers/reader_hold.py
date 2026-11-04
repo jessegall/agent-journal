@@ -30,6 +30,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import OUTPUT_ENDED
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.expect_reply import expect_reply_line
 
 
 @pytest.fixture
@@ -132,7 +133,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
-    assert "journal output read 1 --reader proper" not in story.run(f"agent-line list --agent {reader_worker(story).id}").output_text
+    story.expect_no_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper")
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):
@@ -219,7 +220,7 @@ def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader
     story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     story.advance(timedelta(minutes=11))
     reply = story.hook("s-1", HookSamples.prompt("continue"))
-    assert any("reader request" in line for line in reply.lines), reply
+    expect_reply_line(reply, "reader request")
     story.expect_rows(story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, closed_at=None).exists())
 
 

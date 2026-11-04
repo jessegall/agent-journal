@@ -81,7 +81,7 @@ def test_skill_list_prints_each_folder_with_its_description(new_story):
 def test_skill_show_prints_the_text_and_digest_of_one_skill(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     story.expect_success("skill show journal-notes", "Write a note for every decision.")
-    assert "digest: " in story.run("skill show journal-notes").output_text
+    story.expect_text("skill show journal-notes", "digest: ")
 
 
 def test_skill_show_of_a_skill_no_module_declares_is_refused(new_story):
@@ -91,8 +91,8 @@ def test_skill_show_of_a_skill_no_module_declares_is_refused(new_story):
 
 def test_skill_show_and_skill_list_answer_json_rows_for_a_window(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
-    assert '"text": "---' in story.run("skill show journal-notes --json").output_text
-    assert '"folder": "journal-notes"' in story.run("skill list --json").output_text
+    story.expect_text("skill show journal-notes --json", '"text": "---')
+    story.expect_text("skill list --json", '"folder": "journal-notes"')
 
 
 @pytest.fixture

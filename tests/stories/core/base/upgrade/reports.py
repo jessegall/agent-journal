@@ -1,6 +1,7 @@
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.core.base.upgrade.upgrade import upgrade, upgrading
 from tests.stories.core.base.upgrade.support.move_samples import PATH
+from core.testing.expect_row import expect_row
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
@@ -28,7 +29,7 @@ def test_a_failed_upgrade_says_which_module_failed_what_rolled_back_what_stayed_
     story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     outcome = upgrade(story)
     lines = outcome.text.splitlines()
-    assert outcome.code == 1
+    expect_row(outcome, code=1)
     assert "failed: movetags (the tags table could not be read)" in lines and "rolled back: movetags" in lines
     assert any(line.startswith("stayed moved: ") and "movenotes" in line and "movetags" not in line for line in lines)
     assert lines[-1] == "run journal upgrade again to finish"

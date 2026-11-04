@@ -16,6 +16,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from core.testing.expect_row import expect_row
 
 ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", CommandCategory.PROCESS, ["sins", "--changes"], subcommand="sins"))
 
@@ -33,8 +34,8 @@ def test_an_alias_into_the_journals_folder_runs_from_any_folder_in_that_folder(n
     aliases = story.container.get(ShellAliases)
     caller, worktree = Caller(story.agent), CallerRequest(folder="/work/worktrees/worker-1")
     judged = aliases.shell_run(["sins", "--changes"], caller, worktree)
-    assert judged.line == f"{shlex.quote(str(story.home.folder.resolve()))}/plugins/judge/bin/judge judge --changes"
-    assert judged.folder == "/work/worktrees/worker-1"
+    expect_row(judged, line=f"{shlex.quote(str(story.home.folder.resolve()))}/plugins/judge/bin/judge judge --changes")
+    expect_row(judged, folder="/work/worktrees/worker-1")
     assert aliases.shell_run(["lint", "src"], caller, worktree).line == "ruff check src"
 
 
@@ -84,7 +85,7 @@ def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line
     story.advance(timedelta(seconds=1))
     story.run_listeners()
     story.expect_absent("chat-mark list --json", "process:1")
-    assert any("output 1 ended" in line for line in story.hook("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))).lines)
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), "output 1 ended")
 
 
 def test_the_file_the_hook_reads_names_each_aliass_shell_line(new_story):

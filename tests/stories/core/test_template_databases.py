@@ -1,5 +1,6 @@
 from core.testing.template_databases import TemplateDatabases
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 
 def test_two_workers_sharing_a_folder_build_each_template_once_and_the_second_reuses_it(tmp_path):
@@ -7,7 +8,8 @@ def test_two_workers_sharing_a_folder_build_each_template_once_and_the_second_re
     built = first.template((), UserJoined)
     reused = second.template((), UserJoined)
     folders = [path for path in tmp_path.iterdir() if path.is_dir()]
-    assert reused.home == built.home and reused.state == built.state
+    expect_row(reused, home=built.home)
+    expect_row(reused, state=built.state)
     assert len(folders) == len(UserJoined.chain()) + 1
 
 

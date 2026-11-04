@@ -91,12 +91,14 @@ def test_the_codex_programs_own_question_tool_is_refused_with_the_journal_way(ne
 
 def test_the_waiting_read_brings_the_wait_on_the_user_with_its_targets_and_nothing_else(new_story):
     story = new_story(fixture=BuilderQuestion)
-    answer = story.run("wait waiting --json", actor=story.user).output_text
-    assert '"focus"' in answer and '"targets": "questions:1"' in answer
-    assert '"outcome"' not in answer and '"agent_id"' not in answer
+    answer = story.run("wait waiting --json", actor=story.user)
+    answer.expect_text('"focus"')
+    answer.expect_text('"targets": "questions:1"')
+    answer.expect_no_text('"outcome"')
+    answer.expect_no_text('"agent_id"')
 
 
 def test_an_answered_question_leaves_the_waiting_read(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question answer 1 --answer sqlite")
-    assert '"rows": []' in story.run("wait waiting --json", actor=story.user).output_text
+    story.expect_text("wait waiting --json", '"rows": []', actor=story.user)

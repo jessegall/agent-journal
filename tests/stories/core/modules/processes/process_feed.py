@@ -5,13 +5,16 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 def test_the_feed_brings_a_process_with_only_its_line_and_state(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
-    answer = story.run("process feed --json", actor=story.user).output_text
-    assert '"line"' in answer and '"state": "running"' in answer
-    assert '"folder"' not in answer and '"shell"' not in answer and '"pid"' not in answer
+    answer = story.run("process feed --json", actor=story.user)
+    answer.expect_text('"line"')
+    answer.expect_text('"state": "running"')
+    answer.expect_no_text('"folder"')
+    answer.expect_no_text('"shell"')
+    answer.expect_no_text('"pid"')
 
 
 def test_the_feed_brings_one_process_by_its_number(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
-    assert '"id": 1' in story.run("process feed --id 1 --json", actor=story.user).output_text
-    assert '"rows": []' in story.run("process feed --id 9 --json", actor=story.user).output_text
+    story.expect_text("process feed --id 1 --json", '"id": 1', actor=story.user)
+    story.expect_text("process feed --id 9 --json", '"rows": []', actor=story.user)

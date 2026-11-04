@@ -13,6 +13,7 @@ from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.base.driver.support.samples import SAMPLES
+from core.testing.expect_reply import expect_absent_reply_line
 
 
 def task_end(task_id):
@@ -57,12 +58,12 @@ def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(co
 def test_a_checkpoint_phase_says_to_wait_for_the_users_word(new_story):
     story = new_story(fixture=CheckpointCartPlan)
     story.expect_success("task start 1", "state: started", actor=story.agent)
-    assert "plan 1: phase Build done, a checkpoint: tell the user and wait for their word" in closed_lines(story, 1)
+    expect_closed_lines(story, 1, "plan 1: phase Build done, a checkpoint: tell the user and wait for their word")
 
 
 def test_the_last_task_says_the_plan_is_done(completed_cart_phase):
     story, _ = completed_cart_phase
-    assert "plan 1 done: run the final suite; merging to main and releasing wait for the user's word" in closed_lines(story, 2)
+    expect_closed_lines(story, 2, "plan 1 done: run the final suite; merging to main and releasing wait for the user's word")
 
 
 def test_a_plan_whose_tasks_cannot_start_says_so(started_cart_plan):
@@ -82,26 +83,26 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story = new_story(fixture=ReadyCartPlan)
     story.advance(timedelta(seconds=1))
     story.run("plan approve 1")
-    assert "plan 1 approved" in story.hook("s-1", VIEW_LINE).lines
+    story.expect_hook_allowed("s-1", VIEW_LINE, "plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.run('plan cancel 1 --reason "not needed"')
-    assert "plan:1 is cancelled" in story.hook("s-1", VIEW_LINE).lines
+    story.expect_hook_allowed("s-1", VIEW_LINE, "plan:1 is cancelled")
 
 
 def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     first = story.hook("s-1", HookSamples.session_start())
-    assert not any("you took over" in line for line in first.lines)
-    assert any("you took over from agent" in line for line in story.hook("s-2", HookSamples.session_start()).lines)
+    expect_absent_reply_line(first, "you took over")
+    story.expect_hook_allowed("s-2", HookSamples.session_start(), "you took over from agent")
     story.hook("s-2", VIEW_LINE)
     story.expect_absent_hook_line("s-2", HookSamples.session_start(), "you took over")
 
 
 def test_a_session_start_names_the_laws(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    assert "the laws L1 to L11 in AGENTS.md apply to you" in story.hook("s-1", HookSamples.session_start()).lines
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), "the laws L1 to L11 in AGENTS.md apply to you")
 
 
 def test_blocking_another_task_does_not_repeat_the_task_already_in_hand(started_cart_plan):
@@ -129,7 +130,7 @@ def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_stor
     story.run("plan approve 1")
     story.advance(timedelta(seconds=30))
     story.hook("s-1", HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])))
-    assert "plan 1 approved" in story.hook("s-1", VIEW_LINE).lines
+    story.expect_hook_allowed("s-1", VIEW_LINE, "plan 1 approved")
 
 
 @pytest.fixture
@@ -155,3 +156,8 @@ class ReadyCartPlan(StoryFixture):
 @pytest.fixture
 def completed_cart_phase(started_cart_plan):
     return started_cart_plan, closed_lines(started_cart_plan, 1)
+
+
+def expect_closed_lines(story, task_id, expected) -> None:
+    actual = closed_lines(story, task_id)
+    assert expected in actual, actual

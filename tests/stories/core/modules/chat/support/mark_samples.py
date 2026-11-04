@@ -99,3 +99,18 @@ class ExceptionSampleModule(Module):
     dependencies = ["journal.core.chat"]
     handlers = [FailingCommandHandler]
     subcommands = [FailingCommandSubcommand]
+
+
+def expect_marks_text(story: Story, expected) -> None:
+    actual = marks_text(story)
+    assert expected in actual, actual
+
+
+def expect_absent_marks_text(story: Story, expected) -> None:
+    actual = marks_text(story)
+    assert expected not in actual, actual
+
+
+def expect_mark_count(story: Story, expected) -> None:
+    actual = mark_count(story)
+    assert actual == expected, actual

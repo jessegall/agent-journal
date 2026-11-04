@@ -5,6 +5,7 @@ from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined
+from core.testing.expect_row import expect_row
 
 SEARCH = "window search questions.questions"
 
@@ -49,8 +50,9 @@ def test_a_window_nobody_declares_is_refused_a_search(new_story):
 def test_the_declaration_lists_what_the_viewer_draws_without_the_function(new_story):
     story = new_story(fixture=UserJoined)
     window = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == "questions.questions")
-    assert window.search["placeholder"] == "Search the questions"
-    assert window.search["context"] == [] and window.search["button"] == {}
+    expect_row(window.search, placeholder="Search the questions")
+    expect_row(window.search, context=[])
+    expect_row(window.search, button={})
 
 
 def test_searches_over_read_commands_declare_the_command_placeholder_and_matching_fields(new_story):
@@ -66,14 +68,15 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
     }
     for name, (read, placeholder, fields) in searches.items():
         search = windows[name].search
-        assert search["read"] == read and search["placeholder"] == placeholder
+        expect_row(search, read=read)
+        expect_row(search, placeholder=placeholder)
         assert search["fields"] == fields and read in windows[name].reads
 
 
 def test_worker_and_subagent_windows_declare_the_same_agent_search(new_story):
     story = new_story(fixture=UserJoined)
     windows = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
-    assert windows["agents.agents"].search == windows["agents.subagents"].search
+    expect_row(windows["agents.agents"], search=windows["agents.subagents"].search)
 
 
 class DatabaseQuestions(StoryFixture):

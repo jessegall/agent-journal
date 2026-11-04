@@ -3,6 +3,7 @@ from datetime import timedelta
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from core.testing.expect_row import expect_row
 
 HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
 
@@ -23,7 +24,7 @@ def test_a_recorded_hook_keeps_its_headers_and_body(new_story):
     story = logging_story(new_story)
     story.container.get(HookRequestLog).record("claude", HEADERS, {"event": "stop"}, 12.5, HookAnswer.ALLOWED)
     row = story.container.get(HookRequestLog).read()[0]
-    assert (row.program, row.headers, row.body) == ("claude", HEADERS, {"event": "stop"})
+    expect_row(row, program="claude", headers=HEADERS, body={"event": "stop"})
 
 
 def test_only_the_last_hooks_the_setting_names_are_kept_newest_first(new_story):
@@ -39,10 +40,10 @@ def test_request_rows_include_millisecond_times_day_lines_durations_and_outcomes
     log = story.container.get(HookRequestLog)
     log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "tool_name": "Bash"}, 812.5, HookAnswer.REFUSED)
     row = log.read()[0].json()
-    assert (row["event"], row["tool"], row["duration_ms"], row["outcome"]) == ("PreToolUse", "Bash", 812.5, "refused")
+    expect_row(row, event="PreToolUse", tool="Bash", duration_ms=812.5, outcome="refused")
     assert row["day_start"]
     assert len(row["time"]) == 12
-    assert row["day"] == row["received_at"][:10]
+    expect_row(row, day=row["received_at"][:10])
 
 
 def test_only_the_first_request_of_each_day_has_a_day_line(new_story):

@@ -43,13 +43,13 @@ def test_an_environment_made_gets_its_dock_from_the_listener(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run("environment make elsewhere /work/elsewhere")
     story.run_listeners()
-    assert dock_count(story) == 2
+    expect_dock_count(story, 2)
 
 
 def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_runs(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()
-    assert dock_count(story) == 1
+    expect_dock_count(story, 1)
 
 
 def test_add_keep_and_remove_run_from_the_command_line(new_story):
@@ -77,3 +77,8 @@ def task_dock(new_story):
     dock_id = 1
     item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
     return story, dock_id, item_id
+
+
+def expect_dock_count(story, expected) -> None:
+    actual = dock_count(story)
+    assert actual == expected, actual

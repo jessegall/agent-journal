@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_a_version_4_dump_moves_with_an_item_for_each_part_and_file_and_closes_with_its_outcome(new_story):
@@ -15,6 +15,6 @@ def test_a_dump_without_parts_has_one_item_of_its_whole_text_not_read_yet(new_st
 
 def test_the_dumps_row_count_is_two_and_the_one_of_a_removed_environment_is_skipped_and_named(new_story):
     story = upgraded_story(new_story)
-    assert "journal.core.dumps: moved 2, already moved 0" in story.upgrade_text
-    assert "skipped dumps 3: its environment did not move" in story.upgrade_text
-    assert "dropped dump questions and logs: 1 rows" in story.upgrade_text
+    expect_upgrade_text(story, "journal.core.dumps: moved 2, already moved 0")
+    expect_upgrade_text(story, "skipped dumps 3: its environment did not move")
+    expect_upgrade_text(story, "dropped dump questions and logs: 1 rows")
