@@ -75,3 +75,22 @@ def test_test_totals(new_story, name, output, count):
     run = story.container.get(ReaderRun)
     story.expect_rows(run.count(reader, output, 0) == count)
     story.expect_rows(story.container.get(ReaderJudge).misses(reader, CommandCategory.TEST_RUN, output) == ())
+
+
+def test_nextest_output(new_story):
+    story = new_story(fixture=BuilderStarted)
+    command = "cargo nextest run"
+    output = "Starting 2 tests across 1 binary\n    PASS [   0.005s] example first\n    FAIL [   0.004s] example second\n     Summary [   0.021s] 2 tests run: 1 passed, 1 failed\n"
+    reader = story.container.get(ReaderQuery).filter(name="cargo-nextest").page(1, 1).rows[0]
+    story.expect_rows(ReaderSelection.reads_command(reader, command, CommandCategory.TEST_RUN))
+    story.expect_rows(story.container.get(ReaderRun).count(reader, output, 0) == 2)
+    story.expect_rows(story.container.get(ReaderJudge).misses(reader, CommandCategory.TEST_RUN, output) == ())
+
+
+def test_go_vet_output(new_story):
+    story = new_story(fixture=BuilderStarted)
+    command = "go vet ./..."
+    output = "# example.org/project\n./example.go:12:3: suspicious call\n"
+    reader = story.container.get(ReaderQuery).filter(name="go-vet").page(1, 1).rows[0]
+    story.expect_rows(ReaderSelection.reads_command(reader, command, CommandCategory.CHECK))
+    story.expect_rows(story.container.get(ReaderJudge).misses(reader, CommandCategory.CHECK, output) == ())
