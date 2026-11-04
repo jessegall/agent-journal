@@ -40,3 +40,13 @@ class DocRevisions:
             return
         self.repository.save(DocRevision(doc_id=doc.id, creator_id=context.actor.id, number=latest.number + 1, title=doc.title, abstract=doc.abstract, body=doc.body,
                                          change=change, closes_at=closes_at), context)
+
+    # A save that must stand alone, such as a version from the team: it never folds into the latest revision, and it
+    # closes at once, so the next edit opens its own.
+    def record_standalone(self, doc: Doc, context: Context) -> None:
+        latest = self.latest(doc.id)
+        if latest is not None and (latest.title, latest.abstract, latest.body) == (doc.title, doc.abstract, doc.body):
+            return
+        number, change = (1, FIRST_CHANGE) if latest is None else (latest.number + 1, RevisionChange.text(latest, doc))
+        self.repository.save(DocRevision(doc_id=doc.id, creator_id=context.actor.id, number=number, title=doc.title, abstract=doc.abstract, body=doc.body,
+                                         change=change, closes_at=context.timestamp), context)

@@ -14,6 +14,8 @@ agent what to do next at the moments it would get wrong, so the next session pic
   its task and its work is merged only once each proof is checked.
 - **Processes.** Long shell lines move to the background; every output is numbered so the agent reads the part it needs.
 - **Documents, reports, sequences and templates**, **phones** and **share links**, and **plugins**.
+- **A team library.** A small server, `journal-shared`, holds documents, sequences and checks a team shares. Each journal
+  gets what it wants and keeps it in step.
 
 ## Install
 
@@ -65,6 +67,11 @@ database aside as `version-5.<date>.db`. It checks the backup first and refuses 
 
 [The upgrade guide](docs/upgrade-from-version-4.md) says what moves, what waits for its module and how plugins come along.
 
+## The team library
+
+[Running the server](docs/team-library-admin.md) is for the person who sets it up: the program, users, tokens, backups
+and HTTPS. [Using it from a journal](docs/team-library.md) is for everyone else: connecting, Get, statuses and conflicts.
+
 ## Commands
 
 Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs.
@@ -72,6 +79,7 @@ Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs
 - Work: `task`, `plan`, `phase`, `question`, `message`, `dump`, `memory`, `doc`, `report`, `sequence`, `template`.
 - Agents: `agent`, `worker`, `proof`, `review`, `process`, `output`, `check`.
 - Setup: `environment`, `setting`, `plugin`, `phone`, `share`, `skill`.
+- The team library: `library`, `library-user`.
 - The journal itself: `server stop`, `viewer`, `launch`, `worktree`.
 
 ## Tests

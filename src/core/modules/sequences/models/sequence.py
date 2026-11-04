@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 
 from core.base.model.model import Model
@@ -22,6 +23,14 @@ class Sequence(Model):
     steps: tuple[str, ...]
     triggers: str = "[]"
     step_guards: str = "[]"
+
+    @property
+    def steps_text(self) -> str:
+        return json.dumps(list(self.steps))
+
+    @property
+    def guards_text(self) -> str:
+        return json.dumps(json.loads(self.step_guards))
 
     def has_end_event(self, event_name: str) -> bool:
         return any(event_name in trigger.end_event_names for trigger in SequenceTriggers.parsed(self.triggers))

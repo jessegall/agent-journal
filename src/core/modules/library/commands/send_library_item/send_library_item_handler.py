@@ -3,6 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.library.commands.save_library_copy.save_library_copy import SaveLibraryCopy
 from core.modules.library.commands.send_library_item.send_library_item import SendLibraryItem
+from core.modules.library.support.kept_row import KeptRow
 from core.modules.library.support.library_person import LibraryPerson
 from core.modules.library.support.library_writes import LibraryWrites
 from core.modules.library.support.outgoing_items import OutgoingItems
@@ -23,5 +24,5 @@ class SendLibraryItemHandler(Handler[SendLibraryItem, SharedLibraryItem]):
         LibraryPerson.require(context, "an agent cannot share with the team", "ask the user to share it")
         outgoing = self.outgoing.checked(command.share, command.row_id)
         item = self.writes.new_item(command.share, outgoing.fields)
-        copy = self.bus.run(SaveLibraryCopy(command.share, item.item_id, command.row_id, item.version, outgoing.digest), context.actor)
+        copy = self.bus.run(SaveLibraryCopy(command.share, item.item_id, item.version, KeptRow(command.row_id, outgoing.digest)), context.actor)
         return SharedLibraryItem(copy, item, outgoing.warning)

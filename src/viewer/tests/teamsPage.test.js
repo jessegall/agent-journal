@@ -18,6 +18,7 @@ function window(status, extra = {}) {
         "library list": {ok: true, value: {page: 1, size: 30, total: ITEMS.length, rows: ITEMS}},
         "library show": {ok: true, value: SHOWN},
         "library versions": {ok: true, value: VERSIONS},
+        "library copies": {ok: true, value: {rows: []}},
         ...extra,
     };
     const result = context(answers);
@@ -27,6 +28,11 @@ function window(status, extra = {}) {
         return {ok: true, value: {line: "doc 63 is now library doc 57, version 1", warning: "", copy_id: 5}};
     };
     return result;
+}
+
+async function openCopies(element) {
+    [...element.querySelectorAll("[data-teams-tabs] button")].find((button) => button.textContent.includes("On this journal")).click();
+    await settle();
 }
 
 function type(input, text) {
@@ -92,7 +98,7 @@ test("a stopped sync shows why, with the connect form and no library", async () 
 test("the library lists items live and marks those that are already on this journal", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
-    expect(result.reads).toContain("library list");
+    expect(result.reads).toContain("library list --kind doc");
     const rows = [...element.querySelectorAll("[data-library-item]")];
     expect(rows.map((row) => row.dataset.libraryItem)).toEqual(["doc:12", "check:12"]);
     expect(rows[0].textContent).toContain("Document, Version: 8, Changed by: Grace");
@@ -114,7 +120,7 @@ test("typing in the search reads the library with those words", async () => {
     const element = await mounted(TeamsPage, result);
     type(element.querySelector("[data-library-search] input, input[data-library-search]"), "release notes");
     await new Promise((resolve) => setTimeout(resolve, 400));
-    expect(result.reads).toContain('library list --search "release notes"');
+    expect(result.reads).toContain('library list --kind doc --search "release notes"');
 });
 
 test("only an admin sees Remove, and it removes that item", async () => {
@@ -148,7 +154,10 @@ test("opening an item shows its text and versions, and an editor can restore an 
 test("a reader sees no restore of an old version and no field to share", async () => {
     const result = window({role: "read"});
     const element = await mounted(TeamsPage, result);
+    await openCopies(element);
     expect(element.querySelector("[data-library-share]")).toBeNull();
+    [...element.querySelectorAll("[data-teams-tabs] button")].find((button) => button.textContent.includes("Library")).click();
+    await settle();
     element.querySelector("[data-library-open]").click();
     await settle();
     expect(document.body.querySelector("[data-library-restore-version]")).toBeNull();
@@ -172,6 +181,7 @@ test("a person who may write shares an item by its kind and number, and sees the
         return {ok: true, value: {line: "doc 63 is now library doc 57, version 1", warning: "this text names task 6367 and doc 12; those numbers mean something else in another journal", copy_id: 5}};
     };
     const element = await mounted(TeamsPage, result);
+    await openCopies(element);
     type(element.querySelector("[data-library-share-field]"), "doc 63");
     await settle();
     element.querySelector("[data-library-share-submit]").click();
@@ -184,6 +194,7 @@ test("a person who may write shares an item by its kind and number, and sees the
 test("a share field that is not a kind and a number is not sent", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
+    await openCopies(element);
     type(element.querySelector("[data-library-share-field]"), "doc");
     await settle();
     element.querySelector("[data-library-share-submit]").click();

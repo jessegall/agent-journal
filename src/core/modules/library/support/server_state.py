@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.library_unreachable import LibraryUnreachable
@@ -24,3 +25,10 @@ class ServerState:
             return cls(str(body["server_key"]), LibraryRole(body["role"]), str(body["etag"]), entries)
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachable.unreadable() from error
+
+    @cached_property
+    def entry_index(self) -> dict[tuple[str, int], StateEntry]:
+        return {(entry.share, entry.item_id): entry for entry in self.entries}
+
+    def entry(self, share: str, item_id: int) -> StateEntry:
+        return self.entry_index.get((share, item_id), StateEntry(share, item_id, 0, True))

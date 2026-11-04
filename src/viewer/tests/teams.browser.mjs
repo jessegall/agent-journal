@@ -44,6 +44,7 @@ try {
     await page.keyboard.press("Escape");
 
     await page.getByPlaceholder("Search the library").fill("");
+    await page.locator('[data-teams-tabs] button:has-text("On this journal")').click();
     await page.locator("[data-library-share-field]").fill(`doc ${rowNumber}`);
     await page.locator("[data-library-share-submit]").click();
     await page.locator("[data-library-shared]").waitFor();

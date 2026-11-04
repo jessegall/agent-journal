@@ -7,3 +7,7 @@ class LibraryRole(StrEnum):
     ADMIN = "admin"
     EDIT = "edit"
     READ = "read"
+
+    @property
+    def may_write(self) -> bool:
+        return self is not LibraryRole.READ

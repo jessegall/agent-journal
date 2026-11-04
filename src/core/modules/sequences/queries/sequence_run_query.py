@@ -11,5 +11,8 @@ class SequenceRunQuery(Query[SequenceRun]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, SequenceRun)
 
+    def has_open_run(self, sequence_id: int) -> bool:
+        return self.filter(sequence_id=sequence_id).matching(IsNull("ended_at")).exists()
+
     def current(self, agent_id: int) -> SequenceRun | None:
         return next(iter(self.filter(agent_id=agent_id).matching(IsNull("ended_at")).newest().page(1, 1).rows), None)
