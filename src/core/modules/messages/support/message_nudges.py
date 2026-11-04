@@ -10,7 +10,7 @@ UNREAD_TOOL_USES = 20
 UNREAD_MESSAGE_STOP = NudgeDeclaration("messages.unread_at_stop", NudgeType.REFUSAL, 'message {message} is unread: journal message read {message}')
 UNREAD_DISPLAY_REFUSAL = NudgeDeclaration("messages.unread_show", NudgeType.REFUSAL, 'message {message} is unread, so it cannot be shown: journal message read {message}')
 NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.STEERING, 'new message {message}')
-MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "the user put {emoji} on message:{message}: act on it if it asks for something")
+MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "the user put {emoji} on message:{message}: act on it if it asks for something", wakes_agent=True)
 MESSAGE_UPDATED = NudgeDeclaration("messages.message_updated", NudgeType.STEERING, 'message {message} updated')
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.STEERING, '{count} new messages', turn_limited=False)
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.STEERING, '  file .journal/files/message/{message}/{name}')
