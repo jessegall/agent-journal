@@ -7,7 +7,7 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker
+from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -36,6 +36,16 @@ def test_a_stock_reader_reads_a_test_behind_a_variable_and_no_reader_is_asked_fo
     end_run(story, process, "runner noise\n Tests  12 passed (12)\n")
     story.expect_text(f"output read {process.id} --summary", "summary: 12 passed", actor=story.agent)
     story.expect_success("reader-request list", "nothing found", actor=story.agent)
+
+
+def test_a_crashed_sample_does_not_make_a_working_reader_lose_its_standing(new_story):
+    story = new_story(fixture=ForcedReaders)
+    process = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "collected 3 items\n... [100%]\n3 passed in 1.00s\n")
+    crashed = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, crashed, "pytest could not load a package\n", exit_code=1)
+    worker_run(story, "pytest tests", CommandCategory.TEST_RUN)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
 
 def test_an_alias_that_names_its_own_reader_reads_with_that_reader(new_story):
