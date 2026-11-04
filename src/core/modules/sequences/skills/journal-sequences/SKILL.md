@@ -16,3 +16,6 @@ last step is done.
 - `journal sequence make "<title>" --steps "first | second | third"` writes one, `journal sequence edit <n>` changes it,
   and `journal sequence show <n>` lists its steps.
 - `journal sequence list` shows every sequence with its number of steps.
+- A step can list checks in `--step-guards`, such as `[{"checks": [3]}]` for step 1. `journal sequence next` is refused
+  until each listed check last passed, for a step and for the last step that ends the sequence: run
+  `journal check run <n>`, put right what it finds, then `next` again. `journal sequence abandon` ignores checks.

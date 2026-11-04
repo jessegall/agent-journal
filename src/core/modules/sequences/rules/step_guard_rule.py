@@ -30,10 +30,7 @@ class StepGuardRule(DriverRule):
         if run is None:
             return RuleAnswer.allowed()
         sequence = self.queries.query(Sequence).find(run.sequence_id)
-        guards = SequenceGuards.parsed(sequence.step_guards)
-        if run.step_number > len(guards):
-            return RuleAnswer.allowed()
-        guard = guards[run.step_number - 1]
+        guard = SequenceGuards.step_guard(sequence.step_guards, run.step_number)
         if guard.file_edits_allowed:
             return RuleAnswer.allowed()
         if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):

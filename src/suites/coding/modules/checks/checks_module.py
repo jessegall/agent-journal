@@ -9,6 +9,8 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_icon import WindowIcon
 from core.base.periodic_checks import PeriodicChecks
+from core.base.step_checks import StepChecks
+from suites.coding.modules.checks.support.passed_checks import PassedChecks
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
@@ -62,7 +64,7 @@ class ChecksModule(Module):
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
-    bindings = {PeriodicChecks: DueCheckRuns}
+    bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]
