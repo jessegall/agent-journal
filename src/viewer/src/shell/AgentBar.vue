@@ -68,6 +68,13 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
     font-size: 13px;
 }
 
+@media (max-width: 760px) {
+    .agent-state {
+        flex-wrap: wrap;
+        padding-block: 8px;
+    }
+}
+
 .agent-divider {
     flex: none;
     width: 1px;
