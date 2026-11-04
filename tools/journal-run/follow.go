@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -37,6 +39,7 @@ type Tracker struct {
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
 	started := time.Now()
+	queueStarted := started
 	for {
 		tracker.reportParts(stdout)
 		if code, ended := tracker.Folder.End(); ended {
@@ -45,11 +48,27 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 		if !tracker.Options.ShellAlive() {
 			return tracker.orphan(stdout)
 		}
+		if tracker.waitsForSlot() {
+			if time.Since(queueStarted) >= tracker.Options.QueueWait {
+				return tracker.move(stdout)
+			}
+			time.Sleep(pollInterval)
+			started = time.Now()
+			continue
+		}
 		if tracker.mayMove(started) {
 			return tracker.move(stdout)
 		}
 		time.Sleep(pollInterval)
 	}
+}
+
+func (tracker *Tracker) waitsForSlot() bool {
+	if !tracker.Options.Queue {
+		return false
+	}
+	_, err := os.Stat(filepath.Join(tracker.Folder.Path, "slot"))
+	return os.IsNotExist(err)
 }
 
 // mayMove says whether the run may go to the background: never before the line's last journal command has finished.
@@ -265,7 +284,11 @@ func (tracker *Tracker) move(stdout io.Writer) int {
 			break
 		}
 	}
-	fmt.Fprintf(stdout, "moved to the background: journal output read %s --summary when it ends\n", process)
+	if tracker.waitsForSlot() {
+		fmt.Fprintf(stdout, "queued as output %s; you will be told when it ends; work on or wait\n", process)
+	} else {
+		fmt.Fprintf(stdout, "moved to the background: journal output read %s --summary when it ends\n", process)
+	}
 	_ = tracker.Client.Run("process", "background", process)
 	if tracker.Options.Detach != nil {
 		tracker.Options.Detach(tracker.Options)

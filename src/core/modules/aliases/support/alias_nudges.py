@@ -5,6 +5,7 @@ ALIAS_UNEXPANDED = NudgeDeclaration("aliases.unexpanded", NudgeType.REFUSAL, "th
 ALIAS_ACCESS_REFUSED = NudgeDeclaration("aliases.access_refused", NudgeType.REFUSAL, "this agent runs only aliases marked for agents: ask the main agent to mark this one")
 ALIAS_MISSING = NudgeDeclaration("aliases.missing", NudgeType.REFUSAL, "the alias in this line no longer exists: journal alias list")
 SAVED_COMMAND_LINE = 300
+SAVED_COMMAND_TIMEOUT = NudgeDeclaration("aliases.saved_command_timeout", NudgeType.REFUSAL, '{reason}', longest_characters=240)
 SAVED_COMMAND_UNKNOWN = NudgeDeclaration("aliases.saved_command_unknown", NudgeType.REFUSAL,
                                          'save it: journal alias add <name> "{command}" --category "{category}", or journal alias skip --reason "<why>" && it',
                                          longest_characters=SAVED_COMMAND_LINE)

@@ -12,10 +12,10 @@ def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
-    first = start_process(story, "make package", category=CommandCategory.BUILD, is_queued=True)
+    first = start_process(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=5))
-    second = start_process(story, "make checks", category=CommandCategory.CHECK, is_queued=True)
-    third = start_process(story, "make site", category=CommandCategory.BUILD, is_queued=True)
+    second = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
+    third = start_process(story, "make site", category=CommandCategory.BUILD)
     queue = json.loads(story.run("queue inspect --environment-id 1 --json", actor=story.user).output_text)
     story.expect_rows(queue["used_slots"] == 1, queue["waiting_count"] == 2,
                       [row["id"] for row in queue["waiting"]] == [second.id, third.id],

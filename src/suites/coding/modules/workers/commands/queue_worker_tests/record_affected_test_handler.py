@@ -41,7 +41,7 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             arguments = [line.strip() for line in self.output.all_output(command.process_id).splitlines() if line.strip()]
             if arguments:
                 line = f"{selected.test_command} {shlex.join(arguments)}"
-                start = StartProcess.single_part(worktree.agent_id, line, worktree.folder, CommandCategory.TEST_RUN, 3600, is_queued=True)
+                start = StartProcess.single_part(worktree.agent_id, line, worktree.folder, CommandCategory.TEST_RUN, 3600)
                 process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
                 self.repository.save(selected.changed(state=AffectedTestState.TESTING, process_id=process.id), context)
                 return

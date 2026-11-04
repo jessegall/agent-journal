@@ -35,7 +35,8 @@ class WorkerTestListener(CommitListener):
         elif event.event == RUN_EVENT:
             self.launched(self.queries.query(Proof).find(event.row_id))
         elif event.row_table == "processes":
-            self.ended(self.queries.query(Process).find(event.row_id), event)
+            for process in self.queries.query(Process).filter(id=event.row_id).limited(1):
+                self.ended(process, event)
         elif event.event == "affected_test.create":
             selected = self.queries.query(AffectedTest).find(event.row_id)
             self.start_next(self.queries.query(Worktree).find(selected.worktree_id).environment_id, event)

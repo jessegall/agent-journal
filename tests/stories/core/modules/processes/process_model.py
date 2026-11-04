@@ -56,7 +56,7 @@ def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end
     story.expect_refusal("output stop 1", "stopped", actor=story.agent)
 
 
-def test_the_end_of_a_long_run_keeps_its_output_and_a_short_one_keeps_none(new_story):
+def test_long_and_short_runs_both_keep_their_output(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     start_process(story, "make build")
@@ -64,7 +64,7 @@ def test_the_end_of_a_long_run_keeps_its_output_and_a_short_one_keeps_none(new_s
     bus(story).run(EndProcess(2, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
     story.expect_text(OUTPUTS, "kept")
     story.expect_success("output show 1", "process_id: 1", f"byte_count: {BYTES_LONG}", "line_count: 80", "state: kept")
-    story.expect_text("output list --process 2", "nothing found")
+    story.expect_text("output list --process 2", "kept")
 
 
 def test_a_short_output_of_a_piped_line_is_kept(new_story):
@@ -74,13 +74,11 @@ def test_a_short_output_of_a_piped_line_is_kept(new_story):
     story.expect_text(OUTPUTS, "kept")
 
 
-def test_an_output_is_pruned_once(new_story):
+def test_outputs_have_no_independent_prune_command(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     bus(story).run(EndProcess(1, 0, BYTES_LONG, 80), story.agent, environment_id=1)
-    story.run("output prune 1", actor=story.agent)
-    story.expect_success("output show 1", "state: pruned")
-    story.expect_refusal("output prune 1", "pruned")
+    story.expect_absent("output --help", "prune", actor=story.agent)
 
 
 def test_a_watch_ends_once(new_story):
@@ -97,6 +95,7 @@ def test_the_parts_of_a_process_go_with_it(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     story.expect_text(PARTS, "make test")
+    bus(story).run(EndProcess(1, 0, BYTES_LONG, 80), story.agent, environment_id=1)
     story.run("process delete 1", actor=story.agent)
     story.expect_text(PARTS, "nothing found")
 

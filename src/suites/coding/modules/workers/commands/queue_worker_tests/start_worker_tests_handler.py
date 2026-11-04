@@ -48,11 +48,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
             self.start_picker(selected, worktree, context)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
+        start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=proof.task_id), context)
         self.repository.save(proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, selected: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.agent_id, selected.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
+        start = StartProcess.single_part(worktree.agent_id, selected.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
         self.repository.save(selected.changed(state=AffectedTestState.PICKING, process_id=process.id), context)

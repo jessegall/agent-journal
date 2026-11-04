@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import Self
 from datetime import timedelta
 
@@ -6,7 +5,6 @@ from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
-from core.modules.processes.queries.conditions.prunable_run import PrunableRun
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.query import Query
@@ -53,10 +51,6 @@ class ProcessQuery(Query[Process]):
     def minimum_age(self, present: Timestamp, seconds: int) -> Self:
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))
         return self.matching(Maximum("created_at", cutoff.text))
-
-    def ended_without_kept_output(self, process_ids: Sequence[int], present: Timestamp, seconds: int) -> Self:
-        cutoff = Timestamp(present.value - timedelta(seconds=seconds))
-        return self.matching(PrunableRun(process_ids, cutoff.text))
 
     def long_run_candidates(self, present: Timestamp, seconds: int) -> Self:
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))

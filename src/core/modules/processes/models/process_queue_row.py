@@ -28,7 +28,7 @@ class ProcessQueueRow(ViewModel):
     created_at: Timestamp
     started_at: Timestamp | None
     ended_at: Timestamp | None
-    is_queued: bool
+    queued_at: Timestamp | None
     is_queue_run: bool
     slot_assigned: bool
     is_main: bool

@@ -9,7 +9,7 @@ class ProcessLifecycle(Lifecycle):
     states = ProcessState
     initial = [ProcessState.RUNNING]
     editable = OPEN
-    deletable = tuple(ProcessState)
+    deletable = tuple(state for state in ProcessState if state not in OPEN)
 
     background = Move("background", [ProcessState.RUNNING], ProcessState.BACKGROUND)
     finish = Move("finish", OPEN, ProcessState.FINISHED)
