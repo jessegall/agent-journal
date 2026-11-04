@@ -4,8 +4,7 @@ CRITIQUE = "critique"
 TESTING = "testing"
 DOC_TARGETS = tuple(["doc"])
 PLAN_TARGETS = tuple(["plan"])
-WORKER_TARGETS = tuple(["worker"])
-STANDARD_TEMPLATES = (
+CODING_TEMPLATES = [
     TemplateDeclaration(
         title="Functional design",
         targets=DOC_TARGETS,
@@ -37,30 +36,6 @@ STANDARD_TEMPLATES = (
         brief="Question the plan's approach as a whole: is there a simpler way to reach the same goal, something that already exists and could be reused, a risk the plan takes without saying so. Give the alternative and what it would cost.",
     ),
     TemplateDeclaration(
-        title="No tests",
-        targets=WORKER_TARGETS,
-        purpose=TESTING,
-        brief="Run no tests. Write the tests that prove your change and name each, with the command that runs it, in your proof: the agent that merges your work runs them.",
-    ),
-    TemplateDeclaration(
-        title="The journal tests",
-        targets=WORKER_TARGETS,
-        purpose=TESTING,
-        brief="Run no tests yourself. Write the tests that prove your change and name them in your proof, the tests that cover the files you changed and the tests you wrote, never the whole suite: the journal runs them in your worktree, and your work stands only once they pass.",
-    ),
-    TemplateDeclaration(
-        title="Scoped tests",
-        targets=WORKER_TARGETS,
-        purpose=TESTING,
-        brief="Run only the tests that cover your change, by name, and the new tests you write. Never run the full suite: the agent that sent you runs it once your work is back.",
-    ),
-    TemplateDeclaration(
-        title="Full suite",
-        targets=WORKER_TARGETS,
-        purpose=TESTING,
-        brief="Run the tests that cover your change while you work, and the full suite once before you hand it back.",
-    ),
-    TemplateDeclaration(
         title="Never run tests",
         targets=PLAN_TARGETS,
         purpose=TESTING,
@@ -84,4 +59,4 @@ STANDARD_TEMPLATES = (
         purpose=TESTING,
         brief="Run the full suite whenever it helps, and after every task at least.",
     ),
-)
+]

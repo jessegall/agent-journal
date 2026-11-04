@@ -133,14 +133,12 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
 
 def test_suite_profiles_and_their_types_survive_registry_storage(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read", "Read the notes.", "reader", "small", "small")
-    template = TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=tuple(["doc"]), parts=tuple(["Summary"]))
     policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
-    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), tuple([template]), policy)
+    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), policy)
     registry = replace(Registry.read(database), suites=tuple([suite]))
     restored = Registry.parsed("profiles", registry.entries_text())
     assert restored.suites[0].profiles == tuple([profile])
     assert restored.suites[0].profile_types == tuple(["reader"])
-    assert restored.suites[0].templates == tuple([template])
     assert restored.suites[0].agent_policy == policy
 
 

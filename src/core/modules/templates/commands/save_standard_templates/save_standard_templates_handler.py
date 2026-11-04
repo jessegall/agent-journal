@@ -17,6 +17,5 @@ class SaveStandardTemplatesHandler(Handler[SaveStandardTemplates, None]):
         self.standard, self.registry = standard, registry
 
     def handle(self, command: SaveStandardTemplates, context: Context) -> None:
-        templates = (*(Template.build(template, suite.module) for suite in self.registry.suites for template in suite.templates),
-                     *(Template.build(entry.declaration, entry.module) for entry in self.registry.templates))
+        templates = tuple(Template.build(entry.declaration, entry.module) for entry in self.registry.templates)
         self.standard.save_all(Template, templates, STANDARD_TEMPLATE_FIELDS, context)

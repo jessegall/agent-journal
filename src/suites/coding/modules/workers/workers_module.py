@@ -149,6 +149,7 @@ from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 from suites.coding.modules.workers.support.worker_task_wait_targets import WorkerTaskWaitTargets
 from suites.coding.modules.workers.listeners.worker_task_wait_listener import WorkerTaskWaitListener
 from suites.coding.modules.workers.commands.worker_status.worker_status_subcommand import WorkerStatusSubcommand
+from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 
 
 class WorkersModule(Module):
@@ -156,6 +157,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
+    templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
                                           events=["proof.*", "worker_worktree.*"],
                                           sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
