@@ -10,3 +10,6 @@ class TemplateField:
     target: str
     purpose: str
     default_title: str = ""
+
+    def accepts(self, value: str) -> bool:
+        return value.isdigit()

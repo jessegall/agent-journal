@@ -7,3 +7,6 @@ class TextField:
 
     name: str
     label: str
+
+    def accepts(self, value: str) -> bool:
+        return True

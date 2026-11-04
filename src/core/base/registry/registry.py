@@ -242,13 +242,15 @@ class Registry:
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
             return (*(ButtonLine(mark.module, button["runs"], mark.shipped) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
-                    *(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons))
+                    *(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons),
+                    *(ButtonLine(button.module, action.runs, button.shipped, {item.name: item for item in action.fields})
+                      for button in self.buttons for action in (button.declaration, *button.declaration.menu)))
         if window == ButtonWindow.DOCK:
             return tuple(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons)
         return ()
 
     def subject_button_lines(self, subject: str) -> tuple[str, ...]:
-        return tuple(button.line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
+        return tuple(button.permission_line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
 
     def dock(self, type_name: str) -> DockEntry | None:
         return next((dock for dock in self.docks if dock.type == type_name), None)

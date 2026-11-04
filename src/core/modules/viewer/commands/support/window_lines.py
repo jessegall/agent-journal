@@ -68,7 +68,7 @@ class WindowLines:
         if any(button.shipped for button in buttons):
             return
         environment_id = self.environment_names.environment_id(environment)
-        if parsed.line not in self.allowances.allowed_lines(person.id, environment_id, buttons[0].subject, WindowPermissionType.RUNS):
+        if not any(button.permission_line in self.allowances.allowed_lines(person.id, environment_id, button.subject, WindowPermissionType.RUNS) for button in buttons):
             raise WindowRefusal(f"{buttons[0].module} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:

@@ -14,6 +14,9 @@ class ChoiceField:
     choices: Sequence[Choice]
     default: str = ""
 
+    def accepts(self, value: str) -> bool:
+        return any(choice.key == value for choice in self.choices)
+
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "ChoiceField":
         return cls(stored["name"], stored["label"], tuple(Choice(**choice) for choice in stored["choices"]),
