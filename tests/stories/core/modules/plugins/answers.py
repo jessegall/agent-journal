@@ -1,3 +1,4 @@
+from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -13,6 +14,14 @@ def test_a_card_in_a_plugins_answer_shows_in_the_chat_after_the_reply_with_the_p
     story.hook("s-1", STATUS_SAMPLE)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "sample: Branch is clean", actor=story.user)
+
+
+def test_a_card_for_a_worker_stays_out_of_the_main_chat(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", STATUS_SAMPLE)
+    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE session = 's-1'")
+    story.run_listeners()
+    story.expect_absent("chat-mark list --environment 1", "sample: Branch is clean", actor=story.user)
 
 
 def test_a_card_with_the_same_key_is_updated_in_place(new_story):

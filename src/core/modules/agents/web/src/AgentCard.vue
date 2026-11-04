@@ -136,6 +136,9 @@ readCommand();
                                             <TaskStatusIcon :status="task.state" />
                                             <span class="agent-task-number">{{ task.id }}</span>
                                             <span class="agent-task-title">{{ task.title }}</span>
+                                            <template v-if="task.plan_id">
+                                                <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}: {{ task.plan_title }}</span>
+                                            </template>
                                         </button>
                                     </template>
                                 </FoldGroup>
@@ -355,9 +358,19 @@ readCommand();
 }
 
 .agent-task-title {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.agent-task-plan {
+    flex: 0 2 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 11px;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
