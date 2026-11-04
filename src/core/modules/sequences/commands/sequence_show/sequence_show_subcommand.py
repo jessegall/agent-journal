@@ -5,6 +5,7 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.sequences.models.sequence import Sequence
+from core.modules.sequences.support.sequence_guards import SequenceGuards
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 
 
@@ -32,4 +33,5 @@ class SequenceShowSubcommand(ReadSubcommand[Sequence]):
         triggers = SequenceTriggers.parsed(value.triggers)
         output.line(f"sequence {value.id}: {value.title}, " + (f"starts on its own on {len(triggers)} triggers" if triggers else "starts by hand only"))
         for number, step in enumerate(value.steps, 1):
-            output.line(f"{number}. {step}")
+            checks = SequenceGuards.step_guard(value.step_guards, number).checks
+            output.line(f"{number}. {step}" + (f" (checks that must pass: {', '.join(str(check) for check in checks)})" if checks else ""))

@@ -4,6 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.step_checks import StepChecks
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
@@ -12,18 +13,20 @@ from core.modules.sequences.commands.support.step_line import StepLine
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
+from core.modules.sequences.support.sequence_guards import SequenceGuards
 
 START, FOLLOW, NEXT, ABANDON = "start", "follow", "next", "abandon"
 FINISHED, ABANDONED = "finished", "abandoned"
 
 
 class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
-    """Starts, takes up, moves on and abandons the calling agent's one sequence run."""
+    """Starts, takes up, moves on and abandons the calling agent's one sequence run. A step moves on, or the
+    sequence ends, only once the checks the step lists have passed; abandoning needs none."""
 
     command = MoveSequenceRun
 
-    def __init__(self, queries: Queries, runs: SequenceRunQuery, repository: Repository) -> None:
-        self.queries, self.runs, self.repository = queries, runs, repository
+    def __init__(self, queries: Queries, runs: SequenceRunQuery, repository: Repository, checks: StepChecks) -> None:
+        self.queries, self.runs, self.repository, self.checks = queries, runs, repository, checks
 
     def handle(self, command: MoveSequenceRun, context: Context) -> SequenceLine:
         current = self.runs.current(context.actor.id)
@@ -37,6 +40,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if not current.step_started:
             raise Refusal(f"step {current.step_number} of sequence {sequence.id} was never taken up", "journal sequence follow first")
         if command.action == NEXT:
+            self.require_checks(sequence, current)
             return self.next_step(sequence, current, context)
         undone_steps = ", ".join(sequence.steps[current.step_number - 1:])
         if not command.sure:
@@ -55,6 +59,12 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         sequence = self.queries.query(Sequence).find(command.sequence_id)
         run = self.repository.save(SequenceRun(environment_id=agents[0].environment_id, agent_id=context.actor.id, sequence_id=sequence.id), context)
         return SequenceLine(StepLine.text(sequence, run))
+
+    def require_checks(self, sequence: Sequence, current: SequenceRun) -> None:
+        unpassed = self.checks.unpassed(SequenceGuards.step_guard(sequence.step_guards, current.step_number).checks)
+        if unpassed:
+            raise Refusal(f"step {current.step_number} of sequence {sequence.id} waits on checks that have not passed: {', '.join(f'check {number}' for number in unpassed)}",
+                          f"run journal check run {unpassed[0]}, put right what it finds, then journal sequence next")
 
     def next_step(self, sequence: Sequence, current: SequenceRun, context: Context) -> SequenceLine:
         if current.step_number >= len(sequence.steps):
