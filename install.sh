@@ -117,12 +117,12 @@ esac
 # JOURNAL_RELEASE_URL names a release to download them from; the journal command replaces version 4's script
 if [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command -v go >/dev/null 2>&1; then
   mkdir -p "$BIN"
-  for program in journal journal-hook journal-run; do
+  for program in journal journal-hook journal-run journal-shared; do
     rm -f "$BIN/$program"
     go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
   done
   PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
-  echo "built journal, journal-hook and journal-run from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
+  echo "built journal, journal-hook, journal-run and journal-shared from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
   exit 0
 fi
 

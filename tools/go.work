@@ -4,4 +4,5 @@ use (
 	./journal
 	./journal-hook
 	./journal-run
+	./journal-shared
 )
