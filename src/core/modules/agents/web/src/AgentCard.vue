@@ -412,12 +412,6 @@ readCommand();
     max-height: 240px;
 }
 
-.agent-tabs {
-    margin: 0 -22px -6px -27px;
-    padding: 0 22px 0 27px;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-}
-
 .agent-tab-body {
     position: relative;
     display: flex;
@@ -476,7 +470,6 @@ readCommand();
 .agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-more { order: 2; gap: 0; min-width: 0; max-width: 100%; padding: 0; }
 .agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border); }
-.agent-card.open .agent-tabs { height: 30px; flex: none; align-items: center; margin: 0; padding: 0 14px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-tab-body { gap: 0; margin: 0; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
 .agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border); }

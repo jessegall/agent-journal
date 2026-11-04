@@ -41,15 +41,15 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
     align-items: center;
     min-width: 0;
     height: 34px;
-    margin: 0 -16px;
-    padding: 0 10px;
+    margin: 2px -14px 0;
+    padding: 0 14px;
     border-top: 1px solid var(--border);
     color: var(--text-3);
     font-size: 12px;
 }
 
 .plan-agents-none {
-    padding: 0 6px;
+    color: var(--text-4);
 }
 
 .plan-agents-button {
@@ -57,6 +57,7 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
     gap: 5px;
     align-items: center;
     min-width: 0;
+    margin-left: -6px;
     padding: 3px 6px;
     overflow: hidden;
     border: 0;
