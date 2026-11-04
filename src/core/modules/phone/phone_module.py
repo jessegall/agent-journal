@@ -51,10 +51,10 @@ class PhoneModule(Module):
               ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]
     migrations = [PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
-    subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand)
+    subcommands = [PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand]
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]
     listeners = [QuestionNoticeListener, PlanNoticeListener]
-    bindings = [(PushService, WebPush), (PushTransport, PushTransport)]
+    bindings = {PushService: WebPush, PushTransport: PushTransport}
     settings = [SettingValue("push-private-key", "Push signing key", "The secret half of the key pair the journal signs phone notices with.", SettingType.TEXT,
                              secret=True, scope=SettingScope.PROJECT),
                 SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,

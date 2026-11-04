@@ -58,9 +58,9 @@ class ChecksModule(Module):
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
-    subcommands = (CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
+    subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
-    bindings = [(PeriodicChecks, DueCheckRuns)]
+    bindings = {PeriodicChecks: DueCheckRuns}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]

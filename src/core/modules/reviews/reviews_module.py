@@ -56,10 +56,10 @@ class ReviewsModule(Module):
     requires_core = ">=5,<6"
     settings = REVIEW_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]
-    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
+    models = [ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
     views = [ReviewerRow]
-    subcommands = (ReviewBoardSubcommand, ReviewStepBoardSubcommand, RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
+    subcommands = [ReviewBoardSubcommand, ReviewStepBoardSubcommand, RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand]
     guards = [OneOpenReviewPerSubjectGuard, ReporterIsReviewerGuard, ReviewersEnabledGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
