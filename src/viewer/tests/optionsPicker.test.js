@@ -11,6 +11,7 @@ vi.stubGlobal("ResizeObserver", class {
 test("the options menu marks the color scheme in use and changes it", async () => {
     const element = await mounted(OptionsPicker, context({}));
     document.body.append(element);
+    expect(element.querySelector("[data-options] svg")).not.toBeNull();
     element.querySelector("[data-options]").click();
     await settle();
     const item = (key) => document.body.querySelector(`[data-scheme="${key}"]`);
