@@ -99,9 +99,9 @@ readCommand();
                 </template>
             </span>
         </template>
-        <template v-if="(showsCommand && !open) || (totalCount && tasksPerHour)">
+        <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
             <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
-                <template v-if="showsCommand && !open">
+                <template v-if="showsCommand">
                     <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
                 </template>
                 <template v-if="totalCount && tasksPerHour">
@@ -286,13 +286,14 @@ readCommand();
 
 .agent-foot {
     display: flex;
-    gap: 14px;
+    gap: 24px;
     align-items: center;
     min-width: 0;
 }
 
 .agent-foot .agent-command {
-    flex: 1;
+    flex: 0 1 60%;
+    max-width: 60%;
 }
 
 .agent-pace {
@@ -468,6 +469,7 @@ readCommand();
 .agent-back:hover { background: var(--hover); color: var(--text); }
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
 .agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
+.agent-card.open .agent-work-start { margin-top: 0; }
 .agent-card.open .agent-title { font-weight: 600; }
 .agent-card.open .agent-line { padding: 0 14px 7px 50px; border-bottom: 1px solid var(--border); background: var(--side); }
 .agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 14px; border-bottom: 1px solid var(--border); }
