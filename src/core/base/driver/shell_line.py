@@ -28,6 +28,7 @@ class ShellLine:
     parse_error: str
     alias_names: tuple[str, ...] = ()
     saved_commands_known: bool = False
+    is_retry_loop: bool = False
 
     @classmethod
     def parsed(cls, data: object) -> "ShellLine":
@@ -35,7 +36,7 @@ class ShellLine:
         parts = fields.get("parts", [])
         if not is_list(parts):
             raise HookEventError("parts is a list")
-        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), fields.get("is_journal_only") is True, text(fields, "parse_error"), texts(fields, "aliases"), fields.get("saved_commands_known") is True)
+        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), fields.get("is_journal_only") is True, text(fields, "parse_error"), texts(fields, "aliases"), fields.get("saved_commands_known") is True, fields.get("retry_loop") is True)
 
     @property
     def display_text(self) -> str:

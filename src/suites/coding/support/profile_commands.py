@@ -1,6 +1,6 @@
 READ_COMMANDS = (
     "\n\nJournal commands for reading: journal overview; journal search find \"<topic>\"; "
-    "journal task list; journal task show <n>; journal task brief <n>; journal doc list; journal doc show <n>; "
+    "journal task list; journal task show <n>; journal task overview <n>; journal doc list; journal doc show <n>; "
     "journal report list; journal report show <n>; journal output read <n> --summary or --lines <first>-<last>. "
     "Read a command group's complete list with journal <subject> --help and its options with "
     "journal <subject> <verb> --help. Read the journal skill for that subject before its first command."
@@ -30,7 +30,7 @@ PLAN_COMMANDS = (
     "The phase actions are journal phase make, journal phase edit, journal phase list, journal phase show, "
     "journal phase move, journal phase place and journal phase delete. "
     "The task actions are journal task make, journal task edit, journal task list, journal task show, "
-    "journal task brief, journal task inspect, journal task board, journal task graph, journal task assign, "
+    "journal task overview, journal task inspect, journal task board, journal task graph, journal task assign, "
     "journal task release, journal task start, journal task log, journal task comment, journal task comments, "
     "journal task depend, journal task remove-dependency, journal task block, journal task unblock, "
     "journal task test, journal task retest, journal task close, journal task reopen, journal task cancel "
@@ -46,7 +46,7 @@ PLAN_REVIEW_COMMANDS = (
 )
 
 WORKER_COMMANDS = (
-    "\n\nFor your assigned task use journal task brief <n>, journal task show <n>, journal task inspect <n> "
+    "\n\nFor your assigned task use journal task overview <n>, journal task show <n>, journal task inspect <n> "
     "and journal task log <n> \"<what changed or what you found>\". Read its points with journal proof points "
     "--agent <your agent number>. Record each with journal proof make <point> \"<file:line and evidence>\" "
     "--test \"<focused test command>\"; inspect evidence with journal proof list --task <n> and journal proof show <n>. "

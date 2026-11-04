@@ -15,7 +15,8 @@ SOURCE = "workers.help-request"
 
 
 class WorkerHelpRequestListener(SaveListener):
-    """A worker that says it is stuck tells its main agent at once, with the reason and the tasks it has left."""
+    """A worker that says it is stuck tells its main agent at once, with the reason and the tasks it has left,
+    unless a run of its own still goes, which is waiting and not being stuck."""
 
     name = "workers.help-request"
     event = "wait.create"
@@ -29,5 +30,5 @@ class WorkerHelpRequestListener(SaveListener):
         if not isinstance(wait, Wait) or wait.type is not WaitType.HELP_REQUEST:
             return
         worker = self.queries.query(Agent).find(wait.agent_id)
-        if worker.role == AgentRole.WORKER and worker.parent_id is not None:
+        if worker.role == AgentRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id):
             self.nudger.send(worker.parent_id, WORKER_HELP_REQUEST, SOURCE, change.context, worker=worker.id, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id)

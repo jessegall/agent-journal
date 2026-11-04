@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.driver.command_category import CommandCategory
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
@@ -5,9 +7,9 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithReadTask, BuilderWithUnreadTask, BuilderWithBriefedTask
 
 EDIT = HookSamples.edit("src/cart.py")
-BRIEF_LINE = HookSamples.shell("journal task brief 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "brief", "1"], subcommand="task"))
+BRIEF_LINE = HookSamples.shell("journal task overview 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task"))
 COMPACTION = HookSamples.sample("compact")
-BRIEF_REFUSAL = "journal task brief 1"
+BRIEF_REFUSAL = "journal task overview 1"
 
 
 def briefs_required(story) -> None:
@@ -17,12 +19,12 @@ def briefs_required(story) -> None:
 def test_the_brief_command_prints_the_title_the_brief_and_the_comments(new_story):
     story = new_story(fixture=BuilderWithBriefedTask)
     story.run('task comment 1 "use the new cart" --environment main', actor=story.user)
-    story.expect_text("task brief 1", "task 1: Fix the cart", "the total is in cents", "use the new cart", actor=story.agent)
+    story.expect_text("task overview 1", "task 1: Fix the cart", "the total is in cents", "use the new cart", actor=story.agent)
 
 
 def test_the_brief_command_says_when_a_task_has_no_comments(new_story):
     story = new_story(fixture=BuilderWithBriefedTask)
-    story.expect_text("task brief 1", "no comments on task 1", actor=story.agent)
+    story.expect_text("task overview 1", "no comments on task 1", actor=story.agent)
 
 
 def test_a_task_handed_to_an_agent_blocks_it_until_it_read_the_brief(new_story):
@@ -33,7 +35,7 @@ def test_a_task_handed_to_an_agent_blocks_it_until_it_read_the_brief(new_story):
 
 def test_running_the_brief_command_releases_the_block(new_story):
     story = new_story(fixture=BuilderWithUnreadTask)
-    story.expect_text("task brief 1", "task 1: Fix the cart", actor=story.agent)
+    story.expect_text("task overview 1", "task 1: Fix the cart", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 
@@ -41,9 +43,9 @@ def test_two_unread_tasks_hold_two_blocks_so_reading_one_leaves_the_other(new_st
     story = new_story(fixture=BuilderWithUnreadTask)
     story.run('task make "Second" --brief "A second job" --environment main', actor=story.user)
     story.run("task start 2", actor=story.agent)
-    story.run("task brief 2", actor=story.agent)
+    story.run("task overview 2", actor=story.agent)
     story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
-    story.run("task brief 1", actor=story.agent)
+    story.run("task overview 1", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 
@@ -60,7 +62,27 @@ def test_a_compaction_blocks_the_agent_again_until_it_reads_the_brief(new_story)
     briefs_required(story)
     story.hook("s-1", COMPACTION)
     story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
-    story.run("task brief 1", actor=story.agent)
+    story.run("task overview 1", actor=story.agent)
+    story.expect_hook_allowed("s-1", EDIT)
+
+
+def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_when_the_agent_goes_back_to_it(new_story):
+    story = new_story(fixture=BuilderStarted)
+    briefs_required(story)
+    story.run('task make "First" --brief "A first job" --environment main', actor=story.agent)
+    story.run('task make "Second" --brief "A second job" --environment main', actor=story.agent)
+    story.expect_success("task start 1", actor=story.agent)
+    story.expect_success("task overview 1", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    story.expect_success("task start 2", actor=story.agent)
+    story.expect_success("task overview 2", actor=story.agent)
+    story.hook("s-1", COMPACTION)
+    story.expect_hook_refusal("s-1", EDIT, "journal task overview 2")
+    story.run("task overview 2", actor=story.agent)
+    story.expect_hook_allowed("s-1", EDIT)
+    story.run('task close 2 --outcome "done"', actor=story.agent)
+    story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
+    story.run("task overview 1", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 

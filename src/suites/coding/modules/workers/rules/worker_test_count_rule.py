@@ -33,5 +33,5 @@ class WorkerTestCountRule(DriverRule):
                 continue
             count = self.listings.previous_count(hook.environment_id, part.text)
             if count > limit:
-                return RuleAnswer.refused(TEST_LIMIT_REFUSAL.nudge(command=part.text, count=count, limit=limit))
+                return RuleAnswer.refused(TEST_LIMIT_REFUSAL.nudge(count=count, limit=limit))
         return RuleAnswer.allowed()

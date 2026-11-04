@@ -1,6 +1,6 @@
 from core.modules.processes.support.reader_selection import ReaderSelection
 
-GENERAL_HINT = "make it print its steps as it goes; on Linux stdbuf -oL makes a C program write each line"
+GENERAL_HINT = "make it print its steps as it goes; stdbuf -oL makes a C program write each line"
 
 # the commands of each tool, as a reader writes them, and how the tool prints while it runs, as report 1180 lists with its source
 STREAMING_HINTS = (
@@ -19,7 +19,7 @@ STREAMING_HINTS = (
     ("sbt*", "run sbt with -Dsbt.supershell=false -Dsbt.ci=true, which prints plain lines"),
     ("dotnet build*", "run dotnet build with --tl:off, which prints plain lines"),
     ("dotnet test*", "run dotnet test with -v n, which prints more as it runs"),
-    ("turbo*,*turbo run*", "run turbo with --ui=stream --log-order=stream, which prints each line as it comes"),
+    ("turbo*,*turbo run*", "run turbo with --ui=stream --log-order=stream, which prints each line at once"),
     ("ctest*", "run ctest with --progress, or -V for all its output"),
     ("docker build*,docker buildx*", "set BUILDKIT_PROGRESS=plain, which prints plain lines"),
     ("xcodebuild*", "set NSUnbufferedIO=YES, which writes each line at once"),

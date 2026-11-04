@@ -38,7 +38,7 @@ def test_the_inactive_line_names_the_commands_that_answer_it(new_story):
     story, worker = idle_worker(new_story)
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker send {worker.id}", f"journal worker release {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker status {worker.id}")
 
 
 def test_the_inactive_line_wakes_the_main_agent(new_story):
@@ -49,16 +49,14 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
     story.expect_rows(line.wakes_agent)
 
 
-def test_a_worker_that_never_made_a_call_is_named_with_the_end_of_its_log_and_wakes_the_main_agent(new_story):
+def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_and_wakes_the_main_agent(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.home.terminal_file(worker.id).parent.mkdir(parents=True, exist_ok=True)
-    story.home.terminal_file(worker.id).write_text("Error loading config.toml: duplicate key\n")
     story.advance(timedelta(seconds=START_SECONDS))
     story.tick(MAIN_SESSION)
     line = next(row for row in story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows() if f"worker:{worker.id} made no call" in row.text)
-    story.expect_rows(line.wakes_agent, "duplicate key" in line.text)
+    story.expect_rows(line.wakes_agent, f"journal agent terminal {worker.id}" in line.text)
 
 
 def test_a_worker_that_made_a_call_is_not_named_as_never_started(new_story):
@@ -80,7 +78,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     process = start_process(story, "make third", category=CommandCategory.TEST_RUN)
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {main.id}", f"its run {process.id} waits for a spot, 2 runs ahead", f"journal worker send {worker.id}", f"journal worker release {worker.id}", actor=main)
+    story.expect_text(f"agent-line list --agent {main.id}", f"run {process.id} waits, 2 ahead", f"journal worker status {worker.id}", actor=main)
 
 
 def test_a_worker_that_has_used_no_tool_for_five_minutes_is_named_to_its_main_agent_again_every_five_minutes(new_story):
