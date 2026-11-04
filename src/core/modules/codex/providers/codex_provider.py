@@ -126,6 +126,12 @@ class CodexProvider(Provider):
             return ""
         return CodexSessionEffort(path).read()
 
+    def session_model(self, home: JournalHome, session: str) -> str:
+        path = self.transcript(home.folder.parent, session)
+        if path is None:
+            return ""
+        return CodexSessionEffort(path, "model").read()
+
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
         fields: object = json.loads(line) if line.strip() else {}
         payload = fields.get("payload") if is_mapping(fields) else None

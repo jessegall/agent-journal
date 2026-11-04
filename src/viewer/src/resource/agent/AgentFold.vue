@@ -1,10 +1,9 @@
 <script setup>
-import {ref} from "vue";
 import Icon from "../../kit/Icon.vue";
 
-// a band that opens and closes the rows under it; it starts closed
+// a band that opens and closes the rows under it; it starts closed, and the open state is the parent's to read
 defineProps({icon: {type: String, required: true}, label: {type: String, required: true}, count: {type: Number, required: true}});
-const open = ref(false);
+const open = defineModel("open", {type: Boolean, default: false});
 </script>
 
 <template>

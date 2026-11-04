@@ -1,14 +1,28 @@
 <script setup>
+import {reactive, ref, watch} from "vue";
 import {peek} from "../../route.js";
+import {rowsOf} from "./agentView.js";
 import AgentFold from "./AgentFold.vue";
 
-// the three folds at the foot of an agent's inspector: the subagents it started, the skills it loaded and its details, each with a plain label
-const props = defineProps({subagents: {type: Array, required: true}, skills: {type: Array, required: true}, details: {type: Array, required: true}});
+// the three folds at the foot of an agent's inspector: the subagents it started, the skills it loaded and its details, each with a plain label;
+// the inspector reads only the counts, and a list is read when its fold opens and again each time the inspector reloads while it stays open
+const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, counts: {type: Object, required: true}, loads: {type: Number, required: true}, details: {type: Array, required: true}});
+const shown = reactive({subagents: false, skills: false});
+const subagents = ref([]);
+const skills = ref([]);
+const listed = async (command) => rowsOf(await props.read(command));
+
+watch(() => [shown.subagents, props.loads], async ([isOpen]) => {
+    if (isOpen) subagents.value = await listed(["agent", "list", "--parent", String(props.id)]);
+});
+watch(() => [shown.skills, props.loads], async ([isOpen]) => {
+    if (isOpen) skills.value = await listed(["agent-skill", "list", "--agent", String(props.id), "--state", "loaded"]);
+});
 const nameOf = (agent) => agent.given_name || `${agent.role.slice(0, 1).toUpperCase()}${agent.role.slice(1)} ${agent.id}`;
 </script>
 
 <template>
-    <AgentFold icon="bot" label="Subagents" :count="props.subagents.length">
+    <AgentFold v-model:open="shown.subagents" icon="bot" label="Subagents" :count="counts.subagents">
         <template v-for="agent in subagents" :key="agent.id">
             <button type="button" class="row" data-agent-subagent @click="peek('agents', agent.id)">
                 <span class="text">{{ nameOf(agent) }}</span><span class="aside">{{ agent.role }} {{ agent.id }}</span>
@@ -18,10 +32,10 @@ const nameOf = (agent) => agent.given_name || `${agent.role.slice(0, 1).toUpperC
             <p class="none">It started no subagents.</p>
         </template>
     </AgentFold>
-    <AgentFold icon="style" label="Skills loaded" :count="skills.length">
+    <AgentFold v-model:open="shown.skills" icon="style" label="Skills loaded" :count="counts.skills">
         <p class="skills" data-agent-skills>
             <template v-for="skill in skills" :key="skill.id">
-                <span data-agent-skill>{{ skill.name }}</span>
+                <span data-agent-skill>{{ skill.skill }}</span>
             </template>
             <template v-if="!skills.length"><span class="none-inline">It loaded no skills.</span></template>
         </p>

@@ -8,7 +8,7 @@ import Icon from "../../kit/Icon.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
 import RowMoves from "../RowMoves.vue";
-import {agentState, agentTitle, detailRows, finishedWords, givenName, identityParts, stripCells} from "./agentView.js";
+import {agentState, agentTitle, detailRows, finishedWords, givenName, identityParts, rowsOf, stripCells, totalOf} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
 import AgentNow from "./AgentNow.vue";
@@ -24,13 +24,12 @@ const row = ref(null);
 const facts = ref(null);
 const inspection = ref(null);
 const tool = ref({});
-const subagents = ref([]);
-const skills = ref([]);
+const counts = ref({subagents: 0, skills: 0});
+const loads = ref(0);
 const points = ref([]);
 const failure = ref("");
 let reading = 0;
 
-const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
 const nothing = computed(() => (row.value.ended_at ? finishedWords(facts.value) : `It has no task.${facts.value?.instruction ? " It was given an instruction." : ""}`));
 
 async function load() {
@@ -44,8 +43,8 @@ async function load() {
         props.read(["usage", "agents", "--closed", "--environment", props.environment]),
         props.read(["usage", "agent", id]),
         shown.value.ended_at ? {ok: false} : props.read(["usage", "tool", "--agent", id]),
-        props.read(["agent", "list", "--parent", id]),
-        props.read(["agent-skill", "list", "--agent", id]),
+        props.read(["agent", "list", "--parent", id, "--limit", "1", "--columns", "id"]),
+        props.read(["agent-skill", "list", "--agent", id, "--state", "loaded", "--limit", "1", "--columns", "id"]),
         worker ? props.read(["worker-worktree", "points", "--agent", id]) : {ok: false},
     ]);
     if (turn !== reading) return;
@@ -54,9 +53,9 @@ async function load() {
     facts.value = rowsOf(listed).find((one) => one.id === props.id) ?? null;
     inspection.value = inspected.ok ? inspected.value : null;
     tool.value = tooled.ok ? tooled.value : {};
-    subagents.value = rowsOf(children);
-    skills.value = rowsOf(loaded);
+    counts.value = {subagents: totalOf(children), skills: totalOf(loaded)};
     points.value = pointed.ok ? pointed.value.points : [];
+    loads.value += 1;
 }
 
 useResourceEvents(["agent.*", "task.*", "process.*", "plan.*"], load);
@@ -78,7 +77,7 @@ onMounted(load);
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.role === 'subagent' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
                 <AgentRecent :moves="inspection.recent" />
-                <AgentFolds :subagents="subagents" :skills="skills" :details="detailRows(row, inspection)" />
+                <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
             </template>
             <template v-else><Skeleton /></template>
         </div>
