@@ -2,8 +2,10 @@ import json
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.driver.command_category import CommandCategory
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.testing.hook_samples import HookSamples
+from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
@@ -31,7 +33,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), "journal worker deliver, or say why with journal wait stuck")
+        story.expect_hook_refusal(session, HookSamples.stop(), "if you cannot go on: journal wait stuck")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
@@ -43,6 +45,23 @@ def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_st
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
     story.expect_hook_refusal(session, HookSamples.stop(), "task:2 is not finished")
+
+
+def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothing_when_it_stops(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    main = story.agent
+    worker = dispatched_worker(story)
+    story.expect_success("setting set journal.core.processes.readers-forced off --environment main", actor=main)
+    story.agent = worker
+    start_process(story, "make check", category=CommandCategory.TEST_RUN)
+    story.agent = main
+    story.expect_success('wait stuck "waiting for my test"', actor=worker)
+    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.expect_no_text(f"agent-line list --agent {main.id}", "is stuck")
+    story.expect_no_text(f"agent-line list --agent {main.id}", "ended with")
 
 
 def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
