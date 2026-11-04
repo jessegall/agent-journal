@@ -30,11 +30,11 @@ def test_a_second_read_of_an_ended_run_the_same_way_is_refused_and_again_reads_i
 
 def test_a_read_while_it_runs_does_not_count_as_a_read_of_the_result(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
-    story.expect_success(f"output read {process.id} --tail 3", actor=story.agent)
+    process = moved_run(story, "make check", category=CommandCategory.TEST_RUN)
+    story.expect_success(f"output read {process.id} --lines 1-3", actor=story.agent)
     end_run(story, process, LONG_OUTPUT)
-    story.expect_success(f"output read {process.id} --tail 3", actor=story.agent)
-    story.expect_refusal(f"output read {process.id} --tail 3", REPEAT_REFUSAL, actor=story.agent)
+    story.expect_success(f"output read {process.id} --lines 1-3", actor=story.agent)
+    story.expect_refusal(f"output read {process.id} --lines 1-3", REPEAT_REFUSAL, actor=story.agent)
 
 
 def test_a_person_reads_an_output_as_often_as_they_like(ended_run):
