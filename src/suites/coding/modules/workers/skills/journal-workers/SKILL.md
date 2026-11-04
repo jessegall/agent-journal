@@ -46,7 +46,7 @@ never starts is retired after the idle time.
 - `journal proof points --agent <n>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
-- Correct your own unchecked proof with `journal proof make` again for the same point. A checked proof cannot be changed.
+- Correct your own unchecked proof with `journal proof edit <proof> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. A checked proof cannot be changed.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your

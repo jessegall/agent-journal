@@ -105,6 +105,7 @@ from suites.coding.modules.workers.commands.start_next_worker_task.start_next_wo
 from suites.coding.modules.workers.commands.deliver_task.deliver_task_subcommand import DeliverTaskSubcommand
 from suites.coding.modules.workers.commands.make_proof.make_proof_handler import MakeProofHandler
 from suites.coding.modules.workers.commands.make_proof.make_proof_subcommand import MakeProofSubcommand
+from suites.coding.modules.workers.commands.make_proof.edit_proof_subcommand import EditProofSubcommand
 from suites.coding.modules.workers.commands.short_proof.short_proof_handler import ShortProofHandler
 from suites.coding.modules.workers.guards.proof_point_guard import ProofPointGuard
 from suites.coding.modules.workers.guards.base_branch_guard import BaseBranchGuard
@@ -172,7 +173,7 @@ class WorkersModule(Module):
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
-    subcommands = [ShortProofSubcommand, WorkerProgressSubcommand,WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
+    subcommands = [ShortProofSubcommand, WorkerProgressSubcommand,WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, EditProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
