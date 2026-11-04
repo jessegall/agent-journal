@@ -19,6 +19,7 @@ from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
+from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 
 LINE_SOURCE = "workers"
 
@@ -44,6 +45,13 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if failed:
             self.reopen_work(worktree, failed, context)
             return
+        pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
+        if any(row.state in (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING) for row in pending):
+            return
+        self.finish(worktree, context)
+
+    def finish(self, worktree: Worktree, context: Context) -> None:
+        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         self.complete_tested(proofs, context)
         if worktree.state is WorktreeState.CUT:
             self.start_next(worktree, context)

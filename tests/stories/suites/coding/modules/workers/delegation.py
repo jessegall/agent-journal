@@ -153,6 +153,18 @@ def test_a_workers_last_task_goes_back_with_the_worker(new_story):
     story.expect_refusal(f"task assign 1 --to {story.agent.id}", f"task 1 is the last of worker {worker.id}", actor=story.agent)
 
 
+def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_story):
+    story, repository, worker = delegated_story(new_story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success("worker next", actor=worker)
+    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
+    story.expect_text("task show 2", "state: open", actor=story.agent)
+    story.expect_success("worker deliver", actor=worker)
+    story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
 def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)

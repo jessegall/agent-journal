@@ -6,9 +6,11 @@ from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
 
 class ReassignedTaskListener(SaveListener):
@@ -36,6 +38,9 @@ class ReassignedTaskListener(SaveListener):
             return
         following = self.tasks.next_delegated(old.holder_id)
         if following is None:
+            finished = self.tasks.holder(old.holder_id).filter(state=TaskState.TESTING).page(1, 1).rows
+            if finished:
+                self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=finished[0].id), change.context)
             return
         if worker_released:
             self.advance.next_task(worktree, following, change.context)

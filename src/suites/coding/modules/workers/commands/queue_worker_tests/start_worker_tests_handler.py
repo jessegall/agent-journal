@@ -13,6 +13,7 @@ from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 
 TEST_LIMIT_SECONDS = 3600
 
@@ -35,8 +36,23 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 continue
             self.start(proof, worktrees[proof.worktree_id], context)
             running.add(proof.worktree_id)
+        for selected in self.queries.query(AffectedTest).filter(state=AffectedTestState.QUEUED).oldest().all_rows():
+            if selected.worktree_id not in worktrees or selected.worktree_id in running:
+                continue
+            if any(proof.worktree_id == selected.worktree_id for proof in proofs):
+                continue
+            worktree = worktrees[selected.worktree_id]
+            if self.queries.query(Proof).filter(worktree_id=worktree.id, state=ProofState.SHORT).exists():
+                self.repository.save(selected.changed(state=AffectedTestState.CANCELLED), context)
+                continue
+            self.start_picker(selected, worktree, context)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
         start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=proof.task_id), context)
         self.repository.save(proof.moved(ProofLifecycle.run, process_id=process.id), context)
+
+    def start_picker(self, selected: AffectedTest, worktree: Worktree, context: Context) -> None:
+        start = StartProcess.single_part(worktree.agent_id, selected.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
+        process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
+        self.repository.save(selected.changed(state=AffectedTestState.PICKING, process_id=process.id), context)
