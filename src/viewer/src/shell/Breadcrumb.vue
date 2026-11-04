@@ -28,6 +28,12 @@ defineProps({environment: {type: String, required: true}, project: {type: String
     font-size: 13px;
 }
 
+@media (max-width: 760px) {
+    .breadcrumb {
+        flex-wrap: wrap;
+    }
+}
+
 .crumb-link {
     color: inherit;
     text-decoration: none;

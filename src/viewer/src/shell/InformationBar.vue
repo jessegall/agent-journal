@@ -171,6 +171,12 @@ const uptime = computed(() => {
     font-size: 12px;
 }
 
+@media (max-width: 760px) {
+    .information {
+        flex-wrap: wrap;
+    }
+}
+
 .fact {
     display: inline-flex;
     flex: none;

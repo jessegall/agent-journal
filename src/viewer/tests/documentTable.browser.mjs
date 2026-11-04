@@ -35,6 +35,11 @@ async function check(width, height, name) {
     assert.ok(facts.tableInside, "the table stays inside the text");
     assert.ok(facts.textOverflow <= 0, `the text overflows sideways by ${facts.textOverflow}`);
     assert.ok(facts.panelOverflow.every((overflow) => overflow <= 0), `the panel overflows sideways: ${facts.panelOverflow}`);
+    const pageOverflow = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        widest: [...document.querySelectorAll("body *")].filter((element) => !element.closest("[data-resource-panel]") && element.getBoundingClientRect().right > innerWidth + 1).filter((element) => element instanceof HTMLElement).slice(0, 14).map((element) => `${element.tagName}.${element.className}[${element.getAttribute("aria-label") ?? ""}]${Math.round(element.getBoundingClientRect().left)}-${Math.round(element.getBoundingClientRect().right)}`),
+    }));
+    assert.ok(pageOverflow.overflow <= 0, `the page scrolls sideways by ${pageOverflow.overflow}: ${pageOverflow.widest.join(", ")}`);
     await page.screenshot({path: `${shots}-${name}.png`});
     await page.close();
 }
