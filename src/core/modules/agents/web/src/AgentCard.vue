@@ -292,7 +292,8 @@ readCommand();
 }
 
 .agent-foot .agent-command {
-    flex: 1;
+    flex: 0 1 60%;
+    max-width: 60%;
 }
 
 .agent-pace {
