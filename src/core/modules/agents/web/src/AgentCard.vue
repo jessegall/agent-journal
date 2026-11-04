@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, EmptyState, FoldGroup, Icon, InnerTabs, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import AgentCommand from "./AgentCommand.vue";
 import AgentFileEdits from "./AgentFileEdits.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -9,7 +10,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
-const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
+const TASK_STATES = ["started", "blocked", "open", "completed"];
 const MILLISECONDS_PER_HOUR = 3600000;
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
@@ -42,7 +43,7 @@ const tasksPerHour = computed(() => {
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
     return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
-const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
+const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})));
 const FOLDED_STATES = new Set(["completed"]);
 const folded = ref({});
 const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
@@ -68,18 +69,19 @@ readCommand();
 </script>
 
 <template>
-    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :title="row.session" @click="emit('toggle')">
+    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="row.session" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <span class="agent-head">
+            <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <span class="agent-dot" :data-state="dotState" />
             <span class="agent-title" data-agent-title>{{ title }}</span>
             <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
+            <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="row.ended_at && !stoppedWithWork">
                 <TimeAgo class="agent-time" :at="row.ended_at" />
             </template>
             <template v-else>
                 <span class="agent-time">{{ runTime }}</span>
             </template>
-            <Icon :class="['agent-chevron', {opened: open}]" name="caret" :size="12" />
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity>{{ identity }}</span>
@@ -90,24 +92,15 @@ readCommand();
                 <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
         </span>
-        <template v-if="showsCommand">
-            <span class="agent-command" data-agent-command>
-                <template v-if="waitReason">
-                    <button type="button" class="agent-waiting" data-agent-waiting title="Open the process queue" @click.stop="peekRef('test_queue:0')">Waiting: {{ waitReason }}</button>
-                </template>
-                <template v-else-if="stoppedWithWork">
-                    <span class="agent-stopped" data-agent-stopped>Waiting</span>
-                </template>
-                <template v-else>
-                    <RunningCommand :text="runningCommand" :idle="noCommandNote || 'thinking'" />
-                </template>
-            </span>
+        <template v-if="showsCommand && !open">
+            <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
         </template>
         <template v-if="open">
             <div class="agent-more" data-agent-more @click.stop>
                 <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                 </template>
+                <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="isSubagent">
                     <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
                         <template v-if="facts?.instruction">
@@ -125,6 +118,8 @@ readCommand();
                 <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
+                            <template v-if="!tasks.length"><EmptyState title="No tasks">This agent was given none.</EmptyState></template>
+                            <template v-else>
                             <template v-for="section in sections" :key="section.state">
                                 <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
                                     <template v-for="task in section.tasks" :key="task.id">
@@ -135,6 +130,7 @@ readCommand();
                                         </button>
                                     </template>
                                 </FoldGroup>
+                            </template>
                             </template>
                             <template v-if="facts?.instruction">
                                 <p class="agent-label">Instruction</p>
@@ -413,4 +409,36 @@ readCommand();
     white-space: pre-wrap;
     mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
 }
+
+.agent-card { gap: 2px; padding: 9px 14px; }
+.agent-head { gap: 6px; }
+.agent-dot { margin-right: 3px; }
+.agent-name { flex: 0 1 auto; }
+.agent-chevron { position: static; flex: none; margin-left: -2px; color: var(--text-4); opacity: 1; }
+.agent-card:hover .agent-chevron { color: var(--text-2); }
+.agent-line, .agent-command { padding-left: 16px; }
+.agent-command { font-size: 11px; }
+.agent-waiting { color: var(--accent-text); font-size: 11.5px; text-decoration: none; }
+.agent-waiting:hover { color: var(--accent-text); text-decoration: underline; }
+.agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }
+.agent-back:hover { background: var(--hover); color: var(--text); }
+.agent-card.open { padding: 0; gap: 0; cursor: default; }
+.agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
+.agent-card.open .agent-title { font-weight: 600; }
+.agent-card.open .agent-line { padding: 0 14px 7px 50px; border-bottom: 1px solid var(--border); background: var(--side); }
+.agent-card.open .agent-command { order: 1; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-more { order: 2; gap: 0; padding: 0; }
+.agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tabs { height: 30px; flex: none; align-items: center; margin: 0; padding: 0 14px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tab-body { gap: 0; margin: 0; }
+.agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
+.agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tab-body > .agent-subagent-brief { padding: 0; }
+.agent-task { width: 100%; padding: 7px 14px; border-radius: 0; }
+.agent-task-number { min-width: 30px; }
+.agent-label { margin: 12px 14px 0; }
+.agent-card.open .agent-instruction { margin: 12px 14px 16px; padding: 0 0 0 10px; line-height: 1.55; mask-image: none; }
+.agent-card.open .agent-more { animation: agent-open 240ms ease 60ms both; }
+@keyframes agent-open { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .agent-card.open .agent-more { animation: none; } }
 </style>

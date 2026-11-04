@@ -9,6 +9,9 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(`${address}&windows=agents.agents`);
     const window = page.locator('[data-window="agents.agents"]');
+    const first = window.locator(`[data-agent-open="${worker}"]`);
+    assert.equal(await first.getAttribute("role"), "button");
+    assert.equal(await first.locator(".agent-name + .agent-chevron").count(), 1);
     for (const id of [worker, subagent]) {
         const card = window.locator(`[data-agent-open="${id}"]`);
         await card.click();
@@ -25,7 +28,7 @@ try {
         assert.ok(sizes.body > 600 && sizes.pane > 600, JSON.stringify(sizes));
         assert.ok(sizes.scroll > sizes.pane, JSON.stringify(sizes));
         assert.ok(sizes.outer <= sizes.height + 2, JSON.stringify(sizes));
-        await card.locator(".agent-head").click();
+        await card.getByRole("button", {name: "Back to the list"}).click();
     }
     await window.locator(`[data-agent-open="${worker}"]`).click();
     const card = window.locator(`[data-agent-open="${worker}"]`);
@@ -41,6 +44,12 @@ try {
     await card.locator('[data-tab="transcript"]').click();
     await card.getByText("Transcript row 119", {exact: false}).waitFor();
     await page.screenshot({path: capture, fullPage: true});
+    await card.getByRole("button", {name: "Back to the list"}).click();
+    await page.setViewportSize({width: 390, height: 844});
+    await window.locator(`[data-agent-open="${worker}"]`).click();
+    await card.getByRole("button", {name: "Back to the list"}).waitFor();
+    assert.ok(await window.evaluate((element) => element.scrollWidth <= element.clientWidth));
+    await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true});
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();
