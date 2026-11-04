@@ -57,6 +57,23 @@ def test_a_subagent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_n
     expect_absent_marks_text(story, PLAN_SEQUENCE)
 
 
+def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays_open(new_story):
+    story = new_story(fixture=ShippedSequences)
+    worker = worker_of(story)
+    story.run(lines.NEW_PLAN, actor=story.agent)
+    story.run(lines.NEW_PLAN, actor=worker)
+    story.run_listeners()
+    expect_open_run_agents(story, [story.agent.id, worker.id])
+    story.expect_success("plan ready 1", actor=story.agent)
+    story.run_listeners()
+    expect_open_run_agents(story, [worker.id])
+
+
+def expect_open_run_agents(story, expected) -> None:
+    actual = [run.agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
+    assert actual == expected, actual
+
+
 def expect_run_agents(story, expected) -> None:
     actual = run_agent_ids(story)
     assert actual == expected, actual

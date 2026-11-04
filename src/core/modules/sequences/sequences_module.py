@@ -19,12 +19,14 @@ from core.modules.sequences.commands.sequence_show.sequence_show_subcommand impo
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences_handler import SaveStandardSequencesHandler
 from core.modules.sequences.guards.standard_sequence_guard import StandardSequenceGuard
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
+from core.modules.sequences.listeners.sequence_end_listener import SequenceEndListener
 from core.modules.sequences.listeners.sequence_started_mark_listener import SequenceStartedMarkListener
 from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
 from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
 from core.modules.sequences.migrations.m004_close_legacy_step_blocks import CloseLegacyStepBlocksMigration
+from core.modules.sequences.migrations.m005_run_subject import RunSubjectMigration
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
@@ -49,18 +51,18 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents"]
     block_conditions = [SequenceStepStarted]
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
-    migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration]
+    migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard]
     subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
-    listeners = [SequenceRowTriggerListener, StandardSequencesListener, SequenceStartedMarkListener]
+    listeners = [SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
     marks = SEQUENCE_MARKS
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]

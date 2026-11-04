@@ -12,8 +12,8 @@ INSTRUCTION_CHECK_PHRASES = ("check the instruction files", "check agents.md", "
                              "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies")
 
 
-def row_trigger(event_name: str) -> str:
-    return json.dumps([{"trigger_type": "row", "event": event_name}])
+def row_trigger(event_name: str, **options: str) -> str:
+    return json.dumps([{"trigger_type": "row", "event": event_name, **options}])
 
 
 def phrase_triggers(phrases: tuple[str, ...]) -> str:
@@ -27,7 +27,7 @@ def guards(*steps: dict[str, object]) -> str:
 PLAN_BUILDING = Sequence(
     creator_id=CORE_ACTOR_ID,
     title="Building a plan",
-    triggers=row_trigger("plan.create"),
+    triggers=row_trigger("plan.create", end_events="plan.ready,plan.approve,plan.start,plan.close"),
     step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
         f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
@@ -79,5 +79,18 @@ DOCUMENT_SORTING = Sequence(
         "Tell the user: Tell the user in one or two plain lines what the document concludes, then its reference like doc 41, never in backticks",
     ),
 )
-STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING)
+TRANSCRIPT_HANDLING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Handle a transcript",
+    triggers=row_trigger("task.start", link_source="transcription"),
+    step_guards=guards(FILE_EDITS_OPEN, FILE_EDITS_OPEN, FILE_EDITS_OPEN, FILE_EDITS_OPEN, FILE_EDITS_OPEN),
+    steps=(
+        "Read the transcript whole with journal transcription show <n>; your task's brief names its number. Note who spoke, what was decided, what stays open and each piece of work named.",
+        "Write the summary with journal doc make \"<title>\" --abstract \"<one line>\" --body \"<text>\": who spoke, what was decided, what stays open. For a meeting, write it as meeting notes.",
+        "Write what else it calls for: a task for each piece of work named with journal task make, a plan when that work has an order, a document for anything longer. Do not start the work here.",
+        "Link every row you made to the transcription with journal transcription link <n> <model> <number>, such as doc 3.",
+        "Tell the user in the chat what you made from the transcript, then close your task with journal task close <task> --outcome \"<the rows you made>\".",
+    ),
+)
+STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING, TRANSCRIPT_HANDLING)
 STANDARD_SEQUENCE_FIELDS = ("steps", "triggers", "step_guards")

@@ -7,7 +7,7 @@ from core.base.timestamp import Timestamp
 @dataclass(frozen=True, kw_only=True)
 class SequenceRun(Model):
     """One agent working through a sequence: the step it is on, whether it took that step up, and when the run
-    ended."""
+    ended. A run a row started keeps that row's number as its subject."""
 
     model_name = "sequence_run"
     cli_name = "sequence-run"
@@ -19,3 +19,4 @@ class SequenceRun(Model):
     step_started: bool = False
     ended_at: Timestamp | None = None
     outcome: str = ""
+    subject_id: int | None = None

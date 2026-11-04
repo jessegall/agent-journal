@@ -2,6 +2,7 @@ import pytest
 
 from core.testing.story_fixture import StoryFixture
 
+from server.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output
 
@@ -12,6 +13,9 @@ class CartTranscription(StoryFixture):
     parent = UserJoined
 
     def steps(self, story):
+        story.run_listeners()
+        BootingWork().run(story.container)
+        story.run_listeners()
         story.expect_success(TRANSCRIPTION_LINE, actor=story.user)
 
 
