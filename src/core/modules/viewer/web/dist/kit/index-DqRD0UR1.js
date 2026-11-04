@@ -754,7 +754,7 @@ const Jn = typeof document < "u" && document.documentElement.classList.contains(
     view: "check",
     filters: [
       { key: "open", title: "Checks", shows: "open" },
-      { key: "closed", title: "Waits", shows: "closed", empty: "No wait has a check of its own." }
+      { key: "closed", title: "Waits", shows: "closed", empty: "No wait has a check." }
     ],
     scope: "project",
     in_sidebar: !0,
@@ -5959,7 +5959,7 @@ const T0 = {
               type: "button",
               class: "dock-runs-toggle",
               "aria-expanded": "false",
-              title: "Show each run as its own card",
+              title: "Show each run on a card",
               "data-dock-runs-open": "",
               onClick: T[0] || (T[0] = (v) => o.value = !0)
             }, [
@@ -5981,7 +5981,7 @@ const T0 = {
       _: 1
     }, 8, ["duration"]));
   }
-}, Tb = /* @__PURE__ */ J(R0, [["__scopeId", "data-v-65c310f9"]]), kt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, In = (e) => Math.min(Math.max(e, 0), 1), B0 = (e) => {
+}, Tb = /* @__PURE__ */ J(R0, [["__scopeId", "data-v-c9a1014f"]]), kt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, In = (e) => Math.min(Math.max(e, 0), 1), B0 = (e) => {
   const t = In(e);
   return t * t * (3 - 2 * t);
 }, pt = (e, t, n) => B0((e - t) / (n - t));
@@ -10199,7 +10199,7 @@ const tb = /* @__PURE__ */ X2(eb), nb = ["width", "height", "viewBox"], sb = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Ex = /* @__PURE__ */ J(rb, [["__scopeId", "data-v-47e67f04"]]), Ax = ol(() => import("./VoiceFigure-CKL0SJEa.js").then((e) => e.V)), Cx = "1.0.0", Ox = "3.5";
+}, Ex = /* @__PURE__ */ J(rb, [["__scopeId", "data-v-47e67f04"]]), Ax = ol(() => import("./VoiceFigure-DKZzrKPH.js").then((e) => e.V)), Cx = "1.0.0", Ox = "3.5";
 export {
   Fl as $,
   Me as A,

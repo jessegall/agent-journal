@@ -142,7 +142,7 @@ export const TABLES = {
         view: "check",
         filters: [
             {key: "open", title: "Checks", shows: "open"},
-            {key: "closed", title: "Waits", shows: "closed", empty: "No wait has a check of its own."},
+            {key: "closed", title: "Waits", shows: "closed", empty: "No wait has a check."},
         ],
         scope: "project",
         in_sidebar: true,
