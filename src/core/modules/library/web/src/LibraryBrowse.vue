@@ -1,6 +1,6 @@
 <script setup>
 import {ref, watch} from "vue";
-import {Btn, FormField, RowList, SearchBar, Segmented, SidePanel, TextInput, TimeAgo, useRunLine, useWindow} from "@journal/window-kit";
+import {Btn, RowList, SearchBar, Segmented, SidePanel, TimeAgo, useRunLine, useWindow} from "@journal/window-kit";
 
 const KINDS = [
     {key: "", label: "All"},
@@ -21,9 +21,12 @@ const loaded = ref(false);
 const failure = ref("");
 const opened = ref(null);
 const versions = ref([]);
-const sharing = ref("");
-const shared = ref(null);
-const {refusal, run} = useRunLine(load);
+const checking = ref(null);
+const emit = defineEmits(["changed"]);
+const {refusal, run} = useRunLine(async () => {
+    await load();
+    emit("changed");
+});
 let delay = 0;
 
 const key = (row) => `${row.kind}:${row.id}`;
@@ -58,12 +61,17 @@ async function restore(item, version = null) {
     if (answer.ok) await reopen();
 }
 
-async function share() {
-    const [name, number, ...rest] = sharing.value.trim().split(/\s+/);
-    if (!name || !/^\d+$/.test(number ?? "") || rest.length) return void (refusal.value = "Write the kind and the number, such as doc 63.");
-    const answer = await run(["library", "share", name, number]);
-    shared.value = answer.ok ? answer.value : null;
-    if (answer.ok) sharing.value = "";
+// a check runs on this computer, so its command is read before it is got
+async function openCheck(row) {
+    const answer = await context.read(`library show check ${row.item_id}`);
+    refusal.value = answer.ok ? "" : answer.error;
+    checking.value = answer.ok ? {...row, command: answer.value.fields.command} : null;
+}
+
+async function get(row) {
+    if (row.kind === "check" && checking.value?.id !== row.id) return void (await openCheck(row));
+    checking.value = null;
+    await run(["library", "get", row.kind, String(row.item_id), ...(row.kind === "check" ? ["--read"] : [])]);
 }
 
 watch(kind, load, {immediate: true});
@@ -77,22 +85,16 @@ watch(search, () => {
     <div class="library" data-library>
         <SearchBar v-model="search" placeholder="Search the library" data-library-search />
         <Segmented :options="KINDS" :value="kind" data-library-kind @pick="kind = $event" />
-        <template v-if="canWrite">
-            <form class="library-share" data-library-share @submit.prevent="share">
-                <FormField label="Share with the team" for="library-share" help="The kind and the number of the item on this journal, such as doc 63.">
-                    <TextInput id="library-share" v-model="sharing" placeholder="doc 63" data-library-share-field />
-                </FormField>
-                <Btn kind="primary" :disabled="!sharing.trim()" data-library-share-submit @click="share">Share</Btn>
-            </form>
-        </template>
-        <template v-if="shared">
-            <p class="library-shared" data-library-shared>{{ shared.line }}</p>
-            <template v-if="shared.warning">
-                <p class="library-warning" role="alert" data-library-warning>{{ shared.warning }}</p>
-            </template>
-        </template>
         <template v-if="refusal">
             <p class="library-failure" role="alert" data-library-refusal>{{ refusal }}</p>
+        </template>
+        <template v-if="checking">
+            <div class="library-check" data-library-check>
+                <p>This check runs this command on your computer when someone starts it:</p>
+                <pre data-library-command>{{ checking.command }}</pre>
+                <Btn small @click="checking = null">Cancel</Btn>
+                <Btn small kind="primary" data-library-confirm @click="get(checking)">Get the check, stopped</Btn>
+            </div>
         </template>
         <RowList :rows="rows" :failure="failure" :loaded="loaded" :searching="Boolean(search.trim() || kind)" empty="Nothing in the library yet" hint="Shared documents, sequences and checks appear here.">
             <template #default="{row}">
@@ -109,6 +111,9 @@ watch(search, () => {
                     </button>
                     <template v-if="row.copy_id">
                         <span class="library-here" data-library-here>On this journal</span>
+                    </template>
+                    <template v-else>
+                        <Btn small kind="primary" data-library-get @click="get(row)">Get</Btn>
                     </template>
                     <template v-if="role === 'admin'">
                         <Btn small kind="danger" data-library-remove @click="remove(row)">Remove</Btn>
@@ -154,12 +159,6 @@ watch(search, () => {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-
-.library-share {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
 }
 
 .library-row {

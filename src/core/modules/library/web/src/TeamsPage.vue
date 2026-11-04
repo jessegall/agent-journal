@@ -1,26 +1,51 @@
 <script setup>
-import {computed} from "vue";
-import {TimeAgo, WindowRoom, usePoll, useReadLine} from "@journal/window-kit";
+import {computed, onMounted, ref} from "vue";
+import {Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, usePoll, useReadLine, useRunLine, useWindow} from "@journal/window-kit";
 import LibraryBrowse from "./LibraryBrowse.vue";
 import LibraryConnect from "./LibraryConnect.vue";
+import LibraryCopies from "./LibraryCopies.vue";
 
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 const POLL_MILLISECONDS = 5000;
 
-// the page of the team's shared server: the connect form until this journal is connected, then the header and the library
-const {value: status, failure, load} = useReadLine(() => "library status");
+// the page of the team's shared server: the connect form until this journal is connected, then the header, the library and the items that follow it
+const context = useWindow();
+const {value: status, failure, load: loadStatus} = useReadLine(() => "library status");
+const {value: copies, load: loadCopies} = useReadLine(() => "library copies");
+const tab = ref("library");
 const isLinked = computed(() => Boolean(status.value?.is_connected) && !status.value.stopped);
 const canWrite = computed(() => status.value?.role === "admin" || status.value?.role === "edit");
+const followed = computed(() => copies.value?.rows ?? []);
+const tabs = computed(() => [
+    {key: "library", label: "Library"},
+    {key: "copies", label: "On this journal", count: followed.value.length},
+]);
+
+// a local edit writes no copy, and the status is worked out when it is read, so the copies are read again every few seconds as well as when one changes
+async function load() {
+    await Promise.all([loadStatus(), loadCopies()]);
+}
+
+const {refusal, run} = useRunLine(load);
 
 usePoll(load, () => true, POLL_MILLISECONDS);
+onMounted(() => context.follow(["library_copy.*"], load));
 </script>
 
 <template>
     <WindowRoom>
         <div class="teams" data-teams>
-            <h2 class="teams-title">Teams</h2>
+            <div class="teams-top">
+                <h2 class="teams-title">Teams</h2>
+                <template v-if="isLinked">
+                    <Btn small data-teams-sync @click="run(['library', 'sync'])">Sync now</Btn>
+                </template>
+            </div>
             <template v-if="failure">
                 <p class="teams-failure" role="alert" data-teams-failure>{{ failure }}</p>
+            </template>
+            <template v-if="refusal">
+                <p class="teams-failure" role="alert" data-teams-refusal>{{ refusal }}</p>
             </template>
             <template v-if="status?.is_connected">
                 <div class="teams-header" data-teams-header>
@@ -41,7 +66,15 @@ usePoll(load, () => true, POLL_MILLISECONDS);
                 <LibraryConnect :address="status.address" @connected="load" />
             </template>
             <template v-if="isLinked">
-                <LibraryBrowse :role="status.role" :can-write="canWrite" />
+                <Segmented :options="tabs" :value="tab" data-teams-tabs @pick="tab = $event" />
+                <SwitchCase :value="tab">
+                    <template #library>
+                        <LibraryBrowse :role="status.role" :can-write="canWrite" @changed="load" />
+                    </template>
+                    <template #copies>
+                        <LibraryCopies :copies="followed" :role="status.role" :can-write="canWrite" @changed="load" />
+                    </template>
+                </SwitchCase>
             </template>
         </div>
     </WindowRoom>
@@ -52,6 +85,12 @@ usePoll(load, () => true, POLL_MILLISECONDS);
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.teams-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .teams-title {

@@ -1,3 +1,5 @@
+from core.base.library.library_share import LibraryShare
+from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.modules.library.models.enums.copy_progress import CopyProgress
 from core.modules.library.models.enums.copy_state import CopyState
@@ -24,13 +26,16 @@ class CopyStatuses:
         row = self.queries.query(share.model).filter(id=copy.row_id).first()
         if row is None:
             return None
+        return CopyStatus(copy, self.progress(copy, share, row), share.fields(row))
+
+    def progress(self, copy: LibraryCopy, share: LibraryShare[Model], row: Model) -> CopyProgress:
         if copy.state is not CopyState.SYNCED:
-            return CopyStatus(copy, CopyProgress(copy.state.value))
+            return CopyProgress(copy.state.value)
         if share.digest(row) != copy.base_digest:
-            return CopyStatus(copy, CopyProgress.SENDING if self.reaches_server() else CopyProgress.UNSENT)
+            return CopyProgress.SENDING if self.reaches_server() else CopyProgress.UNSENT
         if copy.server_version > copy.base_version and share.is_paused(row):
-            return CopyStatus(copy, CopyProgress.PAUSED)
-        return CopyStatus(copy, CopyProgress.SYNCED)
+            return CopyProgress.PAUSED
+        return CopyProgress.SYNCED
 
     def reaches_server(self) -> bool:
         connection = self.connections.current()
