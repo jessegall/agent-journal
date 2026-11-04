@@ -28,6 +28,7 @@ class StartProcess(Command[Process]):
     is_full_test_run: bool = False
     owner_agent_id: int | None = None
     task_id: int | None = None
+    timeout_durations: tuple[str, ...] = ()
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int) -> "StartProcess":
@@ -39,4 +40,4 @@ class StartProcess(Command[Process]):
         parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, command.category, command.command, command.named_reader_id,
                               part.arguments[0] if part.program == "journal" and part.arguments else " ".join(value for value in (Path(part.program).name, part.subcommand) if value))
                       for part, command in zip(shell.parts, run.part_commands, strict=True))
-        return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run)
+        return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, timeout_durations=run.timeout_durations)

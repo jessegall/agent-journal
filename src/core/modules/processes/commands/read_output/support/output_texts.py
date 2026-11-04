@@ -56,6 +56,8 @@ class OutputTexts:
 
     def summary(self, process: Process, command: ReadOutput) -> list[str]:
         outcome = ENDING_PHRASES.get(process.state, f"{process.state.value} with exit code {process.exit_code}")
+        if process.timed_out_at is not None:
+            outcome = "timed out"
         kept = self.outputs.process(process.id).limited(1)
         bytes_kept, lines_kept = (kept[0].byte_count, kept[0].line_count) if kept and kept[0].ended_at is not None else self.folder.sizes(process.id)
         size = f"{lines_kept} lines, {bytes_kept} bytes"

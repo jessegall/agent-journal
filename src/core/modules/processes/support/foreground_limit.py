@@ -39,7 +39,8 @@ class ForegroundLimit:
                              queued=bool(part_commands) and all(command.category.is_long_running for command in part_commands),
                              most_output_bytes=self.output_limit(output_setting, environment_id),
                              read_flags=tuple(f"{position}:{part.read_flag}" for position, part in enumerate(shell.parts, start=1) if part.read_flag),
-                             queue_wait_seconds=self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS, environment_id))
+                             queue_wait_seconds=self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS, environment_id),
+                             timeout_durations=tuple(part.timeout_duration for part in shell.parts if part.timeout_duration is not None))
 
     def output_limit(self, setting: ProcessSetting, environment_id: int) -> int:
         return max(1, self.settings.integer(setting, environment_id)) * MEGABYTE

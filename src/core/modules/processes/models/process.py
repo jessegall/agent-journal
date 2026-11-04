@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
+from core.base.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
@@ -41,6 +42,13 @@ class Process(Model):
     slot_assigned: bool = False
     owner_agent_id: int | None = None
     task_id: int | None = None
+    timeout_seconds: int | None = None
+    timed_out_at: Timestamp | None = None
+
+    def has_expired_timeout(self, timestamp: Timestamp) -> bool:
+        if self.timeout_seconds is None or self.started_at is None:
+            return False
+        return Duration(self.timeout_seconds).has_passed(self.started_at, timestamp)
 
     def background(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
