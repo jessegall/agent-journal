@@ -8,7 +8,7 @@ const PREPROCESSOR = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragm
 const OPENER = /[[({,]$/;
 const KEY_LINE = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/;
 const INDENTED = /^(\t|\s{2,})\S/;
-const COMMENT = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*\/?|<!--)/;
+const COMMENT = /^(\/\/|#(?!\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*(?!\*)\/?|<!--)/;
 const WORD = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/;
 const SYMBOLS = /[{}()[\];=<>$&|*\\@+^~%]/g;
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/;

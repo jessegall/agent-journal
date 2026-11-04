@@ -29,6 +29,14 @@ def test_an_alias_counts_as_the_line_it_names_and_its_reader_reads_it(new_story)
     story.expect_text("process-part show 1", "command: npx vitest run cart", actor=story.agent)
 
 
+def test_a_stock_reader_reads_a_test_behind_a_variable_and_no_reader_is_asked_for(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "CI=1 npx vitest run", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "runner noise\n Tests  12 passed (12)\n")
+    story.expect_text(f"output read {process.id} --summary", "summary: 12 passed", actor=story.agent)
+    story.expect_success("reader-request list", "nothing found", actor=story.agent)
+
+
 def test_an_alias_that_names_its_own_reader_reads_with_that_reader(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add viewer --commands "unrelated*" --lines "viewer result"', actor=story.agent)

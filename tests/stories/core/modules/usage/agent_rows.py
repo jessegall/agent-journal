@@ -13,12 +13,12 @@ def expect_card_order(story, state: str, *agent_ids: int) -> None:
     assert listed == list(agent_ids), listed
 
 
-def expect_cards_hold(story, state: str, *agent_ids: int) -> None:
+def expect_listed(story, state: str, *agent_ids: int) -> None:
     listed = {row["id"] for row in cards(story, state)}
     assert set(agent_ids) <= listed, listed
 
 
-def expect_no_cards(story, *agent_ids: int) -> None:
+def expect_unlisted(story, *agent_ids: int) -> None:
     listed = {row["id"] for row in cards(story, "all")}
     assert not set(agent_ids) & listed, listed
 
@@ -64,11 +64,11 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     story.run(f"agent end {reviewer}")
     story.run(f"agent end {worker}")
     story.run(f"agent end {retired_main}")
-    expect_cards_hold(story, "running", running_helper, running_worker)
-    expect_cards_hold(story, "idle", helper, reviewer)
-    expect_cards_hold(story, "retired", worker)
-    expect_cards_hold(story, "all", helper, reviewer, worker, running_helper, running_worker)
-    expect_no_cards(story, main, retired_main)
+    expect_listed(story, "running", running_helper, running_worker)
+    expect_listed(story, "idle", helper, reviewer)
+    expect_listed(story, "retired", worker)
+    expect_listed(story, "all", helper, reviewer, worker, running_helper, running_worker)
+    expect_unlisted(story, main, retired_main)
     states = {row["id"]: row["state"] for row in cards(story, "all")}
     assert states[helper] == "idle"
     assert states[worker] == "retired"

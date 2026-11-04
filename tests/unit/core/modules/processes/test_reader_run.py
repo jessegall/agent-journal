@@ -1,5 +1,7 @@
 import stat
 
+import pytest
+
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.process_part import ProcessPart
@@ -31,6 +33,11 @@ def test_the_default_reader_of_the_matching_ones_reads_a_line_and_else_the_newes
     assert ReaderSelection.choose([reader(1), reader(4)], [part()]).reader.id == 4
     assert ReaderSelection.choose([reader(1, commands="make*,pytest*")], [part()]).reader.id == 1
     assert ReaderSelection.choose(readers, [part("ls", CommandCategory.PROCESS)]) is None
+
+
+@pytest.mark.parametrize("line", ["CI=1 pytest -q", "CI=1 FOO='a b' pytest -q", 'PATH="/x y" pytest -q'])
+def test_a_reader_matches_a_command_behind_the_variables_a_line_sets(line):
+    assert ReaderSelection.choose([reader(1)], [part(line)]).reader.id == 1
 
 
 def test_a_journal_commands_own_output_is_read_by_no_reader():

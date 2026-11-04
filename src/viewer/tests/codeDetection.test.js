@@ -47,6 +47,13 @@ test("code with blank lines inside it stays one block", () => {
     expect(element.querySelectorAll("pre.chat-code")).toHaveLength(1);
 });
 
+test("paragraphs that open in bold and hold inline code stay text", () => {
+    const element = document.createElement("div");
+    element.innerHTML = render("I would do both, split by risk.\n\n**Attach it ourselves where it changes nothing but timing.** Set `PYTHONUNBUFFERED=1` in the environment of every run. No flags change and the output stays the same, it just arrives as it happens. That covers Python, which is the most common case, and agents never have to think about it.\n\n**Nudge for flags, never force them.** `--reporter=verbose` or removing `-q` changes what the tool prints, so the reader, and any pipe the agent wrote, may then see a different format. Rewriting flags behind the agent is the same kind of hidden change we have just been removing from the pipes. So it stays advice, once per run, naming the exact flag for that tool. A project that wants it permanently can put the flag in an alias.\n\nUnless you prefer otherwise, I will build task 6351 this way.");
+    expect(element.querySelector("pre")).toBeNull();
+    expect([...element.querySelectorAll("strong")].map((bold) => bold.textContent)).toEqual(["Attach it ourselves where it changes nothing but timing.", "Nudge for flags, never force them."]);
+});
+
 test("a sentence with a command in backticks stays a sentence", () => {
     const element = document.createElement("div");
     element.innerHTML = render("Run `git status` first and then fix what it lists.\nAfter that commit the fix.");
