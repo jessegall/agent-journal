@@ -71,6 +71,16 @@ def test_the_servers_and_settings_the_project_had_stay_beside_the_journals(new_s
                       tomllib.loads(codex_file(story).read_text())["model"] == "gpt-5")
 
 
+def test_an_older_table_of_a_server_gives_way_to_the_journals_so_codex_can_read_the_file(new_story):
+    story = new_story(fixture=UserJoined)
+    codex_file(story).parent.mkdir(parents=True, exist_ok=True)
+    older = "# Written by the journal: edit it on the viewer's MCP page.\n[mcp_servers.linear]\nurl = \"https://old.example\"\n\n[mcp_servers.mine]\ncommand = \"my-server\"\n"
+    codex_file(story).write_text(older)
+    story.expect_success("mcp install linear", actor=story.user)
+    servers = tomllib.loads(codex_file(story).read_text())["mcp_servers"]
+    story.expect_rows(servers["linear"] == {"url": "https://mcp.linear.app/mcp"}, servers["mine"] == {"command": "my-server"})
+
+
 def test_a_server_installed_already_is_refused(new_story):
     story = installed_story(new_story, "github")
     story.expect_refusal("mcp install github", "github is installed already: journal mcp list shows it", actor=story.user)

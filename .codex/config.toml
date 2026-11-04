@@ -1,12 +1,3 @@
-# Written by the journal: edit it on the viewer's MCP page.
-[mcp_servers.linear]
-url = "https://mcp.linear.app/mcp"
-
-# Written by the journal: edit it on the viewer's MCP page.
-[mcp_servers.github]
-command = "npx"
-args = ["-y", "@modelcontextprotocol/server-github"]
-env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
 # agent-journal mcp servers: written by the journal, changed with journal mcp
 [mcp_servers."linear"]
 url = "https://mcp.linear.app/mcp"
