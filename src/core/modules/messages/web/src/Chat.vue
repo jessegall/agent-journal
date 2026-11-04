@@ -25,7 +25,7 @@ onUnmounted(releaseQuestions);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo goes for good when a message of the user with the same words has landed since, so an edit of that row brings it back no more
-const landed = (echo) => messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS);
+const landed = (echo) => messages.value.some((row) => row.type === echo.type && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS);
 watch(messages, () => {
     const kept = outgoing.value.filter((echo) => !landed(echo));
     if (kept.length !== outgoing.value.length) outgoing.value = kept;
@@ -268,7 +268,10 @@ async function send() {
     const sent = {text: text.value, attached: attached.value};
     const files = sent.attached.flatMap((entry) => ["--file", entry.pending]);
     const line = sent.text || sent.attached.map((entry) => entry.name).join(", ");
-    const echo = {id: `sending-${Date.now()}`, type: "user", text: line, created_at: Date.now(), files: [], local: true};
+    const answering = replying.value;
+    const commented = commenting.value;
+    const comment = commented && !files.length;
+    const echo = {id: `sending-${Date.now()}`, type: comment ? "comment" : "user", commented_row: comment ? `message:${commented.id}` : "", text: line, created_at: Date.now(), files: [], local: true};
     outgoing.value = [...outgoing.value, echo];
     // a sent message takes the reader to the foot at once, also one who had scrolled up, so the rows watch below sets the scroll with no glide
     atFoot = true;
@@ -278,13 +281,11 @@ async function send() {
     attached.value = [];
     sendFailure.value = "";
     focusComposer();
-    const answering = replying.value;
-    const commented = commenting.value;
     replying.value = null;
     commenting.value = null;
     const result = await context.run(sentLine(answering, commented, line, files));
     if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached, commenting.value = commented);
-    outgoing.value = outgoing.value.filter((other) => other !== echo);
+    outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);
     await load();
 }
 
