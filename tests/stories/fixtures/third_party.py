@@ -20,6 +20,9 @@ def third_party(new_story, tmp_path):
         source = Path(__file__).parent / package
         folder = tmp_path / f"{package}_{uuid4().hex}"
         shutil.copytree(source, folder)
+        if package == "acme_findings":
+            (folder / "web/dist").mkdir()
+            shutil.copyfile(folder / "web/findings.js", folder / "web/dist/findings.js")
         stream = io.StringIO()
         code = LineRun(story.home).run(["module", "add", str(folder)], CallerRequest({"USER": "Ada"}, "/", 0), stream)
         expect_value_with(stream.getvalue(), "modules:")
