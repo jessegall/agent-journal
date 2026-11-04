@@ -1,0 +1,8 @@
+.F
+
+  1) test the total (CartTest)
+     test/cart_test.exs:4
+     Assertion with == failed
+
+Finished in 0.03 seconds (0.00s async, 0.03s sync)
+2 tests, 1 failure

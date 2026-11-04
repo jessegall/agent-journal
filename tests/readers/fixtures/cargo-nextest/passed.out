@@ -1,0 +1,4 @@
+    Starting 2 tests across 1 binary
+        PASS [   0.005s] cart first
+        PASS [   0.004s] cart second
+     Summary [   0.021s] 2 tests run: 2 passed, 0 skipped

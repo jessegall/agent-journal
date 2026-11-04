@@ -62,8 +62,9 @@ wait. `readers-forced` defaults to on; off removes reader requests and blocks. A
 agent is told how many readers lack required fields. This notice never blocks the main agent. Full
 judgement happens when an agent first needs each reader, so project readers are not changed on upgrade.
 
-A pipe or redirect hides output from its reader. Run tests and builds without them and read output by its
-number. An ended sample can be read with `journal output read <output> --reader <name>` after saving its
+A reader of a test or build always reads its complete output: a pipe such as `| tail -5` runs over the stored
+output and only shapes what you get back. A redirect to a file still hides the output, so run tests and builds
+without one. An ended sample can be read with `journal output read <output> --reader <name>` after saving its
 reader.
 
 ## Aliases

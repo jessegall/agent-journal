@@ -1,0 +1,8 @@
+> viewer@1.0.0 build
+> vite build
+
+vite v6.4.5 building for production...
+x Build failed in 120ms
+error during build:
+Could not resolve "./missing" from src/main.js
+npm ERR! Lifecycle script `build` failed with error:

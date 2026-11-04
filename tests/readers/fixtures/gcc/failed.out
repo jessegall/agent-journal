@@ -1,0 +1,4 @@
+cart.c:1:25: error: use of undeclared identifier 'missing'
+    1 | int main(void) { return missing; }
+      |                         ^
+1 error generated.

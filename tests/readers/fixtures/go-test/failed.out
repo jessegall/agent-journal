@@ -1,0 +1,6 @@
+=== RUN   TestTotal
+    cart_test.go:7: wrong total
+--- FAIL: TestTotal (0.00s)
+FAIL
+FAIL	example.org/cart	0.133s
+FAIL

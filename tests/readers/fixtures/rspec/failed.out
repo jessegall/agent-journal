@@ -1,0 +1,14 @@
+.F
+
+Failures:
+
+  1) Cart has a total
+     expected: 3
+          got: 2
+
+Finished in 0.01 seconds (files took 0.1 seconds to load)
+2 examples, 1 failure
+
+Failed examples:
+
+rspec ./spec/cart_spec.rb:4 # Cart has a total

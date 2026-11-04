@@ -1,0 +1,15 @@
+[0/1] Planning build
+Building for debugging...
+[0/2] Write sources
+[1/2] Write swift-version--1AB21518FC5DEDBE.txt
+error: emit-module command failed with exit code 1 (use -v to see invocation)
+[3/4] Emitting module Cart
+/work/project/Sources/Cart/Cart.swift:1:18: error: cannot find 'missing' in scope
+1 | let total: Int = missing
+  |                  `- error: cannot find 'missing' in scope
+2 | 
+[4/4] Compiling Cart Cart.swift
+/work/project/Sources/Cart/Cart.swift:1:18: error: cannot find 'missing' in scope
+1 | let total: Int = missing
+  |                  `- error: cannot find 'missing' in scope
+2 | 
