@@ -23,30 +23,20 @@ type Flags struct {
 	// KeepCutting is the program that keeps a line's outputs under the limit while a part with & outlives the line.
 	KeepCutting bool
 	Folder      string
-	Parts      int
-	Aliases    []string
-	MostOutput int
+	Parts       int
+	Aliases     []string
+	MostOutput  int
 }
 
 // The output settings of a run come in variables, so a runner of an older install ignores them. Each is cleared once
 // read, so a run inside this one starts with none.
-const (
-	strippedVariable   = "JOURNAL_RUN_STRIPPED"
-	mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
-	// strippedSeparator stands between the commands to strip; a command may hold a newline, never this control byte.
-	strippedSeparator = "\x1f"
-)
+const mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
 
-// outputSettings reads the commands to strip and the most bytes one part may keep.
-func outputSettings() ([]string, int) {
-	stripped, mostOutput := os.Getenv(strippedVariable), os.Getenv(mostOutputVariable)
-	_ = os.Unsetenv(strippedVariable)
+// mostOutputBytes reads the most bytes one part may keep.
+func mostOutputBytes() int {
+	bytes, _ := strconv.Atoi(os.Getenv(mostOutputVariable))
 	_ = os.Unsetenv(mostOutputVariable)
-	bytes, _ := strconv.Atoi(mostOutput)
-	if stripped == "" {
-		return nil, bytes
-	}
-	return strings.Split(stripped, strippedSeparator), bytes
+	return bytes
 }
 
 // outputReading reads what the agent reads of each part, and clears it, so a run inside this one starts with none.

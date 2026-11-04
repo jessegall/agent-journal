@@ -22,4 +22,4 @@ class PeekOutputSubcommand(OutputLinesWriting, ReadSubcommand[OutputLines]):
         OutputLines.add_flags(parser)
 
     def read(self, arguments: Namespace, caller: Caller) -> OutputLines:
-        return OutputLines(self.texts.lines(caller.actor, ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader, arguments.piped)))
+        return OutputLines(self.texts.lines(caller.actor, ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader)))

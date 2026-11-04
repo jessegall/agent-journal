@@ -13,12 +13,8 @@ import (
 
 const (
 	outputSuffix   = "out"
-	stdoutSuffix   = "stdout"
-	stderrSuffix   = "stderr"
-	commandSuffix  = "command"
-	filteredSuffix = "filtered"
 	cutBytesSuffix = "cut-bytes"
-	cutLine      = "[this output grew past its limit: the oldest lines were dropped]\n"
+	cutLine        = "[this output grew past its limit: the oldest lines were dropped]\n"
 	// mostReadBytes is the end of an output the runner reads into memory, whatever the size of the file.
 	mostReadBytes = 16 << 20
 	countBuffer   = 1 << 16
@@ -96,29 +92,17 @@ func (folder Folder) outputPath(position int) string {
 	return filepath.Join(folder.Path, fmt.Sprintf("%d.out", position))
 }
 
-func (folder Folder) filteredPath(position int) string {
-	return filepath.Join(folder.Path, fmt.Sprintf("%d.%s", position, filteredSuffix))
-}
-
 // Output is the end of a part's stored output.
 func (folder Folder) Output(position int) string {
 	text, _ := readEnd(folder.outputPath(position), mostReadBytes)
 	return string(text)
 }
 
-// Result is what the agent asked for of a part, at most its last bytes: what its pipes printed, else its output.
-func (folder Folder) Result(position, mostBytes int) (string, OutputSize) {
-	path := folder.outputPath(position)
-	if _, err := os.Stat(folder.filteredPath(position)); err == nil {
-		path = folder.filteredPath(position)
-	}
-	text, _ := readEnd(path, mostBytes)
-	return string(text), fileSize(path)
-}
-
-// CommandCode is the code of a part stripped of its pipes, from its command and not from the pipes after it.
-func (folder Folder) CommandCode(position int) (int, bool) {
-	return folder.number(fmt.Sprintf("%d.%s", position, commandSuffix))
+// OutputEnd is the end of a part's output, at most its last bytes, and the size of the whole.
+func (folder Folder) OutputEnd(position, mostBytes int) (string, OutputSize) {
+	outputPath := folder.outputPath(position)
+	text, _ := readEnd(outputPath, mostBytes)
+	return string(text), fileSize(outputPath)
 }
 
 // Sizes are the bytes and the lines of every part's output.
@@ -137,10 +121,6 @@ func (folder Folder) Sizes(parts int) (int, int) {
 func (folder Folder) CutOutput(position, mostBytes int) {
 	if cut := cutFile(folder.outputPath(position), mostBytes); cut > 0 {
 		folder.addCutBytes(position, cut)
-	}
-	if _, ended := folder.CommandCode(position); !ended {
-		cutFile(filepath.Join(folder.Path, fmt.Sprintf("%d.%s", position, stdoutSuffix)), mostBytes)
-		cutFile(filepath.Join(folder.Path, fmt.Sprintf("%d.%s", position, stderrSuffix)), mostBytes)
 	}
 }
 
@@ -167,8 +147,12 @@ func cutFile(path string, mostBytes int) int {
 func (folder Folder) addCutBytes(position, count int) {
 	name := fmt.Sprintf("%d.%s", position, cutBytesSuffix)
 	total, _ := folder.number(name)
-	path := filepath.Join(folder.Path, name)
-	if err := os.WriteFile(path+".new", []byte(strconv.Itoa(total+count)), 0o644); err == nil {
+	writeWhole(filepath.Join(folder.Path, name), strconv.Itoa(total+count))
+}
+
+// writeWhole writes a file by rename, so a reader never finds it empty or half written.
+func writeWhole(path, text string) {
+	if err := os.WriteFile(path+".new", []byte(text), 0o644); err == nil {
 		_ = os.Rename(path+".new", path)
 	}
 }
@@ -213,7 +197,7 @@ func fileSize(path string) OutputSize {
 
 // WriteHeartbeat writes the time of the runner's last sign of life into the heartbeat file, as the module reads it.
 func (folder Folder) WriteHeartbeat() {
-	_ = os.WriteFile(filepath.Join(folder.Path, "heartbeat"), []byte(time.Now().UTC().Format("2006-01-02T15:04:05.000000+00:00")), 0o644)
+	writeWhole(filepath.Join(folder.Path, "heartbeat"), time.Now().UTC().Format("2006-01-02T15:04:05.000000+00:00"))
 }
 
 func (folder Folder) number(name string) (int, bool) {

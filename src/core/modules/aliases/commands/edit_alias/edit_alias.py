@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
+from core.base.driver.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
 
 
@@ -14,3 +15,4 @@ class EditAlias(Command[Alias]):
     description: str | None
     background: bool | None
     agent_access: bool | None
+    category: CommandCategory | None = None

@@ -43,6 +43,7 @@ func TestARunMovesToTheBackgroundAsSoonAsTheJournalAsksForIt(t *testing.T) {
 	if code != 0 || time.Since(started) > 2500*time.Millisecond || !strings.Contains(output, "moved to the background") {
 		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
 	}
+	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
 }
 
 func TestAnAtOnceRunMovesBeforeItsFirstOutput(t *testing.T) {
@@ -77,6 +78,7 @@ func TestAJournalCommandInALineFinishesBeforeTheRunMoves(t *testing.T) {
 	if !strings.Contains(output, "answered") || !strings.Contains(output, "moved to the background") {
 		t.Fatalf("printed %q", output)
 	}
+	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
 }
 
 func TestAnAliasIsNoJournalCommandToTheRunner(t *testing.T) {

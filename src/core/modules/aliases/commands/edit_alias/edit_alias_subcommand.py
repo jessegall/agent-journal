@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.driver.command_category import CommandCategory
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
@@ -9,8 +10,8 @@ from core.modules.aliases.models.alias import Alias
 
 
 class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
-    """`journal alias edit <name> [--line "<line>"] [--reader <name>] [--about <text>] [--background |
-    --foreground]`."""
+    """`journal alias edit <name> [--line "<line>"] [--reader <name>] [--about <text>] [--category "test run"]
+    [--background | --foreground]`."""
 
     cli_name = "alias"
     name = "edit"
@@ -23,7 +24,8 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
         parser.add_argument("--line")
         parser.add_argument("--reader")
         parser.add_argument("--about")
-        running = parser.add_mutually_exclusive_group()
+        parser.add_argument("--category", choices=[category.value for category in CommandCategory])
+        running =parser.add_mutually_exclusive_group()
         running.add_argument("--background", dest="background", action="store_true", default=None)
         running.add_argument("--foreground", dest="background", action="store_false")
         access = parser.add_mutually_exclusive_group()
@@ -31,7 +33,8 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
         access.add_argument("--main-only", dest="agent_access", action="store_false")
 
     def command(self, arguments: Namespace, caller: Caller) -> EditAlias:
-        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background, arguments.agent_access)
+        category = CommandCategory(arguments.category) if arguments.category else None
+        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background, arguments.agent_access, category)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Alias):

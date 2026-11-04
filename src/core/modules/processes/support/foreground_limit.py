@@ -19,7 +19,7 @@ class ForegroundLimit:
     background at once for an alias marked so or a part that went past the limit in an earlier
     run, else the seconds the settings give, fewer while the user waits on a message; a line that
     runs an alias is judged by the command under the alias, as the hook classified it, and read by
-    the alias's reader. The test runs and builds of a line keep their whole output."""
+    the alias's reader. The test runs and builds of a line keep more of their output."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries
@@ -32,10 +32,10 @@ class ForegroundLimit:
         declared = self.background.declared_category(shell)
         is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.pipeline_heads)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
-        stripped = tuple(part.text for part in shell.parts if part.classification.category.is_long_running or self.background.is_long_alias(part, shell))
-        output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if stripped else ProcessSetting.MOST_OUTPUT_MEGABYTES
+        has_long_part = any(part.classification.category.is_long_running or self.background.is_long_alias(part, shell) for part in shell.parts)
+        output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if has_long_part else ProcessSetting.MOST_OUTPUT_MEGABYTES
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands,
-                             stripped=stripped, most_output_bytes=self.output_limit(output_setting, environment_id),
+                             most_output_bytes=self.output_limit(output_setting, environment_id),
                              read_flags=tuple(f"{position}:{part.read_flag}" for position, part in enumerate(shell.parts, start=1) if part.read_flag))
 
     def output_limit(self, setting: ProcessSetting, environment_id: int) -> int:

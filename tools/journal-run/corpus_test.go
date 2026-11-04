@@ -26,16 +26,14 @@ import (
 // JSON string. JOURNAL_CORPUS_RUNS is how many lines the run test runs, 2000 by default. Lines that differ are written
 // beside the corpus, in runner-differing.txt.
 const (
-	corpusVariable   = "JOURNAL_CORPUS"
-	corpusRunsName   = "JOURNAL_CORPUS_RUNS"
-	sandboxedName    = "JOURNAL_CORPUS_SANDBOXED"
+	corpusVariable    = "JOURNAL_CORPUS"
+	corpusRunsName    = "JOURNAL_CORPUS_RUNS"
+	sandboxedName     = "JOURNAL_CORPUS_SANDBOXED"
 	sandboxPathPrefix = "/private/var/"
 	// sandboxProbeFolder is a folder this user may write in, which the sandbox must refuse.
 	sandboxProbeFolder = "/Users/Shared"
-	// strippedRunsName, when set, runs every command of a line as a test: its pipes come off and run over its output.
-	strippedRunsName = "JOURNAL_CORPUS_STRIPPED"
-	corpusSeed       = 20261104
-	lineTimeout      = 5 * time.Second
+	corpusSeed         = 20261104
+	lineTimeout        = 5 * time.Second
 	// runnerTimeout is long, so a run that ends late on a busy machine is not taken for one that hangs.
 	runnerTimeout    = 60 * time.Second
 	mixedLines       = 500000
@@ -128,18 +126,6 @@ func writeFailing(t *testing.T, path string, failing []string) {
 	}
 }
 
-func commandTexts(line string) []string {
-	commands, _, err := shell.Split(line)
-	if err != nil {
-		return nil
-	}
-	names := make([]string, 0, len(commands))
-	for _, command := range commands {
-		names = append(names, strings.TrimSpace(command.Text))
-	}
-	return names
-}
-
 // partsProblem says what is wrong with how a line is cut: it never panics and its script is one a shell can read.
 func partsProblem(line string) (problem string) {
 	defer func() {
@@ -150,11 +136,8 @@ func partsProblem(line string) (problem string) {
 	if _, _, err := shell.Split(line); err != nil {
 		return ""
 	}
-	for _, listed := range [][]string{nil, commandTexts(line)} {
-		parts := Parts(line, listed...)
-		if _, err := shell.Parse(Script(parts, "/folder")); err != nil {
-			return fmt.Sprintf("the script does not read: %v\n%s", err, line)
-		}
+	if _, err := shell.Parse(Script(Parts(line), "/folder")); err != nil {
+		return fmt.Sprintf("the script does not read: %v\n%s", err, line)
 	}
 	return ""
 }
@@ -369,9 +352,6 @@ func runnerProblem(sandbox, shellPath, line string, number *int, mutex *sync.Mut
 	setting := fmt.Sprintf("cd %s\nPATH=%s\nHOME=%s\n", quoted(work), quoted(filepath.Join(sandbox, "tools")), quoted(work))
 	setup := Options{Process: 4, LimitSeconds: 30, Line: setting + standInFunctions + line, Home: home, Shell: shellPath, HeartbeatEvery: time.Hour, CapCharacters: 1 << 24,
 		ShellAlive: func() bool { return true }}
-	if os.Getenv(strippedRunsName) != "" {
-		setup.Stripped = commandTexts(setup.Line)
-	}
 	var output strings.Builder
 	codes := make(chan int, 1)
 	go func() { codes <- Run(setup, newClient(), &output) }()

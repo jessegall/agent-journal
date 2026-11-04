@@ -8,8 +8,8 @@ from core.modules.processes.support.part_command import PartCommand
 class ForegroundRun:
     """How long a line may run in the foreground, whether it goes to the background at once, the reader an
     alias it runs names, whether it waits for a spot in the machine's run queue, whether it only reads,
-    which a change of the journal's code does not hold, the test runs and builds that keep their whole output,
-    and how many bytes of one part's output stay on disk."""
+    which a change of the journal's code does not hold, how many bytes of one part's output stay on disk, and what
+    the agent reads of each saved command."""
 
     seconds: int
     background: bool
@@ -21,6 +21,5 @@ class ForegroundRun:
     part_commands: tuple[PartCommand, ...] = ()
 
     count_line: str = ""
-    stripped: tuple[str, ...] = ()
     most_output_bytes: int = 0
     read_flags: tuple[str, ...] = ()

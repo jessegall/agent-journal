@@ -3,10 +3,11 @@ from collections.abc import Iterator
 
 import pytest
 
+from core.base.driver.command_category import CommandCategory
 from core.modules.processes.support.runner_line import READ_FLAGS_VARIABLE
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook
 from tests.stories.server.support.server_client import server_story
@@ -73,6 +74,21 @@ def test_a_saved_build_runs_bare_with_its_arguments_and_its_reading_goes_to_the_
 
 def test_a_saved_build_answers_a_question_about_itself_with_no_reading_flag(saved_hook):
     saved_hook.expect_expanded("journal build-npm --version", "npm run build --version")
+
+
+def test_a_failed_test_fails_its_run_whatever_came_after_it(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "npm test; echo done", category=CommandCategory.TEST_RUN)
+    story.expect_success(f"process part-end {process.id} --position 1 --exit-code 3", actor=story.agent)
+    story.expect_success(f"process end {process.id} --exit-code 0 --bytes 0 --lines 0", actor=story.agent)
+    story.expect_text(f"process show {process.id}", "state: failed", "exit_code: 3", actor=story.agent)
+
+
+def test_an_alias_becomes_a_saved_command_by_its_category(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success('alias add unit-tests "pytest tests/unit"', actor=story.agent)
+    story.expect_success('alias edit unit-tests --category "test run"', actor=story.agent)
+    story.expect_text("alias show 1", "category: test run", actor=story.agent)
 
 
 def test_a_line_naming_a_worktree_is_not_saved(new_story):

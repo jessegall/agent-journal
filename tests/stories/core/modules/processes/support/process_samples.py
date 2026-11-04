@@ -6,6 +6,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.hook_reply import HookReply
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
@@ -14,7 +15,6 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.runner_line import STRIPPED_SEPARATOR
 from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
@@ -32,12 +32,15 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, stripped: tuple[str, ...] = ()) -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False) -> str:
     """The line the rule gives the agent's tool to run in place of its own."""
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
-    variables = f" JOURNAL_RUN_STRIPPED={shlex.quote(STRIPPED_SEPARATOR.join(stripped))}" if stripped else ""
-    variables += f" JOURNAL_RUN_MOST_OUTPUT={(100 if stripped else 10) << 20}"
+    variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
     return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
+
+
+def expect_rewritten(reply: HookReply, line: str) -> None:
+    assert dict(reply.updated_input) == {"command": line}
 
 
 def monitor(command: str) -> HookSample:

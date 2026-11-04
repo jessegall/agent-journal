@@ -30,17 +30,14 @@ var privateLine = regexp.MustCompile(`(?i)~|/users|/home|/private|/tmp|@|https?:
 // shapeWords are what tell one way of cutting a line from another.
 var shapeWords = regexp.MustCompile(`&&|\|\||\|&|\||;|&>|2>&1|2>|>>|>|<<-?|<\(|\$\(|\beval\b|\bexec\b|&|\n|\bif\b|\bfor\b|\bwhile\b|\(|\{|/dev/null|\\$`)
 
-// cutCase is one line and how it must be cut, as it stands and with every command of the line listed as a test.
+// cutCase is one line and how it must be cut.
 type cutCase struct {
-	Line  string   `json:"line"`
-	Plain []Part   `json:"plain"`
-	Tests []Part   `json:"tests"`
-	Names []string `json:"names"`
+	Line  string `json:"line"`
+	Parts []Part `json:"parts"`
 }
 
 func cutCaseOf(line string) cutCase {
-	names := commandTexts(line)
-	return cutCase{Line: line, Plain: Parts(line), Tests: Parts(line, names...), Names: names}
+	return cutCase{Line: line, Parts: Parts(line)}
 }
 
 func shapeOf(line string) string {
@@ -116,9 +113,9 @@ func TestEveryFixtureLineIsCutAsItWas(t *testing.T) {
 	for _, recorded := range cases {
 		cut := cutCaseOf(recorded.Line)
 		if fmt.Sprint(cut) != fmt.Sprint(recorded) {
-			t.Errorf("%q is cut otherwise:\n now %+v\n was %+v", recorded.Line, cut.Tests, recorded.Tests)
+			t.Errorf("%q is cut otherwise:\n now %+v\n was %+v", recorded.Line, cut.Parts, recorded.Parts)
 		}
-		if _, err := shell.Parse(Script(cut.Tests, "/folder")); err != nil && !slices.Contains(sameAsShellLines, recorded.Line) {
+		if _, err := shell.Parse(Script(cut.Parts, "/folder")); err != nil && !slices.Contains(sameAsShellLines, recorded.Line) {
 			t.Errorf("%q gives a script no shell reads: %v", recorded.Line, err)
 		}
 	}

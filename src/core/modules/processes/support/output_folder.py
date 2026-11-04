@@ -111,16 +111,6 @@ class OutputFolder:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
         return int(timestamp.value.timestamp() - path.stat().st_mtime)
 
-    def piped_paths(self, process_id: int) -> list[Path]:
-        folder = self.home.folder / FOLDER_NAME / str(process_id)
-        return [path for position in range(1, len(self.part_texts(process_id)) + 1) if (path := folder / f"{position}.filtered").exists()]
-
-    def has_piped_output(self, process_id: int) -> bool:
-        return bool(self.piped_paths(process_id))
-
-    def piped_output(self, process_id: int) -> str:
-        return ColourCodes.removed("".join(path.read_text(errors="replace") for path in self.piped_paths(process_id)))
-
     def output_paths(self, process_id: int) -> list[Path]:
         return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
 

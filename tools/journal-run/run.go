@@ -28,13 +28,11 @@ type Options struct {
 	Shell          string
 	HeartbeatEvery time.Duration
 	CapCharacters  int
-	// Stripped names the commands of the line whose filter pipes come off: its test runs and builds.
-	Stripped []string
 	// MostOutputBytes is how much of one part's output stays on disk.
 	MostOutputBytes int
-	// Reading says what the agent reads of a saved command, by position; the whole output stays on disk.
-	Reading map[int]string
-	Detach          func(options Options)
+	// ReadFlags say what the agent reads of a saved command, by position; the whole output stays on disk.
+	ReadFlags map[int]string
+	Detach    func(options Options)
 	// ShellAlive says whether the shell that started the runner still lives; when it is nil the runner watches its parent.
 	ShellAlive func() bool
 }
@@ -54,7 +52,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	if options.MostOutputBytes == 0 {
 		options.MostOutputBytes = DefaultMostOutputBytes
 	}
-	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line, options.Stripped...)
+	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
 	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
@@ -65,14 +63,15 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		return 127
 	}
 	go waitForLeader(leader, folder)
+	folder.WriteHeartbeat()
 	go writeHeartbeats(folder, leader.Process.Pid, options.HeartbeatEvery)
 	if options.ShellAlive == nil {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Stripped: map[int]bool{}, ShownBytes: map[int]int{}}
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Positions: map[int]bool{}, ShownBytes: map[int]int{}}
 	for _, part := range parts {
-		tracker.Stripped[part.Position] = part.Command != ""
+		tracker.Positions[part.Position] = true
 		if part.JoinedBy == "&" {
 			tracker.Background = append(tracker.Background, part.Position)
 		}
@@ -95,7 +94,7 @@ func start(options Options, folder Folder, lastPosition int) (*exec.Cmd, error) 
 // waitForLeader reaps the group leader and, when it was killed before it wrote the end, writes the end for it.
 func waitForLeader(leader *exec.Cmd, folder Folder) {
 	err := leader.Wait()
-	if _, ended := folder.End(); ended {
+	if _, ended := folder.End(); ended || err == nil {
 		return
 	}
 	code := 1
@@ -110,11 +109,11 @@ func waitForLeader(leader *exec.Cmd, folder Folder) {
 
 func writeHeartbeats(folder Folder, pid int, interval time.Duration) {
 	for {
+		time.Sleep(interval)
 		if _, ended := folder.End(); ended || syscall.Kill(pid, 0) != nil {
 			return
 		}
 		folder.WriteHeartbeat()
-		time.Sleep(interval)
 	}
 }
 
@@ -127,7 +126,7 @@ func StartCutting(options Options, parts int) {
 
 // Detach continues a moved run in a program of its own that no tool call waits for.
 func Detach(options Options) {
-	command := exec.Command(os.Args[0], "--follow", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(PartCount(Parts(options.Line, options.Stripped...))), "--most-output", strconv.Itoa(options.MostOutputBytes))
+	command := exec.Command(os.Args[0], "--follow", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(PartCount(Parts(options.Line))), "--most-output", strconv.Itoa(options.MostOutputBytes))
 	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	_ = command.Start()
 }

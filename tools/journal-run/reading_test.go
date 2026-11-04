@@ -36,7 +36,7 @@ func TestAReadingIsParsedPerPosition(t *testing.T) {
 
 func TestAPartWithAReadingShowsOnlyThoseLinesAndStoresEverything(t *testing.T) {
 	setup := options(t, `printf 'one\ntwo\nthree\n'`)
-	setup.Reading = map[int]string{1: "tail:1"}
+	setup.ReadFlags = map[int]string{1: "tail:1"}
 	output, _ := run(t, setup, newClient())
 	if output != "three\n" || !strings.Contains(readFile(t, folderOf(setup)+"/1.out"), "one\ntwo\nthree\n") {
 		t.Fatalf("printed %q", output)

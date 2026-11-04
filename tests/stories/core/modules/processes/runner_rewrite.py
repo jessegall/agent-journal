@@ -10,7 +10,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.mark_samples import mark_count
-from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line, user_waits, with_parse_error
+from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
@@ -32,10 +32,10 @@ def test_a_journal_only_line_has_limit_0(new_story):
     assert dict(story.hook("s-1", JOURNAL).updated_input) == {"command": runner_line(story, 1, "journal task show 1", limit=0)}
 
 
-def test_a_test_run_and_a_build_run_in_line_and_are_named_for_stripping(new_story):
+def test_a_test_run_and_a_build_run_in_line_and_keep_more_of_their_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    assert dict(story.hook("s-1", TESTS).updated_input) == {"command": runner_line(story, 1, "pytest -q", stripped=tuple(["pytest -q"]))}
-    assert dict(story.hook("s-1", BUILD).updated_input) == {"command": runner_line(story, 2, "make build", stripped=tuple(["make build"]))}
+    expect_rewritten(story.hook("s-1", TESTS), runner_line(story, 1, "pytest -q", has_long_part=True))
+    expect_rewritten(story.hook("s-1", BUILD), runner_line(story, 2, "make build", has_long_part=True))
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
@@ -130,7 +130,7 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, stripped=tuple(["pytest -q"]))}
+    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True))
 
 
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):

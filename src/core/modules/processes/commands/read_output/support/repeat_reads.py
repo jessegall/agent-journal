@@ -28,7 +28,7 @@ class RepeatReads:
             self.folder.write_read_mark(command.process_id, self.mark(command, actor), read_at)
 
     def mark(self, command: ReadOutput, actor: Actor) -> str:
-        return f"{actor.id}-{command.summary}-{command.all}-{command.lines}-{command.tail}-{command.reader}-{command.piped}"
+        return f"{actor.id}-{command.summary}-{command.all}-{command.lines}-{command.tail}-{command.reader}"
 
     def has_ended(self, process_id: int) -> bool:
         return self.queries.query(Process).find(process_id).ended_at is not None

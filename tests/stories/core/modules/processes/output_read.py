@@ -8,7 +8,7 @@ PYTEST = "pytest -q"
 def test_an_output_is_read_by_one_flag_and_none_is_refused(new_story):
     story = new_story(fixture=BuilderStarted)
     process = ended_run(story, PYTEST, REPORT)
-    story.expect_refusal(f"output read {process.id}", "--summary, --all, --lines, --tail, --reader or --piped", actor=story.agent)
+    story.expect_refusal(f"output read {process.id}", "--summary, --all, --lines, --tail or --reader", actor=story.agent)
 
 
 def test_all_lines_tail_and_a_range_show_the_output(new_story):
