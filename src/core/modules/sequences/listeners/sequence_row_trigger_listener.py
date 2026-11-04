@@ -4,10 +4,11 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.modules.documents.models.link import Link
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
+from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER, SequenceTrigger
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -15,7 +16,8 @@ from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
 
 
 class SequenceRowTriggerListener(CommitListener):
-    """Continues a sequence for the triggering agent or the environment's idle main agent."""
+    """Starts a sequence for the triggering agent or the environment's idle main agent when a row event meets a
+    row trigger whose link source, if it names one, has a link to the row."""
 
     name = "sequences.row-trigger"
     event = "*.*"
@@ -37,6 +39,10 @@ class SequenceRowTriggerListener(CommitListener):
         agents = MainAgentFinder.rows(self.queries, event.environment_id) if event.environment_id is not None else ()
         return agents[0].id if agents else None
 
-    @staticmethod
-    def is_triggered(sequence: Sequence, event: LoggedEvent) -> bool:
-        return any(trigger.trigger_type == ROW_TRIGGER and trigger.event == event.event for trigger in SequenceTriggers.parsed(sequence.triggers))
+    def is_triggered(self, sequence: Sequence, event: LoggedEvent) -> bool:
+        return any(trigger.trigger_type == ROW_TRIGGER and trigger.event == event.event and self.is_linked(trigger, event) for trigger in SequenceTriggers.parsed(sequence.triggers))
+
+    def is_linked(self, trigger: SequenceTrigger, event: LoggedEvent) -> bool:
+        if not trigger.link_source:
+            return True
+        return self.queries.query(Link).filter(source_model=trigger.link_source, target_model=trigger.row_model, target_id=event.row_id).exists()

@@ -21,5 +21,5 @@ class SequenceEndListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         for run in self.runs.filter(subject_id=event.row_id).matching(IsNull("ended_at")).all_rows():
-            if self.queries.query(Sequence).find(run.sequence_id).ends_on(event.event):
+            if self.queries.query(Sequence).find(run.sequence_id).has_end_event(event.event):
                 self.bus.run(MoveSequenceRun(END, reason=event.event), Actor(run.agent_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
