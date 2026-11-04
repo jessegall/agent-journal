@@ -34,6 +34,16 @@ from core.modules.library.commands.run_library_sync.run_library_sync_handler imp
 from core.modules.library.commands.run_library_sync.run_library_sync_subcommand import RunLibrarySyncSubcommand
 from core.modules.library.commands.merge_library_item.merge_library_item_handler import MergeLibraryItemHandler
 from core.modules.library.ticks.library_sync_tick import LibrarySyncTick
+from core.modules.library.commands.add_library_user.add_library_user_handler import AddLibraryUserHandler
+from core.modules.library.commands.add_library_user.add_library_user_subcommand import AddLibraryUserSubcommand
+from core.modules.library.commands.set_library_role.set_library_role_handler import SetLibraryRoleHandler
+from core.modules.library.commands.set_library_role.set_library_role_subcommand import SetLibraryRoleSubcommand
+from core.modules.library.commands.remove_library_user.remove_library_user_handler import RemoveLibraryUserHandler
+from core.modules.library.commands.remove_library_user.remove_library_user_subcommand import RemoveLibraryUserSubcommand
+from core.modules.library.commands.revoke_library_token.revoke_library_token_handler import RevokeLibraryTokenHandler
+from core.modules.library.commands.revoke_library_token.revoke_library_token_subcommand import RevokeLibraryTokenSubcommand
+from core.modules.library.commands.library_user_list.library_user_list_subcommand import LibraryUserListSubcommand
+from core.modules.library.commands.library_user_tokens.library_user_tokens_subcommand import LibraryUserTokensSubcommand
 from core.modules.library.commands.leave_library_copy.leave_library_copy_handler import LeaveLibraryCopyHandler
 from core.modules.library.commands.leave_library_copy.leave_library_copy_subcommand import LeaveLibraryCopySubcommand
 from core.modules.library.commands.library_copies.library_copies_subcommand import LibraryCopiesSubcommand
@@ -67,14 +77,15 @@ class LibraryModule(Module):
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
     bindings = {LibraryLookup: ServerLibraryLookup}
-    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, SendLibraryItemHandler,
+    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, AddLibraryUserHandler, SetLibraryRoleHandler, RemoveLibraryUserHandler, RevokeLibraryTokenHandler, SendLibraryItemHandler,
                 RunLibrarySyncHandler, ChooseLibraryVersionHandler, MergeLibraryItemHandler, UpdateLibraryCopyHandler, DeleteLibraryCopyHandler, UpdateLibraryConnectionHandler, RemoveLibraryItemHandler,
                 RestoreLibraryItemHandler]
-    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand,
+    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand, LibraryUserListSubcommand, LibraryUserTokensSubcommand, AddLibraryUserSubcommand, SetLibraryRoleSubcommand, RemoveLibraryUserSubcommand,
+                   RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
     skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
                                keywords=("library", "team", "shared"), commands=["library"])]
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
-                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library show", "library versions", "library copies"],
-                                 runs=["library connect", "library get", "library share", "library sync", "library resolve", "library leave", "library remove", "library restore"], events=["library_connection.*", "library_copy.*"])]
+                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library show", "library versions", "library copies", "library-user list", "library-user tokens"],
+                                 runs=["library connect", "library get", "library share", "library sync", "library resolve", "library leave", "library remove", "library restore", "library-user add", "library-user role", "library-user remove", "library-user revoke"], events=["library_connection.*", "library_copy.*"])]
