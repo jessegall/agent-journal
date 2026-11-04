@@ -1,5 +1,5 @@
 <script setup>
-import {computed, defineAsyncComponent, onUnmounted, ref} from "vue";
+import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
 import {age, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -47,6 +47,7 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
+watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 // a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isSubagent = computed(() => props.row.role === "subagent" || props.row.role === "reviewer");
@@ -436,7 +437,4 @@ readCommand();
 .agent-task-number { min-width: 30px; }
 .agent-label { margin: 12px 14px 0; }
 .agent-card.open .agent-instruction { margin: 12px 14px 16px; padding: 0 0 0 10px; line-height: 1.55; mask-image: none; }
-.agent-card.open .agent-more { animation: agent-open 240ms ease 60ms both; }
-@keyframes agent-open { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .agent-card.open .agent-more { animation: none; } }
 </style>

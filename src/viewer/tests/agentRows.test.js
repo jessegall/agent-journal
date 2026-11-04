@@ -11,6 +11,8 @@ import Subagents from "../../core/modules/agents/web/src/subagents.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
+vi.stubGlobal("matchMedia", () => ({matches: true}));
+
 vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: () => import("../../suites/coding/web/src/agent-file-edits.js")}));
 
 vi.stubGlobal("ResizeObserver", class {
