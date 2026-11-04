@@ -4,8 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class StepTally:
-    """The steps a run's symbols count, read from its rows of symbols alone: a dot passed, an F or an E
-    failed; a row may lead with its file and end with its progress."""
+    """Counts passed and failed tests from symbols or named pattern groups."""
 
     passed: int = 0
     failed: int = 0

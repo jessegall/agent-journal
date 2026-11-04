@@ -9,6 +9,11 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_judge import FEW_LINES, SAMPLE_OUTPUTS, WIDTH_LINE_COUNT, ReaderJudge
 from core.modules.processes.support.reader_judgement import ReaderJudgement
+
+
+def test_npx_title_validation():
+    assert not ReaderJudge.has_argument("Jest tests", "npx jest --runInBand")
+    assert ReaderJudge.has_argument("Cart tests", "npx jest cart")
 from core.modules.processes.support.reader_run import ReaderRun
 
 

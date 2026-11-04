@@ -41,3 +41,8 @@ def type_checked():
 def listed_files():
     # @righteous architecture_testing_TypeCheckInItsOwnJobDetector
     return subprocess.run(["ls", "src"], check=False)
+
+
+def reader_name():
+    # @righteous architecture_testing_TypeCheckInItsOwnJobDetector
+    return "pyright"
