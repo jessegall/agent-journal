@@ -48,6 +48,10 @@ class AliasHook:
         assert process.line == expanded, process
         return rewritten
 
+    def expect_allowed(self, line: str) -> None:
+        answer = self.answer(line)
+        assert answer.get("permissionDecision") == "allow", answer
+
     def expect_options(self, line: str, expanded: str, reader_id: int) -> None:
         rewritten = self.expect_expanded(line, expanded)
         assert "--background" in shlex.split(rewritten), rewritten

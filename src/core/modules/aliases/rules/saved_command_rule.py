@@ -5,9 +5,10 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.shell_line import ShellLine
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
@@ -35,7 +36,15 @@ class SavedCommandRule(DriverRule):
             return RuleAnswer.allowed()
         refusals = (self.refusal(part, hook.role) for part in shell.parts)
         refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)
-        return RuleAnswer.refused(refusal) if refusal else RuleAnswer.allowed()
+        if refusal:
+            return RuleAnswer.refused(refusal)
+        return RuleAnswer.refused(SAVED_COMMAND_MIXED.nudge()) if self.is_mixed(shell) else RuleAnswer.allowed()
+
+    @staticmethod
+    def is_mixed(shell: ShellLine) -> bool:
+        parts = shell.parts[1:] if shell.is_skip_line else shell.parts
+        long_parts = [part for part in parts if part.classification.category.is_long_running and not set(ASKING_FLAGS) & set(part.arguments)]
+        return bool(long_parts) and len(long_parts) != len(parts)
 
     def refusal(self, part: Part, role: str) -> Nudge | None:
         if part.saved_command:

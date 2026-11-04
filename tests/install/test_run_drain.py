@@ -12,7 +12,7 @@ def going_run(home: Path, name: str, pid: int) -> Path:
     run = home / "processes" / name
     run.mkdir(parents=True)
     (run / "pid").write_text(str(pid))
-    (run / "1.out").write_text("")
+    (run / "1.started").write_text("")
     return run
 
 
@@ -32,6 +32,7 @@ def test_a_run_waiting_on_the_lock_or_gone_or_ended_does_not_count(tmp_path):
     waiting = tmp_path / "processes" / "1"
     waiting.mkdir(parents=True)
     (waiting / "pid").write_text(str(os.getpid()))
+    (waiting / "1.out").write_text("")
     ended_process = subprocess.Popen(["true"])
     ended_process.wait()
     going_run(tmp_path, "2", ended_process.pid)

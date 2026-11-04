@@ -8,6 +8,7 @@ SAVED_COMMAND_LINE = 300
 SAVED_COMMAND_UNKNOWN = NudgeDeclaration("aliases.saved_command_unknown", NudgeType.REFUSAL,
                                          'save it: journal alias add <name> "{command}" --category "{category}", or journal alias skip --reason "<why>" && it',
                                          longest_characters=SAVED_COMMAND_LINE)
+SAVED_COMMAND_MIXED = NudgeDeclaration("aliases.saved_command_mixed",NudgeType.REFUSAL, "a test or build runs on a line of its own: run the other commands apart from it")
 SAVED_COMMAND_CHOICES = NudgeDeclaration("aliases.saved_command_choices", NudgeType.REFUSAL,
                                          'use {items} with --tail, --head or --cut, or save it: journal alias add <name> "{command}" --category "{category}"',
                                          longest_characters=SAVED_COMMAND_LINE)

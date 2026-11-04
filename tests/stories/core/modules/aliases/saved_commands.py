@@ -78,6 +78,15 @@ def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
     saved_hook.expect_denied("make all", 'use build-npm with --tail, --head or --cut, or save it: journal alias add <name> "make all" --category "build"')
 
 
+def test_a_test_or_build_is_refused_beside_any_other_command(saved_hook):
+    saved_hook.expect_denied("journal build-npm --tail 5 && git commit -m done", "a test or build runs on a line of its own")
+    saved_hook.expect_denied("git status && journal build-npm --tail 5", "a test or build runs on a line of its own")
+
+
+def test_two_saved_builds_run_on_one_line(saved_hook):
+    saved_hook.expect_allowed("journal build-npm --tail 5 && journal build-npm --tail 1")
+
+
 def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
     saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', "this runs through a saved command: journal build-npm --tail 20")
     saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "use build-npm")

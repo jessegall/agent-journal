@@ -15,7 +15,7 @@ LINE_FILE = "line"
 PARTS_FILE = "parts"
 PID_FILE = "pid"
 END_FILE = "end"
-FIRST_OUTPUT_FILE = "1.out"
+FIRST_STARTED_FILE = "1.started"
 HEARTBEAT_FILE = "heartbeat"
 SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
@@ -120,7 +120,7 @@ class OutputFolder:
         return tuple(int(name) for name in names if self.is_running(int(name)))
 
     def is_running(self, process_id: int) -> bool:
-        is_started = (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_OUTPUT_FILE).exists()
+        is_started = (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_STARTED_FILE).exists()
         return is_started and self.end(process_id) is None and self.has_leader_process(process_id)
 
     def has_leader_process(self, process_id: int) -> bool:
