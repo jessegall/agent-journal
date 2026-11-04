@@ -216,7 +216,7 @@ onMounted(() => {
     readActiveEnvironments();
     props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
     readFacts();
-    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*"], askBars);
+    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
     props.subscriptions.follow("stage:usage", ["agent.*"], askUsage);
     props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
     usageTimer = setInterval(readUsage, USAGE_SECONDS * 1000);
@@ -346,7 +346,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>

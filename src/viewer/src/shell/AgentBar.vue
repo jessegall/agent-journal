@@ -7,7 +7,7 @@ import {peekRef} from "../route.js";
 import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, processes: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
 const emit = defineEmits(["open", "changed"]);
 const LOADING_BARS = [{width: "220px", height: 12}];
 const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
@@ -45,14 +45,15 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             </template>
             <span class="agent-space" />
         </template>
-        <button type="button" class="agent-helpers" data-process-queue title="Open the process queue" @click="peekRef('test_queue:0')">Process queue</button>
         <slot />
-        <template v-if="agent">
-            <button type="button" class="agent-helpers agent-helpers-count" data-helpers title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
-                <Icon name="agents" :size="12" />
-                {{ helpers }}
-            </button>
-        </template>
+        <button type="button" class="agent-helpers agent-helpers-count" data-process-queue aria-label="Process queue" title="Process queue: processes running now" @click="peekRef('test_queue:0')">
+            <Icon name="terminal" :size="12" />
+            {{ processes }}
+        </button>
+        <button type="button" class="agent-helpers agent-helpers-count" data-helpers aria-label="Helpers" title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
+            <Icon name="agents" :size="12" />
+            {{ helpers }}
+        </button>
     </div>
 </template>
 

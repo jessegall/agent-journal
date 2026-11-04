@@ -1,5 +1,6 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
+import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
@@ -100,16 +101,21 @@ let lastTop = 0;
 let atFoot = true;
 let folding = 0;
 let sizeWatch = null;
+let footWatch = null;
 onMounted(() => {
     focusComposer();
     Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]);
     if (chat.value && typeof ResizeObserver !== "undefined") {
         sizeWatch = new ResizeObserver(([entry]) => (short.value = entry.contentRect.height < SHORT_CHAT));
         sizeWatch.observe(chat.value);
+        // the history shrinks each frame while the composer grows: a chat at its foot stays there
+        footWatch = new ResizeObserver(() => atFoot && scroller.value && (scroller.value.scrollTop = scroller.value.scrollHeight));
+        footWatch.observe(scroller.value);
     }
 });
 onUnmounted(() => {
     sizeWatch?.disconnect();
+    footWatch?.disconnect();
     clearTimeout(folding);
 });
 const text = ref("");
@@ -122,6 +128,7 @@ const dumping = ref(false);
 const attached = ref([]);
 const picker = ref(null);
 const composerInput = ref(null);
+useComposerHeight(composerInput, text);
 const focusComposer = () => nextTick(() => composerInput.value?.focus());
 
 // words put in without an input event, as dictation does, are in the box and not in text; a redraw must not write over them, so the box takes
@@ -743,14 +750,21 @@ async function runCommand(pin) {
 }
 
 .composer-input {
-    min-height: 54px;
     padding: 0;
     border: 0;
     outline: 0;
     color: var(--text);
     background: transparent;
     font: inherit;
+    line-height: 1.45;
     resize: none;
+    transition: height 160ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .composer-input {
+        transition: none;
+    }
 }
 
 .composer-row {

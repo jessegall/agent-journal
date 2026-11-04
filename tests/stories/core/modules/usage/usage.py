@@ -91,7 +91,7 @@ def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_tas
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run("task start 1", actor=story.agent)
     story.expect_text("usage bars --environment main", "1 helpers, 2 tasks, 0 waiting", actor=story.user)
-    story.expect_text("usage bars --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)
+    story.expect_text("usage bars --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', '"processes": 0', actor=story.user)
 
 
 def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
