@@ -2,7 +2,6 @@
 import {computed, ref, watch} from "vue";
 import {useWindow} from "@journal/window-kit";
 
-// the body of a docked plan, as version 4's plan card drew it: the plan's phases, each with the number of its tasks
 const PREVIEW_PHASES = 5;
 const context = useWindow();
 const item = context.option("row");
@@ -12,7 +11,7 @@ async function load() {
     const planId = item.value?.target_id;
     if (!planId) return;
     const answer = await context.read(`plan outline ${planId}`);
-    phases.value = answer.ok ? answer.value.phases.map((phase) => ({...phase, tasks: phase.tasks.length})) : [];
+    phases.value = answer.ok ? answer.value.phases : [];
 }
 
 context.follow(["phase.*", "phase_task.*"], load);
@@ -25,8 +24,11 @@ watch(() => item.value?.target_id, load, {immediate: true});
             <li class="plan-dock-phase">
                 <span class="plan-dock-number">{{ index + 1 }}</span>
                 <span class="plan-dock-name">{{ phase.title }}</span>
-                <span class="plan-dock-tasks">{{ phase.tasks ? `${phase.tasks} task${phase.tasks === 1 ? "" : "s"}` : "" }}</span>
+                <span class="plan-dock-tasks">{{ phase.tasks.length ? `${phase.tasks.length} task${phase.tasks.length === 1 ? "" : "s"}` : "" }}</span>
             </li>
+            <template v-for="task in phase.tasks" :key="task.id">
+                <li class="plan-dock-task">{{ task.title }}</li>
+            </template>
         </template>
         <template v-if="hidden">
             <li class="plan-dock-phase quiet">
@@ -74,5 +76,11 @@ watch(() => item.value?.target_id, load, {immediate: true});
 .plan-dock-tasks {
     color: var(--text-4);
     font-size: 11.5px;
+}
+
+.plan-dock-task {
+    padding: 2px 0 2px 26px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 </style>
