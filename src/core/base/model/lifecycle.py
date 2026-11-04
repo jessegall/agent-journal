@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import ClassVar
 
+from core.base.model.added_state import StateValue
 from core.base.model.move import Move
 
 
@@ -22,10 +23,10 @@ class Lifecycle:
         return [attribute for attribute, value in vars(cls).items() if isinstance(value, Move) and value.name != attribute]
 
     @classmethod
-    def outgoing_moves(cls, state: StrEnum) -> tuple[Move, ...]:
+    def outgoing_moves(cls, state: StateValue) -> tuple[Move, ...]:
         return tuple(move for move in cls.moves() if state in move.sources)
 
     @classmethod
-    def suggestion(cls, cli_name: str, row_id: int, state: StrEnum) -> str:
+    def suggestion(cls, cli_name: str, row_id: int, state: StateValue) -> str:
         lines = [f"journal {cli_name} {move.name} {row_id}" for move in cls.outgoing_moves(state)]
         return f"from {state.value} it can only go on with {', '.join(lines)}" if lines else f"{state.value} is final"

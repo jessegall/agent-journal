@@ -24,6 +24,9 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             <strong data-agent-word>{{ word }}</strong>
             <template v-if="task">
                 <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
+                <template v-if="task.planId">
+                    <span class="agent-plan" data-agent-plan>Plan {{ task.planId }}</span>
+                </template>
             </template>
             <template v-if="failure">
                 <span class="agent-failure" role="alert" data-agent-failure>{{ failure }}</span>
@@ -73,6 +76,12 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         flex-wrap: wrap;
         padding-block: 8px;
     }
+}
+
+.agent-plan {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11px;
 }
 
 .agent-divider {

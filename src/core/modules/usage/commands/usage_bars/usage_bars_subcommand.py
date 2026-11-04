@@ -13,6 +13,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.plans.models.plan_task import PlanTask
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.questions.models.enums.question_state import QuestionState
@@ -51,7 +52,9 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         started_tasks = self.tasks.holder(mains[0].id).started().descending("started_at").page(1, PAGE_ROWS).rows if mains else ()
         jobs = self.queries.query(ScheduledJob).filter(agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
         processes = self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).page(1, PAGE_ROWS).total
-        return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes)
+        plans = self.queries.query(PlanTask).filter(task_id=started_tasks[0].id).page(1, PAGE_ROWS).rows if started_tasks else ()
+        return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes,
+                        plans[0].plan_id if plans else None)
 
     def ended_delegates(self, environment_id: int) -> int:
         holders = {task.delegated_to for task in self.tasks.environment(environment_id).unclosed().all_rows() if task.state in UNFINISHED_WORK_STATES and task.delegated_to is not None}

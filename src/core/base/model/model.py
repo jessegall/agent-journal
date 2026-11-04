@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
-from enum import StrEnum
 from typing import ClassVar, Self
 from core.base.metadata import Metadata
+from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
 from core.base.timestamp import Timestamp
@@ -57,7 +57,7 @@ class Model:
     def saved(self, id: int, version: int, timestamp: Timestamp) -> Self:
         return replace(self, id=id, version=version, created_at=self.created_at or timestamp, updated_at=timestamp, move=None)
 
-    def current_state(self) -> StrEnum:
+    def current_state(self) -> StateValue:
         return getattr(self, STATE)
 
     def scoped(self, actor_id: int) -> Self:

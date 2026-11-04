@@ -2,19 +2,21 @@ from dataclasses import dataclass
 
 from core.base.actor import Actor
 from core.base.model.model import Model
+from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 
 
 @dataclass(frozen=True, kw_only=True)
-class Review(Model):
+class Review(Model, StateHolder):
     """One request to have a row's work checked, point by point; its state moves only as ReviewLifecycle
     allows."""
 
     model_name = "review"
     cli_name = "review"
     lifecycle = ReviewLifecycle
+    added_state_moves = tuple([ReviewLifecycle.abandon])
 
     environment_id: int
     subject_model: str

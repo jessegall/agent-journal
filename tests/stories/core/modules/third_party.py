@@ -4,6 +4,7 @@ from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.testing.expect_row import expect_row
 from tests.stories.fixtures.third_party import third_party, third_party_cookie, viewer_body
+from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.support.story_checks import expect_value
 
@@ -39,6 +40,12 @@ def test_a_third_party_suite_adds_its_window_without_changing_the_default(third_
     third_party.expect_viewer_status("/api/windows?environment=main", 200, third_party_cookie, text="messages.chat")
     registry = Registry.read(story.container.get(Database))
     story.expect_rows("findings.row" in registry.button_slots)
+
+
+def test_a_third_party_window_draws_its_own_slot_and_a_press_runs_after_the_prompt(third_party):
+    third_party.story.expect_success("suite choose acme --environment main", actor=third_party.story.user)
+    third_party.story.expect_success("window trust acme.findings --environment main", actor=third_party.story.user)
+    expect_browser(third_party, "thirdPartyWindow.browser.mjs", [])
 
 
 def test_another_suite_hides_templates_and_buttons_but_keeps_commands(third_party, third_party_cookie):

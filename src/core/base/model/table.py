@@ -7,7 +7,8 @@ from types import NoneType, UnionType
 from enum import StrEnum
 from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 from core.base.metadata import Metadata
-from core.base.model.model import Model
+from core.base.model.added_state import AddedState
+from core.base.model.model import Model, STATE
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.base.model.unsupported_column_type_error import UnsupportedColumnTypeError
@@ -62,7 +63,7 @@ class Table(Generic[R]):
         return self.model(**values)
 
     def row_model(self, row: sqlite3.Row) -> R:
-        return self.model(**{column: loaded(self.types[column], row[column]) for column in self.columns})
+        return self.model(**{column: loaded_state(self.types[column], row[column]) if column == STATE else loaded(self.types[column], row[column]) for column in self.columns})
 
 
 def plural(name: str) -> str:
@@ -97,6 +98,12 @@ def stored(value: object) -> object:
     if isinstance(value, (tuple, list)):
         return json.dumps(value)
     return value
+
+
+def loaded_state(value_type: type, value: object) -> object:
+    if not issubclass(value_type, StrEnum) or not isinstance(value, str):
+        return loaded(value_type, value)
+    return value_type(value) if value in value_type._value2member_map_ else AddedState(value)
 
 
 def loaded(value_type: type, value: object) -> Any:

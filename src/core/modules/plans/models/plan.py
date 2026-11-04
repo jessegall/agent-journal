@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.model.model import Model
+from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
 from core.modules.tasks.models.task import check_title
 from core.modules.plans.models.enums.plan_state import PlanState
@@ -8,7 +9,7 @@ from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 
 
 @dataclass(frozen=True, kw_only=True)
-class Plan(Model):
+class Plan(Model, StateHolder):
     """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then
     followed. Its design document, when it has one, is linked to it."""
 
@@ -16,6 +17,7 @@ class Plan(Model):
     cli_name = "plan"
     search_fields = ["title", "brief"]
     lifecycle = PlanLifecycle
+    added_state_moves = tuple([PlanLifecycle.cancel])
 
     environment_id: int
     creator_id: int

@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from enum import StrEnum
+
+from core.base.model.added_state import StateValue
 
 
 @dataclass(frozen=True)
@@ -9,5 +10,5 @@ class Move:
     """
 
     name: str
-    sources: Sequence[StrEnum]
-    target: StrEnum
+    sources: Sequence[StateValue]
+    target: StateValue

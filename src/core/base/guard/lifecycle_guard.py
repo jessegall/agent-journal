@@ -1,4 +1,3 @@
-from enum import StrEnum
 
 from core.base.change.change import Change
 from core.base.guard.guard import Guard
@@ -40,5 +39,5 @@ class LifecycleGuard(Guard):
     def require(self, allowed: bool, row: Model, lifecycle: type[Lifecycle], reason: str) -> None:
         if allowed:
             return
-        state: StrEnum = row.current_state()
+        state = row.current_state()
         raise Refusal(f"{row.cli_name} {row.id} is {state.value}, {reason}", lifecycle.suggestion(row.cli_name, row.id, state))

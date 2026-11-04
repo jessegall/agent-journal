@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.model.model import Model
+from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -13,13 +14,14 @@ def check_title(cli_name: str, title: str) -> None:
     if not 1 <= len(title) <= TASK_TITLE_LIMIT_CHARACTERS:
         raise Refusal(f"a {cli_name}'s title is 1 to {TASK_TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
 @dataclass(frozen=True, kw_only=True)
-class Task(Model):
+class Task(Model, StateHolder):
     """One unit of work; its state moves only as TaskLifecycle allows."""
 
     model_name = "task"
     cli_name = "task"
     search_fields = ["title", "brief", "outcome"]
     lifecycle = TaskLifecycle
+    added_state_moves = tuple([TaskLifecycle.cancel])
 
     environment_id: int
     holder_id: int | None = None
