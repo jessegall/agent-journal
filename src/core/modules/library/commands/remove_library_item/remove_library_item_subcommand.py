@@ -5,7 +5,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.library.commands.remove_library_item.remove_library_item import RemoveLibraryItem
 from core.modules.library.support.item_arguments import ItemArguments
-from core.modules.library.support.library_item import LibraryItem
+from core.base.library.library_item import LibraryItem
 
 
 class RemoveLibraryItemSubcommand(ItemArguments, Subcommand[RemoveLibraryItem, LibraryItem]):

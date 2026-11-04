@@ -1,8 +1,6 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.modules.library.support.library_unreachable import LibraryUnreachable
-
 
 @dataclass(frozen=True)
 class LibraryItem:
@@ -17,16 +15,6 @@ class LibraryItem:
     author: str
     changed_at: str
     removed_at: str = ""
-
-    @classmethod
-    def parsed(cls, body: object) -> "LibraryItem":
-        if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
-        try:
-            return cls(str(body["kind"]), int(body["id"]), int(body["version"]), dict(body["fields"]), str(body.get("creator", "")), str(body.get("updated_by", "")),
-                       str(body.get("updated_at", "")), str(body.get("removed_at", "")))
-        except (KeyError, TypeError, ValueError) as error:
-            raise LibraryUnreachable.unreadable() from error
 
     @property
     def is_removed(self) -> bool:

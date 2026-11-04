@@ -13,7 +13,8 @@ from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_errors import LibraryFailures
-from core.modules.library.support.library_item import LibraryItem
+from core.base.library.library_item import LibraryItem
+from core.modules.library.support.library_item_body import LibraryItemBody
 from core.modules.library.support.library_page import LibraryPage
 from core.modules.library.support.page_request import PageRequest
 from core.modules.library.support.version_request import VersionRequest
@@ -55,39 +56,40 @@ class LibraryClient:
             return kept
 
     def item(self, share: str, item_id: int) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "GET", f"/items/{share}/{item_id}")
+        return self.send(LibraryItemBody.parsed, "GET", f"/items/{share}/{item_id}")
 
-    def page(self, request: PageRequest) -> LibraryPage:
+    def page(self, request: PageRequest, limit_seconds: float = LIMIT_SECONDS) -> LibraryPage:
         query = urllib.parse.urlencode({"kind": request.share, "search": request.search, "page": request.number})
-        return self.send(LibraryPage.parsed, "GET", f"/items?{query}")
+        return self.send(LibraryPage.parsed, "GET", f"/items?{query}", limit_seconds=limit_seconds)
 
     def versions(self, share: str, item_id: int) -> LibraryVersions:
         return self.send(LibraryVersions.parsed, "GET", f"/items/{share}/{item_id}/versions")
 
     def new_item(self, share: str, fields: Mapping[str, object]) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "POST", f"/items/{share}", {"fields": fields})
+        return self.send(LibraryItemBody.parsed, "POST", f"/items/{share}", {"fields": fields})
 
     def old_version(self, request: VersionRequest) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "GET", f"/items/{request.share}/{request.item_id}/versions/{request.version}")
+        return self.send(LibraryItemBody.parsed, "GET", f"/items/{request.share}/{request.item_id}/versions/{request.version}")
 
     def removal(self, share: str, item_id: int) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "DELETE", f"/items/{share}/{item_id}")
+        return self.send(LibraryItemBody.parsed, "DELETE", f"/items/{share}/{item_id}")
 
     def restoration(self, share: str, item_id: int) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "POST", f"/items/{share}/{item_id}/restore")
+        return self.send(LibraryItemBody.parsed, "POST", f"/items/{share}/{item_id}/restore")
 
     def update(self, share: str, item_id: int, base_version: int, fields: Mapping[str, object]) -> LibraryItem:
-        return self.send(LibraryItem.parsed, "PUT", f"/items/{share}/{item_id}", {"fields": fields}, {"If-Match": f'"{base_version}"'})
+        return self.send(LibraryItemBody.parsed, "PUT", f"/items/{share}/{item_id}", {"fields": fields}, {"If-Match": f'"{base_version}"'})
 
-    def send(self, parse: Callable[[object], T], method: str, path: str, body: Mapping[str, object] | None = None, headers: Mapping[str, str] = EMPTY_HEADERS) -> T:
-        return self.call(self.connected_address(), self.token(), parse, method, path, body, headers, opener=self.certificate.opener())
+    def send(self, parse: Callable[[object], T], method: str, path: str, body: Mapping[str, object] | None = None, headers: Mapping[str, str] = EMPTY_HEADERS,
+             limit_seconds: float = LIMIT_SECONDS) -> T:
+        return self.call(self.connected_address(), self.token(), parse, method, path, body, headers, limit_seconds, opener=self.certificate.opener())
 
     def call(self, address: str, token: str, parse: Callable[[object], T], method: str, path: str, body: Mapping[str, object] | None = None,
-             headers: Mapping[str, str] = EMPTY_HEADERS, *, opener: urllib.request.OpenerDirector) -> T:
+             headers: Mapping[str, str] = EMPTY_HEADERS, limit_seconds: float = LIMIT_SECONDS, *, opener: urllib.request.OpenerDirector) -> T:
         request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), method=method,
                                          headers={"Authorization": f"Bearer {token}", "Journal-Protocol": PROTOCOL, "Content-Type": "application/json", **headers})
         try:
-            with opener.open(request, timeout=LIMIT_SECONDS) as answer:
+            with opener.open(request, timeout=limit_seconds) as answer:
                 return parse(json.load(answer))
         except urllib.error.HTTPError as failure:
             if failure.code == UNCHANGED_CODE:

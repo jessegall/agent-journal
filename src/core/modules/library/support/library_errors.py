@@ -2,7 +2,8 @@ import json
 
 from core.modules.library.support.library_denied import LibraryDenied
 from core.modules.library.support.library_failure import LibraryFailure
-from core.modules.library.support.library_item import LibraryItem
+from core.base.library.library_item import LibraryItem
+from core.modules.library.support.library_item_body import LibraryItemBody
 from core.modules.library.support.library_item_removed import LibraryItemRemoved
 from core.modules.library.support.library_rejected import LibraryRejected
 from core.modules.library.support.library_stale import LibraryStale
@@ -36,6 +37,6 @@ class LibraryFailures:
     @staticmethod
     def stale(reason: str, suggestion: str, current: object) -> LibraryFailure:
         try:
-            return LibraryStale(reason, suggestion, LibraryItem.parsed(current))
+            return LibraryStale(reason, suggestion, LibraryItemBody.parsed(current))
         except LibraryUnreachable as unreadable:
             return unreadable

@@ -1,5 +1,5 @@
 from core.modules.library.support.library_failure import LibraryFailure
-from core.modules.library.support.library_item import LibraryItem
+from core.base.library.library_item import LibraryItem
 
 
 class LibraryStale(LibraryFailure):

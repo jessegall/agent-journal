@@ -4,6 +4,8 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_read_search import WindowReadSearch
+from core.base.library.library_lookup import LibraryLookup
+from core.modules.library.support.server_library_lookup import ServerLibraryLookup
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
@@ -46,6 +48,7 @@ class LibraryModule(Module):
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
+    bindings = {LibraryLookup: ServerLibraryLookup}
     handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, SendLibraryItemHandler, RemoveLibraryItemHandler, RestoreLibraryItemHandler]
     subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand,
                    SendLibraryItemSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]

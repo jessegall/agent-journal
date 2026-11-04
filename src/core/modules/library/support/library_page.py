@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 
+from core.base.library.library_hit import LibraryHit
 from core.modules.library.support.library_unreachable import LibraryUnreachable
 from core.modules.library.support.item_summary import ItemSummary
 
@@ -26,6 +27,9 @@ class LibraryPage:
     @property
     def is_last(self) -> bool:
         return self.number * self.size >= self.total
+
+    def hits(self) -> tuple[LibraryHit, ...]:
+        return tuple(item.hit() for item in self.items)
 
     def with_copies(self, copy_ids: Mapping[int, int]) -> "LibraryPage":
         return replace(self, items=tuple(item.with_copy(copy_ids.get(item.item_id)) for item in self.items))

@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
+from core.base.library.library_hit import LibraryHit
 from core.modules.library.support.library_unreachable import LibraryUnreachable
 
 
@@ -29,6 +30,9 @@ class ItemSummary:
                        str(body.get("creator", "")), str(body.get("updated_by", "")), str(body.get("updated_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachable.unreadable() from error
+
+    def hit(self) -> LibraryHit:
+        return LibraryHit(self.share, self.item_id, self.title, self.excerpt)
 
     def with_copy(self, copy_id: int | None) -> "ItemSummary":
         return replace(self, copy_id=copy_id)

@@ -3,7 +3,7 @@ from typing import TypeVar
 
 from core.base.refusal import Refusal
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_item import LibraryItem
+from core.base.library.library_item import LibraryItem
 from core.modules.library.support.library_unreachable import LibraryUnreachable
 from core.modules.library.support.version_request import VersionRequest
 
