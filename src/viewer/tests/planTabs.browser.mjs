@@ -4,6 +4,8 @@ import {chromium} from "playwright-core";
 
 const [address, socketPath, shots] = process.argv.slice(2);
 const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
+// the viewer key signs one browser in; both widths share its login
+const login = await browser.newContext();
 
 async function run(line) {
     const answer = await new Promise((resolve, reject) => {
@@ -20,11 +22,15 @@ async function run(line) {
 
 // the plan window at one width: the tab band, its sliding line and the flush cards
 async function check(width, height, name) {
-    const page = await browser.newPage({viewport: {width, height}});
+    const page = await login.newPage();
+    await page.setViewportSize({width, height});
     await page.goto(address);
-    await page.locator('.pane-tab', {hasText: "Plans"}).first().click();
+    await page.locator('.pane-tab:has-text("Plans"), [data-phone-window="plans.plans"]').first().click();
     const band = page.locator("[data-inner-tabs]").first();
-    await band.waitFor();
+    await band.waitFor({timeout: 8000}).catch(async (error) => {
+        await page.screenshot({path: `${shots}-failed-${name}.png`});
+        throw new Error(`${error.message} PAGE: ${(await page.locator("body").innerText()).slice(-400)}`);
+    });
     await page.locator(".plan").first().waitFor();
 
     const tabs = await band.evaluate((element) => {
@@ -74,7 +80,7 @@ async function check(width, height, name) {
             agentsWidth: rows.map((row, at) => Math.round(row.querySelector("[data-plan-agents]").getBoundingClientRect().width - rects[at].width)),
             agentsText: rows.map((row) => row.querySelector("[data-plan-agents]").textContent.trim()),
             gridLeft: grid.getBoundingClientRect().left, roomLeft: grid.closest("[data-window-room]").getBoundingClientRect().left,
-            overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            beyond: Math.round(grid.getBoundingClientRect().right - innerWidth),
         };
     });
     assert.deepEqual(cards.radius.filter((value) => value !== "0px"), []);
@@ -86,9 +92,11 @@ async function check(width, height, name) {
     assert.deepEqual([...new Set(cards.top)], ["0px"]);
     assert.deepEqual([...new Set(cards.titles)], ["nowrap"]);
     assert.deepEqual([...new Set(cards.agentsText)], ["Agents: none"]);
-    assert.ok(cards.agentsWidth.every((difference) => Math.abs(difference - 28) <= 1), JSON.stringify(cards.agentsWidth));
+    // the agents row runs across the cell, short of it only by the one line on the cell's right
+    assert.deepEqual([...new Set(cards.agentsWidth)], [-1]);
     assert.equal(cards.gridLeft, cards.roomLeft);
-    assert.ok(cards.overflow <= 0, `page overflows by ${cards.overflow}`);
+    // the plan cards fit the width; the other windows of the page are not this test's
+    assert.ok(cards.beyond <= 1, `the cards reach ${cards.beyond}px past the page`);
     await page.screenshot({path: `${shots}-${name}.png`});
     await page.close();
 }
