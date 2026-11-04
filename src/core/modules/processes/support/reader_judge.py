@@ -50,7 +50,8 @@ class ReaderJudge:
         return self.tested_samples(reader, self.samples(reader))
 
     def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderJudgement:
-        samples = tuple(islice(parts, SAMPLE_OUTPUTS))
+        samples = tuple(part for part in islice(parts, SAMPLE_OUTPUTS)
+                        if part.exit_code in (None, 0) or self.run.summary(reader, self.output_text(part.process_id, part.position)))
         missed = tuple(f"on output {part.process_id}: {', '.join(misses)}" for part in samples
                        if (misses := self.misses(reader, part.category, self.output_text(part.process_id, part.position))))
         output_id = samples[0].process_id if samples and not missed else None
