@@ -29,7 +29,7 @@ PROGRESS = 'reader add steps --commands "make*" --lines "FAILED" --progress "\\[
 
 def test_a_run_shows_a_process_mark_keyed_by_its_number(started_test_mark):
     story = started_test_mark
-    story.expect_text(MARKS, "processes.command", "process:1", "make test")
+    story.expect_text(MARKS, "processes.command", "process:1", "Running tests")
 
 
 def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
@@ -132,13 +132,13 @@ def test_a_plain_command_moved_to_the_background_makes_no_mark(background_plain_
 
 def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(command_chain_mark):
     story, parts = command_chain_mark
-    story.expect_text(MARKS, "process:1", "Running make test")
+    story.expect_text(MARKS, "process:1", "Running tests")
     story.expect_absent(MARKS, "grep")
 
 
-def test_a_mark_names_the_command_and_not_where_the_project_lives(project_path_mark):
+def test_a_test_mark_omits_the_command_and_project_path(project_path_mark):
     story = project_path_mark
-    story.expect_text(MARKS, "make test cart.py")
+    story.expect_absent(MARKS, "cart.py")
 
 
 def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_the_same(new_story):
@@ -231,6 +231,31 @@ def test_an_ended_run_says_its_result_on_its_mark(new_story):
     end_run(story, process, "F..\n=== 1 failed, 2 passed in 1.00s ===\n", exit_code=1)
     story.run_listeners()
     story.expect_text("chat-mark list --json", "1 failed, 2 passed")
+
+
+def test_test_marks_name_the_tests_and_count(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    python = start_process(story, "pytest tests/cart.py", category=CommandCategory.TEST_RUN)
+    vitest = start_process(story, "npx vitest run cart", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    story.expect_text(MARKS, "Running Python tests", "Running Vitest tests")
+    story.expect_text(f"process card {python.id}", "Running Python tests")
+    end_run(story, python, "collected 12 items\n12 passed\n")
+    end_run(story, vitest, "cart.test.js > works\nTests 1 passed\n")
+    story.run_listeners()
+    story.expect_text(MARKS, "Ran 12 Python tests", "Ran 1 Vitest tests")
+    story.expect_text(f"process card {vitest.id}", "Ran 1 Vitest tests")
+
+
+def test_go_tests_use_the_reader_title_and_count_even_when_a_pipe_returns_zero(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_success('reader add go-tests --commands "go*test*" --title "Go tests" --lines "FAIL|passed" --summary "(FAIL)" --failed "^FAIL" --count "total ([0-9]+)" --progress "([0-9]+)%"', actor=story.agent)
+    process = start_process(story, "go -C tools test ./...", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    story.expect_text(MARKS, "Running Go tests")
+    end_run(story, process, "total 12\n100%\nFAIL\n", exit_code=0)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --outcome failed", "Ran 12 Go tests")
 
 
 @pytest.fixture

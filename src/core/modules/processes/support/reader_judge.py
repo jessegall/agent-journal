@@ -31,7 +31,16 @@ class ReaderJudge:
 
     def judged(self, reader: Reader, category: CommandCategory) -> ReaderJudgement:
         samples = tuple(part for part in self.samples(reader) if part.category is category)
-        return replace(self.tested_samples(reader, samples), missing=self.fields_missing(reader, category))
+        missing = self.fields_missing(reader, category)
+        if category is CommandCategory.TEST_RUN and any(self.has_argument(reader.title, part.text) for part in samples):
+            missing = (*missing, "--title must name the tests without command arguments, such as Go tests")
+        return replace(self.tested_samples(reader, samples), missing=missing)
+
+    @staticmethod
+    def has_argument(title: str, command: str) -> bool:
+        title_terms = set(re.findall(r"[\w.-]+", title.lower()))
+        arguments = re.findall(r"[\w./-]+", command.lower())[1:]
+        return any(argument in title_terms for argument in arguments if argument not in {"test", "tests", "run", "go"} and not argument.startswith("-"))
 
     def tested(self, reader: Reader) -> ReaderJudgement:
         return self.tested_samples(reader, self.samples(reader))
@@ -43,13 +52,22 @@ class ReaderJudge:
         output_id = samples[0].process_id if samples and not missed else None
         return ReaderJudgement(missed=missed, output_id=output_id)
 
-    def fields_missing(self, reader: Reader, category: CommandCategory) -> tuple[str, ...]:
+    @staticmethod
+    def fields_missing(reader: Reader, category: CommandCategory) -> tuple[str, ...]:
         wanted = [("--title", bool(reader.title)), ("--lines or --script", bool(reader.lines_pattern or reader.script)),
                   ("--summary", bool(reader.summary_pattern))]
         if category is CommandCategory.TEST_RUN:
             wanted.extend([("--count", bool(reader.count_pattern)),
-                           ("--progress or --step with --count", bool(reader.progress_pattern) or reader.has_counted_steps())])
+                           ("--progress or --step with --count", bool(reader.progress_pattern) or reader.has_counted_steps()),
+                           ("--title must name the tests, such as Go tests, without paths, flags or command arguments", ReaderJudge.test_title(reader))])
         return tuple(flag for flag, value in wanted if not value)
+
+    @staticmethod
+    def test_title(reader: Reader) -> bool:
+        if re.search(r"(?:^|\s)-\S|[/\\]", reader.title):
+            return False
+        title = reader.title.strip().lower()
+        return title.endswith("tests") and not title.startswith(("running ", "ran "))
 
     def misses(self, reader: Reader, category: CommandCategory, text: str) -> tuple[str, ...]:
         return self.misses_with_lines(reader, category, text, self.run.lines(reader, text, "finished"))

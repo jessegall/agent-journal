@@ -163,3 +163,11 @@ def test_a_quiet_run_and_an_empty_output_do_not_make_the_stock_test_reader_poor(
     reader = story.container.get(ReaderQuery).filter(name="pytest").page(1, 1).rows[0]
     assert judge.misses(reader, CommandCategory.TEST_RUN, "") == ()
     assert judge.misses(reader, CommandCategory.TEST_RUN, "...  [100%]\n3 passed, 11 deselected in 1.15s\n") == ()
+
+
+def test_a_test_reader_title_cannot_contain_a_path_or_flag(new_story):
+    story = new_story(fixture=BuilderStarted)
+    reader_id = story.new_row_id('reader add titled --commands "go*test*" --title "Go tests ./..." --lines "FAIL" --summary "FAIL" --count "total ([0-9]+)" --progress "([0-9]+)%"', actor=story.agent)
+    reader = story.container.get(ReaderQuery).find(reader_id)
+    missing = story.container.get(ReaderJudge).fields_missing(reader, CommandCategory.TEST_RUN)
+    assert any("without paths, flags or command arguments" in reason for reason in missing)
