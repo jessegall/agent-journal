@@ -35,8 +35,10 @@ class SuiteChoice:
         suite = self.suite(environment_id)
         if suite is None:
             return None
-        value = self.settings.text(f"{DRIVER_SETTINGS}{role}", environment_id) or suite.defaults.get(role, "")
-        return self.registry.driver(value)
+        configured_driver = self.registry.driver(self.settings.text(f"{DRIVER_SETTINGS}{role}", environment_id))
+        if configured_driver is not None:
+            return configured_driver
+        return self.registry.driver(suite.defaults.get(role, ""))
 
     def suite_names(self) -> str:
         return " or ".join(sorted(suite.name for suite in self.registry.suites))
