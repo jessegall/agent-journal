@@ -36,6 +36,7 @@ from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.template.template_declaration import TemplateDeclaration
+from core.base.viewer.button_declaration import ButtonDeclaration
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -74,6 +75,8 @@ class Module:
     tick_handlers: ClassVar[list[TickHandler]] = []
     docks: ClassVar[list[DockDeclaration]] = []
     templates: ClassVar[list[TemplateDeclaration]] = []
+    buttons: ClassVar[list[ButtonDeclaration]] = []
+    button_slots: ClassVar[list[str]] = []
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []

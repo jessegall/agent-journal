@@ -34,6 +34,7 @@ from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
@@ -139,6 +140,8 @@ class ModuleSync:
             nudges=self.nudges(modules),
             docks=self.docks(modules),
             templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
+            buttons=self.buttons(modules),
+            button_slots=self.button_slots(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
@@ -184,6 +187,16 @@ class ModuleSync:
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
                                           SkillDigest.digest(path.read_text()), str(path), module in shipped))
         return tuple(entries)
+
+    def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.buttons)
+
+    def button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
+        dock_slots = (f"dock.{dock.type.value}" for module in modules for dock in module.docks)
+        row_slots = (f"row.{declaration.model.cli_name}" for module in modules for declaration in module.models)
+        declared_slots = (slot for module in modules for slot in module.button_slots)
+        return tuple(sorted({*dock_slots, *row_slots, *declared_slots}))
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

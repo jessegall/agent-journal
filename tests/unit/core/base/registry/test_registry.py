@@ -19,6 +19,8 @@ from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
+from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from core.base.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
@@ -181,3 +183,26 @@ def test_module_suites_survive_registry_storage(database):
 
 def test_a_registry_saved_before_module_suites_has_no_memberships(database):
     assert Registry.read(database).module_suites == {}
+
+
+def test_a_button_with_fields_menu_and_labels_survives_registry_storage(database):
+    size = ChoiceField("size", "Size", (Choice("short", "Short"), Choice("full", "Full")), "short")
+    template = TemplateField("template", "Template", "item", "critique", "General critique")
+    message = TextField("message", "Message")
+    menu = ButtonMenuItem("Review with a message", "item pause {row_id} --message={message}",
+                          fields=tuple([message]), description="Send a message with the review")
+    declaration = ButtonDeclaration("notes.review", ("row.item", "notes.toolbar"), "Review", "item pause {row_id}",
+                                    icon="check", primary=True, fields=(size, template, message),
+                                    condition=ButtonCondition("state", tuple(["open"])), menu=tuple([menu]),
+                                    menu_label="More review actions", tip="Review this item")
+    entry = ButtonEntry("notes", declaration, True)
+    registry = replace(Registry.read(database), buttons=tuple([entry]), button_slots=("row.item", "notes.toolbar"))
+    restored = Registry.parsed("buttons", registry.entries_text())
+    assert restored.buttons == tuple([entry])
+    assert restored.button_slots == registry.button_slots
+
+
+def test_a_registry_saved_before_declared_buttons_has_none(database):
+    registry = Registry.read(database)
+    assert registry.buttons == ()
+    assert registry.button_slots == ()

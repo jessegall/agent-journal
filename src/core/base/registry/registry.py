@@ -21,6 +21,7 @@ from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.template_entry import TemplateEntry
+from core.base.registry.button_entry import ButtonEntry
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.setting_entry import SettingEntry
@@ -67,6 +68,8 @@ class Registry:
     nudges: tuple[NudgeEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
     templates: tuple[TemplateEntry, ...] = ()
+    buttons: tuple[ButtonEntry, ...] = ()
+    button_slots: tuple[str, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
@@ -122,6 +125,8 @@ class Registry:
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
+            buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
+            button_slots=tuple(entries.get("button_slots", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
@@ -164,6 +169,8 @@ class Registry:
             "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],
             "templates": [asdict(template) for template in self.templates],
+            "buttons": [asdict(button) for button in self.buttons],
+            "button_slots": list(self.button_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
             "shared_rows": {model: path.text for model, path in self.shared_rows.items()},
