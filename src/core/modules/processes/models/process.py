@@ -35,7 +35,7 @@ class Process(Model):
     moved_at: Timestamp | None = None
     ended_at: Timestamp | None = None
     is_full_test_run: bool = False
-    is_queued: bool = False
+    queued_at: Timestamp | None = None
     is_queue_run: bool = False
     started_at: Timestamp | None = None
     slot_assigned: bool = False

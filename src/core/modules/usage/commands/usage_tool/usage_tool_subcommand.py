@@ -67,7 +67,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         runs = self.processes.agent(call.agent_id).newest().limited(1)
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
-        if runs[0].is_queued:
+        if runs[0].queued_at is not None:
             return QUEUE_LINE
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=runs[0].id).ordered("position").all_rows())
         return next((part.text for state in (PartState.RUNNING, PartState.WAITING) for part in parts if part.state is state), parts[-1].text if parts else "")

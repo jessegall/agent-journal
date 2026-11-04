@@ -18,6 +18,8 @@ class ProcessSetting(Enum):
     READERS_FORCED = SettingValue("readers-forced", "Require output readers", "Pause agents whose commands have no usable output reader.", SettingType.FLAG, default=True)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "Seconds a command runs in the foreground while your message is waiting.", SettingType.NUMBER, default=10)
+    QUEUE_WAIT_SECONDS = SettingValue("queue-wait-seconds", "Seconds to wait for a run slot",
+                                     "Seconds a queued command waits before continuing in the background.", SettingType.NUMBER, default=5)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Run inactivity limit (seconds)", "Seconds without activity before a run is marked as lost.",
                                   SettingType.NUMBER, default=90)
     RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",

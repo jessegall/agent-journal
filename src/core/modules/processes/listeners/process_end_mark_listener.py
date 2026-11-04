@@ -53,7 +53,7 @@ class ProcessEndMarkListener(CommitListener):
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
         reader = self.queries.query(Reader).find(output.reader_id) if output and output.reader_id else None
-        variant = ProcessMarkVariant.QUEUED if process.is_queued else ProcessMarkVariant(process.state.value)
+        variant = ProcessMarkVariant.QUEUED if process.queued_at is not None else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
         text = self.text(process, output.title if output else "", ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS])
         if part.category is CommandCategory.TEST_RUN:
@@ -69,7 +69,7 @@ class ProcessEndMarkListener(CommitListener):
 
     @staticmethod
     def text(process: Process, title: str, line: str) -> str:
-        if process.is_queued:
+        if process.queued_at is not None:
             return f"Queued: {title or line}"
         return title or f"{PHRASES[process.state]} {line}"
 

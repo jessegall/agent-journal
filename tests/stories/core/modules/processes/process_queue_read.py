@@ -41,7 +41,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
                       [row["id"] for row in page["running"]] == [first.id],
                       [row["id"] for row in page["waiting"]] == [second.id],
                       [row["id"] for row in page["rows"]] == [first.id, second.id],
-                      [row["is_queued"] for row in page["rows"]] == [False, True],
+                      [row["queued_at"] is not None for row in page["rows"]] == [False, True],
                       [row["category"] for row in page["rows"]] == [CommandCategory.BUILD.value, CommandCategory.CHECK.value],
                       all(row["owner_agent_id"] == story.agent.id and row["output_id"] == row["id"] for row in page["rows"]),
                       page["rows"][1]["line"] == "python check_cart.py")
@@ -52,11 +52,11 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     third = start_process(story, "make site", category=CommandCategory.BUILD, is_queued=True)
     page = queue_page(story)
     story.expect_rows(page["parallel_limit"] == 2,
-                      [row["is_queued"] for row in page["rows"]] == [False, False, True])
+                      [row["queued_at"] is not None for row in page["rows"]] == [False, False, True])
     end_run(story, first, "built\n")
     page = queue_page(story)
     story.expect_rows([row["id"] for row in page["rows"]] == [second.id, third.id],
-                      all(not row["is_queued"] for row in page["rows"]))
+                      all(row["queued_at"] is None for row in page["rows"]))
     limited = queue_page(story, "--limit 1 --page 2")
     story.expect_rows(limited["total"] == 2, limited["page"] == 2, limited["size"] == 1,
                       [row["id"] for row in limited["rows"]] == [third.id])

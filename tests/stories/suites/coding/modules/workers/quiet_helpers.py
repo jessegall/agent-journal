@@ -42,6 +42,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     main = story.agent
     start_process(story, "make first", is_queued=True)
     start_process(story, "make second", is_queued=True)
+    story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=main)
     story.agent = worker
     process = start_process(story, "make third", is_queued=True)
     story.advance(minutes(DEFAULT_MINUTES))

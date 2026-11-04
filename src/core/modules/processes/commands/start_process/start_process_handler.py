@@ -36,8 +36,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(environment_id=agent.environment_id, agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
-                                               is_queued=command.is_queued, is_queue_run=command.is_queued,
-                                               started_at=None if command.is_queued else context.timestamp,
+                                               queued_at=context.timestamp, is_queue_run=command.is_queued or (command.limit_seconds > 0 and not command.category.accesses_files),
                                                owner_agent_id=command.owner_agent_id, task_id=command.task_id), context)
         parts: list[ProcessPart] = []
         for position, spec in enumerate(command.parts, 1):
@@ -58,7 +57,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.grant(process.environment_id, context)
-        return process
+        return self.queries.query(Process).find(process.id)
 
     def all_readers(self) -> tuple[Reader, ...]:
         return self.kept.read("readers", lambda: tuple(self.readers.all_rows()))

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Flags are what the rewritten command line says: the process, the foreground limit, whether to move at once and the
@@ -31,6 +32,18 @@ type Flags struct {
 // The output settings of a run come in variables, so a runner of an older install ignores them. Each is cleared once
 // read, so a run inside this one starts with none.
 const mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
+
+const queueWaitVariable = "JOURNAL_RUN_QUEUE_WAIT"
+
+func queueWait() time.Duration {
+	value := os.Getenv(queueWaitVariable)
+	_ = os.Unsetenv(queueWaitVariable)
+	seconds, err := strconv.Atoi(value)
+	if err != nil || seconds < 0 {
+		return 5 * time.Second
+	}
+	return time.Duration(seconds) * time.Second
+}
 
 // mostOutputBytes reads the most bytes one part may keep.
 func mostOutputBytes() int {

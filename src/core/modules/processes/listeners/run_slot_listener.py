@@ -6,10 +6,7 @@ from core.modules.processes.support.run_slots import RunSlots
 
 
 class RunSlotListener(SaveListener):
-    """The queue of an environment's runs: whenever one of its runs starts or ends, its queued runs get a
-    spot, oldest first, while fewer hold one than the environment's batch size, and none while the queue is
-    halted. The runner holds a queued run's line until its spot is written. The main agent's runs never
-    queue and hold no spot."""
+    """Rechecks admission when a process starts or ends."""
 
     name = "processes.run-slots"
     event = "process.*"
@@ -19,5 +16,5 @@ class RunSlotListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         run = change.new_row
-        if isinstance(run, Process):
+        if isinstance(run, Process) and change.move is not None:
             self.slots.grant(run.environment_id, change.context)

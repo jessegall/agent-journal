@@ -117,7 +117,7 @@ def test_a_run_waits_in_the_queue_while_a_kept_sample_exists(kept_reader_sample)
     story = kept_reader_sample
     process = worker_run(story)
     story.expect_rows(not story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_rows(story.container.get(Queries).query(type(process)).find(process.id).is_queued)
+    story.expect_rows(story.container.get(Queries).query(type(process)).find(process.id).queued_at is not None)
 
 
 def test_a_run_with_no_sample_runs_as_the_sample_while_its_worker_is_held(new_story):
