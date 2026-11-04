@@ -1,0 +1,16 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {"documented": true}
+        ]
+    },
+    "sin": {
+        "name": "docstring-in-method",
+        "description": "A docstring inside a method or a function.",
+        "rule": "Say it in the name, or in the class's one line; a method's body carries no prose.",
+        "skill": "plain-code-words"
+    }
+}

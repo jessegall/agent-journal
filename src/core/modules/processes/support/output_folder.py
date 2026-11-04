@@ -133,8 +133,8 @@ class OutputFolder:
             return False
         return True
 
+    # The bytes of the parts' output, in order, from the offset on; only the part files that reach past it are opened.
     def bytes_after(self, process_id: int, offset: int) -> bytes:
-        """The bytes of the parts' output, in order, from the offset on; only the part files that reach past it are opened."""
         passed, collected = 0, b""
         for path in self.output_paths(process_id):
             size = path.stat().st_size if path.exists() else 0
@@ -145,8 +145,8 @@ class OutputFolder:
             passed += size
         return collected
 
+    # The bytes of the parts' output from first up to last; only the part files that reach into them are opened.
     def byte_range(self, process_id: int, first: int, last: int) -> bytes:
-        """The bytes of the parts' output from first up to last; only the part files that reach into them are opened."""
         passed, collected = 0, b""
         for path in self.output_paths(process_id):
             size = path.stat().st_size if path.exists() else 0
@@ -157,9 +157,9 @@ class OutputFolder:
             passed += size
         return collected
 
+    # The last lines that end at a byte, or at the output's end when end is below 0, read in windows that double
+    # until they hold the lines asked for.
     def older_page(self, process_id: int, end: int, count: int) -> OutputPage:
-        """The last lines that end at a byte, or at the output's end when end is below 0, read in windows that double
-        until they hold the lines asked for."""
         total = self.total_bytes(process_id)
         last_byte = total if end < 0 else min(end, total)
         window = TAIL_BYTES
@@ -176,10 +176,10 @@ class OutputFolder:
                 return OutputPage(self.page_text(kept), first_byte + dropped, last_byte, total, self.cut_bytes(process_id))
             window *= 2
 
+    # The lines after a byte, at most a window of them, so a following view reads only what is new; a line
+    # still being written waits, unless it fills the window alone, and the last one of an ended run comes
+    # without its newline.
     def page_after(self, process_id: int, first: int, has_ended: bool) -> OutputPage:
-        """The lines after a byte, at most a window of them, so a following view reads only what is new; a line
-        still being written waits, unless it fills the window alone, and the last one of an ended run comes
-        without its newline."""
         total = self.total_bytes(process_id)
         ready = self.byte_range(process_id, first, first + PAGE_BYTES)
         is_last = has_ended and first + len(ready) >= total
@@ -192,15 +192,15 @@ class OutputFolder:
     def page_text(lines: list[bytes]) -> list[str]:
         return [ColourCodes.removed(line.decode(errors="replace")) for line in lines]
 
+    # The bytes the runner dropped from a part, or from every part with no position.
     def cut_bytes(self, process_id: int, position: int = 0) -> int:
-        """The bytes the runner dropped from a part, or from every part with no position."""
         positions = [position] if position else range(1, len(self.part_texts(process_id)) + 1)
         files = [self.home.folder / FOLDER_NAME / str(process_id) / f"{number}.cut-bytes" for number in positions]
         return sum(int(path.read_text()) for path in files if path.exists())
 
+    # Where in the file a reader goes on. Its offset counts every byte ever written, so a cut moves the place
+    # by the bytes dropped; a place that was dropped or lies past the file starts again at the top.
     def reader_offset(self, process_id: int, position: int, offset: int) -> int:
-        """Where in the file a reader goes on. Its offset counts every byte ever written, so a cut moves the place
-        by the bytes dropped; a place that was dropped or lies past the file starts again at the top."""
         paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
         size = sum(path.stat().st_size for path in paths if path.exists())
         place = offset - self.cut_bytes(process_id, position)
@@ -222,9 +222,9 @@ class OutputFolder:
     def last_text(self, process_id: int) -> str:
         return "\n".join(self.last_lines(process_id, COUNT_LINES))
 
+    # The last lines, read from the end in windows that double until they hold one line more than asked,
+    # which drops a line cut by the window's start.
     def last_lines(self, process_id: int, count: int) -> list[str]:
-        """The last lines, read from the end in windows that double until they hold one line more than asked,
-        which drops a line cut by the window's start."""
         total = self.total_bytes(process_id)
         window = TAIL_BYTES
         while True:
@@ -233,8 +233,8 @@ class OutputFolder:
                 return lines[-count:]
             window *= 2
 
+    # The lines numbered first to last, counted from 1; the parts are read in chunks up to the last line wanted.
     def numbered_lines(self, process_id: int, first: int, last: int) -> list[tuple[int, str]]:
-        """The lines numbered first to last, counted from 1; the parts are read in chunks up to the last line wanted."""
         selected: list[tuple[int, str]] = []
         for number, line in enumerate(self.streamed_lines(process_id), 1):
             if number >= first:
@@ -257,9 +257,9 @@ class OutputFolder:
             yield ColourCodes.removed(pending)
 
     @staticmethod
+    # The lines of the text that end in a line break, and what follows the last one; a last piece that has no
+    # break, or ends in a carriage return that a line feed may follow, waits for more text.
     def split_complete(text: str) -> tuple[list[str], str]:
-        """The lines of the text that end in a line break, and what follows the last one; a last piece that has no
-        break, or ends in a carriage return that a line feed may follow, waits for more text."""
         segments = text.splitlines(keepends=True)
         incomplete = segments.pop() if segments and (segments[-1].splitlines()[0] == segments[-1] or segments[-1].endswith("\r")) else ""
         return [segment.splitlines()[0] for segment in segments], incomplete
@@ -277,9 +277,9 @@ class OutputFolder:
     def all_output(self, process_id: int) -> str:
         return ColourCodes.removed("".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)))
 
+    # The bytes and the lines of all the parts, counted in chunks; a part without a last line feed still has
+    # its last line.
     def sizes(self, process_id: int) -> tuple[int, int]:
-        """The bytes and the lines of all the parts, counted in chunks; a part without a last line feed still has
-        its last line."""
         size = lines = 0
         for path in self.output_paths(process_id):
             if not path.exists():

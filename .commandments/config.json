@@ -212,6 +212,8 @@
         "CoreNamesNoSuiteViewDetector",
         "StoryAssertDetector",
         "StoryStepDuplicateDetector",
+        "naming_DocstringInMethodDetector",
+        "naming_FieldDocstringDetector",
         "architecture_corpus_CorpusOnlyInItsTestsDetector"
     ],
     "parallel": 2,

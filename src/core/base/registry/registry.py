@@ -246,8 +246,8 @@ class Registry:
         required = {name for suite in self.suites for name in suite.requires}
         return [suite for suite in self.suites if suite.name not in required]
 
+    # The suite's name and the names of every suite it requires, those they require too, nearest first.
     def lineage(self, suite: SuiteEntry) -> tuple[str, ...]:
-        """The suite's name and the names of every suite it requires, those they require too, nearest first."""
         names = [suite.name]
         for required in suite.requires:
             parent = self.suite(required)

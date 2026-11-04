@@ -90,9 +90,9 @@ class ServerFiles:
             self.socket.unlink(missing_ok=True)
             self.pid_file.unlink(missing_ok=True)
 
+    # Moves a log past its limit aside as server.log.1, and points the output the starter opened on the
+    # old file at the new one; only the server that holds the lock calls it.
     def rotate_log(self, limit_bytes: int = SERVER_LOG_LIMIT_BYTES) -> None:
-        """Moves a log past its limit aside as server.log.1, and points the output the starter opened on the
-        old file at the new one; only the server that holds the lock calls it."""
         inode = self.log.stat().st_ino if self.log.exists() else None
         if not RotatedFile(self.log, limit_bytes).rotate():
             return

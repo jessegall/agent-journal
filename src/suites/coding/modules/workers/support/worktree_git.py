@@ -34,9 +34,9 @@ class WorktreeGit:
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
+    # Commits the worktree on the latest of its base branch and returns the files that clash, which keep
+    # their conflict markers. A merge the worker settled is finished by the commit.
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
-        """Commits the worktree on the latest of its base branch and returns the files that clash, which keep
-        their conflict markers. A merge the worker settled is finished by the commit."""
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree):
             self.commit(worktree, message, trailer)
@@ -109,11 +109,11 @@ class WorktreeGit:
             raise Refusal(f"the web build produced no files in {', '.join(missing)}", "fix the web build before merging")
         self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.agent_id}")
 
+    # Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
+    # stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were. A
+    # stash that clashes leaves conflict markers; one that applies not at all stays in the stash list and refuses
+    # the merge.
     def rebase(self, worktree: Worktree) -> bool:
-        """Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
-        stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were. A
-        stash that clashes leaves conflict markers; one that applies not at all stays in the stash list and refuses
-        the merge."""
         stash = self.stash(worktree)
         rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
         if not rebased:

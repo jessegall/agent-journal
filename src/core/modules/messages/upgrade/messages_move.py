@@ -52,8 +52,8 @@ class MessagesMove(VersionFourMove):
         self.move_reactions(source, rows, map, creators)
         return report
 
+    # A version 4 reaction is its own row, tied to its message by a link.
     def move_reactions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, creators: CreatorResolver) -> None:
-        """A version 4 reaction is its own row, tied to its message by a link."""
         reactions = {row["id"]: row for row in source.rows(REACTIONS)}
         faces: dict[int, list[dict[str, object]]] = {}
         for link in source.rows(LINKS):

@@ -54,9 +54,9 @@ class TrackedRequests(ThreadingMixIn):
         with self.thread_lock:
             self.idle_connections.pop(threading.current_thread(), None)
 
+    # Waits for the requests that run, up to the limit; a connection kept open with no request on it is closed
+    # from this side at once, as it would otherwise hold the stop until its client let go.
     def drain(self, limit_seconds: float) -> None:
-        """Waits for the requests that run, up to the limit; a connection kept open with no request on it is closed
-        from this side at once, as it would otherwise hold the stop until its client let go."""
         deadline = time.monotonic() + limit_seconds
         while time.monotonic() < deadline:
             with self.thread_lock:

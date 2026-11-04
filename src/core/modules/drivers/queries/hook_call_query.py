@@ -52,8 +52,8 @@ class HookCallQuery(Query[HookCall]):
     def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
 
+    # How many tools the agent used after each start, all counted in one query over the newest start's range.
     def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
-        """How many tools the agent used after each start, all counted in one query over the newest start's range."""
         parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
         row = self.database.rows(Statement(tool_use_counts_select(len(starts)), parameters))[0]
         return [int(count) for count in row]

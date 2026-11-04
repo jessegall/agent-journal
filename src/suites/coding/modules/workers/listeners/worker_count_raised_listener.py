@@ -39,8 +39,8 @@ class WorkerCountRaisedListener(SaveListener):
         for agent in self.main_agents(setting):
             self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, change.context, limit=limit, workers=len(self.worktrees.environment_worktrees(agent.environment_id)), count=self.undelegated(agent.environment_id))
 
+    # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Model | None, setting: Setting) -> int:
-        """The limit the row replaces: its own old value, else what an environment's row falls back to, the project's."""
         if isinstance(old, Setting):
             return int(json.loads(old.value))
         if setting.environment_id is None:

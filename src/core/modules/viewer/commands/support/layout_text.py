@@ -12,8 +12,8 @@ def is_layout_text(text: str) -> bool:
         return False
 
 
+# The tree the viewer arranges and keeps: tabs of windows with whatever options the pane holds, or a split of two.
 def is_arranged_layout(data: object) -> bool:
-    """The tree the viewer arranges and keeps: tabs of windows with whatever options the pane holds, or a split of two."""
     if not is_mapping(data):
         return False
     if is_text_list(data.get("tabs")):

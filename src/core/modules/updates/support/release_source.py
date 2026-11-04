@@ -32,9 +32,9 @@ class ReleaseSource:
     def __init__(self, settings: SettingValues, home: JournalHome, clock: Clock) -> None:
         self.settings, self.home, self.clock = settings, home, clock
 
+    # The newest release; one answered in the last hour, or a failure in the last five minutes, is kept in a
+    # file, so a page asking for it does not wait on the network each time. An install asks the network.
     def newest(self, online: bool = False) -> PublishedRelease:
-        """The newest release; one answered in the last hour, or a failure in the last five minutes, is kept in a
-        file, so a page asking for it does not wait on the network each time. An install asks the network."""
         address = self.address()
         saved = None if online else self.kept(address)
         if saved is not None:
