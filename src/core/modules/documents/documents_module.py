@@ -5,6 +5,7 @@ from core.modules.documents.listeners.reply_link_listener import ReplyLinkListen
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
+from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
@@ -76,6 +77,7 @@ class DocumentsModule(Module):
     models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration]
+    library_shares = [DocLibraryShare]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,

@@ -1,0 +1,228 @@
+<script setup>
+import {ref, watch} from "vue";
+import {Btn, FormField, RowList, SearchBar, Segmented, SidePanel, TextInput, TimeAgo, useRunLine, useWindow} from "@journal/window-kit";
+
+const KINDS = [
+    {key: "", label: "All"},
+    {key: "doc", label: "Documents"},
+    {key: "sequence", label: "Sequences"},
+    {key: "check", label: "Checks"},
+];
+const KIND_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
+const SEARCH_DELAY_MILLISECONDS = 300;
+
+// what the shared server holds, read live: the journal reads it for this page, so the browser holds no token
+const props = defineProps({role: {type: String, required: true}, canWrite: Boolean});
+const context = useWindow();
+const kind = ref("");
+const search = ref("");
+const rows = ref([]);
+const loaded = ref(false);
+const failure = ref("");
+const opened = ref(null);
+const versions = ref([]);
+const sharing = ref("");
+const shared = ref(null);
+const {refusal, run} = useRunLine(load);
+let delay = 0;
+
+const key = (row) => `${row.kind}:${row.id}`;
+
+async function load() {
+    const words = search.value.trim();
+    const answer = await context.read(`library list${kind.value ? ` --kind ${kind.value}` : ""}${words ? ` --search ${JSON.stringify(words)}` : ""}`);
+    failure.value = answer.ok ? "" : answer.error;
+    rows.value = answer.ok ? answer.value.rows.map((row) => ({...row, item_id: row.id, id: key(row)})) : [];
+    loaded.value = true;
+}
+
+async function open(row) {
+    const [item, changes] = await Promise.all([context.read(`library show ${row.kind} ${row.item_id}`), context.read(`library versions ${row.kind} ${row.item_id}`)]);
+    refusal.value = item.ok ? "" : item.error;
+    opened.value = item.ok ? {...item.value, title: row.title} : null;
+    versions.value = changes.ok ? changes.value.versions : [];
+}
+
+async function reopen() {
+    const item = opened.value;
+    await open({kind: item.kind, item_id: item.id, title: item.title});
+}
+
+async function remove(row) {
+    const answer = await run(["library", "remove", row.kind, String(row.item_id ?? row.id)]);
+    if (answer.ok && opened.value) await reopen();
+}
+
+async function restore(item, version = null) {
+    const answer = await run(["library", "restore", item.kind, String(item.id), ...(version ? ["--version", String(version)] : [])]);
+    if (answer.ok) await reopen();
+}
+
+async function share() {
+    const [name, number, ...rest] = sharing.value.trim().split(/\s+/);
+    if (!name || !/^\d+$/.test(number ?? "") || rest.length) return void (refusal.value = "Write the kind and the number, such as doc 63.");
+    const answer = await run(["library", "share", name, number]);
+    shared.value = answer.ok ? answer.value : null;
+    if (answer.ok) sharing.value = "";
+}
+
+watch(kind, load, {immediate: true});
+watch(search, () => {
+    clearTimeout(delay);
+    delay = setTimeout(load, SEARCH_DELAY_MILLISECONDS);
+});
+</script>
+
+<template>
+    <div class="library" data-library>
+        <SearchBar v-model="search" placeholder="Search the library" data-library-search />
+        <Segmented :options="KINDS" :value="kind" data-library-kind @pick="kind = $event" />
+        <template v-if="canWrite">
+            <form class="library-share" data-library-share @submit.prevent="share">
+                <FormField label="Share with the team" for="library-share" help="The kind and the number of the item on this journal, such as doc 63.">
+                    <TextInput id="library-share" v-model="sharing" placeholder="doc 63" data-library-share-field />
+                </FormField>
+                <Btn kind="primary" :disabled="!sharing.trim()" data-library-share-submit @click="share">Share</Btn>
+            </form>
+        </template>
+        <template v-if="shared">
+            <p class="library-shared" data-library-shared>{{ shared.line }}</p>
+            <template v-if="shared.warning">
+                <p class="library-warning" role="alert" data-library-warning>{{ shared.warning }}</p>
+            </template>
+        </template>
+        <template v-if="refusal">
+            <p class="library-failure" role="alert" data-library-refusal>{{ refusal }}</p>
+        </template>
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" :searching="Boolean(search.trim() || kind)" empty="Nothing in the library yet" hint="Shared documents, sequences and checks appear here.">
+            <template #default="{row}">
+                <div class="library-row" :data-library-item="row.id">
+                    <button type="button" class="library-open" data-library-open @click="open(row)">
+                        <span class="library-title">{{ row.title }}</span>
+                        <template v-if="row.excerpt">
+                            <span class="library-excerpt" data-library-excerpt>{{ row.excerpt }}</span>
+                        </template>
+                        <template v-else>
+                            <span class="library-abstract">{{ row.abstract }}</span>
+                        </template>
+                        <span class="library-facts">{{ KIND_WORDS[row.kind] }}, Version: {{ row.version }}, Changed by: {{ row.updated_by }}, <TimeAgo :at="row.updated_at" /></span>
+                    </button>
+                    <template v-if="row.copy_id">
+                        <span class="library-here" data-library-here>On this journal</span>
+                    </template>
+                    <template v-if="role === 'admin'">
+                        <Btn small kind="danger" data-library-remove @click="remove(row)">Remove</Btn>
+                    </template>
+                </div>
+            </template>
+        </RowList>
+        <template v-if="opened">
+            <SidePanel :title="opened.title" @close="opened = null">
+                <div data-library-panel>
+                <template v-if="opened.removed_at">
+                    <p class="library-removed" data-library-removed>Removed from the library</p>
+                    <template v-if="role === 'admin'">
+                        <Btn small kind="primary" data-library-restore @click="restore(opened)">Restore</Btn>
+                    </template>
+                </template>
+                <p class="library-facts">{{ KIND_WORDS[opened.kind] }}, Version: {{ opened.version }}, Changed by: {{ opened.updated_by }}</p>
+                <dl class="library-fields" data-library-fields>
+                    <template v-for="(value, name) in opened.fields" :key="name">
+                        <dt>{{ name }}</dt>
+                        <dd>{{ value }}</dd>
+                    </template>
+                </dl>
+                <h3 class="library-heading">Versions</h3>
+                <ul class="library-versions" data-library-versions>
+                    <template v-for="change in versions" :key="change.version">
+                        <li :data-library-version="change.version">
+                            <span>Version: {{ change.version }}, Changed by: {{ change.user }}, <TimeAgo :at="change.created_at" /></span>
+                            <template v-if="canWrite && change.version !== opened.version">
+                                <Btn small data-library-restore-version @click="restore(opened, change.version)">Restore this version</Btn>
+                            </template>
+                        </li>
+                    </template>
+                </ul>
+                </div>
+            </SidePanel>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.library {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.library-share {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.library-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.library-open {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.library-title {
+    font-weight: 600;
+}
+
+.library-abstract,
+.library-excerpt,
+.library-facts,
+.library-here {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.library-failure,
+.library-warning {
+    margin: 0;
+    color: var(--danger);
+    font-size: 13px;
+}
+
+.library-fields dt {
+    margin-top: 8px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.library-fields dd {
+    margin: 2px 0 0;
+    white-space: pre-wrap;
+}
+
+.library-versions {
+    padding: 0;
+    list-style: none;
+}
+
+.library-versions li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+}
+</style>

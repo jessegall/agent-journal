@@ -16,6 +16,7 @@ PLACEHOLDERS = {
     "processes.outputs": "Search the commands",
     "phone.phones": "Search the phones",
     "sharing.shares": "Search the links",
+    "library.teams": "Search the library",
     "mcp.integrations": "Search the servers",
     "plugins.plugins": "Search the plugins",
     "reviews.reviewer": "Search the reviews",

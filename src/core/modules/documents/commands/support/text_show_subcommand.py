@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 from typing import ClassVar
 
 from core.base.caller.caller import Caller
@@ -6,23 +7,25 @@ from core.base.cli.row_links import RowLinks
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.documents.commands.support.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.text_lines import TextLines
 
 
-class TextShowSubcommand(ReadSubcommand[TextReading]):
+class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
     """`journal <doc or report> show <n>`: its outline, or one section, its bullets, a search or the whole
     text."""
 
     model: ClassVar[type[TextRow]]
+    id_type: ClassVar[Callable[[str], object]] = staticmethod(int)
     name = "show"
 
     def __init__(self, queries: Queries, links: RowLinks) -> None:
         self.queries, self.links = queries, links
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("id", type=int)
+        parser.add_argument("id", type=self.id_type)
         TextLines.reading_flags(parser)
 
     def read(self, arguments: Namespace, caller: Caller) -> TextReading:

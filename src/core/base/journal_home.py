@@ -33,6 +33,10 @@ class JournalHome:
         return self.folder / "runtime" / "newest-release.json"
 
     @property
+    def library_failure_file(self) -> Path:
+        return self.folder / "runtime" / "library-failure.json"
+
+    @property
     def alias_file(self) -> Path:
         return self.folder / "runtime" / "aliases.json"
 

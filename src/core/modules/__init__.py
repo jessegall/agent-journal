@@ -25,6 +25,7 @@ from core.modules.viewer.viewer_module import ViewerModule
 from core.modules.phone.phone_module import PhoneModule
 from core.modules.sharing.sharing_module import SharingModule
 from core.modules.tunnel.tunnel_module import TunnelModule
+from core.modules.library.library_module import LibraryModule
 from core.modules.documents.documents_module import DocumentsModule
 from core.modules.sequences.sequences_module import SequencesModule
 from core.modules.triggers.triggers_module import TriggersModule
@@ -43,4 +44,4 @@ from core.modules.transcriptions.transcriptions_module import TranscriptionsModu
 from core.modules.usage.usage_module import UsageModule
 from core.modules.updates.updates_module import UpdatesModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, PinsModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, VoicesModule, TranscriptionsModule, RemindersModule, UpdatesModule, OverviewModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, PinsModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, VoicesModule, TranscriptionsModule, RemindersModule, UpdatesModule, OverviewModule, LibraryModule)
