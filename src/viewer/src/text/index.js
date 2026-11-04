@@ -77,19 +77,16 @@ function cells(row) {
         .map((c) => c.replace(/\\\|/g, "|").trim());
 }
 
+// a column with a cell longer than this holds sentences, and is given a readable width
+const TEXT_COLUMN_CHARACTERS = 24;
+
 function table(lines) {
     const [head, , ...body] = lines;
-    const th = cells(head)
-        .map((c) => `<th>${spans(c)}</th>`)
-        .join("");
-    const rows = body
-        .map(
-            (r) =>
-                `<tr>${cells(r)
-                    .map((c) => `<td>${spans(c)}</td>`)
-                    .join("")}</tr>`
-        )
-        .join("");
+    const headCells = cells(head);
+    const bodyRows = body.map(cells);
+    const kind = (column) => ([headCells, ...bodyRows].some((row) => (row[column] ?? "").length > TEXT_COLUMN_CHARACTERS) ? ' class="text-column"' : "");
+    const th = headCells.map((c, column) => `<th${kind(column)}>${spans(c)}</th>`).join("");
+    const rows = bodyRows.map((row) => `<tr>${row.map((c, column) => `<td${kind(column)}>${spans(c)}</td>`).join("")}</tr>`).join("");
     return `<table><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
