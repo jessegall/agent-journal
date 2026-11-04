@@ -15,12 +15,12 @@ from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_guards import SequenceGuards
 
-START, FOLLOW, NEXT, ABANDON = "start", "follow", "next", "abandon"
-FINISHED, ABANDONED = "finished", "abandoned"
+START, FOLLOW, NEXT, ABANDON, END = "start", "follow", "next", "abandon", "end"
+FINISHED, ABANDONED, ENDED = "finished", "abandoned", "ended"
 
 
 class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
-    """Starts, takes up, moves on and abandons the calling agent's one sequence run. A step moves on, or the
+    """Starts, takes up, moves on, ends and abandons the calling agent's one sequence run. A step moves on, or the
     sequence ends, only once the checks the step lists have passed; abandoning needs none."""
 
     command = MoveSequenceRun
@@ -35,6 +35,9 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if current is None:
             raise Refusal("no sequence is running", "journal sequence run <n> starts one")
         sequence = self.queries.query(Sequence).find(current.sequence_id)
+        if command.action == END:
+            self.repository.save(replace(current, ended_at=context.timestamp, outcome=f"{ENDED}: {command.reason}"), context)
+            return SequenceLine(f"sequence {sequence.id} ended: {command.reason}")
         if command.action == FOLLOW:
             return SequenceLine(StepLine.text(sequence, self.repository.save(replace(current, step_started=True), context)))
         if not current.step_started:
@@ -57,7 +60,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if not agents:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
         sequence = self.queries.query(Sequence).find(command.sequence_id)
-        run = self.repository.save(SequenceRun(environment_id=agents[0].environment_id, agent_id=context.actor.id, sequence_id=sequence.id), context)
+        run = self.repository.save(SequenceRun(environment_id=agents[0].environment_id, agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
         return SequenceLine(StepLine.text(sequence, run))
 
     def require_checks(self, sequence: Sequence, current: SequenceRun) -> None:

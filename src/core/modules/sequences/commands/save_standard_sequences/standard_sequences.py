@@ -12,8 +12,11 @@ INSTRUCTION_CHECK_PHRASES = ("check the instruction files", "check agents.md", "
                              "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies")
 
 
-def row_trigger(event_name: str) -> str:
-    return json.dumps([{"trigger_type": "row", "event": event_name}])
+def row_trigger(event_name: str, *end_events: str) -> str:
+    trigger = {"trigger_type": "row", "event": event_name}
+    if end_events:
+        trigger["ends_on"] = ",".join(end_events)
+    return json.dumps([trigger])
 
 
 def phrase_triggers(phrases: tuple[str, ...]) -> str:
@@ -27,7 +30,7 @@ def guards(*steps: dict[str, object]) -> str:
 PLAN_BUILDING = Sequence(
     creator_id=CORE_ACTOR_ID,
     title="Building a plan",
-    triggers=row_trigger("plan.create"),
+    triggers=row_trigger("plan.create", "plan.ready", "plan.approve", "plan.start", "plan.close"),
     step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
         f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",

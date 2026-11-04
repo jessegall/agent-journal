@@ -23,6 +23,9 @@ class Sequence(Model):
     triggers: str = "[]"
     step_guards: str = "[]"
 
+    def ends_on(self, event_name: str) -> bool:
+        return any(event_name in trigger.end_events for trigger in SequenceTriggers.parsed(self.triggers))
+
     def __post_init__(self) -> None:
         SequenceTriggers.parsed(self.triggers)
         SequenceGuards.parsed(self.step_guards)

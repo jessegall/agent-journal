@@ -28,6 +28,7 @@ class SequenceTrigger:
     text: str = ""
     pattern: str = ""
     tool: str = ""
+    ends_on: str = ""
 
     @classmethod
     def parsed(cls, values: Mapping[object, object]) -> Self:
@@ -41,11 +42,17 @@ class SequenceTrigger:
         missing = [name for name in REQUIRED_FIELDS[category] if not getattr(self, name).strip()]
         if missing:
             raise Refusal(f"a {category} trigger needs its {', '.join(missing)}")
+        if self.ends_on and category != ROW_TRIGGER:
+            raise Refusal(f"a {category} trigger has no ends_on", "only a row trigger names the events that end its sequence")
         if category in PATTERN_TRIGGERS and self.pattern:
             try:
                 re.compile(self.pattern)
             except re.error as error:
                 raise Refusal(f"the pattern {self.pattern} does not read: {error}") from error
+
+    @property
+    def end_events(self) -> tuple[str, ...]:
+        return tuple(name.strip() for name in self.ends_on.split(",") if name.strip())
 
     def matches_hook(self, hook: AgentHook) -> bool:
         event = hook.event
