@@ -7,6 +7,6 @@ class LibraryPerson:
     """The check every command that decides for the team shares: a person gives it, never an agent."""
 
     @staticmethod
-    def require(context: Context) -> None:
+    def require(context: Context, reason: str, suggestion: str) -> None:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person connects to the shared server or disconnects from it", "ask the user to do it on the Teams page")
+            raise Refusal(reason, suggestion)

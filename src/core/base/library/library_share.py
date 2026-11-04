@@ -1,8 +1,10 @@
+import json
 from collections.abc import Mapping
 from typing import ClassVar, Generic, TypeVar
 
 from core.base.command.context import Context
 from core.base.model.model import Model
+from core.base.text_digest import TextDigest
 
 Fields = Mapping[str, object]
 
@@ -19,6 +21,9 @@ class LibraryShare(Generic[M]):
 
     def fields(self, row: M) -> Fields:
         raise NotImplementedError
+
+    def digest(self, row: M) -> str:
+        return TextDigest().hex_digest(json.dumps(self.fields(row), sort_keys=True))
 
     # Makes the local row for an item that was just fetched.
     def arrive(self, fields: Fields, context: Context) -> M:

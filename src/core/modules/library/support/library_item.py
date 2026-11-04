@@ -16,6 +16,7 @@ class LibraryItem:
     creator: str
     author: str
     changed_at: str
+    removed_at: str = ""
 
     @classmethod
     def parsed(cls, body: object) -> "LibraryItem":
@@ -23,9 +24,13 @@ class LibraryItem:
             raise LibraryUnreachable.unreadable()
         try:
             return cls(str(body["kind"]), int(body["id"]), int(body["version"]), dict(body["fields"]), str(body.get("creator", "")), str(body.get("updated_by", "")),
-                       str(body.get("updated_at", "")))
+                       str(body.get("updated_at", "")), str(body.get("removed_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachable.unreadable() from error
+
+    @property
+    def is_removed(self) -> bool:
+        return bool(self.removed_at)
 
     def lines(self) -> Sequence[str]:
         return [f"{self.share} {self.item_id}  version {self.version}  by {self.author}  {self.changed_at}", *(f"{name}: {value}" for name, value in self.fields.items())]

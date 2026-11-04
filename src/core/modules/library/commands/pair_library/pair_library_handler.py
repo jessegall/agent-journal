@@ -33,7 +33,7 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
         self.client, self.certificate, self.values, self.settings, self.bus = client, certificate, values, settings, bus
 
     def handle(self, command: PairLibrary, context: Context) -> LibraryConnection:
-        LibraryPerson.require(context)
+        LibraryPerson.require(context, "only a person connects to the shared server or disconnects from it", "ask the user to do it on the Teams page")
         address_text = command.address or str(self.settings.project_value(ADDRESS_SETTING))
         address = LibraryAddress(address_text).base
         server, user = self.verified(address, command.token, self.opener(command.certificate))

@@ -16,6 +16,7 @@ from core.modules.library.support.library_errors import LibraryFailures
 from core.modules.library.support.library_item import LibraryItem
 from core.modules.library.support.library_page import LibraryPage
 from core.modules.library.support.page_request import PageRequest
+from core.modules.library.support.version_request import VersionRequest
 from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.library_unchanged_error import LibraryUnchangedError
 from core.modules.library.support.library_stopped import LibraryStopped
@@ -62,6 +63,18 @@ class LibraryClient:
 
     def versions(self, share: str, item_id: int) -> LibraryVersions:
         return self.send(LibraryVersions.parsed, "GET", f"/items/{share}/{item_id}/versions")
+
+    def new_item(self, share: str, fields: Mapping[str, object]) -> LibraryItem:
+        return self.send(LibraryItem.parsed, "POST", f"/items/{share}", {"fields": fields})
+
+    def old_version(self, request: VersionRequest) -> LibraryItem:
+        return self.send(LibraryItem.parsed, "GET", f"/items/{request.share}/{request.item_id}/versions/{request.version}")
+
+    def removal(self, share: str, item_id: int) -> LibraryItem:
+        return self.send(LibraryItem.parsed, "DELETE", f"/items/{share}/{item_id}")
+
+    def restoration(self, share: str, item_id: int) -> LibraryItem:
+        return self.send(LibraryItem.parsed, "POST", f"/items/{share}/{item_id}/restore")
 
     def update(self, share: str, item_id: int, base_version: int, fields: Mapping[str, object]) -> LibraryItem:
         return self.send(LibraryItem.parsed, "PUT", f"/items/{share}/{item_id}", {"fields": fields}, {"If-Match": f'"{base_version}"'})

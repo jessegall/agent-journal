@@ -11,6 +11,13 @@ from core.modules.library.commands.library_list.library_list_subcommand import L
 from core.modules.library.commands.library_show.library_show_subcommand import LibraryShowSubcommand
 from core.modules.library.commands.library_versions.library_versions_subcommand import LibraryVersionsSubcommand
 from core.modules.library.commands.library_status.library_status_subcommand import LibraryStatusSubcommand
+from core.modules.library.commands.remove_library_item.remove_library_item_handler import RemoveLibraryItemHandler
+from core.modules.library.commands.remove_library_item.remove_library_item_subcommand import RemoveLibraryItemSubcommand
+from core.modules.library.commands.restore_library_item.restore_library_item_handler import RestoreLibraryItemHandler
+from core.modules.library.commands.restore_library_item.restore_library_item_subcommand import RestoreLibraryItemSubcommand
+from core.modules.library.commands.save_library_copy.save_library_copy_handler import SaveLibraryCopyHandler
+from core.modules.library.commands.send_library_item.send_library_item_handler import SendLibraryItemHandler
+from core.modules.library.commands.send_library_item.send_library_item_subcommand import SendLibraryItemSubcommand
 from core.modules.library.commands.save_library_connection.save_library_connection_handler import SaveLibraryConnectionHandler
 from core.modules.library.guards.library_address_guard import LibraryAddressGuard
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
@@ -26,11 +33,12 @@ class LibraryModule(Module):
     requires_core = ">=5,<6"
     seed_reason = "it keeps only what a connected server gave it"
     move_reason = "version 4's team rows are not carried over"
-    dependencies = ["journal.core.actors", "journal.core.settings"]
+    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets"]
     settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
                              SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
-    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler]
-    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand]
+    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, SendLibraryItemHandler, RemoveLibraryItemHandler, RestoreLibraryItemHandler]
+    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand,
+                   SendLibraryItemSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]

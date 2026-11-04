@@ -1,8 +1,12 @@
+from core.base.refusal import Refusal
 from core.modules.library.support.library_failure import LibraryFailure
 
 
 class LibraryUnreachable(LibraryFailure):
     """The server gave no answer that can be read: nothing changes and the next round tries again."""
+
+    def address_refusal(self, address: str) -> Refusal:
+        return Refusal(f"The library cannot be reached at {address}.", self.reason)
 
     @classmethod
     def unreadable_page(cls, code: int) -> "LibraryUnreachable":
