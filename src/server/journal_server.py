@@ -2,36 +2,28 @@ import selectors
 import socket
 import sys
 import threading
-import time
-from socketserver import BaseRequestHandler, ThreadingMixIn, UnixStreamServer
+from socketserver import BaseRequestHandler, UnixStreamServer
 from typing import Any
 from server.client_disconnected import client_disconnected
 from server.handover_descriptors import QUEUED_CONNECTIONS
 from server.server_context import ServerContext
+from server.tracked_requests import TrackedRequests
 
 
 DRAIN_LIMIT_SECONDS = 10
-DRAIN_POLL_SECONDS = 0.05
-class JournalServer(ThreadingMixIn, UnixStreamServer):
+class JournalServer(TrackedRequests, UnixStreamServer):
     """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to
     its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once. A client
-    that left before its answer is no error. It binds its socket, or takes the listening socket of the server
-    it replaces, with the connections that wait in it."""
+    that left before its answer is no error."""
 
-    daemon_threads = True
     request_queue_size = QUEUED_CONNECTIONS
 
     def __init__(self, path: str, handler: type[BaseRequestHandler], context: ServerContext, inherited_socket: socket.socket | None = None) -> None:
         self.context = context
         self.wake_sender, self.wake_receiver = socket.socketpair()
         self.stopping, self.stopped = threading.Event(), threading.Event()
-        self.request_threads: set[threading.Thread] = set()
-        self.idle_connections: dict[threading.Thread, socket.socket] = {}
-        self.thread_lock = threading.Lock()
-        super().__init__(path, handler, bind_and_activate=inherited_socket is None)
-        if inherited_socket is not None:
-            self.socket.close()
-            self.socket = inherited_socket
+        self.is_handing_over = False
+        super().__init__(path, handler, inherited_socket=inherited_socket)
 
     def serve_requests(self) -> None:
         try:
@@ -48,53 +40,19 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
         if not client_disconnected(sys.exception()):
             super().handle_error(request, client_address)
 
-    def process_request(self, request: Any, client_address: Any) -> None:
-        thread = threading.Thread(target=self.tracked_request, args=(request, client_address), daemon=True)
-        with self.thread_lock:
-            self.request_threads.add(thread)
-        thread.start()
-
-    def tracked_request(self, request: Any, client_address: Any) -> None:
-        try:
-            self.process_request_thread(request, client_address)
-        finally:
-            with self.thread_lock:
-                self.request_threads.discard(threading.current_thread())
-                self.idle_connections.pop(threading.current_thread(), None)
-
-    def connection_idle(self, connection: socket.socket) -> None:
-        with self.thread_lock:
-            self.idle_connections[threading.current_thread()] = connection
-
-    def connection_busy(self) -> None:
-        with self.thread_lock:
-            self.idle_connections.pop(threading.current_thread(), None)
-
     def request_stop(self) -> None:
         self.stopping.set()
         self.wake_sender.send(b"\0")
+
+    def begin_handover(self) -> None:
+        self.context.files.mark_restart()
+        self.is_handing_over = True
+        self.request_stop()
 
     def release_files(self) -> None:
         self.context.files.remove_server_files()
         self.context.files.release_lock()
         self.request_stop()
-
-    def drain(self, limit_seconds: float) -> None:
-        """Waits for the requests that run, up to the limit; a connection kept open with no request on it is closed
-        from this side at once, as it would otherwise hold the stop until its client let go."""
-        deadline = time.monotonic() + limit_seconds
-        while time.monotonic() < deadline:
-            with self.thread_lock:
-                threads = [thread for thread in self.request_threads if thread is not threading.current_thread()]
-                idle = list(self.idle_connections.values())
-            if not threads:
-                return
-            for connection in idle:
-                try:
-                    connection.shutdown(socket.SHUT_RD)
-                except OSError:
-                    continue
-            threads[0].join(DRAIN_POLL_SECONDS)
 
     def server_close(self) -> None:
         super().server_close()

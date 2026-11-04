@@ -2,6 +2,7 @@ import fnmatch
 import hashlib
 import os
 import shutil
+import time
 from pathlib import Path
 
 from core.base.code_copy import IGNORED, CodeCopy
@@ -13,6 +14,7 @@ FIRST_VERSION = "first"
 NEW_LINK = "src.new"
 PREVIOUS_FILE = "previous"
 TAG_CHARACTERS = 16
+STALE_PARTIAL_SECONDS = 3600
 
 
 class CodeVersions:
@@ -52,9 +54,15 @@ class CodeVersions:
             partial = self.version(tag + PARTIAL_VERSION)
             shutil.rmtree(partial, ignore_errors=True)
             self.folder.mkdir(parents=True, exist_ok=True)
+            self.remove_stale_partials()
             CodeCopy(source, self.home).write(partial)
             partial.rename(self.version(tag))
         return tag
+
+    def remove_stale_partials(self) -> None:
+        for partial in self.folder.glob(f"*{PARTIAL_VERSION}"):
+            if time.time() - partial.stat().st_mtime > STALE_PARTIAL_SECONDS:
+                shutil.rmtree(partial, ignore_errors=True)
 
     def switch(self, tag: str) -> None:
         if not self.version(tag).is_dir():

@@ -1,0 +1,45 @@
+import sqlite3
+import tempfile
+from pathlib import Path
+
+from core.base.database.database import Database
+from core.base.journal_container import opened_container, sync_modules
+from core.base.journal_home import JournalHome
+from core.base.module.module_sync import ModuleSync
+
+PLUGINS_FOLDER = "plugins"
+
+
+class SuccessorProof:
+    """Proves new code before the old server lets go of anything: its modules sync on an empty database, and on
+    a copy of the real database when its migrations have not run there. A failure raises, so the new server
+    exits and the old one keeps serving."""
+
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
+
+    def run(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            sync_modules(JournalHome(Path(folder)))
+        if self.has_pending_migrations():
+            with tempfile.TemporaryDirectory(dir=self.home.folder) as folder:
+                sync_modules(self.copied_home(Path(folder)))
+
+    def has_pending_migrations(self) -> bool:
+        container = opened_container(self.home)
+        try:
+            return container.get(ModuleSync).has_pending_migrations()
+        finally:
+            container.get(Database).close()
+
+    def copied_home(self, folder: Path) -> JournalHome:
+        copy = JournalHome(folder)
+        source, target = sqlite3.connect(self.home.database), sqlite3.connect(copy.database)
+        try:
+            source.backup(target)
+        finally:
+            target.close()
+            source.close()
+        if (self.home.folder / PLUGINS_FOLDER).is_dir():
+            (folder / PLUGINS_FOLDER).symlink_to(self.home.folder / PLUGINS_FOLDER, target_is_directory=True)
+        return copy

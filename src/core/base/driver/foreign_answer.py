@@ -1,12 +1,9 @@
-import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from core.base.driver.foreign_run import ForeignRun
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.refusal_style import RefusalStyle
-from core.base.driver.hook_answer_program import HookAnswerProgram
-from core.base.type_guards import is_mapping
+from core.base.driver.hook_fields import mapping, text, texts
+
 
 @dataclass(frozen=True)
 class ForeignAnswer:
@@ -17,49 +14,10 @@ class ForeignAnswer:
     terminal: str = ""
 
     @classmethod
-    def read(cls, provider: HookAnswerProgram, event: HookEventName, run: ForeignRun) -> "ForeignAnswer":
-        if run.timed_out:
-            return cls(run.id, terminal=f"{run.id}: hook timed out")
-        if run.exit_code == 2:
-            return cls(run.id, refusal=run.stderr.strip() or "Hook refused without a reason")
-        if run.exit_code != 0:
-            return cls(run.id, terminal=f"{run.id}: hook exited with code {run.exit_code}: {run.stderr.strip()}")
-        if not run.stdout.strip():
-            return cls(run.id)
-        try:
-            data = json.loads(run.stdout)
-        except json.JSONDecodeError:
-            data = None
-        if is_mapping(data):
-            return cls.decoded(provider, event, run.id, data)
-        if event in provider.plain_output_events:
-            return cls(run.id, lines=tuple(run.stdout.strip().splitlines()))
-        return cls(run.id, terminal=f"{run.id}: hook answer must be a JSON object")
-
-    @classmethod
-    def decoded(cls, provider: HookAnswerProgram, event: HookEventName, name: str, data: Mapping[str, object]) -> "ForeignAnswer":
-        output = data.get("hookSpecificOutput", {})
-        if not is_mapping(output):
-            output = {}
-        refusal = ""
-        style = provider.refusals.get(event)
-        if style is RefusalStyle.DENY and output.get("permissionDecision") == "deny":
-            refusal = cls.text(output, "permissionDecisionReason") or "Hook refused without a reason"
-        if style is RefusalStyle.BLOCK and data.get("decision") == "block":
-            refusal = cls.text(data, "reason") or "Hook refused without a reason"
-        terminal = cls.text(data, "systemMessage")
-        if output.get("permissionDecision") == "ask":
-            terminal = "\n".join(line for line in (terminal, f"{name}: hook asked for permission; the journal cannot ask") if line)
-            return cls(name, terminal=terminal)
-        updated_input = output.get("updatedInput", {})
-        if not is_mapping(updated_input):
-            updated_input = {}
-        return cls(name, refusal, tuple(cls.text(output, "additionalContext").splitlines()), updated_input, terminal)
-
-    @staticmethod
-    def text(data: Mapping[str, object], key: str) -> str:
-        value = data.get(key, "")
-        return value if isinstance(value, str) else ""
+    def read(cls, run: ForeignRun) -> "ForeignAnswer":
+        answer = run.answer
+        return cls(run.id, text(answer, "refusal"), texts(answer, "lines"),
+                   {str(key): value for key, value in mapping(answer.get("updated_input", {}), "updated input").items()}, text(answer, "terminal"))
 
     def reason(self) -> str:
         return f"{self.name}: {self.refusal}" if self.refusal else ""

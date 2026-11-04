@@ -18,7 +18,7 @@ def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_i
 
 def test_install_puts_the_newest_release_into_the_journals_code_and_records_it(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    story.expect_success("update install", "the newest release is installed in .journal/src: the journal runs it from its next request", actor=story.user)
+    story.expect_success("update install", "the newest release is installed: a new server takes over when it has proved the code", actor=story.user)
     story.expect_text("update check", "up to date: this journal runs the newest release", actor=story.agent)
     story.expect_text("release list", "1", actor=story.user)
     story.expect_rows(installed_marker(story) == "release one")

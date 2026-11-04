@@ -23,14 +23,23 @@ class Schema:
 
     def migrate(self, ordered: Sequence[ModuleMigrations]) -> list[str]:
         self.database.update(Statement(MIGRATIONS_TABLE))
-        highest_numbers = {row["module"]: row["number"] for row in self.database.rows(LAST_NUMBERS)}
+        highest_numbers = self.highest_numbers()
         run_names: list[str] = []
         for module in ordered:
-            pending = [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if migration.number > highest_numbers.get(module.module, 0)]
-            for migration in pending:
+            for migration in self.pending(module, highest_numbers):
                 self.run_one(module.module, migration)
                 run_names.append(f"{module.module} {migration.number}")
         return run_names
+
+    def has_pending(self, ordered: Sequence[ModuleMigrations]) -> bool:
+        highest_numbers = self.highest_numbers()
+        return any(self.pending(module, highest_numbers) for module in ordered)
+
+    def highest_numbers(self) -> dict[str, int]:
+        return {row["module"]: row["number"] for row in self.database.rows(LAST_NUMBERS)}
+
+    def pending(self, module: ModuleMigrations, highest_numbers: dict[str, int]) -> list[Migration]:
+        return [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if migration.number > highest_numbers.get(module.module, 0)]
 
     def run_one(self, module: str, migration: Migration) -> None:
         record = Statement("INSERT INTO migrations (module, number, ran_at) VALUES (?, ?, ?)", (module, migration.number, datetime.now(timezone.utc).isoformat()))

@@ -21,8 +21,43 @@ var hookProgram = programs.Program{
 
 const refusingStdout = `{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"no writes here"}}`
 
+func TestForeignAnswerCases(t *testing.T) {
+	cases := []struct {
+		name, event, stdout, stderr, refusal, terminal string
+		exit                                           int
+		timedOut                                       bool
+		lines                                          int
+	}{
+		{"deny", "pre_tool_use", refusingStdout, "", "no writes here", "", 0, false, 0},
+		{"wrong style", "stop", refusingStdout, "", "", "", 0, false, 0},
+		{"block", "stop", `{"decision":"block","reason":"unfinished"}`, "", "unfinished", "", 0, false, 0},
+		{"ask", "pre_tool_use", `{"systemMessage":"notice","hookSpecificOutput":{"permissionDecision":"ask"}}`, "", "", "notice\ncheck: hook asked for permission; the journal cannot ask", 0, false, 0},
+		{"exit two", "stop", "", "reason", "reason", "", 2, false, 0},
+		{"timeout", "stop", "", "", "", "check: hook timed out", 2, true, 0},
+		{"failure", "stop", "", "details", "", "check: hook exited with code 7: details", 7, false, 0},
+		{"context", "pre_tool_use", `{"hookSpecificOutput":{"additionalContext":"one\ntwo"}}`, "", "", "", 0, false, 2},
+		{"invalid", "stop", "broken", "", "", "check: hook answer must be a JSON object", 0, false, 0},
+	}
+	for _, item := range cases {
+		t.Run(item.name, func(t *testing.T) {
+			runs := []ForeignRun{{ID: "check", Stdout: item.stdout, Stderr: item.stderr, ExitCode: item.exit, TimedOut: item.timedOut}}
+			decodeRuns(hookProgram, item.event, runs)
+			answer := runs[0].Answer
+			if answer.Refusal != item.refusal || answer.Terminal != item.terminal || len(answer.Lines) != item.lines {
+				t.Fatalf("answer = %+v", answer)
+			}
+		})
+	}
+	runs := []ForeignRun{{ID: "check", Stdout: `{"hookSpecificOutput":{"updatedInput":{"command":"safe"}}}`}}
+	decodeRuns(hookProgram, "pre_tool_use", runs)
+	if runs[0].Answer.UpdatedInput["command"] != "safe" {
+		t.Fatalf("answer = %+v", runs[0].Answer)
+	}
+}
+
 func answeredOutput(t *testing.T, status int, answer string, runs ...ForeignRun) string {
 	t.Helper()
+	decodeRuns(hookProgram, "pre_tool_use", runs)
 	var stdout, stderr strings.Builder
 	Answered(&stdout, &stderr, hookProgram, "PreToolUse", "pre_tool_use", status, []byte(answer), t.TempDir(), 5*time.Second, runs...)
 	return stdout.String()
@@ -84,10 +119,13 @@ func TestARestartTimeoutBesideAProjectHooksNewInputKeepsTheToolFromRunning(t *te
 func TestPlainOutputIsALineOnTheEventsTheProgramTakesItOn(t *testing.T) {
 	program := programs.Program{Events: map[string]string{"SessionStart": "session_start"}, PlainOutput: []string{"session_start"}, LineEvents: []string{"session_start"}}
 	run := ForeignRun{ID: "note", Stdout: "read the notes\n"}
-	if reply := foreignReply(program, "session_start", []ForeignRun{run}); len(reply.Lines) != 1 || reply.Lines[0] != "read the notes" {
+	runs := []ForeignRun{run}
+	decodeRuns(program, "session_start", runs)
+	if reply := foreignReply(program, "session_start", runs); len(reply.Lines) != 1 || reply.Lines[0] != "read the notes" {
 		t.Fatalf("reply = %+v", reply)
 	}
-	if reply := foreignReply(program, "stop", []ForeignRun{run}); len(reply.Lines) != 0 || reply.Terminal != "note: hook answer must be a JSON object" {
+	decodeRuns(program, "stop", runs)
+	if reply := foreignReply(program, "stop", runs); len(reply.Lines) != 0 || reply.Terminal != "note: hook answer must be a JSON object" {
 		t.Fatalf("reply = %+v", reply)
 	}
 }
@@ -126,7 +164,9 @@ func TestAProjectWithNoManagedHooksAnswersNothingInASessionTheJournalDoesNotHand
 
 func TestASkippedEventsRefusalIsAnswered(t *testing.T) {
 	var stdout, stderr strings.Builder
-	code := foreignAnswered(&stdout, &stderr, hookProgram, "PreToolUse", []ForeignRun{{ID: "guard", ExitCode: 2, Stderr: "no writes here"}})
+	runs := []ForeignRun{{ID: "guard", ExitCode: 2, Stderr: "no writes here"}}
+	decodeRuns(hookProgram, "pre_tool_use", runs)
+	code := foreignAnswered(&stdout, &stderr, hookProgram, "PreToolUse", runs)
 	if code != 0 || !strings.Contains(stdout.String(), "no writes here") {
 		t.Fatalf("code = %d, stdout = %s", code, stdout.String())
 	}

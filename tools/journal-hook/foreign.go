@@ -10,28 +10,29 @@ import (
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
+	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
 const managedOutputLimit = 1 << 20
 
 type ForeignRun = event.ForeignRun
 
-func refuses(run ForeignRun) bool {
-	if run.TimedOut {
-		return false
+func decodeRuns(program programs.Program, hookEvent string, runs []ForeignRun) {
+	for index := range runs {
+		answer := foreignRunReply(program, hookEvent, runs[index])
+		if answer.Lines == nil {
+			answer.Lines = []string{}
+		}
+		if answer.UpdatedInput == nil {
+			answer.UpdatedInput = map[string]any{}
+		}
+		runs[index].Answer = event.ForeignAnswer{Refusal: answer.Refusal, Lines: answer.Lines, UpdatedInput: answer.UpdatedInput, Terminal: answer.Terminal}
 	}
-	if run.ExitCode == 2 {
-		return true
-	}
-	if run.ExitCode != 0 {
-		return false
-	}
-	return nativeRefusal(run.Stdout)
 }
 
 func answerWithoutServer(stdout, stderr io.Writer, hookEvent string, runs []ForeignRun) (int, bool) {
 	for _, run := range runs {
-		if !refuses(run) {
+		if run.Answer.Refusal == "" {
 			continue
 		}
 		io.WriteString(stdout, run.Stdout)

@@ -25,6 +25,7 @@ from server.booting_work import BootingWork
 from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
+from server.handover_descriptors import HandoverDescriptors
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
@@ -44,6 +45,7 @@ from server.viewer.viewer_routes import ViewerRoutes
 from server.request_handler import RequestHandler
 from server.server_backup import ServerBackup
 from server.server_files import ServerFiles
+from server.waiting_server import WaitingServer
 
 SECOND_SERVER_CODE = 0
 
@@ -63,21 +65,31 @@ def last_port(home: JournalHome) -> int:
     return int(text) if text.isdigit() else 0
 
 
+def begin_files(home: JournalHome, files: ServerFiles) -> None:
+    PerformanceState(home).begin_start()
+    TimingLog(home).rotate()
+    files.rotate_log()
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="journal server")
     parser.add_argument("--home", required=True)
-    home = JournalHome(Path(parser.parse_args(argv).home))
+    parser.add_argument("--take-over", default="")
+    arguments = parser.parse_args(argv)
+    home = JournalHome(Path(arguments.home))
     CodeFingerprint.ticked = True
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
     files = ServerFiles(home)
-    if not files.acquire_lock():
+    waiting_server = WaitingServer(home, HandoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
+    if waiting_server is not None:
+        files.keep_lock_descriptor(waiting_server.descriptors.lock)
+    elif files.acquire_lock():
+        begin_files(home, files)
+        files.clear_leftover_socket()
+    else:
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
-    PerformanceState(home).begin_start()
-    TimingLog(home).rotate()
-    files.rotate_log()
-    files.clear_leftover_socket()
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork())
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork())
@@ -86,7 +98,7 @@ def main(argv: list[str]) -> int:
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
+    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
     home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}"), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
@@ -103,7 +115,12 @@ def main(argv: list[str]) -> int:
     ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
     ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
-    server =JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel),
+                           waiting_server.journal_socket() if waiting_server else None)
+    if waiting_server is not None:
+        waiting_server.wait_turn()
+        begin_files(home, files)
+        login.reload_sessions()
     files.restrict_socket()
     files.write_pid()
     files.log_line(f"listening on {files.socket}")
@@ -135,7 +152,8 @@ def main(argv: list[str]) -> int:
             thread.join(deadline - time.monotonic())
         ticker.join(deadline - time.monotonic())
         hook_database.close()
-        files.remove_server_files()
+        if not server.is_handing_over:
+            files.remove_server_files()
         server.server_close()
         files.release_lock()
         files.log_line("stopped")

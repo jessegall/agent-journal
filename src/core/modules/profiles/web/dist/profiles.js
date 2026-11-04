@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-93b593a0d82f")) { const style = document.createElement("style"); style.id = "window-styles-93b593a0d82f"; style.textContent = ".profile-panel[data-v-57deba13]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-57deba13]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-57deba13]{flex:1}.profiles[data-v-c337ca50]{padding:0 0 40px}.bar[data-v-c337ca50]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-c337ca50]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-c337ca50]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-c337ca50]{color:var(--danger)}.empty[data-v-c337ca50]{margin:40px auto;max-width:480px}.rows[data-v-c337ca50]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-c337ca50]{text-align:left}.profile-meta[data-v-c337ca50]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-c337ca50]{color:var(--text-2)}.profile-used[data-v-c337ca50]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-c337ca50]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-c337ca50]{flex:1 1 100%}.profile-meta[data-v-c337ca50]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-c0f56f897bec")) { const style = document.createElement("style"); style.id = "window-styles-c0f56f897bec"; style.textContent = ".profile-panel[data-v-57deba13]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-57deba13]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-grow[data-v-57deba13]{flex:1}.profiles[data-v-f3402437]{padding:0 0 40px}.bar[data-v-f3402437]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-f3402437]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-f3402437]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-f3402437]{color:var(--danger)}.empty[data-v-f3402437]{margin:40px auto;max-width:480px}.rows[data-v-f3402437]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-f3402437]{text-align:left}.profile-meta[data-v-f3402437]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-f3402437]{color:var(--text-2)}.profile-used[data-v-f3402437]{color:var(--text-3);white-space:nowrap}.profile-used.never[data-v-f3402437]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-f3402437]{flex:1 1 100%}.profile-meta[data-v-f3402437]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as _, watch as W, computed as I, openBlock as u, createBlock as y, unref as e, withCtx as i, createElementVNode as k, createVNode as n, createCommentVNode as C, createElementBlock as g, createTextVNode as w, toDisplayString as m, Fragment as M, renderList as q, normalizeClass as z } from "vue";
 import { SidePanel as K, FormField as h, TextInput as V, TextArea as A, Segmented as U, ModelPicker as B, Btn as N, useRows as H, matchesSearch as J, SearchBar as Q, EmptyState as R, ListRow as X, ago as Y } from "@journal/window-kit";
 const F = (p, x) => {
@@ -279,7 +279,7 @@ const F = (p, x) => {
             }, {
               end: i(() => [
                 k("span", re, [
-                  k("span", de, m(a.profile_type) + " · " + m(a.model || "the agent's model") + " on Claude · " + m(a.codex_model || "the agent's model") + " on Codex", 1),
+                  k("span", de, m(a.profile_type) + " · " + m(a.model || "chosen at start") + " on Claude · " + m(a.codex_model || "chosen at start") + " on Codex", 1),
                   k("span", {
                     class: z(["profile-used", { never: !a.uses }])
                   }, m(E(a)), 3)
@@ -309,7 +309,7 @@ const F = (p, x) => {
       }, null, 8, ["profile", "used"])) : C("", !0)
     ]));
   }
-}, me = /* @__PURE__ */ F(ue, [["__scopeId", "data-v-c337ca50"]]);
+}, me = /* @__PURE__ */ F(ue, [["__scopeId", "data-v-f3402437"]]);
 export {
   me as default
 };

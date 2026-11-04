@@ -9,6 +9,8 @@ from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.run_visibility import RunVisibility
+from core.modules.processes.queries.process_query import ProcessQuery
 from tests.stories.core.modules.chat.support.mark_samples import mark_count
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
@@ -167,6 +169,25 @@ def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new
     story.run_listeners()
     story.expect_text("dock-item show 1", "state: docked")
     story.expect_refusal("dock-item show 2", "no dock-item 2")
+
+
+def test_visibility_and_the_long_run_dock_agree(process_story):
+    story = process_story
+    cases = [("journal worker merge 7", True), ("Journal worker merge 7", False),
+             ("journal worker_merGe 7", False), ("make build", True)]
+    processes = [(start_process(story, line, category=CommandCategory.BUILD if line == "make build" else CommandCategory.UNKNOWN), visible) for line, visible in cases]
+    story.advance(timedelta(seconds=6))
+    candidates = {process.id for process in story.container.get(ProcessQuery).running().long_run_candidates(story.clock.timestamp(), 5).all_rows()}
+    visibility = story.container.get(RunVisibility)
+    assert [(visibility.is_visible(process), process.id in candidates) for process, _ in processes] == [(visible, visible) for _, visible in processes]
+    story.hook("s-1", HookSamples.stop())
+    story.run_listeners()
+    story.expect_text("dock-item list", "processes.output")
+
+
+@pytest.fixture
+def process_story(new_story):
+    return install_runner(new_story(fixture=BuilderStarted))
 
 
 def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(new_story):

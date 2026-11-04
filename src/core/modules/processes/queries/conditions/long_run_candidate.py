@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
-from core.modules.processes.support.run_visibility import MERGE_COMMAND, VISIBLE_CATEGORIES
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 
@@ -13,10 +12,8 @@ class LongRunCandidate:
     start_cutoff: str
 
     def statement(self) -> Statement:
-        categories = ", ".join("?" for _ in VISIBLE_CATEGORIES)
-        return Statement("((started_at < ? AND (creator_id != agent_id OR id IN "
-                         f"(SELECT process_id FROM process_parts WHERE category IN ({categories}) OR text LIKE ?))) "
+        return Statement("((started_at < ? AND (creator_id != agent_id OR EXISTS "
+                         "(SELECT 1 FROM process_parts WHERE process_id = processes.id AND is_visible = 1))) "
                          "OR id IN (SELECT target_id FROM dock_items "
                          "WHERE type = ? AND target_model = ? AND state = ?))",
-                         [self.start_cutoff, *(category.value for category in VISIBLE_CATEGORIES), f"{MERGE_COMMAND}%",
-                          ProcessDockType.OUTPUT.value, "process", DockItemState.DOCKED.value])
+                         [self.start_cutoff, ProcessDockType.OUTPUT.value, "process", DockItemState.DOCKED.value])

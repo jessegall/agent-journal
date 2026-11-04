@@ -1,7 +1,6 @@
 import {watch} from "vue";
 import {ENTER_MS, LEAVE_MS, RESIZE_MS} from "./markMotion.js";
 
-const RECORDING_SETTING = "journal.core.developer.tools.mark-motion";
 const SETTLE_MS = 200;
 const RECORD_MS = LEAVE_MS + RESIZE_MS + ENTER_MS + SETTLE_MS;
 
@@ -30,22 +29,18 @@ function frameOf(element, started, phase) {
     };
 }
 
-async function save(context, recording) {
-    const setting = await context.read(`setting show ${RECORDING_SETTING}`);
-    if (setting.ok && setting.value?.value === true) await context.run(["developer", "record-mark-motion", JSON.stringify(recording)]);
-}
-
 // each time a mark opens or closes, every animation frame until its motion is over is recorded, and kept while the developer setting is on
 export function useMarkRecording(root, wanted, phase, context) {
     watch(wanted, (folds) => {
         const element = root.value;
-        if (!element || !context?.run) return;
+        if (!element || !context?.run || !context.markMotion?.value) return;
         const started = performance.now();
         const frames = [];
         function sample() {
+            if (!context.markMotion.value) return;
             frames.push(frameOf(element, started, phase.value));
             if (performance.now() - started < RECORD_MS) return void requestAnimationFrame(sample);
-            save(context, {key: element.dataset.markKey ?? "", folds, at: new Date().toISOString(), frames});
+            context.run(["developer", "record-mark-motion", JSON.stringify({key: element.dataset.markKey ?? "", folds, at: new Date().toISOString(), frames})]);
         }
         sample();
     }, {flush: "sync"});

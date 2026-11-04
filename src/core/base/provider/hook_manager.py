@@ -50,17 +50,18 @@ class HookManager:
     def restore(self) -> list[ManagedHook]:
         hooks = self.managed.all()
         for hook in hooks:
-            path = self.root / hook.source
-            if not path.parent.is_dir():
-                continue
-            settings = ProgramHooks.read(path)
-            stored_hooks = settings.get("hooks")
-            events = dict(stored_hooks) if is_mapping(stored_hooks) else {}
-            blocks = events.get(hook.event)
-            events[hook.event] = self._restored_blocks(hook, blocks if is_list(blocks) else [])
-            ProgramHooks.store(path, {**settings, "hooks": events})
-            if hook.tracked:
-                HookFilesGit(path.parent).clear_skip_worktree(path.name)
+            for source in hook.all_sources():
+                path = self.root / source.path
+                if not path.parent.is_dir():
+                    continue
+                settings = ProgramHooks.read(path)
+                stored_hooks = settings.get("hooks")
+                events = dict(stored_hooks) if is_mapping(stored_hooks) else {}
+                blocks = events.get(hook.event)
+                events[hook.event] = self._restored_blocks(hook, blocks if is_list(blocks) else [])
+                ProgramHooks.store(path, {**settings, "hooks": events})
+                if source.tracked:
+                    HookFilesGit(path.parent).clear_skip_worktree(path.name)
         self.managed.emptied()
         return hooks
 

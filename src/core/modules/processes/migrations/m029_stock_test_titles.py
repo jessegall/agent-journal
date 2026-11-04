@@ -4,7 +4,7 @@ from core.modules.processes.support.stock_reader import STOCK_READERS
 
 
 class StockTestTitlesMigration(Migration):
-    number = 28
+    number = 29
     statements = tuple(
         f"UPDATE readers SET title = {quoted(reader.title)}, progress_pattern = {quoted(reader.progress)} WHERE name = {quoted(reader.name)} AND creator_id = 1"
         for reader in STOCK_READERS if reader.name in ("pytest", "vitest", "dotnet-test", "phpunit")

@@ -77,7 +77,7 @@ async function save(profile, fields) {
                         <ListRow :title="profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
-                                    <span class="profile-model">{{ profile.profile_type }} · {{ profile.model || "the agent's model" }} on Claude · {{ profile.codex_model || "the agent's model" }} on Codex</span>
+                                    <span class="profile-model">{{ profile.profile_type }} · {{ profile.model || "chosen at start" }} on Claude · {{ profile.codex_model || "chosen at start" }} on Codex</span>
                                     <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
                                 </span>
                             </template>

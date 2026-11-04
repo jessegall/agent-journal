@@ -24,7 +24,8 @@ def test_a_new_worktree_strips_committed_hooks_and_keeps_the_shared_store_unchan
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
     assert ProgramHooks.read(folder / name) == {"permissions": {"allow": ["Bash(ls)"]}, "hooks": {}}
-    assert store.all() == source_hooks
+    assert len(store.all()) == 1
+    assert len(store.all()[0].all_sources()) == 2
     worktree_store = folder / ".journal/hooks/managed.json"
     if worktree_store.exists():
         assert worktree_store.samefile(story.home.managed_hooks_file)

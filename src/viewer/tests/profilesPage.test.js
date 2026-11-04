@@ -54,7 +54,7 @@ test("the page lists each profile with its description, kind, models and use, un
     expect(first).toContain("subagent · sonnet on Claude · gpt-6.1-sol on Codex");
     expect(first).toContain("Dispatched 3 times, last");
     const second = host.querySelector('[data-profile="builder"]').textContent.replace(/\s+/g, " ");
-    expect(second).toContain("worker · the agent's model on Claude · gpt-6-luna on Codex");
+    expect(second).toContain("worker · chosen at start on Claude · gpt-6-luna on Codex");
     expect(second).toContain("Never dispatched here");
     expect(host.querySelector("[data-profile-find]")).not.toBeNull();
     expect(host.querySelector("[data-profile-new]").textContent).toBe("New profile");

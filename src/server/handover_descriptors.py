@@ -1,6 +1,7 @@
 from dataclasses import astuple, dataclass
 
 QUEUED_CONNECTIONS = 128
+READY_BYTE = b"1"
 
 
 @dataclass(frozen=True)

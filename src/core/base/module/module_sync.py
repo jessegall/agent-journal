@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from core.base.clock import Clock
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
@@ -73,12 +75,18 @@ class ModuleSync:
         with PerformanceState(self.home).reload():
             return self.synchronize()
 
+    def has_pending_migrations(self) -> bool:
+        return self.schema.has_pending(self.ordered_migrations(self.order.ordered(self.finder.modules())))
+
+    def ordered_migrations(self, modules: Sequence[type[Module]]) -> tuple[ModuleMigrations, ...]:
+        return (CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules))
+
     def synchronize(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
         rules = self.entries.rules(modules)
         self.check.check(modules, rules)
         models = self.check.models(modules)
-        migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
+        migrations = self.schema.migrate(self.ordered_migrations(modules))
         views = tuple(view for module in modules for view in module.views)
         self.schema.rebuild_views(views)
         self.triggers.rebuild(models)
