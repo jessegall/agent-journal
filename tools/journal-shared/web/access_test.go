@@ -94,6 +94,10 @@ func routeCases(made fixture) []routeCase {
 		{"GET", "/items/doc/1", "", store.RoleRead, 200, nil},
 		{"POST", "/items/doc", checklist, store.RoleEdit, 201, nil},
 		{"PUT", "/items/doc/1", `{"fields": {"body": "changed"}}`, store.RoleEdit, 200, map[string]string{"If-Match": `"1"`}},
+		{"DELETE", "/items/doc/1", "", store.RoleAdmin, 200, nil},
+		{"POST", "/items/doc/1/restore", "", store.RoleAdmin, 200, nil},
+		{"GET", "/items/doc/1/versions", "", store.RoleRead, 200, nil},
+		{"GET", "/items/doc/1/versions/1", "", store.RoleRead, 200, nil},
 	}
 }
 

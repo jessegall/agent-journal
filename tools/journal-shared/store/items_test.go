@@ -96,3 +96,52 @@ func TestAnExcerptShowsTheTextAroundTheTermCutWithDots(t *testing.T) {
 		t.Error("an excerpt for a term that is not there")
 	}
 }
+
+func TestAPurgeDeletesTheItemAndItsVersionsAddsOnePurgeRowAndNeverFreesTheNumber(t *testing.T) {
+	opened := openIn(t, t.TempDir())
+	ada, _ := opened.AddUser("Ada", RoleAdmin)
+	caller := Caller{User: ada}
+	first, _ := opened.CreateItem(docKind(), Fields{"title": "T", "abstract": "A", "body": "one"}, caller)
+	opened.UpdateItem(docKind(), first.ID, 1, Fields{"body": "two"}, caller)
+	deleted, err := opened.PurgeItem(docKind(), first.ID, caller)
+	if err != nil || deleted != 2 {
+		t.Fatalf("%d, %v", deleted, err)
+	}
+	if _, err := opened.ReadItem(docKind(), first.ID); !errors.Is(err, ErrNotFound) {
+		t.Errorf("the purged item is still there: %v", err)
+	}
+	versions, err := opened.ItemVersions(docKind(), first.ID)
+	if err != nil || len(versions) != 1 || versions[0].Action != ActionPurge {
+		t.Fatalf("%v, %v", versions, err)
+	}
+	if count := countOf(t, opened, "SELECT count(*) FROM item_versions WHERE action = 'purge' AND fields = '{}'"); count != 1 {
+		t.Errorf("%d purge rows with empty fields", count)
+	}
+	if count := countOf(t, opened, "SELECT count(*) FROM item_versions WHERE fields LIKE '%two%' OR fields LIKE '%one%'"); count != 0 {
+		t.Errorf("the text of the purged item is still in the history")
+	}
+	second, _ := opened.CreateItem(docKind(), Fields{"title": "T", "abstract": "A", "body": "new"}, caller)
+	if second.ID == first.ID {
+		t.Errorf("the number %d was used twice", second.ID)
+	}
+	if _, err := opened.PurgeItem(docKind(), first.ID, caller); !errors.Is(err, ErrNotFound) {
+		t.Errorf("a purged item was purged again: %v", err)
+	}
+}
+
+func TestRemovingAndRestoringEachAddAVersionAndAnItemAlreadyInThatStateStaysAsItIs(t *testing.T) {
+	opened := openIn(t, t.TempDir())
+	ada, _ := opened.AddUser("Ada", RoleAdmin)
+	caller := Caller{User: ada}
+	item, _ := opened.CreateItem(docKind(), Fields{"title": "T", "abstract": "A", "body": "one"}, caller)
+	same, _ := opened.RestoreItem(docKind(), item.ID, caller)
+	removed, _ := opened.RemoveItem(docKind(), item.ID, caller)
+	again, _ := opened.RemoveItem(docKind(), item.ID, caller)
+	restored, _ := opened.RestoreItem(docKind(), item.ID, caller)
+	if same.Version != 1 || removed.Version != 2 || again.Version != 2 || restored.Version != 3 || restored.RemovedAt != "" {
+		t.Errorf("%d %d %d %d %q", same.Version, removed.Version, again.Version, restored.Version, restored.RemovedAt)
+	}
+	if count := countOf(t, opened, "SELECT count(*) FROM item_versions WHERE action IN ('remove', 'restore')"); count != 2 {
+		t.Errorf("%d history rows for removing and restoring", count)
+	}
+}

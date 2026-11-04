@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/jessegall/agent-journal/tools/journal-shared/store"
 )
@@ -176,4 +177,54 @@ func printNewToken(database *store.Store, user store.User, label string, out io.
 	}
 	fmt.Fprintf(out, "user %s (%s), token %d\n%s\nthis token is shown once and is kept nowhere\n", user.Name, user.Role, token.ID, text)
 	return nil
+}
+
+func itemCommand(name string, arguments []string, out, errs io.Writer) error {
+	flags, data := newFlags("item "+name, errs)
+	if name != "history" && name != "purge" {
+		return fmt.Errorf("there is no item command %q", name)
+	}
+	positional, err := parse(flags, arguments, 2)
+	if err != nil {
+		return err
+	}
+	kind, found := store.KindByName(positional[0])
+	if !found {
+		return fmt.Errorf("there is no kind %q; the kinds are %s", positional[0], strings.Join(store.KindNames(), ", "))
+	}
+	id, err := strconv.ParseInt(positional[1], 10, 64)
+	if err != nil {
+		return fmt.Errorf("%q is not an item number", positional[1])
+	}
+	database, err := openData(*data)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	if name == "purge" {
+		return purgeItem(database, kind, id, out)
+	}
+	return printHistory(database, kind, id, out)
+}
+
+func printHistory(database *store.Store, kind store.Kind, id int64, out io.Writer) error {
+	versions, err := database.ItemVersions(kind, id)
+	for _, version := range versions {
+		fmt.Fprintf(out, "version %d  %s  by %s with token %q  at %s\n", version.Version, version.Action, version.User, version.Token, version.CreatedAt)
+	}
+	return err
+}
+
+// purgeItem is written in the name of the first admin, because the purge row needs a user and this command is run by
+// whoever has the server's data folder.
+func purgeItem(database *store.Store, kind store.Kind, id int64, out io.Writer) error {
+	admin, err := database.FirstAdmin()
+	if err != nil {
+		return errors.New("a purge is written in the name of the first admin, and there is none: user add makes one")
+	}
+	deleted, err := database.PurgeItem(kind, id, store.Caller{User: admin})
+	if err == nil {
+		fmt.Fprintf(out, "%s %d purged with its %d versions; its number is never used again\n", kind.Name, id, deleted)
+	}
+	return err
 }

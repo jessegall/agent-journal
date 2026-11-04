@@ -37,6 +37,10 @@ func Routes(database *store.Store, protocol int) http.Handler {
 	routes.HandleFunc("POST /items/{kind}", server.guard(store.RoleEdit, server.createItem))
 	routes.HandleFunc("GET /items/{kind}/{id}", server.guard(store.RoleRead, server.readItem))
 	routes.HandleFunc("PUT /items/{kind}/{id}", server.guard(store.RoleEdit, server.updateItem))
+	routes.HandleFunc("DELETE /items/{kind}/{id}", server.guard(store.RoleAdmin, server.removeItem))
+	routes.HandleFunc("POST /items/{kind}/{id}/restore", server.guard(store.RoleAdmin, server.restoreItem))
+	routes.HandleFunc("GET /items/{kind}/{id}/versions", server.guard(store.RoleRead, server.listVersions))
+	routes.HandleFunc("GET /items/{kind}/{id}/versions/{version}", server.guard(store.RoleRead, server.readVersion))
 	routes.HandleFunc("/", func(response http.ResponseWriter, _ *http.Request) {
 		writeError(response, http.StatusNotFound, "there is no such route", "see the routes in the design of the shared library")
 	})

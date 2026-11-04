@@ -212,3 +212,67 @@ func TestTheListPagesSearchesAndShowsAnExcerptAroundTheFirstTerm(t *testing.T) {
 		}
 	}
 }
+
+func TestAnAdminRemovesAndRestoresAnItemAndAPutOnARemovedItemIs410(t *testing.T) {
+	made := newFixture(t)
+	createChecklist(t, made)
+	if made.send("DELETE", "/items/doc/1", "", made.tokens[store.RoleEdit], nil).Code != http.StatusForbidden {
+		t.Error("an editor removed an item")
+	}
+	removed := made.send("DELETE", "/items/doc/1", "", made.tokens[store.RoleAdmin], nil)
+	body := decode(t, removed)
+	if removed.Code != 200 || body["removed_at"] == nil || body["version"] != float64(2) {
+		t.Fatalf("%d %v", removed.Code, body)
+	}
+	if read := decode(t, made.send("GET", "/items/doc/1", "", made.tokens[store.RoleRead], nil)); read["removed_at"] == nil {
+		t.Error("a removed item does not say so")
+	}
+	if listed := decode(t, made.send("GET", "/items?kind=doc", "", made.tokens[store.RoleRead], nil)); listed["total"] != float64(0) {
+		t.Errorf("a removed item is listed: %v", listed)
+	}
+	gone := made.send("PUT", "/items/doc/1", `{"fields": {"body": "x"}}`, made.tokens[store.RoleEdit], ifMatch(`"2"`))
+	if gone.Code != http.StatusGone {
+		t.Fatalf("%d", gone.Code)
+	}
+	expectErrorShape(t, gone)
+	if made.send("POST", "/items/doc/1/restore", "", made.tokens[store.RoleEdit], nil).Code != http.StatusForbidden {
+		t.Error("an editor restored an item")
+	}
+	restored := decode(t, made.send("POST", "/items/doc/1/restore", "", made.tokens[store.RoleAdmin], nil))
+	if restored["removed_at"] != nil || restored["version"] != float64(3) {
+		t.Fatalf("%v", restored)
+	}
+	if code := made.send("PUT", "/items/doc/1", `{"fields": {"body": "back"}}`, made.tokens[store.RoleEdit], ifMatch(`"3"`)).Code; code != 200 {
+		t.Errorf("a restored item is not writable: %d", code)
+	}
+}
+
+func TestTheVersionsOfAnItemAreListedWithoutTextAndEachCanBeRead(t *testing.T) {
+	made := newFixture(t)
+	laptop, _, _ := made.store.NewToken(1, "laptop")
+	if made.send("POST", "/items/doc", checklist, laptop, nil).Code != 201 {
+		t.Fatal("create failed")
+	}
+	made.send("PUT", "/items/doc/1", `{"fields": {"body": "Tag first, then build."}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	listed := made.send("GET", "/items/doc/1/versions", "", made.tokens[store.RoleRead], nil)
+	versions, _ := decode(t, listed)["versions"].([]any)
+	if listed.Code != 200 || len(versions) != 2 {
+		t.Fatalf("%d %s", listed.Code, listed.Body.String())
+	}
+	newest, oldest := versions[0].(map[string]any), versions[1].(map[string]any)
+	if newest["version"] != float64(2) || newest["action"] != "update" || newest["user"] != "Grace" || oldest["user"] != "Ada" || oldest["token"] != "laptop" || oldest["created_at"] == nil {
+		t.Fatalf("%v", versions)
+	}
+	if _, hasText := newest["fields"]; hasText || strings.Contains(listed.Body.String(), "Tag first") {
+		t.Error("the list of versions carries the text")
+	}
+	first := decode(t, made.send("GET", "/items/doc/1/versions/1", "", made.tokens[store.RoleRead], nil))
+	if fieldsOf(first)["body"] != "Tag first." || first["action"] != "create" || first["version"] != float64(1) {
+		t.Fatalf("%v", first)
+	}
+	for _, path := range []string{"/items/doc/1/versions/9", "/items/doc/1/versions/x", "/items/doc/9/versions", "/items/note/1/versions"} {
+		if code := made.send("GET", path, "", made.tokens[store.RoleRead], nil).Code; code != 404 {
+			t.Errorf("%s: %d", path, code)
+		}
+	}
+}

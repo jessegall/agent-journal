@@ -148,6 +148,11 @@ func (store *Store) UserByName(name string) (User, error) {
 	return scanUser(store.DB.QueryRow("SELECT "+userColumns+" FROM users WHERE name = ? AND removed_at IS NULL", name))
 }
 
+// FirstAdmin finds the admin who was made first.
+func (store *Store) FirstAdmin() (User, error) {
+	return scanUser(store.DB.QueryRow("SELECT " + userColumns + " FROM users WHERE role = 'admin' AND removed_at IS NULL ORDER BY id LIMIT 1"))
+}
+
 // Users lists the users who are not removed, oldest first.
 func (store *Store) Users() ([]User, error) {
 	rows, err := store.DB.Query("SELECT " + userColumns + " FROM users WHERE removed_at IS NULL ORDER BY id")

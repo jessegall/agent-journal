@@ -93,3 +93,35 @@ func TestACommandWithoutADataFolderOrWithABadRoleFails(t *testing.T) {
 		t.Errorf("%d %q", status, output)
 	}
 }
+
+func TestItemHistoryListsTheVersionsAndPurgeDeletesThemForGood(t *testing.T) {
+	folder := t.TempDir()
+	runIn(t, folder, "user", "add", "Ada", "--role", "admin")
+	database, err := store.Open(folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ada, _ := database.UserByName("Ada")
+	kind, _ := store.KindByName("doc")
+	item, _ := database.CreateItem(kind, store.Fields{"title": "T", "abstract": "A", "body": "secret text"}, store.Caller{User: ada})
+	database.UpdateItem(kind, item.ID, 1, store.Fields{"body": "more secret text"}, store.Caller{User: ada})
+	database.Close()
+	history, status := runIn(t, folder, "item", "history", "doc", "1")
+	if status != 0 || !strings.Contains(history, "version 2  update  by Ada") || !strings.Contains(history, "version 1  create") || strings.Contains(history, "secret") {
+		t.Fatalf("%d %s", status, history)
+	}
+	purged, status := runIn(t, folder, "item", "purge", "doc", "1")
+	if status != 0 || !strings.Contains(purged, "doc 1 purged with its 2 versions") {
+		t.Fatalf("%d %s", status, purged)
+	}
+	after, _ := runIn(t, folder, "item", "history", "doc", "1")
+	if strings.Contains(after, "create") || !strings.Contains(after, "purge") {
+		t.Errorf("%s", after)
+	}
+	if output, status := runIn(t, folder, "item", "purge", "doc", "1"); status != 1 || !strings.Contains(output, "not found") {
+		t.Errorf("%d %s", status, output)
+	}
+	if output, status := runIn(t, folder, "item", "history", "note", "1"); status != 1 || !strings.Contains(output, "no kind") {
+		t.Errorf("%d %s", status, output)
+	}
+}

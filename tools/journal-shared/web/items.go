@@ -136,3 +136,60 @@ func number(text string, otherwise int) (int, bool) {
 	parsed, err := strconv.Atoi(text)
 	return parsed, err == nil
 }
+
+func (server *Server) removeItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
+	kind, id, found := itemOf(response, request)
+	if !found {
+		return
+	}
+	item, err := server.store.RemoveItem(kind, id, caller)
+	if err != nil {
+		fail(response, err)
+		return
+	}
+	writeItem(response, http.StatusOK, item)
+}
+
+func (server *Server) restoreItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
+	kind, id, found := itemOf(response, request)
+	if !found {
+		return
+	}
+	item, err := server.store.RestoreItem(kind, id, caller)
+	if err != nil {
+		fail(response, err)
+		return
+	}
+	writeItem(response, http.StatusOK, item)
+}
+
+func (server *Server) listVersions(response http.ResponseWriter, request *http.Request, _ store.Caller) {
+	kind, id, found := itemOf(response, request)
+	if !found {
+		return
+	}
+	versions, err := server.store.ItemVersions(kind, id)
+	if err != nil {
+		fail(response, err)
+		return
+	}
+	writeJSON(response, http.StatusOK, map[string]any{"versions": versions})
+}
+
+func (server *Server) readVersion(response http.ResponseWriter, request *http.Request, _ store.Caller) {
+	kind, id, found := itemOf(response, request)
+	if !found {
+		return
+	}
+	version, valid := pathNumber(request, "version")
+	if !valid {
+		fail(response, store.ErrNotFound)
+		return
+	}
+	old, err := server.store.ItemVersionOf(kind, id, version)
+	if err != nil {
+		fail(response, err)
+		return
+	}
+	writeJSON(response, http.StatusOK, old)
+}

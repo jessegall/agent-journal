@@ -21,8 +21,11 @@ var (
 const sqliteConstraint = 19
 
 const (
-	ActionCreate = "create"
-	ActionUpdate = "update"
+	ActionCreate  = "create"
+	ActionUpdate  = "update"
+	ActionRemove  = "remove"
+	ActionRestore = "restore"
+	ActionPurge   = "purge"
 )
 
 // excerptReach is how many characters an excerpt shows on each side of the first search term.
@@ -154,6 +157,73 @@ func (store *Store) UpdateItem(kind Kind, id, baseVersion int64, fields Fields, 
 	return updated, transaction.Commit()
 }
 
+// RemoveItem marks an item removed from the library, as a new version; an item removed already stays as it is.
+func (store *Store) RemoveItem(kind Kind, id int64, caller Caller) (Item, error) {
+	return store.markRemoved(kind, id, true, caller)
+}
+
+// RestoreItem clears the removed mark, as a new version; an item that is not removed stays as it is.
+func (store *Store) RestoreItem(kind Kind, id int64, caller Caller) (Item, error) {
+	return store.markRemoved(kind, id, false, caller)
+}
+
+func (store *Store) markRemoved(kind Kind, id int64, removing bool, caller Caller) (Item, error) {
+	transaction, err := store.DB.Begin()
+	if err != nil {
+		return Item{}, err
+	}
+	defer transaction.Rollback()
+	current, err := readItem(transaction, kind, id)
+	if err != nil {
+		return Item{}, err
+	}
+	if (current.RemovedAt != "") == removing {
+		return current, nil
+	}
+	now, action := store.timestamp(), ActionRestore
+	var removedAt any
+	if removing {
+		removedAt, action = now, ActionRemove
+	}
+	if _, err := transaction.Exec("UPDATE "+kind.Table+" SET removed_at = ?, version = version + 1, updated_at = ? WHERE id = ?", removedAt, now, id); err != nil {
+		return Item{}, err
+	}
+	changed, err := store.record(transaction, kind, id, action, caller)
+	if err != nil {
+		return Item{}, err
+	}
+	return changed, transaction.Commit()
+}
+
+// PurgeItem deletes an item and all its versions for good, and adds one purge row with no fields, so the history still
+// shows that the item is gone. The number is never used again. It returns how many versions were deleted.
+func (store *Store) PurgeItem(kind Kind, id int64, caller Caller) (int64, error) {
+	transaction, err := store.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer transaction.Rollback()
+	current, err := readItem(transaction, kind, id)
+	if err != nil {
+		return 0, err
+	}
+	deleted, err := transaction.Exec("DELETE FROM item_versions WHERE kind = ? AND item_id = ?", kind.Name, id)
+	if err != nil {
+		return 0, err
+	}
+	if _, err := transaction.Exec("DELETE FROM "+kind.Table+" WHERE id = ?", id); err != nil {
+		return 0, err
+	}
+	if err := store.addVersion(transaction, kind, id, current.Version+1, ActionPurge, "{}", caller); err != nil {
+		return 0, err
+	}
+	count, err := deleted.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return count, transaction.Commit()
+}
+
 // ListItems lists one page of the items of a kind that are not removed, newest change first. Every word of search
 // has to be in one of the kind's search fields, and each row then carries an excerpt around the first word.
 func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, error) {
@@ -245,15 +315,20 @@ func (store *Store) record(transaction *sql.Tx, kind Kind, id int64, action stri
 	if err != nil {
 		return Item{}, err
 	}
+	if err := store.addVersion(transaction, kind, id, written.Version, action, string(fields), caller); err != nil {
+		return Item{}, err
+	}
+	return readItem(transaction, kind, id)
+}
+
+func (store *Store) addVersion(transaction *sql.Tx, kind Kind, id, version int64, action, fields string, caller Caller) error {
 	var token sql.NullInt64
 	if caller.TokenID != 0 {
 		token = sql.NullInt64{Int64: caller.TokenID, Valid: true}
 	}
-	if _, err := transaction.Exec("INSERT INTO item_versions (kind, item_id, version, action, fields, user_id, token_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		kind.Name, id, written.Version, action, string(fields), caller.User.ID, token, store.timestamp()); err != nil {
-		return Item{}, err
-	}
-	return readItem(transaction, kind, id)
+	_, err := transaction.Exec("INSERT INTO item_versions (kind, item_id, version, action, fields, user_id, token_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		kind.Name, id, version, action, fields, caller.User.ID, token, store.timestamp())
+	return err
 }
 
 // checked keeps the fields of the kind, with numbers as whole numbers; a field that is not named in the kind is left
