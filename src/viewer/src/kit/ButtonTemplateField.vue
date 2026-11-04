@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import Segmented from "./Segmented.vue";
 import {lineResult} from "../windows/windowContext.js";
+import {CHAT_WINDOW} from "../windows/chatOptions.js";
 
 const props = defineProps({field: {type: Object, required: true}, value: {type: String, required: true}, environment: {type: String, required: true}});
 const emit = defineEmits(["pick"]);
@@ -11,7 +12,7 @@ const options = computed(() => templates.value.map((row) => ({key: String(row.id
 const picked = computed(() => templates.value.find((row) => String(row.id) === props.value));
 
 async function load() {
-    const answer = await lineResult("templates.templates", ["template", "list", "--target", props.field.target, "--purpose", props.field.purpose], props.environment);
+    const answer = await lineResult(CHAT_WINDOW, ["template", "list", "--target", props.field.target, "--purpose", props.field.purpose], props.environment);
     if (!answer.ok) {
         failure.value = answer.error;
         return;

@@ -122,7 +122,7 @@ test("every choice, text and template field is required before sending", async (
     expect(form.querySelector("[data-button-send]").disabled).toBe(false);
     await pickButton(form, "Send");
     expect(writes.at(-1).line).toEqual(["plan", "review", "12", "short", "--message=A message with spaces", "--template=2"]);
-    expect(reads[0]).toMatchObject({window: "templates.templates", line: ["template", "list", "--target", "plan", "--purpose", "review"], environment: "main"});
+    expect(reads[0]).toMatchObject({window: "messages.chat", line: ["template", "list", "--target", "plan", "--purpose", "review"], environment: "main"});
 });
 
 test.each(["Security review", "General critique"])("a template field picks its default title %s", async (title) => {

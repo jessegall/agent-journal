@@ -28,7 +28,7 @@ async function started({missing = true, share = false} = {}) {
     vi.stubGlobal("fetch", perLine(async (url, init) => {
         if (String(url).startsWith("/api/buttons")) {
             reads.push(url);
-            return {ok: !share, status: share ? 403 : 200, json: async () => ({buttons: [BUTTON], missing: missingLines.length ? {"acme.review": missingLines} : {}})};
+            return {ok: !share, status: share ? 403 : 200, json: async () => ({buttons: [], missing: missingLines.length ? {"acme.review": missingLines} : {}})};
         }
         const body = JSON.parse(init.body);
         writes.push(body);

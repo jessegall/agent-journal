@@ -1,4 +1,5 @@
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
 from core.modules.plans.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
@@ -88,6 +89,12 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
     docks = PLAN_DOCKS
+    buttons = [ButtonDeclaration("plans.approve", ("dock.plans.waiting", "row.plan"), "Approve", "plan approve {row_id}",
+                                 icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
+                                 tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
+                                 menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
+                                                           tuple([TextField("message", "Message to the agent")]),
+                                                           "Your message reaches the agent before the plan starts")]))]
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]

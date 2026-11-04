@@ -1,6 +1,7 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import Btn from "../kit/Btn.vue";
+import ButtonSlot from "../kit/ButtonSlot.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import DockLeave from "./DockLeave.vue";
@@ -59,6 +60,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
             </template>
             <span class="chat-dock-acts dock-acts">
+                <ButtonSlot :name="`dock.${item.type}`" :row="{id: item.target_id, kind: item.target_model}" :environment="context.environment" :read-only="context.readOnly" />
                 <template v-for="button in buttons" :key="button.action + button.runs">
                     <template v-if="button.iconOnly">
                         <Btn kind="icon" :aria-label="button.label" :title="button.label" :data-dock-action="button.action" @click="press(button)"><Icon :name="button.icon" :size="13" /></Btn>

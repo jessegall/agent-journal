@@ -33,7 +33,8 @@ def test_buttons_are_offered_only_where_their_module_is_active(buttons_server):
     expect_row(button["fields"][0], name="priority", choices=[{"key": "normal", "label": "Normal"}, {"key": "high", "label": "High"}])
     status, _, body = viewer_answer(story.viewer_port(), "/api/buttons?environment=elsewhere", cookie, "")
     expect_value(status, 200)
-    expect_row(json.loads(body), buttons=[], missing={})
+    expect_row(json.loads(body), missing={})
+    expect_value({item["name"] for item in json.loads(body)["buttons"]}, {"plans.approve", "templates.critique"})
 
 
 def test_missing_lines_include_main_and_menu_labels_until_this_person_allows_them(buttons_server):

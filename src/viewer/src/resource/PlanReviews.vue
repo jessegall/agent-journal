@@ -10,7 +10,7 @@ const shown = computed(() => reviews.value.filter((review) => review.subject_mod
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
 async function load() {
-    const answer = await props.read(["review", "list", "--subject-id", String(props.id), "--oldest"]);
+    const answer = await props.read(["review", "list", "--subject", String(props.id), "--oldest"]);
     reviews.value = answer.ok ? answer.value.rows ?? [] : [];
 }
 

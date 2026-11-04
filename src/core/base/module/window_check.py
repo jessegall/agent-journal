@@ -53,7 +53,8 @@ class WindowCheck:
 
     def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
         buttons = self.mark_dock_lines(modules, shipped)
-        return ButtonCommandCheck().problems(buttons, buttons, self.allowed_button_lines(modules, shipped))
+        peers = (*buttons, *ButtonCommandCheck.declared_lines(modules, shipped))
+        return ButtonCommandCheck().problems(buttons, peers, self.allowed_button_lines(modules, shipped))
 
     @staticmethod
     def allowed_button_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> frozenset[str]:

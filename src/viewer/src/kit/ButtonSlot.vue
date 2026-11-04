@@ -4,7 +4,7 @@ import Btn from "./Btn.vue";
 import ButtonForm from "./ButtonForm.vue";
 import MenuItem from "./MenuItem.vue";
 import SplitButton from "./SplitButton.vue";
-import {buttonsAt} from "../domain/buttons.js";
+import {buttonsAt} from "@journal/window-kit";
 import {pressButton} from "../chat/markButtons.js";
 
 const props = defineProps({name: {type: String, required: true}, row: {type: Object, default: null}, environment: {type: String, required: true}, readOnly: Boolean});

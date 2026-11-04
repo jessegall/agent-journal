@@ -11,7 +11,7 @@ from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.module.template_check import TemplateCheck
 from core.base.module.window_check import WindowCheck
-from core.base.registry.button_line import BLANK, ButtonLine
+from core.base.registry.button_line import BLANK
 from core.base.viewer.button_field import ButtonField
 from core.base.viewer.text_field import TextField
 
@@ -53,8 +53,7 @@ class ButtonCheck:
                     problems.append(f"{owner} uses slot {slot} of {slots[slot]}, which it depends on only when listed in dependencies")
             for action in (button, *button.menu):
                 problems += self.action_problems(f"{owner}, action {action.label}", action.runs, action.fields, runs, targets)
-        buttons = tuple(ButtonLine(module.name, action.runs, module.name in shipped) for module in modules
-                        for button in module.buttons for action in (button, *button.menu))
+        buttons = ButtonCommandCheck.declared_lines(modules, shipped)
         peers = (*buttons, *WindowCheck.mark_dock_lines(modules, shipped))
         problems += ButtonCommandCheck().problems(buttons, peers, WindowCheck.allowed_button_lines(modules, shipped))
         return tuple(problems)

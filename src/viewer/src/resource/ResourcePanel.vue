@@ -97,6 +97,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 :backed="route.stack.length > 1"
                                 :id="opened.id"
                                 :read="read"
+                                :environment="environment"
                                 @close="close"
                                 @back="unpeek"
                                 @select="(id) => peek('tasks', id)"
