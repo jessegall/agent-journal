@@ -60,7 +60,7 @@ test("the output window shows the reader's lines and the whole text on a button,
     const answers = {
         "process feed --id 4": page([run(4, "pytest -q", "running")]),
         "output peek 4 --summary": {ok: true, value: {lines: ["output 4 is running: 3 lines, 40 characters", "3: FAILED a"]}},
-        "output peek 4 --all": {ok: true, value: {lines: ["setup", "ok", "FAILED a"]}},
+        "output page 4": {ok: true, value: {lines: ["setup", "ok", "FAILED a"], first_byte: 0, last_byte: 20, total: 20}},
     };
     const windowContext = recording(answers, {output: 4});
     const element = await mounted(Output, windowContext);
@@ -72,7 +72,7 @@ test("the output window shows the reader's lines and the whole text on a button,
     element.querySelector(".whole").click();
     await settle();
     expect(element.textContent).toContain("setup");
-    expect(windowContext.reads).toContain("output peek 4 --all");
+    expect(windowContext.reads).toContain("output page 4");
 });
 
 test("a pruned output says so, and the output window has its stop and watch buttons", async () => {

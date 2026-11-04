@@ -21,7 +21,7 @@ test("a process mark opens to its run's output and folds on the next click", asy
     const asked = [];
     vi.stubGlobal("fetch", async (url, init) => {
         asked.push(JSON.parse(init.body));
-        return {json: async () => ({code: 0, value: {lines: ["compiling the cart", "1 failed"]}, error: ""})};
+        return {json: async () => ({code: 0, value: {lines: ["compiling the cart", "1 failed"], first_byte: 0, last_byte: 30, total: 30}, error: ""})};
     });
     const element = document.createElement("div");
     document.body.append(element);
@@ -31,7 +31,7 @@ test("a process mark opens to its run's output and folds on the next click", asy
     await settled();
     element.querySelector("button, [role=button], .chat-mark")?.click();
     await settled();
-    expect(asked).toContainEqual({window: "messages.chat", line: ["output", "peek", "7", "--all"], environment: "development"});
+    expect(asked).toContainEqual({window: "messages.chat", line: ["output", "page", "7"], environment: "development"});
     expect(element.textContent).toContain("compiling the cart");
 });
 
