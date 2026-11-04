@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-import { openBlock as o, createElementBlock as i, withModifiers as K, unref as d, createTextVNode as ge, toDisplayString as p, createVNode as w, createBlock as b, computed as r, ref as c, defineAsyncComponent as we, onUnmounted as ve, withKeys as le, normalizeClass as ae, createElementVNode as g, createCommentVNode as m, Fragment as H, withCtx as S, createSlots as fe, renderList as te, resolveDynamicComponent as ke, watch as ie, normalizeStyle as ye, Transition as he } from "vue";
-import { peekRef as pe, Icon as ne, RunningCommand as be, useNow as Se, age as Ce, useWindow as me, loadWindowComponent as $e, TimeAgo as Re, FoldGroup as re, InnerTabs as xe, SwitchCase as Te, EmptyState as _e, TaskStatusIcon as Oe, useRows as Ae, useDeclaredRows as ue, SearchBar as Ee, Segmented as Be, RowList as Ie } from "@journal/window-kit";
+import { openBlock as o, createElementBlock as i, withModifiers as K, unref as d, createTextVNode as ge, toDisplayString as p, createVNode as w, createBlock as h, computed as r, ref as c, defineAsyncComponent as we, onUnmounted as ve, withKeys as le, normalizeClass as ae, createElementVNode as g, createCommentVNode as m, Fragment as H, withCtx as S, createSlots as fe, renderList as te, resolveDynamicComponent as ke, watch as ie, normalizeStyle as ye, Transition as be } from "vue";
+import { peekRef as pe, Icon as ne, RunningCommand as he, useNow as Se, age as Ce, useWindow as me, loadWindowComponent as $e, TimeAgo as Re, FoldGroup as re, InnerTabs as xe, SwitchCase as Te, EmptyState as _e, TaskStatusIcon as Oe, useRows as Ae, useDeclaredRows as ue, SearchBar as Ee, Segmented as Be, RowList as Ie } from "@journal/window-kit";
 import { _ as oe, T as de } from "./TranscriptRows-CjXeMFF-.js";
 const Ne = {
   class: "agent-command",
@@ -26,7 +26,7 @@ const Ne = {
           name: "arrow",
           size: 11
         })
-      ])) : n.stopped ? (o(), i("span", Le, "Waiting")) : (o(), b(d(be), {
+      ])) : n.stopped ? (o(), i("span", Le, "Waiting")) : (o(), h(d(he), {
         key: 2,
         text: n.command,
         idle: n.note || "thinking"
@@ -145,13 +145,13 @@ const Ne = {
           }, null, 8, Ve),
           g("span", We, p(Z.value), 1),
           g("span", ze, p(((q = n.facts) == null ? void 0 : q.given_name) || n.row.id), 1),
-          n.open ? m("", !0) : (o(), b(d(ne), {
+          n.open ? m("", !0) : (o(), h(d(ne), {
             key: 1,
             class: "agent-chevron",
             name: "chevronRight",
             size: 12
           })),
-          n.row.ended_at && !R.value ? (o(), b(d(Re), {
+          n.row.ended_at && !R.value ? (o(), h(d(Re), {
             key: 2,
             class: "agent-time",
             at: n.row.ended_at
@@ -164,7 +164,7 @@ const Ne = {
             g("span", Me, p(I.value), 1)
           ], 64)) : m("", !0)
         ]),
-        l.value && !n.open ? (o(), b(ce, {
+        l.value && !n.open ? (o(), h(ce, {
           key: 0,
           class: "agent-command",
           "wait-reason": n.waitReason,
@@ -180,7 +180,7 @@ const Ne = {
           }, ["stop"]))
         }, [
           j.value ? (o(), i("span", Pe, p(j.value), 1)) : m("", !0),
-          l.value ? (o(), b(ce, {
+          l.value ? (o(), h(ce, {
             key: 1,
             class: "agent-command",
             "wait-reason": n.waitReason,
@@ -223,7 +223,7 @@ const Ne = {
                 tasks: S(() => {
                   var k;
                   return [
-                    v.value.length ? m("", !0) : (o(), b(d(_e), {
+                    v.value.length ? m("", !0) : (o(), h(d(_e), {
                       key: 0,
                       title: "No tasks"
                     }, {
@@ -232,16 +232,16 @@ const Ne = {
                       ])]),
                       _: 1
                     })),
-                    (o(!0), i(H, null, te(ee.value, (h) => (o(), b(d(re), {
-                      key: h.state,
-                      label: h.label,
-                      count: h.tasks.length,
-                      open: z(h.state),
-                      "data-agent-section": h.state,
-                      onToggle: (A) => f(h.state)
+                    (o(!0), i(H, null, te(ee.value, (b) => (o(), h(d(re), {
+                      key: b.state,
+                      label: b.label,
+                      count: b.tasks.length,
+                      open: z(b.state),
+                      "data-agent-section": b.state,
+                      onToggle: (A) => f(b.state)
                     }, {
                       default: S(() => [
-                        (o(!0), i(H, null, te(h.tasks, (A) => (o(), i("button", {
+                        (o(!0), i(H, null, te(b.tasks, (A) => (o(), i("button", {
                           key: A.id,
                           type: "button",
                           class: "agent-task",
@@ -271,10 +271,10 @@ const Ne = {
                 ]),
                 _: 2
               }, [
-                te(d(y), (k, h) => ({
-                  name: h,
+                te(d(y), (k, b) => ({
+                  name: b,
                   fn: S(() => [
-                    (o(), b(ke(k), {
+                    (o(), h(ke(k), {
                       agent: n.row.id
                     }, null, 8, ["agent"]))
                   ])
@@ -286,7 +286,7 @@ const Ne = {
       ], 42, De);
     };
   }
-}, ot = /* @__PURE__ */ oe(nt, [["__scopeId", "data-v-11633900"]]), st = ["data-agent-row"], lt = {
+}, ot = /* @__PURE__ */ oe(nt, [["__scopeId", "data-v-934ddb8b"]]), st = ["data-agent-row"], lt = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(n) {
@@ -327,7 +327,7 @@ const Ne = {
       class: ae(["agents", { focused: y.value }]),
       style: ye({ "--agent-row-offset": `${O.value}px` })
     }, [
-      y.value ? m("", !0) : (o(), b(d(Ee), {
+      y.value ? m("", !0) : (o(), h(d(Ee), {
         key: 0,
         modelValue: $.value,
         "onUpdate:modelValue": s[1] || (s[1] = (u) => $.value = u),
@@ -343,7 +343,7 @@ const Ne = {
         ]),
         _: 1
       }, 8, ["modelValue"])),
-      w(he, {
+      w(be, {
         name: "agents-view",
         mode: "out-in"
       }, {
