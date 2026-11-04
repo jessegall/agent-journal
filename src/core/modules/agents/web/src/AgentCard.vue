@@ -469,10 +469,11 @@ readCommand();
 .agent-back:hover { background: var(--hover); color: var(--text); }
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
 .agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
-.agent-card.open .agent-work-start { margin-top: 0; }
 .agent-card.open .agent-title { font-weight: 600; }
-.agent-card.open .agent-line { padding: 0 14px 7px 50px; border-bottom: 1px solid var(--border); background: var(--side); }
-.agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-dot { display: none; }
+.agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border); background: var(--side); }
+.agent-card.open .agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
+.agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-more { order: 2; gap: 0; min-width: 0; max-width: 100%; padding: 0; }
 .agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border); }
 .agent-card.open .agent-tabs { height: 30px; flex: none; align-items: center; margin: 0; padding: 0 14px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
