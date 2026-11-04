@@ -16,7 +16,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 
 def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.expect_success('reader add python3 --commands "python3*" --title "Running tests" --lines "passed" --summary "([0-9]+ passed)" --count "collected ([0-9]+)" --step "^test_"', actor=story.agent)
+    story.expect_success('reader add python3 --commands "python3*" --title "Python tests" --lines "passed" --summary "([0-9]+ passed)" --count "collected ([0-9]+)" --step "^test_"', actor=story.agent)
     worker = reader_worker(story)
     parts = [PartSpec('python3 -c "update_sources()"', "python3", category=CommandCategory.EDIT),
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
