@@ -5,7 +5,8 @@ import {register} from "./index.js";
 import "./copyBlock.js";
 
 const PARAGRAPH_BREAK = /\n\s*\n/;
-const FENCE =/^(```|~~~)\s*(\w+)?\s*$/;
+const FENCE = /^(\s*)(`{3,}|~{3,})\s*([\w+#.-]+)?[^`]*$/;
+const CLOSING_FENCE = /^\s*(`{3,}|~{3,})\s*$/;
 const INDENTED = /^\s{4,}\S/;
 // the lines under a head line: indented by two spaces or more, and not a list item
 const UNDER_HEAD = /^\s{2,}(?![-*+]\s|\d+[.)]\s)\S/;
@@ -49,6 +50,18 @@ function block(lines, lang) {
     return {kind: "html", html: `<div class="chat-code-block" data-language="${language}"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
 }
 
+// a fence ends at a line of the same mark, at least as long, with nothing after it
+function fenceEnd(lines, opening, mark) {
+    const end = lines.findIndex((line, k) => k > opening && line.trim().startsWith(mark) && CLOSING_FENCE.test(line));
+    return end < 0 ? lines.length : end;
+}
+
+// the lines of a fence inside a list lose the fence's own indent
+function fenced(lines, indent, language) {
+    const outdented = lines.map((line) => line.replace(new RegExp(`^\\s{0,${indent.length}}`), ""));
+    return block(outdented.map(withoutChips), language ? language.toLowerCase() : "");
+}
+
 // the text with each run of paragraphs that is code without a fence made a block, and the text between them kept as it was: a run holds
 // a paragraph of code, or two lines of code, and may hold blank lines
 function withCodeParagraphs(text) {
@@ -77,27 +90,27 @@ function withCodeParagraphs(text) {
     return pieces.length === 1 && pieces[0].kind === "text" ? [{kind: "text", text}] : pieces;
 }
 
-function lift(text) {
+// the text with its fences made blocks; a document is Markdown, so nothing else in it is guessed to be code
+function lift(text, isDocument) {
     const lines = text.split("\n");
     const out = [];
     let held = [];
     const flush = () => {
-        if (held.length) out.push(...withCodeParagraphs(held.join("\n")));
+        if (held.length) out.push(...(isDocument ? [{kind: "text", text: held.join("\n")}] : withCodeParagraphs(held.join("\n"))));
         held = [];
     };
     let i = 0;
     while (i < lines.length) {
         const fence = lines[i].match(FENCE);
         if (fence) {
-            const end = lines.findIndex((l, k) => k > i && l.trim().startsWith(fence[1]));
-            const stop = end < 0 ? lines.length : end;
+            const stop = fenceEnd(lines, i, fence[2]);
             flush();
-            out.push(block(lines.slice(i + 1, stop).map(withoutChips), fence[2] ? fence[2].toLowerCase() : ""));
+            out.push(fenced(lines.slice(i + 1, stop), fence[1], fence[3]));
             i = stop + 1;
             continue;
         }
         const indent = endsInHead(held) ? UNDER_HEAD : INDENTED;
-        if (indent.test(lines[i]) && !inList(held, lines[i])) {
+        if (!isDocument && indent.test(lines[i]) && !inList(held, lines[i])) {
             let stop = i;
             while (stop < lines.length && (indent.test(lines[stop]) || !lines[stop].trim())) stop += 1;
             while (stop > i && !lines[stop - 1].trim()) stop -= 1;
@@ -118,4 +131,4 @@ function lift(text) {
     return out.length > 1 || (out[0] && out[0].kind === "html") ? out : null;
 }
 
-register((text) => lift(text));
+register((text, context) => lift(text, context.document));

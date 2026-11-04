@@ -55,4 +55,4 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         if not status.is_reported:
             return f"{start}  nothing reported yet"
         context = f"  context {status.context_percent}%" if status.context_percent is not None else ""
-        return f"{start}  {status.model or 'model not reported'}{context}  cost ${status.cost_dollars:.2f}"
+        return f"{start}  {status.model or 'model not reported'}{context}  {'cost not known' if status.cost_dollars is None else f'cost ${status.cost_dollars:.2f}'}"

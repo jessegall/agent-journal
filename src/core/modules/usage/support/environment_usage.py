@@ -14,4 +14,4 @@ class EnvironmentUsage:
 
     @property
     def cost_dollars(self) -> float:
-        return sum(status.cost_dollars for _, status in self.agents)
+        return sum(status.cost_dollars for _, status in self.agents if status.cost_dollars is not None)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.model.view_model import ViewModel
 
 
-# @sin architecture_views_ViewModelDeclaresSelectDetector
+# @sin architecture_views_view_model_without_select
 @dataclass(frozen=True, kw_only=True)
 class ShelfCount(ViewModel):
     cli_name = "shelf-count"
@@ -13,7 +13,7 @@ class ShelfCount(ViewModel):
     shelf_id: int
 
 
-# @righteous architecture_views_ViewModelDeclaresSelectDetector
+# @righteous architecture_views_view_model_without_select
 @dataclass(frozen=True, kw_only=True)
 class ShelfLabel(ViewModel):
     cli_name = "shelf-label"
@@ -24,6 +24,6 @@ class ShelfLabel(ViewModel):
     label: str
 
 
-# @sin architecture_views_NoSecondViewReaderDetector
+# @sin architecture_views_second_view_reader
 class ViewQuery:
     pass

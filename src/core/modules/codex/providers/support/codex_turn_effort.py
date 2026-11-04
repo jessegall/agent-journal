@@ -6,11 +6,12 @@ TURN_CONTEXT_TYPE = "turn_context"
 
 
 class CodexTurnEffort:
-    """Reads the reasoning effort a turn of a Codex session ran at from a line of its rollout."""
+    """Reads what a turn of a Codex session ran at from a line of its rollout: its reasoning effort, or with
+    `field="model"` the model."""
 
     @staticmethod
-    def parsed(line: str) -> str:
+    def parsed(line: str, field: str = "effort") -> str:
         fields: object = json.loads(line) if line.strip() else {}
         payload = fields.get("payload") if is_mapping(fields) and fields.get("type") == TURN_CONTEXT_TYPE else None
-        effort = payload.get("effort") if is_mapping(payload) else None
-        return effort if isinstance(effort, str) else ""
+        value = payload.get(field) if is_mapping(payload) else None
+        return value if isinstance(value, str) else ""

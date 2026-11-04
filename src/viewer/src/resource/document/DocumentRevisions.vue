@@ -20,7 +20,7 @@ async function open(row) {
                 <Btn kind="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change || row.created_at }}</Btn>
             </template>
             <template v-if="opened">
-                <div class="md revision-text" data-text-revision-body v-html="render(opened.body, {env: '', rowNames: false})" />
+                <div class="md revision-text" data-text-revision-body v-html="render(opened.body, {env: '', rowNames: false, document: true})" />
             </template>
         </template>
         <template v-else>

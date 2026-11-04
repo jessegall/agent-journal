@@ -27,6 +27,13 @@ def test_a_session_variable_naming_no_open_agent_is_refused_and_never_runs_as_an
     story.expect_success("task list", "nothing found")
 
 
+def test_a_run_the_journal_started_keeps_running_as_its_agent_after_the_agent_has_stopped(new_story):
+    story, agent_id = agent_with_pid(new_story)
+    story.expect_success(f"agent end {agent_id}")
+    story.expect_requested_exit(TASK_LINE, CallerRequest({"JOURNAL_AGENT_SESSION": "s-7"}), USAGE_CODE, "which is no open agent")
+    story.expect_requested_success(TASK_LINE, CallerRequest({"JOURNAL_AGENT_SESSION": "s-7", "JOURNAL_RUNNER_PROCESS": "12"}), f"creator_id: {agent_id}", "environment_id: 1")
+
+
 def test_a_shell_of_an_agent_program_with_no_runner_session_runs_as_the_agent_its_program_names(new_story):
     story, agent_id = agent_with_pid(new_story)
     story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-7", "USER": "ada"}), f"creator_id: {agent_id}", "environment_id: 1")

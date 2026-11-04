@@ -7,6 +7,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.doc_revisions import DocRevisions
+from core.modules.documents.support.markdown_check import MarkdownCheck
 from core.modules.documents.support.row_refs import RowRefs
 
 
@@ -19,6 +20,7 @@ class MakeTextHandler(Handler[MakeText, NewText]):
         self.repository, self.revisions, self.row_refs = repository, revisions, row_refs
 
     def handle(self, command: MakeText, context: Context) -> NewText:
+        MarkdownCheck.check(command.body)
         subject_refs = [self.row_refs.parsed(word) for text in command.subjects for word in text.replace(",", " ").split()]
         text_row = self.repository.save(command.text_model(creator_id=context.actor.id, title=command.title,
                                                      abstract=command.abstract, body=command.body), context)

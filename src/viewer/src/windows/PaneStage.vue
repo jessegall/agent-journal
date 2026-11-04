@@ -27,7 +27,6 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
-import OptionsPicker from "../shell/OptionsPicker.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../resource/resourceEvents.js";
@@ -218,7 +217,7 @@ onMounted(() => {
     readActiveEnvironments();
     props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
     readFacts();
-    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*"], askBars);
+    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
     props.subscriptions.follow("stage:usage", ["agent.*"], askUsage);
     props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
     usageTimer = setInterval(readUsage, USAGE_SECONDS * 1000);
@@ -349,7 +348,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
@@ -359,7 +358,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <template v-if="presets">
                             <LayoutPicker :list="presets" />
                         </template>
-                        <OptionsPicker />
                     </span>
             </InformationBar>
             </template>

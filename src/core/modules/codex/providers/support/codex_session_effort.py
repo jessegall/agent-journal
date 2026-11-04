@@ -6,10 +6,11 @@ from core.modules.codex.providers.support.codex_turn_effort import CodexTurnEffo
 
 
 class CodexSessionEffort:
-    """Reads backward through complete rollout records until the latest turn's effort is found."""
+    """Reads backward through complete rollout records until the latest turn's effort is found, or with
+    `field="model"` its model."""
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
+    def __init__(self, path: Path, field: str = "effort") -> None:
+        self.path, self.field = path, field
 
     def read(self) -> str:
         if not self.path.is_file():
@@ -31,7 +32,7 @@ class CodexSessionEffort:
                     lines.pop()
                     incomplete = False
                 for line in reversed(lines):
-                    effort = CodexTurnEffort.parsed(line.decode())
-                    if effort:
-                        return effort
-        return "" if incomplete else CodexTurnEffort.parsed(remainder.decode())
+                    value = CodexTurnEffort.parsed(line.decode(), self.field)
+                    if value:
+                        return value
+        return "" if incomplete else CodexTurnEffort.parsed(remainder.decode(), self.field)

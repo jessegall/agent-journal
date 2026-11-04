@@ -35,8 +35,8 @@ const WORKER = {
         recent: [{time: before(8 * MINUTE), text: "Finished task 331: Read the settings", tone: "good", table: "tasks", id: 331}, {time: before(3 * MINUTE), text: "A run failed: npm run build", tone: "bad", table: "", id: 9}],
     }),
     "usage tool --agent 12": {tool: "Bash pytest -q", thinking: false, wait_target: ""},
-    "agent list --parent 12": {rows: []},
-    "agent-skill list --agent 12": {rows: [{id: 1, name: "journal"}, {id: 2, name: "plain-viewer-text"}]},
+    "agent list --parent 12": {rows: [], total: 0},
+    "agent-skill list --agent 12": {rows: [{id: 1, agent_id: 12, skill: "journal", state: "loaded"}, {id: 2, agent_id: 12, skill: "plain-viewer-text", state: "loaded"}], total: 2},
     "worker-worktree points --agent 12": {points: [{id: 1, text: "Every label is the one in the spec", proof: {state: "checked", text: "labels match"}}, {id: 2, text: "The tests pass", proof: null}]},
 };
 
@@ -105,8 +105,8 @@ const MAIN = {
     "usage agents": {rows: [facts({id: 1, given_name: "Ada", profile: "", cost_dollars: 537.93, context_percent: 57, instruction: "", tasks: []})]},
     "usage agent 1": inspection({id: 1, started_by: "You", task: {id: 5649, title: "Sidebar: pages only for what is a page"}, plan: {id: 91, title: "Sidebar", phase: 2, done: 6, total: 9}}),
     "usage tool --agent 1": {tool: "", thinking: true, wait_target: ""},
-    "agent list --parent 1": {rows: [{id: 22, role: "subagent", given_name: "Curie", profile: "explorer"}]},
-    "agent-skill list --agent 1": {rows: []},
+    "agent list --parent 1": {rows: [{id: 22, role: "subagent", given_name: "Curie", profile: "explorer"}], total: 1},
+    "agent-skill list --agent 1": {rows: [], total: 0},
 };
 
 test("the main agent is titled without a number, shows the tasks done of its plan, and has no brief and no points", async () => {
@@ -132,8 +132,8 @@ const ENDED = {
     "agent show 12": row({ended_at: before(12 * MINUTE), created_at: before(53 * MINUTE), process_started_at: before(53 * MINUTE)}),
     "usage agents": {rows: [facts({context_percent: 71, cost_dollars: 6.02, tasks: [{state: "completed"}, {state: "completed"}, {state: "completed"}]})]},
     "usage agent 12": inspection({last_activity: before(12 * MINUTE)}),
-    "agent list --parent 12": {rows: []},
-    "agent-skill list --agent 12": {rows: []},
+    "agent list --parent 12": {rows: [], total: 0},
+    "agent-skill list --agent 12": {rows: [], total: 0},
     "worker-worktree points --agent 12": {points: []},
 };
 
@@ -155,8 +155,8 @@ const SUBAGENT = {
     "usage agents": {rows: [facts({id: 22, given_name: "Curie", profile: "explorer", model: "Haiku 4.5", effort: "", context_percent: 9, cost_dollars: 0.07, instruction: "Find where the queue gives a command its place, and say which file holds the rule. Reply with the file and the line."})]},
     "usage agent 22": inspection({id: 22}),
     "usage tool --agent 22": {tool: "Read src/core/modules/processes/support/run_slots.py", thinking: false, wait_target: ""},
-    "agent list --parent 22": {rows: []},
-    "agent-skill list --agent 22": {rows: []},
+    "agent list --parent 22": {rows: [], total: 0},
+    "agent-skill list --agent 22": {rows: [], total: 0},
 };
 
 test("a subagent shows its instruction, no tasks an hour and its parent, and asks nothing of a worker", async () => {
@@ -192,4 +192,36 @@ test("the panel is 600 wide, the strip and the foot wrap on a phone and only the
     expect(source("../src/resource/RowMoves.vue")).toMatch(/\.moves,\s*\.ask \{[^}]*flex-wrap: wrap/);
     expect(source("../src/resource/agent/AgentInspector.vue")).toMatch(/\.scroll \{[^}]*overflow-y: auto/);
     expect(source("../src/resource/agent/AgentInspector.vue")).toMatch(/\.foot \{[^}]*flex: none/);
+});
+
+test("a fold reads only its count while it is closed, and its list when it opens, again after each reload while it stays open", async () => {
+    const {element, lines} = opened(WORKER);
+    await settle();
+    const skillFold = () => [...element.querySelectorAll("[data-agent-fold]")].find((fold) => fold.textContent.includes("Skills loaded"));
+    expect(texts(element, "[data-agent-fold] .count")).toEqual(["0", "2", "7"]);
+    expect(lines.filter((line) => line.startsWith("agent-skill list") || line.startsWith("agent list"))).toEqual([
+        "agent list --parent 12 --limit 1 --columns id", "agent-skill list --agent 12 --state loaded --limit 1 --columns id",
+    ]);
+    skillFold().click();
+    await settle();
+    expect(lines).toContain("agent-skill list --agent 12 --state loaded");
+    expect(lines).not.toContain("agent list --parent 12");
+    expect(texts(element, "[data-agent-skill]")).toEqual(["journal", "plain-viewer-text"]);
+    const reads = lines.filter((line) => line === "agent-skill list --agent 12 --state loaded").length;
+    element.querySelector("[data-agent-inspector]").dispatchEvent(new CustomEvent("noop"));
+    expect(reads).toBe(1);
+});
+
+const CODEX = {
+    ...WORKER,
+    "agent show 12": row({program: "codex"}),
+    "usage agents": {rows: [facts({model: "gpt-6.1-sol", effort: "medium", context_percent: null, cost_dollars: null})]},
+};
+
+test("a Codex agent says its real model and that its cost is not known, never zero dollars", async () => {
+    const {element} = opened(CODEX);
+    await settle();
+    expect(text(element, "[data-agent-identity]")).toBe("Builder · codex · gpt-6.1-sol · medium effort");
+    expect(text(element, '[data-agent-cell="cost"]')).toBe("CostNot known");
+    expect(element.textContent).not.toContain("$0");
 });

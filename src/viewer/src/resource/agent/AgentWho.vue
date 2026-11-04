@@ -12,7 +12,7 @@ defineProps({name: {type: String, required: true}, state: {type: String, require
 </template>
 
 <style scoped>
-.who { padding: 14px 14px 12px; border-bottom: 1px solid var(--border); }
+.who { padding: 14px 14px 12px; border-bottom: 1px solid var(--border-inner); }
 .name { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
 .dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .dot.waiting { background: var(--paused, var(--text-3)); }

@@ -1,12 +1,12 @@
 <template>
-    <!-- @sin WindowSearchBarDetector -->
+    <!-- @sin window_search_bar -->
     <input type="search" placeholder="Find a task" />
-    <!-- @sin WindowSearchBarDetector -->
+    <!-- @sin window_search_bar -->
     <TextInput icon="search" placeholder="Find a file" />
-    <!-- @sin WindowSearchBarDetector -->
+    <!-- @sin window_search_bar -->
     <input type="text" placeholder="Filter files" />
-    <!-- @righteous WindowSearchBarDetector -->
+    <!-- @righteous window_search_bar -->
     <input placeholder="Task title" />
-    <!-- @righteous WindowSearchBarDetector -->
+    <!-- @righteous window_search_bar -->
     <SearchBar />
 </template>

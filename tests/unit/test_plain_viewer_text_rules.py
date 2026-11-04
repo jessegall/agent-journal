@@ -5,10 +5,10 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 RULES = (
-    "naming_PlainViewerTextDetector",
-    "naming_PlainViewerPageTextDetector",
-    "naming_PlainViewerScriptTextDetector",
-    "naming_PlainSettingTextDetector",
+    "naming_plain_viewer_text",
+    "naming_plain_viewer_page_text",
+    "naming_plain_viewer_script_text",
+    "naming_plain_setting_text",
 )
 
 
@@ -21,29 +21,29 @@ def test_viewer_wording_rules_reject_vague_actions_and_keep_clear_actions(tmp_pa
         shutil.copyfile(ROOT / ".commandments" / "custom" / f"{name}.json", custom / f"{name}.json")
     shutil.copytree(ROOT / ".commandments/custom/skills/plain-viewer-text", custom / "skills/plain-viewer-text")
     (samples / "Secrets.vue").write_text('''<template>
-<!-- @sin naming_PlainViewerTextDetector -->
+<!-- @sin naming_plain_viewer_text -->
 <input placeholder="Type what it needs" />
-<!-- @sin naming_PlainViewerPageTextDetector -->
+<!-- @sin naming_plain_viewer_page_text -->
 <button>Enter the values</button>
-<!-- @sin naming_PlainViewerPageTextDetector -->
+<!-- @sin naming_plain_viewer_page_text -->
 <span>Needs a value</span>
-<!-- @righteous naming_PlainViewerTextDetector -->
+<!-- @righteous naming_plain_viewer_text -->
 <input placeholder="Leave blank to keep the saved credential" />
-<!-- @righteous naming_PlainViewerPageTextDetector -->
+<!-- @righteous naming_plain_viewer_page_text -->
 <button>Add credentials</button>
 </template>''')
     (samples / "labels.js").write_text('''export const labels = {
-// @sin naming_PlainViewerScriptTextDetector
+// @sin naming_plain_viewer_script_text
 label: "Make it",
-// @sin naming_PlainViewerScriptTextDetector
+// @sin naming_plain_viewer_script_text
 help: "Type the value",
-// @righteous naming_PlainViewerScriptTextDetector
+// @righteous naming_plain_viewer_script_text
 title: "Create secret",
 };''')
     (samples / "settings.py").write_text('''settings = [
-# @sin naming_PlainSettingTextDetector
+# @sin naming_plain_setting_text
 SettingValue("saved", "Window settings", "Each window saves its own data.", TYPE),
-# @righteous naming_PlainSettingTextDetector
+# @righteous naming_plain_setting_text
 SettingValue("saved", "Window settings", "Saved window preferences.", TYPE),
 ]''')
     plugin = Path(".journal/plugins/code-commandments/bin/commandments-release")

@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {AgentRowList, InnerTabs, SwitchCase, WindowRoom, useRows, useWindow} from "@journal/window-kit";
+import {AgentRowList, InnerTabs, SwitchCase, TabBody, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 import WorkerRecent from "./WorkerRecent.vue";
 
 // the workers this environment sent, and beside them what the workers did lately, as version 4's list showed both
@@ -12,7 +12,7 @@ const {rows, failure, loaded} = useRows("agent list --role worker", ["agent.*"])
 <template>
     <WindowRoom padding="0">
         <InnerTabs :active="tab" @choose="tab = $event" />
-        <div class="worker-tab-body">
+        <TabBody class="worker-tab-body" :tab="tab">
             <SwitchCase :value="tab?.key">
                 <template #workers>
                     <AgentRowList :rows="rows" :failure="failure" :loaded="loaded" none="No workers have been sent from here" />
@@ -21,7 +21,7 @@ const {rows, failure, loaded} = useRows("agent list --role worker", ["agent.*"])
                     <WorkerRecent />
                 </template>
             </SwitchCase>
-        </div>
+        </TabBody>
     </WindowRoom>
 </template>
 

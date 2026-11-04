@@ -43,12 +43,12 @@ const share = computed(() => (props.inspection.plan?.total ? Math.round((props.i
 </template>
 
 <style scoped>
-.now { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+.now { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 9px 14px; border-bottom: 1px solid var(--border-inner); }
 .detail { max-width: 100%; overflow: hidden; color: var(--text-3); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
 .muted { color: var(--text-3); font-size: 12.5px; }
 .link { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
 .link:hover { text-decoration: underline; }
-.plan { display: flex; flex-direction: column; gap: 3px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+.plan { display: flex; flex-direction: column; gap: 3px; padding: 9px 14px; border-bottom: 1px solid var(--border-inner); }
 .line { display: flex; justify-content: space-between; gap: 10px; color: var(--text-2); font-size: 12px; }
 .bar { height: 4px; margin-top: 4px; border-radius: 2px; background: var(--chip); }
 .bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
