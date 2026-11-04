@@ -25,7 +25,7 @@ export function rowOf(context, table, id) {
 
 const isCurrent = (read) => rows(read.table).find((r) => r.id === read.id) === read.row;
 
-const renderKey = (text, context) => [context.env ?? "", context.inline ? "inline" : "block", context.rowNames === false ? "plain" : "names", text].join("\u0000");
+const renderKey = (text, context) => [context.env ?? "", context.inline ? "inline" : "block", context.rowNames === false ? "plain" : "names", context.document ? "document" : "note", text].join("\u0000");
 
 export function escape(text) {
     return String(text ?? "")
@@ -54,6 +54,7 @@ function spans(text) {
     const held = text.replace(/`([^`\n]+)`/g, (whole, code) => `\u0000${codes.push(`<code>${code}</code>`) - 1}\u0000`);
     const html = held
         .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/~~([^~\n]+)~~/g, "<del>$1</del>")
         .replace(/(^|[\s(])\*(?!\s)([^*\n]*[^*\s])\*/g, "$1<em>$2</em>")
         .replace(/(^|[\s(])_(?!\s)([^_\n]*[^_\s])_(?!\w)/g, "$1<em>$2</em>")
         .replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
@@ -95,16 +96,22 @@ function table(lines) {
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/;
 const NUMBERED_ITEM = /^\s*(\d+)[.)]\s/;
 
+const indentOf = (line) => line.match(/^\s*/)[0].length;
+
+// an item indented past the list's first item, and what runs on from it, is a list of its own inside the item above it
 function list(lines) {
     const number = lines[0].match(NUMBERED_ITEM);
+    const depth = indentOf(lines[0]);
     const items = [];
     for (const line of lines) {
         const m = line.match(/^(\s*)(?:[-*+]|\d+[.)])\s+(.*)$/);
-        if (m) items.push(m[2]);
-        else if (items.length && line.trim()) items[items.length - 1] += ` ${line.trim()}`;
+        const last = items[items.length - 1];
+        if (m && indentOf(line) <= depth) items.push({text: m[2], nested: []});
+        else if (last && line.trim() && (m || last.nested.length)) last.nested.push(line);
+        else if (last && line.trim()) last.text += ` ${line.trim()}`;
     }
     const opening = number ? `<ol${number[1] === "1" ? "" : ` start="${number[1]}"`}>` : "<ul>";
-    return `${opening}${items.map((i) => `<li>${spans(i)}</li>`).join("")}</${number ? "ol" : "ul"}>`;
+    return `${opening}${items.map((i) => `<li>${spans(i.text)}${i.nested.length ? list(i.nested) : ""}</li>`).join("")}</${number ? "ol" : "ul"}>`;
 }
 
 // A blank line between two items of one kind stays inside the list, so a numbered list keeps counting.

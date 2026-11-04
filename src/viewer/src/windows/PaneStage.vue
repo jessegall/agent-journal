@@ -26,7 +26,6 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
-import OptionsPicker from "../shell/OptionsPicker.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../resource/resourceEvents.js";
@@ -357,7 +356,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <template v-if="presets">
                             <LayoutPicker :list="presets" />
                         </template>
-                        <OptionsPicker />
                     </span>
             </InformationBar>
             </template>
