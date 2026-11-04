@@ -1,4 +1,5 @@
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.code_copy import IGNORED
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from install.code_handover import CodeHandover
@@ -82,6 +84,18 @@ def test_an_update_hands_over_to_a_new_server_on_the_same_sockets_and_refuses_no
     assert not home.restart_mark.exists()
     with socket.create_connection(("127.0.0.1", int(viewer_port)), timeout=5):
         pass
+
+
+def test_two_updates_in_a_row_leave_the_server_on_the_newest_code_with_the_one_before_it_kept(home, tmp_path):
+    first, second = tmp_path / "first", tmp_path / "second"
+    for source, text in ((first, "# first update\n"), (second, "# second update\n")):
+        shutil.copytree(SOURCE, source, ignore=shutil.ignore_patterns(*IGNORED))
+        (source / "update_note.py").write_text(text)
+        CodeHandover(home).run(source)
+        wait_started(home)
+    assert ((home.folder / "src") / "update_note.py").read_text() == "# second update\n"
+    assert health_status(home) == 200
+    assert len([version for version in (home.folder / "versions").iterdir() if version.is_dir()]) == 2
 
 
 def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_path):
