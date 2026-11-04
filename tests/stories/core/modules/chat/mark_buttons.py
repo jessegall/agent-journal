@@ -17,6 +17,7 @@ def chat_story(new_story) -> tuple[WindowStory, int]:
 
 def test_a_declared_buttons_line_runs_through_the_line_route_with_its_row(new_story):
     window_story, task_id = chat_story(new_story)
+    window_story.story.expect_success("window allow button:chatsample --type runs --environment main", actor=window_story.story.user)
     window_story.expect_window_allowed(CHAT, f"task edit {task_id}")
 
 
