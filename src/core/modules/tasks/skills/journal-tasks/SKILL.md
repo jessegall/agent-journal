@@ -12,7 +12,7 @@ A task is one unit of work: open, started, then completed or cancelled. Declare 
 - Add `--phase <phase>` to `journal task make` to put the new task at the end of that phase in the same command.
   A missing phase or an ended plan refuses the command and leaves no new task.
 - `journal task start <n>` takes a task in hand; `journal task list` shows the tasks here, `--state open` narrows it.
-- `journal task brief <n>` prints a task's title, brief and comments. A task handed to you blocks your writes until you
+- `journal task overview <n>` prints a task's title, brief, last 5 comments and last 5 log lines. A task handed to you blocks your writes until you
   have run it, and again after each compaction.
 - `journal task show <n>` reads one row; `journal task inspect <n>` adds what it waits on and its latest log lines.
 - `journal task edit <n> --title "<title>" --brief "<what and done when>"` writes either anew. `--brief` replaces the

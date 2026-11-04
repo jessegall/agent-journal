@@ -73,7 +73,7 @@ def expect_worker_commands(story) -> None:
     assert "python3" in "\n".join(opening.lines), opening.lines
     line = SILENT_RUN.nudge(output=1, seconds=15, hint=StreamingHints.hint("python3 tools/deploy.py")).text
     assert "python3 -u" in line and "python -u" not in line, line
-    story.expect_success("task brief 1", actor=worker)
+    story.expect_success("task overview 1", actor=worker)
     story.expect_success(f"skill require {worker.id} journal-memory", actor=worker)
     story.expect_success("skill write", actor=worker)
     rows = story.container.get(Queries).query(AgentSkill).filter(agent_id=worker.id, skill="journal-memory")

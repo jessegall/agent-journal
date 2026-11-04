@@ -7,11 +7,11 @@ from core.modules.tasks.support.task_brief import TaskBrief
 
 
 class ReadTaskBriefSubcommand(Subcommand[ReadTaskBrief, TaskBrief]):
-    """`journal task brief <n>`: a task's title, brief and comments; an agent given a task is blocked until it
-    ran this."""
+    """`journal task overview <n>`: a task's title, brief, last comments and last log lines; an agent given a
+    task is blocked until it ran this in its context window."""
 
     cli_name = "task"
-    name = "brief"
+    name = "overview"
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)

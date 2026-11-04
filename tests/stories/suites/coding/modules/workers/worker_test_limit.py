@@ -86,7 +86,7 @@ def test_a_count_for_another_part_does_not_refuse_a_command(limited_run):
     worker = reader_worker(story)
     task = story.new_row_id('task make "Check another command" --environment main')
     story.run(f"task start {task}", actor=worker)
-    story.run(f"task brief {task}", actor=worker)
+    story.run(f"task overview {task}", actor=worker)
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.expect_hook_allowed("s-reader", HookSamples.shell("pytest tests/other.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/other.py"])))
@@ -144,7 +144,7 @@ def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):
     worker = reader_worker(story)
     task = story.new_row_id('task make "List both test commands" --environment main')
     story.run(f"task start {task}", actor=worker)
-    story.run(f"task brief {task}", actor=worker)
+    story.run(f"task overview {task}", actor=worker)
     reply = story.hook("s-reader", HookSamples.shell("pytest tests/one.py && pytest tests/two.py",
                        ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]),
                        ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/two.py"])))

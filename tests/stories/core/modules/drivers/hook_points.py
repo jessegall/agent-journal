@@ -93,7 +93,7 @@ def busy_hook_points(filled_hook_points):
         story.expect_success(f'sequence make "Sequence {number}" --steps "Read the task | Do the task"', actor=story.user)
     for task_id in range(1, 9):
         story.expect_success(f"task start {task_id}", actor=story.agent)
-        story.expect_success(f"task brief {task_id}", actor=story.agent)
+        story.expect_success(f"task overview {task_id}", actor=story.agent)
     for task_id in range(9, 17):
         story.expect_success(f"task block {task_id} --until 'false' --every 2", actor=story.user)
         story.expect_success(f'check make "Check {task_id}" --command "true" --every 0', actor=story.user)

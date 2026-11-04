@@ -18,8 +18,8 @@ PROFILE_COMMANDS = {
     "journal-researcher": ("journal search find", "journal doc make", "journal report make"),
     "journal-debugger": ("journal search find", "journal task show", "journal output read"),
     "journal-plan-reviewer": ("journal plan outline", "journal phase show", "journal task show"),
-    "journal-medior": ("journal task brief", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
-    "journal-senior": ("journal task brief", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
+    "journal-medior": ("journal task overview", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
+    "journal-senior": ("journal task overview", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
 }
 PROJECT_COMMANDS = {
     "code-reviewer": ("journal search find", "journal task make", "journal task list", "journal doc show"),
@@ -91,6 +91,6 @@ def expect_worker_commands(story) -> None:
     for profile in ("journal-medior", "journal-senior"):
         task = story.new_row_id(f'task make "Work for {profile}" --brief "1. Keep the total in cents" --environment main', actor=story.agent)
         worker = dispatched_worker(story, f"worker dispatch {task} --model sonnet --profile {profile}")
-        story.expect_success(f"task brief {task}", actor=worker)
+        story.expect_success(f"task overview {task}", actor=worker)
         story.expect_success(f'task log {task} "Checked the total"', actor=worker)
         story.expect_success('proof make 1 "cart.py:1 checked"', actor=worker)
