@@ -10,15 +10,23 @@ const {rows, failure, loaded} = useRows("agent list --role worker", ["agent.*"])
 </script>
 
 <template>
-    <WindowRoom padding="14px 16px">
+    <WindowRoom padding="0">
         <InnerTabs :active="tab" @choose="tab = $event" />
-        <SwitchCase :value="tab?.key">
-            <template #workers>
-                <AgentRowList :rows="rows" :failure="failure" :loaded="loaded" none="No workers have been sent from here" />
-            </template>
-            <template #recent>
-                <WorkerRecent />
-            </template>
-        </SwitchCase>
+        <div class="worker-tab-body">
+            <SwitchCase :value="tab?.key">
+                <template #workers>
+                    <AgentRowList :rows="rows" :failure="failure" :loaded="loaded" none="No workers have been sent from here" />
+                </template>
+                <template #recent>
+                    <WorkerRecent />
+                </template>
+            </SwitchCase>
+        </div>
     </WindowRoom>
 </template>
+
+<style scoped>
+.worker-tab-body {
+    padding: 14px 16px;
+}
+</style>

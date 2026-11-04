@@ -1,10 +1,12 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
+import {TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
+import QuestionActions from "./QuestionActions.vue";
 
 // one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
-// an answer shows the moment it is given and goes back if the server refuses it
-const props = defineProps({row: {type: Object, required: true}});
+// an answer shows the moment it is given and goes back if the server refuses it;
+// flush is the questions window's look: edge to edge with no box, a ring in front of each option and the answer box in a band at the foot
+const props = defineProps({row: {type: Object, required: true}, flush: Boolean});
 const emit = defineEmits(["changed"]);
 const context = useWindow();
 const typed = ref("");
@@ -40,34 +42,48 @@ async function elaborate() {
 </script>
 
 <template>
-    <section class="question" :data-state="shown().state" data-question-card>
+    <section :class="['question', {flush}]" :data-state="shown().state" data-question-card>
         <header class="question-head">
+            <template v-if="flush">
+                <i class="question-dot" data-question-dot />
+            </template>
             <p class="question-label">Question {{ row.id }}</p>
             <TimeAgo class="question-time" :at="row.created_at" data-question-time />
         </header>
         <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
         <template v-if="shown().state !== 'open'">
-            <p class="question-closed" data-question-settled>{{ shown().state === "answered" ? `Answered: ${shown().answer}` : "Closed" }}</p>
+            <p class="question-closed" data-question-settled>
+                <template v-if="shown().state === 'answered'"><template v-if="flush"><b>Answered:</b></template><template v-else>Answered:</template> {{ shown().answer }}</template>
+                <template v-else>Closed</template>
+            </p>
         </template>
         <template v-else>
             <div class="question-options">
                 <template v-for="option in row.options" :key="option">
                     <button type="button" :class="['question-option', {recommended: option === row.recommended}]" :data-question-option="option" @click="answer(option)">
-                        <template v-if="option === row.recommended">
+                        <template v-if="flush">
+                            <i class="question-ring" />
+                        </template>
+                        <template v-if="option === row.recommended && !flush">
                             <span class="question-tag">Recommended</span>
                         </template>
-                        <span>{{ option }}</span>
+                        <span class="question-option-text">{{ option }}</span>
+                        <template v-if="option === row.recommended && flush">
+                            <span class="question-chip">Recommended</span>
+                        </template>
                     </button>
                 </template>
             </div>
-            <form @submit.prevent="sendTyped">
-                <TextInput v-model="typed" placeholder="Or answer in your own words…">
-                    <template #end>
-                        <Btn small data-question-close @click="close">Close</Btn>
-                        <Btn small :disabled="elaborated" data-question-elaborate @click="elaborate">{{ elaborated ? "Asked to elaborate" : "Elaborate" }}</Btn>
-                        <Btn kind="primary" small data-question-answer @click="sendTyped">Answer</Btn>
-                    </template>
-                </TextInput>
+            <form class="question-form" @submit.prevent="sendTyped">
+                <template v-if="flush">
+                    <TextInput v-model="typed" class="question-input" placeholder="Or answer in your own words…" />
+                    <span class="question-buttons"><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></span>
+                </template>
+                <template v-else>
+                    <TextInput v-model="typed" placeholder="Or answer in your own words…">
+                        <template #end><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></template>
+                    </TextInput>
+                </template>
             </form>
         </template>
         <template v-if="refusal">
@@ -180,5 +196,177 @@ async function elaborate() {
     margin: 0;
     color: var(--danger);
     font-size: 12.5px;
+}
+
+/* the questions window's card: no box, one line below, rows that run edge to edge */
+.question.flush {
+    flex: none;
+    max-width: none;
+    margin: 0;
+    padding: 12px 14px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--bg);
+}
+
+.flush .question-head {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+}
+
+.flush .question-label {
+    font-size: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.flush .question-time {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.question-dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.flush[data-state="answered"] .question-dot {
+    background: var(--tone-good, var(--green));
+}
+
+.flush[data-state="closed"] .question-dot {
+    background: var(--text-3);
+}
+
+.flush .question-open {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.flush .question-open:hover {
+    color: var(--accent-text);
+}
+
+.flush .question-options {
+    gap: 0;
+    margin: 2px -14px 0;
+    border-top: 1px solid var(--border);
+}
+
+.flush .question-option {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    overflow: visible;
+    width: 100%;
+    padding: 9px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: none;
+    line-height: 1.5;
+    transition: none;
+}
+
+.flush .question-option:last-child {
+    border-bottom: 0;
+}
+
+.flush .question-option:hover {
+    background: var(--hover);
+}
+
+.flush .question-option:active {
+    transform: none;
+}
+
+.question-ring {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+    border: 1.5px solid var(--border-3);
+    border-radius: 50%;
+}
+
+.flush .question-option:hover .question-ring,
+.flush .question-option.recommended .question-ring {
+    border-color: var(--accent);
+}
+
+.question-option-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.question-chip {
+    flex: none;
+    margin-top: 1px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--accent-dim);
+    color: var(--accent-text);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.flush .question-closed {
+    display: flex;
+    gap: 9px;
+    margin: 0 -14px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.flush .question-closed::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.flush[data-state="answered"] .question-closed::before {
+    background: var(--tone-good, var(--green));
+}
+
+.flush .question-closed b {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.flush .question-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 -14px;
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--side);
+}
+
+.flush .question-input {
+    flex: 1 1 220px;
+}
+
+.question-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.flush .question-failure {
+    padding-bottom: 10px;
 }
 </style>
