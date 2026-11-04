@@ -1,5 +1,6 @@
 import re
 
+from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
@@ -8,6 +9,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
@@ -28,6 +30,7 @@ OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: Mark
 PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "Running", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
 ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED)
+ACTOR_LABELS = {ActorType.AGENT: "The agent", ActorType.USER: "You"}
 
 
 class ProcessEndMarkListener(CommitListener):
@@ -64,7 +67,7 @@ class ProcessEndMarkListener(CommitListener):
         if process.state in ENDED and output and reader:
             if reader.failed_pattern and re.search(reader.failed_pattern, self.folder.reader_text(process.id, output.reader_position), re.MULTILINE):
                 outcome = MarkOutcome.FAILED
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.detail(process, event),
                               row_model="process", row_id=process.id, outcome=outcome, figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
@@ -85,5 +88,9 @@ class ProcessEndMarkListener(CommitListener):
             return f"{output.steps_passed} passed"
         return f"{process.progress}%" if process.progress and process.state not in ENDED else ""
 
-    def last_lines(self, process: Process) -> str:
-        return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
+    def detail(self, process: Process, event: LoggedEvent) -> str:
+        if process.state is not ProcessState.STOPPED:
+            return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
+        if process.expired_at is not None:
+            return f"It ran past its timeout of {process.timeout_seconds} seconds"
+        return f"{ACTOR_LABELS.get(self.queries.query(ActorRecord).find(event.actor_id).type, 'The journal')} stopped it"
