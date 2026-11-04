@@ -1,12 +1,11 @@
 <script setup>
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ProcessQueueBand from "./ProcessQueueBand.vue";
 const props = defineProps({queue: {type: Object, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["saved"]);
 const saving = ref(false);
 const failure = ref("");
-const mainCount = computed(() => props.queue.running.filter((run) => run.is_main).length);
 async function save(key, value) {
     if (saving.value) return;
     saving.value = true;
@@ -34,10 +33,9 @@ async function save(key, value) {
                 <input :id="limit.key" class="limit" type="number" min="0" :value="limit.value" :disabled="saving" data-queue-suite-limit @change="save(limit.key, $event.target.value)" />
             </div>
         </template>
-        <div class="control"><div><label id="main-spots-label">Include the main agent</label><p>On: its commands count toward Commands at once and can wait. Off: they always start right away.</p></div>
+        <div class="control"><div><label id="main-spots-label">Include the main agent</label><p>The main agent's commands wait in line with the workers' commands.</p></div>
             <button type="button" role="switch" aria-labelledby="main-spots-label" :aria-checked="queue.count_main_runs" :disabled="saving" data-queue-main-spots @click="save(queue.main_spots_setting, queue.count_main_runs ? 'off' : 'on')"><span /></button>
         </div>
-        <template v-if="!queue.count_main_runs && mainCount"><p class="note"><Icon name="info" :size="13" />{{ mainCount === 1 ? "The main agent is also running 1 command, which is not counted above." : `The main agent is also running ${mainCount} commands, which are not counted above.` }}</p></template>
         <template v-if="queue.halted"><p class="note halted" role="status" data-queue-held><Icon name="pause" :size="13" />The queue is paused. No waiting command gets a place until it is resumed. {{ queue.halt_reason }}</p></template>
         <template v-if="failure"><p class="note failure" role="alert">{{ failure }}</p></template>
     </div>
