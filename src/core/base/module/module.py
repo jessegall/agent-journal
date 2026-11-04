@@ -50,6 +50,7 @@ class Module:
     name: ClassVar[str]
     requires_core: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
+    part_of: ClassVar[list[str]] = []
     models: ClassVar[list[ModelDeclaration]] = []
     migrations: ClassVar[list[type[Migration]]] = []
     views: ClassVar[list[type[ViewModel]]] = []

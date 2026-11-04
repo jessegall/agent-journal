@@ -16,7 +16,20 @@ class SuiteCheck:
     def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)
                 + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules) + self.preset_problems(modules) + self.rule_owners(modules, rules)
-                + self.unknown_hooks(rules))
+                + self.unknown_hooks(rules) + self.module_memberships(modules))
+
+    def module_memberships(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+        owners = self.suite_modules(modules)
+        problems: list[str] = []
+        for module in modules:
+            for suite in module.part_of:
+                if suite not in owners:
+                    problems.append(f"module {module.name} is part of suite {suite}: install the module that ships it first")
+                    continue
+                if owners[suite] not in {module.name, *module.dependencies}:
+                    problems.append(f"module {module.name} is part of suite {suite} of module {owners[suite]}, "
+                                    "which it does not depend on")
+        return tuple(problems)
 
     def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:
         return {suite.name: module.name for module in modules for suite in module.suites}

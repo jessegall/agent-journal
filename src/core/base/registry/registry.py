@@ -74,6 +74,7 @@ class Registry:
     skills: tuple[SkillEntry, ...] = ()
     moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
+    module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -128,6 +129,7 @@ class Registry:
             skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
             moves=tuple(MoveEntry.restored(move) for move in entries.get("moves", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
+            module_suites={module: tuple(suites) for module, suites in entries.get("module_suites", {}).items()},
         )
 
     def entries_text(self) -> str:
@@ -169,6 +171,7 @@ class Registry:
             "skills": [asdict(skill) for skill in self.skills],
             "moves": [dict(move.stored()) for move in self.moves],
             "module_fingerprints": self.module_fingerprints,
+            "module_suites": {module: list(suites) for module, suites in self.module_suites.items()},
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":

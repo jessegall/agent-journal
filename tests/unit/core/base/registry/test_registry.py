@@ -169,3 +169,13 @@ def test_module_templates_survive_registry_storage(database):
 
 def test_a_registry_saved_before_module_templates_has_no_entries(database):
     assert Registry.read(database).templates == ()
+
+
+def test_module_suites_survive_registry_storage(database):
+    memberships = {"acme.suite": ("acme", "coding"), "acme.review": tuple(["coding"]), "core": ()}
+    registry = replace(Registry.read(database), module_suites=memberships)
+    assert Registry.parsed("module-suites", registry.entries_text()).module_suites == memberships
+
+
+def test_a_registry_saved_before_module_suites_has_no_memberships(database):
+    assert Registry.read(database).module_suites == {}
