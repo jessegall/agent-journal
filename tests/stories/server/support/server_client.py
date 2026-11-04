@@ -275,6 +275,7 @@ def without_start_skills(story: Story) -> None:
 @contextmanager
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
     without_start_skills(story)
+    story.run("setting make journal.core.voices.avatar false")
     with started_server(story.home, code_folders, listener_thread_started) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 

@@ -30,7 +30,7 @@ def expect_browser(story: ServerStory, script: str, arguments: Sequence[str], lo
     try:
         finished = subprocess.run(
             ["node", f"tests/{script}", address, *arguments], cwd=VIEWER_FOLDER, capture_output=True, text=True, timeout=60,
-            env={**os.environ, "DEBUG": f"{os.environ.get('DEBUG', '')},pw:api", "CHROMIUM_PATH": os.environ.get("CHROMIUM_PATH", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")},
+            env={**os.environ, "DEBUG": f"{os.environ.get('DEBUG', '')},pw:api"},
         )
     except subprocess.TimeoutExpired as error:
         raise BrowserStoryTimeout.for_script(script, error) from error
