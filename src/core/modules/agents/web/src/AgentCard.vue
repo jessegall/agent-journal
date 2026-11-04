@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -125,7 +125,7 @@ readCommand();
                 </template>
                 <template v-else>
                 <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
-                <div class="agent-tab-body" :data-agent-tab-body="tab?.key">
+                <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
@@ -152,7 +152,7 @@ readCommand();
                             <component :is="component" :agent="row.id" />
                         </template>
                     </SwitchCase>
-                </div>
+                </TabBody>
                 </template>
             </div>
         </template>
