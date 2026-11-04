@@ -12,7 +12,6 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import SILENT_RUN, SILENT_SAVED_RUN, STALLED_RUN
-from core.modules.processes.support.streaming_hints import StreamingHints
 
 SILENT_SECONDS = 30
 STALLED_SECONDS = 300
@@ -42,13 +41,12 @@ class SilentRunRule(DriverRule):
         part = next((part for part in self.parts.process(process.id).all_rows() if part.ended_at is None), None)
         if part is None or not self.is_watched(part):
             return None
-        hint = StreamingHints.hint(part.command or part.text)
         if not self.folder.part_bytes(process.id, part.position):
             if part.saved_command:
-                return SILENT_SAVED_RUN.nudge(name=part.saved_command, seconds=SILENT_SECONDS, hint=hint)
-            return SILENT_RUN.nudge(output=process.id, seconds=SILENT_SECONDS, hint=hint)
+                return SILENT_SAVED_RUN.nudge(name=part.saved_command, seconds=SILENT_SECONDS)
+            return SILENT_RUN.nudge(output=process.id, seconds=SILENT_SECONDS)
         if self.folder.silent_seconds(process.id, part.position, timestamp) >= STALLED_SECONDS:
-            return STALLED_RUN.nudge(output=process.id, seconds=STALLED_SECONDS, hint=hint)
+            return STALLED_RUN.nudge(output=process.id, seconds=STALLED_SECONDS)
         return None
 
     @staticmethod

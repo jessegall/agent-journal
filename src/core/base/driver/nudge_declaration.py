@@ -8,7 +8,6 @@ from core.base.driver.nudge_type import NudgeType
 LONGEST_LINE_CHARACTERS = 120
 LONGEST_NOTICE_CHARACTERS = 800
 LONGEST_FIELD_CHARACTERS = 80
-AUTHORED_LINE_CHARACTERS = 2000
 BARE_TEMPLATE = "{text}"
 CUT_MARK = "…"
 CUT_END_CHARACTERS = 60
@@ -22,18 +21,14 @@ class NudgeDeclaration:
     type: NudgeType
     text: str
     interval: Interval | None = None
-    longest_characters: int | None = None
     turn_limited: bool = True
     required_command: str | None = None
     plural_text: str = ""
-    field_limit_characters: int = LONGEST_FIELD_CHARACTERS
     wakes_agent: bool = False
     path_fields: Sequence[str] = ()
 
     @property
     def limit(self) -> int:
-        if self.longest_characters is not None:
-            return self.longest_characters
         return LONGEST_NOTICE_CHARACTERS if self.type is NudgeType.NOTICE else LONGEST_LINE_CHARACTERS
 
     @property
@@ -57,7 +52,7 @@ class NudgeDeclaration:
 
     def field_text(self, value: object) -> str:
         text = str(value)
-        return text if len(text) <= self.field_limit_characters else text[:self.field_limit_characters - len(CUT_MARK)] + CUT_MARK
+        return text if len(text) <= LONGEST_FIELD_CHARACTERS else text[:LONGEST_FIELD_CHARACTERS - len(CUT_MARK)] + CUT_MARK
 
     def cut(self, line: str) -> str:
         if len(line) <= self.limit:

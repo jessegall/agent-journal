@@ -37,7 +37,7 @@ class SavedCommandRule(DriverRule):
                     continue
                 Duration.parse(part.timeout_duration)
         except DurationError as error:
-            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge(hint=error.text))
+            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
         if not shell.saved_commands_known:
             return RuleAnswer.allowed()
         if hook.role not in self.suites.agent_policy(hook.environment_id).saved_command_roles:
@@ -65,10 +65,10 @@ class SavedCommandRule(DriverRule):
         if exact:
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if saved:
-            return SAVED_COMMAND_CHOICES.nudge(items=", ".join(alias.name for alias in saved), command=part.text, category=category.value)
+            return SAVED_COMMAND_CHOICES.nudge(category=category.value)
         if role == AgentRole.SUBAGENT:
             return SAVED_COMMAND_SUBAGENT.nudge(category=category.value)
-        return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
+        return SAVED_COMMAND_UNKNOWN.nudge(category=category.value)
 
     @staticmethod
     def saved_refusal(part: Part) -> Nudge | None:

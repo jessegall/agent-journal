@@ -9,11 +9,11 @@ READERS_MISSING_FIELDS = NudgeDeclaration("processes.readers_missing_fields", Nu
 
 
 READER_REQUEST_REMINDER = Seconds(600)
-READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: agent {agent} needs a reader for {command}; sample {output}: journal reader draft {request}", interval=Interval(READER_REQUEST_REMINDER), longest_characters=320, turn_limited=False)
+READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: agent {agent} needs a reader for output {output}: journal reader draft {request}", interval=Interval(READER_REQUEST_REMINDER), turn_limited=False)
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", ToolUseSpan(5))
-READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader: journal reader-request waive {request} --reason "<why>"', longest_characters=400)
+READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader: journal reader-request waive {request} --reason "<why>"')
 
-READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads {command}: draft and save your reader. After failed tries, stop for the main agent to help", longest_characters=240)
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}: journal reader draft {request} --save")
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
 OUTPUT_TIMEOUT = NudgeDeclaration("processes.output_timed_out", NudgeType.STEERING,
                                   'output {output} timed out after {seconds} seconds and was stopped', wakes_agent=True)
@@ -37,14 +37,14 @@ SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, '
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: journal output title {process} "<what it does>"', required_command="journal output title {process}")
 
 SILENT_RUN_INTERVAL = Seconds(600)
-SILENT_RUN =NudgeDeclaration("processes.silent_run", NudgeType.STEERING, "output {output} printed nothing for {seconds} seconds, so its output is not streaming: {hint}",
-                              interval=Interval(SILENT_RUN_INTERVAL), longest_characters=240, field_limit_characters=160)
-SILENT_SAVED_RUN = NudgeDeclaration("processes.silent_saved_run", NudgeType.STEERING, "saved command {name} printed nothing for {seconds} seconds, fix it with journal alias edit {name} --line: {hint}",
-                                    interval=Interval(SILENT_RUN_INTERVAL), longest_characters=280, field_limit_characters=160)
+SILENT_RUN =NudgeDeclaration("processes.silent_run", NudgeType.STEERING, "output {output} printed nothing for {seconds} seconds, so no reader sees it: journal output read {output} --tail 20",
+                              interval=Interval(SILENT_RUN_INTERVAL))
+SILENT_SAVED_RUN = NudgeDeclaration("processes.silent_saved_run", NudgeType.STEERING, "saved command {name} printed nothing for {seconds} seconds: fix it with journal alias edit {name} --line",
+                                    interval=Interval(SILENT_RUN_INTERVAL))
 SILENT_SAVED_FAILURE = NudgeDeclaration("processes.silent_saved_failure", NudgeType.STEERING, "saved command {name} failed and printed nothing, fix it with journal alias edit {name} --line",
                                         interval=Interval(SILENT_RUN_INTERVAL))
-STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.STEERING, "output {output} has written nothing for {seconds} seconds and still runs: {hint}",
-                               interval=Interval(SILENT_RUN_INTERVAL), longest_characters=240, field_limit_characters=160)
+STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.STEERING, "output {output} has written nothing for {seconds} seconds and still runs: journal output read {output} --tail 20",
+                               interval=Interval(SILENT_RUN_INTERVAL))
 READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.STEERING, 'reader {reader} picked none of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.STEERING, 'reader {reader} kept {kept} of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.STEERING, 'reader {reader} found no summary in output {output}: journal reader add {reader} --summary "<pattern>"', required_command="journal reader add {reader}")

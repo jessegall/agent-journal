@@ -32,7 +32,7 @@ class WorkerStepCheck:
             refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.agent_id)
             if refusal:
                 if event in DELIVERY_EVENTS:
-                    self.bus.run(RecordWorkerRefusal(worktree.id, refusal), Actor(worktree.agent_id, ActorType.AGENT), environment_id=worktree.environment_id)
+                    self.bus.run(RecordWorkerRefusal(worktree.id), Actor(worktree.agent_id, ActorType.AGENT), environment_id=worktree.environment_id)
                 raise Refusal(refusal, hint)
         if any(event in DELIVERY_EVENTS for event in events):
             self.bus.run(ClearWorkerRefusals(worktree.id), Actor(worktree.agent_id, ActorType.AGENT), environment_id=worktree.environment_id)

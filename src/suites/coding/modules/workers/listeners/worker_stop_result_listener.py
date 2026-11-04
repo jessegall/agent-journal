@@ -32,6 +32,6 @@ class WorkerStopResultListener(SaveListener):
         if worktree is None:
             return
         if call.answer is HookAnswer.REFUSED:
-            self.refusals.record(worktree, call.refusal, change.context)
+            self.refusals.record(worktree, change.context)
             return
         self.refusals.clear(worktree, change.context)

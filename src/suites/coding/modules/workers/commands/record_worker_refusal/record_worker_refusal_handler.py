@@ -14,4 +14,4 @@ class RecordWorkerRefusalHandler(Handler[RecordWorkerRefusal, None]):
         self.worktrees, self.refusals = worktrees, refusals
 
     def handle(self, command: RecordWorkerRefusal, context: Context) -> None:
-        self.refusals.record(self.worktrees.find(command.worktree_id), command.reason, context)
+        self.refusals.record(self.worktrees.find(command.worktree_id), context)

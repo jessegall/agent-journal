@@ -33,6 +33,6 @@ class ReaderBlockListener(SaveListener):
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
         process = self.queries.query(Process).find(part.process_id)
-        nudge = READER_BLOCK.nudge(command=request.command)
+        nudge = READER_BLOCK.nudge(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
         self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{request.id}"), ends), change.context)
