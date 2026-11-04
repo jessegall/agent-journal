@@ -34,6 +34,9 @@ class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
         button_lines = self.registry.subject_button_lines(command.window)
         if button_lines and command.type is WindowPermissionType.RUNS:
             return button_lines
+        dock = self.registry.dock(command.window)
+        if dock is not None and command.type is WindowPermissionType.READS and not self.registry.has_window(command.window):
+            return dock.reads
         if not self.registry.has_window(command.window) or command.type is WindowPermissionType.COMPONENT:
             raise Refusal(f"no installed module declares the window {command.window} with {command.type} to allow", "journal window trust <module> trusts a module's page code")
         window = self.registry.window(command.window)
