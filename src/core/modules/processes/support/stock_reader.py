@@ -16,6 +16,7 @@ class StockReader:
     summary: str = ""
     count: str = ""
     count_command: str = ""
+    step: str = ""
 
 
 STOCK_READERS = (
@@ -31,4 +32,11 @@ STOCK_READERS = (
     StockReader("phpunit", "*phpunit*,*pest*,artisan test*", "PHP tests", r"FAILURES!|ERRORS!|Tests: |FAIL |Failed asserting|OK \(", r"\( *([0-9]+)%\)",
                   r"OK \(|Tests: ", r"FAILURES!|ERRORS!|FAIL |Failed asserting|Tests: ",
                   r"(OK \([0-9]+ tests?|Tests: +[0-9]+)"),
+    StockReader("npm-build", "npm*run build*,*vite build*", "Building", r"built in|error|Error|ERR!", finished=r"built in", failed=r"error|Error|ERR!", summary=r"built in [^\n]+|error[^\n]*|Error[^\n]*|ERR![^\n]*"),
+    StockReader("npm-install", "npm*install*,npm* ci*", "Installing packages", r"added |removed |changed |audited |vulnerabilities|ERR!", finished=r"audited |vulnerabilities", failed=r"ERR!", summary=r"found [0-9]+ vulnerabilities|audited [0-9]+ packages|npm ERR![^\n]*"),
+    StockReader("pyright", "*pyright*", "Checking Python types", r"error:|warning:|[0-9]+ errors?, [0-9]+ warnings?", finished=r"[0-9]+ errors?, [0-9]+ warnings?", failed=r"error:", summary=r"[0-9]+ errors?, [0-9]+ warnings?, [0-9]+ informations?"),
+    StockReader("tsc", "tsc*,*node_modules/.bin/tsc*,npx tsc*,npx vue-tsc*,vue-tsc*", "Checking TypeScript", r"error TS[0-9]+|Found [0-9]+ errors?", failed=r"error TS[0-9]+", summary=r"error TS[0-9]+:.*|Found [0-9]+ errors?.*"),
+    StockReader("eslint", "eslint*,*node_modules/.bin/eslint*,npx eslint*", "Checking JavaScript", r"\berror\b|\bwarning\b|No files matching|Oops!", failed=r"\berror\b|No files matching|Oops!", summary=r"✖ [0-9]+ problems?.*|No files matching.*|Oops!.*"),
+    StockReader("pip-install", "pip install*,pip3 install*,*python -m pip install*,*python3 -m pip install*", "Installing Python packages", r"Successfully installed|Requirement already satisfied|ERROR:|error:", finished=r"Successfully installed|Requirement already satisfied", failed=r"ERROR:|error:", summary=r"Successfully installed.*|Requirement already satisfied.*|ERROR:.*|error:.*"),
+    StockReader("go-test", "go test*,go -C * test*", "Go tests", r"^(?:ok|FAIL|--- FAIL|panic:|# )", finished=r"^(?:ok|FAIL)\s", failed=r"^(?:FAIL|--- FAIL|panic:|# )", summary=r"^(?:ok|FAIL)\s.*", count=r"^Test\w+$", count_command="{part} -list .", step=r"^--- (?:PASS|FAIL):"),
 )
