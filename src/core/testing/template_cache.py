@@ -18,7 +18,7 @@ class TemplateCache:
 
     def folder(self) -> Path:
         checkout = self.root / hashlib.sha1(str(CORE_FOLDER).encode()).hexdigest()[:HASH_CHARACTERS]
-        current = checkout / CodeFingerprint().folder_text([CORE_FOLDER.parent])[:HASH_CHARACTERS]
+        current = checkout / CodeFingerprint().folder_text([CORE_FOLDER.parent, CORE_FOLDER.parent.parent / "tests"])[:HASH_CHARACTERS]
         if not current.is_dir():
             self.remove_old(checkout)
         current.mkdir(parents=True, exist_ok=True)
