@@ -1,0 +1,23 @@
+...
+Building library for helloworld-0.1.0.0..
+[1 of 2] Compiling Lib [Source file changed]
+
+src\Lib.hs:7:1: error:
+    Could not load module ‘Data.Text.IO’
+    It is a member of the hidden package ‘text-2.0.2’.
+    Perhaps you need to add ‘text’ to the build-depends in your .cabal file.
+    Use -v (or `:set -v` in ghci) to see a list of the files searched for.
+  |
+7 | import qualified Data.Text.IO as T
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+
+       While executing the build plan, Stack encountered the error:
+
+       [S-7011]
+       While building package helloworld-0.1.0.0 (scroll up to its section to
+       see the error) using:
+       ...
+       Process exited with code: ExitFailure 1

@@ -1,0 +1,4 @@
+[...]
+File "src/fact.ml", line 3, characters 0-25: <<(fact 5) = 0>> is false.
+
+FAILED 1 / 1 tests

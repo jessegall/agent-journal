@@ -13,14 +13,19 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
+from core.modules.processes.support.step_tally import StepTally
 from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
 
 pytestmark = pytest.mark.reader_job
 
 FIXTURES = Path(__file__).parent / "fixtures"
-TEST_READERS = {"pytest", "vitest", "jest", "dotnet-test", "phpunit", "cargo-test", "cargo-nextest", "go-test", "ruby-minitest", "rspec", "mix-test", "bun-test", "swift-test"}
+TEST_READERS = {"pytest", "vitest", "jest", "dotnet-test", "phpunit", "cargo-test", "cargo-nextest", "go-test", "ruby-minitest", "rspec", "mix-test", "bun-test", "swift-test", "prove", "zig-test", "crystal-spec", "ginkgo", "meson-test",
+                "deno-test", "dart-test", "dune-test", "cabal-test", "scala-cli-test", "sbt-test", "ng-test", "pio-test", "hatch-test", "tox", "nox", "dbt-test"}
 CHECK_READERS = {"pyright", "tsc", "eslint", "go-vet", "php-lint", "mypy", "ruff"}
-PACKAGE_READERS = {"npm-install", "pip-install"}
+PACKAGE_READERS = {"npm-install", "pip-install", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install", "yarn-install", "pnpm-install", "brew-install"}
+NO_FAILED_STEPS = {"dune-test", "cabal-test"}
+ADDED_STEPPED = {"prove", "zig-test", "crystal-spec", "ginkgo", "meson-test", "deno-test", "dart-test", "dune-test", "cabal-test", "scala-cli-test", "sbt-test", "pio-test", "tox", "nox"}
+ONE_OUTPUT_ONLY = {"hatch-test", "nox", "dbt-test", "cabal-test", "pio-test"}
 READERS = {reader.name: reader for reader in STOCK_READERS}
 SAMPLES = sorted(FIXTURES.glob("*/*.out"))
 
@@ -55,7 +60,17 @@ def test_every_fixture_belongs_to_a_stock_reader():
 
 
 def test_a_passed_and_a_failed_output_exist_for_every_test_reader():
-    assert sorted(name for name in TEST_READERS if not (FIXTURES / name / "failed.out").exists()) == []
+    assert sorted(name for name in TEST_READERS - ONE_OUTPUT_ONLY if not (FIXTURES / name / "failed.out").exists() or not (FIXTURES / name / "passed.out").exists()) == []
+
+
+def test_a_test_reader_with_one_output_has_it_in_its_folder():
+    assert sorted(name for name in ONE_OUTPUT_ONLY if not (FIXTURES / name / "passed.out").exists()) == []
+
+
+@pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.with_suffix(".source").exists()], ids=sample_id)
+def test_a_sourced_output_names_its_page_or_says_it_was_run(sample):
+    source = sample.with_suffix(".source").read_text().strip()
+    assert source.startswith(("https://", "http://", "ran on ")), source
 
 
 @pytest.mark.parametrize("sample", SAMPLES, ids=sample_id)
@@ -88,3 +103,21 @@ def test_a_passed_output_is_not_marked_failed(sample):
 @pytest.mark.parametrize("name", sorted(TEST_READERS))
 def test_a_test_reader_has_every_field_a_test_needs(name):
     assert judge().fields_missing(reader_row(READERS[name]), CommandCategory.TEST_RUN) == ()
+
+
+@pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.stem == "passed" and sample.parent.name in ADDED_STEPPED], ids=sample_id)
+def test_the_steps_of_a_passed_output_are_counted_as_passed(sample):
+    stock = READERS[sample.parent.name]
+    tally = StepTally.counted(stock.step, stock.progress, ColourCodes.removed(sample.read_text()))
+    assert tally.passed > 0 and tally.failed == 0, tally
+
+
+@pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.stem == "failed" and sample.parent.name in ADDED_STEPPED - NO_FAILED_STEPS], ids=sample_id)
+def test_the_steps_of_a_failed_output_include_a_failure(sample):
+    stock = READERS[sample.parent.name]
+    assert StepTally.counted(stock.step, stock.progress, ColourCodes.removed(sample.read_text())).failed > 0
+
+
+@pytest.mark.parametrize("name", sorted(set(READERS) - TEST_READERS))
+def test_a_stock_reader_has_the_fields_of_its_category(name):
+    assert judge().fields_missing(reader_row(READERS[name]), category_of(name)) == ()

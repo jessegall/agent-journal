@@ -1,0 +1,5 @@
+Template validation failed. Errors are shown below.
+
+Errors validating build 'vmware'. 1 error(s) occurred:
+
+* Either a path or inline script must be specified.

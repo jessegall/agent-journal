@@ -1,0 +1,8 @@
+Testing `Dummy'.
+This run has ID `B5926D16-0DD4-4C97-8C7A-5AFE1F5DF31B'.
+
+  [OK]          Greeting          0   can greet Tom.
+  [OK]          Greeting          1   can greet John.
+
+Full test results in `_build/default/_build/_tests/Dummy'.
+Test Successful in 0.000s. 2 tests run.
