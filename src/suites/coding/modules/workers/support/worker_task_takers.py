@@ -3,6 +3,7 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.support.task_takers import TaskTakers
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -22,5 +23,7 @@ class WorkerTaskTakers(TaskTakers):
 
     def check_reassignment(self, task: Task) -> None:
         if task.delegated_to != task.holder_id or task.holder_id is None or self.tasks.next_delegated(task.holder_id) is not None:
+            return
+        if self.tasks.holder(task.holder_id).filter(state=TaskState.TESTING).exists():
             return
         raise Refusal(f"task {task.id} is the last of worker {task.holder_id}", f"journal worker release {task.holder_id} \"<why>\" takes it back")
