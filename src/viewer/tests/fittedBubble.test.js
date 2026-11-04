@@ -3,6 +3,7 @@ import {createApp, h, ref} from "vue";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 
 const CHAT_WIDTH = 400;
+const LINE_HEIGHT = 40;
 let host;
 
 afterEach(() => {
@@ -11,8 +12,15 @@ afterEach(() => {
     delete Range.prototype.getClientRects;
 });
 
-function bubbleWithLines(lines) {
-    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(CHAT_WIDTH);
+// `narrowest` is the width under which the text takes a second line
+function bubbleWithLines(lines, narrowest = 0) {
+    const widthOf = (element) => parseFloat(element.style.width) || CHAT_WIDTH;
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function () {
+        return widthOf(this);
+    });
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function () {
+        return widthOf(this) < narrowest ? LINE_HEIGHT * 2 : LINE_HEIGHT;
+    });
     Range.prototype.getClientRects = () => lines;
     host = document.createElement("div");
     document.body.append(host);
@@ -28,8 +36,13 @@ function bubbleWithLines(lines) {
 }
 
 test("a bubble is as wide as its longest line and its padding", () => {
-    const bubble = bubbleWithLines([{left: 12, right: 200}, {left: 12, right: 212.4}, {left: 12, right: 150}]);
+    const bubble = bubbleWithLines([{left: 12, right: 200}, {left: 12, right: 212.4}, {left: 12, right: 150}], 227);
     expect(bubble.style.width).toBe("227px");
+});
+
+test("a width that would add a line gives way, so text that fits one line stays on one", () => {
+    const bubble = bubbleWithLines([{left: 12, right: 212}], 300);
+    expect(parseFloat(bubble.style.width)).toBeGreaterThanOrEqual(300);
 });
 
 test("a bubble with nothing measured keeps its width", () => {

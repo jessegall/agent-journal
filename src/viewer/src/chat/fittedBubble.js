@@ -30,14 +30,21 @@ function fit(bubble) {
     if (bubble.querySelector(WIDE_BLOCKS)) return;
     const style = getComputedStyle(bubble);
     const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+    const height = bubble.offsetHeight;
     const width = fittedWidth(textLines(bubble), padding || 0);
-    if (width && width < bubble.offsetWidth) bubble.style.width = `${width}px`;
-    narrow(bubble, padding || 0);
+    if (!width) return;
+    if (width < bubble.offsetWidth) setWidthKeepingLines(bubble, width, height, "");
+    narrow(bubble, padding || 0, height);
+}
+
+// a width that adds a line, as a rounded one can, gives way to the width it replaces: text that fits one line stays on one
+function setWidthKeepingLines(bubble, width, height, fallback) {
+    bubble.style.width = `${width}px`;
+    if (bubble.offsetHeight !== height) bubble.style.width = fallback;
 }
 
 // the narrowest width that keeps the bubble's number of lines, found by halving, so wrapped text stands compact and its lines end close together
-function narrow(bubble, padding) {
-    const height = bubble.offsetHeight;
+function narrow(bubble, padding, height) {
     let fits = bubble.offsetWidth;
     let tooNarrow = fits * NARROWEST_SHARE;
     for (let step = 0; step < NARROWING_STEPS; step++) {
@@ -48,7 +55,7 @@ function narrow(bubble, padding) {
     }
     bubble.style.width = `${fits}px`;
     const width = fittedWidth(textLines(bubble), padding);
-    if (width && width < fits) bubble.style.width = `${width}px`;
+    if (width && width < fits) setWidthKeepingLines(bubble, width, height, `${fits}px`);
 }
 
 // a bubble as wide as its longest line, measured again when its text or the width of the chat changes
@@ -57,6 +64,7 @@ export function useFittedBubble(bubble, text) {
     const refit = () => bubble.value && fit(bubble.value);
     onMounted(() => {
         refit();
+        document.fonts?.ready.then(refit);
         if (typeof ResizeObserver === "undefined" || !bubble.value?.parentElement) return;
         let width = 0;
         watcher = new ResizeObserver(([entry]) => {
