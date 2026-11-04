@@ -6,14 +6,15 @@ from core.base.database.database import Database
 from core.base.journal_container import opened_container, sync_modules
 from core.base.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
+from server.server_backup import ServerBackup
 
 PLUGINS_FOLDER = "plugins"
 
 
 class SuccessorProof:
     """Proves new code before the old server lets go of anything: its modules sync on an empty database, and on
-    a copy of the real database when its migrations have not run there. A failure raises, so the new server
-    exits and the old one keeps serving."""
+    a copy of the real database when its migrations have not run there, after a database copy kept in the backup
+    folder for going back. A failure raises, so the new server exits and the old one keeps serving."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -22,6 +23,7 @@ class SuccessorProof:
         with tempfile.TemporaryDirectory() as folder:
             sync_modules(JournalHome(Path(folder)))
         if self.has_pending_migrations():
+            ServerBackup(self.home).write_copy()
             with tempfile.TemporaryDirectory(dir=self.home.folder) as folder:
                 sync_modules(self.copied_home(Path(folder)))
 
