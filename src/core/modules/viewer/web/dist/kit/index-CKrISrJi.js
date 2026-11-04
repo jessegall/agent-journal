@@ -2144,7 +2144,7 @@ const Ks = "if else for while do switch case default break continue return funct
   sh: { keywords: Nd, line: "#", quotes: ['"', "'"] },
   css: { keywords: "", block: ["/*", "*/"], quotes: ['"', "'"], property: !0 },
   html: { keywords: "", block: ["<!--", "-->"], quotes: ['"', "'"], tags: !0 },
-  json: { keywords: "true false null", quotes: ['"'] },
+  json: { keywords: "true false null", quotes: ['"'], keyed: !0 },
   yaml: { keywords: "true false null yes no", line: "#", quotes: ['"', "'"] },
   sql: { keywords: Dd, line: "--", block: ["/*", "*/"], quotes: ["'"], lower: !0 },
   md: { keywords: "", quotes: [], markdown: !0 },
@@ -2226,7 +2226,7 @@ function jd(e, t) {
       let u = o + 1;
       for (; u < e.length && e[u] !== i && (i === "`" || e[u] !== `
 `); ) u += e[u] === "\\" ? 2 : 1;
-      r("string", e.slice(o, u + 1)), o = u + 1;
+      r(n.keyed && /^\s*:/.test(e.slice(u + 1)) ? "property" : "string", e.slice(o, u + 1)), o = u + 1;
       continue;
     }
     if (n.tags && i === "<" && /[A-Za-z/!?]/.test(e[o + 1] || "")) {
@@ -10261,7 +10261,7 @@ const cb = /* @__PURE__ */ rb(lb), ub = ["width", "height", "viewBox"], db = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, jx = /* @__PURE__ */ Y(mb, [["__scopeId", "data-v-47e67f04"]]), qx = il(() => import("./VoiceFigure-Bz4ZiZXW.js").then((e) => e.V)), Fx = "1.0.0", Wx = "3.5";
+}, jx = /* @__PURE__ */ Y(mb, [["__scopeId", "data-v-47e67f04"]]), qx = il(() => import("./VoiceFigure-Bp5roXaF.js").then((e) => e.V)), Fx = "1.0.0", Wx = "3.5";
 export {
   Hl as $,
   Me as A,
@@ -10497,20 +10497,21 @@ export {
   jx as d7,
   Vr as d8,
   kx as d9,
-  Rb as dA,
-  Sx as dB,
-  kk as dC,
-  Cx as dD,
-  bp as dE,
-  Ur as dF,
-  sw as dG,
-  oi as dH,
-  bx as dI,
-  Qs as dJ,
-  xx as dK,
-  $x as dL,
-  jt as dM,
-  Tx as dN,
+  xk as dA,
+  Rb as dB,
+  Sx as dC,
+  kk as dD,
+  Cx as dE,
+  bp as dF,
+  Ur as dG,
+  sw as dH,
+  oi as dI,
+  bx as dJ,
+  Qs as dK,
+  xx as dL,
+  $x as dM,
+  jt as dN,
+  Tx as dO,
   u1 as da,
   Ua as db,
   d1 as dc,
@@ -10522,20 +10523,20 @@ export {
   Pb as di,
   Nb as dj,
   gx as dk,
-  px as dl,
-  Ox as dm,
-  Rg as dn,
-  bk as dp,
-  kb as dq,
-  _b as dr,
-  yx as ds,
-  wx as dt,
-  Fe as du,
-  Mb as dv,
-  vx as dw,
-  Lb as dx,
-  ut as dy,
-  xk as dz,
+  qd as dl,
+  px as dm,
+  Ox as dn,
+  Rg as dp,
+  bk as dq,
+  kb as dr,
+  _b as ds,
+  yx as dt,
+  wx as du,
+  Fe as dv,
+  Mb as dw,
+  vx as dx,
+  Lb as dy,
+  ut as dz,
   We as e,
   j0 as f,
   g5 as g,

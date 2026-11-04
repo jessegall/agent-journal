@@ -71,6 +71,7 @@ export {usePins} from "../src/chat/pins.js";
 export {default as PinsToggle} from "../src/chat/PinsToggle.vue";
 export {default as Dialog} from "../src/kit/Dialog.vue";
 export {default as DiffCard} from "../src/kit/DiffCard.vue";
+export {highlight} from "../src/text/highlight.js";
 export {default as MenuItem} from "../src/kit/MenuItem.vue";
 export {default as DropList} from "../src/kit/DropList.vue";
 export {default as MenuLabel} from "../src/kit/MenuLabel.vue";
