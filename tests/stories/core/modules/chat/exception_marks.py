@@ -1,4 +1,5 @@
 from core.base.actor import CORE_ACTOR_ID
+from core.base.cli.console import Console
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
@@ -36,6 +37,18 @@ def test_a_failing_command_shows_one_exception_mark_and_the_file_keeps_the_trace
     assert marks_text(story).count("RuntimeError: the sample command broke") == 1, marks_text(story) + story.error_log_text()
     assert "the sample command broke" in story.error_log_text() and "Traceback" in story.error_log_text()
     story.expect_text("journal-exception list", "RuntimeError")
+
+
+def closed_pipe(*_arguments: object) -> None:
+    raise BrokenPipeError
+
+
+def test_a_command_whose_reader_went_away_records_no_exception(new_story, monkeypatch):
+    story = new_story(fixture=UserJoined)
+    with monkeypatch.context() as patched:
+        patched.setattr(Console, "chosen_run", closed_pipe)
+        story.run("task list", environment_id=1)
+    story.expect_no_text("journal-exception list", "BrokenPipeError")
 
 
 def test_a_failing_hook_rule_shows_one_exception_mark_and_the_file_keeps_the_trace(new_story):

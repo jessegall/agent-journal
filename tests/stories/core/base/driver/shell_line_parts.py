@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 
+from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
+from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool import Tool
 from core.testing.hook_samples import HookSamples
@@ -16,6 +18,17 @@ EDITING = ShellPart("sed", CommandCategory.EDIT, ["-i"], effects=[CommandEffect.
 
 def line_of(text: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> ShellLine:
     return ShellLine.parsed(HookSamples.shell(text, *parts, redirects=redirects).body["tool"]["shell"])
+
+
+def expect_full_test_run(parts: tuple[Part, ...], is_full: bool) -> None:
+    assert ShellLine("", parts, (), False, "").has_full_test_run is is_full
+
+
+def test_a_line_that_skips_the_saved_commands_is_no_full_test_run():
+    skip = Part('journal alias skip --reason "one run"', "journal", "", ("alias", "skip"), Classification(CommandCategory.JOURNAL, ()), (), (), "&&", None)
+    suite = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", None, is_full_test_run=True)
+    expect_full_test_run(tuple([suite]), True)
+    expect_full_test_run((skip, suite), False)
 
 
 def test_a_chain_tests_when_any_of_its_parts_tests_whichever_comes_first():

@@ -1,8 +1,6 @@
 import {onMounted, onUnmounted, watch} from "vue";
 
 const WIDE_BLOCKS = "img,pre,table";
-const NARROWEST_SHARE = 0.5;
-const NARROWING_STEPS = 6;
 
 // how wide a bubble needs to be: its longest line and its padding, none when nothing was measured
 function fittedWidth(lines, padding) {
@@ -33,29 +31,10 @@ function fit(bubble) {
     const height = bubble.offsetHeight;
     const width = fittedWidth(textLines(bubble), padding || 0);
     if (!width) return;
-    if (width < bubble.offsetWidth) setWidthKeepingLines(bubble, width, height, "");
-    narrow(bubble, padding || 0, height);
-}
-
-// a width that adds a line, as a rounded one can, gives way to the width it replaces: text that fits one line stays on one
-function setWidthKeepingLines(bubble, width, height, fallback) {
+    if (width >= bubble.offsetWidth) return;
     bubble.style.width = `${width}px`;
-    if (bubble.offsetHeight !== height) bubble.style.width = fallback;
-}
-
-// the narrowest width that keeps the bubble's number of lines, found by halving, so wrapped text stands compact and its lines end close together
-function narrow(bubble, padding, height) {
-    let fits = bubble.offsetWidth;
-    let tooNarrow = fits * NARROWEST_SHARE;
-    for (let step = 0; step < NARROWING_STEPS; step++) {
-        const middle = (fits + tooNarrow) / 2;
-        bubble.style.width = `${middle}px`;
-        if (bubble.offsetHeight === height) fits = middle;
-        else tooNarrow = middle;
-    }
-    bubble.style.width = `${fits}px`;
-    const width = fittedWidth(textLines(bubble), padding);
-    if (width && width < fits) setWidthKeepingLines(bubble, width, height, `${fits}px`);
+    // a width that adds a line, as a rounded one can, gives way: text that fits one line stays on one
+    if (bubble.offsetHeight !== height) bubble.style.width = "";
 }
 
 // a bubble as wide as its longest line, measured again when its text or the width of the chat changes

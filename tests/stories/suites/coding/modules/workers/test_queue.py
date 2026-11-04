@@ -17,6 +17,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
+PIPED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
+REDIRECTED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py > out.txt"'
 
 
 def recording_launch(monkeypatch) -> list[int]:
@@ -41,6 +43,15 @@ def ended(story, process_id: int, code: int) -> None:
     owner = Actor(story.container.get(Queries).query(Process).find(process_id).agent_id, ActorType.AGENT)
     story.container.get(Bus).run(EndProcess(process_id, code, 0, 0), owner, environment_id=1)
     story.run_listeners()
+
+
+def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    recording_launch(monkeypatch)
+    repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    story.expect_refusal(PIPED_PROOF, "without a pipe or a redirect", actor=worker)
+    story.expect_refusal(REDIRECTED_PROOF, "without a pipe or a redirect", actor=worker)
 
 
 def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story, monkeypatch):

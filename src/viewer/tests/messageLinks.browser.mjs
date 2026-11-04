@@ -25,14 +25,6 @@ try {
     assert.deepEqual(padding, ["18px", "20px"]);
     assert.equal(await four.locator("[data-message-links-rows]").isVisible(), false);
     assert.match(await four.locator("[data-message-links-count]").innerText(), /4 linked tasks/);
-    const paragraph = await page.locator(".message-card p", {hasText: "several lines"}).evaluate((element) => {
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        const lines = [...range.getClientRects()].map((line) => line.width).filter((width) => width > 20);
-        return {wrap: getComputedStyle(element).textWrap, widest: Math.max(...lines), narrowest: Math.min(...lines), count: lines.length};
-    });
-    assert.ok(paragraph.count > 1 && paragraph.narrowest > paragraph.widest * 0.6, JSON.stringify(paragraph));
-    assert.equal(paragraph.wrap, "pretty");
     await page.screenshot({path: capture});
     await four.locator("[data-message-links-count]").click();
     await four.locator("[data-message-links-list]").getByText("Task number 4").waitFor();

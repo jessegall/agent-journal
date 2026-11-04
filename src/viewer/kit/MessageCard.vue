@@ -399,11 +399,6 @@ function pick(face) {
     overflow-wrap: anywhere;
 }
 
-.message-card :deep(p),
-.message-card :deep(li) {
-    text-wrap: pretty;
-}
-
 .message-card {
     min-width: 0;
     max-width: 100%;

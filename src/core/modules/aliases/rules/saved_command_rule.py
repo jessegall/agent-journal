@@ -5,13 +5,11 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.shell_line import JOURNAL_PROGRAM, ShellLine
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
-SKIP_ARGUMENTS = ("alias", "skip")
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
 
 
@@ -29,7 +27,7 @@ class SavedCommandRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or not shell.saved_commands_known or self.opens_with_skip(shell):
+        if shell is None or shell.parse_error or not shell.saved_commands_known or shell.is_skip_line:
             return RuleAnswer.allowed()
         if hook.role not in self.suites.agent_policy(hook.environment_id).saved_command_roles:
             return RuleAnswer.allowed()
@@ -37,21 +35,21 @@ class SavedCommandRule(DriverRule):
         refusal = next((nudge for nudge in refusals if nudge), None)
         return RuleAnswer.refused(refusal) if refusal else RuleAnswer.allowed()
 
-    @staticmethod
-    def opens_with_skip(shell: ShellLine) -> bool:
-        first = shell.parts[0] if shell.parts else None
-        return first is not None and first.program == JOURNAL_PROGRAM and first.arguments[:2] == SKIP_ARGUMENTS and first.next_operator == "&&"
-
     def refusal(self, part: Part, role: str) -> Nudge | None:
         if part.saved_command:
             return self.saved_refusal(part)
         category = part.classification.category
         if not category.is_long_running or set(ASKING_FLAGS) & set(part.arguments):
             return None
-        saved = next((alias for alias in self.aliases.all_rows() if alias.category is category and part.text.startswith(alias.line.replace(ARGS_MARK, "").strip())), None)
+        saved = [alias for alias in self.aliases.all_rows() if alias.category is category]
+        exact = next((alias for alias in saved if part.text.startswith(alias.line.replace(ARGS_MARK, "").strip())), None)
+        if exact:
+            return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
+        if role == AgentRole.SUBAGENT:
+            return SAVED_COMMAND_SUBAGENT.nudge(category=category.value)
         if saved:
-            return SAVED_COMMAND_DIRECT.nudge(name=saved.name)
-        return (SAVED_COMMAND_SUBAGENT if role == AgentRole.SUBAGENT else SAVED_COMMAND_UNKNOWN).nudge(command=part.text, category=category.value)
+            return SAVED_COMMAND_CHOICES.nudge(items=", ".join(alias.name for alias in saved), command=part.text, category=category.value)
+        return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 
     @staticmethod
     def saved_refusal(part: Part) -> Nudge | None:

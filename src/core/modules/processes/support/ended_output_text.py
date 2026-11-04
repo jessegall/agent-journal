@@ -1,7 +1,7 @@
 from core.base.driver.nudge import Nudge
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
+from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH, SILENT_SAVED_FAILURE
 from pathlib import PurePath
 
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -26,12 +26,19 @@ class EndedOutputText:
         self.outputs, self.readers, self.parts, self.visibility, self.judge, self.writers = outputs, readers, parts, visibility, judge, writers
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
-        ended = OUTPUT_ENDED.nudge(output=process.id, result=self.result(process))
+        ended = (OUTPUT_ENDED.nudge(output=process.id, result=self.result(process)), *self.silent_failure_nudges(process))
         if not self.writers.allows(Actor(process.agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
-            return tuple([ended])
+            return ended
         program = self.read_program(process)
         draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if self.needs_reader(process) and program else []
-        return (ended, *draft, *self.reader_nudges(process))
+        return (*ended, *draft, *self.reader_nudges(process))
+
+    def silent_failure_nudges(self, process: Process) -> tuple[Nudge, ...]:
+        kept = self.outputs.process(process.id).page(1, 1).rows
+        if process.state is not ProcessState.FAILED or not kept or kept[0].byte_count:
+            return ()
+        saved = next((part.saved_command for part in self.parts.process(process.id).oldest().all_rows() if part.saved_command), "")
+        return tuple([SILENT_SAVED_FAILURE.nudge(name=saved)]) if saved else ()
 
     def result(self, process: Process) -> str:
         summary = self.summary(process)

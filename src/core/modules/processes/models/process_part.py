@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.shell_line import JOURNAL_PROGRAM
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.part_state import PartState
@@ -26,3 +27,7 @@ class ProcessPart(Model):
     exit_code: int | None = None
     started_at: Timestamp | None = None
     ended_at: Timestamp | None = None
+
+    @property
+    def saved_command(self) -> str:
+        return self.text.split()[1] if self.program == JOURNAL_PROGRAM and self.category.is_long_running else ""

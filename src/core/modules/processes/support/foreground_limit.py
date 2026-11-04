@@ -31,7 +31,8 @@ class ForegroundLimit:
             return ForegroundRun(0, False, part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES, environment_id))
         declared = self.background.declared_category(shell)
         is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.pipeline_heads)
-        reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
+        reader_ids = {options.reader_id for options in alias_runs if options.reader_id is not None}
+        reader_id = reader_ids.pop() if len(reader_ids) == 1 else None
         has_long_part = any(part.classification.category.is_long_running or self.background.is_long_alias(part, shell) for part in shell.parts)
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if has_long_part else ProcessSetting.MOST_OUTPUT_MEGABYTES
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands,

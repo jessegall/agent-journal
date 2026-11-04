@@ -20,8 +20,8 @@ from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
-from core.modules.aliases.support.alias_nudges import (ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN,
-                                                       SAVED_COMMAND_UNREAD)
+from core.modules.aliases.support.alias_nudges import (ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT,
+                                                       SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD)
 
 
 class AliasesModule(Module):
@@ -39,4 +39,4 @@ class AliasesModule(Module):
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
     driver_rules = [AliasExpansionRule, SavedCommandRule]
-    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD]
+    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD]

@@ -3,7 +3,11 @@ from collections.abc import Iterator
 
 import pytest
 
+from core.base.agent_role import AgentRole
+from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.part import Part
+from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
 from core.modules.processes.support.runner_line import READ_FLAGS_VARIABLE
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -48,6 +52,16 @@ def expect_read_flag(hook: AliasHook, line: str, expanded: str, read_flag: str) 
     assert f"{READ_FLAGS_VARIABLE}={read_flag}" in hook.expect_expanded(line, expanded)
 
 
+def expect_saved_names(story: Story, names: list[str]) -> None:
+    assert sorted(json.loads(story.home.saved_command_file.read_text())) == names
+
+
+def expect_subagent_refusal(story: Story, text: str) -> None:
+    part = Part("make all", "make", "", (), Classification(CommandCategory.BUILD, ()), (), (), "", None)
+    refusal = story.container.get(SavedCommandRule).refusal(part, AgentRole.SUBAGENT)
+    assert refusal is not None and text in refusal.text
+
+
 def test_an_unknown_build_is_stopped_and_told_how_to_register_it(unsaved_hook):
     unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'journal alias add <name> "npm run build 2>&1" --category "build"')
 
@@ -58,6 +72,22 @@ def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):
 
 def test_a_saved_build_refuses_the_command_written_out(saved_hook):
     saved_hook.expect_denied("npm run build", "this runs through a saved command: journal build-npm --tail 20")
+
+
+def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
+    saved_hook.expect_denied("make all", 'use build-npm or journal alias add <name> "make all" --category "build"')
+
+
+def test_a_subagent_is_told_to_ask_its_parent(new_story):
+    story = new_story(fixture=BuildSaved)
+    expect_subagent_refusal(story, "a subagent only reads: ask your parent to save this build")
+
+
+def test_saving_a_build_writes_its_name_for_the_hook(new_story):
+    story = new_story(fixture=BuildSaved)
+    story.expect_success('alias add unit-tests "pytest tests/unit" --category "test run"', actor=story.agent)
+    story.run_listeners()
+    expect_saved_names(story, ["build-npm", "unit-tests"])
 
 
 def test_a_saved_build_refuses_a_pipe(saved_hook):

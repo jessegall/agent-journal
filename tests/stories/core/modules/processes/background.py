@@ -154,6 +154,16 @@ class SilentVitestRun(StoryFixture):
         moved_run(story, "npx vitest run", category=CommandCategory.TEST_RUN)
 
 
+class SavedBuildMoved(StoryFixture):
+    """A saved build has moved to the background and printed nothing yet."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        install_runner(story)
+        moved_run(story, "journal build-npm --tail 5", category=CommandCategory.BUILD)
+
+
 def expect_streaming_line(story, text: str) -> None:
     lines = lines_of(story, NOTHING)
     assert any(text in line for line in lines), lines
@@ -162,6 +172,11 @@ def expect_streaming_line(story, text: str) -> None:
 def expect_without_hint(story) -> None:
     lines = lines_of(story, NOTHING)
     assert not any("not streaming" in line or "still runs" in line for line in lines), lines
+
+
+def expect_without_failure_line(story) -> None:
+    lines = lines_of(story, NOTHING)
+    assert not any("failed and printed nothing" in line for line in lines), lines
 
 
 def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_streaming(new_story):
@@ -184,6 +199,26 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     modified_at = story.clock.timestamp().value.timestamp() - STALLED_SECONDS
     os.utime(folder.home.folder / "processes" / str(process_id) / "1.out", (modified_at, modified_at))
     expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: run vitest with --reporter=verbose")
+
+
+def test_a_silent_saved_command_is_told_to_fix_the_saved_command(new_story):
+    story = new_story(fixture=SavedBuildMoved)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    story.advance(timedelta(seconds=31))
+    expect_streaming_line(story, "saved command build-npm printed nothing for 30 seconds, fix it with journal alias edit build-npm --line")
+
+
+def test_a_saved_command_that_fails_and_prints_nothing_is_told_to_fix_the_saved_command(new_story):
+    story = new_story(fixture=SavedBuildMoved)
+    story.expect_success("process part-end 1 --position 1 --exit-code 2", actor=story.agent)
+    story.expect_success("process end 1 --exit-code 2 --bytes 0 --lines 0", actor=story.agent)
+    expect_streaming_line(story, "saved command build-npm failed and printed nothing")
+
+
+def test_a_saved_command_that_fails_with_output_is_only_told_how_it_ended(new_story):
+    story = new_story(fixture=SavedBuildMoved)
+    end_run(story, story.container.get(ProcessQuery).find(1), "the build broke\n", exit_code=2)
+    expect_without_failure_line(story)
 
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
@@ -34,6 +36,11 @@ class Background:
 
     def is_long_alias(self, part: Part, shell: ShellLine) -> bool:
         return False
+
+
+@dataclass(frozen=True)
+class AliasRun:
+    reader_id: int | None
 
 
 class CategoryBackground(Background):
@@ -132,6 +139,18 @@ def test_a_line_declared_as_a_test_stores_as_much():
     declared = limit()
     declared.background = CategoryBackground()
     assert declared.decide(1, line(part("sins", CommandCategory.UNKNOWN))).most_output_bytes == 100 << 20
+
+
+def test_two_saved_commands_with_different_readers_leave_the_run_no_reader_of_its_own():
+    run_limit = limit()
+    run_limit.background.alias_runs = lambda shell: [AliasRun(1), AliasRun(2)]
+    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN))).reader_id is None
+
+
+def test_two_saved_commands_with_one_reader_share_it():
+    run_limit = limit()
+    run_limit.background.alias_runs = lambda shell: [AliasRun(1), AliasRun(1)]
+    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN))).reader_id == 1
 
 
 def test_a_chain_with_a_test_stores_as_much_as_a_test():

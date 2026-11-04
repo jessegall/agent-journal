@@ -70,6 +70,8 @@ class Console:
             self.refusals.record(caller.actor, " ".join(argv[:2]), refusal)
             output.refusal(refusal)
             return REFUSED_CODE
+        except BrokenPipeError:
+            return ERROR_CODE
         except Exception as error:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE

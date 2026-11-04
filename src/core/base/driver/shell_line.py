@@ -11,6 +11,7 @@ from core.base.type_guards import is_list
 
 
 JOURNAL_PROGRAM = "journal"
+SKIP_ARGUMENTS = ("alias", "skip")
 DESCRIPTOR_REDIRECT = re.compile(r"^\d*>&\d+$|^\d*>\s*/dev/null$")
 
 
@@ -89,7 +90,12 @@ class ShellLine:
 
     @property
     def has_full_test_run(self) -> bool:
-        return any(part.is_full_test_run for part in self.parts)
+        return not self.is_skip_line and any(part.is_full_test_run for part in self.parts)
+
+    @property
+    def is_skip_line(self) -> bool:
+        first = self.parts[0] if self.parts else None
+        return first is not None and first.program == JOURNAL_PROGRAM and first.arguments[:2] == SKIP_ARGUMENTS and first.next_operator == "&&"
 
     def has_category_part(self, category: CommandCategory) -> bool:
         return any(part.classification.category is category for part in self.parts)

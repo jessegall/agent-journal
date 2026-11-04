@@ -42,7 +42,12 @@ test("a bubble is as wide as its longest line and its padding", () => {
 
 test("a width that would add a line gives way, so text that fits one line stays on one", () => {
     const bubble = bubbleWithLines([{left: 12, right: 212}], 300);
-    expect(parseFloat(bubble.style.width)).toBeGreaterThanOrEqual(300);
+    expect(bubble.style.width).toBe("");
+});
+
+test("a bubble never narrows past its longest line to even out its lines", () => {
+    const bubble = bubbleWithLines([{left: 12, right: 212}, {left: 12, right: 112}]);
+    expect(bubble.style.width).toBe("226px");
 });
 
 test("a bubble with nothing measured keeps its width", () => {
