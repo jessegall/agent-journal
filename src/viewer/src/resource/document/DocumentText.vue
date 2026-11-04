@@ -97,7 +97,7 @@ defineExpose({show, showHeading, nextTick});
 }
 
 .document-words {
-    max-width: 660px;
+    max-width: 794px;
     font-size: 14px;
     line-height: 1.7;
     overflow-wrap: anywhere;
