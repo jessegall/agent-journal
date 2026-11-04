@@ -12,4 +12,5 @@ class PlanInspectionJsonRecord(TypedDict):
     total: object
     finished: object
     current_phase: object
+    document_id: object
     phases: object

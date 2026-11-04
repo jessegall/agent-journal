@@ -1,5 +1,6 @@
 <script setup>
 import {shareAddress} from "../route.js";
+import PlanLinks from "./PlanLinks.vue";
 import PlanReviews from "./PlanReviews.vue";
 import PlanTimeline from "./PlanTimeline.vue";
 import Segmented from "../kit/Segmented.vue";
@@ -22,7 +23,7 @@ import {useTextComments} from "../composables/textComments.js";
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, backed: Boolean});
-const emit = defineEmits(["close", "back", "select"]);
+const emit = defineEmits(["close", "back", "select", "open"]);
 const VIEWS = [
     {key: "phases", label: "Phases"},
     {key: "timeline", label: "Timeline"},
@@ -101,6 +102,7 @@ watch(() => props.id, () => {
                         </Folded>
                     </div>
                 </template>
+                <PlanLinks :id="id" :document-id="plan.document_id ?? 0" :read="read" @open="emit('open', $event)" />
                 <div class="plan-views">
                     <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                 </div>

@@ -1,5 +1,6 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
+from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
@@ -81,7 +82,7 @@ class DocumentsModule(Module):
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [ReplyLinkListener, DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
+    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks}
     subcommands = [CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
