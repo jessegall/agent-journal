@@ -3,6 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.base.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -12,6 +13,8 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
+from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
 
 QUEUED_EVENT, RUN_EVENT = "proof.queue", "proof.run"
 
@@ -33,6 +36,14 @@ class WorkerTestListener(CommitListener):
             self.launched(self.queries.query(Proof).find(event.row_id))
         elif event.row_table == "processes":
             self.ended(self.queries.query(Process).find(event.row_id), event)
+        elif event.event == "affected_test.create":
+            selected = self.queries.query(AffectedTest).find(event.row_id)
+            self.start_next(self.queries.query(Worktree).find(selected.worktree_id).environment_id, event)
+        elif event.event == "affected_test.update":
+            selected = self.queries.query(AffectedTest).find(event.row_id)
+            if selected.state in (AffectedTestState.PICKING, AffectedTestState.TESTING) and selected.process_id is not None:
+                process = self.queries.query(Process).find(selected.process_id)
+                self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
 
     def start_next(self, environment_id: int, event: LoggedEvent) -> None:
         self.bus.run(StartWorkerTests(environment_id), Actor.core(), cause_id=event.id, environment_id=environment_id)
@@ -51,3 +62,7 @@ class WorkerTestListener(CommitListener):
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=event.id, environment_id=process.environment_id)
             self.start_next(process.environment_id, event)
+        selected = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).page(1, 1).rows
+        if selected:
+            passed = process.state is ProcessState.FINISHED and process.exit_code == 0
+            self.bus.run(RecordAffectedTest(selected[0].id, process.id, passed), Actor.core(), cause_id=event.id, environment_id=process.environment_id)

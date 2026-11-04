@@ -1,4 +1,6 @@
 import json
+import subprocess
+import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -134,22 +136,119 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("pick.py", "import sys\nfrom pathlib import Path\nassert 'cart.py' in sys.argv\nassert Path('base.txt').read_text() == 'rebased\\n'\nprint('tests/other test.py')\n", "Picker")
+    repository.committed("run_tests.py", "import sys\nfrom pathlib import Path\nassert sys.argv[1:] == ['tests/other test.py']\nassert Path('base.txt').read_text() == 'rebased\\n'\n", "Tests")
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=story.agent)
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
+    story.expect_success('proof make 1 "cart.py:1, the cart story" --test "python3 -c \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\'"', actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    run_test_process(story, started[0])
+    picker = story.container.get(Queries).query(Process).find(started[1])
+    story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
+                      (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
+    run_test_process(story, picker.id)
+    selected = story.container.get(Queries).query(Process).find(started[2])
+    story.expect_rows(selected.line == "python3 run_tests.py 'tests/other test.py'")
+    run_test_process(story, selected.id)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def run_test_process(story, process_id):
+    process = story.container.get(Queries).query(Process).find(process_id)
+    completed = subprocess.run(process.line, shell=True, cwd=process.folder, capture_output=True, text=True, timeout=30, check=False)
+    story.container.get(OutputFolder).write_output(process_id, 1, completed.stdout)
+    ended(story, process_id, completed.returncode)
+
+
+def affected_test_story(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
-    picker = story.container.get(Queries).query(Process).find(started[1])
-    story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
-                      (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
-    story.container.get(OutputFolder).write_output(picker.id, 1, "tests/other test.py\n")
-    ended(story, picker.id, 0)
-    selected = story.container.get(Queries).query(Process).find(started[2])
-    story.expect_rows(selected.line == "python3 -m pytest -q 'tests/other test.py'")
-    ended(story, selected.id, 0)
+    return story, repository, worker, started
+
+
+def test_a_failed_picker_returns_the_work_with_its_output(new_story, monkeypatch):
+    story, _, worker, started = affected_test_story(new_story, monkeypatch)
+    ended(story, started[1], 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"journal output read {started[1]} --summary")
+
+
+def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkeypatch):
+    story, _, worker, started = affected_test_story(new_story, monkeypatch)
+    story.container.get(OutputFolder).write_output(started[1], 1, "tests/other.py\n")
+    ended(story, started[1], 0)
+    ended(story, started[2], 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"journal output read {started[2]} --summary")
+
+
+def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):
+    story, repository, worker, started = affected_test_story(new_story, monkeypatch)
+    ended(story, started[1], 1)
+    repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    story.expect_rows(len(started) == 3)
+    story.container.get(OutputFolder).write_output(started[2], 1, "tests/other.py\n")
+    ended(story, started[2], 0)
+    ended(story, started[3], 0)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_an_empty_picker_result_finishes_without_an_extra_test(new_story, monkeypatch):
+    story, _, _, started = affected_test_story(new_story, monkeypatch)
+    ended(story, started[1], 0)
+    story.expect_rows(len(started) == 2)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 "cart.py:1, checked the cart"', actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    story.expect_rows(len(started) == 1)
+    story.container.get(OutputFolder).write_output(started[0], 1, "tests/cart.py\n")
+    ended(story, started[0], 0)
+    ended(story, started[1], 0)
+    story.expect_text("proof show 1", "state: shown", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
+@pytest.mark.parametrize("setting", ("affected-tests-command", "project-test-command"))
+def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, setting):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    story.expect_rows(len(started) == 1)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
