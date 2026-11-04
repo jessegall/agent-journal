@@ -16,7 +16,7 @@ Every shell command you run goes through the journal's runner.
 - A test or build runs through a saved command, registered once with `journal alias add <name> "<bare command>"
   --category "test run"` or `--category build`. Run it as `journal <name> --tail 20`, `--head 20` or `--cut 100-160`
   with no pipe: its complete output is kept and read by number. Your own arguments stay, and after a bare `--` they
-  are all the command's. To run a line as written once: `journal alias skip --reason "<why>" && <line>`.
+  are all the command's. While no command of that kind is saved, a line runs as written once with `journal alias skip --reason "<why>" && <line>`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
 - While you keep working you hear of a run's end on your next tool call, so a run needs no Monitor. Only when you

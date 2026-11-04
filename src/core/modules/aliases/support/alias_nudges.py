@@ -9,7 +9,7 @@ SAVED_COMMAND_UNKNOWN = NudgeDeclaration("aliases.saved_command_unknown", NudgeT
                                          'save it: journal alias add <name> "{command}" --category "{category}", or journal alias skip --reason "<why>" && it',
                                          longest_characters=SAVED_COMMAND_LINE)
 SAVED_COMMAND_CHOICES = NudgeDeclaration("aliases.saved_command_choices", NudgeType.REFUSAL,
-                                         'use {items} or journal alias add <name> "{command}" --category "{category}" or journal alias skip --reason "<why>" && it',
+                                         'use {items} with --tail, --head or --cut, or save it: journal alias add <name> "{command}" --category "{category}"',
                                          longest_characters=SAVED_COMMAND_LINE)
 SAVED_COMMAND_SUBAGENT = NudgeDeclaration("aliases.saved_command_subagent", NudgeType.REFUSAL,
                                           'a subagent only reads: ask your parent to save this {category}, or journal alias skip --reason "<why>" && it',
