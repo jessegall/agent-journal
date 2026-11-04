@@ -1,16 +1,16 @@
 export const looks = {
-    // @sin naming_PlainViewerScriptTextDetector
+    // @sin naming_plain_viewer_script_text
     label: "We dispatch the rows",
-    // @righteous naming_PlainViewerScriptTextDetector
+    // @righteous naming_plain_viewer_script_text
     title: "Notes",
-    // @sin naming_SentenceLabelScriptDetector
+    // @sin naming_sentence_label_in_script
     tag: "waiting for a reply",
-    // @righteous naming_SentenceLabelScriptDetector
+    // @righteous naming_sentence_label_in_script
     status: "Replies",
-    // @sin naming_PlainViewerScriptTextDetector
+    // @sin naming_plain_viewer_script_text
     help: "Make the secret",
-    // @sin naming_PlainViewerScriptTextDetector
+    // @sin naming_plain_viewer_script_text
     placeholder: "Type the value",
-    // @righteous naming_PlainViewerScriptTextDetector
+    // @righteous naming_plain_viewer_script_text
     hint: "Add credentials",
 };

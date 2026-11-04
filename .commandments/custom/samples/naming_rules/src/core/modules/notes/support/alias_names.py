@@ -1,7 +1,7 @@
-# @righteous-file naming_PoeticMethodNameDetector
-# @righteous-file naming_SentenceMethodNameDetector
-# @righteous-file naming_PoeticVariableNameDetector
-# @righteous-file naming_SentenceVariableNameDetector
+# @righteous-file naming_poetic_method_name
+# @righteous-file naming_sentence_method_name
+# @righteous-file naming_poetic_variable_name
+# @righteous-file naming_sentence_variable_name
 
 
 def named_line(argv: list[str]) -> str | None:

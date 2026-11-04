@@ -1,9 +1,9 @@
 from core.base.module.module import Module
 
 
-# @righteous architecture_modules_ModuleSeedsDetector
-# @righteous architecture_modules_ModuleMovesDetector
-# @sin architecture_core_OneClassPerFileDetector
+# @righteous architecture_modules_module_without_seeder
+# @righteous architecture_modules_module_without_move
+# @sin architecture_core_second_class_in_a_file
 class WarmModule(Module):
     """A module that seeds demo rows and carries its version 4 table."""
 
@@ -13,9 +13,9 @@ class WarmModule(Module):
     moves = [WarmMove]
 
 
-# @righteous architecture_modules_ModuleSeedsDetector
-# @righteous architecture_modules_ModuleMovesDetector
-# @sin architecture_core_OneClassPerFileDetector
+# @righteous architecture_modules_module_without_seeder
+# @righteous architecture_modules_module_without_move
+# @sin architecture_core_second_class_in_a_file
 class ExplainedModule(Module):
     """A module that says why it seeds and moves nothing."""
 

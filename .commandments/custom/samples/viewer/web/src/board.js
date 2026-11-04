@@ -1,10 +1,10 @@
 import {useWindow} from "@journal/window-kit";
 
 export async function load() {
-    // @righteous architecture_viewer_WindowDataThroughContextDetector
+    // @righteous architecture_viewer_window_data_outside_context
     const answer = await useWindow().read("task list");
-    // @sin architecture_viewer_WindowDataThroughContextDetector
-    // @sin architecture_viewer_RequestOutsideTransportDetector
+    // @sin architecture_viewer_window_data_outside_context
+    // @sin architecture_viewer_request_outside_transport
     const direct = await fetch("/api/line");
     return [answer, direct];
 }

@@ -5,9 +5,9 @@ from dataclasses import dataclass
 class Basket:
     """A customer's goods before they pay."""
 
-    # @sin naming_FieldDocstringDetector
+    # @sin naming_field_docstring
     total: int
     """What they pay."""
 
-    # @righteous naming_FieldDocstringDetector
+    # @righteous naming_field_docstring
     count: int

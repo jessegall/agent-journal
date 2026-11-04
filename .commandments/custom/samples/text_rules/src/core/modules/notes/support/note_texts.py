@@ -3,13 +3,13 @@ from core.base.refusal import Refusal
 
 def refuse_both(count: int) -> None:
     if count:
-        # @sin naming_PlainJournalTextDetector
+        # @sin naming_plain_journal_text
         raise Refusal("the note names a row that holds nothing", "ask again")
-    # @righteous naming_PlainJournalTextDetector
+    # @righteous naming_plain_journal_text
     raise Refusal("the note has no row", "ask again")
 
 
-# @sin architecture_core_SqlLayerDetector
+# @sin architecture_core_sql_outside_database_layer
 SELECT_ALL = "SELECT * FROM notes WHERE id = 1"
-# @righteous architecture_core_SqlLayerDetector
+# @righteous architecture_core_sql_outside_database_layer
 GREETING = "Select a note"

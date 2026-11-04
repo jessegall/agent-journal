@@ -13,7 +13,7 @@ class SampleListener(CommitListener):
         self.bus, self.repository = bus, repository
 
     def handle(self, event):
-        # @sin architecture_docking_DockOnlyByCommandDetector
+        # @sin architecture_docking_dock_written_outside_docking
         self.repository.save(DockItem(dock_id=1, creator_id=1, type="plans.started", target_model="plan", target_id=1), event)
-        # @righteous architecture_docking_DockOnlyByCommandDetector
+        # @righteous architecture_docking_dock_written_outside_docking
         self.bus.run(AddDockItem(1, PlanDockType.STARTED, "plan", 1), event.actor)

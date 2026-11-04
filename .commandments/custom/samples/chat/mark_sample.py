@@ -11,7 +11,7 @@ class SampleHandler:
         self.bus = bus
 
     def handle(self, command, context):
-        # @sin architecture_chat_MarkShownByListenerDetector
+        # @sin architecture_chat_mark_shown_outside_a_listener
         self.bus.run(ShowMark(1, MessageMarkType.THOUGHT, MessageMarkVariant.SUMMARY, "key", "words"), context.actor)
 
 
@@ -20,7 +20,7 @@ class SampleRoute:
         self.bus = bus
 
     def answer(self, window, argv, person):
-        # @sin architecture_chat_MarkShownByListenerDetector
+        # @sin architecture_chat_mark_shown_outside_a_listener
         self.bus.run(ShowMark(1, MessageMarkType.THOUGHT, MessageMarkVariant.SUMMARY, "button", "words"), person)
 
 
@@ -32,7 +32,7 @@ class SampleListener(CommitListener):
         self.bus = bus
 
     def handle(self, event):
-        # @righteous architecture_chat_MarkShownByListenerDetector
+        # @righteous architecture_chat_mark_shown_outside_a_listener
         self.bus.run(ShowMark(1, MessageMarkType.THOUGHT, MessageMarkVariant.SUMMARY, "key", "words"), event.actor)
 
 
@@ -44,20 +44,20 @@ class SampleRawListener(CommitListener):
         self.bus = bus
 
     def handle(self, event):
-        # @sin architecture_chat_NoRawMarkTypeDetector
+        # @sin architecture_chat_raw_mark_type
         self.bus.run(ShowMark(1, "messages.thought", MessageMarkVariant.SUMMARY, "key", "words"), event.actor)
-        # @sin architecture_chat_NoRawMarkTypeDetector
+        # @sin architecture_chat_raw_mark_type
         self.bus.run(ShowMark(1, MessageMarkType.THOUGHT, "summary", "key", "words"), event.actor)
-        # @sin architecture_chat_NoRawMarkTypeDetector
+        # @sin architecture_chat_raw_mark_type
         self.bus.run(AddDockItem(1, "plans.started", "plan", 1), event.actor)
-        # @righteous architecture_chat_NoRawMarkTypeDetector
+        # @righteous architecture_chat_raw_mark_type
         self.bus.run(AddDockItem(1, MessageMarkType.THOUGHT.value, "plan", 1), event.actor)
 
 
 def sample_declarations() -> None:
-    # @sin architecture_chat_NoRawMarkTypeDetector
+    # @sin architecture_chat_raw_mark_type
     MarkDeclaration("messages.thought", MessageMarkVariant, FAMILY, "Thoughts", "summary")
-    # @sin architecture_chat_NoRawMarkTypeDetector
+    # @sin architecture_chat_raw_mark_type
     DockDeclaration("plans.started", "plan", "Plan", "plan-dock.js")
-    # @righteous architecture_chat_NoRawMarkTypeDetector
+    # @righteous architecture_chat_raw_mark_type
     MarkDeclaration(MessageMarkType.THOUGHT, MessageMarkVariant, FAMILY, "Thoughts", "summary")
