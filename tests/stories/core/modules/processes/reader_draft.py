@@ -69,3 +69,12 @@ def test_candidates_fill_an_unrecognized_test_output(draft_sample):
     story, request = draft_sample
     story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "starting\n" * 10 + "3/3\nTests: 3 passed\n")
     story.expect_text(f"reader draft {request.id} --save", "saved reader custom-test-reader", "count: 3", "progress: 100", actor=story.agent)
+
+
+def test_a_stock_draft_keeps_test_steps(draft_sample):
+    story, request = draft_sample
+    story.expect_success("reader remove go-test")
+    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "ok  \texample.org/project/tools/runner\t1.723s\n")
+    story.expect_text(f"reader draft {request.id} --save", "saved reader go-test", actor=story.agent)
+    reader = story.container.get(Queries).query(Reader).filter(name="go-test").page(1, 1).rows[0]
+    story.expect_rows("?P<passed>" in reader.step_pattern, "?P<failed>" in reader.step_pattern)

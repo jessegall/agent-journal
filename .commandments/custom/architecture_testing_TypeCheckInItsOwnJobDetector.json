@@ -8,6 +8,14 @@
                 "textMatches": "^(pyright|mypy)$"
             },
             {
+                "inside": {
+                    "all": [
+                        {"is": "call"},
+                        {"nameMatches": "^(run|Popen|call|check_call|check_output)$"}
+                    ]
+                }
+            },
+            {
                 "fileMatches": "(^|/)tests/"
             }
         ],

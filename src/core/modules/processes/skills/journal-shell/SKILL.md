@@ -29,7 +29,8 @@ and `--summary <pattern>` too. The other requirements depend on the command:
 
 - A test run always needs a reader with `--count <pattern>`. It also needs either `--progress <pattern>`
   or `--step <pattern>`. A progress pattern captures a percent, or done and total as two numbers. A step
-  pattern matches completed tests, whose count and the required total give the progress.
+  pattern matches completed tests, whose count and the required total give the progress. For one result per
+  line, use named `passed` and `failed` groups; for symbol rows, match the individual symbols.
 - A build always needs a reader. It needs progress only when its output prints a percent or a done/total count.
 - A check needs a reader after a run of that command moved to the background.
 - Reading, searching, journal commands, help, version and listing commands need no reader. Each part of a
