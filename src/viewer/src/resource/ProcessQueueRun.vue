@@ -1,21 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
-import FoldSign from "../kit/FoldSign.vue";
-
-const props = defineProps({
-    run: {type: Object, required: true},
-    environment: {type: String, required: true},
-    position: {type: Number, required: true},
-    read: {type: Function, required: true},
-});
-const expanded = ref(false);
+import Icon from "../kit/Icon.vue";
+const props = defineProps({run: {type: Object, required: true}, environment: {type: String, required: true}, position: {type: Number, required: true}, read: {type: Function, required: true}, expanded: Boolean});
+const emit = defineEmits(["toggle"]);
 const lines = ref([]);
 const now = useSharedNow();
-const STATES = {running: "Running", waiting: "Waiting", finished: "Passed", failed: "Failed", stopped: "Stopped", orphaned: "Lost"};
-const state = computed(() => (props.run.section === "recent" ? STATES[props.run.state] : STATES[props.run.section]));
+const kind = computed(() => ({test: "Test run", build: "Build", check: "Check", install: "Install"})[props.run.category] || props.run.category.charAt(0).toUpperCase() + props.run.category.slice(1));
 const duration = computed(() => {
     const start = props.run.section === "waiting" ? props.run.created_at : props.run.started_at;
     if (!start) return "";
@@ -23,189 +16,41 @@ const duration = computed(() => {
     const seconds = Math.max(0, Math.floor((end - new Date(start).getTime()) / 1000));
     if (seconds < 60) return `${seconds} s`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)} m ${seconds % 60} s`;
-    return `${Math.floor(seconds / 3600)} h ${Math.floor(seconds / 60) % 60} m`;
+    return `${Math.floor(seconds / 3600)} h ${String(Math.floor(seconds / 60) % 60).padStart(2, "0")} m`;
 });
-
 async function refresh() {
-    if (!expanded.value) return;
+    if (!props.expanded) return;
     const answer = await props.read(["output", "peek", String(props.run.id), "--lines", "1-10"]);
     lines.value = answer.ok ? answer.value.lines : [answer.error];
 }
-async function toggle() {
-    expanded.value = !expanded.value;
-    if (expanded.value) await refresh();
-}
+watch(() => props.expanded, refresh, {immediate: true});
 useResourceEvents(["output.*"], refresh);
 </script>
-
 <template>
-    <div :class="['run', run.section]" :data-queue-row="run.section" :data-queue-process="run.id">
-        <div class="run-line">
-            <template v-if="run.section === 'waiting'">
-                <span class="position" data-queue-position>{{ position }}</span>
-            </template>
-            <template v-else><span :class="['marker', run.state, {used: run.uses_slot}]">{{ run.section === 'recent' ? (run.state === 'finished' ? '✓' : '×') : '▤' }}</span></template>
-            <code class="command" :title="run.line">{{ run.line }}</code>
-            <span class="time"><small>{{ run.section === 'recent' ? 'ran' : run.section }}</small><span data-queue-time>{{ duration }}</span></span>
+    <div class="run" :data-queue-row="run.section" :data-queue-process="run.id">
+        <div class="toggle" role="button" tabindex="0" :aria-expanded="expanded" @click="emit('toggle')" @keydown.enter.prevent="emit('toggle')" @keydown.space.prevent="emit('toggle')">
+            <div class="run-line"><span class="leading"><template v-if="run.section === 'waiting'"><span data-queue-position>{{ position }}</span></template><template v-else><span :class="['dot', {ring: run.section === 'running' && !run.uses_slot, passed: run.section === 'recent' && run.state === 'finished', failed: run.section === 'recent' && run.state !== 'finished'}]" :title="run.section === 'running' && !run.uses_slot ? 'Running, not counted in the limit' : run.section === 'recent' ? (run.state === 'finished' ? 'Passed' : 'Failed') : 'Running'" /></template></span>
+                <code class="command">{{ run.line }}</code><span class="time" data-queue-time>{{ duration }}</span><Icon class="chevron" :class="{open: expanded}" name="chevronRight" facing="down" :size="12" />
+            </div>
+            <div class="details"><span data-queue-kind>{{ kind }}</span><template v-if="run.worker_id"><span class="separator">·</span><button type="button" class="link" data-queue-worker @click.stop="peek('agents', run.worker_id)">Worker {{ run.worker_id }}</button></template><template v-else-if="run.is_main"><span class="separator">·</span><span>Main agent</span></template><template v-if="run.task_id"><span class="separator">·</span><button type="button" class="link" data-queue-task @click.stop="peek('tasks', run.task_id)">Task {{ run.task_id }}</button></template><template v-if="run.state === 'failed'"><span class="separator">·</span><span class="failed">Failed, exit {{ run.exit_code }}</span></template></div>
         </div>
-        <div class="details">
-            <span class="kind" data-queue-kind>{{ run.category }}</span>
-            <span class="state" data-queue-state>{{ run.state === 'failed' ? `Failed, exit ${run.exit_code}` : state }}</span>
-            <template v-if="run.worker_id">
-                <button type="button" class="link" data-queue-worker @click="peek('agents', run.worker_id)">
-                    Worker {{ run.worker_id }}
-                </button>
-            </template>
-            <template v-else-if="run.is_main"><span>Main agent</span></template>
-            <template v-if="run.task_id">
-                <button type="button" class="link" data-queue-task @click="peek('tasks', run.task_id)">Task {{ run.task_id }}</button>
-            </template>
-            <template v-if="run.uses_slot"><span class="spot">Takes a spot</span></template>
-        </div>
-        <div class="output-links">
-            <button type="button" class="output-toggle" :aria-expanded="expanded" data-queue-output @click="toggle">
-                Output {{ run.id }}
-                <FoldSign :open="expanded" />
-            </button>
-            <a class="link" :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open in its own window</a>
-        </div>
-        <template v-if="expanded">
-            <div class="output"><div class="output-heading">Output {{ run.id }}<span>10 lines from start</span></div><pre data-queue-output-body>{{ lines.join("\n") }}</pre></div>
-        </template>
+        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}</span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open in its own window</a></div><pre data-queue-output-body><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
     </div>
 </template>
-
 <style scoped>
-.run {
-    box-sizing: border-box;
-    width: 100%;
-    margin-bottom: 8px;
-    padding: 13px 14px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--surface);
-}
-.queue-run-move,
-.queue-run-enter-active,
-.queue-run-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
-.queue-run-enter-from,
-.queue-run-leave-to { opacity: 0; transform: translateY(6px); }
-.queue-run-leave-active { position: absolute; }
-@media (prefers-reduced-motion: reduce) {
-    .queue-run-move,
-    .queue-run-enter-active,
-    .queue-run-leave-active { transition: none; }
-    .queue-run-enter-from,
-    .queue-run-leave-to { transform: none; }
-}
-.run-line {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-.command {
-    flex: 1;
-    min-width: 0;
-    color: var(--text);
-    font-family: var(--font-mono, monospace);
-    font-size: 11.5px;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.time { display: flex; flex-direction: column; gap: 4px; text-align: right; }
-.time small { color: var(--text-4); font-size: 10px; }
-.marker { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border: 1px solid var(--border-2); border-radius: 4px; color: var(--accent); }
-.marker.used { background: var(--accent); color: white; }
-.marker.finished { color: var(--tone-good, #268a60); }
-.marker.failed, .marker.orphaned, .marker.stopped { color: var(--danger); }
-.output-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; font-size: 10.5px; color: var(--text-3); }
-.output-links .output-toggle { margin-left: 0; border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px; }
-.output-links a { text-decoration: none; }
-.output-heading { display: flex; justify-content: space-between; color: var(--text-3); font: 11px var(--font-mono, monospace); }
-.output pre { max-height: 176px; overflow: auto; margin-bottom: 0; white-space: pre-wrap; }
-@media (max-width: 520px) { .run-line { flex-wrap: wrap; } .time { flex-direction: row; flex-basis: 100%; margin-left: 30px; text-align: left; } }
-.time {
-    flex: none;
-    color: var(--text-3);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-}
-.dot {
-    flex: none;
-    align-self: center;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--tone-good, var(--accent));
-}
-.dot.failed,
-.dot.orphaned {
-    background: var(--danger);
-}
-.position {
-    flex: none;
-    min-width: 14px;
-    color: var(--text-4);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-}
-.details {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    margin-top: 7px;
-    padding-left: 15px;
-    color: var(--text-4);
-    font-size: 10.5px;
-}
-.kind {
-    padding: 2px 5px;
-    border-radius: 4px;
-    background: var(--hover);
-    color: var(--text-3);
-}
-.link,
-.output-toggle {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-}
-.link:hover,
-.output-toggle:hover {
-    color: var(--accent-text);
-}
-.output-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-}
-.spot {
-    color: var(--accent-text);
-}
-.output {
-    max-height: 240px;
-    margin: 12px 0 0;
-    padding: 12px;
-    overflow: auto;
-    border-top: 1px solid var(--border);
-    color: var(--text-2);
-    font-family: var(--font-mono, monospace);
-    font-size: 11px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    background: #141519;
-    color: #ddd;
-    border-radius: 6px;
-}
+.run { width:100%; background:var(--bg); border-bottom:1px solid var(--border); }
+.toggle { cursor:pointer; } .toggle:hover { background:var(--hover); }
+.run-line { display:flex; align-items:center; gap:10px; padding:9px 14px 2px; }
+.leading { display:grid; place-items:center; flex:none; width:18px; color:var(--text-3); font-size:12px; font-variant-numeric:tabular-nums; }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--accent); } .dot.ring { background:transparent; box-shadow:inset 0 0 0 1.5px var(--accent); } .dot.passed { background:var(--tone-good); } .dot.failed { background:var(--danger); }
+.command { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font:12px var(--font-mono, monospace); }
+.time { flex:none; color:var(--text-2); font-size:12px; font-variant-numeric:tabular-nums; }
+.chevron { flex:none; color:var(--text-4); transition:transform 200ms; } .chevron.open { transform:rotate(180deg); } .toggle:hover .chevron { color:var(--text-2); }
+.details { display:flex; flex-wrap:wrap; gap:0 6px; padding:0 38px 9px 42px; color:var(--text-3); font-size:11.5px; } .separator { color:var(--text-4); } .failed { color:var(--danger); }
+.link { padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; } .link:hover { color:var(--accent-text); }
+.drop { display:grid; grid-template-rows:0fr; transition:grid-template-rows 200ms cubic-bezier(.2,.9,.25,1); } .drop.open { grid-template-rows:1fr; } .drop-inner { min-height:0; overflow:hidden; }
+.output { background:var(--term); color:#c9ccd3; font:11px/1.6 var(--font-mono, monospace); }
+.output-heading { display:flex; justify-content:space-between; gap:8px; padding:5px 14px; border-bottom:1px solid #25272b; color:#83868e; } .output-heading a, .prompt { color:#a3a8f0; } .output-heading a { text-decoration:none; } .output-heading a:hover { text-decoration:underline; }
+pre { max-height:200px; overflow:auto; margin:0; padding:7px 14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+@media (prefers-reduced-motion: reduce) { .drop, .chevron { transition:none; } }
 </style>

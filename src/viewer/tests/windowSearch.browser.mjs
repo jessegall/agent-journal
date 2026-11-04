@@ -20,6 +20,11 @@ try {
         await window.getByText(name === "coding.file-feed" ? "search_29.py" : words + (name === "questions.questions" ? "?" : ""), {exact: true}).first().waitFor();
         const bar = window.locator("[data-search-bar]");
         const before = await bar.boundingBox();
+        const pane = await window.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " pane-body ")]').boundingBox();
+        if (name === "questions.questions") {
+            assert.ok(Math.abs(before.x - pane.x) < 1 && Math.abs(before.width - pane.width) < 1, JSON.stringify({before, pane}));
+            assert.ok(Math.abs(before.y - pane.y) < 1, JSON.stringify({before, pane}));
+        }
         const style = await bar.evaluate((element) => ({position: getComputedStyle(element).position, border: getComputedStyle(element).borderBottomWidth}));
         assert.equal(style.position, "sticky");
         assert.equal(style.border, "1px");

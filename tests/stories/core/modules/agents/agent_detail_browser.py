@@ -13,4 +13,4 @@ def test_open_worker_and_subagent_details_fill_the_window_and_scroll_inside_it(n
     worker = story.new_row_id(f"agent start detail-worker claude worker --parent {story.agent.id} --environment main")
     subagent = story.new_row_id(f"agent start detail-subagent claude subagent --parent {story.agent.id} --environment main")
     with server_story(story) as server:
-        expect_browser(server, "agentDetail.browser.mjs", [str(worker), str(subagent), "/tmp/journal-worker-464-agent-detail.png"])
+        expect_browser(server, "agentDetail.browser.mjs", [str(worker), str(subagent), "/tmp/journal-worker-475-agent-detail.png"])
