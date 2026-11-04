@@ -1,6 +1,7 @@
 import json
 import shlex
 import socket
+import ssl
 import subprocess
 import time
 import urllib.error
@@ -9,6 +10,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from tests.stories.server.support.go_build import GoBuild
+from tests.stories.server.support.tls_files import TlsFiles
 
 READY_TIMEOUT_SECONDS = 30
 RUN_TIMEOUT_SECONDS = 30
@@ -21,19 +23,19 @@ class SharedServerBinary:
     """The Go shared server built once into a story's folder and run on a free local port with its own data folder,
     stopped when the story ends; every run has a time limit."""
 
-    def __init__(self, build_folder: Path) -> None:
-        self.binary, self.data = build_folder / "journal-shared", build_folder / "shared-data"
+    def __init__(self, build_folder: Path, tls: TlsFiles | None = None) -> None:
+        self.binary, self.data, self.tls = build_folder / "journal-shared", build_folder / "shared-data", tls
         self.port = self.free_port()
         self.process: subprocess.Popen[str] | None = None
 
     @property
     def address(self) -> str:
-        return f"http://{HOST}:{self.port}"
+        return f"{'https' if self.tls else 'http'}://{HOST}:{self.port}"
 
     def __enter__(self) -> "SharedServerBinary":
         GoBuild.built("journal-shared", self.binary)
         self.data.mkdir(exist_ok=True)
-        self.process = subprocess.Popen([str(self.binary), "serve", "--data", str(self.data), "--listen", f"{HOST}:{self.port}"], env=GoBuild.environment(),
+        self.process = subprocess.Popen([str(self.binary), "serve", "--data", str(self.data), "--listen", f"{HOST}:{self.port}", *self.tls_arguments()], env=GoBuild.environment(),
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
         self.wait_until_ready()
         return self
@@ -58,13 +60,19 @@ class SharedServerBinary:
         request = urllib.request.Request(self.address + path, data=None if body is None else json.dumps(body).encode(), method=method,
                                          headers={"Authorization": f"Bearer {token}", "Journal-Protocol": PROTOCOL, "Content-Type": "application/json", **(headers or {})})
         try:
-            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as answer:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS, context=self.context()) as answer:
                 return answer.status, json.load(answer)
         except urllib.error.HTTPError as failure:
             return failure.code, json.load(failure)
 
+    def tls_arguments(self) -> list[str]:
+        return ["--tls-cert", str(self.tls.certificate), "--tls-key", str(self.tls.key)] if self.tls else []
+
+    def context(self) -> ssl.SSLContext:
+        return ssl.create_default_context(cafile=str(self.tls.certificate)) if self.tls else ssl.create_default_context()
+
     def server_key(self) -> str:
-        with urllib.request.urlopen(self.address + "/info", timeout=REQUEST_TIMEOUT_SECONDS) as answer:
+        with urllib.request.urlopen(self.address + "/info", timeout=REQUEST_TIMEOUT_SECONDS, context=self.context()) as answer:
             return str(json.load(answer)["server_key"])
 
     def wait_until_ready(self) -> None:

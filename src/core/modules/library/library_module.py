@@ -3,6 +3,12 @@ from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
+from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
+from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
+from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
+from core.modules.library.commands.unpair_library.unpair_library_subcommand import UnpairLibrarySubcommand
+from core.modules.library.commands.library_status.library_status_subcommand import LibraryStatusSubcommand
+from core.modules.library.commands.save_library_connection.save_library_connection_handler import SaveLibraryConnectionHandler
 from core.modules.library.guards.library_address_guard import LibraryAddressGuard
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.models.library_connection import LibraryConnection
@@ -23,3 +29,5 @@ class LibraryModule(Module):
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
+    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler]
+    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand]

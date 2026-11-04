@@ -21,11 +21,14 @@ from core.modules.library.support.library_unreachable import LibraryUnreachable
 from core.modules.library.support.server_state import ServerState
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.testing.story import Story
+from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 from tests.stories.server.support.stub_server import StubAnswer, StubServer
 
-pytestmark = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
+__all__ = ["private_folder"]
+
+pytestmark = [pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build"), pytest.mark.usefixtures("private_folder")]
 
 DOC_FIELDS = {"title": "Release checklist", "abstract": "What to do before a release", "body": "Tag first."}
 NEWER_FIELDS = {"title": "Release checklist", "abstract": "What to do before a release", "body": "Build, then tag."}
@@ -109,7 +112,7 @@ def test_a_token_the_server_does_not_know_stops_sync(new_story, shared_server):
 def test_a_protocol_the_server_does_not_speak_stops_sync(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server.address, tokens.reader)
-    outcome = outcome_of(lambda: client_of(story).call(server.address, tokens.reader, ServerState.parsed, "GET", "/state", headers={"Journal-Protocol": "9"}))
+    outcome = outcome_of(lambda: client_of(story).call(server.address, tokens.reader, ServerState.parsed, "GET", "/state", headers={"Journal-Protocol": "9"}, opener=client_of(story).certificate.opener()))
     story.expect_rows(isinstance(outcome, LibraryStopped))
 
 
@@ -152,7 +155,7 @@ def test_an_update_that_names_no_version_is_rejected(new_story, shared_server):
     server, tokens = shared_server
     item_id = new_doc(server, tokens)
     story = connected(new_story, server.address, tokens.editor)
-    outcome = outcome_of(lambda: client_of(story).call(server.address, tokens.editor, LibraryItem.parsed, "PUT", f"/items/doc/{item_id}", {"fields": NEWER_FIELDS}))
+    outcome = outcome_of(lambda: client_of(story).call(server.address, tokens.editor, LibraryItem.parsed, "PUT", f"/items/doc/{item_id}", {"fields": NEWER_FIELDS}, opener=client_of(story).certificate.opener()))
     story.expect_rows(isinstance(outcome, LibraryRejected))
 
 
