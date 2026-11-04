@@ -287,7 +287,7 @@ func (tracker *Tracker) move(stdout io.Writer) int {
 	if tracker.waitsForSlot() {
 		fmt.Fprintf(stdout, "queued as output %s; you will be told when it ends; work on or wait\n", process)
 	} else {
-		fmt.Fprintf(stdout, "moved to the background: journal output read %s --summary when it ends\n", process)
+		fmt.Fprintf(stdout, "moved to the background: output %s\n", process)
 	}
 	_ = tracker.Client.Run("process", "background", process)
 	if tracker.Options.Detach != nil {

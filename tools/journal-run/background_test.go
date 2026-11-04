@@ -16,7 +16,7 @@ func TestARunPastTheLimitMovesToTheBackgroundAndExitsWithTheShellStillRunning(t 
 	if code != 0 || time.Since(started) > 2500*time.Millisecond || !strings.Contains(output, "first") || strings.Contains(output, "later") {
 		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
 	}
-	if !strings.Contains(output, "moved to the background: journal output read 4 --summary when it ends") {
+	if !strings.Contains(output, "moved to the background: output 4") {
 		t.Errorf("printed %q", output)
 	}
 	if exists(folderOf(setup) + "/end") {
@@ -51,7 +51,7 @@ func TestAnAtOnceRunMovesBeforeItsFirstOutput(t *testing.T) {
 	setup.Background = true
 	started := time.Now()
 	output, code := run(t, setup, newClient())
-	if code != 0 || time.Since(started) > time.Second || !strings.Contains(output, "moved to the background: journal output read 4 --summary when it ends") {
+	if code != 0 || time.Since(started) > time.Second || !strings.Contains(output, "moved to the background: output 4") {
 		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
 	}
 	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
