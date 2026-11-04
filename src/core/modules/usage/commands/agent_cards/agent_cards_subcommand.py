@@ -31,7 +31,6 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
         parser.add_argument("--show", type=AgentListState, choices=list(AgentListState), default=AgentListState.RUNNING)
-        parser.add_argument("--helpers", action="store_true")
         parser.add_argument("--search", default="")
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
@@ -40,7 +39,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
         environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the agents are shown for one environment", "name it with --environment")
-        rows = self.queries.query(AgentListing).filter(environment_id=environment_id)
+        rows = self.queries.query(AgentListing).filter(environment_id=environment_id).matching(Equal("role", AgentRole.MAIN, negated=True))
         match arguments.show:
             case AgentListState.RUNNING:
                 rows = rows.matching(self.activity)
@@ -50,8 +49,6 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
                 rows = rows.matching(EndedAgents(self.activity))
             case _:
                 pass
-        if arguments.helpers:
-            rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
         if arguments.search.strip():
             rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "dispatch_profile", "dispatch_description"), arguments.search.split()))
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)

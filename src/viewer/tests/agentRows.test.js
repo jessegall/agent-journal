@@ -99,14 +99,6 @@ test("a card is two lines: the profile, name and time, then the provider, model 
     expect(card.title).toBe("s-sub");
 });
 
-test("the main agent is titled Main agent and its model follows the provider", async () => {
-    const element = await drawn();
-    const card = cardOf(element, 2);
-    expect(card.querySelector("[data-agent-title]").textContent).toBe("Main agent");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · opus");
-    expect(card.textContent).not.toContain("Fix the cart");
-});
-
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
     const element = await drawn(FACTS, {}, WORKERS);
     document.body.append(element);

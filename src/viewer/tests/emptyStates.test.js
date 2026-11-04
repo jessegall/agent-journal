@@ -89,7 +89,7 @@ test("the running tab of the helpers window with none running says so and what b
 });
 
 test("a search of the helpers window that finds none says nothing matches", async () => {
-    const element = await agents(helpers, {"agent cards --helpers --show running --search \"no such helper\"": page([]), "agent cards": page([{...closedAgent, id: 8, ended_at: null}])});
+    const element = await agents(helpers, {"agent cards --show running --search \"no such helper\"": page([]), "agent cards": page([{...closedAgent, id: 8, ended_at: null}])});
     await type(element, "no such helper");
     expect(words()[0]).toBe("Nothing matches");
 });

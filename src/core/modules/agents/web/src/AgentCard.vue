@@ -7,7 +7,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
 // its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
-const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", reviewer: "Reviewer"};
+const FALLBACK_TITLES = {subagent: "Subagent", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const MILLISECONDS_PER_HOUR = 3600000;
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
