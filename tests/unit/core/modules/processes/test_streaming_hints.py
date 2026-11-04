@@ -3,7 +3,8 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.rules.silent_run_rule import SilentRunRule
-from core.modules.processes.support.streaming_hints import GENERAL_HINT, StreamingHints
+from core.base.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
+from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
 
 
 @pytest.mark.parametrize("command,part_of_hint", [
@@ -20,6 +21,11 @@ from core.modules.processes.support.streaming_hints import GENERAL_HINT, Streami
 ])
 def test_a_command_gets_the_hint_of_its_tool(command, part_of_hint):
     assert part_of_hint in StreamingHints.hint(command)
+
+
+def test_every_hint_fits_a_nudge_field_whole():
+    assert [hint for _, hint in STREAMING_HINTS if len(hint) > LONGEST_FIELD_CHARACTERS] == []
+    assert len(GENERAL_HINT) <= LONGEST_FIELD_CHARACTERS
 
 
 @pytest.mark.parametrize("category,program,is_watched", [

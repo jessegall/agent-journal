@@ -37,13 +37,13 @@ SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, '
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: journal output title {process} "<what it does>"', required_command="journal output title {process}")
 
 SILENT_RUN_INTERVAL = Seconds(600)
-SILENT_RUN =NudgeDeclaration("processes.silent_run", NudgeType.STEERING, "output {output} printed nothing for {seconds} seconds, so no reader sees it: journal output read {output} --tail 20",
+SILENT_RUN =NudgeDeclaration("processes.silent_run", NudgeType.NOTICE, "output {output} printed nothing for {seconds} seconds, so its output is not streaming: {hint}",
                               interval=Interval(SILENT_RUN_INTERVAL))
-SILENT_SAVED_RUN = NudgeDeclaration("processes.silent_saved_run", NudgeType.STEERING, "saved command {name} printed nothing for {seconds} seconds: fix it with journal alias edit {name} --line",
+SILENT_SAVED_RUN = NudgeDeclaration("processes.silent_saved_run", NudgeType.NOTICE, "saved command {name} printed nothing for {seconds} seconds, fix it with journal alias edit {name} --line: {hint}",
                                     interval=Interval(SILENT_RUN_INTERVAL))
 SILENT_SAVED_FAILURE = NudgeDeclaration("processes.silent_saved_failure", NudgeType.STEERING, "saved command {name} failed and printed nothing, fix it with journal alias edit {name} --line",
                                         interval=Interval(SILENT_RUN_INTERVAL))
-STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.STEERING, "output {output} has written nothing for {seconds} seconds and still runs: journal output read {output} --tail 20",
+STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.NOTICE, "output {output} has written nothing for {seconds} seconds and still runs: {hint}",
                                interval=Interval(SILENT_RUN_INTERVAL))
 READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.STEERING, 'reader {reader} picked none of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.STEERING, 'reader {reader} kept {kept} of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
