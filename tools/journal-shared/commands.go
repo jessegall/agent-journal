@@ -228,3 +228,21 @@ func purgeItem(database *store.Store, kind store.Kind, id int64, out io.Writer) 
 	}
 	return err
 }
+
+func backupCommand(arguments []string, out, errs io.Writer) error {
+	flags, data := newFlags("backup", errs)
+	positional, err := parse(flags, arguments, 1)
+	if err != nil {
+		return err
+	}
+	database, err := openData(*data)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	if err := database.Backup(positional[0]); err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "backup written to %s\n", positional[0])
+	return nil
+}

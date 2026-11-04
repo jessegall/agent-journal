@@ -7,3 +7,11 @@ url = "https://mcp.linear.app/mcp"
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-github"]
 env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
+# agent-journal mcp servers: written by the journal, changed with journal mcp
+[mcp_servers."linear"]
+url = "https://mcp.linear.app/mcp"
+[mcp_servers."github"]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
+# end of agent-journal mcp servers

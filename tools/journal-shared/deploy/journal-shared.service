@@ -1,0 +1,27 @@
+# A systemd unit for journal-shared. Copy it to /etc/systemd/system/ and set up the server once:
+#
+#   sudo useradd --system --home-dir /var/lib/journal-shared --create-home journal-shared
+#   sudo install -m 755 journal-shared-linux-amd64 /usr/local/bin/journal-shared
+#   sudo -u journal-shared journal-shared user add Ada --role admin --data /var/lib/journal-shared
+#   sudo systemctl daemon-reload && sudo systemctl enable --now journal-shared
+#
+# The user add command prints Ada's token once. To serve HTTPS, add
+# --tls-cert /etc/journal-shared/cert.pem --tls-key /etc/journal-shared/key.pem to ExecStart, with both files readable
+# by the journal-shared user.
+
+[Unit]
+Description=journal-shared, the library a team shares
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=journal-shared
+ExecStart=/usr/local/bin/journal-shared serve --data /var/lib/journal-shared --listen 0.0.0.0:8740
+Restart=on-failure
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/journal-shared
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

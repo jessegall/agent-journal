@@ -15,7 +15,7 @@ var version = "dev"
 // protocol is the number of the HTTP API; it only rises for a change that older journals cannot read.
 const protocol = 1
 
-const usage = "usage: journal-shared serve | user add|role|remove|tokens | token new|revoke | item history|purge | --version"
+const usage = "usage: journal-shared serve | user add|role|remove|tokens | token new|revoke | item history|purge | backup <file> | --version"
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
@@ -36,6 +36,8 @@ func run(arguments []string, out, errs io.Writer) int {
 		err = userCommand(arguments[1], arguments[2:], out, errs)
 	case arguments[0] == "token" && len(arguments) > 1:
 		err = tokenCommand(arguments[1], arguments[2:], out, errs)
+	case arguments[0] == "backup":
+		err = backupCommand(arguments[1:], out, errs)
 	case arguments[0] == "item" && len(arguments) > 1:
 		err = itemCommand(arguments[1], arguments[2:], out, errs)
 	default:

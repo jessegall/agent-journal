@@ -57,6 +57,15 @@ func Open(folder string) (*Store, error) {
 	return store, nil
 }
 
+// Backup writes the whole database to one new file with VACUUM INTO. A file that is there already is not overwritten.
+func (store *Store) Backup(file string) error {
+	if _, err := os.Stat(file); err == nil {
+		return fmt.Errorf("%s exists already: a backup is written to a new file", file)
+	}
+	_, err := store.DB.Exec("VACUUM INTO ?", file)
+	return err
+}
+
 // Close closes the database.
 func (store *Store) Close() error {
 	return store.DB.Close()
