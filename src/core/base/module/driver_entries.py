@@ -16,11 +16,11 @@ class DriverEntries:
     """The registry entries of the modules' suites, drivers, overlays and driver rules, in sync order: per
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
-    def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
+    def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {str(role): driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
                                       tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
                                       tuple(suite.profiles), tuple(suite.profile_types), suite.agent_policy,
-                                      DottedPath.class_path(suite.task_assigner).text if suite.task_assigner else "")
+                                      DottedPath.class_path(suite.task_assigner).text if suite.task_assigner else "", shipped=module in shipped_modules)
                      for module in modules for suite in module.suites)
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:

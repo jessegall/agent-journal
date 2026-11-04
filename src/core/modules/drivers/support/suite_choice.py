@@ -8,17 +8,18 @@ from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_
 
 
 class SuiteChoice:
-    """The suite an environment runs and the driver each role gets there: what the environment's settings
-    name, else the one installed suite no other requires and that suite's default for the role."""
+    """Chooses an environment's suite from its setting, then shipped suites, then installed suites."""
 
     def __init__(self, registry: Registry, settings: SettingValues) -> None:
         self.registry, self.settings = registry, settings
 
     def suite(self, environment_id: int) -> SuiteEntry | None:
-        value = self.settings.text(SUITE_SETTING, environment_id)
-        if value:
-            return self.registry.suite(value)
-        tops = self.registry.top_suites()
+        configured_suite = self.registry.suite(self.settings.text(SUITE_SETTING, environment_id))
+        if configured_suite is not None:
+            return configured_suite
+        tops = self.registry.default_suite_roots()
+        if not tops:
+            tops = self.registry.top_suites()
         return tops[0] if len(tops) == 1 else None
 
     # Whether the environment runs the suite of that name, as the suite it chose or one that requires it, however far down.

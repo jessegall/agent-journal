@@ -1,0 +1,28 @@
+from core.base.driver.suite import Suite
+from core.base.module.module import Module
+
+PATH = "tests.stories.core.modules.drivers.support.extended_suites"
+
+
+class AcmeSuite(Suite):
+    name = "acme"
+    requires = ["coding"]
+
+
+class AuditSuite(Suite):
+    name = "audit"
+    requires = ["coding"]
+
+
+class AcmeModule(Module):
+    name = "acme.suite"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.suites.coding"]
+    suites = [AcmeSuite]
+
+
+class AuditModule(Module):
+    name = "audit.suite"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.suites.coding"]
+    suites = [AuditSuite]

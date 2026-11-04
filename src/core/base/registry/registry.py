@@ -1,4 +1,5 @@
 import json
+from collections.abc import Sequence
 from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
@@ -107,7 +108,7 @@ class Registry:
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
                                     tuple(AgentProfile(**profile) for profile in suite.get("profiles", [])), tuple(suite.get("profile_types", ["subagent"])),
-                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""))
+                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""), suite.get("shipped", False))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -149,7 +150,7 @@ class Registry:
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
                         "profiles": [asdict(profile) for profile in suite.profiles], "profile_types": list(suite.profile_types),
-                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner,
+                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner, "shipped": suite.shipped,
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -255,8 +256,15 @@ class Registry:
         return next((driver for driver in self.drivers if driver.name == name), None)
 
     def top_suites(self) -> list[SuiteEntry]:
-        required = {name for suite in self.suites for name in suite.requires}
-        return [suite for suite in self.suites if suite.name not in required]
+        return self.suite_roots(self.suites)
+
+    def default_suite_roots(self) -> list[SuiteEntry]:
+        return self.suite_roots([suite for suite in self.suites if suite.shipped])
+
+    @staticmethod
+    def suite_roots(suites: Sequence[SuiteEntry]) -> list[SuiteEntry]:
+        required = {name for suite in suites for name in suite.requires}
+        return [suite for suite in suites if suite.name not in required]
 
     # The suite's name and the names of every suite it requires, those they require too, nearest first.
     def lineage(self, suite: SuiteEntry) -> tuple[str, ...]:

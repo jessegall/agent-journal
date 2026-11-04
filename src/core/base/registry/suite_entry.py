@@ -26,6 +26,7 @@ class SuiteEntry:
     profile_types: Sequence[str] = tuple(["subagent"])
     agent_policy: AgentPolicy = AgentPolicy()
     task_assigner: str = ""
+    shipped: bool = False
 
     def is_overlay_included(self, overlay: str) -> bool:
         return not self.complete_control or overlay in self.included_overlays

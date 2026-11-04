@@ -118,6 +118,7 @@ def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read
     read_window = registry.windows[0]
     assert (read_window.icon, read_window.float_width, read_window.float_height, read_window.options, read_window.count, registry.suites[0].presets) == (
         "window", 400, 340, (), "", {})
+    assert registry.suites[0].shipped is False
 
 
 def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_show(tmp_path):
@@ -134,12 +135,13 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
 def test_suite_profiles_and_their_types_survive_registry_storage(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read", "Read the notes.", "reader", "small", "small")
     policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
-    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), policy)
+    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), policy, shipped=True)
     registry = replace(Registry.read(database), suites=tuple([suite]))
     restored = Registry.parsed("profiles", registry.entries_text())
     assert restored.suites[0].profiles == tuple([profile])
     assert restored.suites[0].profile_types == tuple(["reader"])
     assert restored.suites[0].agent_policy == policy
+    assert restored.suites[0].shipped is True
 
 
 def test_window_sources_links_and_components_survive_registry_storage(database):
