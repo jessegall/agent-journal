@@ -26,4 +26,5 @@ class LinkPinRule(DriverRule):
         if tool is None or tool.category in FILE_TOOLS:
             return RuleAnswer.allowed()
         part_nudges = [nudge for part_text in (tool.shell.part_texts if tool.shell is not None else ()) for nudge in self.check.nudges(hook.environment_id, part_text)]
-        return RuleAnswer.with_nudges(*part_nudges, *self.check.nudges(hook.environment_id, "", self.check.joined_text(hook.event.raw.get("tool_response"))))
+        response = self.check.joined_text(hook.event.raw.get("tool_response"))
+        return RuleAnswer.with_nudges(*part_nudges, *self.check.nudges(hook.environment_id, "", response)).running(*self.check.pull_request_pins(hook.environment_id, response))

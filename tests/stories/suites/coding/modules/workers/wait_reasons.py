@@ -54,14 +54,14 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
     command = StartProcess(worker.id, None, "make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])
     process = story.container.get(Bus).run(command, worker, environment_id=1)
     database.update(Statement("UPDATE agents SET ended_at = ? WHERE id = ?", [ENDED_AT, worker.id]))
-    expect_reason(story, worker, "a reader")
+    expect_reason(story, worker, "reader")
     database.update(Statement("UPDATE reader_requests SET completed_at = ?", [ENDED_AT]))
     database.update(Statement("UPDATE processes SET is_queued = 1 WHERE id = ?", [process.id]))
-    expect_reason(story, worker, "a place in the queue")
+    expect_reason(story, worker, "place in the queue")
     database.update(Statement("UPDATE processes SET is_queued = 0 WHERE id = ?", [process.id]))
-    expect_reason(story, worker, "its run")
+    expect_reason(story, worker, "command to finish")
     database.update(Statement("UPDATE processes SET state = 'finished' WHERE id = ?", [process.id]))
-    expect_reason(story, worker, "its next start")
+    expect_reason(story, worker, "next start")
 
 
 def test_a_worker_with_no_unfinished_tasks_waits_for_a_job(new_story):
