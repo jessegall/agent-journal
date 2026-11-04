@@ -89,6 +89,16 @@ def test_an_invalid_saved_command_timeout_refuses_the_run(new_story):
     story.expect_rows(not story.container.get(Queries).query(Process).exists())
 
 
+def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    process = start_process(story, "make package", category=CommandCategory.BUILD)
+    story.expect_success(f"output timeout {process.id} 1m", actor=story.agent)
+    end_run(story, process, "built\n")
+    story.advance(timedelta(minutes=2))
+    timeout_tick(story)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timed_out_at is None)
+
+
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
     story = new_story(fixture=QueueAgents)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)

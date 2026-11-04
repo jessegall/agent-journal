@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from core.base.duration import Duration
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.support.part_command import PartCommand
@@ -24,4 +25,4 @@ class ForegroundRun:
     most_output_bytes: int = 0
     read_flags: tuple[str, ...] = ()
     queue_wait_seconds: int = 5
-    timeout_durations: tuple[str, ...] = ()
+    timeout: Duration | None = None

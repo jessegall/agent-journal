@@ -18,7 +18,8 @@ func TestSplitReading(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.arguments, func(t *testing.T) {
-			kept, reading := splitReading(testCase.arguments)
+			options := splitSavedOptions(testCase.arguments)
+			kept, reading := options.arguments, options.reading
 			if kept != testCase.kept || reading != testCase.reading {
 				t.Fatalf("kept %q, reading %q", kept, reading)
 			}

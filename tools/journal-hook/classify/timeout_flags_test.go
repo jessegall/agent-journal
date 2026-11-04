@@ -15,7 +15,7 @@ func TestSavedTimeoutFlagsStayOutOfCommandArguments(t *testing.T) {
 	} {
 		t.Run(sample.arguments, func(t *testing.T) {
 			options := splitSavedOptions(sample.arguments)
-			if options.arguments != sample.wanted || options.reading != sample.reading || options.timeoutDuration != sample.timeout {
+			if options.arguments != sample.wanted || options.reading != sample.reading || (sample.timeout != "" && (options.timeoutDuration == nil || *options.timeoutDuration != sample.timeout)) || (sample.timeout == "" && options.timeoutDuration != nil) {
 				t.Fatalf("saved options %+v", options)
 			}
 		})
@@ -32,7 +32,16 @@ func TestSavedTimeoutReachesThePreparedPart(t *testing.T) {
 		t.Fatalf("prepared line %+v", prepared)
 	}
 	part := prepared.Parts[0]
-	if part.TimeoutDuration != "5m" || part.ReadFlag != "tail:20" || part.SavedCommand != "bounded" {
+	if part.TimeoutDuration == nil || *part.TimeoutDuration != "5m" || part.ReadFlag != "tail:20" || part.SavedCommand != "bounded" {
 		t.Fatalf("prepared part %+v", part)
+	}
+}
+
+func TestSavedTimeoutWithoutAValueReachesValidation(t *testing.T) {
+	for _, arguments := range []string{"--timeout", "--timeout ''", "--timeout=\"\""} {
+		options := splitSavedOptions(arguments)
+		if options.arguments != "" || options.timeoutDuration == nil || *options.timeoutDuration != "" {
+			t.Fatalf("saved options %+v", options)
+		}
 	}
 }

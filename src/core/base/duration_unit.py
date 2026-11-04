@@ -11,4 +11,4 @@ class DurationUnit(StrEnum):
 
     @property
     def seconds(self) -> int:
-        return {self.SECOND: 1, self.MINUTE: 60, self.HOUR: 3600, self.DAY: 86400}[self]
+        return {DurationUnit.SECOND: 1, DurationUnit.MINUTE: 60, DurationUnit.HOUR: 3600, DurationUnit.DAY: 86400}[self]
