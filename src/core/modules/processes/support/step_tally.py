@@ -15,6 +15,10 @@ class StepTally:
         if not step:
             return cls()
         step_pattern, progress_pattern = re.compile(step), re.compile(progress) if progress else None
+        if {"passed", "failed"} <= step_pattern.groupindex.keys():
+            matches = tuple(step_pattern.finditer(text))
+            return cls(sum(bool(match.group("passed")) for match in matches),
+                       sum(bool(match.group("failed")) for match in matches))
         symbols = "".join(cls.row_symbols(line, step_pattern, progress_pattern) for line in text.splitlines())
         return cls(symbols.count("."), symbols.count("F") + symbols.count("E"))
 
