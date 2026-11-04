@@ -41,6 +41,8 @@ class EndedOutputText:
         return tuple([SILENT_SAVED_FAILURE.nudge(name=saved)]) if saved else ()
 
     def result(self, process: Process) -> str:
+        if process.expired_at is not None:
+            return "timed out"
         summary = self.summary(process)
         return summary if summary else self.outcome(process)
 

@@ -4,9 +4,7 @@ from dataclasses import replace
 from core.modules.processes.support.process_nudges import RUNNER_MISSING
 from collections.abc import Mapping, Sequence
 
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -33,9 +31,8 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, suites: SuiteChoice) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
-        self.suites = suites
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -44,12 +41,8 @@ class RunnerRewriteRule(DriverRule):
         if not self.runner.is_installed():
             return self.missing(hook)
         decided = self.limits.decide(hook.environment_id, shell)
-        run = replace(decided, queued=hook.role in self.suites.agent_policy(hook.environment_id).queued_run_roles
-                      and decided.seconds > 0 and not self.is_read_write(shell), read_command=shell.is_readonly)
+        run = replace(decided, read_command=shell.is_readonly)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
-
-    def is_read_write(self, shell: ShellLine) -> bool:
-        return bool(shell.parts) and all(part.classification.category.accesses_files and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)

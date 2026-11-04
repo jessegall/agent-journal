@@ -1,0 +1,6 @@
+Cloning into 'git'...
+remote: Enumerating objects: 267152, done.
+remote: Total 267152 (delta 0), reused 0 (delta 0), pack-reused 267152R
+Receiving objects: 100% (267152/267152), 114.11 MiB | 13.62 MiB/s, done.
+Resolving deltas: 100% (198252/198252), done.
+Checking out files: 100% (3577/3577), done.

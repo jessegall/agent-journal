@@ -54,7 +54,7 @@ class InactiveHelperRule(DriverRule):
         workers = self.workers.read(page)
         for position, process in enumerate(page.rows):
             worker_id = workers.get(process.id)
-            if not process.is_queued or worker_id is None or worker_id not in notes or notes[worker_id]:
+            if process.queued_at is None or worker_id is None or worker_id not in notes or notes[worker_id]:
                 continue
             notes[worker_id] = f"; its run {process.id} waits for a spot, {position} runs ahead"
         return notes

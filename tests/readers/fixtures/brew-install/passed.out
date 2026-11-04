@@ -1,0 +1,7 @@
+==> Downloading https://ghcr.io/v2/homebrew/core/tree/manifests/2.0.2
+######################################################################## 100.0%
+==> Pouring tree--2.0.2.arm64_monterey.bottle.tar.gz
+🍺 /opt/homebrew/Cellar/tree/2.0.2: 8 files, 167.8KB
+==> Running `brew cleanup tree`...
+Disable this behaviour by setting HOMEBREW_NO_INSTALL_CLEANUP.
+Hide these hints with HOMEBREW_NO_ENV_HINTS (see `man brew`).

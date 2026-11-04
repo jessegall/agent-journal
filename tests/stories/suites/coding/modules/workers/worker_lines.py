@@ -76,7 +76,7 @@ def test_a_workers_build_goes_in_the_queue_and_its_read_does_not(new_story):
     read = HookSamples.shell("cat notes.txt", ShellPart("cat", "read", ["notes.txt"]))
     expect_updated_input_hook_with_2(story, session, build, "--queue")
     expect_updated_input_hook_without_2(story, session, read, "--queue")
-    expect_updated_input_hook_without_2(story, "s-1", build, "--queue")
+    expect_updated_input_hook_with_2(story, "s-1", build, "--queue")
 
 
 def expect_updated_input_hook_without_2(story, text, build, expected) -> None:

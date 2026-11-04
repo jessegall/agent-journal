@@ -1,0 +1,10 @@
+00:00 +1 -1: test/binary_search_test.dart: finds a value in the middle of an array [E]
+  Expected: <3>
+    Actual: <0>
+
+  package:matcher                    expect
+  test/binary_search_test.dart 13:5  main.<fn>
+
+
+To run this test again: dart test test/binary_search_test.dart -p vm --plain-name 'finds a value in the middle of an array'
+00:00 +1 ~9 -1: Some tests failed.

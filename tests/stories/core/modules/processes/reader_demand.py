@@ -134,7 +134,7 @@ def test_each_part_of_a_chain_is_judged_alone(new_story):
     parts = (PartSpec("custom-tests a", "custom-tests", category=CommandCategory.TEST_RUN),
              PartSpec("custom-build run", "custom-build", category=CommandCategory.BUILD),
              PartSpec("ls", "ls", category=CommandCategory.READ))
-    story.container.get(Bus).run(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts, is_queued=True), worker, environment_id=1)
+    story.container.get(Bus).run(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
     story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 2)
 
 

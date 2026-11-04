@@ -1,0 +1,22 @@
+learn-packer.docker.ubuntu: output will be in this color.
+
+==> learn-packer.docker.ubuntu: Creating a temporary directory for sharing data...
+==> learn-packer.docker.ubuntu: Pulling Docker image: ubuntu:jammy
+    learn-packer.docker.ubuntu: jammy: Pulling from library/ubuntu
+    learn-packer.docker.ubuntu: 4007a89234b4: Pulling fs layer
+    learn-packer.docker.ubuntu: Digest: sha256:bb84bbf2ff36d46acaf0bb0c6bcb33dae64cd93cba8652d74c9aaf438fada438
+    learn-packer.docker.ubuntu: Status: Downloaded newer image for ubuntu:jammy
+    learn-packer.docker.ubuntu: docker.io/library/ubuntu:jammy
+==> learn-packer.docker.ubuntu: Starting docker container...
+    learn-packer.docker.ubuntu: Run command: docker run -v /Users/youruser/.packer.d/tmp819964324:/packer-files -d -i -t --entrypoint=/bin/sh -- ubuntu:jammy
+    learn-packer.docker.ubuntu: Container ID: 6e18a8066f5f9b758a35a257bb7a08a2e06b5b257d51d3599f15466ccab74691
+==> learn-packer.docker.ubuntu: Using docker communicator to connect: 172.17.0.2
+==> learn-packer.docker.ubuntu: Committing the container
+    learn-packer.docker.ubuntu: Image ID: sha256:13d5a06b9ad37668669ecef6b8ddcaa81c0e6bcacc140f6e954268e8181ad140
+==> learn-packer.docker.ubuntu: Killing the container: 6e18a8066f5f9b758a35a257bb7a08a2e06b5b257d51d3599f15466ccab74691
+Build 'learn-packer.docker.ubuntu' finished after 32 seconds 28 milliseconds.
+
+==> Wait completed after 32 seconds 29 milliseconds
+
+==> Builds finished. The artifacts of successful builds are:
+--> learn-packer.docker.ubuntu: Imported Docker image: sha256:13d5a06b9ad37668669ecef6b8ddcaa81c0e6bcacc140f6e954268e8181ad140

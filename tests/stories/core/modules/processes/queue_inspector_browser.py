@@ -18,10 +18,10 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
     task_id = story.new_row_id('task make "Build the package" --brief "Build and check the package" --environment main', actor=story.user)
     story.expect_success(f"task start {task_id}", actor=story.agent)
-    finished = start_process(story, "make previous", category=CommandCategory.BUILD, is_queued=True)
+    finished = start_process(story, "make previous", category=CommandCategory.BUILD)
     end_run(story, finished, "package built\n")
-    running = start_process(story, "make package", category=CommandCategory.BUILD, is_queued=True)
-    waiting = start_process(story, "make checks", category=CommandCategory.CHECK, is_queued=True)
+    running = start_process(story, "make package", category=CommandCategory.BUILD)
+    waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
     for process in (running, waiting):
         story.container.get(OutputFolder).beat(process.id, Timestamp(datetime.now(timezone.utc)))
     story.run_listeners()
@@ -33,7 +33,7 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
 def test_the_queue_reads_output_from_the_end_and_loads_earlier_pages(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
-    finished = start_process(story, "make long-output", category=CommandCategory.BUILD, is_queued=True)
+    finished = start_process(story, "make long-output", category=CommandCategory.BUILD)
     end_run(story, finished, "".join(f"line {number} of the run\n" for number in range(250)))
     with server_story(story) as server:
         expect_browser(server, "processQueuePages.browser.mjs", [])

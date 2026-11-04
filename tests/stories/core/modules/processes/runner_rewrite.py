@@ -118,7 +118,7 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line)})
+    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line, queue_run=False)})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
 
@@ -134,7 +134,7 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True))
+    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True, queue_run=False))
 
 
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):

@@ -1,0 +1,8 @@
+nox > Running session lint
+nox > Creating virtual environment (virtualenv) using python3 in .nox/lint
+nox > python -m pip install pre-commit
+nox > pre-commit run --all-files --show-diff-on-failure
+An error has occurred: FatalError: git failed. Is it installed, and are you in a Git repository directory?
+Check the log at /home/tkloczko/.cache/pre-commit/pre-commit.log
+nox > Command pre-commit run --all-files --show-diff-on-failure failed with exit code 1
+nox > Session lint failed.

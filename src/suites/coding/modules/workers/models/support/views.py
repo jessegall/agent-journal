@@ -14,7 +14,7 @@ SELECT worktree.agent_id, worktree.environment_id,
                    WHEN agents.ended_at IS NULL THEN ''
                    WHEN EXISTS (SELECT 1 FROM reader_requests WHERE reader_requests.creator_id = worktree.agent_id AND reader_requests.completed_at IS NULL)
                        THEN 'reader'
-                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.agent_id = worktree.agent_id AND processes.state = 'running' AND processes.is_queued = 1)
+                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.agent_id = worktree.agent_id AND processes.state IN ('running', 'background') AND processes.queued_at IS NOT NULL)
                        THEN 'place in the queue'
                    WHEN EXISTS (SELECT 1 FROM processes WHERE processes.agent_id = worktree.agent_id AND processes.state IN ('running', 'background'))
                        THEN 'command to finish'

@@ -1,4 +1,6 @@
 from core.base.agent_role import AgentRole
+from core.base.duration import Duration
+from core.base.duration_error import DurationError
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -8,7 +10,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
@@ -16,10 +18,7 @@ SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_SUBAGENT.key)
 
 
 class SavedCommandRule(DriverRule):
-    """Holds every test and build of a line to a saved command: one not saved is registered first, one that is
-    saved runs as the journal command, and that command takes reading flags, never a pipe. A line that opens with
-    a skip runs as written only while nothing of that kind is saved, and a hook that could not read the saved
-    commands judges nothing."""
+    """Requires tests and builds to use saved commands with valid reading and timeout options."""
 
     name = "aliases.saved-command"
     hook = HookEventName.PRE_TOOL_USE
@@ -30,7 +29,16 @@ class SavedCommandRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or not shell.saved_commands_known:
+        if shell is None or shell.parse_error:
+            return RuleAnswer.allowed()
+        try:
+            for part in shell.parts:
+                if part.timeout_duration is None:
+                    continue
+                Duration.parse(part.timeout_duration)
+        except DurationError as error:
+            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge(hint=error.text))
+        if not shell.saved_commands_known:
             return RuleAnswer.allowed()
         if hook.role not in self.suites.agent_policy(hook.environment_id).saved_command_roles:
             return RuleAnswer.allowed()

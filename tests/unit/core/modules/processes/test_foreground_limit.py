@@ -32,7 +32,7 @@ class Background:
         return None
 
     def part_command(self, part: Part) -> PartCommand:
-        return PartCommand(part.text)
+        return PartCommand(part.text, part.classification.category)
 
     def is_long_alias(self, part: Part, shell: ShellLine) -> bool:
         return False
@@ -92,11 +92,11 @@ def limit(over_limit: bool = False, waiting: bool = False, journal_commands: boo
 
 
 def test_a_journal_only_line_has_no_limit_to_move_at():
-    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal")]), most_output_bytes=10 << 20)
+    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
 
 
 def test_a_journal_line_never_goes_to_the_background():
-    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal")]), most_output_bytes=10 << 20)
+    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
 
 
 def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():
