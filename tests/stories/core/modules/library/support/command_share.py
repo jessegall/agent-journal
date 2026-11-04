@@ -5,6 +5,7 @@ from core.modules.documents.support.doc_library_share import DocLibraryShare
 
 PATH = "tests.stories.core.modules.library.support.command_share"
 WARNING = "this check runs on your computer: echo hello"
+COMMAND_CHANGED = "The command of this check changed."
 
 
 class CommandShare(DocLibraryShare):
@@ -18,6 +19,9 @@ class CommandShare(DocLibraryShare):
 
     def is_removed(self, row: Doc) -> bool:
         return bool(row.close_reason)
+
+    def needs_reading(self, row: Doc, fields: Fields) -> str:
+        return COMMAND_CHANGED if fields["command"] != row.body else ""
 
     def warning(self, fields: Fields) -> str:
         return WARNING

@@ -16,8 +16,11 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_client import LibraryClient
+from core.modules.library.support.library_denied import LibraryDenied
 from core.modules.library.support.library_item_removed import LibraryItemRemoved
+from core.modules.library.support.library_rejected import LibraryRejected
 from core.modules.library.support.library_shares import LibraryShares
+from core.modules.library.support.library_stale import LibraryStale
 from core.modules.library.support.library_stopped import LibraryStopped
 from core.modules.library.support.library_unreachable import LibraryUnreachable
 from core.modules.library.support.round_memory import RoundMemory
@@ -31,7 +34,7 @@ REACHED_NOTE_SECONDS = 60
 class LibrarySync:
     """One sync round: reads the server's list, then compares each copy with it. All network work happens here,
     outside any transaction, and each result is saved in a short command of its own, so a slow server never
-    holds the journal's write lock. One copy's failure stops no other. A change made here is left alone."""
+    holds the journal's write lock. One copy's failure stops no other."""
 
     def __init__(self, client: LibraryClient, shares: LibraryShares, queries: Queries, connections: LibraryConnectionQuery, bus: Bus, actors: ModuleActors, clock: Clock) -> None:
         self.client, self.shares, self.queries, self.connections, self.bus, self.clock = client, shares, queries, connections, bus, clock
@@ -88,7 +91,18 @@ class LibrarySync:
             return copy.server_version != entry.version and self.save(UpdateLibraryCopy(copy.id, copy.state, server_version=entry.version))
         if server_changed:
             return self.compare(copy, row, self.client.item(copy.share, copy.item_id), digest, state)
-        return False
+        return self.send(copy, row, digest, state)
+
+    def send(self, copy: LibraryCopy, row: Model, digest: str, state: ServerState) -> bool:
+        try:
+            item = self.client.update(copy.share, copy.item_id, copy.base_version, self.shares.lookup(copy.share).fields(row))
+        except LibraryDenied:
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.DENIED, note="", unsent_digest=digest, server_version=copy.base_version))
+        except LibraryRejected as refusal:
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.REJECTED, note=str(refusal), unsent_digest=digest, server_version=copy.base_version))
+        except LibraryStale as stale:
+            return self.compare(copy, row, stale.current, digest, state)
+        return self.save(UpdateLibraryCopy.synced(copy.id, item.version, digest))
 
     def compare(self, copy: LibraryCopy, row: Model, item: LibraryItem, digest: str, state: ServerState) -> bool:
         share = self.shares.lookup(copy.share)
