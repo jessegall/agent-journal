@@ -1661,7 +1661,7 @@ const Ht = (e) => mn[e], gr = new Map(pr.flatMap((e) => [e, e.replace(/s$/, ""),
       ], 64))
     ], 10, _u));
   }
-}, Cu = /* @__PURE__ */ Y(Au, [["__scopeId", "data-v-2fcd7385"]]), Ou = {
+}, Cu = /* @__PURE__ */ Y(Au, [["__scopeId", "data-v-2da32260"]]), Ou = {
   class: "running",
   "data-running-command": ""
 }, Tu = ["title"], Iu = {
@@ -10692,7 +10692,7 @@ const jb = /* @__PURE__ */ Nb(Pb), qb = ["width", "height", "viewBox"], Fb = ["w
       ue(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, p$ = /* @__PURE__ */ Y(Ub, [["__scopeId", "data-v-47e67f04"]]), g$ = hl(() => import("./VoiceFigure-DIOiIK6s.js").then((e) => e.V)), v$ = "1.1.0", y$ = "3.5";
+}, p$ = /* @__PURE__ */ Y(Ub, [["__scopeId", "data-v-47e67f04"]]), g$ = hl(() => import("./VoiceFigure-su_EfQOK.js").then((e) => e.V)), v$ = "1.1.0", y$ = "3.5";
 export {
   ju as $,
   Me as A,
