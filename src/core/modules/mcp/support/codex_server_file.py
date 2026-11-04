@@ -23,12 +23,16 @@ class CodexServerFile:
         return set(tomllib.loads(self.path.read_text()).get("mcp_servers", {})) if self.path.is_file() else set()
 
     def write(self, servers: Sequence[McpServer]) -> None:
-        text = self.path.read_text() if self.path.is_file() else ""
+        self.write_file(self.path, servers)
+
+    @staticmethod
+    def write_file(path: Path, servers: Sequence[McpServer]) -> None:
+        text = path.read_text() if path.is_file() else ""
         leading_text, _, block_text = text.partition(BEGIN)
         trailing_text = block_text.partition(END)[2]
-        block = "\n".join([BEGIN, *(self.table(server) for server in servers), END]) if servers else ""
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text("\n".join(part.strip("\n") for part in (leading_text, block, trailing_text) if part.strip()) + "\n")
+        block = "\n".join([BEGIN, *(CodexServerFile.table(server) for server in servers), END]) if servers else ""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(part.strip("\n") for part in (leading_text, block, trailing_text) if part.strip()) + "\n")
 
     @staticmethod
     def table(server: McpServer) -> str:

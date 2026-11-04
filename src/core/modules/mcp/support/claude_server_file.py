@@ -20,13 +20,22 @@ class ClaudeServerFile:
         return set(self.read().get(SERVERS, {}))
 
     def write(self, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
-        settings = self.read()
+        self.write_file(self.path, servers, dropped)
+
+    @staticmethod
+    def write_file(path: Path, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
+        settings = ClaudeServerFile.read_file(path)
         kept = {name: entry for name, entry in settings.get(SERVERS, {}).items() if name not in dropped}
-        settings[SERVERS] = {**kept, **{server.name: self.entry(server) for server in servers}}
-        self.path.write_text(json.dumps(settings, indent=2) + "\n")
+        settings[SERVERS] = {**kept, **{server.name: ClaudeServerFile.entry(server) for server in servers}}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(settings, indent=2) + "\n")
 
     def read(self) -> dict[str, dict[str, object]]:
-        return json.loads(self.path.read_text() or "{}") if self.path.is_file() else {}
+        return self.read_file(self.path)
+
+    @staticmethod
+    def read_file(path: Path) -> dict[str, dict[str, object]]:
+        return json.loads(path.read_text() or "{}") if path.is_file() else {}
 
     @staticmethod
     def entry(server: McpServer) -> dict[str, object]:

@@ -164,7 +164,7 @@ class WorkersModule(Module):
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage", "journal.core.aliases", "journal.core.viewer"]
+    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.usage", "journal.core.aliases", "journal.core.viewer", "journal.core.mcp"]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(AffectedTest, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),

@@ -12,7 +12,7 @@ from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.skills.support.skill_files import SkillFiles
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
-from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
+from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

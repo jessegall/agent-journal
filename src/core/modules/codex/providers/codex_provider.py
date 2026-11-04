@@ -89,7 +89,7 @@ class CodexProvider(Provider):
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",
                      "--dangerously-bypass-hook-trust", "-m", launch.model, launch.brief]
-        return LaunchCommand(arguments, launch.folder, launch.variables)
+        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
 
     def new_session_arguments(self, session: str) -> Sequence[str]:
         return []

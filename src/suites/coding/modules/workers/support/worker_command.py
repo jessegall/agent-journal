@@ -8,6 +8,8 @@ from core.base.provider.session_start import SessionStart
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.task import Task
+from core.modules.mcp.support.server_configs import ServerConfigs
+from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.refusal import Refusal
 
@@ -21,8 +23,8 @@ class WorkerCommand:
     """The command line that starts a worker's program on its task, or resumes it on a new job, as its
     provider writes it."""
 
-    def __init__(self, providers: Providers) -> None:
-        self.providers = providers
+    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders) -> None:
+        self.providers, self.servers, self.libraries = providers, servers, libraries
 
     def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
         skills = Path(worktree.folder) / self.providers.provider(worker.program).skills_folder
@@ -42,6 +44,8 @@ class WorkerCommand:
         if not worker.program_model.strip():
             raise Refusal(f"worker {worker.id} has no recorded model", "dispatch a worker with --model <model>")
         provider = self.providers.provider(worker.program)
+        files = self.servers.write_folder(Path(worktree.folder))
+        self.libraries.exclude(worktree.folder, [str(path) for path in files])
         launch = HelperLaunch(root=Path(environment.folder), folder=Path(worktree.folder), model=worker.program_model, launch="", session=session,
                               variables={ENVIRONMENT_VARIABLE: environment.name, ACTIVE_VARIABLE: "1"}, brief=brief)
         return provider.helper_command(launch)
