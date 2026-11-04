@@ -42,10 +42,11 @@ test("an empty waiting list shows an empty state", async () => {
     expect(await drawn(Waiting, context({"wait waiting": page([])}))).toContain("Nothing is waiting");
 });
 
-test("the questions list shows the recommended choice first and marked", async () => {
+test("the questions list shows the recommended choice first, with a chip that says so after its words", async () => {
     const text = await drawn(Questions, context({"question list": page([QUESTION])}));
     expect(text).toContain("Which database?");
-    expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("postgres"));
+    expect(text.indexOf("Recommended")).toBeGreaterThan(text.indexOf("postgres"));
+    expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("sqlite"));
     expect(text.indexOf("postgres")).toBeLessThan(text.indexOf("sqlite"));
 });
 
