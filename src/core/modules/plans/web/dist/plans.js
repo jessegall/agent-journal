@@ -1,97 +1,174 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-9bffa5c2fab8")) { const style = document.createElement("style"); style.id = "window-styles-9bffa5c2fab8"; style.textContent = ".plan-dock-agents[data-v-aa962e00]{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 6px 16px}.plan-dock-agent[data-v-aa962e00]{padding:0 8px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-aa962e00]{margin:0;padding:0 12px 9px 16px;list-style:none}.plan-dock-phase[data-v-aa962e00]{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;column-gap:8px;height:24px;font-size:12.5px}.plan-dock-number[data-v-aa962e00]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-aa962e00]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-aa962e00]{color:var(--text-4)}.plan-dock-tasks[data-v-aa962e00]{color:var(--text-4);font-size:11.5px}.plans[data-v-462020cb]{display:flex;flex-direction:column;gap:14px}.plans-grid[data-v-462020cb]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.plan[data-v-462020cb]{cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plan-head[data-v-462020cb]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-462020cb]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-462020cb],.plan-state.completed[data-v-462020cb]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-462020cb]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-462020cb]{font-weight:500}.plan-bar[data-v-462020cb]{height:4px;border-radius:2px;background:var(--raised)}.plan-bar-fill[data-v-462020cb]{display:block;height:100%;border-radius:2px;background:var(--accent)}.plan-foot[data-v-462020cb],.plans-note[data-v-462020cb]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as v, computed as g, openBlock as o, createBlock as f, unref as r, withCtx as w, createElementVNode as u, createElementBlock as i, toDisplayString as d, Fragment as k, createVNode as x, createCommentVNode as y, renderList as E, withKeys as I, createTextVNode as h, normalizeClass as K, normalizeStyle as L } from "vue";
-import { useWindow as R, WindowRoom as W, Skeleton as M, InnerTabs as T, peekRef as S, Icon as A, Btn as D } from "@journal/window-kit";
-import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const G = { class: "plans" }, O = {
+if (!document.getElementById("window-styles-8e74d5ac59e1")) { const style = document.createElement("style"); style.id = "window-styles-8e74d5ac59e1"; style.textContent = ".plan-dock-agents[data-v-aa962e00]{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 6px 16px}.plan-dock-agent[data-v-aa962e00]{padding:0 8px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-aa962e00]{margin:0;padding:0 12px 9px 16px;list-style:none}.plan-dock-phase[data-v-aa962e00]{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;column-gap:8px;height:24px;font-size:12.5px}.plan-dock-number[data-v-aa962e00]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-aa962e00]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-aa962e00]{color:var(--text-4)}.plan-dock-tasks[data-v-aa962e00]{color:var(--text-4);font-size:11.5px}.plan-agents[data-v-3294ddc9]{display:flex;align-items:center;min-width:0;height:34px;margin:0 -16px;padding:0 10px;border-top:1px solid var(--border);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-3294ddc9]{padding:0 6px}.plan-agents-button[data-v-3294ddc9]{display:inline-flex;gap:5px;align-items:center;min-width:0;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-3294ddc9]:hover{background:var(--hover);color:var(--text)}.plans[data-v-a436c665]{display:flex;flex-direction:column;gap:14px}.plans-grid[data-v-a436c665]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.plan[data-v-a436c665]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:14px 16px 0;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plan-head[data-v-a436c665]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-a436c665]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-a436c665],.plan-state.completed[data-v-a436c665]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-a436c665]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-a436c665]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-a436c665]{height:4px;border-radius:2px;background:var(--raised)}.plan-bar-fill[data-v-a436c665]{display:block;height:100%;border-radius:2px;background:var(--accent)}.plan-foot[data-v-a436c665],.plans-note[data-v-a436c665]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as A, ref as k, openBlock as n, createElementBlock as d, withKeys as S, withModifiers as N, toDisplayString as o, Fragment as g, createElementVNode as v, createTextVNode as m, createVNode as y, unref as u, createBlock as $, withCtx as b, renderList as z, createCommentVNode as x, normalizeClass as R, normalizeStyle as W } from "vue";
+import { Icon as B, MenuPanel as O, MenuLabel as T, MenuItem as q, peekRef as I, useWindow as D, WindowRoom as F, Skeleton as G, InnerTabs as j, Btn as H } from "@journal/window-kit";
+import { _ as K } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const J = {
+  key: 0,
+  class: "plan-agents-none",
+  "data-plan-agents-none": ""
+}, Q = ["title"], U = ["aria-expanded"], X = {
+  __name: "PlanAgents",
+  props: { planId: { type: Number, required: !0 }, agents: { type: Array, default: () => [] } },
+  setup(w) {
+    const p = w, a = A(() => [...new Map(p.agents.map((_) => [_.id, _])).values()]), t = k(null), i = k(!1), f = (_) => I(`agents:${_.id}`);
+    return (_, l) => (n(), d("span", {
+      class: "plan-agents",
+      "data-plan-agents": "",
+      onClick: l[3] || (l[3] = N(() => {
+      }, ["stop"])),
+      onKeydown: l[4] || (l[4] = S(N(() => {
+      }, ["stop"]), ["enter"]))
+    }, [
+      a.value.length ? a.value.length === 1 ? (n(), d("button", {
+        key: 1,
+        type: "button",
+        class: "plan-agents-button",
+        title: `Open ${a.value[0].name}`,
+        "data-plan-agent": "",
+        onClick: l[0] || (l[0] = (h) => f(a.value[0]))
+      }, "Agent: " + o(a.value[0].name), 9, Q)) : (n(), d(g, { key: 2 }, [
+        v("button", {
+          ref_key: "anchor",
+          ref: t,
+          type: "button",
+          class: "plan-agents-button",
+          "aria-expanded": i.value,
+          "data-plan-agents-list": "",
+          onClick: l[1] || (l[1] = (h) => i.value = !i.value)
+        }, [
+          m(" Agents: " + o(a.value.length) + " ", 1),
+          y(u(B), {
+            name: "down",
+            size: 11
+          })
+        ], 8, U),
+        i.value ? (n(), $(u(O), {
+          key: 0,
+          anchor: t.value,
+          "min-width": 200,
+          "data-plan-agents-menu": "",
+          onClose: l[2] || (l[2] = (h) => i.value = !1)
+        }, {
+          default: b(() => [
+            y(u(T), null, {
+              default: b(() => [
+                m("Agents on plan " + o(w.planId), 1)
+              ]),
+              _: 1
+            }),
+            (n(!0), d(g, null, z(a.value, (h) => (n(), $(u(q), {
+              key: h.id,
+              "data-plan-agent": "",
+              onClick: (M) => f(h)
+            }, {
+              default: b(() => [
+                m(o(h.name), 1)
+              ]),
+              _: 2
+            }, 1032, ["onClick"]))), 128))
+          ]),
+          _: 1
+        }, 8, ["anchor"])) : x("", !0)
+      ], 64)) : (n(), d("span", J, "Agents: none"))
+    ], 32));
+  }
+}, Y = /* @__PURE__ */ K(X, [["__scopeId", "data-v-3294ddc9"]]), Z = { class: "plans" }, ee = {
   key: 1,
   class: "plans-note"
-}, j = {
+}, ae = {
   key: 0,
   class: "plans-note"
-}, q = { class: "plans-grid" }, H = ["data-row", "onClick", "onKeydown"], J = { class: "plan-head" }, Q = { class: "plan-title" }, U = { class: "plan-bar" }, X = { class: "plan-foot" }, Y = 25, Z = {
+}, ne = { class: "plans-grid" }, te = ["data-row", "onClick", "onKeydown"], le = { class: "plan-head" }, se = ["title"], oe = { class: "plan-bar" }, ue = { class: "plan-foot" }, de = 25, pe = {
   __name: "PlanCards",
-  setup(ee) {
-    var C;
-    const c = R(), l = v((C = c.tabs) == null ? void 0 : C[0]), t = v({ open_total: 0, closed_total: 0, plans: [] }), p = v(""), b = v(!1), $ = () => l.value.read;
-    async function m() {
-      const a = l.value, n = t.value.plans.length, s = await c.read(c.shared ? `${c.shared.model} show ${c.shared.id}` : `${$()}${n > Y ? ` --limit ${n}` : ""}`);
-      a === l.value && (p.value = s.ok ? "" : s.error, b.value = !0, s.ok && (t.value = c.shared ? { open_total: 1, closed_total: 0, plans: [{ task_count: 0, completed_count: 0, current_phase: 0, ...s.value }] } : s.value));
+  setup(w) {
+    var P;
+    const p = D(), a = k((P = p.tabs) == null ? void 0 : P[0]), t = k({ open_total: 0, closed_total: 0, plans: [] }), i = k(""), f = k(!1), _ = () => a.value.read;
+    async function l() {
+      const s = a.value, r = t.value.plans.length, c = await p.read(p.shared ? `${p.shared.model} show ${p.shared.id}` : `${_()}${r > de ? ` --limit ${r}` : ""}`);
+      s === a.value && (i.value = c.ok ? "" : c.error, f.value = !0, c.ok && (t.value = p.shared ? { open_total: 1, closed_total: 0, plans: [{ task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...c.value }] } : c.value));
     }
-    async function N() {
+    async function h() {
       if (!t.value.plans.length) return;
-      const a = l.value, n = await c.read(`${$()} --before-id ${Math.min(...t.value.plans.map((e) => e.id))}`);
-      if (a !== l.value) return;
-      if (!n.ok) return void (p.value = n.error);
-      const s = new Set(t.value.plans.map((e) => e.id));
-      t.value = { ...n.value, plans: [...t.value.plans, ...n.value.plans.filter((e) => !s.has(e.id))] };
+      const s = a.value, r = await p.read(`${_()} --before-id ${Math.min(...t.value.plans.map((e) => e.id))}`);
+      if (s !== a.value) return;
+      if (!r.ok) return void (i.value = r.error);
+      const c = new Set(t.value.plans.map((e) => e.id));
+      t.value = { ...r.value, plans: [...t.value.plans, ...r.value.plans.filter((e) => !c.has(e.id))] };
     }
-    const B = (a) => {
-      l.value = a, t.value = { ...t.value, plans: [] }, m();
-    }, _ = g(() => t.value.plans), P = g(() => {
-      var a;
-      return t.value[(a = l.value) == null ? void 0 : a.count_field];
-    }), V = (a) => a.task_count ? Math.round(a.completed_count / a.task_count * 100) : 0;
-    return c.follow(["plan.*", "phase.*", "task.*"], m), m(), (a, n) => (o(), f(r(W), null, {
-      default: w(() => {
-        var s;
+    const M = (s) => {
+      a.value = s, t.value = { ...t.value, plans: [] }, l();
+    }, C = A(() => t.value.plans), L = A(() => {
+      var s;
+      return t.value[(s = a.value) == null ? void 0 : s.count_field];
+    }), V = (s) => s.task_count ? Math.round(s.completed_count / s.task_count * 100) : 0;
+    return p.follow(["plan.*", "phase.*", "task.*"], l), l(), (s, r) => (n(), $(u(F), null, {
+      default: b(() => {
+        var c;
         return [
-          u("div", G, [
-            b.value ? p.value ? (o(), i("p", O, d(p.value), 1)) : (o(), i(k, { key: 2 }, [
-              x(r(T), {
-                active: l.value,
+          v("div", Z, [
+            f.value ? i.value ? (n(), d("p", ee, o(i.value), 1)) : (n(), d(g, { key: 2 }, [
+              y(u(j), {
+                active: a.value,
                 answer: t.value,
-                onChoose: B
+                onChoose: M
               }, null, 8, ["active", "answer"]),
-              _.value.length ? y("", !0) : (o(), i("p", j, "No " + d((s = l.value) == null ? void 0 : s.label.toLowerCase()) + " plans", 1)),
-              u("div", q, [
-                (o(!0), i(k, null, E(_.value, (e) => (o(), i("div", {
+              C.value.length ? x("", !0) : (n(), d("p", ae, "No " + o((c = a.value) == null ? void 0 : c.label.toLowerCase()) + " plans", 1)),
+              v("div", ne, [
+                (n(!0), d(g, null, z(C.value, (e) => (n(), d("div", {
                   key: e.id,
                   class: "plan",
                   "data-row": e.id,
                   role: "button",
                   tabindex: "0",
-                  onClick: (z) => r(S)(`plans:${e.id}`),
-                  onKeydown: I((z) => r(S)(`plans:${e.id}`), ["enter"])
+                  onClick: (E) => u(I)(`plans:${e.id}`),
+                  onKeydown: S((E) => u(I)(`plans:${e.id}`), ["enter"])
                 }, [
-                  u("span", J, [
-                    x(r(A), {
+                  v("span", le, [
+                    y(u(B), {
                       name: "plan",
                       size: 12
                     }),
-                    h(" Plan " + d(e.id), 1),
-                    u("span", {
-                      class: K(["plan-state", e.state]),
+                    m(" Plan " + o(e.id), 1),
+                    v("span", {
+                      class: R(["plan-state", e.state]),
                       "data-plan-state": ""
-                    }, d(e.state), 3)
+                    }, o(e.state), 3)
                   ]),
-                  u("span", Q, d(e.title), 1),
-                  u("span", U, [
-                    u("span", {
+                  v("span", {
+                    class: "plan-title",
+                    title: e.title
+                  }, o(e.title), 9, se),
+                  v("span", oe, [
+                    v("span", {
                       class: "plan-bar-fill",
-                      style: L({ width: `${V(e)}%` })
+                      style: W({ width: `${V(e)}%` })
                     }, null, 4)
                   ]),
-                  u("span", X, [
-                    h(d(e.completed_count) + " of " + d(e.task_count) + " tasks done", 1),
-                    e.current_phase ? (o(), i(k, { key: 0 }, [
-                      h(" · phase " + d(e.current_phase), 1)
-                    ], 64)) : y("", !0)
-                  ])
-                ], 40, H))), 128))
+                  v("span", ue, [
+                    m(o(e.completed_count) + " of " + o(e.task_count) + " tasks done", 1),
+                    e.current_phase ? (n(), d(g, { key: 0 }, [
+                      m(" · phase " + o(e.current_phase), 1)
+                    ], 64)) : x("", !0)
+                  ]),
+                  y(Y, {
+                    "plan-id": e.id,
+                    agents: e.agents
+                  }, null, 8, ["plan-id", "agents"])
+                ], 40, te))), 128))
               ]),
-              _.value.length && _.value.length < P.value ? (o(), f(r(D), {
+              C.value.length && C.value.length < L.value ? (n(), $(u(H), {
                 key: 1,
                 kind: "text",
                 "data-plans-more": "",
-                onClick: N
+                onClick: h
               }, {
-                default: w(() => [...n[0] || (n[0] = [
-                  h("Show more", -1)
+                default: b(() => [...r[0] || (r[0] = [
+                  m("Show more", -1)
                 ])]),
                 _: 1
-              })) : y("", !0)
-            ], 64)) : (o(), f(r(M), {
+              })) : x("", !0)
+            ], 64)) : (n(), $(u(G), {
               key: 0,
               shape: "cards"
             }))
@@ -101,7 +178,7 @@ const G = { class: "plans" }, O = {
       _: 1
     }));
   }
-}, se = /* @__PURE__ */ F(Z, [["__scopeId", "data-v-462020cb"]]);
+}, ve = /* @__PURE__ */ K(pe, [["__scopeId", "data-v-a436c665"]]);
 export {
-  se as default
+  ve as default
 };

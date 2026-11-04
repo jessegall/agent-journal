@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, Icon, InnerTabs, Skeleton, WindowRoom, peekRef, useWindow} from "@journal/window-kit";
+import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
 const context = useWindow();
@@ -18,7 +19,7 @@ async function load() {
     if (asked !== tab.value) return;
     failure.value = answer.ok ? "" : answer.error;
     loaded.value = true;
-    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, ...answer.value}]} : answer.value;
+    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...answer.value}]} : answer.value;
 }
 
 async function more() {
@@ -61,9 +62,10 @@ load();
                     <template v-for="row in shown" :key="row.id">
                         <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
                             <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span :class="['plan-state', row.state]" data-plan-state>{{ row.state }}</span></span>
-                            <span class="plan-title">{{ row.title }}</span>
+                            <span class="plan-title" :title="row.title">{{ row.title }}</span>
                             <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
+                            <PlanAgents :plan-id="row.id" :agents="row.agents" />
                         </div>
                     </template>
                 </div>
@@ -93,7 +95,8 @@ load();
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 14px 16px;
+    min-width: 0;
+    padding: 14px 16px 0;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface);
@@ -128,7 +131,10 @@ load();
 }
 
 .plan-title {
+    overflow: hidden;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .plan-bar {
