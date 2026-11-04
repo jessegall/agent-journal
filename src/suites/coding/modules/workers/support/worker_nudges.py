@@ -3,7 +3,7 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, longest_characters=300, field_limit_characters=200, wakes_agent=True)
+HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, wakes_agent=True)
 BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
 PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}: journal proof check {proofs}, or journal proof short <proof> "<what is missing>"')
 WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, 'worker:{worker} made no call in {seconds} seconds: journal agent terminal {worker}', interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True)
@@ -41,7 +41,7 @@ WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING,
 WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERING, 'worker:{worker} blocked task:{task}: journal task show {task}', turn_limited=False)
 
 WORKER_REFUSAL_INTERVAL = Interval(Seconds(600))
-WORKER_REFUSED = NudgeDeclaration("workers.repeated_refusal", NudgeType.STEERING, 'worker:{worker} refused {count} times on task:{task}: {refusal}: journal worker send {worker} "<job>"', interval=WORKER_REFUSAL_INTERVAL, turn_limited=False, longest_characters=800, field_limit_characters=600)
+WORKER_REFUSED = NudgeDeclaration("workers.repeated_refusal", NudgeType.STEERING, 'worker:{worker} refused {count} times on task:{task}: journal worker status {worker}', interval=WORKER_REFUSAL_INTERVAL, turn_limited=False)
 
 WORKER_RUN_OUTLASTS = NudgeDeclaration("workers.run_outlasts", NudgeType.STEERING, "worker:{worker} stopped and waits on output {output}, still running: journal output stop {output}", interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True)
 WORKER_RESTARTED = NudgeDeclaration("workers.restarted", NudgeType.STEERING, "worker:{worker} stopped with {tasks} left and is started again", turn_limited=False)

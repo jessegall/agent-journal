@@ -75,7 +75,7 @@ def test_a_saved_build_refuses_the_command_written_out(saved_hook):
 
 
 def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
-    saved_hook.expect_denied("make all", 'use build-npm with --tail, --head or --cut, or save it: journal alias add <name> "make all" --category "build"')
+    saved_hook.expect_denied("make all", 'use a saved build with --tail, --head or --cut: journal alias list names them')
 
 
 def test_a_test_or_build_is_refused_beside_any_other_command(saved_hook):
@@ -89,12 +89,12 @@ def test_two_saved_builds_run_on_one_line(saved_hook):
 
 def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
     saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', "this runs through a saved command: journal build-npm --tail 20")
-    saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "use build-npm")
+    saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "use a saved build")
 
 
 def test_a_subagent_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_subagent_refusal(story, "a subagent only reads: ask your parent to save this build")
+    expect_subagent_refusal(story, "a subagent only reads: ask your parent to run journal alias add for this build")
 
 
 def test_saving_a_build_writes_its_name_for_the_hook(new_story):

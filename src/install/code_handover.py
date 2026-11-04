@@ -6,6 +6,7 @@ from core.base.code_versions import CodeVersions
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from install.unix_connection import UnixConnection
+from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from server.server_files import ServerFiles
 from server.successor_start import PROOF_LIMIT_SECONDS
 
@@ -18,17 +19,29 @@ class CodeHandover:
     server to hand over to it, so requests wait in the socket's queue and none is refused. With no server
     running, the link moves at once."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home, self.versions, self.files = home, CodeVersions(home), ServerFiles(home)
+    def __init__(self, home: JournalHome, steps: UpdateSteps = UpdateSteps()) -> None:
+        self.home, self.versions, self.files, self.steps = home, CodeVersions(home), ServerFiles(home), steps
 
     def run(self, source: Path) -> float:
         tag = self.versions.add(source)
         running_pid = self.server_pid()
         started_seconds = time.monotonic()
+        try:
+            self.switch_code(tag, running_pid)
+        except Refusal as refusal:
+            self.steps.record(FAILED, refusal.text)
+            raise
+        self.steps.record(FINISHED, tag)
+        return time.monotonic() - started_seconds
+
+    def switch_code(self, tag: str, running_pid: str) -> None:
+        if running_pid:
+            self.steps.record(PROOF)
         self.request_takeover(tag, running_pid)
         if running_pid:
+            self.steps.record(HANDOVER)
             self.wait_new_server(running_pid)
-        return time.monotonic() - started_seconds
+            self.steps.record(SERVING)
 
     def begin(self, source: Path) -> None:
         tag = self.versions.add(source)

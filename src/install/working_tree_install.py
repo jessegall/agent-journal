@@ -5,6 +5,7 @@ from core.base.journal_home import JournalHome
 from install.code_handover import CodeHandover
 from install.code_replacement import CodeReplacement
 from install.run_drain import RunDrain
+from install.chat_update_steps import ChatUpdateSteps
 
 OLD_SERVER_STATUS = 404
 
@@ -13,6 +14,9 @@ class WorkingTreeInstall(CodeHandover):
     """What `journal server update` runs: a project's own source tree goes into its journal by a hand-over once
     no run is going; a running server too old to hand over is stopped as before, and the next command starts
     the new code."""
+
+    def __init__(self, home: JournalHome) -> None:
+        super().__init__(home, ChatUpdateSteps(home))
 
     def run(self, source: Path) -> float:
         RunDrain(self.home).wait()
