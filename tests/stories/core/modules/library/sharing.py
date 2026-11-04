@@ -74,7 +74,7 @@ def test_a_person_shares_a_document_and_the_row_follows_the_new_item(new_story, 
     item = server_item(server, tokens.editor, copy.item_id)
     doc = story.container.get(Queries).query(Doc).find(row_id)
     story.expect_rows(outcome.output_text.strip() == f"doc {row_id} is now library doc {copy.item_id}, version 1", item["fields"] == fields_of("Quartz release"),
-                      item["creator"] == "Grace", (copy.base_version, copy.base_digest) == (1, DocLibraryShare().digest(doc)))
+                      item["creator"] == "Grace", (copy.base_version, copy.base_digest) == (1, story.container.get(DocLibraryShare).digest(doc)))
 
 
 def test_a_text_that_names_local_rows_is_shared_with_a_warning(new_story, shared_server):
