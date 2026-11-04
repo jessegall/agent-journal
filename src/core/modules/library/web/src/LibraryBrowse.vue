@@ -8,6 +8,7 @@ const KINDS = [
     {key: "sequence", label: "Sequences"},
     {key: "check", label: "Checks"},
 ];
+const SHARES = ["doc", "sequence", "check"];
 const KIND_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
 const SEARCH_DELAY_MILLISECONDS = 300;
 
@@ -33,9 +34,11 @@ const key = (row) => `${row.kind}:${row.id}`;
 
 async function load() {
     const words = search.value.trim();
-    const answer = await context.read(`library list${kind.value ? ` --kind ${kind.value}` : ""}${words ? ` --search ${JSON.stringify(words)}` : ""}`);
-    failure.value = answer.ok ? "" : answer.error;
-    rows.value = answer.ok ? answer.value.rows.map((row) => ({...row, item_id: row.id, id: key(row)})) : [];
+    const answers = await Promise.all((kind.value ? [kind.value] : SHARES).map((share) => context.read(`library list --kind ${share}${words ? ` --search ${JSON.stringify(words)}` : ""}`)));
+    const failed = answers.find((answer) => !answer.ok);
+    failure.value = failed ? failed.error : "";
+    const listed = failed ? [] : answers.flatMap((answer) => answer.value.rows);
+    rows.value = [...new Map(listed.map((row) => [key(row), row])).values()].map((row) => ({...row, item_id: row.id, id: key(row)}));
     loaded.value = true;
 }
 

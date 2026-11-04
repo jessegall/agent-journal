@@ -8,6 +8,7 @@ import LibraryCopyRow from "./LibraryCopyRow.vue";
 const props = defineProps({copies: {type: Array, required: true}, role: {type: String, required: true}, canWrite: Boolean});
 const emit = defineEmits(["changed"]);
 const context = useWindow();
+const KEEPS_REVISIONS = ["doc"];
 const sharing = ref("");
 const shared = ref(null);
 const compared = ref(null);
@@ -21,17 +22,22 @@ async function library(copy) {
     return answer.ok ? answer.value.fields : null;
 }
 
-async function compare(copy) {
+async function compare(copy, isTaking = false) {
     const there = await library(copy);
-    compared.value = there ? {copy, there} : null;
+    compared.value = there ? {copy, there, isTaking} : null;
+}
+
+async function take(copy) {
+    compared.value = null;
+    await run(["library", "resolve", String(copy.copy_id), "--keep", "library"]);
 }
 
 const ACTIONS = {
-    compare,
-    read: compare,
+    compare: (copy) => compare(copy),
+    read: (copy) => compare(copy),
     send: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "mine"]),
     mine: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "mine"]),
-    library: (copy) => run(["library", "resolve", String(copy.copy_id), "--keep", "library"]),
+    library: (copy) => (KEEPS_REVISIONS.includes(copy.share) ? take(copy) : compare(copy, true)),
     leave: (copy) => run(["library", "leave", String(copy.copy_id)]),
 };
 
@@ -74,7 +80,13 @@ async function share() {
         <template v-if="compared">
             <SidePanel :title="`Compare: ${compared.copy.local_fields.title}`" @close="compared = null">
                 <div data-library-compare-panel>
+                    <template v-if="!KEEPS_REVISIONS.includes(compared.copy.share)">
+                        <p class="copies-failure" data-library-loss>The text on this journal is lost when you use the library's version: a {{ compared.copy.share }} keeps no earlier versions.</p>
+                    </template>
                     <CopyCompare :here="compared.copy.local_fields" :library="compared.there" :at="new Date().toISOString()" />
+                    <template v-if="compared.isTaking">
+                        <Btn kind="primary" data-library-take @click="take(compared.copy)">Use the library's version</Btn>
+                    </template>
                 </div>
             </SidePanel>
         </template>

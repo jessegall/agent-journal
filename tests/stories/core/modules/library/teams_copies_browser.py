@@ -1,5 +1,6 @@
 import json
 import os
+import shlex
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -9,6 +10,8 @@ import pytest
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
+from core.modules.sequences.models.sequence import Sequence
+from suites.coding.modules.checks.models.check import Check
 from core.modules.library.models.library_copy import LibraryCopy
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.copy_stories import (Tokens, change_on_server, connected, connection_with, copy_of_item, made_copy, new_item)
@@ -120,3 +123,40 @@ def test_story_16_stopping_to_follow_leaves_both_sides_as_they_are(new_story, te
     story.expect_rows(story.row(Doc, copy.row_id).title == "Followed notes", copy_of_item(story, copy.item_id) is None,
                       server.send(tokens.admin, "GET", f"/items/doc/{copy.item_id}")[1]["version"] == 1)
     story.expect_rows(story.container.get(Queries).query(LibraryCopy).filter(share="doc").first() is None)
+
+
+def test_story_11_a_check_shows_its_command_before_it_is_got_and_a_changed_command_waits_to_be_read(new_story, team):
+    server, tokens = team
+    fields = {"title": "Migrations are reversible", "command": "echo old", "brief": "Checks the migrations", "interval_minutes": 0}
+    item_id = int(str(server.send(tokens.admin, "POST", "/items/check", {"fields": fields})[1]["id"]))
+    story = journal(new_story, server, tokens.editor)
+    browse(story, {"expect": "Migrations are reversible"}, {"click": "[data-library-get]"}, {"expect": "This check runs this command on your computer when someone starts it:"},
+           {"expect": "echo old"}, {"click": "[data-library-confirm]"}, {"expect": "On this journal"}, COPIES, {"expect": "Status: In sync, Version: 1"})
+    story.expect_text("check list", "stopped", "Migrations are reversible", actor=story.user)
+    story.expect_text("check start 1", "check 1 started", actor=story.user)
+    server.send(tokens.admin, "PUT", f"/items/check/{item_id}", {"fields": {**fields, "command": "echo new"}}, {"If-Match": '"1"'})
+    browse(story, COPIES, SYNC, {"expect": "Status: New version to read"}, {"expect": "The command of this check changed."}, {"button": "Read"}, {"expect": "echo new"}, {"press": "Escape"},
+           {"button": "Use the library's version"}, {"expect": "a check keeps no earlier versions"}, {"click": "[data-library-take]"}, {"expect": "Status: In sync, Version: 2"})
+    story.expect_rows(story.row(Check, 1).command == "echo new", not story.row(Check, 1).stopped)
+
+
+def test_story_12_a_sequence_arrives_without_its_trigger_and_new_steps_wait_for_a_run_and_for_reading(new_story, team):
+    server, tokens = team
+    steps = json.dumps(["Run the suite", "Tag the release"])
+    item_id = int(str(server.send(tokens.admin, "POST", "/items/sequence", {"fields": {"title": "Cut a release", "steps": steps, "step_guards": "[]"}})[1]["id"]))
+    story = journal(new_story, server, tokens.editor)
+    browse(story, {"expect": "Cut a release"}, {"click": "[data-library-get]"}, {"expect": "On this journal"}, COPIES, {"expect": "Status: In sync, Version: 1"})
+    story.expect_text("sequence show 1", "starts by hand only", "1. Run the suite", "2. Tag the release", actor=story.user)
+    story.expect_text("sequence run 1", "Run the suite", actor=story.agent)
+    server.send(tokens.admin, "PUT", f"/items/sequence/{item_id}", {"fields": {"title": "Cut a release", "steps": json.dumps(["Run the suite", "Tag it", "Announce it"]), "step_guards": "[]"}}, {"If-Match": '"1"'})
+    browse(story, COPIES, SYNC, {"expect": "Status: Waiting for its run to end"})
+    story.run("sequence follow", actor=story.agent)
+    story.expect_text('sequence abandon --why "not today" --sure', "sequence 1 abandoned", actor=story.agent)
+    browse(story, COPIES, SYNC, {"expect": "Status: In sync, Version: 2"})
+    story.expect_text("sequence show 1", "3. Announce it", actor=story.user)
+    triggers = json.dumps([{"trigger_type": "phrase", "text": "give me an update"}])
+    story.expect_text(f"sequence edit 1 --triggers {shlex.quote(triggers)}", "updated: sequence:1", actor=story.user)
+    server.send(tokens.admin, "PUT", f"/items/sequence/{item_id}", {"fields": {"title": "Cut a release", "steps": json.dumps(["Run the suite", "Announce it"]), "step_guards": "[]"}}, {"If-Match": '"2"'})
+    browse(story, COPIES, SYNC, {"expect": "Status: New version to read"}, {"expect": "The steps of this sequence changed."}, {"button": "Read"}, {"expect": "Tag it"}, {"press": "Escape"},
+           {"button": "Use the library's version"}, {"expect": "a sequence keeps no earlier versions"}, {"click": "[data-library-take]"}, {"expect": "Status: In sync, Version: 3"})
+    story.expect_rows(len(story.row(Sequence, 1).steps) == 2)

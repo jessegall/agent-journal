@@ -98,7 +98,7 @@ test("a stopped sync shows why, with the connect form and no library", async () 
 test("the library lists items live and marks those that are already on this journal", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
-    expect(result.reads).toContain("library list");
+    expect(result.reads).toContain("library list --kind doc");
     const rows = [...element.querySelectorAll("[data-library-item]")];
     expect(rows.map((row) => row.dataset.libraryItem)).toEqual(["doc:12", "check:12"]);
     expect(rows[0].textContent).toContain("Document, Version: 8, Changed by: Grace");
@@ -120,7 +120,7 @@ test("typing in the search reads the library with those words", async () => {
     const element = await mounted(TeamsPage, result);
     type(element.querySelector("[data-library-search] input, input[data-library-search]"), "release notes");
     await new Promise((resolve) => setTimeout(resolve, 400));
-    expect(result.reads).toContain('library list --search "release notes"');
+    expect(result.reads).toContain('library list --kind doc --search "release notes"');
 });
 
 test("only an admin sees Remove, and it removes that item", async () => {

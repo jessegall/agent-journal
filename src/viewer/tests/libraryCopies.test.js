@@ -195,3 +195,79 @@ test("the difference of two texts marks the lines only in one of them", () => {
     expect([added, removed]).toEqual([1, 1]);
     expect(diffRows("", "new").rows).toEqual([{line_type: "add", line: 1, text: "new"}]);
 });
+
+const CHECK_HERE = {title: "Migrations are reversible", command: "echo old", brief: "Checks", interval_minutes: 0};
+const CHECK_THERE = {title: "Migrations are reversible", command: "echo new", brief: "Checks", interval_minutes: 0};
+
+function reviewOf(share, here, there) {
+    return copy("review", "New version to read", {share, local_fields: here, server_fields: there, note: share === "check" ? "The command of this check changed." : "The steps of this sequence changed."});
+}
+
+test("a check to read shows its note, and Read shows the new command beside the old one", async () => {
+    const {element} = await onThisJournal([reviewOf("check", CHECK_HERE, CHECK_THERE)]);
+    expect(element.querySelector("[data-copy-facts]").textContent).toBe("Status: New version to read, Version: 8");
+    expect(element.querySelector("[data-copy-line]").textContent).toBe("The command of this check changed.");
+    element.querySelector('[data-copy-button="read"]').click();
+    await settle();
+    const panel = document.body.querySelector("[data-library-compare-panel]");
+    expect(panel.querySelector(".diff-row.del").textContent).toContain("echo old");
+    expect(panel.querySelector(".diff-row.add").textContent).toContain("echo new");
+});
+
+test("using the library's version of a check says the local text is lost and waits for a second press", async () => {
+    const {result, element} = await onThisJournal([reviewOf("check", CHECK_HERE, CHECK_THERE)]);
+    element.querySelector('[data-copy-button="library"]').click();
+    await settle();
+    expect(result.lines).toEqual([]);
+    const panel = document.body.querySelector("[data-library-compare-panel]");
+    expect(panel.querySelector("[data-library-loss]").textContent).toBe("The text on this journal is lost when you use the library's version: a check keeps no earlier versions.");
+    panel.querySelector("[data-library-take]").click();
+    await settle();
+    expect(result.lines).toEqual([["library", "resolve", "7", "--keep", "library"]]);
+    expect(document.body.querySelector("[data-library-compare-panel]")).toBeNull();
+});
+
+test("a sequence to read says the same, with its own word", async () => {
+    const here = {title: "Cut a release", steps: '["one"]', step_guards: "[]"};
+    const {element} = await onThisJournal([reviewOf("sequence", here, {...here, steps: '["one", "two"]'})]);
+    element.querySelector('[data-copy-button="library"]').click();
+    await settle();
+    expect(document.body.querySelector("[data-library-loss]").textContent).toContain("a sequence keeps no earlier versions");
+});
+
+test("Compare of a check says the local text is lost but offers no way to take the library's version", async () => {
+    const {element} = await onThisJournal([copy("conflict", "Conflict", {share: "check", local_fields: CHECK_HERE, server_fields: CHECK_THERE})]);
+    element.querySelector('[data-copy-button="compare"]').click();
+    await settle();
+    expect(document.body.querySelector("[data-library-loss]")).not.toBeNull();
+    expect(document.body.querySelector("[data-library-take]")).toBeNull();
+});
+
+test("a document keeps its earlier text in the revisions, so it says nothing about a loss and takes the library's version at once", async () => {
+    const {result, element} = await onThisJournal([copy("conflict", "Conflict", {server_fields: THEIRS})]);
+    element.querySelector('[data-copy-button="compare"]').click();
+    await settle();
+    expect(document.body.querySelector("[data-library-loss]")).toBeNull();
+    element.querySelector('[data-copy-button="library"]').click();
+    await settle();
+    expect(result.lines).toEqual([["library", "resolve", "7", "--keep", "library"]]);
+});
+
+test("the dialog of a check shows its command and Cancel gets nothing", async () => {
+    const result = window([]);
+    const element = await mounted(TeamsPage, result);
+    [...element.querySelectorAll("[data-library-item]")][1].querySelector("[data-library-get]").click();
+    await settle();
+    expect(element.querySelector("[data-library-check]").textContent).toContain("This check runs this command on your computer when someone starts it:");
+    expect(element.querySelector("[data-library-command]").textContent).toBe("make release");
+    [...element.querySelectorAll("[data-library-check] button")].find((button) => button.textContent.trim() === "Cancel").click();
+    await settle();
+    expect(element.querySelector("[data-library-check]")).toBeNull();
+    expect(result.lines).toEqual([]);
+});
+
+test("the Library tab with All chosen reads documents, sequences and checks", async () => {
+    const result = window([]);
+    await mounted(TeamsPage, result);
+    expect(result.reads).toEqual(expect.arrayContaining(["library list --kind doc", "library list --kind sequence", "library list --kind check"]));
+});
