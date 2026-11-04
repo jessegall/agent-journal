@@ -124,7 +124,7 @@ class ModuleSync:
                       for position, guard in enumerate(guards, 1))),
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
-            bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings},
+            bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
             overlays=self.entries.overlays(modules),
             rules=rules,
             suites=self.entries.suites(modules),

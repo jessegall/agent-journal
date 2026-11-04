@@ -55,8 +55,8 @@ class SequencesModule(Module):
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard]
-    subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
-                   AdvanceStepSubcommand, AbandonSequenceSubcommand)
+    subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
+                   AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
     listeners = [SequenceRowTriggerListener, StandardSequencesListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]

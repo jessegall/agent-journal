@@ -49,8 +49,8 @@ class SecretsModule(Module):
     migrations = [SecretsTableMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
-    subcommands = (MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,
-                   SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand)
+    subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,
+                   SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand]
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
     windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, skeleton=SECRETS_SECRETS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,

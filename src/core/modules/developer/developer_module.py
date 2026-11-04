@@ -32,7 +32,7 @@ class DeveloperModule(Module):
     migrations = [HookRequestsMigration]
     views = [HookRequest]
     handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler]
-    bindings = [(RouteCostTool, DeveloperRouteCostTool)]
+    bindings = {RouteCostTool: DeveloperRouteCostTool}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand]
     windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),

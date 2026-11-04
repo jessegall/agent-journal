@@ -1,7 +1,7 @@
 import json
 import os
+import select
 import signal
-import time
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -15,9 +15,9 @@ from core.modules.plugins.support.service_processes import ServiceProcesses
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
 from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
-from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
 def served_story(new_story):
@@ -128,18 +128,14 @@ def is_running(pid: int) -> bool:
     return True
 
 
-def has_ended(pid: int) -> bool:
-    deadline = time.monotonic() + END_LIMIT_SECONDS
-    while is_running(pid) and time.monotonic() < deadline:
-        continue
-    return not is_running(pid)
-
-
 def test_stopping_a_service_ends_the_children_it_started(new_story):
     story = served_story(new_story)
-    child_pid = int((story.home.folder / "plugin-data" / "served" / "child.pid").read_text())
+    reader = os.open(story.home.folder / "plugin-data" / "served" / "child.alive", os.O_RDONLY | os.O_NONBLOCK)
     story.processes.close()
-    story.expect_rows(has_ended(child_pid))
+    readable, _, _ = select.select([reader], [], [], END_LIMIT_SECONDS)
+    ended = bool(readable) and os.read(reader, 1) == b""
+    os.close(reader)
+    story.expect_rows(ended)
 
 
 def test_a_server_started_after_a_crash_stops_the_service_left_running_before_starting_its_own(new_story):

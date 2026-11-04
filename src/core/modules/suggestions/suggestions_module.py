@@ -32,7 +32,7 @@ class SuggestionsModule(Module):
                                  events=["suggestion.*"])]
     migrations = [SuggestionsTableMigration]
     handlers = [MakeSuggestionsHandler, AnswerSuggestionHandler]
-    subcommands = (SuggestionListSubcommand, AnswerSuggestionSubcommand)
+    subcommands = [SuggestionListSubcommand, AnswerSuggestionSubcommand]
     driver_rules = [SuggestionRoundRule]
     marks = SUGGESTION_MARKS
     listeners = [SuggestionMarkListener]

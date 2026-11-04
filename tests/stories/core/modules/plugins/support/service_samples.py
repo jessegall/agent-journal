@@ -26,9 +26,12 @@ def health():
 
 threading.Thread(target=health, daemon=True).start()
 import subprocess
-child = subprocess.Popen(["sleep", "60"])
-with open(os.path.join(os.environ["JOURNAL_PLUGIN_DATA"], "child.pid"), "w") as kept:
-    kept.write(str(child.pid))
+alive_pipe = os.path.join(os.environ["JOURNAL_PLUGIN_DATA"], "child.alive")
+if not os.path.exists(alive_pipe):
+    os.mkfifo(alive_pipe)
+alive = os.open(alive_pipe, os.O_RDWR)
+subprocess.Popen(["sleep", "60"], stdout=alive)
+os.close(alive)
 server = listening(os.environ["JOURNAL_PLUGIN_SOCKET"])
 while True:
     connection, _ = server.accept()

@@ -180,6 +180,7 @@
         "architecture_nudges_AgentLineThroughNudgerDetector",
         "architecture_agents_RunningMainAgentOneQueryDetector",
         "architecture_testing_NoSleepInTestsDetector",
+        "architecture_testing_NoClockLoopInATestDetector",
         "architecture_testing_NoInterpreterInATestDetector",
         "architecture_testing_NoGitInitInATestDetector",
         "architecture_testing_SourceParsedOnceDetector",
@@ -204,10 +205,18 @@
         "ArchitectureWorkersWorkerLaunchFunnelDetector",
         "WindowSearchBarDetector",
         "architecture_processes_ReaderSavedThroughAddReaderDetector",
-        "architecture_processes_ReaderDemandByPartDetector"
+        "architecture_processes_ReaderDemandByPartDetector",
+        "ModuleRegistrationDetector"
     ],
     "parallel": 2,
     "configure": {
+        "naming_LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
         "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
@@ -357,13 +366,6 @@
             {
                 "elements": [
                     50
-                ]
-            }
-        ],
-        "naming_LongDocstringLineDetector": [
-            {
-                "judges": [
-                    "tests"
                 ]
             }
         ]

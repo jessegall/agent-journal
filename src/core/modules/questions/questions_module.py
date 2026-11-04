@@ -46,7 +46,7 @@ class QuestionsModule(Module):
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration, AnswerMessageMigration]
     moves = [QuestionsMove]
-    subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
+    subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]

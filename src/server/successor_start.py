@@ -12,7 +12,7 @@ from server.handover_descriptors import READY_BYTE, HandoverDescriptors
 from server.server_files import ServerFiles
 
 PROOF_LIMIT_SECONDS = 180
-STOP_LIMIT_SECONDS = 5
+KILLED_WAIT_SECONDS = 5
 PYTHON_PATH_VARIABLE = "PYTHONPATH"
 
 
@@ -36,7 +36,7 @@ class SuccessorStart:
         if not ready:
             os.close(self.exit_writer)
             process.kill()
-            process.wait(STOP_LIMIT_SECONDS)
+            process.wait(KILLED_WAIT_SECONDS)
             self.files.log_line(f"code version {tag} failed its proof; this server keeps serving")
         return ready
 

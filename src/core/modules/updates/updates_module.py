@@ -27,6 +27,6 @@ class UpdatesModule(Module):
     models = [ModelDeclaration(Release, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ReleasesTableMigration]
     handlers = [InstallReleaseHandler]
-    subcommands = (UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand)
+    subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand]
     windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", icon=WindowIcon.UPDATE,
                                  reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*"])]

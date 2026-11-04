@@ -145,8 +145,8 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [DispatchMarkRule, DispatchLawRule, SubagentReuseRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
-    bindings = [(ManagedHookHistoryReader, ManagedHookHistoryQuery), (TranscriptAuthors, LineTranscriptAuthors), (HookHistory, TableHookHistory),(HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
-                (EssentialAllowances, SettingEssentialAllowances)]
+    bindings = {ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
+                EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
                                  reads=["hook-call feed", "hook-call show"], events=["hook_call.create"])]
