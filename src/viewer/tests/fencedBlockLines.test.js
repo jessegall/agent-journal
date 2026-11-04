@@ -16,5 +16,5 @@ test("code inside a fenced block takes the block's white space, so its line brea
 });
 
 test("a fenced block keeps its line breaks", () => {
-    expect(declarations(".message-card :deep(pre)")).toMatch(/white-space:\s*pre-wrap;/);
+    expect(declarations(".message-card :deep(pre)")).toMatch(/white-space:\s*pre;/);
 });

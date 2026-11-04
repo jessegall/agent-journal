@@ -440,8 +440,13 @@ function pick(face) {
     padding: 8px 10px;
     border-radius: 8px;
     background: var(--code-bg);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+.message-card :deep(pre code) {
+    white-space: pre;
+    overflow-wrap: normal;
 }
 
 .message-card :deep(p) {

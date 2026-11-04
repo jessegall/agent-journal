@@ -40,7 +40,7 @@ const band = (element) => element.querySelector("[data-agents-held]");
 
 test("every card is listed and there is no band while none is open", async () => {
     const element = await drawn();
-    expect(cards(element)).toEqual([2, 3, 4, 5]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
     expect(band(element)).toBeNull();
     expect(element.querySelector(".agents").classList.contains("focused")).toBe(false);
 });
@@ -49,7 +49,7 @@ test("the open card is alone in the window, and the band counts the cards held b
     const element = await drawn();
     cardOf(element, 3).click();
     await settle();
-    expect(cards(element)).toEqual([3]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([3]));
     expect(cardOf(element, 3).getAttribute("aria-expanded")).toBe("true");
     expect(element.querySelector(".agents").classList.contains("focused")).toBe(true);
     expect(band(element).textContent.trim()).toBe("3 more");
@@ -61,7 +61,7 @@ test("the band is a button that closes the card and brings the others back", asy
     await settle();
     band(element).click();
     await settle();
-    expect(cards(element)).toEqual([2, 3, 4, 5]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
     expect(cardOf(element, 4).getAttribute("aria-expanded")).toBe("false");
     expect(band(element)).toBeNull();
 });
@@ -70,10 +70,10 @@ test("closing the card itself brings the others back", async () => {
     const element = await drawn();
     cardOf(element, 5).click();
     await settle();
-    expect(cards(element)).toEqual([5]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([5]));
     cardOf(element, 5).querySelector(".agent-back").click();
     await settle();
-    expect(cards(element)).toEqual([2, 3, 4, 5]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
     expect(band(element)).toBeNull();
 });
 
@@ -85,7 +85,7 @@ test("opening another card closes the one that was open", async () => {
     await settle();
     cardOf(element, 4).click();
     await settle();
-    expect(cards(element)).toEqual([4]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([4]));
     expect(cardOf(element, 4).getAttribute("aria-expanded")).toBe("true");
     expect(element.querySelectorAll("[data-agent-more]").length).toBe(1);
 });
@@ -100,7 +100,7 @@ test("starting a search closes the open card and lists every match", async () =>
     box.value = "worker";
     box.dispatchEvent(new Event("input", {bubbles: true}));
     await settle();
-    expect(cards(element)).toEqual([4, 5]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([4, 5]));
     expect(element.querySelector("[data-agent-more]")).toBeNull();
     expect(band(element)).toBeNull();
 });
@@ -111,7 +111,7 @@ test("a clicked card inside the open one, such as a tab, does not close it", asy
     await settle();
     element.querySelector("[data-tab=transcript]").click();
     await settle();
-    expect(cards(element)).toEqual([4]);
+    await vi.waitFor(() => expect(cards(element)).toEqual([4]));
     expect(element.querySelector("[data-agent-tab-body]").textContent).toContain("Read the cart");
 });
 

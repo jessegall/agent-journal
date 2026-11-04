@@ -3839,7 +3839,7 @@ const w1 = ["data-incoming", "data-ref"], k1 = ["data-figure-mark", "data-figure
       }, null, 8, ["links"])) : O("", !0)
     ], 8, k1));
   }
-}, gb = /* @__PURE__ */ Y(V1, [["__scopeId", "data-v-5547df44"]]), G1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
+}, gb = /* @__PURE__ */ Y(V1, [["__scopeId", "data-v-f1ee602a"]]), G1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
   __name: "SkeletonParts",
   props: { parts: { type: Array, default: () => [] } },
   setup(e) {
@@ -10233,7 +10233,7 @@ const sb = /* @__PURE__ */ eb(nb), ab = ["width", "height", "viewBox"], ob = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Tx = /* @__PURE__ */ Y(lb, [["__scopeId", "data-v-47e67f04"]]), Ix = rl(() => import("./VoiceFigure-C9II0D_Q.js").then((e) => e.V)), Rx = "1.0.0", Bx = "3.5";
+}, Tx = /* @__PURE__ */ Y(lb, [["__scopeId", "data-v-47e67f04"]]), Ix = rl(() => import("./VoiceFigure-B0AyGm1Q.js").then((e) => e.V)), Rx = "1.0.0", Bx = "3.5";
 export {
   Wl as $,
   Me as A,
