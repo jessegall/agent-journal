@@ -241,12 +241,12 @@ class Registry:
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
-            return (*(ButtonLine(mark.module, button["runs"], mark.shipped) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
-                    *(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons),
-                    *(ButtonLine(button.module, action.runs, button.shipped, {item.name: item for item in action.fields})
+            return (*(ButtonLine(mark.module, button["runs"], mark.shipped, label=button["label"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
+                    *(ButtonLine(dock.module, button["runs"], dock.shipped, label=button["label"]) for dock in self.docks for button in dock.buttons),
+                    *(ButtonLine(button.module, action.runs, button.shipped, {item.name: item for item in action.fields}, action.label)
                       for button in self.buttons for action in (button.declaration, *button.declaration.menu)))
         if window == ButtonWindow.DOCK:
-            return tuple(ButtonLine(dock.module, button["runs"], dock.shipped) for dock in self.docks for button in dock.buttons)
+            return tuple(ButtonLine(dock.module, button["runs"], dock.shipped, label=button["label"]) for dock in self.docks for button in dock.buttons)
         return ()
 
     def subject_button_lines(self, subject: str) -> tuple[str, ...]:

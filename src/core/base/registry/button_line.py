@@ -21,6 +21,7 @@ class ButtonLine:
     template: str
     shipped: bool
     fields: Mapping[str, ButtonField] = field(default_factory=dict)
+    label: str = ""
 
     @property
     def line(self) -> str:

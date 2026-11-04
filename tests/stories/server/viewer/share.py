@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from tests.stories.core.support import story_lines as lines
 from core.testing.story_fixture import StoryFixture
 from core.testing.story import Story
-from tests.stories.core.support.fixtures import PlanWithTasks, UserJoined
+from tests.stories.core.support.fixtures import PlanWithTasks
 from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
 from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without
 
@@ -25,7 +25,6 @@ class PlanAndPersonFixture(StoryFixture):
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
         story.run('phase make --plan 2 "Elsewhere" --goal "not shared"')
-        UserJoined().steps(story)
 
     def expect(self, story: Story) -> None:
         story.expect_success("plan show 2", "title: Version 5 core")

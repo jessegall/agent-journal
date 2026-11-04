@@ -1,5 +1,6 @@
 from core.base.journal_home import JournalHome
 from server.listener_thread import ListenerThread
+from server.viewer.buttons_route import ButtonsRoute
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import FileRoute
@@ -24,6 +25,7 @@ class ViewerRoutes:
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin) -> None:
         self.line_route, self.event_stream = LineRoute(home, listener_thread), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
+        self.buttons_route = ButtonsRoute(home)
         self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)
         self.waiting_route, self.server_state_route = WaitingRoute(home), ServerStateRoute(home)
         self.skills_route = SkillsRoute(home)

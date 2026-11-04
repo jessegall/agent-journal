@@ -44,6 +44,7 @@ LINES_ROUTE = "/api/lines"
 EVENTS_ROUTE = "/api/events"
 SHARE_COMMENTS_ROUTE = "/api/share/comments"
 WINDOWS_ROUTE = "/api/windows"
+BUTTONS_ROUTE = "/api/buttons"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
@@ -126,6 +127,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 self.answer(404, {"error": str(error)})
                 return
             self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
+            return
+        if route.path == BUTTONS_ROUTE:
+            try:
+                buttons = viewer.routes.buttons_route.buttons(parse_qs(route.query).get("environment", [""])[0], viewer.login.person_id(token))
+            except UnknownEnvironmentError as error:
+                self.answer(404, {"error": str(error)})
+                return
+            self.answer(200, asdict(buttons))
             return
         if route.path == WAITING_ROUTE:
             self.answer(200, {"waiting": [asdict(waiting_item) for waiting_item in viewer.routes.waiting_route.waiting()]})
