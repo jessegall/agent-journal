@@ -14,3 +14,4 @@ class ReadOutput(Command[OutputLines]):
     lines: str = ""
     tail: int = 0
     reader: str = ""
+    is_repeat_allowed: bool = False
