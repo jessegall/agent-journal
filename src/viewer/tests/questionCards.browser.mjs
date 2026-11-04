@@ -16,7 +16,11 @@ async function check(width, height, name) {
     await page.waitForTimeout(400);
 
     const blocks = await page.locator("[data-question-card].flush").evaluateAll((cards) => {
-        const lines = (node) => Math.round(node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight));
+        const lines = (node) => {
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size;
+        };
         const banner = (card) => card.querySelector(".question-head");
         return {
             banners: cards.every((card) => getComputedStyle(banner(card)).backgroundColor !== getComputedStyle(card).backgroundColor && banner(card).querySelectorAll("[data-question-dot]").length === 1),
@@ -26,12 +30,13 @@ async function check(width, height, name) {
             labelFlex: [...document.querySelectorAll(".question-answered")].map((label) => getComputedStyle(label).flexGrow + getComputedStyle(label).flexShrink + getComputedStyle(label).whiteSpace),
         };
     });
+    assert.ok(blocks.labelLines.length >= 1, "an answered question shows in the window");
     assert.ok(blocks.banners && blocks.bannerOnTop, "each block starts with a darker banner holding one dot");
     assert.ok(blocks.gaps.every((gap) => gap >= 12), `a band of space separates the blocks: ${blocks.gaps}`);
     assert.ok(blocks.labelLines.every((count) => count === 1), `the Answered label stays on one line: ${blocks.labelLines}`);
     assert.ok(blocks.labelFlex.every((flex) => flex === "00nowrap"), `the Answered label does not grow, shrink or wrap: ${blocks.labelFlex}`);
 
-    const facts = await page.locator("[data-question-card].flush").first().evaluate((card) => {
+    const facts = await page.locator('[data-question-card].flush[data-state="open"]').first().evaluate((card) => {
         const style = getComputedStyle(card);
         const window = card.closest("[data-window-room]").getBoundingClientRect();
         const box = card.getBoundingClientRect();
