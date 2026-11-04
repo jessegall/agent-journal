@@ -12,7 +12,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.modules.usage.conditions.ended_agents import EndedAgents
-from core.modules.usage.conditions.idle_agents import AvailableAgents
+from core.modules.usage.conditions.available_agents import AvailableAgents
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.support.agent_listing_state import AgentListingState
 from core.modules.usage.models.enums.agent_list_state import AgentListState

@@ -27,14 +27,35 @@ class WorktreeGit:
         self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
-        conflicts = self.conflict_files(worktree)
-        if conflicts:
-            raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", "settle them in the worktree, then try again")
+        self.refuse_conflicts(worktree)
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
+
+    def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
+        """Commits the worktree on the latest of its base branch and returns the files that clash, which keep
+        their conflict markers. A merge the worker settled is finished by the commit."""
+        self.refuse_conflicts(worktree)
+        if self.is_merging(worktree):
+            self.commit(worktree, message, trailer)
+            return ()
+        moved = self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
+        rebased = moved and self.rebase(worktree)
+        conflicts = self.conflict_files(worktree) if rebased else ()
+        if conflicts:
+            return conflicts
+        self.commit(worktree, message, trailer)
+        return self.sync(worktree) if moved and not rebased else ()
+
+    def refuse_conflicts(self, worktree: Worktree) -> None:
+        conflicts = self.conflict_files(worktree)
+        if conflicts:
+            raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", "settle them in the worktree, then try again")
+
+    def is_merging(self, worktree: Worktree) -> bool:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
 
     def conflict_files(self, worktree: Worktree) -> tuple[str, ...]:
         return ConflictFiles(Path(worktree.folder)).paths()
@@ -104,6 +125,7 @@ class WorktreeGit:
     def stash(self, worktree: Worktree) -> str:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return ""
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--update")
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "push", "--include-untracked", "--message", f"journal merge of {worktree.branch}")
         return self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "stash@{0}").stdout.strip()
 

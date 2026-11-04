@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class StockReadersNotDefaultMigration(Migration):
+class StockReaderDefaultsMigration(Migration):
     """Takes the default off the core's readers, so a reader a project adds for the same command comes first."""
 
     number = 31
