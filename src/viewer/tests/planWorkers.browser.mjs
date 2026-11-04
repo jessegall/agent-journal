@@ -8,24 +8,6 @@ try {
     const page = await browser.newPage({viewport: {width: 1440, height: 900}});
     await page.goto(address);
 
-    // the plan bar names the one agent on the started plan and opens the agent with its task
-    const delegation = page.locator("[data-plan-bar-delegation]");
-    await delegation.waitFor();
-    assert.equal((await delegation.textContent()).trim(), `Worker: ${NAME}`);
-    await delegation.click();
-    await page.locator("[data-plan-bar-popover] [data-plan-bar-agent]").first().waitFor();
-    assert.ok((await page.locator("[data-plan-bar-popover]").textContent()).includes(NAME));
-    await page.screenshot({path: `${shots}-bar.png`});
-    await delegation.click();
-
-    // the counter says how many workers are out, and its click opens their list
-    const counter = page.locator("[data-workers-count]");
-    await counter.waitFor();
-    assert.equal(await counter.getAttribute("title"), "1 worker out");
-    await counter.click();
-    await page.locator('[data-dropdown="workers.workers"]').waitFor();
-    await page.keyboard.press("Escape");
-
     // the agent card of the helpers dropdown has the job and the tasks queued behind it
     await page.locator("[data-helpers]").click();
     const card = page.locator(`[data-dropdown="agents.subagents"] [data-agent-open="${worker}"]`);

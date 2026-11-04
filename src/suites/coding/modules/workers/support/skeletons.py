@@ -16,14 +16,6 @@ WORKERS_TODOS_SKELETON = [
 padding="6px 8px", count=10)], spacing=2, padding="8px 12px"),
 ]
 
-WORKERS_PLAN_DELEGATION_SKELETON = [
-    SkeletonPart.row([SkeletonPart.block(18, "52px"), SkeletonPart.line(SkeletonSize.MEDIUM, "160px"), SkeletonPart.block(20, "90px")], spacing=8),
-]
-
-WORKERS_COUNT_SKELETON = [
-    SkeletonPart.row([SkeletonPart.block(22, "46px")], padding="2px 8px"),
-]
-
 WORKERS_WORKERS_SKELETON = [
 SkeletonPart.stack([
     SkeletonPart.line(SkeletonSize.SMALL, "80px"),

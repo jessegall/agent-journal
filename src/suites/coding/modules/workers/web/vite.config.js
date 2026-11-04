@@ -9,8 +9,6 @@ export default windowBuild({
         todos: here("./src/todos.js"),
         models: here("./src/models.js"),
         workers: here("./src/workers.js"),
-        "workers-count": here("./src/workers-count.js"),
-        "plan-delegation": here("./src/plan-delegation.js"),
         worktrees: here("./src/worktrees.js"),
     },
     outDir: here("./dist"),
