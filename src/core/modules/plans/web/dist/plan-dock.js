@@ -1,9 +1,9 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-6f03dabbbc57")) { const style = document.createElement("style"); style.id = "window-styles-6f03dabbbc57"; style.textContent = ".plan-dock-agents[data-v-d0bc1591]{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 6px 16px}.plan-dock-agent[data-v-d0bc1591]{padding:0 8px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-d0bc1591]{margin:0;padding:0 12px 9px 16px;list-style:none}.plan-dock-phase[data-v-d0bc1591]{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;column-gap:8px;height:24px;font-size:12.5px}.plan-dock-number[data-v-d0bc1591]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-d0bc1591]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-d0bc1591]{color:var(--text-4)}.plan-dock-tasks[data-v-d0bc1591]{color:var(--text-4);font-size:11.5px}.plans[data-v-929f7644]{display:flex;flex-direction:column;gap:14px}.plans-grid[data-v-929f7644]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.plan[data-v-929f7644]{cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plan-head[data-v-929f7644]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-agents[data-v-929f7644]{display:flex;flex-direction:column;gap:2px;color:var(--text-3);font-size:12px}.plan-agent strong[data-v-929f7644]{color:var(--text-2);font-weight:500}.plan-state[data-v-929f7644]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-929f7644],.plan-state.completed[data-v-929f7644]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-929f7644]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-929f7644]{font-weight:500}.plan-bar[data-v-929f7644]{height:4px;border-radius:2px;background:var(--raised)}.plan-bar-fill[data-v-929f7644]{display:block;height:100%;border-radius:2px;background:var(--accent)}.plan-foot[data-v-929f7644],.plans-note[data-v-929f7644]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as v, computed as h, watch as y, openBlock as a, createElementBlock as s, Fragment as p, renderList as g, unref as $, toDisplayString as o, createCommentVNode as f, createElementVNode as l } from "vue";
+if (!document.getElementById("window-styles-4605da24eb5d")) { const style = document.createElement("style"); style.id = "window-styles-4605da24eb5d"; style.textContent = ".plan-dock-agents[data-v-aa962e00]{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 6px 16px}.plan-dock-agent[data-v-aa962e00]{padding:0 8px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-aa962e00]{margin:0;padding:0 12px 9px 16px;list-style:none}.plan-dock-phase[data-v-aa962e00]{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;column-gap:8px;height:24px;font-size:12.5px}.plan-dock-number[data-v-aa962e00]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-aa962e00]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-aa962e00]{color:var(--text-4)}.plan-dock-tasks[data-v-aa962e00]{color:var(--text-4);font-size:11.5px}.plans[data-v-b67ba505]{display:flex;flex-direction:column;gap:14px}.plans-grid[data-v-b67ba505]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.plan[data-v-b67ba505]{cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plan-head[data-v-b67ba505]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-agents[data-v-b67ba505]{display:flex;flex-direction:column;gap:2px;color:var(--text-3);font-size:12px}.plan-agent strong[data-v-b67ba505]{color:var(--text-2);font-weight:500}.plan-state[data-v-b67ba505]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-b67ba505],.plan-state.completed[data-v-b67ba505]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-b67ba505]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-b67ba505]{font-weight:500}.plan-bar[data-v-b67ba505]{height:4px;border-radius:2px;background:var(--raised)}.plan-bar-fill[data-v-b67ba505]{display:block;height:100%;border-radius:2px;background:var(--accent)}.plan-foot[data-v-b67ba505],.plans-note[data-v-b67ba505]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as v, computed as h, watch as y, openBlock as n, createElementBlock as s, Fragment as p, renderList as g, unref as $, toDisplayString as o, createCommentVNode as f, createElementVNode as l } from "vue";
 import { useWindow as x, peekRef as E } from "@journal/window-kit";
-import { _ as b } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
-const P = {
+import { _ as P } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const b = {
   key: 0,
   class: "plan-dock-agents",
   "data-plan-dock-agents": ""
@@ -18,15 +18,15 @@ const P = {
       var e;
       const t = (e = i.value) == null ? void 0 : e.target_id;
       if (!t) return;
-      const n = await c.read(`plan outline ${t}`);
-      d.value = n.ok ? n.value.phases : [], r.value = n.ok ? n.value.agents : [];
+      const a = await c.read(`plan outline ${t}`);
+      d.value = a.ok ? a.value.phases : [], r.value = a.ok ? a.value.agents : [];
     }
     return c.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], _), y(() => {
       var t;
       return (t = i.value) == null ? void 0 : t.target_id;
-    }, _, { immediate: !0 }), (t, n) => (a(), s(p, null, [
-      k.value.length ? (a(), s("div", P, [
-        (a(!0), s(p, null, g(k.value, (e) => (a(), s("button", {
+    }, _, { immediate: !0 }), (t, a) => (n(), s(p, null, [
+      k.value.length ? (n(), s("div", b, [
+        (n(!0), s(p, null, g(k.value, (e) => (n(), s("button", {
           key: e.id,
           type: "button",
           class: "plan-dock-agent",
@@ -36,7 +36,7 @@ const P = {
         }, o(e.name), 9, C))), 128))
       ])) : f("", !0),
       l("ol", D, [
-        (a(!0), s(p, null, g(d.value.slice(0, w), (e, m) => (a(), s("li", {
+        (n(!0), s(p, null, g(d.value.slice(0, w), (e, m) => (n(), s("li", {
           key: e.id,
           class: "plan-dock-phase"
         }, [
@@ -44,15 +44,15 @@ const P = {
           l("span", S, o(e.title), 1),
           l("span", V, o(e.tasks.length ? `${e.tasks.length} task${e.tasks.length === 1 ? "" : "s"}` : ""), 1)
         ]))), 128)),
-        u.value ? (a(), s("li", A, [
-          n[0] || (n[0] = l("span", null, null, -1)),
+        u.value ? (n(), s("li", A, [
+          a[0] || (a[0] = l("span", null, null, -1)),
           l("span", B, "and " + o(u.value) + " more phase" + o(u.value === 1 ? "" : "s"), 1),
-          n[1] || (n[1] = l("span", null, null, -1))
+          a[1] || (a[1] = l("span", null, null, -1))
         ])) : f("", !0)
       ])
     ], 64));
   }
-}, F = /* @__PURE__ */ b(M, [["__scopeId", "data-v-d0bc1591"]]);
+}, F = /* @__PURE__ */ P(M, [["__scopeId", "data-v-aa962e00"]]);
 export {
   F as default
 };
