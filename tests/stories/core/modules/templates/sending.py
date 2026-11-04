@@ -26,6 +26,17 @@ def test_a_person_sends_the_same_critique_request_as_the_button(new_story):
     story.expect_text("plan show 1", "state: ready")
 
 
+@pytest.mark.parametrize("count", [1, 2, 3, 4, 5])
+@pytest.mark.parametrize("size", ["a quick look", "a normal read", "a thorough review"])
+def test_every_critique_sentence_matches_version_four_with_a_named_template(new_story, count, size):
+    story = new_story(fixture=SendingTemplates)
+    agents = "one agent" if count == 1 else f"{count} agents"
+    story.expect_success(f'template send 1 --on=plan:1 --set=agents="{agents}" --set=size="{size}" --environment main', actor=story.user)
+    expected = (f"Please have {agents} give plan 1 {size}, following template 1 (Plan critique), "
+                "and compile what they find into a report linked to the plan.")
+    expect_row(story.container.get(Queries).query(Message).find(1), text=expected)
+
+
 def test_an_unknown_purpose_uses_the_default_prompt(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_success('template make "Custom purpose" --purpose custom --applies-to plan', actor=story.user)
