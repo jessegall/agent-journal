@@ -37,7 +37,7 @@ def test_a_suite_module_cannot_be_removed_while_another_module_is_part_of_it(new
     story = new_story(f"{PATH}:SuiteModule", f"{PATH}:MemberModule", fixture=MainEnvironment)
     database = story.container.get(Database)
     listed = story.home.module_list.read_text()
-    before = tuple(database.connection.iterdump())
+    stored_rows = tuple(database.connection.iterdump())
     with pytest.raises(ModuleError, match="module acme.member depends on acme.suite"):
         story.container.get(ModuleRemoval).remove("acme.suite")
-    story.expect_rows(tuple(database.connection.iterdump()) == before, story.home.module_list.read_text() == listed)
+    story.expect_rows(tuple(database.connection.iterdump()) == stored_rows, story.home.module_list.read_text() == listed)
