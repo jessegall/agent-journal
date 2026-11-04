@@ -6,7 +6,7 @@ from core.modules.documents.models.enums.text_dock_type import TextDockType
 class NewDocDockListener(NewTextDockListener):
     """Docks a new document."""
 
-    name = "documents.new-doc-dock"
-    event = "doc.create"
     row_model = Doc
     dock_type = TextDockType.DOC
+    name = "documents.new-doc-dock"
+    event = "doc.create"

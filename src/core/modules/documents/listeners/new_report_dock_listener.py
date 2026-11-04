@@ -6,7 +6,7 @@ from core.modules.documents.models.report import Report
 class NewReportDockListener(NewTextDockListener):
     """Docks a new report."""
 
-    name = "documents.new-report-dock"
-    event = "report.create"
     row_model = Report
     dock_type = TextDockType.REPORT
+    name = "documents.new-report-dock"
+    event = "report.create"

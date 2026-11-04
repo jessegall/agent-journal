@@ -5,6 +5,6 @@ from core.modules.documents.models.report import Report
 class ReportMentionListener(TextMentionListener):
     """Links a saved report to the rows it names."""
 
+    model = Report
     name = "documents.report-mentions"
     event = "report.*"
-    model = Report

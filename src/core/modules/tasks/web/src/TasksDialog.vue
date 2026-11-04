@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
-import {Btn, Dialog, Icon, Segmented, TaskInspector, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, Icon, Segmented, TaskInspector, steppedItem, useWindow} from "@journal/window-kit";
 import NewTask from "./NewTask.vue";
 import TaskGraphView from "./TaskGraphView.vue";
 import TaskGroups from "./TaskGroups.vue";
@@ -54,8 +54,7 @@ function select(id) {
 
 function step(by) {
     if (!order.value.length) return;
-    const at = order.value.indexOf(selected.value);
-    selected.value = at < 0 ? order.value[0] : order.value[Math.max(0, Math.min(order.value.length - 1, at + by))];
+    selected.value = steppedItem(order.value, selected.value, by);
     nextTick(() => document.querySelector(`.tasks-dialog [data-row="${selected.value}"]`)?.scrollIntoView({block: "nearest"}));
 }
 

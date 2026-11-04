@@ -5,6 +5,6 @@ from core.modules.documents.models.doc import Doc
 class DocMentionListener(TextMentionListener):
     """Links a saved document to the rows it names."""
 
+    model = Doc
     name = "documents.doc-mentions"
     event = "doc.*"
-    model = Doc

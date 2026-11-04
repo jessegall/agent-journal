@@ -17,9 +17,9 @@ from core.modules.documents.support.text_lines import TextLines
 class DocShowSubcommand(LibraryAwareShow, TextShowSubcommand):
     """`journal doc show <n or library:n>`: a document of this journal, or one of the team's library read live."""
 
-    share = "doc"
     id_type = staticmethod(LibraryRef.row_id)
     model = Doc
+    share = "doc"
     cli_name = "doc"
 
     def __init__(self, queries: Queries, links: RowLinks, lookup: LibraryLookup) -> None:

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, useWindow} from "@journal/window-kit";
+import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, steppedItem, useWindow} from "@journal/window-kit";
 import {grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -77,8 +77,7 @@ const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
 
 function step(by) {
     if (!shownRows.value.length) return;
-    const at = shownRows.value.findIndex((row) => row.id === chosen.value);
-    chosen.value = shownRows.value[at < 0 ? 0 : Math.max(0, Math.min(shownRows.value.length - 1, at + by))].id;
+    chosen.value = steppedItem(shownRows.value.map((row) => row.id), chosen.value, by);
 }
 
 function closeOrClear() {
