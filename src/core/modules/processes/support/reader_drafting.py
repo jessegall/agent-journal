@@ -32,7 +32,7 @@ class ReaderDrafting:
         readers = tuple(self.readers.newest().all_rows()) + tuple(Reader(creator_id=request.creator_id, name=stock.name, type=ReaderType.PATTERN,
                          commands=stock.commands, title=stock.title, lines_pattern=stock.lines, progress_pattern=stock.progress,
                          finished_pattern=stock.finished, failed_pattern=stock.failed, summary_pattern=stock.summary,
-                         count_pattern=stock.count, count_command=stock.count_command) for stock in STOCK_READERS)
+                         count_pattern=stock.count, count_command=stock.count_command, step_pattern=stock.step) for stock in STOCK_READERS)
         for reader in readers:
             if not self.judge.fields_missing(reader, request.category) and not self.judge.misses(reader, request.category, text):
                 commands = reader.commands.split(",")

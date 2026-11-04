@@ -18,7 +18,7 @@ WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
 TEST_ABSENCE_PATTERN = re.compile(r"^(?:=+ )?no tests ran\b", re.MULTILINE)
-CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |: command not found$|^\S+ command not found$", re.MULTILINE)
+CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |^error: could not find .*Cargo\.toml|: command not found$|^\S+ command not found$", re.MULTILINE)
 CRASHING_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
@@ -42,6 +42,8 @@ class ReaderJudge:
     def has_argument(title: str, command: str) -> bool:
         title_terms = set(re.findall(r"[\w.-]+", title.lower()))
         arguments = re.findall(r"[\w./-]+", command.lower())[1:]
+        if command.startswith("npx ") and arguments and arguments[0] in title_terms:
+            arguments = arguments[1:]
         return any(argument in title_terms for argument in arguments if argument not in {"test", "tests", "run", "go"} and not argument.startswith("-"))
 
     def tested(self, reader: Reader) -> ReaderJudgement:

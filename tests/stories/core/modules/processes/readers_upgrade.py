@@ -9,14 +9,14 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 def with_reader_files(folder):
     readers = folder / "readers"
     readers.mkdir()
-    (readers / "go-test.pattern").write_text("# each package's result\n^(ok|FAIL)\\s\nlabel: Go tests\ncommands: go test\nfinished: ^ok\nfailed: ^FAIL\n")
+    (readers / "cart-test.pattern").write_text("# each package's result\n^(ok|FAIL)\\s\nlabel: Cart tests\ncommands: cart test\nfinished: ^ok\nfailed: ^FAIL\n")
     (readers / "merge.sh").write_text("#!/bin/sh\n# what a merge did\n# label: Worker merge\n# commands: journal worker merge\ncat\n")
 
 
 def test_version_4_reader_files_move_into_version_5_readers(new_story):
     story = upgraded_story(new_story, prepare=with_reader_files)
     rows = {row["name"]: row for row in json.loads(story.run("reader list --json").output_text)["rows"]}
-    assert rows["go-test"]["type"] == "pattern" and rows["go-test"]["lines_pattern"] == "^(ok|FAIL)\\s" and rows["go-test"]["title"] == "Go tests", rows["go-test"]
+    assert rows["cart-test"]["type"] == "pattern" and rows["cart-test"]["lines_pattern"] == "^(ok|FAIL)\\s" and rows["cart-test"]["title"] == "Cart tests", rows["cart-test"]
     assert rows["merge"]["type"] == "script" and rows["merge"]["script"].endswith("readers/merge.sh") and rows["merge"]["commands"] == "journal worker merge", rows["merge"]
 
 
