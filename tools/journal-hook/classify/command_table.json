@@ -724,6 +724,8 @@
     "uncertain": true
    },
    "subcommands": {
+    "bench": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "doc": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
     "build": {
      "kind": "build",
      "effects": [
@@ -1090,6 +1092,10 @@
     "label": "running deno"
    },
    "subcommands": {
+    "check": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "fmt": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "bench": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
     "test": {
      "kind": "test run",
      "effects": [
@@ -1163,6 +1169,14 @@
    "kind": "process",
    "effects": [],
    "subcommands": {
+    "buildx": {
+     "kind": "process",
+     "effects": [],
+     "subcommands": {
+      "bake": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+      "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+     }
+    },
     "ps": {
      "kind": "process",
      "effects": []
@@ -1283,6 +1297,10 @@
     "label": "running dotnet"
    },
    "subcommands": {
+    "vstest": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "pack": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "clean": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "msbuild": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
     "build": {
      "kind": "build",
      "effects": [
@@ -2397,69 +2415,15 @@
      ],
      "label": "building"
     }
+   },
+   "subcommand_globs": {
+    "test*": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "connected*": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "assemble*": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
    }
   },
   "gradlew": {
-   "base": {
-    "kind": "process",
-    "effects": [],
-    "uncertain": true,
-    "label": "running gradle"
-   },
-   "subcommands": {
-    "test": {
-     "kind": "test run",
-     "effects": [
-      "reads_files",
-      "runs_long"
-     ],
-     "label": "testing"
-    },
-    "check": {
-     "kind": "test run",
-     "effects": [
-      "reads_files",
-      "runs_long"
-     ],
-     "label": "testing"
-    },
-    "build": {
-     "kind": "build",
-     "effects": [
-      "reads_files",
-      "makes_files",
-      "runs_long"
-     ],
-     "label": "building"
-    },
-    "assemble": {
-     "kind": "build",
-     "effects": [
-      "reads_files",
-      "makes_files",
-      "runs_long"
-     ],
-     "label": "building"
-    },
-    "assembleDebug": {
-     "kind": "build",
-     "effects": [
-      "reads_files",
-      "makes_files",
-      "runs_long"
-     ],
-     "label": "building"
-    },
-    "assembleRelease": {
-     "kind": "build",
-     "effects": [
-      "reads_files",
-      "makes_files",
-      "runs_long"
-     ],
-     "label": "building"
-    }
-   }
+   "same_as": "gradle"
   },
   "grep": {
    "kind": "search",
@@ -2973,6 +2937,13 @@
     "label": "running nix"
    },
    "subcommands": {
+    "flake": {
+     "kind": "process",
+     "effects": [],
+     "subcommands": {
+      "check": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+     }
+    },
     "build": {
      "kind": "build",
      "effects": [
@@ -2994,7 +2965,10 @@
    "kind": "process",
    "effects": [],
    "interpreted": true,
-   "runs_script_file": true
+   "runs_script_file": true,
+   "modifiers": {
+    "--test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "nox": {
    "base": {
@@ -4150,6 +4124,8 @@
     "runs_long"
    ],
    "subcommands": {
+    "validate": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "fmt": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
     "plan": {
      "kind": "network",
      "effects": [
@@ -4312,6 +4288,7 @@
     "label": "running uv"
    },
    "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
     "sync": {
      "kind": "package",
      "effects": [
@@ -4595,14 +4572,12 @@
    },
    "subcommands": {
     "build": {
-     "kind": "build",
-     "effects": [
-      "reads_files",
-      "makes_files",
-      "runs_long"
-     ],
-     "label": "building"
-    }
+     "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+     "subcommands": {
+      "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+     }
+    },
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
    }
   },
   "zip": {
@@ -4895,40 +4870,34 @@
    }
   },
   "cabal": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "bench": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "stack": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "bench": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   },
+   "modifiers": {
+    "--test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "dune": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "runtest": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "meson": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "mill": {
    "kind": "build",
@@ -4949,31 +4918,7 @@
    "label": "building"
   },
   "mvnw": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
-  },
-  "./mvnw": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
-  },
-  "./gradlew": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "same_as": "mvn"
   },
   "$(MAKE)": {
    "kind": "build",
@@ -5030,13 +4975,10 @@
    "label": "building"
   },
   "lein": {
-   "kind": "build",
-   "effects": [
-    "reads_files",
-    "makes_files",
-    "runs_long"
-   ],
-   "label": "building"
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
   },
   "elm": {
    "kind": "build",
@@ -5217,6 +5159,12 @@
     "effects": [],
     "uncertain": true,
     "label": "running helm"
+   },
+   "subcommands": {
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "template": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "package": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
    }
   },
   "adb": {
@@ -5225,6 +5173,17 @@
     "effects": [],
     "uncertain": true,
     "label": "running adb"
+   },
+   "subcommands": {
+    "shell": {
+     "subcommands": {
+      "am": {
+       "subcommands": {
+        "instrument": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+       }
+      }
+     }
+    }
    }
   },
   "xcrun": {
@@ -5309,6 +5268,10 @@
     "effects": [],
     "uncertain": true,
     "label": "running packer"
+   },
+   "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "validate": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
    }
   },
   "vagrant": {
@@ -5325,6 +5288,211 @@
     "effects": [],
     "uncertain": true,
     "label": "running npx"
+   }
+  },
+  "ng": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running ng"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "e2e": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+   }
+  },
+  "next": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running next"},
+   "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "hatch": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running hatch"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
+  },
+  "buck2": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running buck2"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "pants": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running pants"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "package": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+   }
+  },
+  "scala-cli": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running scala-cli"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
+  },
+  "fastlane": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running fastlane"},
+   "subcommands": {
+    "scan": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
+  },
+  "ginkgo": {
+   "base": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+   "subcommands": {
+    "bootstrap": {"kind": "process", "effects": []}
+   }
+  },
+  "crystal": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running crystal"},
+   "subcommands": {
+    "spec": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "dub": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running dub"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+   }
+  },
+  "prove": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+  "busted": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+  "raco": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running raco"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "make": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "pio": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running pio"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "run": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "platformio": {"same_as": "pio"},
+  "roc": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running roc"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "check": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+   }
+  },
+  "Unity": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running Unity"},
+   "modifiers": {
+    "-runTests": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"}
+   }
+  },
+  "Unity.exe": {"same_as": "Unity"},
+  "turbo": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running turbo"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "run": {
+     "subcommands": {
+      "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+      "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+      "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+     }
+    }
+   }
+  },
+  "nx": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running nx"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"},
+    "run-many": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "moon": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running moon"},
+   "subcommands": {
+    "run": {
+     "subcommands": {
+      "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+      "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+      "lint": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+     }
+    }
+   }
+  },
+  "mage": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "uncertain": true, "label": "building"},
+  "xmake": {
+   "base": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+   "subcommands": {
+    "run": {"kind": "process", "effects": []},
+    "config": {"kind": "process", "effects": []},
+    "f": {"kind": "process", "effects": []}
+   }
+  },
+  "scons": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+  "waf": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+  "ant": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+  "bazelisk": {"same_as": "bazel"},
+  "gn": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running gn"},
+   "subcommands": {
+    "gen": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "west": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running west"},
+   "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "idf.py": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running idf.py"},
+   "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   },
+   "value_flags": ["-j"]
+  },
+  "dbt": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running dbt"},
+   "subcommands": {
+    "test": {"kind": "test run", "effects": ["reads_files", "runs_long"], "label": "testing"},
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "run": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "compile": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "nimble": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running nimble"},
+   "subcommands": {
+    "build": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "godot": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running godot"},
+   "modifiers": {
+    "--export-release": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "--export-debug": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "--export-pack": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"},
+    "--check-only": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
+   }
+  },
+  "RunUAT.sh": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running RunUAT"},
+   "subcommands": {
+    "BuildCookRun": {"kind": "build", "effects": ["reads_files", "makes_files", "runs_long"], "label": "building"}
+   }
+  },
+  "RunUAT.bat": {"same_as": "RunUAT.sh"},
+  "pre-commit": {
+   "base": {"kind": "process", "effects": [], "uncertain": true, "label": "running pre-commit"},
+   "subcommands": {
+    "run": {"kind": "check", "effects": ["reads_files"], "label": "checking code"}
    }
   }
  }

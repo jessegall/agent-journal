@@ -38,6 +38,7 @@ type Row struct {
 	Label           string
 	BareLabel       string
 	Subcommands     map[string]*Row
+	SubcommandGlobs map[string]*Row
 	Modifiers       map[string]*Row
 	ValueFlags      map[string]bool
 }
@@ -178,7 +179,7 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 		base = nil
 		_ = json.Unmarshal(raw, &base)
 	}
-	row := &Row{Subcommands: map[string]*Row{}, Modifiers: map[string]*Row{}, ValueFlags: set(stringsOf(data["value_flags"]))}
+	row := &Row{Subcommands: map[string]*Row{}, SubcommandGlobs: map[string]*Row{}, Modifiers: map[string]*Row{}, ValueFlags: set(stringsOf(data["value_flags"]))}
 	row.Category = textOf(base["kind"])
 	row.Effects = stringsOf(base["effects"])
 	row.Uncertain = boolOf(base["uncertain"])
@@ -188,7 +189,7 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 	row.RedirectedLabel = textOf(base["redirected_label"])
 	row.Label = textOf(base["label"])
 	row.BareLabel = textOf(base["bare_label"])
-	for section, target := range map[string]map[string]*Row{"subcommands": row.Subcommands, "modifiers": row.Modifiers} {
+	for section, target := range map[string]map[string]*Row{"subcommands": row.Subcommands, "subcommand_globs": row.SubcommandGlobs, "modifiers": row.Modifiers} {
 		var child map[string]json.RawMessage
 		_ = json.Unmarshal(data[section], &child)
 		for word := range child {

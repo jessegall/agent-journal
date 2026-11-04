@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"maps"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -143,17 +144,23 @@ func (classifier *Classifier) walked(row *Row, tokens []string) (rows []*Row, su
 	return rows, subcommands, arguments
 }
 
-// subcommand is the row below a row a word names: the word, unquoted, its last path piece, before a colon or its first
-// word.
+// subcommand is the row below a row a word names: the word, unquoted, its last path piece, before a colon, after the
+// last colon as in app:test, or its first word; or the row of a glob the word after the last colon matches.
 func subcommand(row *Row, token string) (*Row, string) {
 	space := strings.SplitN(token, " ", 2)[0]
 	colon := strings.SplitN(token, ":", 2)[0]
-	spellings := []string{token, strings.Trim(token, `'"`), baseName(token), colon, space}
+	lastColon := token[strings.LastIndex(token, ":")+1:]
+	spellings := []string{token, strings.Trim(token, `'"`), baseName(token), colon, lastColon, space}
 	listed := slices.IndexFunc(spellings, func(word string) bool { return row.Subcommands[word] != nil })
-	if listed < 0 {
-		return nil, ""
+	if listed >= 0 {
+		return row.Subcommands[spellings[listed]], spellings[listed]
 	}
-	return row.Subcommands[spellings[listed]], spellings[listed]
+	for glob, child := range row.SubcommandGlobs {
+		if matched, _ := path.Match(glob, lastColon); matched {
+			return child, lastColon
+		}
+	}
+	return nil, ""
 }
 
 func isNotFlag(token string) bool {
