@@ -13,10 +13,12 @@ from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 
 class AliasFileListener(CommitListener):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
-    anything, and judges an alias by the command under it, and the names of the aliases saved as tests and builds."""
+    anything, and judges an alias by the command under it, and the names of the aliases saved as tests and builds.
+    It runs ahead of slow listeners, since an agent runs a new alias right after adding it."""
 
     name = "aliases.alias-file"
     event = f"{FILE_PUBLISHING_EVENTS}|alias.*"
+    run_order = -1
 
     def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases) -> None:
         self.aliases, self.home, self.names, self.shell_aliases = aliases, home, names, shell_aliases
