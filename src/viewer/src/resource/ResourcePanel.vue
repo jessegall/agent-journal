@@ -250,7 +250,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 }
 
 .panel.document {
-    width: min(980px, 100vw);
+    width: min(1130px, 100vw);
 }
 
 .side-enter-active,
