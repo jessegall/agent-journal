@@ -206,7 +206,8 @@
         "WindowSearchBarDetector",
         "architecture_processes_ReaderSavedThroughAddReaderDetector",
         "architecture_processes_ReaderDemandByPartDetector",
-        "ModuleRegistrationDetector"
+        "ModuleRegistrationDetector",
+        "CoreNamesNoSuiteDetector"
     ],
     "parallel": 2,
     "configure": {
