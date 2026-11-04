@@ -1,11 +1,11 @@
 <script setup>
-defineProps({skill: {type: Object, default: null}, failure: {type: String, default: ""}});
+defineProps({skill: {type: Object, default: null}, failure: {type: String, default: ""}, back: {type: Boolean, default: true}});
 const emit = defineEmits(["back"]);
 </script>
 
 <template>
     <div class="skills">
-        <button type="button" class="skills-back" @click="emit('back')">Back to skills</button>
+        <template v-if="back"><button type="button" class="skills-back" @click="emit('back')">Back to skills</button></template>
         <h3 class="skills-title">{{ skill ? skill.folder : "" }}</h3>
         <pre class="skills-text" data-skill-text>{{ skill ? skill.text : failure }}</pre>
     </div>

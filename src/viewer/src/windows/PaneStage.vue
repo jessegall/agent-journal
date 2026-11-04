@@ -457,7 +457,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <ActivityPanel :events="events" />
         </template>
         <template v-if="shellRead">
-            <ResourcePanel :read="shellRead" />
+            <ResourcePanel :read="shellRead" :catalogue="catalogue" :environment="environment" />
         </template>
         <template v-if="quickOpen">
             <QuickMenu :commands="quickCommands" @close="quickOpen = false" @message="messageTheAgent" />

@@ -62,5 +62,5 @@ class SkillsModule(Module):
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Search the skills", ("folder", "description")),
-                                 reads=["agent main", "agent-skill list", "skill list", "skill show"], events=["agent_skill.*", "agent.*"])]
+                                 reads=["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show"], events=["agent_skill.*", "agent.*"])]
     seeders = [SkillsSeeder]

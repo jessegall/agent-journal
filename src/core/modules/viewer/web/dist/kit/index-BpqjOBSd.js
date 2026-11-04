@@ -5363,12 +5363,12 @@ const rg = {
   }
 }, wo = "*.*", gg = {
   __name: "ModuleBody",
-  props: { declaration: { type: Object, required: !0 }, row: { type: Object, default: null }, head: { type: Object, default: null } },
+  props: { declaration: { type: Object, required: !0 }, row: { type: Object, default: null }, head: { type: Object, default: null }, environment: { type: String, default: "" } },
   setup(e) {
     var u;
     const t = e, n = _e(Ae, null), s = new Yp(), a = (u = n == null ? void 0 : n.subscriptions) == null ? void 0 : u.follow(`body of ${t.declaration.type}`, [wo], (d) => s.dispatch(d));
     Ie(() => a == null ? void 0 : a());
-    const o = (n == null ? void 0 : n.environment) ?? "", r = { reads: [], runs: [], missing: [], ask: async () => !0 }, i = N(() => !!(t.declaration.shipped || t.declaration.trusted)), l = N(() => ({
+    const o = (n == null ? void 0 : n.environment) ?? t.environment, r = { reads: [], runs: [], missing: [], ask: async () => !0 }, i = N(() => !!(t.declaration.shipped || t.declaration.trusted)), l = N(() => ({
       // a body reads as the window its type names, which the module declares with the reads the body needs
       name: t.declaration.type,
       entry_url: t.declaration.body_url,
@@ -10233,7 +10233,7 @@ const sb = /* @__PURE__ */ eb(nb), ab = ["width", "height", "viewBox"], ob = ["w
       he(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Tx = /* @__PURE__ */ Y(lb, [["__scopeId", "data-v-47e67f04"]]), Ix = rl(() => import("./VoiceFigure-Bpk5MJUf.js").then((e) => e.V)), Rx = "1.0.0", Bx = "3.5";
+}, Tx = /* @__PURE__ */ Y(lb, [["__scopeId", "data-v-47e67f04"]]), Ix = rl(() => import("./VoiceFigure-C9II0D_Q.js").then((e) => e.V)), Rx = "1.0.0", Bx = "3.5";
 export {
   Wl as $,
   Me as A,

@@ -1,38 +1,38 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1eade4219022")) { const style = document.createElement("style"); style.id = "window-styles-1eade4219022"; style.textContent = ".skills[data-v-56fe8f79]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-56fe8f79]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-56fe8f79]{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-row[data-v-56fe8f79]:hover{background:var(--hover);color:var(--text)}h2[data-v-56fe8f79]{margin:0;font-size:13px;font-weight:600}.skills-catalogue[data-v-31eac374]{margin:0;padding:0;list-style:none}.skill-entry[data-v-31eac374]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:9px 10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-entry[data-v-31eac374]:hover{background:var(--hover);color:var(--text)}h2[data-v-31eac374]{margin:0 0 8px;font-size:13px;font-weight:600}.skill-description[data-v-31eac374]{color:var(--text-3);font-size:12px}.skills-title[data-v-4b73864f]{margin:0;font-size:13px}.skills-back[data-v-4b73864f]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-4b73864f]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-0ee5e5e4]{display:flex;flex-direction:column;gap:24px}\n"; document.head.appendChild(style); }
-import { computed as C, openBlock as u, createElementBlock as p, createElementVNode as l, createVNode as w, unref as v, withCtx as b, createTextVNode as L, toDisplayString as _, toRef as B, Fragment as T, renderList as R, ref as k, createBlock as x } from "vue";
-import { RowList as I, useListTools as N, ListTools as O, useWindow as q, WindowRoom as A } from "@journal/window-kit";
-const h = (e, s) => {
-  const n = e.__vccOpts || e;
-  for (const [r, o] of s)
-    n[r] = o;
-  return n;
-}, V = {
+if (!document.getElementById("window-styles-e145bbb1d7fa")) { const style = document.createElement("style"); style.id = "window-styles-e145bbb1d7fa"; style.textContent = ".skills[data-v-56fe8f79]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-56fe8f79]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-56fe8f79]{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-row[data-v-56fe8f79]:hover{background:var(--hover);color:var(--text)}h2[data-v-56fe8f79]{margin:0;font-size:13px;font-weight:600}.skills-catalogue[data-v-31eac374]{margin:0;padding:0;list-style:none}.skill-entry[data-v-31eac374]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:9px 10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-entry[data-v-31eac374]:hover{background:var(--hover);color:var(--text)}h2[data-v-31eac374]{margin:0 0 8px;font-size:13px;font-weight:600}.skill-description[data-v-31eac374]{color:var(--text-3);font-size:12px}.skills-title[data-v-47961cf4]{margin:0;font-size:13px}.skills-back[data-v-47961cf4]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-47961cf4]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-27d00a9d]{display:flex;flex-direction:column;gap:24px}\n"; document.head.appendChild(style); }
+import { computed as B, openBlock as c, createElementBlock as p, createElementVNode as t, createVNode as w, unref as _, withCtx as x, createTextVNode as L, toDisplayString as m, toRef as T, Fragment as I, renderList as N, createCommentVNode as R, ref as v, createBlock as $ } from "vue";
+import { RowList as O, useListTools as V, ListTools as q, useWindow as A, WindowRoom as E } from "@journal/window-kit";
+const h = (e, l) => {
+  const s = e.__vccOpts || e;
+  for (const [u, o] of l)
+    s[u] = o;
+  return s;
+}, F = {
   class: "skills",
   "data-skills-loaded": ""
-}, E = ["onClick"], F = {
+}, M = ["onClick"], W = {
   __name: "LoadedSkills",
   props: { rows: { type: Array, required: !0 }, failure: { type: String, default: "" }, answered: { type: Boolean, required: !0 } },
   emits: ["open"],
-  setup(e, { emit: s }) {
-    const n = e, r = s, o = C(() => [...n.rows].reverse());
-    return (c, t) => (u(), p("div", V, [
-      t[1] || (t[1] = l("h2", null, "Loaded by the main agent", -1)),
-      t[2] || (t[2] = l("p", { class: "skills-note" }, "The skills the main agent has read in this conversation.", -1)),
-      w(v(I), {
+  setup(e, { emit: l }) {
+    const s = e, u = l, o = B(() => [...s.rows].reverse());
+    return (d, a) => (c(), p("div", F, [
+      a[1] || (a[1] = t("h2", null, "Loaded by the main agent", -1)),
+      a[2] || (a[2] = t("p", { class: "skills-note" }, "The skills the main agent has read in this conversation.", -1)),
+      w(_(O), {
         rows: o.value,
         failure: e.failure,
         loaded: e.answered,
         empty: "No skill is loaded in this conversation.",
         hint: "Skills appear here with the time the agent read them."
       }, {
-        default: b(({ row: a }) => [
-          l("button", {
+        default: x(({ row: n }) => [
+          t("button", {
             type: "button",
             class: "skill-row",
-            onClick: (m) => r("open", a.skill)
+            onClick: (k) => u("open", n.skill)
           }, [
-            t[0] || (t[0] = l("svg", {
+            a[0] || (a[0] = t("svg", {
               class: "skill-book",
               viewBox: "0 0 16 16",
               width: "14",
@@ -42,100 +42,104 @@ const h = (e, s) => {
               "stroke-width": "1.4",
               "aria-hidden": "true"
             }, [
-              l("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
-              l("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
+              t("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
+              t("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
             ], -1)),
-            L(" " + _(a.skill), 1)
-          ], 8, E)
+            L(" " + m(n.skill), 1)
+          ], 8, M)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, M = /* @__PURE__ */ h(F, [["__scopeId", "data-v-56fe8f79"]]), W = {
+}, j = /* @__PURE__ */ h(W, [["__scopeId", "data-v-56fe8f79"]]), z = {
   class: "skills",
   "data-skills-catalogue": ""
-}, j = { class: "skills-catalogue" }, z = ["onClick"], D = { class: "skill-name" }, H = { class: "skill-description" }, P = {
+}, D = { class: "skills-catalogue" }, H = ["onClick"], P = { class: "skill-name" }, G = { class: "skill-description" }, J = {
   __name: "SkillCatalogue",
   props: { rows: { type: Array, required: !0 } },
   emits: ["open"],
-  setup(e, { emit: s }) {
-    const n = e, r = s, o = N(B(n, "rows"), { title: (c) => c.folder });
-    return (c, t) => (u(), p("div", W, [
-      t[0] || (t[0] = l("h2", null, "All skills", -1)),
-      w(v(O), { tools: v(o) }, null, 8, ["tools"]),
-      l("ul", j, [
-        (u(!0), p(T, null, R(v(o).shown.value, (a) => (u(), p("li", {
-          key: a.folder
+  setup(e, { emit: l }) {
+    const s = e, u = l, o = V(T(s, "rows"), { title: (d) => d.folder });
+    return (d, a) => (c(), p("div", z, [
+      a[0] || (a[0] = t("h2", null, "All skills", -1)),
+      w(_(q), { tools: _(o) }, null, 8, ["tools"]),
+      t("ul", D, [
+        (c(!0), p(I, null, N(_(o).shown.value, (n) => (c(), p("li", {
+          key: n.folder
         }, [
-          l("button", {
+          t("button", {
             type: "button",
             class: "skill-entry",
-            onClick: (m) => r("open", a.folder)
+            onClick: (k) => u("open", n.folder)
           }, [
-            l("span", D, _(a.folder), 1),
-            l("span", H, _(a.description), 1)
-          ], 8, z)
+            t("span", P, m(n.folder), 1),
+            t("span", G, m(n.description), 1)
+          ], 8, H)
         ]))), 128))
       ])
     ]));
   }
-}, G = /* @__PURE__ */ h(P, [["__scopeId", "data-v-31eac374"]]), J = { class: "skills" }, K = { class: "skills-title" }, Q = {
+}, K = /* @__PURE__ */ h(J, [["__scopeId", "data-v-31eac374"]]), Q = { class: "skills" }, U = { class: "skills-title" }, X = {
   class: "skills-text",
   "data-skill-text": ""
-}, U = {
+}, Y = {
   __name: "SkillText",
-  props: { skill: { type: Object, default: null }, failure: { type: String, default: "" } },
+  props: { skill: { type: Object, default: null }, failure: { type: String, default: "" }, back: { type: Boolean, default: !0 } },
   emits: ["back"],
-  setup(e, { emit: s }) {
-    const n = s;
-    return (r, o) => (u(), p("div", J, [
-      l("button", {
+  setup(e, { emit: l }) {
+    const s = l;
+    return (u, o) => (c(), p("div", Q, [
+      e.back ? (c(), p("button", {
+        key: 0,
         type: "button",
         class: "skills-back",
-        onClick: o[0] || (o[0] = (c) => n("back"))
-      }, "Back to skills"),
-      l("h3", K, _(e.skill ? e.skill.folder : ""), 1),
-      l("pre", Q, _(e.skill ? e.skill.text : e.failure), 1)
+        onClick: o[0] || (o[0] = (d) => s("back"))
+      }, "Back to skills")) : R("", !0),
+      t("h3", U, m(e.skill ? e.skill.folder : ""), 1),
+      t("pre", X, m(e.skill ? e.skill.text : e.failure), 1)
     ]));
   }
-}, X = /* @__PURE__ */ h(U, [["__scopeId", "data-v-4b73864f"]]), Y = {
+}, Z = /* @__PURE__ */ h(Y, [["__scopeId", "data-v-47961cf4"]]), ee = {
   key: 1,
   class: "skills-page"
-}, Z = {
+}, le = {
   __name: "SkillRows",
   setup(e) {
-    const s = q(), n = k([]), r = k(""), o = k(!1), c = k([]), t = k(null), a = k("");
-    async function m() {
-      const [f, i] = await Promise.all([s.read("agent main"), s.read("skill list")]);
-      c.value = i.ok ? i.value.rows : [];
-      const y = f.ok && f.value.id, d = y ? await s.read(`agent-skill list --agent ${y} --limit 100`) : null;
-      n.value = d != null && d.ok ? d.value.rows.filter((S) => S.state === "loaded") : [], r.value = d && !d.ok ? d.error : i.ok ? "" : i.error, o.value = !0;
+    const l = A(), s = l.option("row"), u = v([]), o = v(""), d = v(!1), a = v([]), n = v(null), k = v("");
+    async function y() {
+      const [r, i] = await Promise.all([l.read("agent main"), l.read("skill list")]);
+      a.value = i.ok ? i.value.rows : [];
+      const b = r.ok && r.value.id, f = b ? await l.read(`agent-skill list --agent ${b} --limit 100`) : null;
+      u.value = f != null && f.ok ? f.value.rows.filter((C) => C.state === "loaded") : [], o.value = f && !f.ok ? f.error : i.ok ? "" : i.error, d.value = !0;
     }
-    s.follow(["agent.*", "agent_skill.*"], m), m();
-    function $() {
-      t.value = null, a.value = "";
+    l.follow(["agent.*", "agent_skill.*"], y), s.value ? l.read(`agent-skill show ${s.value.skillId}`).then((r) => {
+      r.ok ? g(r.value.skill) : k.value = r.error;
+    }) : y();
+    function S() {
+      n.value = null, k.value = "";
     }
-    async function g(f) {
-      const i = await s.read(`skill show ${f}`);
-      a.value = i.ok ? "" : i.error, t.value = i.ok ? i.value : null;
+    async function g(r) {
+      const i = await l.read(`skill show ${r}`);
+      k.value = i.ok ? "" : i.failure === "refused" ? `The skill ${r} is no longer available.` : i.error, n.value = i.ok ? i.value : null;
     }
-    return (f, i) => (u(), x(v(A), null, {
-      default: b(() => [
-        t.value || a.value ? (u(), x(X, {
+    return (r, i) => (c(), $(_(E), null, {
+      default: x(() => [
+        n.value || k.value ? (c(), $(Z, {
           key: 0,
-          skill: t.value,
-          failure: a.value,
-          onBack: $
-        }, null, 8, ["skill", "failure"])) : (u(), p("div", Y, [
-          w(M, {
-            rows: n.value,
-            failure: r.value,
-            answered: o.value,
+          skill: n.value,
+          failure: k.value,
+          back: !_(s),
+          onBack: S
+        }, null, 8, ["skill", "failure", "back"])) : (c(), p("div", ee, [
+          w(j, {
+            rows: u.value,
+            failure: o.value,
+            answered: d.value,
             onOpen: g
           }, null, 8, ["rows", "failure", "answered"]),
-          w(G, {
-            rows: c.value,
+          w(K, {
+            rows: a.value,
             onOpen: g
           }, null, 8, ["rows"])
         ]))
@@ -143,7 +147,7 @@ const h = (e, s) => {
       _: 1
     }));
   }
-}, le = /* @__PURE__ */ h(Z, [["__scopeId", "data-v-0ee5e5e4"]]);
+}, oe = /* @__PURE__ */ h(le, [["__scopeId", "data-v-27d00a9d"]]);
 export {
-  le as default
+  oe as default
 };

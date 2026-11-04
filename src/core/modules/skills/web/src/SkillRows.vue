@@ -6,6 +6,7 @@ import SkillCatalogue from "./SkillCatalogue.vue";
 import SkillText from "./SkillText.vue";
 
 const context = useWindow();
+const skillId = context.option("row");
 const loaded = ref([]);
 const failure = ref("");
 const answered = ref(false);
@@ -23,7 +24,12 @@ async function load() {
     answered.value = true;
 }
 context.follow(["agent.*", "agent_skill.*"], load);
-load();
+if (skillId.value) {
+    context.read(`agent-skill show ${skillId.value.skillId}`).then((result) => {
+        if (result.ok) open(result.value.skill);
+        else openFailure.value = result.error;
+    });
+} else load();
 
 function back() {
     opened.value = null;
@@ -32,14 +38,14 @@ function back() {
 
 async function open(folder) {
     const result = await context.read(`skill show ${folder}`);
-    openFailure.value = result.ok ? "" : result.error;
+    openFailure.value = result.ok ? "" : result.failure === "refused" ? `The skill ${folder} is no longer available.` : result.error;
     opened.value = result.ok ? result.value : null;
 }
 </script>
 
 <template>
     <WindowRoom>
-        <template v-if="opened || openFailure"><SkillText :skill="opened" :failure="openFailure" @back="back" /></template>
+        <template v-if="opened || openFailure"><SkillText :skill="opened" :failure="openFailure" :back="!skillId" @back="back" /></template>
         <template v-else>
             <div class="skills-page">
                 <LoadedSkills :rows="loaded" :failure="failure" :answered="answered" @open="open" />
