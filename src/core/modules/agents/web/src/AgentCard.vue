@@ -1,5 +1,5 @@
 <script setup>
-import {computed, defineAsyncComponent, onUnmounted, ref} from "vue";
+import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
 import {age, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -47,6 +47,7 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
+watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 // a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isSubagent = computed(() => props.row.role === "subagent" || props.row.role === "reviewer");
@@ -69,24 +70,24 @@ readCommand();
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="row.session" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <span class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
-            <span class="agent-dot" :data-state="dotState" />
-            <span class="agent-title" data-agent-title>{{ title }}</span>
-            <span class="agent-name" data-agent-name>{{ facts?.given_name || row.id }}</span>
+            <span class="agent-dot" :data-state="dotState" data-agent-motion />
+            <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
+            <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="row.ended_at && !stoppedWithWork">
-                <TimeAgo class="agent-time" :at="row.ended_at" />
+                <TimeAgo class="agent-time" :at="row.ended_at" data-agent-motion />
             </template>
             <template v-else>
-                <span class="agent-time">{{ runTime }}</span>
+                <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity>{{ identity }}</span>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
             <template v-if="totalCount">
                 <template v-if="tasksPerHour">
-                    <span class="agent-tasks" data-agent-pace>{{ tasksPerHour }}</span>
+                    <span class="agent-tasks" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
                 </template>
-                <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
+                <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
         <template v-if="showsCommand && !open">
@@ -436,7 +437,4 @@ readCommand();
 .agent-task-number { min-width: 30px; }
 .agent-label { margin: 12px 14px 0; }
 .agent-card.open .agent-instruction { margin: 12px 14px 16px; padding: 0 0 0 10px; line-height: 1.55; mask-image: none; }
-.agent-card.open .agent-more { animation: agent-open 240ms ease 60ms both; }
-@keyframes agent-open { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .agent-card.open .agent-more { animation: none; } }
 </style>

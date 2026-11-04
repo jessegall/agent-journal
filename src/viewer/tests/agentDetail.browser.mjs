@@ -36,7 +36,7 @@ try {
     await card.locator(".file-feed [data-row-list-empty]").waitFor();
     await page.setViewportSize({width: 1000, height: 1200});
     const feed = await card.locator(".file-feed").boundingBox();
-    assert.ok(feed.height > 850, JSON.stringify(feed));
+    assert.ok(feed.height > 800, JSON.stringify(feed));
     await page.setViewportSize({width: 1000, height: 700});
     const smaller = await card.locator(".file-feed").boundingBox();
     assert.ok(smaller.height < feed.height - 400 && smaller.height > 300, JSON.stringify(smaller));

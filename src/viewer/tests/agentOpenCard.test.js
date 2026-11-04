@@ -5,6 +5,8 @@ import {h} from "vue";
 import {context, mounted, page, settleTransition as settle} from "./support/codingWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 
+vi.stubGlobal("matchMedia", () => ({matches: true}));
+
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
 
