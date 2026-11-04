@@ -146,8 +146,8 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
                             <span class="task-title">{{ row.title }}</span>
-                            <template v-if="group.state === 'delegated'">
-                                <span class="task-agent" :title="`Delegated to agent ${row.delegated_to}, in state ${row.state}`" data-task-agent>Agent {{ row.delegated_to }}</span>
+                            <template v-if="row.delegated_name">
+                                <span class="task-agent" :title="`Delegated to ${row.delegated_name}, in state ${row.state}`" data-task-agent>{{ row.delegated_name }}</span>
                             </template>
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>

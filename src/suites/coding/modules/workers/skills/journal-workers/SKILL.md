@@ -12,6 +12,8 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 - `journal worker dispatch <task> [<task> ...] --model <model>` starts a worker on the tasks on that model, which every dispatch names (`--profile` and `--name` show on its card), which it takes one by one with no report in
   between; the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
+- `journal worker dispatch --plan <plan> [--phase <phase>] --model <model>` hands a worker the open tasks of an approved or
+  started plan, or of one phase of it, in the plan's order. The plan then shows as delegated, with each task's agent named.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
 - A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last. Send

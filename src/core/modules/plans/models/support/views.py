@@ -17,7 +17,12 @@ PLAN_PROGRESS_SELECT = (
 
 PLAN_CARDS_SELECT = (
     "SELECT plans.id, plans.environment_id, plans.title, plans.state,"
-    " plan_progress.task_count, plan_progress.completed_count, plan_progress.current_phase"
+    " plan_progress.task_count, plan_progress.completed_count, plan_progress.current_phase,"
+    " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'task_id', tasks.id, 'task_title', tasks.title))"
+    " FROM plan_tasks"
+    " JOIN tasks ON tasks.id = plan_tasks.task_id"
+    " JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
+    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL) AS agents"
     " FROM plans"
     " JOIN plan_progress ON plan_progress.plan_id = plans.id"
 )
@@ -34,8 +39,8 @@ PLAN_EVENT_ROWS_SELECT = (
 
 PLAN_OUTLINE_TASKS_SELECT = (
     "SELECT plan_tasks.task_id, plan_tasks.plan_id, plan_tasks.phase_id, plan_tasks.phase_position, plan_tasks.priority, plan_tasks.state, tasks.title,"
-    " CASE WHEN agents.role != 'main' THEN tasks.holder_id END AS helper_id"
+    " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
-    " LEFT JOIN agents ON agents.id = tasks.holder_id"
+    " LEFT JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
 )

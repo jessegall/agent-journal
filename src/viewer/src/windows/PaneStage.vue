@@ -173,6 +173,11 @@ const openCount = (key, anchor) => {
     if (groups.length) openDropdown.value = {key, groups, anchor};
     else if (props.catalogue.window(name)) openView(name);
 };
+// a bar window asks for the dropdown of another window under its own button
+const heardDropdown = (event) => {
+    const {name, anchor} = event.detail;
+    if (props.catalogue.dropdown(name)) openDropdown.value = {key: name, groups: [{name, title: windowTitle(name), count: 0}], anchor};
+};
 const pairedPhones = ref([]);
 async function readPhones() {
     const answer = await props.shellRead(["phone", "list"]);
@@ -211,6 +216,7 @@ function openRef(ref) {
 const heardWorker = (event) => event.data?.open && openRef(event.data.open);
 onMounted(() => {
     window.addEventListener("resize", measure);
+    window.addEventListener("journal:open-dropdown", heardDropdown);
     navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
     readEnvironments();
@@ -232,6 +238,7 @@ onUnmounted(() => {
     askBars.cancel();
     askUsage.cancel();
     window.removeEventListener("resize", measure);
+    window.removeEventListener("journal:open-dropdown", heardDropdown);
     navigator.serviceWorker?.removeEventListener("message", heardWorker);
 });
 const {counts} = useTabCounts({

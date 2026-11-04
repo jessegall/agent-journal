@@ -1,6 +1,7 @@
 <script setup>
 import {shareAddress} from "../route.js";
 import PlanLinks from "./PlanLinks.vue";
+import PlanPhaseAgents from "./PlanPhaseAgents.vue";
 import PlanReviews from "./PlanReviews.vue";
 import PlanTimeline from "./PlanTimeline.vue";
 import Segmented from "../kit/Segmented.vue";
@@ -19,6 +20,7 @@ import CommentedRow from "./CommentedRow.vue";
 import PlanCritique from "./PlanCritique.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
+import {delegationWord} from "../domain/plans.js";
 
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
@@ -89,6 +91,9 @@ watch(() => props.id, () => {
                         <span class="overall-figure">{{ plan.finished }} of {{ plan.total }} done</span>
                     </div>
                 </template>
+                <template v-if="plan.delegated">
+                    <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
+                </template>
                 <RowMoves inline kind="plan" :id="id" :row="plan" :read="read" @done="load" />
                 <template v-if="plan.state === 'ready'">
                     <div class="plan-critique">
@@ -125,13 +130,14 @@ watch(() => props.id, () => {
                             <template v-if="phase.goal">
                                 <div class="when">{{ phase.goal }}</div>
                             </template>
+                            <PlanPhaseAgents :tasks="phase.tasks" />
                             <template v-for="task in phase.tasks" :key="task.id">
                                 <button type="button" :class="['row', task.state]" data-resource-task @click="emit('select', task.id)">
                                     <Dot :kind="task.state" />
                                     <span class="row-id">#{{ task.id }}</span>
                                     <span class="row-title">{{ task.title }}</span>
                                     <template v-if="task.helper_id">
-                                        <span class="holder" data-plan-agent>Agent {{ task.helper_id }}</span>
+                                        <span class="holder" :title="task.state === 'open' ? `Queued for ${task.helper_name}` : `Held by ${task.helper_name}`" data-plan-agent>{{ task.helper_name }}</span>
                                     </template>
                                 </button>
                             </template>
@@ -172,6 +178,12 @@ watch(() => props.id, () => {
     color: var(--text-3);
     font-size: 11px;
     line-height: 18px;
+}
+
+.delegation {
+    margin: 0 0 10px;
+    color: var(--text-2);
+    font-size: 12.5px;
 }
 
 .plan-critique {

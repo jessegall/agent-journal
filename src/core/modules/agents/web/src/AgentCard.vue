@@ -18,6 +18,10 @@ const title = computed(() => {
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
+// a worker's job is the task it works on, or the first one queued for it; Queued counts the tasks that wait behind it
+const isWorker = computed(() => props.row.role === "worker");
+const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
+const job = computed(() => (isWorker.value ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
@@ -81,8 +85,14 @@ readCommand();
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
         </span>
+        <template v-if="job">
+            <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
+        </template>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <template v-if="isWorker && queuedTasks.length">
+                <span class="agent-tasks" data-agent-queued data-agent-motion>Queued: {{ queuedTasks.length }}</span>
+            </template>
             <template v-if="totalCount">
                 <template v-if="tasksPerHour">
                     <span class="agent-tasks" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
@@ -244,6 +254,15 @@ readCommand();
 
 .agent-line {
     padding-left: 15px;
+}
+
+.agent-job {
+    padding-left: 15px;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .agent-command {

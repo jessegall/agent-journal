@@ -51,7 +51,7 @@ test("a plan with no reviews shows no rounds", async () => {
 
 test("the inspector tags a task a worker holds and switches to the timeline", async () => {
     const lines = [];
-    const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", helper_id: 44}, {id: 8, title: "Tax", state: "open", helper_id: null}]}]};
+    const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", helper_id: 44, helper_name: "Grace Hopper"}, {id: 8, title: "Tax", state: "open", helper_id: null, helper_name: null}]}], delegated: true, agents: [{id: 44, name: "Grace Hopper", task_id: 7, task_title: "Cart"}]};
     const read = async (line) => {
         lines.push(line[1]);
         return line[1] === "inspect" ? {ok: true, value: plan} : line[1] === "timeline" ? {ok: true, value: {events: [event("made", 7)]}} : {ok: true, value: {rows: []}};
@@ -60,7 +60,7 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
     createApp({render: () => h(PlanInspector, {id: 3, read})}).directive("tip", {}).mount(element);
     await settle();
     expect(element.querySelectorAll("[data-plan-agent]").length).toBe(1);
-    expect(element.querySelector("[data-plan-agent]").textContent).toBe("Agent 44");
+    expect(element.querySelector("[data-plan-agent]").textContent).toBe("Grace Hopper");
     [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === "Timeline").click();
     await settle();
     expect(lines).toContain("timeline");
@@ -82,4 +82,43 @@ test("the links to a plan list the design document first and open a row as its t
 
 test("a plan nothing links to shows no links", async () => {
     expect((await drawn(PlanLinks, {ok: true, value: {rows: []}})).querySelector("[data-plan-links]")).toBeNull();
+});
+
+const delegatedPlan = () => ({
+    id: 3, title: "Rebuild the cart", brief: "", state: "started", reason: "", total: 3, finished: 0, current_phase: 1, document_id: 0,
+    delegated: true,
+    agents: [{id: 12, name: "Lady Lovelace", task_id: 1, task_title: "Cart"}, {id: 12, name: "Lady Lovelace", task_id: 2, task_title: "Tax"}],
+    phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [
+        {id: 1, title: "Cart", state: "started", helper_id: 12, helper_name: "Lady Lovelace"},
+        {id: 2, title: "Tax", state: "open", helper_id: 12, helper_name: "Lady Lovelace"},
+        {id: 3, title: "Totals", state: "open", helper_id: null, helper_name: null},
+    ]}],
+});
+
+test("a delegated plan names its agent on the plan, under its phase and on each task it holds or has queued", async () => {
+    const element = await drawn(PlanInspector, {ok: true, value: delegatedPlan()});
+    expect(element.querySelector("[data-plan-delegated]").textContent).toBe("Worker: Lady Lovelace");
+    expect(element.querySelector("[data-plan-phase-agent]").textContent).toContain("Lady Lovelace");
+    expect(element.querySelector("[data-plan-phase-agent]").textContent).toContain("Working");
+    expect([...element.querySelectorAll("[data-plan-agent]")].map((agent) => agent.textContent)).toEqual(["Lady Lovelace", "Lady Lovelace"]);
+    expect(element.textContent).not.toContain("Agent 12");
+});
+
+test("a plan with two agents is only Delegated, and a plan nobody works for shows neither line", async () => {
+    const two = delegatedPlan();
+    two.agents.push({id: 13, name: "Grace Hopper", task_id: 3, task_title: "Totals"});
+    expect((await drawn(PlanInspector, {ok: true, value: two})).querySelector("[data-plan-delegated]").textContent).toBe("Delegated");
+    const none = {...delegatedPlan(), delegated: false, agents: []};
+    none.phases[0].tasks.forEach((task) => Object.assign(task, {helper_id: null, helper_name: null}));
+    const element = await drawn(PlanInspector, {ok: true, value: none});
+    expect(element.querySelector("[data-plan-delegated]")).toBeNull();
+    expect(element.querySelector("[data-plan-phase-agents]")).toBeNull();
+});
+
+test("a phase whose tasks are all closed shows no agent tag, though each task still names its agent", async () => {
+    const plan = delegatedPlan();
+    plan.phases[0].tasks.forEach((task) => Object.assign(task, {state: "completed"}));
+    const element = await drawn(PlanInspector, {ok: true, value: plan});
+    expect(element.querySelector("[data-plan-phase-agents]")).toBeNull();
+    expect(element.querySelectorAll("[data-plan-agent]").length).toBe(2);
 });

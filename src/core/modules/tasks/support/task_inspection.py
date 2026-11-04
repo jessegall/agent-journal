@@ -14,9 +14,11 @@ class TaskInspection:
     waits: tuple[Mapping[str, object], ...]
     logs: tuple[Mapping[str, object], ...]
     openers: tuple[str, ...] = ()
+    helper_id: int | None = None
+    helper_name: str | None = None
 
     def json(self) -> TaskInspectionJsonRecord:
         task = self.task
         return {"id": task.id, "title": task.title, "brief": task.brief, "state": task.state.value, "priority": task.priority, "reason": task.reason, "outcome": task.outcome,
-                "holder_id": task.holder_id, "created_at": task.creation_timestamp().text, "updated_at": task.update_timestamp().text,
+                "holder_id": task.holder_id, "helper_id": self.helper_id, "helper_name": self.helper_name, "created_at": task.creation_timestamp().text, "updated_at": task.update_timestamp().text,
                 "openers": list(self.openers), "waits": list(self.waits), "logs": list(self.logs)}
