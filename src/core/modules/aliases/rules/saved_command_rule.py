@@ -37,7 +37,7 @@ class SavedCommandRule(DriverRule):
                     continue
                 Duration.parse(part.timeout_duration)
         except DurationError as error:
-            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge(reason=error.text))
+            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge(hint=error.text))
         if not shell.saved_commands_known:
             return RuleAnswer.allowed()
         if hook.role not in self.suites.agent_policy(hook.environment_id).saved_command_roles:
