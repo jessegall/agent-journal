@@ -72,6 +72,11 @@ database aside as `version-5.<date>.db`. It checks the backup first and refuses 
 [Running the server](docs/team-library-admin.md) is for the person who sets it up: the program, users, tokens, backups
 and HTTPS. [Using it from a journal](docs/team-library.md) is for everyone else: connecting, Get, statuses and conflicts.
 
+## Modules
+
+[Writing a module](docs/writing-a-module.md) covers templates, buttons, slots, suites, installation
+and removal, with the tested Acme packages as examples.
+
 ## Commands
 
 Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs.
