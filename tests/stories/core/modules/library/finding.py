@@ -11,14 +11,17 @@ from tests.stories.core.modules.library.support.saved_connection import saved_co
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 from tests.stories.server.support.stub_server import StubAnswer, StubServer
+from tests.stories.server.viewer.share import SharedLink, opened
 
 __all__ = ["private_folder"]
 
 pytestmark = pytest.mark.usefixtures("private_folder")
 
 JSON_HEADERS = {"Content-Type": "application/json"}
+DOCUMENTS_WINDOW = "documents.documents"
 UNREACHABLE_LINE = "the library could not be reached, so these are local results only"
 NEEDS_GO = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
 
@@ -116,3 +119,87 @@ def test_a_search_mark_asks_no_server(new_story):
         story.expect_rows(stub.requests == [])
         story.expect_text("search find cart", "task 1: ", actor=story.user)
         story.expect_rows(len(stub.requests) == 1)
+
+
+def connected_story(new_story, server: SharedServerBinary, token: str):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_text(f"library connect {server.address} --token {token}", "Connected: ", actor=story.user)
+    return story
+
+
+@NEEDS_GO
+def test_a_library_document_is_read_by_its_library_number_with_every_reading_flag(new_story, shared_server):
+    server, tokens = shared_server
+    item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Reading alpha", "abstract": "About alpha", "body": "## Steps\nTag first.\n- one\n- two\n## Notes\nThen build."}})[1]
+    number = int(str(item["id"]))
+    story = connected_story(new_story, server, tokens.editor)
+    story.expect_text(f"doc show library:{number}", "From the team's library, version 1, changed by Ada", f"library doc {number}: Reading alpha", "1  Steps", "2  Notes", actor=story.agent)
+    story.expect_text(f"doc show library:{number} --section 1", "1. Steps", "Tag first.", actor=story.agent)
+    story.expect_text(f"doc show library:{number} --section 1 --bullets", "- one", actor=story.agent)
+    story.expect_text(f"doc show library:{number} --grep build", "2 Notes: Then build.", actor=story.agent)
+    story.expect_text(f"doc show library:{number} --all", "Then build.", actor=story.agent)
+    document = json.loads(story.run(f"doc show library:{number} --json", actor=story.agent).output_text)
+    story.expect_rows(document["fields"]["title"] == "Reading alpha", document["id"] == number)
+
+
+@NEEDS_GO
+def test_nothing_is_saved_by_reading_a_library_document(new_story, shared_server):
+    server, tokens = shared_server
+    item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Reading beta", "abstract": "About beta", "body": "Tag first."}})[1]
+    story = connected_story(new_story, server, tokens.editor)
+    story.run(f"doc show library:{int(str(item['id']))}", actor=story.agent)
+    story.expect_no_text("doc list", "Reading beta", actor=story.agent)
+
+
+@NEEDS_GO
+def test_a_plain_number_with_no_local_document_is_refused_with_the_library_item_of_that_number(new_story, shared_server):
+    server, tokens = shared_server
+    item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Rollback procedure", "abstract": "How to undo", "body": "Run it."}})[1]
+    number = int(str(item["id"]))
+    story = connected_story(new_story, server, tokens.editor)
+    story.expect_refusal(f"doc show {number}", f"library doc {number} exists: Rollback procedure; read it with journal doc show library:{number}", actor=story.agent)
+
+
+def test_a_plain_number_with_no_local_document_and_no_library_stays_a_plain_refusal(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal("doc show 5000", "no doc 5000", actor=story.agent)
+
+
+@NEEDS_GO
+def test_a_library_reading_lists_no_links_of_the_local_row_with_the_same_number(new_story, tmp_path):
+    with SharedServerBinary(tmp_path) as server:
+        token = server.new_user("Ada", "admin")
+        server.send(token, "POST", "/items/doc", {"fields": {"title": "Library one", "abstract": "About it", "body": "Plain words."}})
+        story = connected_story(new_story, server, token)
+        story.expect_success('task make "Fix the cart" --environment main', actor=story.user)
+        story.expect_success('doc make "Local one" --abstract "About it" --body "See task 1 for the cart."', actor=story.user)
+        story.expect_text("doc show 1", "links: task:1", actor=story.agent)
+        story.expect_text("doc show library:1", "library doc 1: Library one", actor=story.agent)
+        story.expect_no_text("doc show library:1", "links:", actor=story.agent)
+        story.expect_no_text("doc show library:1 --all", "links:", actor=story.agent)
+
+
+def test_a_report_takes_no_library_number(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_usage_error("report show library:3", actor=story.agent)
+
+
+def test_a_library_number_that_is_no_number_is_a_usage_error(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_usage_error("doc show library:twelve", actor=story.agent)
+
+
+def test_with_no_connection_a_library_number_is_refused_in_plain_words(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal("doc show library:31", "This journal is not connected to a shared server.", actor=story.agent)
+
+
+def test_a_share_session_reads_the_shared_document_and_never_the_library_item_with_that_number(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_success('doc make "Shared one" --abstract "About it" --body "Plain words."', actor=story.user)
+    made = json.loads(story.run("share make docs:1 --environment main --json", actor=story.user).output_text)
+    with server_story(story) as server:
+        visitor = opened(server, SharedLink(int(made["id"]), str(made["link"])))
+        server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "1"], "environment": "main"}, 200, '"code": 0')
+        server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "library:1"], "environment": "main"}, 403, "not part of what is shared")
+        server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "library:14"], "environment": "main"}, 403, "not part of what is shared")
