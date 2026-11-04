@@ -27,7 +27,7 @@ defineProps({moves: {type: Array, required: true}});
 </template>
 
 <style scoped>
-.move { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text-2); font: inherit; font-size: 12.5px; text-align: left; }
+.move { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: none; color: var(--text-2); font: inherit; font-size: 12.5px; text-align: left; }
 button.move { cursor: pointer; }
 button.move:hover { background: var(--hover); }
 .dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--text-4); }
@@ -35,5 +35,5 @@ button.move:hover { background: var(--hover); }
 .dot.bad { background: var(--danger); }
 .text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .when { flex: none; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
-.none { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; }
+.none { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border-inner); color: var(--text-3); font-size: 12px; }
 </style>

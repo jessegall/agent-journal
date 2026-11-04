@@ -66,6 +66,20 @@ async function check(width, height, name) {
     assert.ok(facts.ring && facts.chip === "Recommended");
     assert.ok(facts.footFull && facts.buttonsInside, "the foot band holds its buttons");
     assert.ok(facts.textFits, "the whole question text shows");
+    for (const scheme of ["dark", "light"]) {
+        await page.emulateMedia({colorScheme: scheme});
+        const lines = await page.locator('[data-question-card].flush[data-state="open"]').first().evaluate((card) => {
+            const strength = (color, ground) => Math.abs(color.match(/\d+/g).slice(0, 3).reduce((sum, part) => sum + Number(part), 0) - ground.match(/\d+/g).slice(0, 3).reduce((sum, part) => sum + Number(part), 0));
+            const ground = getComputedStyle(card).backgroundColor;
+            const colorOf = (selector, side) => getComputedStyle(card.querySelector(selector))[`border${side}Color`];
+            return {
+                between: strength(getComputedStyle(card).borderTopColor, ground),
+                inner: [strength(colorOf(".question-head", "Bottom"), ground), strength(colorOf(".question-options", "Top"), ground), strength(colorOf(".question-form", "Top"), ground)],
+            };
+        });
+        assert.ok(lines.inner.every((inner) => inner < lines.between), `in the ${scheme} theme the lines inside the block are fainter than the line between blocks: ${JSON.stringify(lines)}`);
+    }
+    await page.emulateMedia({colorScheme: "dark"});
     await page.screenshot({path: `${shots}-${name}.png`});
     await page.close();
     return facts;

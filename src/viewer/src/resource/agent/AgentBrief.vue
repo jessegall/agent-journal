@@ -30,11 +30,11 @@ const proofLine = (point) => (point.proof ? `${point.proof.state.slice(0, 1).toU
 </template>
 
 <style scoped>
-.brief { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.brief { padding: 10px 14px; border-bottom: 1px solid var(--border-inner); color: var(--text-2); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .brief.clamp { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
-.more { display: block; width: 100%; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--accent-text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
+.more { display: block; width: 100%; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: none; color: var(--accent-text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
 .more:hover { text-decoration: underline; }
-.point { display: flex; align-items: flex-start; gap: 9px; margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; line-height: 1.5; }
+.point { display: flex; align-items: flex-start; gap: 9px; margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--border-inner); font-size: 12.5px; line-height: 1.5; }
 .number { flex: none; width: 16px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 .text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .proof { display: block; color: var(--text-3); font-size: 12px; }

@@ -218,7 +218,7 @@ async function elaborate() {
     gap: 7px;
     margin: 0 -14px;
     padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-inner);
     background: var(--bg-2);
 }
 
@@ -263,7 +263,7 @@ async function elaborate() {
 .flush .question-options {
     gap: 0;
     margin: 0 -14px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-inner);
 }
 
 .flush .question-option {
@@ -274,7 +274,7 @@ async function elaborate() {
     width: 100%;
     padding: 9px 14px;
     border: 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-inner);
     border-radius: 0;
     background: none;
     line-height: 1.5;
@@ -328,7 +328,7 @@ async function elaborate() {
     gap: 9px;
     margin: 0 -14px;
     padding: 10px 14px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-inner);
     background: var(--side);
     color: var(--text-2);
     font-size: 13px;
@@ -368,7 +368,7 @@ async function elaborate() {
     gap: 8px;
     margin: 0 -14px;
     padding: 8px 14px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-inner);
     background: var(--side);
 }
 

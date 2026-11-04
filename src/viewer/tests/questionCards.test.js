@@ -75,7 +75,7 @@ test("the window's blocks run edge to edge with no box, a line above and below a
     const card = source(CARD);
     expect(rule(card, ".question.flush")).toMatch(/max-width: none;[\s\S]*padding: 0 14px;[\s\S]*border: 0;[\s\S]*border-top: 1px solid var\(--border-2\);[\s\S]*border-bottom: 1px solid var\(--border-2\);[\s\S]*border-radius: 0;/);
     expect(rule(card, ".flush .question-form")).toMatch(/flex-wrap: wrap;[\s\S]*margin: 0 -14px;[\s\S]*background: var\(--side\)/);
-    expect(rule(card, ".flush .question-options")).toMatch(/margin: 0 -14px;[\s\S]*border-top: 1px solid var\(--border\)/);
+    expect(rule(card, ".flush .question-options")).toMatch(/margin: 0 -14px;[\s\S]*border-top: 1px solid var\(--border-inner\)/);
     expect(rule(card, ".question-buttons")).toContain("flex-wrap: wrap");
     expect(rule(source("../../core/modules/questions/web/src/QuestionRows.vue"), ".questions :deep(.row-list-row)")).toMatch(/padding: 0;/);
 });

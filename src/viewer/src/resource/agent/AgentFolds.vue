@@ -50,14 +50,14 @@ const nameOf = (agent) => agent.given_name || `${agent.role.slice(0, 1).toUpperC
 </template>
 
 <style scoped>
-.row { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text-2); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
+.row { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: none; color: var(--text-2); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
 .row:hover { background: var(--hover); }
 .text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aside { flex: none; color: var(--text-3); font-size: 12px; }
-.none { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; }
-.skills { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 12.5px; }
+.none { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border-inner); color: var(--text-3); font-size: 12px; }
+.skills { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; padding: 9px 14px; border-bottom: 1px solid var(--border-inner); color: var(--text-2); font-size: 12.5px; }
 .none-inline { color: var(--text-3); }
-.detail { display: flex; align-items: flex-start; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; line-height: 1.5; }
+.detail { display: flex; align-items: flex-start; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--border-inner); font-size: 12.5px; line-height: 1.5; }
 .label { flex: 0 0 118px; color: var(--text-3); font-size: 12px; }
 .value { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .value.code { font-family: var(--mono, ui-monospace, monospace); font-size: 11.5px; }

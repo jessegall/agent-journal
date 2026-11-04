@@ -69,22 +69,22 @@ const S = {
   props: { row: { type: Object, required: !0 }, flush: Boolean },
   emits: ["changed"],
   setup(e, { emit: w }) {
-    const s = e, y = w, V = I(), q = h(""), g = h(null), f = h(""), v = h(!1);
+    const s = e, y = w, V = I(), f = h(""), g = h(null), q = h(""), v = h(!1);
     async function x(l, a) {
-      g.value = l, f.value = "";
+      g.value = l, q.value = "";
       const n = await V.run(a);
       if (n.ok) return void y("changed");
-      g.value = null, f.value = n.error;
+      g.value = null, q.value = n.error;
     }
     const k = () => ({ ...s.row, ...g.value }), A = (l) => x({ state: "answered", answer: l }, ["question", "answer", String(s.row.id), "--answer", l]), B = () => x({ state: "closed" }, ["question", "close", String(s.row.id)]);
     function p() {
-      const l = q.value.trim();
+      const l = f.value.trim();
       l && A(l);
     }
     async function E() {
       v.value = !0;
       const l = await V.run(["message", "send", `Elaborate on question ${s.row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
-      l.ok || (v.value = !1, f.value = l.error);
+      l.ok || (v.value = !1, q.value = l.error);
     }
     return (l, a) => (t(), o("section", {
       class: Q(["question", { flush: e.flush }]),
@@ -139,8 +139,8 @@ const S = {
         }, [
           e.flush ? (t(), o(r, { key: 0 }, [
             d(c(N), {
-              modelValue: q.value,
-              "onUpdate:modelValue": a[1] || (a[1] = (n) => q.value = n),
+              modelValue: f.value,
+              "onUpdate:modelValue": a[1] || (a[1] = (n) => f.value = n),
               class: "question-input",
               placeholder: "Or answer in your own words…"
             }, null, 8, ["modelValue"]),
@@ -154,8 +154,8 @@ const S = {
             ])
           ], 64)) : (t(), R(c(N), {
             key: 1,
-            modelValue: q.value,
-            "onUpdate:modelValue": a[2] || (a[2] = (n) => q.value = n),
+            modelValue: f.value,
+            "onUpdate:modelValue": a[2] || (a[2] = (n) => f.value = n),
             placeholder: "Or answer in your own words…"
           }, {
             end: C(() => [
@@ -170,10 +170,10 @@ const S = {
           }, 8, ["modelValue"]))
         ], 32)
       ], 64)),
-      f.value ? (t(), o("p", ee, u(f.value), 1)) : b("", !0)
+      q.value ? (t(), o("p", ee, u(q.value), 1)) : b("", !0)
     ], 10, D));
   }
-}, le = /* @__PURE__ */ z(te, [["__scopeId", "data-v-499ce224"]]);
+}, le = /* @__PURE__ */ z(te, [["__scopeId", "data-v-b7fa0d55"]]);
 export {
   le as Q
 };
