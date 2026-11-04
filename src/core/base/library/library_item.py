@@ -1,3 +1,4 @@
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
@@ -19,6 +20,10 @@ class LibraryItem:
     @property
     def is_removed(self) -> bool:
         return bool(self.removed_at)
+
+    @property
+    def fields_text(self) -> str:
+        return json.dumps(dict(self.fields), sort_keys=True)
 
     def lines(self) -> Sequence[str]:
         return [f"{self.share} {self.item_id}  version {self.version}  by {self.author}  {self.changed_at}", *(f"{name}: {value}" for name, value in self.fields.items())]

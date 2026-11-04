@@ -8,12 +8,16 @@ WARNING = "this check runs on your computer: echo hello"
 
 
 class CommandShare(DocLibraryShare):
-    """Shares documents under the name check, as a check that runs a command, and warns before one is got."""
+    """Shares documents under the name check, as a check that runs a command, and warns before one is got. A closed
+    document counts as a check that was removed."""
 
     name = "check"
 
     def fields(self, row: Doc) -> Fields:
         return {"title": row.title, "command": row.body, "brief": row.abstract, "interval_minutes": 5}
+
+    def is_removed(self, row: Doc) -> bool:
+        return bool(row.close_reason)
 
     def warning(self, fields: Fields) -> str:
         return WARNING

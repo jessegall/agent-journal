@@ -23,6 +23,15 @@ from core.modules.library.commands.remove_library_item.remove_library_item_handl
 from core.modules.library.commands.remove_library_item.remove_library_item_subcommand import RemoveLibraryItemSubcommand
 from core.modules.library.commands.restore_library_item.restore_library_item_handler import RestoreLibraryItemHandler
 from core.modules.library.commands.restore_library_item.restore_library_item_subcommand import RestoreLibraryItemSubcommand
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.library.commands.delete_library_copy.delete_library_copy_handler import DeleteLibraryCopyHandler
+from core.modules.library.commands.update_library_connection.update_library_connection_handler import UpdateLibraryConnectionHandler
+from core.modules.library.commands.update_library_copy.update_library_copy_handler import UpdateLibraryCopyHandler
+from core.modules.library.commands.run_library_sync.run_library_sync_handler import RunLibrarySyncHandler
+from core.modules.library.commands.run_library_sync.run_library_sync_subcommand import RunLibrarySyncSubcommand
+from core.modules.library.commands.merge_library_item.merge_library_item_handler import MergeLibraryItemHandler
+from core.modules.library.ticks.library_sync_tick import LibrarySyncTick
 from core.modules.library.commands.leave_library_copy.leave_library_copy_handler import LeaveLibraryCopyHandler
 from core.modules.library.commands.leave_library_copy.leave_library_copy_subcommand import LeaveLibraryCopySubcommand
 from core.modules.library.commands.library_copies.library_copies_subcommand import LibraryCopiesSubcommand
@@ -54,12 +63,14 @@ class LibraryModule(Module):
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
     bindings = {LibraryLookup: ServerLibraryLookup}
-    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, SendLibraryItemHandler, RemoveLibraryItemHandler,
+    handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, SendLibraryItemHandler,
+                RunLibrarySyncHandler, MergeLibraryItemHandler, UpdateLibraryCopyHandler, DeleteLibraryCopyHandler, UpdateLibraryConnectionHandler, RemoveLibraryItemHandler,
                 RestoreLibraryItemHandler]
     subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand,
-                   MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
+                   MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
+    tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
     skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
                                keywords=("library", "team", "shared"), commands=["library"])]
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
                                  place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library show", "library versions", "library copies"],
-                                 runs=["library connect", "library get", "library share", "library leave", "library remove", "library restore"], events=["library_connection.*", "library_copy.*"])]
+                                 runs=["library connect", "library get", "library share", "library sync", "library leave", "library remove", "library restore"], events=["library_connection.*", "library_copy.*"])]

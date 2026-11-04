@@ -23,7 +23,10 @@ class LibraryShare(Generic[M]):
         raise NotImplementedError
 
     def digest(self, row: M) -> str:
-        return TextDigest().hex_digest(json.dumps(self.fields(row), sort_keys=True))
+        return self.fields_digest(self.fields(row))
+
+    def fields_digest(self, fields: Fields) -> str:
+        return TextDigest().hex_digest(json.dumps(fields, sort_keys=True))
 
     # Makes the local row for an item that was just fetched.
     def arrive(self, fields: Fields, context: Context) -> M:

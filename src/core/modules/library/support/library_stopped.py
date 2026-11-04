@@ -9,5 +9,9 @@ class LibraryStopped(LibraryFailure):
         return cls("The address changed. Connect again to send your token to it.")
 
     @classmethod
+    def changed_server(cls) -> "LibraryStopped":
+        return cls("This address now answers as another server.", "journal library disconnect --forget removes the copies of the old one")
+
+    @classmethod
     def disconnected(cls) -> "LibraryStopped":
         return cls("This journal is not connected to a shared server.", "journal library connect <address> --token <token>")
