@@ -5,7 +5,7 @@ import QuestionActions from "./QuestionActions.vue";
 
 // one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
 // an answer shows the moment it is given and goes back if the server refuses it;
-// flush is the questions window's look: edge to edge with no box, a ring in front of each option and the answer box in a band at the foot
+// flush is the questions window's look: one block edge to edge, a darker banner with the dot, the number and the time, the question below it, the options as rows and the answer in a band at the foot
 const props = defineProps({row: {type: Object, required: true}, flush: Boolean});
 const emit = defineEmits(["changed"]);
 const context = useWindow();
@@ -53,7 +53,7 @@ async function elaborate() {
         <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
         <template v-if="shown().state !== 'open'">
             <p class="question-closed" data-question-settled>
-                <template v-if="shown().state === 'answered'"><template v-if="flush"><b>Answered:</b></template><template v-else>Answered:</template> {{ shown().answer }}</template>
+                <template v-if="shown().state === 'answered'"><template v-if="flush"><b class="question-answered">Answered:</b> <span class="question-answer">{{ shown().answer }}</span></template><template v-else>Answered: {{ shown().answer }}</template></template>
                 <template v-else>Closed</template>
             </p>
         </template>
@@ -198,14 +198,16 @@ async function elaborate() {
     font-size: 12.5px;
 }
 
-/* the questions window's card: no box, one line below, rows that run edge to edge */
+/* the questions window's block: edge to edge, a line above and below, the banner, the text, the options and the answer one under the other */
 .question.flush {
     flex: none;
+    gap: 0;
     max-width: none;
     margin: 0;
-    padding: 12px 14px 0;
+    padding: 0 14px;
     border: 0;
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border-2);
+    border-bottom: 1px solid var(--border-2);
     border-radius: 0;
     background: var(--bg);
 }
@@ -214,10 +216,15 @@ async function elaborate() {
     align-items: center;
     justify-content: flex-start;
     gap: 7px;
+    margin: 0 -14px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
 }
 
 .flush .question-label {
     font-size: 12px;
+    white-space: nowrap;
     letter-spacing: 0;
     text-transform: none;
 }
@@ -244,6 +251,7 @@ async function elaborate() {
 }
 
 .flush .question-open {
+    padding: 12px 0;
     font-size: 14px;
     line-height: 1.45;
 }
@@ -254,7 +262,7 @@ async function elaborate() {
 
 .flush .question-options {
     gap: 0;
-    margin: 2px -14px 0;
+    margin: 0 -14px;
     border-top: 1px solid var(--border);
 }
 
@@ -321,6 +329,7 @@ async function elaborate() {
     margin: 0 -14px;
     padding: 10px 14px;
     border-top: 1px solid var(--border);
+    background: var(--side);
     color: var(--text-2);
     font-size: 13px;
     line-height: 1.5;
@@ -340,9 +349,16 @@ async function elaborate() {
     background: var(--tone-good, var(--green));
 }
 
-.flush .question-closed b {
+.flush .question-answered {
+    flex: none;
     color: var(--text);
     font-weight: 500;
+    white-space: nowrap;
+}
+
+.flush .question-answer {
+    flex: 1;
+    min-width: 0;
 }
 
 .flush .question-form {
@@ -367,6 +383,6 @@ async function elaborate() {
 }
 
 .flush .question-failure {
-    padding-bottom: 10px;
+    padding: 0 0 10px;
 }
 </style>

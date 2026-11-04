@@ -6,7 +6,7 @@ const browser = await chromium.launch({headless: true, executablePath: process.e
 // the viewer key signs one browser in; both widths share its login
 const login = await browser.newContext();
 
-// the questions window at one width: cards edge to edge with no box, a line below each, options as rows, the foot band wrapping
+// the questions window at one width: each question one block edge to edge with a banner in --bg-2, a band of space between blocks, options as rows, the foot band wrapping and the Answered label on one line
 async function check(width, height, name) {
     const page = await login.newPage();
     await page.setViewportSize({width, height});
@@ -14,6 +14,22 @@ async function check(width, height, name) {
     await page.locator('.pane-tab:has-text("Questions"), [data-phone-window="questions.questions"]').first().click();
     await page.locator("[data-question-card].flush").first().waitFor();
     await page.waitForTimeout(400);
+
+    const blocks = await page.locator("[data-question-card].flush").evaluateAll((cards) => {
+        const lines = (node) => Math.round(node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight));
+        const banner = (card) => card.querySelector(".question-head");
+        return {
+            banners: cards.every((card) => getComputedStyle(banner(card)).backgroundColor !== getComputedStyle(card).backgroundColor && banner(card).querySelectorAll("[data-question-dot]").length === 1),
+            bannerOnTop: cards.every((card) => card.children[0] === banner(card) && banner(card).getBoundingClientRect().top - card.getBoundingClientRect().top < 2),
+            gaps: cards.slice(1).map((card, index) => Math.round(card.getBoundingClientRect().top - cards[index].getBoundingClientRect().bottom)),
+            labelLines: [...document.querySelectorAll(".question-answered")].map(lines),
+            labelFlex: [...document.querySelectorAll(".question-answered")].map((label) => getComputedStyle(label).flexGrow + getComputedStyle(label).flexShrink + getComputedStyle(label).whiteSpace),
+        };
+    });
+    assert.ok(blocks.banners && blocks.bannerOnTop, "each block starts with a darker banner holding one dot");
+    assert.ok(blocks.gaps.every((gap) => gap >= 12), `a band of space separates the blocks: ${blocks.gaps}`);
+    assert.ok(blocks.labelLines.every((count) => count === 1), `the Answered label stays on one line: ${blocks.labelLines}`);
+    assert.ok(blocks.labelFlex.every((flex) => flex === "00nowrap"), `the Answered label does not grow, shrink or wrap: ${blocks.labelFlex}`);
 
     const facts = await page.locator("[data-question-card].flush").first().evaluate((card) => {
         const style = getComputedStyle(card);
@@ -38,7 +54,7 @@ async function check(width, height, name) {
     });
     assert.equal(facts.left, 0, JSON.stringify(facts.chain));
     assert.ok(facts.right <= 1, `the card stops ${facts.right}px short of the window`);
-    assert.deepEqual(facts.border, ["0px", "1px", "0px"]);
+    assert.deepEqual(facts.border, ["1px", "1px", "0px"]);
     assert.equal(facts.radius, "0px");
     assert.equal(facts.maxWidth, "none");
     assert.ok(facts.rowsFull && facts.rowCount >= 2, "the options run edge to edge");
