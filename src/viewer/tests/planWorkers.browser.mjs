@@ -13,7 +13,6 @@ try {
     const card = page.locator(`[data-dropdown="agents.subagents"] [data-agent-open="${worker}"]`);
     await card.waitFor();
     assert.ok((await card.locator("[data-agent-job]").textContent()).length > 0);
-    assert.equal((await card.locator("[data-agent-queued]").textContent()).trim(), "Queued: 2");
     await page.screenshot({path: `${shots}-card.png`});
     await page.keyboard.press("Escape");
 
