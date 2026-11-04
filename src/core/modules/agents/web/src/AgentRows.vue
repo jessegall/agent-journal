@@ -58,10 +58,18 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
 
 // one card is open at a time and takes the whole window: the others are held back, counted on a band at the foot, until it closes or a search starts
 const openId = ref(null);
+const agents = ref(null);
+const rowOffset = ref(0);
 const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const heldBack = computed(() => shown.value.length - visible.value.length);
-const toggle = (row) => (openId.value = openId.value === row.id ? null : row.id);
+const toggle = (row) => {
+    if (openId.value !== row.id) {
+        const card = agents.value.querySelector(`[data-agent-open="${row.id}"]`);
+        rowOffset.value = card.getBoundingClientRect().top - agents.value.getBoundingClientRect().top;
+    }
+    openId.value = openId.value === row.id ? null : row.id;
+};
 watch(words, (typed) => typed.trim() && (openId.value = null));
 const closeOnEscape = (event) => { if (event.key === "Escape" && openId.value) openId.value = null; };
 window.addEventListener("keydown", closeOnEscape);
@@ -69,19 +77,21 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
-    <div :class="['agents', {focused: openRow}]">
-        <template v-if="!openRow"><SearchBar v-model="words" data-agents-search>
+    <div ref="agents" :class="['agents', {focused: openRow}]" :style="{'--agent-row-offset': `${rowOffset}px`}">
+        <template v-if="!openRow"><SearchBar v-model="words" placeholder="Search agents" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
                 <Btn small bordered title="Open the process queue" data-agents-queue @click="peekRef('test_queue:0')">Process queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
         </SearchBar></template>
         <Transition name="agents-view" mode="out-in">
-        <RowList :key="openRow ? 'open' : 'list'" :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        <div :key="openRow ? 'open' : 'list'" :class="['agents-view', {'agents-view-open': openRow}]">
+        <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
         </RowList>
+        </div>
         </Transition>
         <template v-if="openRow && heldBack">
             <button type="button" class="agents-held" data-agents-held @click="openId = null">{{ heldBack }} more</button>
@@ -107,6 +117,12 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 }
 
 /* with a card open the list, its row and the card stretch down to the band at the foot */
+.agents.focused .agents-view {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
 .agents.focused :deep(.row-list) {
     flex: 1;
     min-height: 0;
@@ -156,6 +172,15 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .agents-view-enter-active { transition: opacity 160ms ease; }
 .agents-view-leave-active { transition: opacity 140ms ease; }
 .agents-view-enter-from, .agents-view-leave-to { opacity: 0; }
+.agents-view-open.agents-view-enter-active { transition-duration: 280ms; }
+.agents-view-open.agents-view-enter-active :deep(.agent-head), .agents-view-open.agents-view-enter-active :deep(.agent-line) { animation: agent-band-in 280ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.agents-view-open.agents-view-leave-active { transition-duration: 280ms; }
+.agents-view-open.agents-view-leave-active :deep(.agent-head), .agents-view-open.agents-view-leave-active :deep(.agent-line) { animation: agent-band-out 280ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.agents-view-open.agents-view-leave-active :deep(.agent-more) { animation: agent-parts-out 120ms ease both; }
+@keyframes agent-band-in { from { transform: translateY(var(--agent-row-offset)); } to { transform: translateY(0); } }
+@keyframes agent-band-out { from { transform: translateY(0); } to { transform: translateY(var(--agent-row-offset)); } }
+@keyframes agent-parts-out { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .agents-view-enter-active, .agents-view-leave-active { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .agents-view-open.agents-view-enter-active :deep(.agent-head), .agents-view-open.agents-view-enter-active :deep(.agent-line), .agents-view-open.agents-view-leave-active :deep(.agent-head), .agents-view-open.agents-view-leave-active :deep(.agent-line), .agents-view-open.agents-view-leave-active :deep(.agent-more) { animation: none; } }
 
 </style>

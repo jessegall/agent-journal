@@ -4,14 +4,14 @@ import {AutoScrollPane, RowList, WindowRoom, useRows} from "@journal/window-kit"
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
 // shows Newest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
-const props = defineProps({line: {type: String, required: true}});
+const props = defineProps({line: {type: String, required: true}, padding: {type: String, default: "8px 22px 8px 27px"}});
 const {rows, failure, loaded} = useRows(props.line, ["hook_call.create"]);
 const newest = computed(() => rows.value.at(-1)?.id ?? 0);
 const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "");
 </script>
 
 <template>
-    <WindowRoom padding="8px 22px 8px 27px">
+    <WindowRoom :padding="padding">
         <div class="transcript">
             <AutoScrollPane :row-count="newest">
                 <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent's words and its tool calls show here as it works.">

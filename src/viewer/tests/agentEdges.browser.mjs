@@ -14,6 +14,7 @@ try {
         await card.click();
         await window.locator(".agents-view-leave-active, .agents-view-enter-active").first().waitFor({timeout: 1000});
         await card.getByRole("button", {name: "Back to the list"}).waitFor();
+        assert.match(await card.locator(".agent-head").evaluate((element) => getComputedStyle(element).animationName), /^agent-band-in/);
         for (const [tab, selector] of [["transcript", ".transcript .row-list-row"], ["file-feed", ".file-feed .row-list-row"]]) {
             await card.locator(`[data-tab="${tab}"]`).click();
             const item = card.locator(selector).first();
@@ -27,6 +28,9 @@ try {
             assert.equal(bounds.border, "1px");
             await page.screenshot({path: `${capture}-${width}-${tab}.png`, animations: "disabled"});
         }
+        await card.getByRole("button", {name: "Back to the list"}).click();
+        await window.locator(".agents-view-open.agents-view-leave-active").waitFor();
+        assert.match(await card.locator(".agent-head").evaluate((element) => getComputedStyle(element).animationName), /^agent-band-out/);
     }
 } finally {
     await browser.close();

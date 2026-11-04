@@ -110,7 +110,7 @@ readCommand();
                                 </FoldGroup>
                             </div>
                         </template>
-                        <TranscriptRows :line="`agent transcript ${row.id}`" />
+                        <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
                     </div>
                 </template>
                 <template v-else>
@@ -136,7 +136,7 @@ readCommand();
                             </template>
                         </template>
                         <template #transcript>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" />
+                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
                         </template>
                         <template #file-feed>
                             <AgentFileEdits :agent="row.id" />
@@ -431,6 +431,9 @@ readCommand();
 .agent-card.open .agent-tab-body { gap: 0; margin: 0; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
 .agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.row-list-row) { gap: 8px; }
+.agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
+.agent-card.open .agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }
 .agent-card.open .agent-tab-body > .agent-subagent-brief { padding: 0; }
 .agent-task { width: 100%; padding: 7px 14px; border-radius: 0; }
 .agent-task-number { min-width: 30px; }
