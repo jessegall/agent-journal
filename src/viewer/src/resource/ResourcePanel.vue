@@ -14,9 +14,10 @@ import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
+import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
-const props = defineProps({read: {type: Function, required: true}});
+const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}});
 
 const opened = computed(() => route.value.open);
 const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
@@ -26,7 +27,7 @@ let reading = 0;
 
 const LONG_KINDS = new Set(["plan"]);
 const DOCUMENT_KINDS = new Set(["doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", ...DOCUMENT_KINDS]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent-skill", ...DOCUMENT_KINDS]);
 const TEXT_KINDS = new Set(["question", "memory"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const isDocument = computed(() => DOCUMENT_KINDS.has(kind.value));
@@ -67,6 +68,15 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     data-resource-panel
                 >
                     <SwitchCase :value="kind">
+                        <template #agent-skill>
+                            <header class="head">
+                                <ResourceHeading label="Skill" title="Skill" />
+                                <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
+                            </header>
+                            <div class="body">
+                                <ModuleBody :declaration="{type: 'skills.skills', body_url: catalogue.window('skills.skills').entry_url, shipped: true}" :row="{skillId: opened.id}" :environment="environment" />
+                            </div>
+                        </template>
                         <template #task>
                             <TaskInspector
                                 lone

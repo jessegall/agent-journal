@@ -7,7 +7,7 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 
 // the body file a module gives a chat mark or a docked item, loaded through the window host: as a component for a module the journal ships or
 // the person trusts, and in a sandboxed frame for any other
-const props = defineProps({declaration: {type: Object, required: true}, row: {type: Object, default: null}, head: {type: Object, default: null}});
+const props = defineProps({declaration: {type: Object, required: true}, row: {type: Object, default: null}, head: {type: Object, default: null}, environment: {type: String, default: ""}});
 const ANY_EVENT = "*.*";
 const host = inject(WINDOW_CONTEXT, null);
 const subscriptions = new WindowSubscriptions();
@@ -15,7 +15,7 @@ const subscriptions = new WindowSubscriptions();
 const stopHearing = host?.subscriptions?.follow(`body of ${props.declaration.type}`, [ANY_EVENT], (event) => subscriptions.dispatch(event));
 onUnmounted(() => stopHearing?.());
 // the body reads in the environment of the window that draws it
-const env = host?.environment ?? "";
+const env = host?.environment ?? props.environment;
 const permissions = {reads: [], runs: [], missing: [], ask: async () => true};
 const asComponent = computed(() => Boolean(props.declaration.shipped || props.declaration.trusted));
 const entry = computed(() => ({

@@ -7,5 +7,5 @@ from core.modules.skills.models.enums.skill_mark_variant import SkillMarkVariant
 
 SKILLS_FAMILY = MarkFamily("skills.skills", "Skills", "skill", MarkGroup.AGENT)
 
-SKILL_MARKS = [MarkDeclaration(SkillMarkType.SKILL, SkillMarkVariant, SKILLS_FAMILY, "Skill loaded", "skill", click=MarkClick.NONE,
+SKILL_MARKS = [MarkDeclaration(SkillMarkType.SKILL, SkillMarkVariant, SKILLS_FAMILY, "Skill loaded", "skill", click=MarkClick.OPEN_ROW,
                                group_label="{count} skills loaded")]
