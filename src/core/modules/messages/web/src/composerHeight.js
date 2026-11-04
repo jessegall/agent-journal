@@ -4,7 +4,7 @@ const ROWS_AT_REST = 3;
 const MOST_ROWS = 16;
 
 // the rows the box shows for a text of so many lines: its resting size up to two lines, then always one row more than the text fills
-export const composerRows = (lines) => Math.min(Math.max(ROWS_AT_REST, lines + 1), MOST_ROWS);
+const composerRows = (lines) => Math.min(Math.max(ROWS_AT_REST, lines + 1), MOST_ROWS);
 
 // the text's own height shows only in a box too small for it, so the box is emptied of its height for the measure, without a transition, in
 // the same frame; the height it then gets runs through the stylesheet's transition
