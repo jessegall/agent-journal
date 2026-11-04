@@ -7,6 +7,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.reminders.commands.make_reminder.make_reminder_handler import MakeReminderHandler
 from core.modules.reminders.commands.make_reminder.make_reminder_subcommand import MakeReminderSubcommand
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired_handler import RecordReminderFiredHandler
+from core.modules.reminders.listeners.reminder_made_mark_listener import ReminderMadeMarkListener
 from core.modules.reminders.migrations.m001_reminders import RemindersTableMigration
 from core.modules.reminders.models.reminder import Reminder
 from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
@@ -27,6 +28,7 @@ class RemindersModule(Module):
     migrations = [RemindersTableMigration]
     handlers = [MakeReminderHandler, RecordReminderFiredHandler]
     subcommands = [MakeReminderSubcommand]
+    listeners = [ReminderMadeMarkListener]
     nudges = REMINDER_NUDGES
     driver_rules = [DueReminderRule]
     windows = [WindowDeclaration("reminders.reminders", "Reminders", "reminders.js", WindowLoading.COMPONENT, skeleton=REMINDERS_REMINDERS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE,

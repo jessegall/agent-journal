@@ -1,0 +1,30 @@
+from core.base.change.logged_event import LoggedEvent
+from core.modules.chat.listeners.mark_listener import MarkListener
+from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
+from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
+from core.modules.reminders.models.reminder import Reminder
+
+MEMORIES_MODULE = "journal.core.memories"
+MINUTE = 60
+
+
+class ReminderMadeMarkListener(MarkListener):
+    """When a reminder is made, the chat shows a mark with its text and when it fires."""
+
+    name = "reminders.made-mark"
+    event = "reminder.create"
+    module_name = MEMORIES_MODULE
+
+    def handle(self, event: LoggedEvent) -> None:
+        reminder = self.queries.query(Reminder).find(event.row_id)
+        self.show(event, MemoryMarkType.REMINDER, MemoryMarkVariant.MADE, f"Reminder set: {reminder.text}", reminder.environment_id, None, "reminder", reminder.id, self.firing(reminder))
+
+    @staticmethod
+    def firing(reminder: Reminder) -> str:
+        if reminder.due_at is not None:
+            return f"Fires at {reminder.due_at.text}"
+        if reminder.interval_seconds:
+            return f"Fires every {reminder.interval_seconds // MINUTE} minutes"
+        if reminder.interval_tool_uses:
+            return f"Fires every {reminder.interval_tool_uses} tool uses"
+        return f"Fires every {reminder.interval_tasks} closed tasks"
