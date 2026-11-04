@@ -92,16 +92,31 @@ function table(lines) {
     return `<table><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/;
+const NUMBERED_ITEM = /^\s*(\d+)[.)]\s/;
+
 function list(lines) {
-    const ordered = /^\s*\d+[.)]\s/.test(lines[0]);
+    const number = lines[0].match(NUMBERED_ITEM);
     const items = [];
     for (const line of lines) {
         const m = line.match(/^(\s*)(?:[-*+]|\d+[.)])\s+(.*)$/);
         if (m) items.push(m[2]);
-        else if (items.length) items[items.length - 1] += ` ${line.trim()}`;
+        else if (items.length && line.trim()) items[items.length - 1] += ` ${line.trim()}`;
     }
-    const tag = ordered ? "ol" : "ul";
-    return `<${tag}>${items.map((i) => `<li>${spans(i)}</li>`).join("")}</${tag}>`;
+    const opening = number ? `<ol${number[1] === "1" ? "" : ` start="${number[1]}"`}>` : "<ul>";
+    return `${opening}${items.map((i) => `<li>${spans(i)}</li>`).join("")}</${number ? "ol" : "ul"}>`;
+}
+
+// A blank line between two items of one kind stays inside the list, so a numbered list keeps counting.
+function listEnd(lines, start) {
+    const numbered = NUMBERED_ITEM.test(lines[start]);
+    let end = start + 1;
+    for (let next = end; next < lines.length; next += 1) {
+        const isItem = LIST_ITEM.test(lines[next]) && NUMBERED_ITEM.test(lines[next]) === numbered;
+        if (isItem || (next === end && /^\s{2,}\S/.test(lines[next]))) end = next + 1;
+        else if (lines[next].trim()) break;
+    }
+    return end;
 }
 
 const opensTable = (lines, i) => lines[i].includes("|") && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1] || "");
@@ -144,9 +159,8 @@ function markdown(text) {
             i = end;
             continue;
         }
-        if (/^\s*(?:[-*+]|\d+[.)])\s+/.test(line)) {
-            let end = i + 1;
-            while (end < lines.length && (/^\s*(?:[-*+]|\d+[.)])\s+/.test(lines[end]) || /^\s{2,}\S/.test(lines[end]))) end += 1;
+        if (LIST_ITEM.test(line)) {
+            const end = listEnd(lines, i);
             out.push(list(lines.slice(i, end)));
             i = end;
             continue;
