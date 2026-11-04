@@ -11,7 +11,7 @@ class AcmeSuite(Suite):
 class SuiteModule(Module):
     name = "acme.suite"
     requires_core = ">=5,<6"
-    part_of = ["coding"]
+    parent_suite = "coding"
     dependencies = ["journal.suites.coding"]
     suites = [AcmeSuite]
 
@@ -19,17 +19,17 @@ class SuiteModule(Module):
 class MemberModule(Module):
     name = "acme.member"
     requires_core = ">=5,<6"
-    part_of = ["acme"]
+    parent_suite = "acme"
     dependencies = ["acme.suite"]
 
 
 class UnknownSuiteModule(Module):
     name = "acme.unknown"
     requires_core = ">=5,<6"
-    part_of = ["absent"]
+    parent_suite = "absent"
 
 
 class MissingDependencyModule(Module):
     name = "acme.independent"
     requires_core = ">=5,<6"
-    part_of = ["coding"]
+    parent_suite = "coding"

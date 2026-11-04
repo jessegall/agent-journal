@@ -11,13 +11,6 @@
         "reject": [
             {
                 "all": [
-                    {"name": "part_of"},
-                    {"of": "parent/parent", "is": "type-declaration"},
-                    {"of": "parent/parent", "any": [{"name": "Module"}, {"extends": "Module"}]}
-                ]
-            },
-            {
-                "all": [
                     {"nameMatches": "^[a-z]+ed_on$"},
                     {"field": "target"},
                     {"of": "closest:type-declaration", "extends": "Model"}

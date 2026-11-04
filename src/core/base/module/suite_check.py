@@ -22,13 +22,15 @@ class SuiteCheck:
         owners = self.suite_modules(modules)
         problems: list[str] = []
         for module in modules:
-            for suite in module.part_of:
-                if suite not in owners:
-                    problems.append(f"module {module.name} is part of suite {suite}: install the module that ships it first")
-                    continue
-                if owners[suite] not in {module.name, *module.dependencies}:
-                    problems.append(f"module {module.name} is part of suite {suite} of module {owners[suite]}, "
-                                    "which it does not depend on")
+            suite = module.parent_suite
+            if suite is None:
+                continue
+            if suite not in owners:
+                problems.append(f"module {module.name} is part of suite {suite}: install the module that ships it first")
+                continue
+            if owners[suite] not in {module.name, *module.dependencies}:
+                problems.append(f"module {module.name} is part of suite {suite} of module {owners[suite]}, "
+                                "which it does not depend on")
         return tuple(problems)
 
     def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:

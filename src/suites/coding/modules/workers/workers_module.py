@@ -157,7 +157,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    part_of = ["coding"]
+    parent_suite = "coding"
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
                                           events=["proof.*", "worker_worktree.*"],

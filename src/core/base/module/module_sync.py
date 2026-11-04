@@ -117,7 +117,8 @@ class ModuleSync:
         return Registry(
             fingerprint=self.fingerprint.text(modules),
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
-            module_suites={module.name: tuple(dict.fromkeys([*module.part_of, *(suite.name for suite in module.suites)]))
+            module_suites={module.name: tuple(dict.fromkeys([suite for suite in
+                           (module.parent_suite, *(suite.name for suite in module.suites)) if suite is not None]))
                            for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
                                                   declaration.excluded_subcommands) for module in modules for declaration in module.models},

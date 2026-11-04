@@ -33,7 +33,7 @@ def test_the_registry_keeps_joined_and_shipped_suites(new_story):
                       registry.module_suites["journal.core.templates"] == ())
 
 
-def test_a_suite_module_cannot_be_removed_while_another_module_is_part_of_it(new_story):
+def test_a_suite_module_cannot_be_removed_while_another_module_names_it_as_parent(new_story):
     story = new_story(f"{PATH}:SuiteModule", f"{PATH}:MemberModule", fixture=MainEnvironment)
     database = story.container.get(Database)
     listed = story.home.module_list.read_text()
