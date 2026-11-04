@@ -3,20 +3,20 @@ class Module:
 
 
 class SampleModule(Module):
-    # @sin ModuleRegistrationDetector
+    # @sin module_registration
     models = (First, Second)
-    # @sin ModuleRegistrationDetector
+    # @sin module_registration
     bindings = [(Interface, Implementation)]
-    # @righteous ModuleRegistrationDetector
+    # @righteous module_registration
     listeners = [First, Second]
-    # @righteous ModuleRegistrationDetector
+    # @righteous module_registration
     bindings = {Interface: Implementation}
 
     def method(self):
-        # @righteous ModuleRegistrationDetector
+        # @righteous module_registration
         values = (First, Second)
 
 
 class Container:
-    # @righteous ModuleRegistrationDetector
+    # @righteous module_registration
     values = (First, Second)

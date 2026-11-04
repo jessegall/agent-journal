@@ -1,5 +1,5 @@
 from core.base.tunnel.tunnel import Tunnel
-# @sin architecture_tunnels_TunnelModuleImportedOutsideTunnelsDetector
+# @sin architecture_tunnels_tunnel_module_imported_outside_tunnels
 from tunnels.sample_link.sample_link_module import SampleLinkModule
 
 
@@ -10,7 +10,7 @@ class SampleShareAddress:
         self.tunnel = tunnel
 
     def is_public(self) -> bool:
-        # @sin architecture_tunnels_TunnelNamedOutsideTunnelsDetector
+        # @sin architecture_tunnels_tunnel_named_outside_tunnels
         return self.tunnel.name == "tunler" and SampleLinkModule.name != ""
 
     def address(self) -> str | None:

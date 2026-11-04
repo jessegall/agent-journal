@@ -10,7 +10,7 @@ from core.modules.notes.models.enums.note_mark_type import NoteMarkType
 from core.modules.notes.models.enums.note_mark_variant import NoteMarkVariant
 
 
-# @sin architecture_chat_ViewerWorkAfterTheHookDetector
+# @sin architecture_chat_viewer_work_inside_the_hook
 class NoteMarkInsideListener(SaveListener):
     """A sample that shows a note's mark inside the writing transaction, holding the hook up."""
 

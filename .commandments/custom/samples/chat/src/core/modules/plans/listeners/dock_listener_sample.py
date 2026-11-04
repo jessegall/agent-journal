@@ -3,7 +3,7 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 
 
-# @sin naming_ClassNamedForItsBaseDetector
+# @sin naming_class_unnamed_for_its_base
 class SampleDockWriter(CommitListener):
     name = "samples.dock-writer"
     event = "plan.start"
@@ -12,7 +12,7 @@ class SampleDockWriter(CommitListener):
         self.repository = repository
 
     def handle(self, event):
-        # @sin architecture_docking_DockOnlyByCommandDetector
+        # @sin architecture_docking_dock_written_outside_docking
         self.repository.save(DockItem(dock_id=1, creator_id=1, type=event.event, target_model="plan", target_id=1), event)
-        # @sin architecture_docking_DockOnlyByCommandDetector
+        # @sin architecture_docking_dock_written_outside_docking
         self.repository.save(Dock(environment_id=1, creator_id=1), event)

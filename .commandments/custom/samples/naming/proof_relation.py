@@ -5,13 +5,13 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class Proof(Model):
-    # @righteous naming_SentenceVariableNameDetector
+    # @righteous naming_sentence_variable_name
     proved_on: int | None = None
-    # @righteous naming_SentenceVariableNameDetector
+    # @righteous naming_sentence_variable_name
     tested_on: int | None = None
 
 
-# @sin naming_SentenceVariableNameDetector
+# @sin naming_sentence_variable_name
 blocked_outside = True
-# @sin naming_SentenceVariableNameDetector
+# @sin naming_sentence_variable_name
 proved_on = 1

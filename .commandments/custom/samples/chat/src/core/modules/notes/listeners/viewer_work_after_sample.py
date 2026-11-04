@@ -10,8 +10,8 @@ from core.modules.notes.models.enums.note_mark_type import NoteMarkType
 from core.modules.notes.models.enums.note_mark_variant import NoteMarkVariant
 
 
-# @righteous architecture_chat_ViewerWorkAfterTheHookDetector
-# @sin naming_SentenceTypeNameDetector
+# @righteous architecture_chat_viewer_work_inside_the_hook
+# @sin naming_sentence_type_name
 class NoteMarkAfterListener(CommitListener):
     """A sample that shows a note's mark after the commit, on the listener thread."""
 

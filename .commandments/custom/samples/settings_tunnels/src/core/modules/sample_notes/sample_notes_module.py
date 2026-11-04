@@ -10,13 +10,13 @@ class SampleNotesModule(Module):
 
     name = "journal.core.sample_notes"
     settings = [
-        # @sin naming_PlainSettingTextDetector
+        # @sin naming_plain_setting_text
         SettingValue("saved", "Window settings", "Each window saves its own data.", SettingType.NUMBER, default=1),
         SettingValue("limit", "Note limit", "How many notes the window lists.", SettingType.NUMBER, default=20),
         SettingValue("depth", "Depth",
-                     # @sin naming_PlainSettingTextDetector
+                     # @sin naming_plain_setting_text
                      "How deep the notes ride before the engine keeps them.", SettingType.NUMBER, default=3),
-        # @sin architecture_settings_SecretWithDefaultDetector
+        # @sin architecture_settings_secret_setting_with_default
         SettingValue("token", "Token", "The token of the notes service.", SettingType.TEXT, default="abc", secret=True),
         SettingValue("password", "Password", "The password of the notes service.", SettingType.TEXT, secret=True),
     ]

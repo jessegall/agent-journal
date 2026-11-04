@@ -8,7 +8,7 @@ class SampleNotesLimit:
         self.settings = settings
 
     def limit(self) -> int:
-        # @sin architecture_settings_SettingDefaultOfItsOwnDetector
+        # @sin architecture_settings_setting_read_with_own_default
         return self.settings.number("journal.core.sample_notes.limit", None) or 20
 
     def depth(self) -> int:

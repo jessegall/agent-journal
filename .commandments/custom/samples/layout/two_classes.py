@@ -1,4 +1,4 @@
-# @sin architecture_core_OneClassPerFileDetector
+# @sin architecture_core_second_class_in_a_file
 class First:
     pass
 
@@ -6,6 +6,6 @@ class First:
 SPACING = 1
 
 
-# @sin architecture_core_OneClassPerFileDetector
+# @sin architecture_core_second_class_in_a_file
 class Second:
     pass

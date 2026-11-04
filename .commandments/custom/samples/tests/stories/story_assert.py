@@ -1,8 +1,8 @@
 def test_a_story(value):
-    # @sin StoryAssertDetector
+    # @sin story_assert
     assert not value
 
 
 def expect_value(value):
-    # @righteous StoryAssertDetector
+    # @righteous story_assert
     assert value
