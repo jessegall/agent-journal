@@ -19,7 +19,7 @@ class PlansSeeder(Seeder):
         demo.run(f"phase place {demo.ids['task:started']} --phase {values}", user)
         demo.run(f"phase place {demo.ids['task:open']} --phase {checkout}", user)
         demo.run(f"plan ready {plan}", user)
-        demo.run(f"plan approve {plan}", user)
+        demo.run(f"plan approve {plan} {demo.environment_flag}", user)
         self.dock_each_state(demo, user)
 
     def dock_each_state(self, demo: Demo, user: Actor) -> None:
@@ -37,7 +37,7 @@ class PlansSeeder(Seeder):
             demo.run(f'phase make --plan {plan} "First steps" --goal "the plan gets going"', user)
             for step in steps:
                 reason = ' --reason "waiting for the shipping rates"' if step in REASONED else ""
-                demo.run(f"plan {step} {plan}{reason}", user)
+                demo.run(f"plan {step} {plan}{reason} {demo.environment_flag}", user)
             # the plans module docks a plan as it is made ready, started or paused; a plan that ended is docked by hand
             if steps[-1] in ("close", "cancel"):
                 demo.run(f"dock add {ENDED_DOCKS[steps[-1]]} plan {plan} {demo.environment_flag}", user)

@@ -1,5 +1,7 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
+from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
+from core.modules.plans.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.commands.start_plan.start_plan import StartPlan
@@ -61,7 +63,7 @@ from core.modules.plans.support.block_conditions.plan_approved import PlanApprov
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 
-PLAN_COMMANDS = (BlockPlan, CancelPlan, ClosePlan, StartPlan)
+PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, StartPlan)
 
 
 class PlansModule(Module):
@@ -70,11 +72,11 @@ class PlansModule(Module):
     name = "journal.core.plans"
     requires_core = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"])]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration]
-    handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
     moves = [PlansMove]
     subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]

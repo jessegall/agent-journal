@@ -1,0 +1,30 @@
+from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.command.handler import Handler
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.repository.repository import Repository
+from core.modules.documents.commands.comment_text.comment_text import CommentText
+from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
+from core.modules.plans.models.plan import Plan
+
+
+class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
+    """Approves a plan for a person and saves their comment in the same transaction."""
+
+    command = ApprovePlan
+
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
+        self.queries, self.repository, self.bus = queries, repository, bus
+
+    def handle(self, command: ApprovePlan, context: Context) -> Plan:
+        if context.actor.type is not ActorType.USER:
+            raise Refusal("only a person approves a plan", "mark it ready and tell the user")
+        plan = self.queries.query(Plan).find(command.row_id)
+        if plan.environment_id != context.environment_id:
+            raise Refusal(f"plan {plan.id} belongs to another environment", "approve it there")
+        message = command.message.strip()
+        if message:
+            self.bus.dispatch(CommentText(Plan, plan.id, message), context)
+        return self.repository.save(plan.moved(self.command.move), context)

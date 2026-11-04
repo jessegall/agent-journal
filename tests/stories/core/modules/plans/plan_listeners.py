@@ -27,7 +27,7 @@ def test_a_refused_task_cancel_undoes_the_whole_plan_cancel(new_story):
 def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new_story):
     story = plan_with_placed_tasks(new_story)
     for move in ("ready", "approve", "start"):
-        story.run(f"plan {move} 1")
+        story.run(f"plan {move} 1 --environment main", actor=story.user)
     story.run(lines.TASK_START, actor=story.agent)
     story.run(lines.TASK_CLOSE, actor=story.agent)
     story.expect_success(lines.SECOND_TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")

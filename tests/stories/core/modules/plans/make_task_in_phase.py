@@ -28,7 +28,7 @@ def test_a_cancelled_plan_refuses_a_new_task_in_its_phase(new_story):
 def test_a_completed_plan_refuses_a_new_task_in_its_phase(new_story):
     story = new_story(fixture=PlanWithPhases)
     story.run("plan ready 1")
-    story.run("plan approve 1")
+    story.run("plan approve 1 --environment main", actor=story.user)
     story.run("plan close 1")
     story.expect_refusal('task make "Too late" --phase 1 --environment main', "plan 1 is completed")
     story.expect_success("task list", "nothing found")

@@ -6,11 +6,13 @@ from tests.stories.core.modules.chat.support.mark_samples import expect_absent_m
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.stories.core.support.fixtures import UserJoined
 
 
 def planned_story(new_story, approve: bool = True):
     """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4."""
     story = new_story(fixture=OrchestratorWithOpenTask)
+    UserJoined().steps(story)
     repository_environment(story)
     story.run('plan make "Rebuild the cart" --environment main')
     story.run('phase make --plan 1 "Build"')
@@ -21,7 +23,7 @@ def planned_story(new_story, approve: bool = True):
         story.run(f"phase place {task_id} --phase {phase}")
     if approve:
         for move in ("ready", "approve"):
-            story.run(f"plan {move} 1")
+            story.run(f"plan {move} 1 --environment main", actor=story.user)
     return story
 
 
