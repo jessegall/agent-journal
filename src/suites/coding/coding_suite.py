@@ -3,6 +3,7 @@ from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
 from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
+from suites.coding.support.next_task import NextTask
 from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from suites.coding.support.standard_templates import STANDARD_TEMPLATES
 from core.base.agent_policy import AgentPolicy
@@ -17,6 +18,7 @@ class CodingSuite(Suite):
     layout presets."""
 
     name = "coding"
+    task_assigner = NextTask
     profiles = SHIPPED_PROFILES
     profile_types = ("subagent", "worker")
     templates = STANDARD_TEMPLATES

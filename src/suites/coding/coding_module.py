@@ -39,8 +39,6 @@ from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
-from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
-from suites.coding.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.support.test_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
@@ -71,7 +69,7 @@ class CodingModule(Module):
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
-    listeners = [AutoNextTaskListener, NextPlanTaskStarterListener, FullTestRunListener]
+    listeners = [FullTestRunListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project")),

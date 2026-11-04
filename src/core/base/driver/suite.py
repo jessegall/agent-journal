@@ -22,6 +22,7 @@ class Suite:
     windows: ClassVar[Sequence[str]] = []
     layouts: ClassVar[Mapping[str, LayoutShape]] = {}
     presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
+    task_assigner: ClassVar[type | None] = None
     profiles: ClassVar[Sequence[AgentProfile]] = ()
     profile_types: ClassVar[Sequence[str]] = tuple(["subagent"])
     templates: ClassVar[Sequence[TemplateDeclaration]] = ()

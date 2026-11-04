@@ -3,6 +3,7 @@ from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.commands.start_plan.start_plan import StartPlan
+from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
@@ -79,7 +80,7 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = [ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener]
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]

@@ -13,6 +13,7 @@ from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHand
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
 from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
+from core.modules.tasks.listeners.auto_next_task_listener import AutoNextTaskListener
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
 from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
@@ -104,7 +105,7 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow]
-    listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener]
+    listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

@@ -106,7 +106,7 @@ class Registry:
                                     tuple(AgentProfile(**profile) for profile in suite.get("profiles", [])), tuple(suite.get("profile_types", ["subagent"])),
                                     tuple(TemplateDeclaration(title=template["title"], brief=template["brief"], targets=tuple(template["targets"]), purpose=template["purpose"],
                                                               parts=tuple(template["parts"]), commands=tuple(template["commands"])) for template in suite.get("templates", [])),
-                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}))
+                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -146,7 +146,7 @@ class Registry:
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
                         "profiles": [asdict(profile) for profile in suite.profiles], "profile_types": list(suite.profile_types),
                         "templates": [asdict(template) for template in suite.templates],
-                        "agent_policy": asdict(suite.agent_policy),
+                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner,
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
