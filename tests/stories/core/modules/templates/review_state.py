@@ -29,6 +29,24 @@ def test_story_1_a_plan_under_review_cannot_be_approved_or_started(new_story):
     story.expect_refusal("plan start 1 --environment main", "plan 1 is reviewing, so it cannot start", actor=story.user)
 
 
+def test_a_refused_approval_of_a_plan_under_review_leaves_no_message(new_story):
+    story = new_story(fixture=PlanUnderReview)
+    story.expect_refusal('plan approve 1 --message "Go ahead" --environment main', "so it cannot approve", actor=story.user)
+    story.expect_no_text("message list", "Go ahead")
+
+
+def test_a_wait_on_a_plan_under_review_does_not_resolve(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('template make "Read it" --brief "Say what is wrong" --applies-to plan --purpose critique', actor=story.user)
+    story.expect_success('plan make "Cart plan" --environment main')
+    story.expect_success('task make "Ship it" --environment main', actor=story.agent)
+    story.expect_success("task block 1 --on plan:1", actor=story.agent)
+    story.expect_success("plan ready 1")
+    story.expect_success(CRITIQUE_COMMAND, actor=story.user)
+    story.run_listeners()
+    story.expect_text("task show 1", "state: blocked", actor=story.user)
+
+
 def test_a_second_press_on_a_plan_under_review_is_refused(new_story):
     story = new_story(fixture=PlanUnderReview)
     story.expect_refusal(CRITIQUE_COMMAND, "so it cannot review", actor=story.user)

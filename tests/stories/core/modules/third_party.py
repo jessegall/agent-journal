@@ -69,6 +69,17 @@ def test_story_8_the_modules_removal_leaves_the_row_in_its_fallback_state(third_
     story.expect_text("task show 1", "state: open", actor=story.user)
 
 
+def test_story_9_a_module_whose_entry_vanishes_leaves_the_row_in_its_fallback_state_and_says_so(third_party):
+    story = third_party.story
+    story.expect_success('task make "Fix the totals" --environment main', actor=story.user)
+    story.expect_success("task hold 1", actor=story.user)
+    listed = story.home.module_list
+    listed.write_text(json.dumps([path for path in json.loads(listed.read_text()) if "acme_legal" not in path]))
+    code, report = story.synced()
+    story.expect_rows(code == 0, "1 task rows left the state legal-hold and are open" in report)
+    story.expect_text("task show 1", "state: open", actor=story.user)
+
+
 def test_another_suite_hides_templates_and_buttons_but_keeps_commands(third_party, third_party_cookie):
     story = third_party.story
     story.expect_success("suite choose control --environment main", actor=story.user)

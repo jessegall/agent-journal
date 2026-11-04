@@ -1,4 +1,4 @@
-import {stateLook, stateOpenMoves} from "./states.js";
+import {stateLook, stateOpenMoves} from "@journal/window-kit";
 
 const PLURALS = {processes: "process", memories: "memory", replies: "reply"};
 const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract"]);

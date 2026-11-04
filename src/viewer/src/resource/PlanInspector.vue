@@ -21,7 +21,7 @@ import CommentedRow from "./CommentedRow.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 import {delegationWord} from "../domain/plans.js";
-import {stateLabel, stateLook} from "../domain/states.js";
+import {stateLabel, stateLook} from "@journal/window-kit";
 
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
