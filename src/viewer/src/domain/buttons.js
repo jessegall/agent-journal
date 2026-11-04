@@ -8,20 +8,24 @@ export class Buttons {
         this.environment = environment;
         this.prompts = prompts;
         this.offers = shallowRef({buttons: [], missing: {}});
-        this.problem = shallowRef("");
+        this.loading = shallowRef(false);
+        this.loaded = shallowRef(false);
+        this.failed = shallowRef("");
         this.pending = null;
     }
 
     load() {
         if (this.pending) return this.pending;
+        this.loading.value = true;
         this.pending = this.read().then((offers) => {
             this.offers.value = offers;
-            this.problem.value = "";
+            this.loaded.value = true;
+            this.failed.value = "";
             return offers;
         }).catch((error) => {
-            this.problem.value = error.message;
+            this.failed.value = error.message;
             throw error;
-        }).finally(() => { this.pending = null; });
+        }).finally(() => { this.pending = null; this.loading.value = false; });
         return this.pending;
     }
 
