@@ -163,7 +163,7 @@ def test_a_document_and_a_report_can_be_shared_and_one_that_does_not_exist_is_re
         story.expect_text(f'{target_type} make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', f"{target_type} 1: The cart rules", actor=story.user)
         row = 1
         story.expect_text(f"share opens {table}:{row}", f"{model.capitalize()} {row}, The cart rules", actor=story.user)
-        made = json.loads(story.run(f"share make {table}:{row} --json", actor=story.user).output_text)
+        made = json.loads(story.run(f"share make {table}:{row} --json", actor=story.user, environment_id=1).output_text)
         story.expect_success(f"share show {made['id']}", f"row_model: {model}", f"row_id: {row}", actor=story.user)
 
 

@@ -125,7 +125,7 @@ test("picking a section in the nav shows that section alone", async () => {
     expect(shown()).toEqual(["till"]);
     expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("till");
     expect(element.querySelector('[data-setting="shop.size"]')).toBeNull();
-    expect(element.querySelectorAll(".settings-nav-item")).toHaveLength(2);
+    expect(element.querySelectorAll(".settings-nav-item")).toHaveLength(3);
 });
 
 test("an environment says whether its agent runs and how many tasks are not done", async () => {

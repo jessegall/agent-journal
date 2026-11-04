@@ -11,6 +11,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.text_digest import TextDigest
 from core.base.timestamp import Timestamp
+from core.modules.plans.models.plan import Plan
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.sharing.commands.make_share_link.make_share_link import MakeShareLink
 from core.modules.sharing.commands.support.share_invitation import ShareInvitation
@@ -38,7 +39,7 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
 
     def handle(self, command: MakeShareLink, context: Context) -> ShareInvitation:
         shared = self.targets.row(command.target)
-        environment_id = context.environment_id if shared.environment_id is None else shared.environment_id
+        environment_id = shared.environment_id if isinstance(shared, Plan) else context.environment_id
         if environment_id is None:
             raise Refusal(f"{command.target} belongs to no environment and neither does this caller", "run it from an environment")
         token = secrets.token_urlsafe(TOKEN_BYTES)

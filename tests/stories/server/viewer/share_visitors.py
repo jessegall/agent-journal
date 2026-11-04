@@ -110,7 +110,7 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(plan_server):
     shared = 1
     story.story.expect_text('doc make "Secret plans" --abstract "Not for visitors" --body "Hidden" --environment main', "doc 2: Secret plans", actor=user)
     second = 2
-    made = json.loads(story.story.run(f"share make docs:{shared} --json", actor=user).output_text)
+    made = json.loads(story.story.run(f"share make docs:{shared} --json", actor=user, environment_id=1).output_text)
     cookie = f"journal_share={made['token']}"
     expect_viewer_answer(story, made, "", "", 200)
     session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
