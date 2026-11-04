@@ -1,8 +1,9 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import ColorSchemePicker from "../shell/ColorSchemePicker.vue";
 
-// the buttons of the top bar: the sidebar, search, what waits on you, phones, the activity panel and full screen
+// the buttons of the top bar: the sidebar, search, what waits on you, phones, the color scheme, full screen and the activity panel
 defineProps({waiting: {type: Number, default: 0}, pairedPhones: {type: Array, required: true}});
 const emit = defineEmits(["sidebar", "view", "count", "activity", "wide"]);
 </script>
@@ -22,10 +23,11 @@ const emit = defineEmits(["sidebar", "view", "count", "activity", "wide"]);
         <span class="top-phone-dot" data-top-phone-dot />
     </template>
 </Btn>
-<Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="emit('activity')"><Icon name="activity" :size="13" /></Btn>
+<ColorSchemePicker />
 <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="emit('wide')">
     <Icon name="wide" :size="13" />
 </Btn>
+<Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="emit('activity')"><Icon name="activity" :size="13" /></Btn>
 </template>
 
 <style scoped>

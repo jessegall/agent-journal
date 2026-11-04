@@ -21,10 +21,17 @@ class Outline:
             if line.startswith(FENCE):
                 fence_open = not fence_open
             if line.startswith("#") and not fence_open:
-                sections.append(Section(len(sections), line.lstrip("#").strip(), ()))
+                sections.append(Section(len(sections), line.lstrip("#").strip(), (), line))
             else:
                 sections[-1] = sections[-1].with_line(line)
         return cls(tuple(section for section in sections if section.number or any(line.strip() for line in section.lines)))
 
     def section(self, wanted: str) -> Section | None:
-        return next((section for section in self.sections if str(section.number) == wanted or section.heading.lower() == wanted.lower()), None)
+        return next(iter(self.matching(wanted)), None)
+
+    def matching(self, wanted: str) -> tuple[Section, ...]:
+        return tuple(section for section in self.sections if str(section.number) == wanted or section.heading.lower() == wanted.lower())
+
+    def with_section_text(self, target: Section, text: str) -> str:
+        changed = target.with_text(text)
+        return "\n".join(line for section in self.sections for line in (changed if section == target else section).all_lines())

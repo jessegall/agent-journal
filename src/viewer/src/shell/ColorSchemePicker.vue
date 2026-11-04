@@ -7,14 +7,14 @@ import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import {chooseColorScheme, colorScheme, SCHEMES} from "../windows/colorScheme.js";
 
-// the options that apply to all windows, beside the layout presets
+// the button of the top bar that chooses light, dark or following the system
 const open = ref(false);
 const opener = ref(null);
 </script>
 
 <template>
-    <span ref="opener">
-        <Btn kind="icon" data-options title="Options" aria-label="Options" @click.stop="open = !open"><Icon name="settings" :size="13" /></Btn>
+    <span ref="opener" class="scheme-opener">
+        <Btn kind="icon" data-color-scheme title="Color scheme" aria-label="Color scheme" @click.stop="open = !open"><Icon name="scheme" :size="13" /></Btn>
     </span>
     <template v-if="open">
         <MenuPanel :anchor="opener" align="end" :min-width="200" @click.stop @close="open = false">
@@ -25,3 +25,9 @@ const opener = ref(null);
         </MenuPanel>
     </template>
 </template>
+
+<style scoped>
+.scheme-opener {
+    display: inline-flex;
+}
+</style>

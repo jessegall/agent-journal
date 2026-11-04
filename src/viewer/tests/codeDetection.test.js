@@ -54,6 +54,61 @@ test("paragraphs that open in bold and hold inline code stay text", () => {
     expect([...element.querySelectorAll("strong")].map((bold) => bold.textContent)).toEqual(["Attach it ourselves where it changes nothing but timing.", "Nudge for flags, never force them."]);
 });
 
+const SECTIONS = "### 2.5 How guards use events\n\nA guard declares `event` as a string and has `check(self, change: Change[Model])` (module.py:12).\n\n## 3. The count\n\n### 3.1 Classes\n\n| Name | Count |\n|---|---|\n| a | 1 |";
+
+test("headings and a sentence holding a call in backticks stay text in a message", () => {
+    const element = document.createElement("div");
+    element.innerHTML = render(SECTIONS);
+
+    expect(element.querySelector("pre")).toBeNull();
+    expect(element.querySelectorAll("h5, h4").length).toBe(3);
+});
+
+test("a document draws code from a fence and guesses nothing", () => {
+    const element = document.createElement("div");
+    element.innerHTML = render(`${SECTIONS}\n\ndef unfenced():\n    return 1\n\n\`\`\`python\nvalue = 1\n\`\`\``, {env: "", rowNames: false, document: true});
+
+    expect(element.querySelectorAll("pre").length).toBe(1);
+    expect(element.querySelector("[data-language]").dataset.language).toBe("python");
+    expect(element.querySelector("pre").textContent).toContain("value = 1");
+    expect(element.textContent).toContain("def unfenced():");
+});
+
+const drawn = (text) => {
+    const element = document.createElement("div");
+    element.innerHTML = render(text, {env: "", rowNames: false, document: true});
+    return element;
+};
+
+test("a fence keeps its language when words follow it, and a longer fence holds a shorter one", () => {
+    const element = drawn("````c++ the sample\n```\nint value;\n```\n````\n\nAfter.");
+
+    expect(element.querySelectorAll("pre").length).toBe(1);
+    expect(element.querySelector("[data-language]").dataset.language).toBe("c++");
+    expect(element.querySelector("pre").textContent).toContain("```");
+    expect(element.textContent).toContain("After.");
+});
+
+test("a fence inside a list loses its indent and the list counts on after it", () => {
+    const element = drawn("1. First\n\n   ```sh\n   git status\n   ```\n\n2. Second");
+
+    expect(element.querySelector("pre").textContent.trim()).toBe("git status");
+    expect(element.querySelector("ol[start='2'] li").textContent).toBe("Second");
+});
+
+test("an indented item is a list inside the item above it", () => {
+    const element = drawn("- One\n  - Inner\n  - Inner two\n- Two\n\n1. Step\n   - Part\n2. Next");
+
+    expect([...element.querySelectorAll("ul > li > ul > li")].map((item) => item.textContent)).toEqual(["Inner", "Inner two"]);
+    expect(element.querySelectorAll("body > ul > li, div > ul > li").length).toBe(2);
+    expect(element.querySelector("ol > li > ul > li").textContent).toBe("Part");
+    expect(element.querySelectorAll("ol > li").length).toBe(2);
+});
+
+test("text between two pairs of tildes is struck through", () => {
+    expect(drawn("It was ~~wrong~~ right.").querySelector("del").textContent).toBe("wrong");
+});
+
 test("a sentence with a command in backticks stays a sentence", () => {
     const element = document.createElement("div");
     element.innerHTML = render("Run `git status` first and then fix what it lists.\nAfter that commit the fix.");

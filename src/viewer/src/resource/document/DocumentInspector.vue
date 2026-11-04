@@ -46,7 +46,7 @@ const composer = ref(null);
 let reading = 0;
 
 const comments = computed(() => numbered(row.value?.comments ?? []));
-const html = computed(() => (row.value?.body ? render(row.value.body, {env: "", rowNames: false}) : ""));
+const html = computed(() => (row.value?.body ? render(row.value.body, {env: "", rowNames: false, document: true}) : ""));
 const chapters = computed(() => (row.value?.body ?? "").split("\n").filter((line) => /^#{1,4} /.test(line)).map((line, position) => ({key: String(position), value: position, label: line.replace(/^#+ /, "")})));
 const inlineComment = computed(() => comments.value.find((comment) => comment.id === inline.value));
 const stateLabel = computed(() => (row.value?.close_reason ? "Closed" : "Open"));
