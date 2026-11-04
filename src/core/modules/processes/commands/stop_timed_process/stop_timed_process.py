@@ -5,7 +5,7 @@ from core.modules.processes.models.process import Process
 
 
 @dataclass(frozen=True)
-class StopExpiredProcess(Command[Process]):
+class StopTimedProcess(Command[Process]):
     """Stops a run whose timeout has passed."""
 
     process_id: int

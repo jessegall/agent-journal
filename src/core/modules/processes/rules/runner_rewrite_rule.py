@@ -1,8 +1,7 @@
 from core.modules.processes.support.run_counts import RunCounts
 from dataclasses import replace
 
-from core.modules.processes.support.process_nudges import INVALID_TIMEOUT, RUNNER_MISSING
-from core.base.duration_error import DurationError
+from core.modules.processes.support.process_nudges import RUNNER_MISSING
 from collections.abc import Mapping, Sequence
 
 from core.base.driver.agent_hook import AgentHook
@@ -41,10 +40,7 @@ class RunnerRewriteRule(DriverRule):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
-        try:
-            decided = self.limits.decide(hook.environment_id, shell)
-        except DurationError as error:
-            return RuleAnswer.refused(INVALID_TIMEOUT.nudge(reason=error.text))
+        decided = self.limits.decide(hook.environment_id, shell)
         run = replace(decided, read_command=shell.is_readonly)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 

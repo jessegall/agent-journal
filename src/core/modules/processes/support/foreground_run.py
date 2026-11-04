@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from core.base.duration import Duration
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.support.part_command import PartCommand
@@ -7,10 +6,7 @@ from core.modules.processes.support.part_command import PartCommand
 
 @dataclass(frozen=True)
 class ForegroundRun:
-    """How long a line may run in the foreground, whether it goes to the background at once, the reader an
-    alias it runs names, whether it waits for a spot in the machine's run queue, whether it only reads,
-    which a change of the journal's code does not hold, how many bytes of one part's output stay on disk, and what
-    the agent reads of each saved command."""
+    """The foreground limit, queue options, output limits and saved-command options for a shell line."""
 
     seconds: int
     background: bool
@@ -25,4 +21,4 @@ class ForegroundRun:
     most_output_bytes: int = 0
     read_flags: tuple[str, ...] = ()
     queue_wait_seconds: int = 5
-    timeout: Duration | None = None
+    timeout_durations: tuple[str, ...] = ()

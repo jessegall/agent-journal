@@ -7,9 +7,7 @@ from core.base.driver.hook_fields import mapping, text, texts
 
 @dataclass(frozen=True)
 class Part:
-    """One command of a shell line: its text, program, subcommand and arguments, how it is classified, the
-    paths it reads and writes, how it joins the next, and the saved command it came from with what the agent reads
-    of its output, such as tail:5."""
+    """One command in a shell line, with its classification, file paths and saved-command options."""
 
     text: str
     program: str
