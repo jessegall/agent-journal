@@ -30,6 +30,10 @@ class Nudge:
         return f"journal: {self.text}"
 
     @property
+    def wakes_agent(self) -> bool:
+        return self.declaration is not None and self.declaration.wakes_agent
+
+    @property
     def is_mergeable(self) -> bool:
         return self.declaration is not None and self.declaration.is_mergeable
 

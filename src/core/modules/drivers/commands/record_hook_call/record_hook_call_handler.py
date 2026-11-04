@@ -90,12 +90,12 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if updated_input != answers.updated_input:
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
-            return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
+            return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], {nudge.text for nudge in answers.delivered_nudges if nudge.wakes_agent}, call.id, context)
         return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal, labelled_lines=[*answers.labelled_lines, *(f"journal: {line}" for line in (*handed_lines.texts, *(line for _, line in refused)))])
 
-    def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
+    def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], waking_texts: set[str], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:
-            self.nudger.send_text(agent_id, text, rule, context)
+            self.nudger.send_text(agent_id, text, rule, context, text in waking_texts)
         return HookReply("", [], call_id)
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:

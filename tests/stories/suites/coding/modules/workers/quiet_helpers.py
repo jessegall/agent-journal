@@ -1,8 +1,11 @@
 from datetime import timedelta
 from core.base.driver.command_category import CommandCategory
 
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
+from suites.coding.modules.workers.rules.unstarted_worker_rule import START_SECONDS
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
@@ -36,6 +39,34 @@ def test_the_inactive_line_names_the_commands_that_answer_it(new_story):
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker send {worker.id}", f"journal worker release {worker.id}")
+
+
+def test_the_inactive_line_wakes_the_main_agent(new_story):
+    story, worker = idle_worker(new_story)
+    story.advance(minutes(DEFAULT_MINUTES))
+    story.tick(MAIN_SESSION)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows() if f"worker:{worker.id} has used no tool" in row.text)
+    story.expect_rows(line.wakes_agent)
+
+
+def test_a_worker_that_never_made_a_call_is_named_with_the_end_of_its_log_and_wakes_the_main_agent(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.home.terminal_file(worker.id).parent.mkdir(parents=True, exist_ok=True)
+    story.home.terminal_file(worker.id).write_text("Error loading config.toml: duplicate key\n")
+    story.advance(timedelta(seconds=START_SECONDS))
+    story.tick(MAIN_SESSION)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows() if f"worker:{worker.id} made no call" in row.text)
+    story.expect_rows(line.wakes_agent, "duplicate key" in line.text)
+
+
+def test_a_worker_that_made_a_call_is_not_named_as_never_started(new_story):
+    story, worker = idle_worker(new_story)
+    story.hook(worker_session(story, worker), HookSamples.prompt("Fix the cart"))
+    story.advance(timedelta(seconds=START_SECONDS))
+    story.tick(MAIN_SESSION)
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "made no call")
 
 
 def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
