@@ -2,7 +2,7 @@ from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.drivers.orchestrator.rules.open_task_stop_rule import OpenTaskStopRule
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class OrchestratorDriver(Driver):

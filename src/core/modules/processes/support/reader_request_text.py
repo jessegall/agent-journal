@@ -12,7 +12,7 @@ class ReaderRequestText:
     """Builds the notice and block for one reader request."""
 
     def line(self, request: ReaderRequest) -> Nudge:
-        nudge = READER_REQUEST.nudge(request=request.id, worker=request.creator_id, command=request.command, output=request.sample_process_id)
+        nudge = READER_REQUEST.nudge(request=request.id, agent=request.creator_id, command=request.command, output=request.sample_process_id)
         return replace(nudge, key=f"{nudge.key}.{request.id}")
 
     def block(self, agent_id: int, request: ReaderRequest) -> BlockUntil:

@@ -11,7 +11,7 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
-from core.modules.processes.support.process_nudges import WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand

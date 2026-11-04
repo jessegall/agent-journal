@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
-from core.base.agent_role import AgentRole
+from core.base.agent_policy import AgentPolicy
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
@@ -16,13 +16,14 @@ class Agent(Model):
     model_name = "agent"
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
+    filter_fields = ["role"]
 
     environment_id: int
     parent_id: int | None = None
     creator_id: int
     session: str
     program: str
-    role: AgentRole
+    role: str
     pid: int | None = None
     process_started_at: Timestamp | None = None
     launch_agent_id: int | None = None
@@ -32,8 +33,8 @@ class Agent(Model):
     given_name: str = ""
     ended_at: Timestamp | None = None
 
-    def ended(self, timestamp: Timestamp) -> "Agent":
-        return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role is AgentRole.WORKER else None)
+    def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
+        return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
 
     @property
     def terminal_id(self) -> int:

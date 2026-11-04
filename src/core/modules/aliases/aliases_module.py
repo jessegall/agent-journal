@@ -1,4 +1,5 @@
 from core.base.cli.shell_aliases import ShellAliases
+from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.aliases.commands.add_alias.add_alias_handler import AddAliasHandler
@@ -17,7 +18,7 @@ from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_WORKERS_REFUSED, ALIAS_UNEXPANDED
+from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_UNEXPANDED
 
 
 class AliasesModule(Module):
@@ -27,7 +28,7 @@ class AliasesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [AliasesTableMigration, AliasCategoryMigration]
+    migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
     subcommands = [AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand]
@@ -35,4 +36,4 @@ class AliasesModule(Module):
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
     driver_rules = [AliasExpansionRule]
-    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_WORKERS_REFUSED]
+    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED]

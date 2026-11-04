@@ -6,12 +6,11 @@ from core.modules.aliases.models.alias import Alias
 
 @dataclass(frozen=True)
 class EditAlias(Command[Alias]):
-    """Changes an alias's line, reader, description, background flag or worker access, each only when given.
-    """
+    """Changes only the alias fields supplied by the command."""
 
     name: str
     line: str | None
     reader_name: str | None
     description: str | None
     background: bool | None
-    worker_access: bool | None
+    agent_access: bool | None

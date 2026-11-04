@@ -10,8 +10,7 @@ from core.modules.questions.models.question import Question
 
 
 class MainAgentGuard(Guard):
-    """Refuses a question asked by anyone but a main agent: nobody answers one asked by a worker, a subagent,
-    a reviewer or a verifier, or by someone who is no agent."""
+    """Allows only the main agent to ask the person a question."""
 
     name = "questions.asked-by-the-main-agent"
     event = "question.create"
@@ -22,5 +21,5 @@ class MainAgentGuard(Guard):
     def check(self, change: Change[Model]) -> None:
         if not isinstance(change.row, Question):
             return
-        if change.actor.type is not ActorType.AGENT or self.queries.query(Agent).find(change.actor.id).role is not AgentRole.MAIN:
-            raise Refusal("nobody can answer a question asked from here", "put it in the worker's report instead")
+        if change.actor.type is not ActorType.AGENT or self.queries.query(Agent).find(change.actor.id).role != AgentRole.MAIN:
+            raise Refusal("nobody can answer a question asked from here", "put it in your report to the main agent instead")

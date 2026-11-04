@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal

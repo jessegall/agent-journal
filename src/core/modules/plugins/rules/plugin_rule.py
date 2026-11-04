@@ -2,6 +2,7 @@ from core.modules.plugins.support.plugin_nudges import PLUGIN_LINE, PLUGIN_REFUS
 import json
 
 from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -36,15 +37,12 @@ CEILING_SETTING = "journal.core.plugins.hold_window_ms"
 
 
 class PluginRule(DriverRule):
-    """Hands the main agent's hooks to the plugins switched on, and a worker's to those whose manifest
-    reaches workers for the event, as version 4 did: a plugin answers an event it holds inside its window,
-    and may refuse it; an event it only hears runs after the reply; the lines in its queue reach the agent
-    they are for; and a plugin whose files changed since the person last took them is switched off."""
+    """Delivers hooks to enabled plugins according to their declared events and role reach."""
 
     name = "plugins.plugin-events"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PLUGIN
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues,
                  queries: Queries) -> None:
@@ -85,7 +83,7 @@ class PluginRule(DriverRule):
 
     @staticmethod
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
-        return hook.role is AgentRole.MAIN or manifest.reaches_workers(event)
+        return hook.role == AgentRole.MAIN or manifest.reaches_role(event, hook.role)
 
     def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]],
                      values: dict[int, dict[str, object]]) -> str:

@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -16,7 +16,7 @@ class ProfileUseRule(DriverRule):
     name = "profiles.use"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.DISPATCH
 
     def __init__(self, files: ProfileFiles) -> None:
         self.files = files

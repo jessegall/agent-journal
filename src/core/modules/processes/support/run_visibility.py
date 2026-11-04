@@ -3,8 +3,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 
 class RunVisibility:
-    """Decides whether a run leaves a chat mark and a docked card, the same for every agent: a test run, a build, a
-    worker's merge, and whatever the journal itself starts are visible, and no other command is."""
+    """Uses declared command visibility to choose the chat mark and output card."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

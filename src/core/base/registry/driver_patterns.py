@@ -5,7 +5,7 @@ from fnmatch import fnmatchcase
 
 @dataclass(frozen=True)
 class DriverPatterns:
-    """Patterns on drivers' full names, such as coding.* or *.worker, and whether they cover a driver."""
+    """Patterns on driver names, such as notes.* or *.reader, and whether they cover a driver."""
 
     patterns: Sequence[str]
 

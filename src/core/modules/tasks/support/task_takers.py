@@ -1,6 +1,7 @@
 from core.base.agent_role import AgentRole
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
+from core.modules.tasks.models.task import Task
 
 
 class TaskTakers:
@@ -8,5 +9,8 @@ class TaskTakers:
     whose helpers take tasks binds its own."""
 
     def check(self, agent: Agent) -> None:
-        if agent.role is not AgentRole.MAIN:
-            raise Refusal(f"agent {agent.id} is a {agent.role.value} and takes no task", "only the main agent takes a task, to hand it out")
+        if agent.role != AgentRole.MAIN:
+            raise Refusal(f"agent {agent.id} is a {agent.role} and takes no task", "only the main agent takes a task, to hand it out")
+
+    def check_reassignment(self, task: Task) -> None:
+        pass

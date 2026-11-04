@@ -23,7 +23,7 @@ export const named = (task) => `task ${task.id} · ${task.title}`;
 
 // Whether auto would take up a task now: an open one that is not blocked, held by a worker or asked about.
 export function queued(tasks, auto) {
-    return auto && tasks.some((t) => t.state === "open" && !t.worker_id);
+    return auto && tasks.some((t) => t.state === "open" && !t.helper_id);
 }
 
 

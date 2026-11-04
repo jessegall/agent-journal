@@ -4,7 +4,7 @@ from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
 from core.base.page import Page, is_page
-from core.base.query.conditions.among import Among
+from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -43,8 +43,10 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListing]]):
                 rows = rows.matching(self.activity)
             case AgentListState.CLOSED:
                 rows = rows.matching(EndedAgents(self.activity))
+            case _:
+                pass
         if arguments.helpers:
-            rows = rows.matching(Among("role", tuple(role for role in AgentRole if role is not AgentRole.MAIN)))
+            rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
         if arguments.search.strip():
             rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "dispatch_profile", "dispatch_description"), arguments.search.split()))
         return rows.ordered("created_at", "id").page(arguments.page, arguments.limit)

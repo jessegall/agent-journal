@@ -2,7 +2,6 @@ from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
 import json
 from pathlib import Path
 
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -19,7 +18,6 @@ class SecretsFolderRule(DriverRule):
     name = "secrets.secrets-folder"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = list(AgentRole)
     essential = True
 
     def __init__(self, folder: PrivateFolder) -> None:

@@ -15,10 +15,14 @@ class MoveEntry:
     reads: Sequence[str]
     drops: Sequence[str]
     id_modules: Sequence[str]
+    references: Sequence[str] = ()
+    setting_keys: Sequence[str] = ()
 
     def stored(self) -> Mapping[str, Any]:
-        return {"module": self.module, "path": self.path.text, "reads": list(self.reads), "drops": list(self.drops), "id_modules": list(self.id_modules)}
+        return {"module": self.module, "path": self.path.text, "reads": list(self.reads), "drops": list(self.drops), "id_modules": list(self.id_modules),
+                "references": list(self.references), "setting_keys": list(self.setting_keys)}
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "MoveEntry":
-        return cls(stored["module"], DottedPath(stored["path"]), tuple(stored["reads"]), tuple(stored["drops"]), tuple(stored["id_modules"]))
+        return cls(stored["module"], DottedPath(stored["path"]), tuple(stored["reads"]), tuple(stored["drops"]), tuple(stored["id_modules"]),
+                   tuple(stored.get("references", [])), tuple(stored.get("setting_keys", [])))

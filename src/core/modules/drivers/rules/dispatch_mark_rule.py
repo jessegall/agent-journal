@@ -29,9 +29,9 @@ class DispatchMarkRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.role is AgentRole.SUBAGENT and hook.event.event is HookEventName.SESSION_START:
+        if hook.role == AgentRole.SUBAGENT and hook.event.event is HookEventName.SESSION_START:
             return self.subagent_started(hook)
-        if hook.role is AgentRole.SUBAGENT:
+        if hook.role == AgentRole.SUBAGENT:
             return self.subagent_stopped(hook) if hook.event.event is HookEventName.STOP else RuleAnswer.allowed()
         tool = hook.event.tool
         if tool is None or tool.category is not ToolType.AGENT:

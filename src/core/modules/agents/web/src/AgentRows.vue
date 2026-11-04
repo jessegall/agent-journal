@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, peekRef, RowList, SearchBar, Segmented, useRows, useWindow} from "@journal/window-kit";
+import {Btn, peekRef, RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -11,14 +11,13 @@ const SHOWS = [
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
-const {rows: workerWaits} = useRows("worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]);
-const {rows: workerProgress} = useRows("worker progress", ["task.*", "worker_worktree.*"]);
-const progressOf = (row) => workerProgress.value.find((progress) => progress.agent_id === row.id) ?? null;
-const waitReasonOf = (row) => workerWaits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
-// Proof tests waiting in the process queue, counted on the button that opens the inspector.
-const {rows: proofs} = useRows("proof list --limit 50", ["proof.*"]);
+const {rows: waits} = useDeclaredRows("waits");
+const {rows: progress} = useDeclaredRows("progress");
+const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;
+const waitReasonOf = (row) => waits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
+const {rows: queue} = useDeclaredRows("queue");
 const WAITING = new Set(["queued", "running"]);
-const waiting = computed(() => proofs.value.filter((proof) => WAITING.has(proof.state)).length);
+const waiting = computed(() => queue.value.filter((run) => WAITING.has(run.state)).length);
 const show = ref("running");
 const words = ref("");
 
@@ -47,7 +46,7 @@ watch([show, words], () => {
     limit.value = 25;
     load();
 });
-context.follow(["agent.*", "task.*", "worker_worktree.*"], load);
+context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], load);
 load();
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const shown = rows;

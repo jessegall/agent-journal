@@ -64,12 +64,12 @@ def worker_actor(new_story):
 def test_a_worker_is_refused_an_alias_not_marked_for_workers(new_story):
     story, worker = worker_actor(new_story)
     story.run('alias add sins "echo judged"', actor=story.agent)
-    story.expect_refusal("sins", "a worker runs only the aliases marked for workers, and sins is not", actor=worker)
+    story.expect_refusal("sins", "a worker runs only the aliases marked for agents, and sins is not", actor=worker)
 
 
 def test_a_worker_runs_an_alias_marked_for_workers(new_story):
     story, worker = worker_actor(new_story)
-    story.run('alias add sins "echo judged" --workers', actor=story.agent)
+    story.run('alias add sins "echo judged" --agents', actor=story.agent)
     story.expect_success("sins", "judged", actor=worker)
 
 

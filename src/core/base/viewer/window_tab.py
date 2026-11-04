@@ -11,6 +11,7 @@ class WindowTab:
     label: str
     read: str
     count_field: str = ""
+    component: str = ""
 
     def listed(self) -> Mapping[str, str]:
-        return {"key": self.key, "label": self.label, "read": self.read, "count_field": self.count_field}
+        return {"key": self.key, "label": self.label, "read": self.read, "count_field": self.count_field, "component": self.component}

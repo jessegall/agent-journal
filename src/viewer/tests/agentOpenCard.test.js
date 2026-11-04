@@ -2,7 +2,7 @@ import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
 import {h} from "vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/codingWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 
 vi.stubGlobal("ResizeObserver", class {

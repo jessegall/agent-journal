@@ -82,7 +82,7 @@ async function applyUpgrade() {
 }
 
 function openFile(node) {
-    window.location.assign(fileAddress(window.location.href, node));
+    if (context.links.files) window.location.assign(fileAddress(window.location.href, node, context.links.files));
 }
 
 const board = ref(null);

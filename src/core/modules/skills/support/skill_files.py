@@ -2,7 +2,7 @@ import shutil
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.agent_role import AgentRole
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.driver.agent_hook import AgentHook
 from core.base.provider.providers import Providers
 from core.base.registry.skill_entry import SkillEntry
@@ -16,13 +16,14 @@ from core.modules.skills.support.skill_projects import SkillProjects
 class SkillFiles:
     """Publishes skills in each program's folder and selects paths for agent reminders."""
 
-    def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue) -> None:
+    def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue, suites: SuiteChoice) -> None:
         self.projects, self.providers, self.catalogue = projects, providers, catalogue
+        self.suites = suites
 
     def path(self, folder: str, hook: AgentHook) -> Path:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
-        return project / path if hook.role is AgentRole.WORKER else path
+        return project / path if hook.role in self.suites.agent_policy(hook.environment_id).project_skill_roles else path
 
     def readable(self, folder: str) -> Path:
         paths = [project / program_folder / folder / SKILL_FILE for project in self.projects.projects() for program_folder in self.providers.skill_folders()]

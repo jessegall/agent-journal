@@ -18,6 +18,7 @@ class Model:
     cli_name: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
+    filter_fields: ClassVar[Sequence[str]] = ()
     search_fields: ClassVar[Sequence[str]] = ()
     shared_rows: ClassVar[bool] = False
 

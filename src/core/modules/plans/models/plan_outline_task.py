@@ -7,7 +7,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 
 @dataclass(frozen=True, kw_only=True)
 class PlanOutlineTask(ViewModel):
-    """A task placed in a plan with its title and the worker holding it, read from the plan_outline_tasks view."""
+    """A task placed in a plan with its title and helper, read from the plan outline view."""
 
     cli_name = "plan-outline-task"
     view = "plan_outline_tasks"
@@ -21,4 +21,4 @@ class PlanOutlineTask(ViewModel):
     priority: int
     state: TaskState
     title: str
-    worker_id: int | None
+    helper_id: int | None

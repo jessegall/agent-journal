@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -16,7 +16,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.queue_run_workers import QueueRunWorkers
+from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 
 HELPER_ROLES = (AgentRole.WORKER, AgentRole.SUBAGENT)
@@ -45,7 +45,7 @@ class InactiveHelperRule(DriverRule):
         if not inactive:
             return RuleAnswer.allowed()
         notes = self.queue_notes(inactive, hook.environment_id)
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role.value, agent=helper.id, minutes=span.whole_minutes, queue=notes[helper.id], action=f'journal worker send {helper.id} "<job>", or journal worker release {helper.id}' if helper.role is AgentRole.WORKER else "check on it") for helper in inactive))
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.id, minutes=span.whole_minutes, queue=notes[helper.id], action=f'journal worker send {helper.id} "<job>", or journal worker release {helper.id}' if helper.role == AgentRole.WORKER else "check on it") for helper in inactive))
 
     def queue_notes(self, helpers: Sequence[Agent], environment_id: int) -> dict[int, str]:
         notes = {helper.id: "" for helper in helpers}

@@ -6,7 +6,7 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.scope.scopes import WholeScopes
 
 
@@ -18,7 +18,9 @@ class DriverRule:
     name: ClassVar[str]
     hook: ClassVar[HookEventName | HookWildcard]
     drivers: ClassVar[Sequence[str]] = []
-    roles: ClassVar[Sequence[AgentRole]] = []
+    roles: ClassVar[Sequence[str]] = []
+    role_group: ClassVar[RoleGroup] = RoleGroup.ANY
+    priority: ClassVar[int] = 0
     essential: ClassVar[bool] = False
     exempt: ClassVar[bool] = False
     history: ClassVar[bool] = False

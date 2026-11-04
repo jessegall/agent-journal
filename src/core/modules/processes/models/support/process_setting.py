@@ -13,14 +13,13 @@ class ProcessSetting(Enum):
 
     FOREGROUND_SECONDS = SettingValue("foreground-seconds", "Seconds in the foreground", "How long a command runs in front before it moves to the background.",
                                       SettingType.NUMBER, default=15)
-    READER_BLOCK_MINUTES = SettingValue("reader-block-minutes", "Minutes to wait for a reader", "How long a worker waits for a proper reader. Runs start after at most 30 minutes even with a longer block.", SettingType.NUMBER, default=25)
-    READERS_FORCED = SettingValue("readers-forced", "Require readers for workers", "Block workers whose tests, builds or background checks need a proper reader.", SettingType.FLAG, default=True)
-    WORKER_TEST_LIMIT = SettingValue("worker-run-most-tests", "Tests per worker run", "Stop or refuse worker commands above this test count; 0 allows any count. Tests run by the journal are exempt.", SettingType.NUMBER, default=0)
+    READER_BLOCK_MINUTES = SettingValue("reader-block-minutes", "Minutes to wait for a reader", "How long an agent waits for a proper reader. Runs start after at most 30 minutes even with a longer block.", SettingType.NUMBER, default=25)
+    READERS_FORCED = SettingValue("readers-forced", "Require output readers", "Pause agents whose commands have no usable output reader.", SettingType.FLAG, default=True)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Seconds to a lost run", "How long a run may go without a sign of life before it is ended as lost.",
                                   SettingType.NUMBER, default=90)
-    RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many runs of workers go at the same time on this machine; the others wait in a queue. Reads and edits never wait.",
+    RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
     MAIN_RUNS_USE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
                                         SettingType.FLAG, default=False)

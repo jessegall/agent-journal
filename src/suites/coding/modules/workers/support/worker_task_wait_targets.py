@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.query.conditions.is_null import IsNull
@@ -23,13 +23,17 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         super().__init__(database)
         self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
 
+    @property
+    def target_types(self) -> tuple[str, ...]:
+        return (*super().target_types, "worker")
+
     def target(self, target_type: str, row_id: int) -> str:
         if target_type != "worker":
             return super().target(target_type, row_id)
         worker = self.queries.query(Agent).filter(id=row_id).first()
         if worker is None:
             raise Refusal(f"worker {row_id} does not exist", "name an existing worker")
-        if worker.role is not AgentRole.WORKER:
+        if worker.role != AgentRole.WORKER:
             raise Refusal(f"agent {row_id} is not a worker", "name a worker")
         if self.is_finished(worker):
             raise Refusal(f"worker {row_id} has already finished", "nothing waits on it; carry on with the task")

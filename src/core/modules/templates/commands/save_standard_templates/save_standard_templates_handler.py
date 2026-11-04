@@ -2,7 +2,10 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.standard_rows import StandardRows
 from core.modules.templates.commands.save_standard_templates.save_standard_templates import SaveStandardTemplates
-from core.modules.templates.support.standard_templates import STANDARD_TEMPLATE_FIELDS, STANDARD_TEMPLATES
+from core.base.registry.registry import Registry
+from core.modules.templates.models.template import Template
+
+STANDARD_TEMPLATE_FIELDS = ("brief", "targets", "purpose", "parts", "commands")
 
 
 class SaveStandardTemplatesHandler(Handler[SaveStandardTemplates, None]):
@@ -10,8 +13,9 @@ class SaveStandardTemplatesHandler(Handler[SaveStandardTemplates, None]):
 
     command = SaveStandardTemplates
 
-    def __init__(self, standard: StandardRows) -> None:
-        self.standard = standard
+    def __init__(self, standard: StandardRows, registry: Registry) -> None:
+        self.standard, self.registry = standard, registry
 
     def handle(self, command: SaveStandardTemplates, context: Context) -> None:
-        self.standard.save_all(STANDARD_TEMPLATES, STANDARD_TEMPLATE_FIELDS, context)
+        templates = tuple(Template.build(template) for suite in self.registry.suites for template in suite.templates)
+        self.standard.save_all(Template, templates, STANDARD_TEMPLATE_FIELDS, context)

@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
 from core.modules.templates.models.template import Template
-from core.modules.templates.support.standard_templates import STANDARD_TEMPLATES
+from suites.coding.support.standard_templates import STANDARD_TEMPLATES
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 

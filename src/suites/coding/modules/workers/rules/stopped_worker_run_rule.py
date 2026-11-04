@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -31,6 +31,6 @@ class StoppedWorkerRunRule(DriverRule):
     def is_outlasting(self, agent_id: int, hook: AgentHook) -> bool:
         worker = self.queries.query(Agent).find(agent_id)
         ended_at = worker.ended_at
-        if worker.parent_id != hook.agent_id or worker.role is not AgentRole.WORKER or ended_at is None:
+        if worker.parent_id != hook.agent_id or worker.role != AgentRole.WORKER or ended_at is None:
             return False
         return ended_at.elapsed_seconds(hook.timestamp) > STOPPED_LIMIT_SECONDS and bool(self.unfinished.rows(agent_id))

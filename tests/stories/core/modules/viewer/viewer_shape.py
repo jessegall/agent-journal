@@ -4,6 +4,9 @@ from pathlib import Path
 
 from core.modules.viewer.commands.support.window_lines import WINDOW_SETTING_LINES
 from core.modules.viewer.viewer_module import ViewerModule
+from core.modules import DEFAULT_MODULES
+from suites import DEFAULT_SUITES
+from core.base.module.window_extensions import WindowExtensions
 
 ROOT = Path(__file__).resolve().parents[5]
 VIEWER = ROOT / "src/viewer"
@@ -12,6 +15,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
+EXTENSIONS = WindowExtensions((*DEFAULT_MODULES, *DEFAULT_SUITES))
 INTERNAL_WINDOWS = {"questions.question", "viewer.shell"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
@@ -28,7 +32,7 @@ def declared_lines(folder):
     dotted = ".".join(folder.relative_to(ROOT / "src").parts)
     module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
     modules = [value for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__]
-    readers = [declared for module in modules for declared in (*module.windows, *module.marks, *module.docks)]
+    readers = [declared for module in modules for declared in (*map(EXTENSIONS.extend, module.windows), *module.marks, *module.docks)]
     return {line for reader in readers for line in getattr(reader, "reads", ())}, {line for reader in readers for line in getattr(reader, "runs", ())}
 
 
@@ -56,7 +60,7 @@ def test_a_window_declares_each_line_it_reads_or_runs():
 
 
 def test_the_shell_declares_each_line_it_reads():
-    viewer = next(window for window in ViewerModule.windows if window.name == "viewer.shell")
+    viewer = EXTENSIONS.extend(next(window for window in ViewerModule.windows if window.name == "viewer.shell"))
     declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
     missing = {f"{target_type} {action}" for path in source_files(VIEWER / "src") for target_type, action in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
     assert not missing, sorted(missing)

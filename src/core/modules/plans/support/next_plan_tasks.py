@@ -13,11 +13,7 @@ from core.modules.tasks.models.task import Task
 
 
 class NextPlanTasks:
-    """Finds a plan's next open task that waits on nothing: only in its first phase with unfinished tasks, so a
-    phase is finished before the next, and within it by priority and then by id. A task that waits on another
-    does not hold its phase, since what it waits on may lie in a later one. A task delegated to a worker is
-    that worker's and is never handed out. Of several started plans, the one
-    started first goes first."""
+    """Selects the next non-delegated task in the earliest unfinished plan phase."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

@@ -5,7 +5,6 @@ from core.base.provider.launch import Launch
 
 @dataclass(frozen=True)
 class HelperLaunch(Launch):
-    """A launch of a worker, reviewer or verifier: the program runs its brief without a terminal and prints
-    its report."""
+    """A helper program launched without a terminal to run its brief and return a report."""
 
     brief: str

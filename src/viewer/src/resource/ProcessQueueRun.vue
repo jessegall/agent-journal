@@ -51,9 +51,9 @@ useResourceEvents(["output.*"], refresh);
         <div class="details">
             <span class="kind" data-queue-kind>{{ run.category }}</span>
             <span class="state" data-queue-state>{{ run.state === 'failed' ? `Failed, exit ${run.exit_code}` : state }}</span>
-            <template v-if="run.worker_id">
-                <button type="button" class="link" data-queue-worker @click="peek('agents', run.worker_id)">
-                    Worker {{ run.worker_id }}
+            <template v-if="run.owner_agent_id">
+                <button type="button" class="link" data-queue-agent @click="peek('agents', run.owner_agent_id)">
+                    Agent {{ run.owner_agent_id }}
                 </button>
             </template>
             <template v-else-if="run.is_main"><span>Main agent</span></template>

@@ -1,7 +1,10 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
+from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.standard_templates import STANDARD_TEMPLATES
+from core.base.agent_policy import AgentPolicy
 
 AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.subagents")
 
@@ -13,6 +16,18 @@ class CodingSuite(Suite):
     layout presets."""
 
     name = "coding"
+    profiles = SHIPPED_PROFILES
+    profile_types = ("subagent", "worker")
+    templates = STANDARD_TEMPLATES
+    agent_policy = AgentPolicy(
+        task_roles=("main", "worker"), prompt_roles=("main", "worker"), plugin_roles=("main", "worker"),
+        dispatch_roles=("main", "worker"), stop_required_roles=("main", "worker"),
+        private_output_roles=tuple(["worker"]), reader_request_roles=tuple(["worker"]), queued_run_roles=tuple(["worker"]),
+       automatic_watch_roles=tuple(["worker"]), continuing_run_roles=tuple(["worker"]),
+        project_skill_roles=tuple(["worker"]),
+        pause_retention_roles=tuple(["worker"]),
+        restricted_alias_roles=tuple(["worker"]),
+    )
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "schedules.jobs", "memories.memories", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",

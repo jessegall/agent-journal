@@ -25,5 +25,5 @@ class SubagentStopListener(CommitListener):
         if call.hook != HookEventName.STOP or call.answer is not HookAnswer.ALLOWED:
             return
         agent = self.queries.query(Agent).find(call.agent_id)
-        if agent.role is AgentRole.SUBAGENT and agent.ended_at is None:
+        if agent.role == AgentRole.SUBAGENT and agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), Actor.core(), cause_id=event.id, environment_id=event.environment_id)

@@ -59,7 +59,7 @@ def test_a_worker_may_not_add_remove_or_choose_a_reader_even_with_skip_guard(new
     story.run('reader add owned --commands "custom-build*" --lines "done"', actor=story.agent)
     worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     for line in ('reader add blocked --commands "custom-build*" --lines "done"', 'reader remove owned', 'reader default owned'):
-        story.expect_refusal(line + " --skip-guard processes.reader-owner", "a worker writes no readers: the main agent does", actor=worker)
+        story.expect_refusal(line + " --skip-guard processes.reader-owner", "only the main agent writes readers", actor=worker)
     story.expect_text("reader list", "owned", actor=story.agent)
     story.expect_absent("reader list", "blocked", actor=story.agent)
 

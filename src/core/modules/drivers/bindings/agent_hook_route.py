@@ -79,8 +79,8 @@ class AgentHookRoute(HookRoute):
         rows = self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).page(1, 1).rows
         return rows[0] if rows else None
 
-    def started(self, event: HookEvent, role: AgentRole, parent_id: int | None) -> Agent | None:
-        session = event.subagent if event.subagent and role is AgentRole.SUBAGENT else event.session
+    def started(self, event: HookEvent, role: str, parent_id: int | None) -> Agent | None:
+        session = event.subagent if event.subagent and role == AgentRole.SUBAGENT else event.session
         environments = self.queries.query(Environment).filter(name=event.environment).page(1, 1).rows
         if not environments:
             return None

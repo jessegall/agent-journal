@@ -15,16 +15,14 @@ Every shell command you run goes through the journal's runner.
 - Other parts: `--tail 20`, `--lines 100-160`, `--reader <name>`, `--all`.
 - `process N was lost` means its shell went away: read what it printed the same way.
 - Read an output this way, never by running the command again.
-- A main agent waits with a Monitor on `journal output monitor N`, rather than repeatedly asking for status.
-  A worker needs no Monitor. The worker can continue other work and hear the result on its next tool call,
-  or stop its session while the run continues. If the worker stops, the journal starts it when the run ends.
+- Your suite chooses which agent roles must wait with `journal output monitor N`. Other roles can continue
+  independent work and hear the result on their next tool call.
 - Read an output by the flag that fits: `--summary` first, `--tail K` or `--lines A-B` for a part, `--all` only for a short output.
 - Name a run for the user with `journal output title N "<what it does>"`: a whole phrase such as Running tests.
 
 ## Readers
 
-Only a main agent, a person or a module saves, removes or chooses a reader. A worker asks the main agent;
-`journal reader draft <request> --save` is also refused for a worker.
+Only a main agent, a person or a module saves, removes or chooses a reader. Other agents ask the main agent.
 
 A reader selects useful output with `--lines <pattern>` or `--script <path>`. Every reader needs `--title`
 and `--summary <pattern>` too. The other requirements depend on the command:
@@ -38,11 +36,9 @@ and `--summary <pattern>` too. The other requirements depend on the command:
   command chain is judged separately.
 
 `--count` captures the total in one number group. Without a group it counts matching lines. An optional
-`--count-command <line>` lists tests before a queued worker run gets a spot, when `worker-run-most-tests` is
-above zero. `{part}` is replaced with that part's command, not the whole chain; alias environment variables
-are not included, so put any variables the listing needs in its command. Counts of test parts are added.
-A failed listing, a listing cut off after 120 seconds, or one with no number leaves the count unknown and
-the run goes on. A known count above `worker-run-most-tests` stops the run before it gets a spot.
+Your suite can use `--count-command <line>` to count tests before a queued run gets a spot. `{part}` is
+replaced with that part's command, not the whole chain; alias environment variables are not included, so
+put any variables the listing needs in its command.
 
 When the main agent receives a reader request:
 
@@ -53,17 +49,17 @@ When the main agent receives a reader request:
    check and output proof. `--save` refuses an incomplete draft.
 3. If the command needs no reader, run `journal reader-request waive <request> --reason "<why>"`.
 
-A saved proper reader completes matching requests and frees the worker and its waiting run. Adding a
+A saved proper reader completes matching requests and frees the waiting agent and its run. Adding a
 reader whose commands do not match leaves the request open and says so. `journal reader list` shows the
 saved readers. Adding under an existing name changes the fields given; `--commands` replaces the whole
 command list, so keep the old patterns when adding a command.
 
-Without a kept sample, one worker run becomes the sample while the worker waits. The worker may read
-outputs and files or stop its own session during the wait. The worker cannot skip its block. The default wait is 25 minutes, set by
+Without a kept sample, one waiting run becomes the sample. The agent may read outputs and files or stop
+its own session during the wait. It cannot skip its block. The default wait is 25 minutes, set by
 `reader-block-minutes`; after it the run starts without a reader. With no main agent running there is no
 wait. `readers-forced` defaults to on; off removes reader requests and blocks. At session start the main
 agent is told how many readers lack required fields. This notice never blocks the main agent. Full
-judgement happens when a worker first needs each reader, so project readers are not changed on upgrade.
+judgement happens when an agent first needs each reader, so project readers are not changed on upgrade.
 
 A pipe or redirect hides output from its reader. Run tests and builds without them and read output by its
 number. An ended sample can be read with `journal output read <output> --reader <name>` after saving its

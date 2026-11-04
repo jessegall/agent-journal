@@ -33,15 +33,14 @@ from core.modules.viewer.commands.trust_window.trust_window_subcommand import Tr
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.support.window_setting_keys import VIEWER_SETTINGS
-from core.modules.viewer.upgrade.viewer_move import ViewerMove
 from core.modules.viewer.support.skeletons import VIEWER_SHELL_SKELETON
 
 SHELL_RUNS = ["doc comment", "report comment", "plan comment", "task comment", "message send", "doc edit", "report edit", "doc close", "report close", "agent pause", "agent resume", "agent control", "agent stop", "agent launch", "task edit", "question answer", "question close", "setting make", "setting set", "plan ready", "plan approve", "plan start", "plan block", "plan unblock", "plan close", "plan cancel", "task start", "task block", "task unblock",
-              "task retest", "task close", "task cancel", "task reopen", "environment make", "update install", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove", "memory-keyword make", "memory-keyword delete", "check run", "check stop", "worker send", "worker merge", "worker release"]
-SHELL_READS = ["agent environments", "agent main", "output list", "pin list", "agent-skill list", "doc inspect", "report inspect", "doc comments", "report comments", "plan comments", "task comments", "git-overview current", "template list", "doc revisions", "doc revision", "link list", "phone list", "agent controls", "agent programs", "update check", "task inspect", "plan place", "plan inspect", "plan timeline", "review list", "environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
+              "task retest", "task close", "task cancel", "task reopen", "environment make", "update install", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove", "memory-keyword make", "memory-keyword delete"]
+SHELL_READS = ["agent environments", "agent main", "output list", "pin list", "agent-skill list", "doc inspect", "report inspect", "doc comments", "report comments", "plan comments", "task comments", "template list", "doc revisions", "doc revision", "link list", "phone list", "agent controls", "agent programs", "update check", "task inspect", "plan place", "plan inspect", "plan timeline", "review list", "environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
                "window permissions", "suite current", "suite layout", "suite presets", "person-preset list", "event list", "task list", "question list", "usage show", "usage bars", "plan show", "plan outline", "plan board", "task board", "phase list", "phase-task list", "task show", "task-log list", "task-dependency list",
                "doc show", "report show", "question show", "suggestion show", "message show", "memory show", "process show", "output show", "review show", "sequence show",
-               "template show", "dump show", "skill show", "usage fitness", "check show", "memory-keyword list", "worker-worktree points", "worker-worktree list", "proof list", "output peek", "queue inspect", "queue list"]
+               "template show", "dump show", "skill show", "usage fitness", "memory-keyword list", "output peek", "queue inspect", "queue list"]
 
 
 class ViewerModule(Module):
@@ -54,7 +53,7 @@ class ViewerModule(Module):
     settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
-    moves = [ViewerMove]
+    move_reason = "each suite carries the layouts of the application it replaces"
     migrations = [ViewerTablesMigration, PersonPresetsMigration]
     handlers = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]
     subcommands = [SaveViewerLayoutSubcommand, SavePersonPresetSubcommand, RenamePersonPresetSubcommand, RemovePersonPresetSubcommand, PersonPresetListSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,

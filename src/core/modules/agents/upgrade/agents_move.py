@@ -34,7 +34,7 @@ class AgentsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        roles = [role.value for role in AgentRole]
+        roles = list(context.role_names)
         for row in source.rows(TABLE):
             role = row["role"] or AgentRole.MAIN.value
             if not row["session"]:

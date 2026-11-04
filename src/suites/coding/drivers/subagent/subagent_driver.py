@@ -1,7 +1,7 @@
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.drivers.subagent.rules.subagent_write_rule import SubagentWriteRule
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class SubagentDriver(Driver):

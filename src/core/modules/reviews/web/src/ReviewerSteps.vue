@@ -21,7 +21,7 @@ load();
     <WindowRoom>
         <div class="reviewer">
             <template v-if="!reviews.length">
-                <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
+                <EmptyState title="No review yet">The reviewer shows here what it does with each agent's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
             </template>
             <ListTools :tools="tools" />
             <template v-for="review in tools.shown.value" :key="review.id">

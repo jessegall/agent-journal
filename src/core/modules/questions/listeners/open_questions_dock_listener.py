@@ -17,8 +17,7 @@ QUESTIONS_MODULE = "journal.core.questions"
 
 
 class OpenQuestionsDockListener(CommitListener):
-    """While a main agent's questions are open one card waits above the chat, and it leaves when the last one is
-    settled. A worker or a subagent says what it needs in its report instead."""
+    """Docks unanswered questions in the main chat until they are settled."""
 
     name = "questions.open-dock"
     event = "question.*"

@@ -2,6 +2,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.repository.repository import Repository
+from core.base.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_readers import AliasReaders
@@ -18,8 +19,9 @@ class PluginAliasesListener(SaveListener):
     name = "aliases.plugin-aliases"
     event = "plugin.create"
 
-    def __init__(self, repository: Repository, names: AliasNames, readers: AliasReaders, folders: PluginFolders) -> None:
+    def __init__(self, repository: Repository, names: AliasNames, readers: AliasReaders, folders: PluginFolders, registry: Registry) -> None:
         self.repository, self.names, self.readers, self.folders = repository, names, readers, folders
+        self.registry = registry
 
     def handle(self, change: Change[Model]) -> None:
         plugin = change.row
@@ -31,4 +33,4 @@ class PluginAliasesListener(SaveListener):
                 continue
             self.repository.save(Alias(creator_id=change.actor.id, name=shipped.name, line=f"{folder}/{shipped.line}", description=shipped.description,
                                        variables=shipped.variables, reader_id=self.readers.existing_reader_id(shipped.reader_name), background=shipped.background,
-                                       worker_access=shipped.worker_access, plugin_id=plugin.id), change.context)
+                                       agent_access=shipped.has_agent_access(self.registry.alias_permission_names), plugin_id=plugin.id), change.context)

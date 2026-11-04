@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.profiles.support.agent_profile import AgentProfile
+from core.base.profile.agent_profile import AgentProfile
 
 
 @dataclass(frozen=True)

@@ -21,4 +21,4 @@ class EditAliasHandler(Handler[EditAlias, Alias]):
         return self.repository.save(alias.changed(line=alias.line if command.line is None else command.line, reader_id=reader_id,
                                                   description=alias.description if command.description is None else command.description,
                                                   background=alias.background if command.background is None else command.background,
-                                                  worker_access=alias.worker_access if command.worker_access is None else command.worker_access), context)
+                                                  agent_access=alias.agent_access if command.agent_access is None else command.agent_access), context)

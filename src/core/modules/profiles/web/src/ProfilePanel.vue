@@ -4,13 +4,10 @@ import {Btn, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} 
 
 // one profile in the panel at the side, as version 4's: the name for a new one, when it is used, its tools, its kind, a model picker for each agent
 // program and its instructions, with Cancel and Save in the foot
-const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}});
+const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}});
 const emit = defineEmits(["close", "save"]);
 
-const KINDS = [
-    {key: "subagent", label: "Subagent"},
-    {key: "worker", label: "Worker"},
-];
+const choices = computed(() => props.types.map((type) => ({key: type, label: type.slice(0, 1).toUpperCase() + type.slice(1)})));
 const FIELDS = ["description", "tools", "profile_type", "model", "codex_model", "body"];
 
 const draft = ref({});
@@ -26,7 +23,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
 </script>
 
 <template>
-    <SidePanel :title="profile.name || 'New profile'" :abstract="profile.name ? used : 'A worker or a subagent the agent can dispatch for one kind of job'" @close="emit('close')">
+    <SidePanel :title="profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, tools and a model for an agent'" @close="emit('close')">
         <div class="profile-panel" data-profile-panel>
             <template v-if="!profile.name">
                 <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
@@ -39,8 +36,8 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="Tools" for="profile-tools" help="Comma separated. A profile that only reads keeps to Read, Grep, Glob and the like.">
                 <TextInput id="profile-tools" :value="draft.tools" placeholder="Read, Grep, Glob" @input="draft.tools = $event.target.value" />
             </FormField>
-            <FormField label="Kind" for="profile-kind" help="A subagent only reads and is started with the Agent tool; a worker writes and is sent out by the agent with a journal command.">
-                <Segmented :options="KINDS" :value="draft.profile_type" @pick="draft.profile_type = $event" />
+            <FormField label="Kind" for="profile-kind" help="The agent roles your suite supports.">
+                <Segmented :options="choices" :value="draft.profile_type" @pick="draft.profile_type = $event" />
             </FormField>
             <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
                 <ModelPicker provider="claude" inherits :value="draft.model" data-profile-model="claude" @pick="draft.model = $event" />

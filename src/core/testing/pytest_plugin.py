@@ -64,9 +64,9 @@ def pytest_testnodedown(node: pytest.Session, error: object) -> None:
 
 def pytest_sessionfinish(session: pytest.Session) -> None:
     overlap = session.config.stash[STORY_OVERLAP]
-    worker_output: dict[str, object] | None = getattr(session.config, "workeroutput", None)
-    if worker_output is not None:
-        worker_output[STORY_STEPS_KEY] = overlap.stories
+    process_output: dict[str, object] | None = getattr(session.config, "workeroutput", None)
+    if process_output is not None:
+        process_output[STORY_STEPS_KEY] = overlap.stories
         return
     lines = overlap.report_lines()
     if not lines:

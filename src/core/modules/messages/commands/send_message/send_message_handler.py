@@ -31,7 +31,7 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
             raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
-        if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role is not AgentRole.MAIN:
+        if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
             raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
         environment_id = self.queries.query(Message).find(command.parent_id).environment_id if command.parent_id is not None else context.environment_id
         if environment_id is None:

@@ -5,7 +5,7 @@ SELECT processes.id, processes.environment_id, processes.agent_id, processes.lin
        processes.state, processes.exit_code, processes.created_at, processes.started_at, processes.ended_at,
        processes.is_queued, processes.is_queue_run, processes.slot_assigned,
        agents.role = 'main' AS is_main,
-       coalesce(processes.worker_id, CASE WHEN agents.role = 'worker' THEN agents.id END) AS worker_id,
+       coalesce(processes.owner_agent_id, CASE WHEN agents.role != 'main' THEN agents.id END) AS owner_agent_id,
        coalesce(processes.task_id, (SELECT tasks.id FROM tasks WHERE (tasks.holder_id = processes.agent_id
         OR tasks.delegated_to = processes.agent_id) AND tasks.started_at <= processes.created_at
         ORDER BY tasks.started_at DESC, tasks.id DESC LIMIT 1)) AS task_id,

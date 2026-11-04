@@ -6,12 +6,12 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_workers import AliasWorkers
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_WORKERS_REFUSED, ALIAS_UNEXPANDED
+from core.modules.aliases.support.alias_access import AliasAccess
+from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_UNEXPANDED
 
 
 class AliasExpansionRule(DriverRule):
-    """Refuses failed alias expansions and keeps worker permissions on expanded aliases."""
+    """Checks expanded alias references and permissions before the shell line runs."""
 
     name = "aliases.expansion"
     hook = HookEventName.PRE_TOOL_USE
@@ -19,8 +19,8 @@ class AliasExpansionRule(DriverRule):
     essential = True
     overlay_proof = True
 
-    def __init__(self, aliases: AliasQuery, workers: AliasWorkers) -> None:
-        self.aliases, self.workers = aliases, workers
+    def __init__(self, aliases: AliasQuery, access: AliasAccess) -> None:
+        self.aliases, self.access = aliases, access
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -32,6 +32,6 @@ class AliasExpansionRule(DriverRule):
             rows = self.aliases.with_name(name).page(1, 1).rows
             if not rows:
                 return RuleAnswer.refused(ALIAS_MISSING.nudge())
-            if self.workers.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
-                return RuleAnswer.refused(ALIAS_WORKERS_REFUSED.nudge())
+            if self.access.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
+                return RuleAnswer.refused(ALIAS_ACCESS_REFUSED.nudge())
         return RuleAnswer.allowed()

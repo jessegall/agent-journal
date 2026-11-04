@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from core.base.agent_role import AgentRole
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.modules.usage.models.support.views import AGENT_CARDS_SELECT
@@ -19,7 +18,7 @@ class AgentCard(ViewModel):
     id: int
     environment_id: int
     session: str
-    role: AgentRole
+    role: str
     program: str
     program_model: str
     profile: str

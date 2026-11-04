@@ -9,6 +9,7 @@ from core.base.module.version_requirement import VersionRequirement
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
+from core.base.module.window_extensions import WindowExtensions
 
 
 
@@ -22,8 +23,17 @@ class WindowCheck:
         reads, runs = self.lines(modules)
         provided = RegistryLines(frozenset(reads), frozenset(runs), events)
         problems = list(NameGroups.duplicates([("windows", names)]))
+        extensions = WindowExtensions(modules)
+        owners = {window.name: module.name for module in modules for window in module.windows}
         for module in modules:
-            for window in module.windows:
+            for extension in module.window_extensions:
+                if extension.window not in owners:
+                    problems.append(f"module {module.name} extends unknown window {extension.window}")
+                    continue
+                owner = owners[extension.window]
+                if owner != module.name and owner not in module.dependencies:
+                    problems.append(f"module {module.name} extends window {extension.window} without depending on {owner}")
+            for window in map(extensions.extend, module.windows):
                 problems += window.problems(module.name, module.web_folder(), provided)
         return tuple(problems)
 

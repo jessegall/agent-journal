@@ -207,7 +207,9 @@
         "architecture_processes_ReaderSavedThroughAddReaderDetector",
         "architecture_processes_ReaderDemandByPartDetector",
         "ModuleRegistrationDetector",
-        "CoreNamesNoSuiteDetector"
+        "CoreNamesNoSuiteDetector",
+        "CoreNamesNoSuiteScriptDetector",
+        "CoreNamesNoSuiteViewDetector"
     ],
     "parallel": 2,
     "configure": {

@@ -1,0 +1,31 @@
+from core.base.module.module import Module
+from core.base.module.window_extensions import WindowExtensions
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_source import WindowSource
+from core.base.viewer.window_tab import WindowTab
+
+
+class NotesModule(Module):
+    name = "notes"
+    window_extensions = [WindowExtension("agents.agents", reads=["note list"], events=["note.*"],
+                                         tabs=[WindowTab("notes", "Notes", "note list", component="/modules/notes/agent-notes.js")],
+                                         sources=[WindowSource("progress", "note list", ["note.*"])], links={"notes": "notes.board"})]
+
+
+def test_an_installed_module_supplies_window_behavior_without_changing_the_owner():
+    original = WindowDeclaration("agents.agents", "Agents", "agent list", WindowLoading.DOCUMENT, reads=["agent list"])
+    extended = WindowExtensions([NotesModule]).extend(original)
+    assert original.reads == ["agent list"]
+    assert extended.reads == ("agent list", "note list")
+    assert extended.events == tuple(["note.*"])
+    assert extended.sources[0].listed() == {"key": "progress", "read": "note list", "events": ["note.*"]}
+    assert extended.tabs[0].component == "/modules/notes/agent-notes.js"
+    assert extended.links == {"notes": "notes.board"}
+
+
+def test_an_unextended_window_keeps_only_its_own_declarations():
+    original = WindowDeclaration("notes.board", "Notes", "note list", WindowLoading.DOCUMENT)
+    assert WindowExtensions([NotesModule]).extend(original) is original
+    assert WindowExtensions([]).extend(original) is original

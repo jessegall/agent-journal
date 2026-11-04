@@ -15,6 +15,12 @@ from core.base.database.registry_table import RegistryTable
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
+from core.base.profile.agent_profile import AgentProfile
+from core.base.registry.suite_entry import SuiteEntry
+from core.base.template.template_declaration import TemplateDeclaration
+from core.base.agent_policy import AgentPolicy
+from core.base.registry.window_entry import WindowEntry
+from dataclasses import replace
 from tests.unit.core.base.command.test_commands import MakeItem
 
 SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"
@@ -122,3 +128,29 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
     registry = Registry.read(opened)
     opened.close()
     assert [(window.place, window.shows) for window in registry.windows] == [("pane", "environment"), ("pane", "one-agent"), ("dropdown", "environment")]
+
+
+def test_suite_profiles_and_their_types_survive_registry_storage(database):
+    profile = AgentProfile("notes-reader", "Reads notes", "Read", "Read the notes.", "reader", "small", "small")
+    template = TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=tuple(["doc"]), parts=tuple(["Summary"]))
+    policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
+    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), tuple([template]), policy)
+    registry = replace(Registry.read(database), suites=tuple([suite]))
+    restored = Registry.parsed("profiles", registry.entries_text())
+    assert restored.suites[0].profiles == tuple([profile])
+    assert restored.suites[0].profile_types == tuple(["reader"])
+    assert restored.suites[0].templates == tuple([template])
+    assert restored.suites[0].agent_policy == policy
+
+
+def test_window_sources_links_and_components_survive_registry_storage(database):
+    window = WindowEntry("notes.board", "notes", "Notes", "board.js", "component", "pane", (), (), (), (), False, "", "window", 400, 340, (), "",
+                         sources=[{"key": "progress", "read": "note list", "events": ["note.*"]}], links={"notes": "notes.board"},
+                         tabs=[{"key": "notes", "label": "Notes", "read": "note list", "count_field": "", "component": "/modules/notes/agent-notes.js"}])
+    registry = replace(Registry.read(database), windows=tuple([window]))
+    restored = Registry.parsed("windows", registry.entries_text()).windows[0]
+    assert restored.sources == tuple(window.sources)
+    assert restored.links == window.links
+    assert restored.tabs == tuple(window.tabs)
+    assert restored.listing("current").sources == restored.sources
+    assert restored.listing("current").links == restored.links

@@ -8,8 +8,7 @@ CHAT_ITEMS = ("(agent_id = ? OR (NOT EXISTS (SELECT 1 FROM agents WHERE id = ? A
 
 @dataclass(frozen=True)
 class SameChat:
-    """Matches the dock items shown in the chat of one agent: a worker's or a subagent's own, and for a main
-    agent, or for no agent, the items of the main chat."""
+    """Matches dock items visible in an agent's chat."""
 
     agent_id: int | None
 

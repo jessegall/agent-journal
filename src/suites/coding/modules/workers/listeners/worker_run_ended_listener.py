@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -33,7 +33,7 @@ class WorkerRunEndedListener(SaveListener):
             return
         agent = self.queries.query(Agent).find(process.agent_id)
         worktree = self.worktrees.worker_worktree(agent.id)
-        if agent.role is not AgentRole.WORKER or agent.ended_at is None or worktree is None or worktree.state is not WorktreeState.CUT:
+        if agent.role != AgentRole.WORKER or agent.ended_at is None or worktree is None or worktree.state is not WorktreeState.CUT:
             return
         if self.stop.was_stopped(agent) or self.stop.has_open_help_request(agent.id):
             return

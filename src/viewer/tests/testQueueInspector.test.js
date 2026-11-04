@@ -6,7 +6,7 @@ import ResourcePanel from "../src/resource/ResourcePanel.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/codingWindowContext.js";
 
 vi.stubGlobal(
     "ResizeObserver",
@@ -21,7 +21,7 @@ const later = () => new Promise((resolve) => setTimeout(resolve, 30));
 const RUN = {
     id: 70,
     task_id: 11,
-    worker_id: 21,
+    owner_agent_id: 21,
     category: "build",
     line: "make package",
     state: "running",
@@ -48,14 +48,14 @@ const SNAPSHOT = {
             ...RUN,
             id: 71,
             task_id: 12,
-            worker_id: 22,
+            owner_agent_id: 22,
             section: "waiting",
             line: "make checks",
             category: "check",
             started_at: null,
             uses_slot: false,
         },
-        {...RUN, id: 72, task_id: 13, worker_id: 23, section: "waiting", line: "make site", started_at: null, uses_slot: false},
+        {...RUN, id: 72, task_id: 13, owner_agent_id: 23, section: "waiting", line: "make site", started_at: null, uses_slot: false},
     ],
     recent: [
         {
@@ -153,7 +153,7 @@ test("the process queue reads its counts and ordered lists together", async () =
         "Finished lately 1",
     ]);
     expect(rowsOf("running")[0].textContent).toContain("make package");
-    expect(rowsOf("running")[0].textContent).toContain("Worker 21");
+    expect(rowsOf("running")[0].textContent).toContain("Agent 21");
     expect(rowsOf("running")[0].textContent).toContain("Task 11");
     expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("build");
     expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);

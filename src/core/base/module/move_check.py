@@ -16,10 +16,11 @@ class MoveCheck:
         for module in modules:
             for move in module.moves:
                 problems += self.move_problems(module, move, installed)
+                problems += [f"the move {move.name} references version 4 table {table}, which no move owns" for table in move.references if table not in claimed]
         return tuple(problems)
 
     def move_problems(self, module: type[Module], move: type[VersionFourMove], installed: set[str]) -> list[str]:
-        problems = [f"the move {move.__name__} of {module.name} states no name or no tables it reads or drops"] if not getattr(move, "name", "") or not (move.reads or move.drops) else []
+        problems = [f"the move {move.__name__} of {module.name} states no name or no tables it reads or drops"] if not getattr(move, "name", "") or not (move.reads or move.references or move.drops) else []
         problems += [f"the move of {module.name} reads ids of {source}, which is not installed" for source in move.id_modules if source not in installed]
         problems += [f"the move of {module.name} reads ids of {source}, and {module.name} does not depend on it" for source in move.id_modules
                      if source in installed and source not in module.dependencies]

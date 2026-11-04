@@ -1,13 +1,12 @@
 from dataclasses import dataclass
+from collections.abc import Sequence
 
 from core.base.type_guards import is_mapping
 
 
 @dataclass(frozen=True)
 class ManifestAlias:
-    """An alias a plugin ships: its name and description, its line with paths in the plugin's folder, its
-    variables as NAME=value, the reader that reads its output, and whether it runs in the background and is
-    a worker's to run too."""
+    """A plugin's alias definition, including the flags its manifest enables."""
 
     name: str
     description: str
@@ -15,7 +14,7 @@ class ManifestAlias:
     variables: tuple[str, ...]
     reader_name: str
     background: bool
-    worker_access: bool
+    access_flags: tuple[str, ...]
 
     @classmethod
     def parsed(cls, entry: object) -> "ManifestAlias | None":
@@ -24,4 +23,8 @@ class ManifestAlias:
         variables: object = entry["env"] if "env" in entry else None
         pairs = tuple(f"{name}={value}" for name, value in variables.items()) if is_mapping(variables) else ()
         return cls(str(entry["name"]), str(entry["description"]) if "description" in entry else "", str(entry["line"]), pairs,
-                   str(entry["reader"]) if "reader" in entry else "", entry.get("background") is True, entry.get("workers") is True)
+                   str(entry["reader"]) if "reader" in entry else "", entry.get("background") is True,
+                   tuple(name for name, value in entry.items() if isinstance(name, str) and value is True))
+
+    def has_agent_access(self, permission_names: Sequence[str]) -> bool:
+        return any(name in self.access_flags for name in permission_names)

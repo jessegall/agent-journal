@@ -6,7 +6,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):

@@ -24,7 +24,7 @@ afterEach(() => {
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
 async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null})) {
     const lines = [];
-    const window_ = {...context({"profile list": page(profiles)}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: ["subagent", "worker", "reader"]}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});
@@ -83,6 +83,7 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     expect(pickers).toEqual(["sonnet", "gpt-6.1-sol"]);
     expect(panel().querySelector('input[aria-label="Model on Claude Code"]')).toBeNull();
     expect(panel().textContent).toContain("The journal ships this profile");
+    expect([...panel().querySelectorAll(".segmented button")].map((button) => button.textContent.trim())).toEqual(["Subagent", "Worker", "Reader"]);
 });
 
 test("Save waits until something changed, and an edit with a new model is saved by the profile's name", async () => {
@@ -152,5 +153,5 @@ test("Cancel closes the panel and saves nothing", async () => {
 test("a journal with no profiles says what a profile is", async () => {
     await drawn([]);
     expect(host.textContent).toContain("No profiles yet");
-    expect(host.textContent).toContain("A profile is a subagent the agent can start for one kind of job");
+    expect(host.textContent).toContain("A profile gives an agent its instructions, tools and model");
 });

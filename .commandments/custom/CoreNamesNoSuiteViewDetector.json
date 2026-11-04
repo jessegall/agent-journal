@@ -1,0 +1,68 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Component",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core|core-boundary/core)/"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "not": {
+                                "textMatches": "^[\\x22\\x27]?workeroutput[\\x22\\x27]?$"
+                            }
+                        },
+                        {
+                            "any": [
+                                {
+                                    "all": [
+                                        {
+                                            "is": "import"
+                                        },
+                                        {
+                                            "any": [
+                                                {
+                                                    "nameMatches": "^suites(\\.|$)"
+                                                },
+                                                {
+                                                    "descendant": {
+                                                        "nameMatches": "^suites(\\.|$)"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nameMatches": "(?i)(^coding$|worker)"
+                                },
+                                {
+                                    "all": [
+                                        {
+                                            "kind": "Text"
+                                        },
+                                        {
+                                            "textMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "commentMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "description": "Core names a suite or a concept owned by a suite.",
+        "name": "core-names-no-suite",
+        "rule": "Core supplies building blocks and generic contracts; suites declare their own concepts and behavior.",
+        "skill": "core-names-no-suite"
+    }
+}

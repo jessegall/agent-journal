@@ -34,7 +34,7 @@ PLAN_EVENT_ROWS_SELECT = (
 
 PLAN_OUTLINE_TASKS_SELECT = (
     "SELECT plan_tasks.task_id, plan_tasks.plan_id, plan_tasks.phase_id, plan_tasks.phase_position, plan_tasks.priority, plan_tasks.state, tasks.title,"
-    " CASE WHEN agents.role = 'worker' THEN tasks.holder_id END AS worker_id"
+    " CASE WHEN agents.role != 'main' THEN tasks.holder_id END AS helper_id"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
     " LEFT JOIN agents ON agents.id = tasks.holder_id"

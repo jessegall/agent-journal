@@ -1,4 +1,9 @@
 import json
+from core.base.profile.agent_profile import AgentProfile
+from core.base.template.template_declaration import TemplateDeclaration
+from core.base.agent_policy import AgentPolicy
+from core.base.role_group import RoleGroup
+from core.base.agent_role import AgentRole
 from dataclasses import asdict, dataclass, field, replace
 from functools import lru_cache
 
@@ -91,12 +96,17 @@ class Registry:
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
-                                        rule.get("exempt", rule.get("unsilenced", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
+                                        rule.get("exempt", rule.get("unsilenced", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False),
+                                        RoleGroup(rule.get("role_group", "any")), rule.get("priority", 0))
                         for rule in entries.get("rules", [])),
             suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
-                                     for page, presets in suite.get("presets", {}).items()})
+                                     for page, presets in suite.get("presets", {}).items()},
+                                    tuple(AgentProfile(**profile) for profile in suite.get("profiles", [])), tuple(suite.get("profile_types", ["subagent"])),
+                                    tuple(TemplateDeclaration(title=template["title"], brief=template["brief"], targets=tuple(template["targets"]), purpose=template["purpose"],
+                                                              parts=tuple(template["parts"]), commands=tuple(template["commands"])) for template in suite.get("templates", [])),
+                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -104,7 +114,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(str(window["place"]), str(window["place"])), tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
-                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])))
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])), tuple(window.get("sources", [])), dict(window.get("links", {})))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
@@ -131,9 +141,12 @@ class Registry:
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
                        "roles": list(rule.roles), "exempt": rule.exempt, "essential": rule.essential, "history": rule.history,
-                       "claims_essential": rule.claims_essential} for rule in self.rules],
+                       "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
+                        "profiles": [asdict(profile) for profile in suite.profiles], "profile_types": list(suite.profile_types),
+                        "templates": [asdict(template) for template in suite.templates],
+                        "agent_policy": asdict(suite.agent_policy),
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -142,7 +155,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "shows": window.shows, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
-                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search), "skeleton": [dict(part) for part in window.skeleton], "required_settings": list(window.required_settings)} for window in self.windows],
+                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search), "skeleton": [dict(part) for part in window.skeleton], "required_settings": list(window.required_settings), "sources": [dict(source) for source in window.sources], "links": dict(window.links)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
             "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],
@@ -167,8 +180,11 @@ class Registry:
     def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:
         return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]
 
-    def driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
-        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.exempt and rule.covers_driver(driver, role)]
+    def driver_rules(self, driver: str, role: str, hook_name: str, suite_name: str) -> list[DriverRuleEntry]:
+        suite = self.suite(suite_name)
+        policy = suite.agent_policy if suite is not None else AgentPolicy()
+        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.exempt
+                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, policy)]
 
     def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
         return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)
@@ -199,6 +215,15 @@ class Registry:
 
     def suite(self, name: str) -> SuiteEntry | None:
         return next((suite for suite in self.suites if suite.name == name), None)
+
+    @property
+    def role_names(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys((*(role.value for role in AgentRole), *(driver.role for driver in self.drivers),
+                                    *(role for suite in self.suites for role in suite.defaults))))
+
+    @property
+    def alias_permission_names(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(("agents", *(f"{role}s" for suite in self.suites for role in suite.agent_policy.restricted_alias_roles))))
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:

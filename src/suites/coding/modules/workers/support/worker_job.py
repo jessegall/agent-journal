@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 
 WORKER_JOB_SOURCE = "workers.worker-job"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"

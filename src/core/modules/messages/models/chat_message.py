@@ -29,5 +29,5 @@ class ChatMessage(ViewModel):
     peer: str
     recipient: str
     commented_row: str
-    worker_id: int | None
+    agent_id: int | None
     created_at: Timestamp

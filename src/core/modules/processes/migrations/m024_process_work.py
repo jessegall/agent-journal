@@ -2,8 +2,7 @@ from core.base.database.migration import Migration
 
 
 class ProcessWorkMigration(Migration):
-    """Keeps the originating worker and task when another agent runs its command."""
+    """Keeps the task associated with a process."""
 
     number = 24
-    statements = ["ALTER TABLE processes ADD COLUMN worker_id INTEGER REFERENCES agents(id)",
-                  "ALTER TABLE processes ADD COLUMN task_id INTEGER REFERENCES tasks(id)"]
+    statements = ["ALTER TABLE processes ADD COLUMN task_id INTEGER REFERENCES tasks(id)"]

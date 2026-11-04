@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -40,7 +40,7 @@ class AutoNextTaskListener(CommitListener):
         if not isinstance(holder_id, int):
             return
         holder = self.queries.query(Agent).find(holder_id)
-        if holder.role is not AgentRole.MAIN or holder.ended_at is not None:
+        if holder.role != AgentRole.MAIN or holder.ended_at is not None:
             return
         excluded_id = closed_task.id if event.event == RELEASE_EVENT else None
         select_next = self.next_task.urgent if self.tasks.holder(holder_id).started().exists() else self.next_task.following

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
-from core.base.agent_role import AgentRole
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.repository.repository import Repository
@@ -11,7 +11,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.models.support.process_setting import ProcessSetting
@@ -19,19 +18,19 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
-from core.modules.processes.support.reader_selection import ReaderSelection
 
 
 class ReaderRequests:
     """Opens or joins the request for each command without a proper reader."""
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
-                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock) -> None:
+                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice) -> None:
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock
+        self.suites = suites
 
     def needed(self, process: Process, agent: Agent) -> bool:
-        return (agent.role is AgentRole.WORKER and process.creator_id == agent.id
+        return (agent.role in self.suites.agent_policy(agent.environment_id).reader_request_roles and process.creator_id == agent.id
                 and self.settings.flag(ProcessSetting.READERS_FORCED, agent.environment_id))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:

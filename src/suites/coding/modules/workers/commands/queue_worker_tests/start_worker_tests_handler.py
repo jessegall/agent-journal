@@ -38,5 +38,5 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
         start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS, is_queued=True)
-        process = self.bus.dispatch(replace(start, worker_id=worktree.agent_id, task_id=proof.task_id), context)
+        process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=proof.task_id), context)
         self.repository.save(proof.moved(ProofLifecycle.run, process_id=process.id), context)

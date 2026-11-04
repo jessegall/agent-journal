@@ -2,18 +2,67 @@
     "$schema": "../rule.schema.json",
     "engine": "python",
     "find": {
-        "reject": [],
-        "select": "call",
+        "select": "kind:Module",
         "where": [
             {
-                "name": "TODO-the-call-this-rule-flags"
+                "fileMatches": "(^|/)(src/core|core-boundary/core)/"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "not": {
+                                "textMatches": "^[\\x22\\x27]?workeroutput[\\x22\\x27]?$"
+                            }
+                        },
+                        {
+                            "any": [
+                                {
+                                    "all": [
+                                        {
+                                            "is": "import"
+                                        },
+                                        {
+                                            "any": [
+                                                {
+                                                    "nameMatches": "^suites(\\.|$)"
+                                                },
+                                                {
+                                                    "descendant": {
+                                                        "nameMatches": "^suites(\\.|$)"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nameMatches": "(?i)(^coding$|worker)"
+                                },
+                                {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "commentMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         ]
     },
     "sin": {
-        "description": "TODO — the symptom, in one line.",
+        "description": "Core names a suite or a concept owned by a suite.",
         "name": "core-names-no-suite",
-        "rule": "TODO — the positive directive the fix follows.",
+        "rule": "Core supplies building blocks and generic contracts; suites declare their own concepts and behavior.",
         "skill": "core-names-no-suite"
     }
 }

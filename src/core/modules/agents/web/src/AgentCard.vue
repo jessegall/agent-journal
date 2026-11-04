@@ -1,14 +1,12 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
-import {age, FoldGroup, Icon, InnerTabs, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
-import AgentFileEdits from "./AgentFileEdits.vue";
+import {computed, defineAsyncComponent, onUnmounted, ref} from "vue";
+import {age, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, RunningCommand, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
 // its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
-const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
-const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
+const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const MILLISECONDS_PER_HOUR = 3600000;
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
@@ -19,11 +17,10 @@ const title = computed(() => {
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
-const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : SHOWN_KINDS.has(props.row.role) ? props.row.role : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
-// a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
-const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role === "worker" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
+const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
 const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : props.facts?.state || "running"));
 const usage = computed(() => {
     const parts = [];
@@ -34,13 +31,12 @@ const usage = computed(() => {
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
-// A worker's pace uses its worktree's start and end, including time spent on corrections.
 const tasksPerHour = computed(() => {
     const started = Date.parse(props.progress?.started_at || props.row.created_at);
     const finished = props.progress ? props.progress.finished_at : props.row.ended_at;
     const ended = finished ? Date.parse(finished) : now.value;
     const hours = (ended - started) / MILLISECONDS_PER_HOUR;
-    return props.row.role === "worker" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
+    return props.row.role !== "main" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)}/h` : "";
 });
 const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const FOLDED_STATES = new Set(["completed"]);
@@ -50,6 +46,7 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const tab = ref(context.tabs[0]);
+const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 // a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isSubagent = computed(() => props.row.role === "subagent");
 const instructionOpen = ref(false);
@@ -144,8 +141,8 @@ readCommand();
                         <template #transcript>
                             <TranscriptRows :line="`agent transcript ${row.id}`" />
                         </template>
-                        <template #file-feed>
-                            <AgentFileEdits :agent="row.id" />
+                        <template v-for="(component, key) in components" :key="key" #[key]>
+                            <component :is="component" :agent="row.id" />
                         </template>
                     </SwitchCase>
                 </div>

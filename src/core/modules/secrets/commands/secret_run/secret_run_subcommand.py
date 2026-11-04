@@ -37,7 +37,7 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
         if deleted:
             raise Refusal(f"secret {deleted[0].id} is deleted", f"journal secret restore {deleted[0].id} brings it back")
         secret = self.secrets.find_title(arguments.secret)
-        if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role is not AgentRole.MAIN:
+        if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role != AgentRole.MAIN:
             raise Refusal(f"secret {secret.id} is the main agent's alone", "the user lets helpers have it on the Secrets window")
         return self.runner.run(secret, [word for word in arguments.command if word != SEPARATOR], arguments.stdin, arguments.env)
 

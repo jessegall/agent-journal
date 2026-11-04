@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_keywords import text_keywords
@@ -7,7 +6,6 @@ from core.modules.skills.commands.require_skill.require_skill import RequireSkil
 from core.modules.skills.listeners.skill_listener import SkillListener
 
 NOTICE_OPENING = "["
-PROMPT_ROLES = (AgentRole.MAIN, AgentRole.WORKER)
 
 
 class KeywordSkillsListener(SkillListener):
@@ -21,7 +19,7 @@ class KeywordSkillsListener(SkillListener):
         call = self.call(event)
         if call.hook != HookEventName.PROMPT or call.summary.lstrip().startswith(NOTICE_OPENING):
             return
-        if self.queries.query(Agent).find(call.agent_id).role not in PROMPT_ROLES:
+        if self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         terms = text_keywords(call.summary)
         for skill in self.catalogue.skills():

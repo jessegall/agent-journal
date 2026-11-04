@@ -3,9 +3,9 @@ from dataclasses import replace
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.modules.profiles.support.agent_profile import SUBAGENT, AgentProfile
+from core.base.profile.agent_profile import SUBAGENT, AgentProfile
 from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING, CODEX_MODEL_SETTING
-from core.modules.profiles.support.shipped_profiles import SHIPPED_PROFILES
+from core.base.registry.registry import Registry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"
@@ -19,8 +19,16 @@ class ProfileFiles:
     toml file for Codex where it has a folder. Each start writes the journal's own again; a person's
     profile stays."""
 
-    def __init__(self, home: JournalHome, settings: SettingValues) -> None:
-        self.home, self.settings = home, settings
+    def __init__(self, home: JournalHome, settings: SettingValues, registry: Registry) -> None:
+        self.home, self.settings, self.registry = home, settings, registry
+
+    @property
+    def suite_profiles(self) -> tuple[AgentProfile, ...]:
+        return tuple(profile for suite in self.registry.suites for profile in suite.profiles)
+
+    @property
+    def profile_types(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys((SUBAGENT, *(profile_type for suite in self.registry.suites for profile_type in suite.profile_types))))
 
     def listed(self) -> list[AgentProfile]:
         return [self.read(path) for path in sorted(self.folder(CLAUDE_FOLDER).glob("*.md"))]
@@ -34,7 +42,7 @@ class ProfileFiles:
                 path.unlink()
         claude_model = self.settings.text(CLAUDE_MODEL_SETTING, None)
         codex_model = self.settings.text(CODEX_MODEL_SETTING, None)
-        for profile in SHIPPED_PROFILES:
+        for profile in self.suite_profiles:
             self.save(replace(profile, model=profile.model or claude_model, codex_model=profile.codex_model or codex_model))
 
     def save(self, profile: AgentProfile) -> AgentProfile:
@@ -55,12 +63,10 @@ class ProfileFiles:
         head, _, body = text.partition(FRONT_MATTER_END) if text.startswith(FRONT_MATTER_START) else ("", "", text)
         fields = {key.strip(): value.strip() for key, value in (line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)}
         return AgentProfile(path.stem, fields.get("description", ""), fields.get("tools", ""), body.strip("\n"), fields.get("kind", SUBAGENT), fields.get("model", ""), fields.get("codex-model", ""),
-                            shipped=path.stem in {profile.name for profile in SHIPPED_PROFILES}, path=str(path.relative_to(self.home.project_folder)))
+                            shipped=path.stem in {profile.name for profile in self.suite_profiles}, path=str(path.relative_to(self.home.project_folder)))
 
     @staticmethod
     def claude_text(profile: AgentProfile) -> str:
-        """A model the profile does not name is left out of its file, so the agent program uses its own, rather than
-        read an empty one."""
         models = "".join(f"{key}: {value}\n" for key, value in (("model", profile.model), ("codex-model", profile.codex_model)) if value)
         return f"---\nname: {profile.name}\ndescription: {profile.description}\ntools: {profile.tools}\nkind: {profile.profile_type}\n{models}---\n\n{profile.body}\n"
 

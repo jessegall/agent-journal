@@ -1,5 +1,5 @@
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -14,7 +14,7 @@ class UnreadSkillStopRule(DriverRule):
     name = "skills.unread-stop"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    role_group = RoleGroup.PROMPT
 
     def __init__(self, unread_skills: UnreadSkills, requirement: SkillRequirement) -> None:
         self.unread_skills, self.requirement = unread_skills, requirement

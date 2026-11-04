@@ -12,6 +12,7 @@ from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
 STOPPED_ANSWER = b"stopped\n"
@@ -24,8 +25,9 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     command = StopAgent
 
-    def __init__(self, queries: Queries, providers: Providers, repository: Repository, bus: Bus, launcher: LauncherLink) -> None:
+    def __init__(self, queries: Queries, providers: Providers, repository: Repository, bus: Bus, launcher: LauncherLink, suites: SuiteChoice) -> None:
         self.queries, self.providers, self.repository, self.bus, self.launcher = queries, providers, repository, bus, launcher
+        self.suites = suites
 
     def prepare(self, command: StopAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -39,4 +41,4 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     def handle(self, command: StopAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
-        return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp), context)
+        return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp, self.suites.agent_policy(agent.environment_id)), context)

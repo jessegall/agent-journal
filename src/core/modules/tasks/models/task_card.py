@@ -8,8 +8,7 @@ from core.modules.tasks.models.support.views import TASK_CARDS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class TaskCard(ViewModel):
-    """A task as the board draws it, read from the task_cards view without its brief, reason or
-    outcome, with the worker it is delegated to."""
+    """A task's current state and assignment, as the task board shows it."""
 
     cli_name = "task"
     view = "task_cards"

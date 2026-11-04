@@ -44,7 +44,7 @@ export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
-export {useRows} from "./useRows.js";
+export {useRows, useDeclaredRows} from "./useRows.js";
 export {matchesSearch} from "./searchFields.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";
 export {useReadLine} from "./useReadLine.js";
@@ -58,6 +58,7 @@ export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
+export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version
 export const KIT_VERSION = "1.0.0";

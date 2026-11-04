@@ -1,4 +1,5 @@
 import inspect
+from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
 
@@ -22,6 +23,7 @@ from core.base.provider.provider import Provider
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
 from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -60,6 +62,7 @@ class Module:
     overlays: ClassVar[list[type[Overlay]]] = []
     driver_rules: ClassVar[list[type[DriverRule]]] = []
     windows: ClassVar[list[WindowDeclaration]] = []
+    window_extensions: ClassVar[list[WindowExtension]] = []
     marks: ClassVar[list[MarkDeclaration]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
@@ -67,7 +70,7 @@ class Module:
     tick_handlers: ClassVar[list[TickHandler]] = []
     docks: ClassVar[list[DockDeclaration]] = []
     providers: ClassVar[list[type[Provider]]] = []
-    settings: ClassVar[list[SettingNode]] = []
+    settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
     skills: ClassVar[list[SkillDeclaration]] = []

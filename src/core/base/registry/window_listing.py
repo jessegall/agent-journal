@@ -34,3 +34,5 @@ class WindowListing:
     search: Mapping[str, object] = field(default_factory=dict[str, object])
     shows: str = "environment"
     skeleton: Sequence[Mapping[str, object]] = ()
+    sources: Sequence[Mapping[str, object]] = ()
+    links: Mapping[str, str] = field(default_factory=dict[str, str])

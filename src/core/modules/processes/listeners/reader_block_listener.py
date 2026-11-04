@@ -17,7 +17,7 @@ from core.modules.processes.support.process_nudges import READER_BLOCK
 
 
 class ReaderBlockListener(SaveListener):
-    """Blocks a worker until its requested reader is saved or the block expires."""
+    """Blocks an agent until its requested reader is saved or the block expires."""
 
     name = "processes.reader-block"
     event = "process_part.create"

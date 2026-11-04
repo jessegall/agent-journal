@@ -51,7 +51,7 @@ class Coding(Suite):
     """Building software."""
 
     name = "coding"
-    defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker"}
+    defaults = {AgentRole.MAIN: "coding.builder", 'worker': "coding.worker"}
 
 
 class BuilderDriver(Driver):
@@ -111,7 +111,7 @@ def test_a_driver_of_a_suite_its_module_depends_on_passes():
 
 
 def test_a_default_naming_a_driver_of_another_role_or_an_unrequired_suite_is_refused():
-    mixed = type("Mixed", tuple([Suite]), {"name": "mixed", "defaults": {AgentRole.WORKER: "mixed.builder", AgentRole.MAIN: "coding.builder"}})
+    mixed = type("Mixed", tuple([Suite]), {"name": "mixed", "defaults": {'worker': "mixed.builder", AgentRole.MAIN: "coding.builder"}})
     builder = type("MixedBuilder", tuple([Driver]), {"name": "mixed.builder", "suite": mixed, "role": AgentRole.MAIN})
     assert problems(module("mixed", suites=[mixed], drivers=[builder])) == ["suite mixed gives role worker driver mixed.builder, which drives role main",
                                                                            "suite mixed gives role main driver coding.builder, of a suite it does not require"]

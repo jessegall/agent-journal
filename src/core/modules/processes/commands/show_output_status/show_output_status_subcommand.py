@@ -30,7 +30,7 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
         if arguments.process_id is not None:
             return OutputLines([self.line(self.access.process(caller.actor, arguments.process_id))])
         query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).newest()
-        if self.access.is_worker(caller.actor):
+        if self.access.has_private_outputs(caller.actor):
             query = query.agent(caller.actor.id)
         return OutputLines([self.line(process) for process in reversed(query.limited(OUTPUTS_SHOWN))])
 

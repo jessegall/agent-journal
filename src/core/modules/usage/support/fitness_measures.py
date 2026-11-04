@@ -29,9 +29,7 @@ EMPTY_CLEARING_RATE = 2
 
 
 class FitnessMeasures:
-    """Works out an agent's fitness and load from rows the journal keeps: how long the oldest message has
-    waited, what share of the last hour went on waits, and how fast tasks close; version 4's measures of
-    workers, lines of code and merges have no rows here."""
+    """Measures message delays, time spent waiting and task completion rates."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

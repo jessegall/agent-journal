@@ -32,7 +32,7 @@ class DriverRules:
     def ask(self, hook: AgentHook) -> RuleAnswers:
         suite = self.registry.suite(hook.suite)
         active = [layer for layer in self.layers.active(hook.agent_id, hook.driver) if suite is None or suite.is_overlay_included(layer.overlay.name)]
-        patterned = self.registry.driver_rules(hook.driver, hook.role, hook.hook_name)
+        patterned = self.registry.driver_rules(hook.driver, hook.role, hook.hook_name, hook.suite)
         allowed = [entry for entry in patterned if entry.claims_essential and self.allowances.allowed(entry.name)]
         added = [entry for entry in patterned if entry not in allowed and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
         walk = Walk([layer.row.ref for layer in active])

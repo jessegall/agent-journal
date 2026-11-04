@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle} from "./support/codingWindowContext.js";
 import {h} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
@@ -10,6 +10,8 @@ import Agents from "../../core/modules/agents/web/src/agents.js";
 import Subagents from "../../core/modules/agents/web/src/subagents.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
+
+vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: () => import("../../suites/coding/web/src/agent-file-edits.js")}));
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -34,7 +36,7 @@ const DEFAULT_OPTIONS = {order: "number"};
 const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
-    {key: "file-feed", label: "File feed", read: "file-edit list", count_field: ""},
+    {key: "file-feed", label: "File feed", read: "file-edit list", count_field: "", component: "/modules/journal.suites.coding/agent-file-edits.js"},
 ];
 const EDIT = {id: 5, path: "src/cart.py", edit_type: "edit", added: 1, removed: 0, created_at: "2026-11-01T10:00:00Z", rows: JSON.stringify([{line_type: "add", line: 4, text: "total = 0"}])};
 const answers = {
@@ -120,7 +122,7 @@ test("an opened card has the tabs Tasks, Transcript and File feed, each read onl
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
     card.querySelector("[data-tab=file-feed]").click();
     await settle();
-    expect(reads.some((line) => line.startsWith("file-edit list --agent 3"))).toBe(true);
+    await vi.waitFor(() => expect(reads.some((line) => line.startsWith("file-edit list --agent 3"))).toBe(true));
     expect(card.querySelector("[data-agent-tab-body]").textContent).toContain("cart.py");
     card.querySelector("[data-tab=tasks]").click();
     await settle();

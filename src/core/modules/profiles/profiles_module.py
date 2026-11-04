@@ -15,8 +15,7 @@ from core.modules.profiles.support.skeletons import PROFILES_PROFILES_SKELETON
 
 
 class ProfilesModule(Module):
-    """Adds agent profiles: the journal's own workers and subagents written into the agent programs' folders at
-    every start, the ones a person saves beside them, and the page that lists and edits them."""
+    """Publishes declared agent profiles and provides their list and editing commands."""
 
     name = "journal.core.profiles"
     seed_reason = "its rows are files the journal writes at every start"
@@ -28,5 +27,5 @@ class ProfilesModule(Module):
     subcommands = [ProfileListSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
-    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WORKER, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "profile_type", "model", "codex_model")),
+    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "profile_type", "model", "codex_model")),
                                  reads=["profile list"], runs=["profile save"])]

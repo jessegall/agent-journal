@@ -23,5 +23,5 @@ class VoiceCompactionListener(SaveListener):
         call = change.new_row
         if not isinstance(call, HookCall) or not call.is_compaction:
             return
-        if self.queries.query(Agent).find(call.agent_id).role is AgentRole.MAIN:
+        if self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN:
             self.lines.deliver(call.agent_id, VOICE_LINE, change)
