@@ -25,5 +25,7 @@ class DumpArrivalListener(SaveListener):
         dump = change.row
         if not isinstance(dump, Dump):
             return
-        for agent in MainAgentFinder.rows(self.queries, dump.environment_id):
+        environment_id = change.context.environment_id
+        agents = MainAgentFinder.rows(self.queries, environment_id) if environment_id is not None else MainAgentFinder.all_running(self.queries)
+        for agent in agents:
             self.nudger.send(agent.id, DUMP_ARRIVED, LINE_SOURCE, change.context, dump=dump.id)

@@ -1,7 +1,6 @@
 import sqlite3
 
 from core.base.database.row_insert import RowInsert
-from core.modules.documents.upgrade.document_environment import DocumentEnvironment
 
 TABLE = "docs"
 TITLE_START_CHARACTERS = 80
@@ -15,11 +14,11 @@ class WholeTextDocuments:
         self.rows, self.limit_characters, self.model_name = rows, limit_characters, model_name
         self.document_ids: list[int] = []
 
-    def fitting_text(self, row: sqlite3.Row, environment_id: int | None, creator_id: int, created: str) -> str:
+    def fitting_text(self, row: sqlite3.Row, creator_id: int, created: str) -> str:
         text: str = row["text"]
         if len(text) <= self.limit_characters:
             return text
-        document_id = self.rows.insert(TABLE, {"environment_id": DocumentEnvironment.id(environment_id), "creator_id": creator_id, "title": text[:TITLE_START_CHARACTERS].strip(),
+        document_id = self.rows.insert(TABLE, {"creator_id": creator_id, "title": text[:TITLE_START_CHARACTERS].strip(),
                                                "abstract": f"The whole text of a version 4 {self.model_name}, longer than version 5 holds", "body": text,
                                                "created_at": created, "updated_at": row["updated_at"] or created})
         self.document_ids.append(document_id)

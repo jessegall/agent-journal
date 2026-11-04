@@ -20,7 +20,7 @@ class MakeTextHandler(Handler[MakeText, NewText]):
 
     def handle(self, command: MakeText, context: Context) -> NewText:
         subject_refs = [self.row_refs.parsed(word) for text in command.subjects for word in text.replace(",", " ").split()]
-        text_row = self.repository.save(command.text_model(environment_id=context.environment_id, creator_id=context.actor.id, title=command.title,
+        text_row = self.repository.save(command.text_model(creator_id=context.actor.id, title=command.title,
                                                      abstract=command.abstract, body=command.body), context)
         if isinstance(text_row, Doc):
             self.revisions.record(text_row, context)

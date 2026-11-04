@@ -61,5 +61,5 @@ class SequencesModule(Module):
     listeners = [SequenceRowTriggerListener, StandardSequencesListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
-    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEQUENCE,
+    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
                                  reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

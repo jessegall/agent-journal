@@ -24,6 +24,7 @@ from core.modules.dumps.rules.open_dump_rule import OpenDumpRule
 from core.modules.dumps.support.dump_nudges import DUMP_NUDGES
 from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
+from core.modules.dumps.migrations.m002_project_dumps import ProjectDumpsMigration
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.upgrade.dumps_move import DumpsMove
@@ -42,7 +43,7 @@ class DumpsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking"]
     skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"])]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
-    migrations = [DumpsTablesMigration]
+    migrations = [DumpsTablesMigration, ProjectDumpsMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     views = [DumpRow]
@@ -51,6 +52,6 @@ class DumpsModule(Module):
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
-    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PAGE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
+    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PANE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  runs=["dump name"], events=["dump.*", "dump_item.*"])]
     seeders = [DumpsSeeder]

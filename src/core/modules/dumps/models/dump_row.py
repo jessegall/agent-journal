@@ -16,7 +16,6 @@ class DumpRow(ViewModel):
 
     row_key: str
     row_type: str
-    environment_id: int
     dump_id: int
     item_id: int
     position: int

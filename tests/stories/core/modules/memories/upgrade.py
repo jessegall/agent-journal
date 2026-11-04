@@ -70,9 +70,9 @@ def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_t
     memories.expect_text('"type": "reminder"')
 
 
-def test_a_long_project_wide_rule_moves_into_a_document_of_no_environment(new_story):
+def test_a_long_project_wide_rule_moves_into_a_project_document(new_story):
     story = upgraded_story(new_story)
     rule = next(memory for memory in json.loads(story.run("memory list --json").output_text)["rows"] if memory["text"].startswith("A long project rule."))
     document = re.search(r"whole text in doc (\d+)", rule["text"])
     expect_value_4(document)
-    expect_row(json.loads(story.run(f"doc show {document.group(1)} --json").output_text), environment_id=None)
+    story.run(f"doc show {document.group(1)} --json").expect_no_text("environment_id")

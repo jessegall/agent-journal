@@ -45,6 +45,7 @@ from core.modules.documents.migrations.m001_documents import DocumentsTablesMigr
 from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
 from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
 from core.modules.documents.migrations.m004_comment_selections import CommentSelectionsMigration
+from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration
 from core.modules.documents.models.comment_selection import CommentSelection
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
@@ -73,10 +74,10 @@ class DocumentsModule(Module):
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]

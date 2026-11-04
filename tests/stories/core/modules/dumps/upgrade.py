@@ -13,8 +13,9 @@ def test_a_dump_without_parts_has_one_item_of_its_whole_text_not_read_yet(new_st
     story.expect_text("dump show 2", "Pasted text")
 
 
-def test_the_dumps_row_count_is_two_and_the_one_of_a_removed_environment_is_skipped_and_named(new_story):
+def test_all_dumps_move_to_the_project_including_one_from_a_removed_environment(new_story):
     story = upgraded_story(new_story)
-    expect_upgrade_text(story, "journal.core.dumps: moved 2, already moved 0")
-    expect_upgrade_text(story, "skipped dumps 3: its environment did not move")
+    expect_upgrade_text(story, "journal.core.dumps: moved 3, already moved 0")
+    story.expect_text("dump show 3", "In a removed environment")
+    story.run("dump show 3 --json").expect_no_text("environment_id")
     expect_upgrade_text(story, "dropped dump questions and logs: 1 rows")

@@ -13,7 +13,6 @@ class Dump(Model):
     cli_name = "dump"
     search_fields = ["title", "brief", "outcome"]
 
-    environment_id: int
     creator_id: int
     title: str = ""
     brief: str

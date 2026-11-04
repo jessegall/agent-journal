@@ -63,7 +63,7 @@ class ChecksModule(Module):
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = {PeriodicChecks: DueCheckRuns}
-    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, icon=WindowIcon.CHECK,
+    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run"], events=["check.*"])]
     seeders = [ChecksSeeder]
     moves = [ChecksMove]

@@ -1,10 +1,11 @@
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
-def test_a_version_4_document_keeps_its_number_title_abstract_and_text_and_a_project_one_has_no_environment(new_story):
+def test_a_version_4_document_keeps_its_number_title_abstract_and_text_in_the_project_library(new_story):
     story = upgraded_story(new_story)
     story.expect_text("doc show 1 --all", "in cents, see task 1")
-    story.expect_text("doc show 1 --json", '"title": "Cart rules"', '"abstract": "How the cart counts"', '"environment_id": null')
+    story.expect_text("doc show 1 --json", '"title": "Cart rules"', '"abstract": "How the cart counts"')
+    story.run("doc show 1 --json").expect_no_text('environment_id')
 
 
 def test_a_document_signed_off_in_version_4_is_closed_with_its_reason_and_one_with_no_text_moves_empty(new_story):
