@@ -53,7 +53,7 @@ test("a setting off only because its group is off does not count as changed", as
 
 test("slash focuses the search and escape clears it", async () => {
     const {element} = await drawn();
-    const search = element.querySelector("input[type=search]");
+    const search = element.querySelector("[data-search-input]");
     document.body.dispatchEvent(new KeyboardEvent("keydown", {key: "/", bubbles: true}));
     expect(document.activeElement).toBe(search);
     search.value = "size";

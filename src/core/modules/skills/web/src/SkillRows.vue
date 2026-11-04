@@ -1,43 +1,54 @@
 <script setup>
-import {computed, ref} from "vue";
-import {WindowRoom, useRows, useWindow} from "@journal/window-kit";
+import {ref} from "vue";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 import LoadedSkills from "./LoadedSkills.vue";
 import SkillCatalogue from "./SkillCatalogue.vue";
 import SkillText from "./SkillText.vue";
 
 const context = useWindow();
-const {rows: loaded, failure, loaded: answered} = useRows(context.agent ? `agent-skill list --agent ${context.agent}` : "agent-skill list", ["agent_skill.*"]);
-const view = ref("loaded");
+const loaded = ref([]);
+const failure = ref("");
+const answered = ref(false);
 const catalogue = ref([]);
 const opened = ref(null);
 const openFailure = ref("");
-const screens = {loaded: LoadedSkills, catalogue: SkillCatalogue, text: SkillText};
-const props = computed(() => ({
-    loaded: {rows: loaded.value, failure: failure.value, answered: answered.value, onOpen: open, onBrowse: browse},
-    catalogue: {rows: catalogue.value, onOpen: open, onBack: back},
-    text: {skill: opened.value, failure: openFailure.value, onBack: back},
-})[view.value]);
+
+async function load() {
+    const [main, skills] = await Promise.all([context.read("agent main"), context.read("skill list")]);
+    catalogue.value = skills.ok ? skills.value.rows : [];
+    const agent = main.ok && main.value.id;
+    const result = agent ? await context.read(`agent-skill list --agent ${agent} --limit 100`) : null;
+    loaded.value = result?.ok ? result.value.rows.filter((row) => row.state === "loaded") : [];
+    failure.value = result && !result.ok ? result.error : skills.ok ? "" : skills.error;
+    answered.value = true;
+}
+context.follow(["agent.*", "agent_skill.*"], load);
+load();
 
 function back() {
-    view.value = "loaded";
-}
-
-async function browse() {
-    const result = await context.read("skill list");
-    catalogue.value = result.ok ? result.value.rows : [];
-    view.value = "catalogue";
+    opened.value = null;
+    openFailure.value = "";
 }
 
 async function open(folder) {
     const result = await context.read(`skill show ${folder}`);
     openFailure.value = result.ok ? "" : result.error;
     opened.value = result.ok ? result.value : null;
-    view.value = "text";
 }
 </script>
 
 <template>
     <WindowRoom>
-        <component :is="screens[view]" v-bind="props" />
+        <template v-if="opened || openFailure"><SkillText :skill="opened" :failure="openFailure" @back="back" /></template>
+        <template v-else>
+            <div class="skills-page">
+                <LoadedSkills :rows="loaded" :failure="failure" :answered="answered" @open="open" />
+                <SkillCatalogue :rows="catalogue" @open="open" />
+            </div>
+        </template>
     </WindowRoom>
 </template>
+
+<style scoped>
+.skills-page { display:flex; flex-direction:column; gap:24px; }
+</style>

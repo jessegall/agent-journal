@@ -6,3 +6,6 @@ class AgentActivity:
 
     def statement(self) -> Statement:
         return Statement("ended_at IS NULL")
+
+    def idle(self) -> Statement:
+        return Statement("(ended_at IS NOT NULL AND role IN ('subagent', 'reviewer'))")

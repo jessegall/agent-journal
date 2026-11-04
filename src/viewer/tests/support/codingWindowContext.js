@@ -1,6 +1,6 @@
 import {context as baseContext} from "./windowContext.js";
 
-export {mounted, page, pickButton, settle} from "./windowContext.js";
+export {mounted, page, pickButton, settle, settleTransition} from "./windowContext.js";
 
 export function context(answers, agent = null) {
     return {

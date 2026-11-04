@@ -2,7 +2,7 @@
 const NOT_TEXT = "button, [data-comment-number]";
 const BLOCKS = "p, li, h3, h4, h5, h6, blockquote, table, .chat-code-block";
 
-export function textNodes(root) {
+function textNodes(root) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) {
@@ -10,8 +10,6 @@ export function textNodes(root) {
     }
     return nodes;
 }
-
-export const shownText = (root) => textNodes(root).map((node) => node.data).join("");
 
 function placeOf(nodes, container, offset) {
     const point = document.createRange();
@@ -45,7 +43,7 @@ export function selectionIn(root) {
 }
 
 // where a selection is now: its own place, or the nearest place its words appear if the text has changed; -1 when they are gone
-export function startOf(text, {quote, position}) {
+function startOf(text, {quote, position}) {
     if (text.startsWith(quote, position ?? 0)) return position ?? 0;
     let nearest = -1;
     for (let found = text.indexOf(quote); found >= 0; found = text.indexOf(quote, found + 1)) {
