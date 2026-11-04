@@ -1,10 +1,18 @@
 import json
 
+from core.base.command.bus import Bus
+from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.base.driver.command_category import CommandCategory
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.support.part_spec import PartSpec
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+
+ENDED_AT = "2026-01-01T00:00:00+00:00"
 
 
 def expect_reason(story, worker, reason):
@@ -35,6 +43,25 @@ def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, mon
         story.expect_success("proof check 2", actor=story.agent)
         expect_reason(story, worker, "merge")
         expect_browser(server, "workerWait.browser.mjs", [str(worker.id), "merge"])
+
+
+def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    database = story.container.get(Database)
+    part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
+    command = StartProcess(worker.id, None, "make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])
+    process = story.container.get(Bus).run(command, worker, environment_id=1)
+    database.update(Statement("UPDATE agents SET ended_at = ? WHERE id = ?", [ENDED_AT, worker.id]))
+    expect_reason(story, worker, "a reader")
+    database.update(Statement("UPDATE reader_requests SET completed_at = ?", [ENDED_AT]))
+    database.update(Statement("UPDATE processes SET is_queued = 1 WHERE id = ?", [process.id]))
+    expect_reason(story, worker, "a place in the queue")
+    database.update(Statement("UPDATE processes SET is_queued = 0 WHERE id = ?", [process.id]))
+    expect_reason(story, worker, "its run")
+    database.update(Statement("UPDATE processes SET state = 'finished' WHERE id = ?", [process.id]))
+    expect_reason(story, worker, "its next start")
 
 
 def test_a_worker_with_no_unfinished_tasks_waits_for_a_job(new_story):

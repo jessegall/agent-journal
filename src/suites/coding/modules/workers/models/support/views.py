@@ -10,7 +10,16 @@ WORKER_WAITS_SELECT = """
 SELECT worktree.agent_id, worktree.environment_id,
        CASE
            WHEN EXISTS (SELECT 1 FROM tasks WHERE tasks.holder_id = worktree.agent_id AND tasks.state = 'started')
-               THEN CASE WHEN agents.ended_at IS NOT NULL THEN 'a job' ELSE '' END
+               THEN CASE
+                   WHEN agents.ended_at IS NULL THEN ''
+                   WHEN EXISTS (SELECT 1 FROM reader_requests WHERE reader_requests.creator_id = worktree.agent_id AND reader_requests.completed_at IS NULL)
+                       THEN 'a reader'
+                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.agent_id = worktree.agent_id AND processes.state = 'running' AND processes.is_queued = 1)
+                       THEN 'a place in the queue'
+                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.agent_id = worktree.agent_id AND processes.state = 'running')
+                       THEN 'its run'
+                   ELSE 'its next start'
+               END
            WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running'))
                THEN 'tests'
            WHEN worktree.state = 'delivered' AND EXISTS (
