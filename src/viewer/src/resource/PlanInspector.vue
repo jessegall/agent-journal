@@ -1,45 +1,31 @@
 <script setup>
+import {ref, watch} from "vue";
 import {shareAddress} from "../route.js";
-import PlanLinks from "./PlanLinks.vue";
-import PlanPhaseAgents from "./PlanPhaseAgents.vue";
-import PlanReviews from "./PlanReviews.vue";
-import PlanTimeline from "./PlanTimeline.vue";
-import Segmented from "../kit/Segmented.vue";
-import {computed, ref, watch} from "vue";
-import ButtonSlot from "../kit/ButtonSlot.vue";
 import BackButton from "../kit/BackButton.vue";
-import CloseButton from "../kit/CloseButton.vue";
-import {statusIcon} from "../domain/taskStatus.js";
-import TaskStatusIcon from "../tasks/TaskStatusIcon.vue";
-import Folded from "../kit/Folded.vue";
+import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import ProgressBar from "../kit/ProgressBar.vue";
+import Segmented from "../kit/Segmented.vue";
 import Skeleton from "../kit/Skeleton.vue";
-import {render} from "../text/index.js";
-import RowMoves from "./RowMoves.vue";
-import CommentedRow from "./CommentedRow.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
-import {delegationWord} from "../domain/plans.js";
-import {stateLabel, stateLook} from "@journal/window-kit";
+import RowMoves from "./RowMoves.vue";
+import CommentSide from "./CommentSide.vue";
+import PlanDetails from "./PlanDetails.vue";
+import PlanTimeline from "./PlanTimeline.vue";
 
-// one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
-const CLOSED = new Set(["completed", "cancelled"]);
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, environment: {type: String, required: true}, readOnly: Boolean, backed: Boolean});
 const emit = defineEmits(["close", "back", "select", "open"]);
-const VIEWS = [
-    {key: "phases", label: "Phases"},
+const TABS = [
+    {key: "details", label: "Details"},
+    {key: "comments", label: "Comments"},
     {key: "timeline", label: "Timeline"},
 ];
-const view = ref("phases");
+const tab = ref("details");
 const plan = ref(null);
 const failure = ref("");
 const textComments = useTextComments(() => (plan.value ? {kind: "plan", id: props.id, title: plan.value.title} : {}), (line) => props.read(line));
 let reading = 0;
-
-const html = computed(() => (plan.value?.brief ? render(plan.value.brief, {env: "", rowNames: false}) : ""));
-const closedCount = (phase) => phase.tasks.filter((task) => CLOSED.has(task.state)).length;
-const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase.tasks.length;
 
 async function load() {
     const turn = ++reading;
@@ -51,329 +37,134 @@ async function load() {
 
 watch(() => props.id, () => {
     plan.value = null;
+    tab.value = "details";
     load();
 }, {immediate: true});
+async function sendComment(text) {
+    await textComments.send(text);
+    tab.value = "comments";
+}
 </script>
 
 <template>
     <article class="plan-inspector" data-plan-inspector>
-        <header class="top">
+        <div class="top">
             <template v-if="backed">
                 <BackButton @back="emit('back')" />
             </template>
-            <span class="kind"><Icon name="flag" :size="13" /> Plan {{ id }}</span>
-            <template v-if="plan">
-                <span :class="['status', stateLook('plan', plan.state)]" data-plan-status>
-                    {{ stateLabel("plan", plan.state) }}<template v-if="plan.current_phase"> · phase {{ plan.current_phase }} of {{ plan.phases.length }}</template>
-                </span>
-            </template>
+            <span class="crumb">Plan {{ id }}</span>
             <span class="grow" />
             <a class="share-link" data-resource-share :href="shareAddress(`plans:${id}`)">Share</a>
-            <CloseButton title="Close the plan" data-resource-close @click="emit('close')" />
-        </header>
-        <CommentedRow stacked :open="textComments.open.value" :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false">
-        <div class="scroll">
-            <template v-if="failure">
-                <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
-            </template>
-            <template v-else-if="!plan">
-                <Skeleton />
-            </template>
-            <template v-else>
-                <h2 class="title" data-resource-title>{{ plan.title }}</h2>
-                <template v-if="plan.reason">
-                    <p class="note" data-plan-reason>{{ plan.state === "cancelled" ? "Cancelled" : "Blocked" }}: {{ plan.reason }}</p>
-                </template>
-                <template v-if="plan.total">
-                    <div class="overall" data-plan-progress>
-                        <ProgressBar :value="plan.finished" :max="plan.total" />
-                        <span class="overall-figure">{{ plan.finished }} of {{ plan.total }} done</span>
-                    </div>
-                </template>
-                <template v-if="plan.delegated">
-                    <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
-                </template>
-                <RowMoves inline kind="plan" :id="id" :row="plan" :read="read" @done="load" />
-                <div class="plan-buttons">
-                    <ButtonSlot name="row.plan" :row="{...plan, kind: 'plan'}" :environment="environment" :read-only="readOnly" @done="load" />
-                </div>
-                <template v-if="html">
-                    <div class="brief">
-                        <Folded :name="`plans:${id}:brief`" :at="220" :keep="160">
-                            <div class="md" data-resource-text v-html="html" />
-                        </Folded>
-                    </div>
-                </template>
-                <PlanLinks :id="id" :document-id="plan.document_id ?? 0" :read="read" @open="emit('open', $event)" />
-                <div class="plan-views">
-                    <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
-                </div>
-                <template v-if="view === 'timeline'">
-                    <PlanTimeline :id="id" :read="read" @select="emit('select', $event)" />
-                </template>
-                <ol v-show="view === 'phases'" class="phases">
-                    <template v-for="(phase, index) in plan.phases" :key="phase.id">
-                        <li :class="['phase', {current: index + 1 === plan.current_phase, done: isDone(phase)}]" data-resource-phase>
-                            <div class="phead">
-                                <span class="mark"><Icon :name="isDone(phase) ? 'check' : 'circle'" :size="14" /></span>
-                                <span class="ptitle">{{ index + 1 }}. {{ phase.title }}</span>
-                                <span class="phead-end">
-                                    <template v-if="phase.checkpoint">
-                                        <span class="checkpoint">checkpoint</span>
-                                    </template>
-                                    <span class="progress">{{ closedCount(phase) }}/{{ phase.tasks.length }}</span>
-                                </span>
-                            </div>
-                            <template v-if="phase.goal">
-                                <div class="when">{{ phase.goal }}</div>
-                            </template>
-                            <PlanPhaseAgents :tasks="phase.tasks" />
-                            <template v-for="task in phase.tasks" :key="task.id">
-                                <button type="button" :class="['row', task.state]" data-resource-task @click="emit('select', task.id)">
-                                    <TaskStatusIcon :status="statusIcon(task.state)" />
-                                    <span class="row-id">#{{ task.id }}</span>
-                                    <span class="row-title">{{ task.title }}</span>
-                                    <template v-if="task.helper_id">
-                                        <span class="holder" :title="task.state === 'open' ? `Queued for ${task.helper_name}` : `Held by ${task.helper_name}`" data-plan-agent>{{ task.helper_name }}</span>
-                                    </template>
-                                </button>
-                            </template>
-                        </li>
-                    </template>
-                </ol>
-                <PlanReviews :id="id" :read="read" />
-            </template>
+            <Btn small aria-label="Close the plan (Esc)" data-resource-close @click="emit('close')"><Icon name="close" :size="13" /></Btn>
         </div>
-        </CommentedRow>
-        <template v-if="plan">
-            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
+        <template v-if="failure">
+            <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
+        </template>
+        <template v-else-if="!plan">
+            <div class="body"><Skeleton /></div>
+        </template>
+        <template v-else>
+            <RowMoves kind="plan" :id="id" :row="plan" :read="read" @done="load" />
+            <header class="summary">
+                <div class="stamp">Plan {{ plan.id }}</div>
+                <h3 class="title" data-resource-title>{{ plan.title }}</h3>
+            </header>
+            <div class="tabs" data-plan-tabs>
+                <Segmented :options="TABS" :value="tab" @pick="tab = $event" />
+            </div>
+            <div class="panels">
+                <SwitchCase :value="tab">
+                    <template #details>
+                        <PlanDetails :plan="plan" :read="read" :environment="environment" :read-only="readOnly" @done="load" @select="emit('select', $event)" @open="emit('open', $event)" />
+                    </template>
+                    <template #comments>
+                        <CommentSide below :comments="textComments.comments.value" :words="textComments.words" @close="tab = 'details'" />
+                    </template>
+                    <template #timeline>
+                        <div class="body"><PlanTimeline :id="id" :read="read" @select="emit('select', $event)" /></div>
+                    </template>
+                </SwitchCase>
+            </div>
+            <QuickCommentBar :send="sendComment" :count="textComments.comments.value.length" @show="tab = 'comments'" />
         </template>
     </article>
 </template>
 
 <style scoped>
-.share-link {
-    color: var(--text-2);
-    font-size: 12px;
-    text-decoration: none;
-}
-
-.plan-views {
-    display: flex;
-    margin: 16px 0 0;
-}
-
-.holder {
-    flex: none;
-    margin-left: auto;
-    padding: 0 7px;
-    border-radius: 99px;
-    background: var(--hover);
-    color: var(--text-3);
-    font-size: 11px;
-    line-height: 18px;
-}
-
-.delegation {
-    margin: 0 0 10px;
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.plan-buttons {
-    margin-top: 8px;
-}
-
 .plan-inspector {
     display: flex;
     flex: 1;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
 }
-
 .top {
     display: flex;
     flex: none;
     align-items: center;
-    gap: 12px;
-    padding: 14px 12px 8px 24px;
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.kind {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--accent-text);
-    font-size: 12px;
-}
-
-.status {
-    color: var(--text-2);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.status.started {
-    color: var(--progress);
-}
-
-.status.blocked {
-    color: var(--blocking);
-}
-
-.status.approved {
-    color: var(--created);
-}
-
-.grow {
-    flex: 1;
-}
-
-.scroll {
-    flex: 1;
-    overflow: auto;
-    padding: 0 24px 28px;
-    scrollbar-width: thin;
-}
-
-.title {
-    margin: 6px 0 4px;
-    font-size: 22px;
-    font-weight: 600;
-}
-
-.note {
-    margin: 0 0 8px;
+    gap: 4px;
+    height: 44px;
+    padding: 0 8px 0 20px;
+    border-bottom: 1px solid var(--border);
     color: var(--text-3);
     font-size: 12px;
 }
-
-.failure {
-    margin: 12px 0;
-    color: var(--danger);
-    font-size: 12.5px;
-}
-
-.overall {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 6px 0 14px;
-}
-
-.overall :deep(.track) {
-    flex: 1;
-}
-
-.overall-figure {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.brief {
-    margin: 0 0 20px;
-    color: var(--text-2);
-    line-height: 1.55;
-    overflow-wrap: anywhere;
-}
-
-.phases {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.phase {
-    margin-bottom: 8px;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--raised);
-}
-
-.phase.current {
-    border-color: var(--accent);
-}
-
-.phase.done {
-    opacity: 0.7;
-}
-
-.phead {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.mark {
-    display: inline-flex;
-    color: var(--accent-text);
-}
-
-.ptitle {
-    flex: 0 1 auto;
+.crumb {
     min-width: 0;
     overflow: hidden;
-    font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-.phead-end {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
+.grow {
+    flex: 1;
 }
-
-.checkpoint {
-    color: var(--blocking);
-    font-size: 11.5px;
-}
-
-.progress {
-    color: var(--text-3);
+.share-link {
+    margin-right: 8px;
+    color: var(--text-2);
     font-size: 12px;
+    text-decoration: none;
 }
-
-.when {
-    margin: 2px 0 6px 24px;
-    color: var(--text-3);
+.body {
+    flex: 1;
+    overflow: auto;
+    padding: 18px 20px 28px;
+    scrollbar-width: thin;
+}
+.failure {
+    flex: 1;
+    margin: 0;
+    padding: 18px 20px;
+    color: var(--danger);
     font-size: 12.5px;
 }
-
-.row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    padding: 4px 6px 4px 24px;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.row:hover {
-    color: var(--text);
-}
-
-.row.completed .row-title,
-.row.cancelled .row-title {
-    color: var(--text-3);
-}
-
-.row.cancelled .row-title {
-    text-decoration: line-through;
-}
-
-.row-id {
+.stamp {
     color: var(--text-3);
     font-size: 12px;
+}
+.title {
+    margin: 6px 0 14px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+}
+.summary {
+    padding: 18px 20px 0;
+}
+.tabs {
+    padding: 0 20px 12px;
+    border-bottom: 1px solid var(--border);
+}
+.panels {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+.panels :deep(.comment-side) {
+    flex: 1;
+    width: auto;
+    border: 0;
 }
 </style>

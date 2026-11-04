@@ -32,7 +32,7 @@ watch(() => props.id, load, {immediate: true});
 <template>
     <template v-if="linked.length">
         <section class="links" data-plan-links>
-            <h3 class="heading">Linked</h3>
+            <h4 class="heading">Linked</h4>
             <ul class="list">
                 <template v-for="row in linked" :key="`${row.model}:${row.id}`">
                     <li>
@@ -51,15 +51,15 @@ watch(() => props.id, load, {immediate: true});
 .links {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin: 0 0 20px;
+    gap: 6px;
+    margin: 0 0 18px;
 }
 
 .heading {
     margin: 0;
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .list {
@@ -73,6 +73,7 @@ watch(() => props.id, load, {immediate: true});
     align-items: baseline;
     gap: 8px;
     min-width: 0;
+    width: 100%;
     padding: 3px 0;
     border: 0;
     background: none;

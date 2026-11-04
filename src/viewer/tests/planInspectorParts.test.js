@@ -122,3 +122,48 @@ test("a phase whose tasks are all closed shows no agent tag, though each task st
     expect(element.querySelector("[data-plan-phase-agents]")).toBeNull();
     expect(element.querySelectorAll("[data-plan-agent]").length).toBe(2);
 });
+
+test("the plan has detail and comment tabs, and comment controls return to the details", async () => {
+    const element = await drawn(PlanInspector, {ok: true, value: delegatedPlan()});
+    const tab = (name) => [...element.querySelectorAll("[data-plan-tabs] button")].find((button) => button.textContent.trim() === name);
+    expect(element.querySelector(".summary [data-resource-title]").textContent).toBe("Rebuild the cart");
+    expect(tab("Details")).toBeDefined();
+    tab("Comments").click();
+    await nextTick();
+    expect(element.querySelector("[data-comment-side]").textContent).toContain("No comments yet");
+    expect(element.querySelector("[data-resource-phase]")).toBeNull();
+    element.querySelector('[aria-label="Close the comments"]').click();
+    await nextTick();
+    expect(element.querySelector("[data-resource-phase]")).not.toBeNull();
+});
+
+test("all task states in the plan use the tasks window's status icons", async () => {
+    const plan = delegatedPlan();
+    plan.phases[0].tasks = ["open", "started", "testing", "blocked", "completed", "cancelled"].map((state, id) => ({id, title: state, state}));
+    const element = await drawn(PlanInspector, {ok: true, value: plan});
+    expect([...element.querySelectorAll("[data-resource-task] .ring")].map((icon) => icon.getAttribute("class"))).toEqual(["ring open", "ring started", "ring testing", "ring blocked", "ring done", "ring done"]);
+    expect(element.querySelector('[data-resource-task].cancelled .ring').getAttribute("aria-label")).toBe("Cancelled");
+});
+
+test("sending another comment from the details returns to the comments again", async () => {
+    const comments = [];
+    const read = async (line) => {
+        if (line[1] === "inspect") return {ok: true, value: delegatedPlan()};
+        if (line[1] === "comment") comments.push({id: comments.length + 1, text: line[3]});
+        return {ok: true, value: {rows: line[1] === "comments" ? comments : []}};
+    };
+    const element = await drawn(PlanInspector, null, {read, environment: "main"});
+    for (const text of ["Check the cart", "Check the tax too"]) {
+        [...element.querySelectorAll("[data-plan-tabs] button")].find((button) => button.textContent.trim() === "Details").click();
+        await nextTick();
+        element.querySelector(".comment-bar-open").click();
+        await nextTick();
+        const input = element.querySelector("textarea");
+        input.value = text;
+        input.dispatchEvent(new Event("input"));
+        await nextTick();
+        element.querySelector("form.compose").dispatchEvent(new Event("submit", {cancelable: true}));
+        await settle();
+        expect(element.querySelector("[data-comment-side]").textContent).toContain(text);
+    }
+});

@@ -3,9 +3,11 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {computed} from "vue";
 import {stateLabel, stateLook} from "../domain/states.js";
 import {STATUS_PREFIXES} from "../domain/taskBoard.js";
+import {statusIcon} from "../domain/taskStatus.js";
 
 const props = defineProps({status: {type: String, required: true}, size: {type: Number, default: 14}});
-const look = computed(() => stateLook("task", props.status));
+const look = computed(() => stateLook("task", statusIcon(props.status)));
+const shape = computed(() => (look.value === "testing" ? "started" : look.value));
 const label = computed(() => STATUS_PREFIXES[props.status] ?? stateLabel("task", props.status));
 </script>
 
@@ -21,7 +23,7 @@ const label = computed(() => STATUS_PREFIXES[props.status] ?? stateLabel("task",
                 role="img"
                 :aria-label="label"
             >
-                <SwitchCase :value="look">
+                <SwitchCase :value="shape">
                     <template #blocked>
                         <circle cx="6.3" cy="8" r="4.7" class="stroke" />
                         <rect x="10.8" y="7.3" width="3.2" height="1.4" rx="0.7" class="fill" />
@@ -75,6 +77,10 @@ const label = computed(() => STATUS_PREFIXES[props.status] ?? stateLabel("task",
 .ring.started,
 .ring.done {
     --tone: var(--progress);
+}
+
+.ring.testing {
+    --tone: var(--tone-sequence);
 }
 
 .ring.asked,

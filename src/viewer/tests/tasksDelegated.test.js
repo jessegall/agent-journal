@@ -39,14 +39,14 @@ test("the filter of the tasks dialog offers the delegated section", () => {
     expect(read("../../core/modules/tasks/web/src/TasksMenus.vue")).toMatch(/const STATES = \[[^\]]*"delegated"/);
 });
 
-test("the Testing section has a colour of its own, in both themes, apart from Started and Blocked", () => {
-    const styles = read("../../core/modules/tasks/web/src/TaskGroups.vue");
-    const rule = (selector) => styles.match(new RegExp(`${selector.replace(/[.[\]"=]/g, "\\$&")} \\{([^}]*)\\}`))[1];
-    const colour = (selector) => rule(selector).match(/border-color: ([^;]+);/)[1];
-    expect(colour(".task-mark.testing")).toBe("var(--tone-sequence)");
-    expect(colour(".task-mark.testing")).not.toBe(colour(".task-mark.started"));
-    expect(colour(".task-mark.testing")).not.toBe(colour(".task-mark.blocked"));
-    expect(rule('.tasks-group[data-state="testing"] .tasks-fold')).toContain("var(--tone-sequence)");
+test("the Testing section uses the shared half-filled icon and the testing colour in both themes", async () => {
+    const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
+    const testing = element.querySelector('[data-row="4"] .ring.testing');
+    expect(testing).not.toBeNull();
+    expect(testing.querySelector("path.fill")).not.toBeNull();
+    expect(element.querySelector('[data-row="3"] .ring.started')).not.toBeNull();
+    expect(read("../src/tasks/TaskStatusIcon.vue")).toContain(".ring.testing {\n    --tone: var(--tone-sequence);");
+    expect(read("../../core/modules/tasks/web/src/TaskGroups.vue")).toContain('.tasks-group[data-state="testing"] .tasks-fold');
     expect(read("../src/tokens.css")).toContain("--tone-sequence:");
     expect(read("../src/light.css")).toContain("--tone-sequence:");
 });
