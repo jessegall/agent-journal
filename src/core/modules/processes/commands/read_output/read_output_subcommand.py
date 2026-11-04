@@ -16,6 +16,7 @@ class ReadOutputSubcommand(OutputLinesWriting, Subcommand[ReadOutput, OutputLine
 
     def arguments(self, parser: ArgumentParser) -> None:
         OutputLines.add_flags(parser)
+        parser.add_argument("--again", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReadOutput:
-        return ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader)
+        return ReadOutput(arguments.process_id, arguments.summary, arguments.all, arguments.lines, arguments.tail, arguments.reader, arguments.again)
