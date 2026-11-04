@@ -158,6 +158,14 @@ func (tracker *Tracker) showPart(stdout io.Writer, position int) {
 	if uncapped {
 		mostBytes = tracker.Options.MostOutputBytes
 	}
+	if reading, isRead := tracker.Options.Reading[position]; isRead {
+		text, size := tracker.Folder.Result(position, mostReadBytes)
+		if tracker.ShownBytes != nil {
+			tracker.ShownBytes[position] = size.Bytes
+		}
+		io.WriteString(stdout, Shown(readLines(text, reading), size, tracker.Options.Process, ReadCapCharacters, false, "--summary"))
+		return
+	}
 	text, size := tracker.Folder.Result(position, mostBytes)
 	readFlag := "--summary"
 	if tracker.Stripped[position] {

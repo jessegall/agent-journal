@@ -32,6 +32,8 @@ type Options struct {
 	Stripped []string
 	// MostOutputBytes is how much of one part's output stays on disk.
 	MostOutputBytes int
+	// Reading says what the agent reads of a saved command, by position; the whole output stays on disk.
+	Reading map[int]string
 	Detach          func(options Options)
 	// ShellAlive says whether the shell that started the runner still lives; when it is nil the runner watches its parent.
 	ShellAlive func() bool

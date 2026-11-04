@@ -1,6 +1,8 @@
 package classify
 
 import (
+	"strings"
+
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
@@ -13,6 +15,9 @@ const runnerProgram = "journal-run"
 func (classifier *Classifier) Line(line string) event.ShellLine {
 	line = lineOfRunner(line)
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}}
+	classifier.savedRuns = nil
+	classifier.isSaved("")
+	prepared.SavedCommandsKnown = classifier.savedCommandsKnown
 	expanded, aliases, expansionError := classifier.expandAliases(line)
 	prepared.Line, prepared.Aliases = expanded, aliases
 	if expansionError != nil {
@@ -58,6 +63,11 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 	if command.PipedInto >= 0 {
 		target := command.PipedInto
 		prepared.PipedInto = &target
+	}
+	for _, run := range classifier.savedRuns {
+		if run.line == strings.TrimSpace(command.Text) {
+			prepared.SavedCommand, prepared.ReadFlag = run.name, run.reading
+		}
 	}
 	return prepared
 }

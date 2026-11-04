@@ -25,6 +25,11 @@ type Classifier struct {
 	table       *Table
 	projectFile string
 	aliasLines  map[string]string
+	// savedCommands names the aliases registered as tests and builds, and savedCommandsKnown says the list was read.
+	savedCommands      []string
+	savedCommandsKnown bool
+	// savedRuns are the saved commands of the line being read.
+	savedRuns []savedRun
 }
 
 func NewClassifier(table *Table) *Classifier {
@@ -62,6 +67,20 @@ func (classifier *Classifier) aliases() map[string]string {
 		classifier.aliasLines = readAliasLines(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasFileName))
 	}
 	return classifier.aliasLines
+}
+
+// savedCommandFileName is the file that names the aliases registered as a project's tests and builds.
+const savedCommandFileName = "saved-commands.json"
+
+// isSaved says an alias is a saved command. The list is read once, and an unread file leaves the mark off the line, so
+// a missing file never refuses a test.
+func (classifier *Classifier) isSaved(name string) bool {
+	if classifier.savedCommands == nil {
+		classifier.savedCommands = []string{}
+		text, err := os.ReadFile(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", savedCommandFileName))
+		classifier.savedCommandsKnown = err == nil && json.Unmarshal(text, &classifier.savedCommands) == nil
+	}
+	return slices.Contains(classifier.savedCommands, name)
 }
 
 func readAliasLines(path string) map[string]string {

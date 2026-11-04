@@ -8,7 +8,7 @@ from core.modules.aliases.models.alias import Alias
 
 
 class AliasAccess:
-    """Checks alias permissions for the roles a suite restricts."""
+    """Checks alias permissions for the roles a suite restricts; a saved test or build is open to every role."""
 
     def __init__(self, queries: Queries, suites: SuiteChoice) -> None:
         self.queries, self.suites = queries, suites
@@ -18,7 +18,7 @@ class AliasAccess:
             raise refusal
 
     def refusal(self, alias: Alias, caller: Caller) -> Refusal | None:
-        if alias.agent_access or caller.actor.type is not ActorType.AGENT:
+        if alias.agent_access or caller.actor.type is not ActorType.AGENT or (alias.category and alias.category.is_long_running):
             return None
         agent = self.queries.query(Agent).find(caller.actor.id)
         if agent.role in self.suites.agent_policy(agent.environment_id).restricted_alias_roles:

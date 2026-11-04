@@ -51,6 +51,8 @@ type DiffRow struct {
 
 type ShellLine struct {
 	Aliases       []string `json:"aliases,omitempty"`
+	// SavedCommandsKnown says the hook read the project's saved commands, so a test or build can be judged by them.
+	SavedCommandsKnown bool `json:"saved_commands_known,omitempty"`
 	Line          string   `json:"line"`
 	Parts         []Part   `json:"parts"`
 	Redirects     []string `json:"redirects"`
@@ -69,6 +71,8 @@ type Part struct {
 	JoinedBy       string         `json:"joined_by,omitempty"`
 	PipedInto      *int           `json:"piped_into,omitempty"`
 	IsFullTestRun  bool           `json:"is_full_test_run,omitempty"`
+	SavedCommand   string         `json:"saved_command,omitempty"`
+	ReadFlag       string         `json:"read_flag,omitempty"`
 }
 
 type Classification struct {

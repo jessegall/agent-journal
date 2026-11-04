@@ -13,7 +13,7 @@ from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 
 class AliasFileListener(CommitListener):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
-    anything, and judges an alias by the command under it."""
+    anything, and judges an alias by the command under it, and the names of the aliases saved as tests and builds."""
 
     name = "aliases.alias-file"
     event = f"{FILE_PUBLISHING_EVENTS}|alias.*"
@@ -25,6 +25,7 @@ class AliasFileListener(CommitListener):
         commands = self.names.command_names()
         lines = {alias.name: self.line(alias) for alias in self.aliases.all_rows() if alias.name not in commands}
         self.home.alias_file.write_text(json.dumps(lines))
+        self.home.saved_command_file.write_text(json.dumps([alias.name for alias in self.aliases.all_rows() if alias.name in lines and alias.category and alias.category.is_long_running]))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

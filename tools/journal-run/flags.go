@@ -49,6 +49,13 @@ func outputSettings() ([]string, int) {
 	return strings.Split(stripped, strippedSeparator), bytes
 }
 
+// outputReading reads what the agent reads of each part, and clears it, so a run inside this one starts with none.
+func outputReading() map[int]string {
+	reading := parseReading(os.Getenv(readingVariable))
+	_ = os.Unsetenv(readingVariable)
+	return reading
+}
+
 // binFolder is where a journal keeps this program, inside the journal's folder.
 const binFolder = "bin"
 

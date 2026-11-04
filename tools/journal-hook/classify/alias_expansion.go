@@ -85,6 +85,11 @@ func (classifier *Classifier) aliasReplacement(call *syntax.CallExpr, line strin
 	if len(unwrapped) > 2 {
 		arguments = line[call.Args[first+2].Pos().Offset():call.Args[len(call.Args)-1].End().Offset()]
 	}
+	reading := ""
+	isSaved := classifier.isSaved(name)
+	if isSaved {
+		arguments, reading = splitReading(arguments)
+	}
 	expanded := strings.ReplaceAll(definition, "{args}", arguments)
 	if !strings.Contains(definition, "{args}") && arguments != "" {
 		expanded += " " + arguments
@@ -96,6 +101,9 @@ func (classifier *Classifier) aliasReplacement(call *syntax.CallExpr, line strin
 				expanded = "sh -c " + shell.Quote(expanded)
 			}
 		}
+	}
+	if isSaved {
+		classifier.savedRuns = append(classifier.savedRuns, savedRun{name, expanded, reading})
 	}
 	return aliasReplacement{[]string{name}, int(call.Args[first].Pos().Offset()), int(call.Args[len(call.Args)-1].End().Offset()), expanded}, true, err
 }

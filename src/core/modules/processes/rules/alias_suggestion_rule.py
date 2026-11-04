@@ -26,7 +26,7 @@ class AliasSuggestionRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        commands = [part.text.split()[:SHAPE_TERMS] for part in shell.parts if part.text.split()[0] not in SKIPPED_TERMS] if shell is not None else []
+        commands = [part.text.split()[:SHAPE_TERMS] for part in shell.parts if part.text.split()[0] not in SKIPPED_TERMS and not part.saved_command] if shell is not None else []
         if not commands:
             return RuleAnswer.allowed()
         shape = " ".join(commands[0])

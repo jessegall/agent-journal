@@ -42,7 +42,7 @@ def test_an_output_limit_of_zero_keeps_one_megabyte(piped_runs):
 
 def test_a_declared_test_alias_strips_only_its_own_part(piped_runs):
     piped_runs.story.expect_success('alias add all-tests "./check.sh" --category "test run"', actor=piped_runs.story.agent)
-    piped_runs.expect_stripped("yes | head -1; journal all-tests | tail -2", "./check.sh")
+    piped_runs.expect_stripped("yes | head -1; journal all-tests --tail 2", "./check.sh")
 
 
 def test_a_journal_line_gets_the_limit_of_a_read(piped_runs):

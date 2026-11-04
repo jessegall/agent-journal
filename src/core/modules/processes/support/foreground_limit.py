@@ -35,7 +35,8 @@ class ForegroundLimit:
         stripped = tuple(part.text for part in shell.parts if part.classification.category.is_long_running or self.background.is_long_alias(part, shell))
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if stripped else ProcessSetting.MOST_OUTPUT_MEGABYTES
         return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands,
-                             stripped=stripped, most_output_bytes=self.output_limit(output_setting, environment_id))
+                             stripped=stripped, most_output_bytes=self.output_limit(output_setting, environment_id),
+                             read_flags=tuple(f"{position}:{part.read_flag}" for position, part in enumerate(shell.parts, start=1) if part.read_flag))
 
     def output_limit(self, setting: ProcessSetting, environment_id: int) -> int:
         return max(1, self.settings.integer(setting, environment_id)) * MEGABYTE

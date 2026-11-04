@@ -17,8 +17,11 @@ from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
+from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_UNEXPANDED
+from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
+from core.modules.aliases.support.alias_nudges import (ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN,
+                                                       SAVED_COMMAND_UNREAD)
 
 
 class AliasesModule(Module):
@@ -31,9 +34,9 @@ class AliasesModule(Module):
     migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
-    subcommands = [AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand]
+    subcommands = [AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]
     bindings = {ShellAliases: AliasShellAliases}
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
-    driver_rules = [AliasExpansionRule]
-    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED]
+    driver_rules = [AliasExpansionRule, SavedCommandRule]
+    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD]

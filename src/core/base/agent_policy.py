@@ -18,4 +18,5 @@ class AgentPolicy:
     project_skill_roles: tuple[str, ...] = ()
     pause_retention_roles: tuple[str, ...] = ()
     restricted_alias_roles: tuple[str, ...] = ()
+    saved_command_roles: tuple[str, ...] = ()
     queue_limit_settings: tuple[str, ...] = ()

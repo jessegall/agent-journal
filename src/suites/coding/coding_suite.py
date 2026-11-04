@@ -30,6 +30,7 @@ class CodingSuite(Suite):
         project_skill_roles=tuple(["worker"]),
         pause_retention_roles=tuple(["worker"]),
         restricted_alias_roles=tuple(["worker"]),
+        saved_command_roles=("main", "worker", "subagent", "reviewer", "verifier"),
         queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
     )
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",

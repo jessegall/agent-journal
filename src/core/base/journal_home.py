@@ -37,6 +37,10 @@ class JournalHome:
         return self.folder / "runtime" / "aliases.json"
 
     @property
+    def saved_command_file(self) -> Path:
+        return self.folder / "runtime" / "saved-commands.json"
+
+    @property
     def hook_wait_file(self) -> Path:
         return self.folder / "runtime" / "hook-wait-seconds"
 

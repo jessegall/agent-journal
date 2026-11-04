@@ -7,6 +7,7 @@ from core.base.cli.shell_handoff import RUNNER_VARIABLE
 
 STRIPPED_VARIABLE = "JOURNAL_RUN_STRIPPED"
 MOST_OUTPUT_VARIABLE = "JOURNAL_RUN_MOST_OUTPUT"
+READ_FLAGS_VARIABLE = "JOURNAL_RUN_READING"
 STRIPPED_SEPARATOR = chr(31)
 
 
@@ -25,4 +26,5 @@ class RunnerLine:
         background += " --only-reads" if run.read_command else ""
         variables = f" {STRIPPED_VARIABLE}={shlex.quote(STRIPPED_SEPARATOR.join(run.stripped))}" if run.stripped else ""
         variables += f" {MOST_OUTPUT_VARIABLE}={run.most_output_bytes}" if run.most_output_bytes else ""
+        variables += f" {READ_FLAGS_VARIABLE}={shlex.quote(','.join(run.read_flags))}" if run.read_flags else ""
         return f"{SESSION_VARIABLE}={shlex.quote(session)} {RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

@@ -23,3 +23,4 @@ class ForegroundRun:
     count_line: str = ""
     stripped: tuple[str, ...] = ()
     most_output_bytes: int = 0
+    read_flags: tuple[str, ...] = ()
