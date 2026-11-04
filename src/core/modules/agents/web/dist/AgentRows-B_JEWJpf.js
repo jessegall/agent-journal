@@ -193,12 +193,12 @@ const De = {
           }, p(T.value), 9, Qe),
           A.value ? (s(), l("span", Xe, p(D.value), 1)) : v("", !0)
         ])) : v("", !0),
-        U.value && !n.open || A.value && P.value ? (s(), l("span", {
+        !n.open && (U.value || A.value && P.value) ? (s(), l("span", {
           key: 1,
           class: le(["agent-foot", { "agent-work-start": !T.value }]),
           "data-agent-foot": ""
         }, [
-          U.value && !n.open ? (s(), B(we, {
+          U.value ? (s(), B(we, {
             key: 0,
             class: "agent-command",
             "wait-reason": n.waitReason,
@@ -322,7 +322,7 @@ const De = {
       ], 42, ze);
     };
   }
-}, dt = /* @__PURE__ */ ce(ct, [["__scopeId", "data-v-1e24f62d"]]), gt = ["data-agent-row"], oe = "cubic-bezier(0.2, 0.9, 0.25, 1)", vt = {
+}, dt = /* @__PURE__ */ ce(ct, [["__scopeId", "data-v-770e2bc4"]]), gt = ["data-agent-row"], oe = "cubic-bezier(0.2, 0.9, 0.25, 1)", vt = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(n) {
