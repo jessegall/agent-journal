@@ -34,7 +34,7 @@ def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(
     story.expect_text(MARKS, "12 passed")
     story.expect_absent(MARKS, "\x1b")
     story.expect_text("output read 1 --all", "Tests  12 passed (12)", actor=story.agent)
-    story.expect_absent("output read 1 --all", "\x1b", actor=story.agent)
+    story.expect_absent("output read 1 --all --again", "\x1b", actor=story.agent)
 
 
 def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(ended_custom_tests):
