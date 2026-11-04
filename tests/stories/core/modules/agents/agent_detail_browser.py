@@ -7,6 +7,7 @@ from core.base.driver.diff_count import DiffCount
 from core.modules.agents.models.agent import Agent
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+import os
 
 
 def test_open_worker_and_subagent_details_fill_the_window_and_scroll_inside_it(new_story, tmp_path, monkeypatch):
@@ -31,3 +32,11 @@ def test_agent_details_animate_and_lists_reach_the_edges(new_story, tmp_path, mo
     story.expect_text(f"file-edit list --agent {helper}", "src/cart.py", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "agentEdges.browser.mjs", [str(helper), "/tmp/journal-worker-481-agent"])
+
+
+def test_selected_agent_moves_continuously_when_opened_and_closed(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    helpers = [story.new_row_id(f"agent start motion-{number} claude worker --parent {story.agent.id} --environment main") for number in range(10)]
+    with server_story(story) as server:
+        expect_browser(server, "agentTransition.browser.mjs", [str(helpers[3]), os.environ.get("AGENT_TRANSITION_CAPTURE", "/tmp/journal-agent-transition/after")])
