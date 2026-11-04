@@ -23,7 +23,7 @@ pytestmark = pytest.mark.usefixtures("private_folder")
 JSON_HEADERS = {"Content-Type": "application/json"}
 DOCUMENTS_WINDOW = "documents.documents"
 UNREACHABLE_LINE = "the library could not be reached, so these are local results only"
-NEEDS_GO = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
+SERVER_BUILD_REQUIRED = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
 
 
 @dataclass(frozen=True)
@@ -49,7 +49,7 @@ def local_doc(story, title: str, body: str) -> None:
     story.expect_text(f'doc make "{title}" --abstract "About {title}" --body "{body}"', f"{title}", actor=story.user)
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_library_hits_follow_the_local_ones_with_their_excerpt(new_story, shared_server):
     server, tokens = shared_server
     server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Recovery procedure", "abstract": "How to undo", "body": "Run the rollback script, then check the logs."}})
@@ -60,7 +60,7 @@ def test_library_hits_follow_the_local_ones_with_their_excerpt(new_story, shared
     story.expect_text("search find rollback", "library doc 1: Recovery procedure ", "rollback script", actor=story.agent)
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_the_library_hits_are_in_the_json_with_whether_the_library_was_reached(new_story, shared_server):
     server, tokens = shared_server
     server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Granite note", "abstract": "About granite", "body": "Granite only."}})
@@ -70,7 +70,7 @@ def test_the_library_hits_are_in_the_json_with_whether_the_library_was_reached(n
     story.expect_rows([(hit["cli_name"], hit["title"]) for hit in answer["library"]] == [("library doc", "Granite note")], answer["library_unreachable"] is False, answer["hits"] == [])
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_a_search_with_only_library_hits_does_not_say_nothing_holds_the_words(new_story, shared_server):
     server, tokens = shared_server
     server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Basalt note", "abstract": "About basalt", "body": "Basalt only."}})
@@ -118,7 +118,7 @@ def test_a_search_mark_asks_no_server(new_story):
         story.run_listeners()
         story.expect_rows(stub.requests == [])
         story.expect_text("search find cart", "task 1: ", actor=story.user)
-        story.expect_rows(len(stub.requests) == 1)
+        story.expect_rows(len(stub.requests) == 3)
 
 
 def connected_story(new_story, server: SharedServerBinary, token: str):
@@ -127,7 +127,7 @@ def connected_story(new_story, server: SharedServerBinary, token: str):
     return story
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_a_library_document_is_read_by_its_library_number_with_every_reading_flag(new_story, shared_server):
     server, tokens = shared_server
     item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Reading alpha", "abstract": "About alpha", "body": "## Steps\nTag first.\n- one\n- two\n## Notes\nThen build."}})[1]
@@ -142,7 +142,7 @@ def test_a_library_document_is_read_by_its_library_number_with_every_reading_fla
     story.expect_rows(document["fields"]["title"] == "Reading alpha", document["id"] == number)
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_nothing_is_saved_by_reading_a_library_document(new_story, shared_server):
     server, tokens = shared_server
     item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Reading beta", "abstract": "About beta", "body": "Tag first."}})[1]
@@ -151,7 +151,7 @@ def test_nothing_is_saved_by_reading_a_library_document(new_story, shared_server
     story.expect_no_text("doc list", "Reading beta", actor=story.agent)
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_a_plain_number_with_no_local_document_is_refused_with_the_library_item_of_that_number(new_story, shared_server):
     server, tokens = shared_server
     item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Rollback procedure", "abstract": "How to undo", "body": "Run it."}})[1]
@@ -165,7 +165,7 @@ def test_a_plain_number_with_no_local_document_and_no_library_stays_a_plain_refu
     story.expect_refusal("doc show 5000", "no doc 5000", actor=story.agent)
 
 
-@NEEDS_GO
+@SERVER_BUILD_REQUIRED
 def test_a_library_reading_lists_no_links_of_the_local_row_with_the_same_number(new_story, tmp_path):
     with SharedServerBinary(tmp_path) as server:
         token = server.new_user("Ada", "admin")
@@ -203,3 +203,71 @@ def test_a_share_session_reads_the_shared_document_and_never_the_library_item_wi
         server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "1"], "environment": "main"}, 200, '"code": 0')
         server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "library:1"], "environment": "main"}, 403, "not part of what is shared")
         server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": ["doc", "show", "library:14"], "environment": "main"}, 403, "not part of what is shared")
+        for share_name in SHARE_NAMES:
+            server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": [share_name, "show", "library:1"], "environment": "main"}, 403, "not shared by the link")
+            server.expect_viewer_line(visitor, {"window": DOCUMENTS_WINDOW, "line": [share_name, "show", "1"], "environment": "main"}, 403, "not shared by the link")
+
+
+SHARE_NAMES = ["sequence", "check"]
+
+
+def library_item(server: SharedServerBinary, token: str, share_name: str, title: str) -> int:
+    fields = ({"title": title, "steps": json.dumps(["Run the suite", "Tag the release"]), "step_guards": "[]"} if share_name == "sequence"
+              else {"title": title, "command": "make release", "brief": "Builds the release", "interval_minutes": 0})
+    return int(str(server.send(token, "POST", f"/items/{share_name}", {"fields": fields})[1]["id"]))
+
+
+@SERVER_BUILD_REQUIRED
+@pytest.mark.parametrize("share_name", SHARE_NAMES)
+def test_a_library_sequence_or_check_is_read_by_its_library_number_and_nothing_is_saved(new_story, shared_server, share_name):
+    server, tokens = shared_server
+    number = library_item(server, tokens.admin, share_name, f"Reading {share_name}")
+    story = connected_story(new_story, server, tokens.editor)
+    expected = ["1. Run the suite", "2. Tag the release"] if share_name == "sequence" else ["command: make release", "brief: Builds the release"]
+    story.expect_text(f"{share_name} show library:{number}", f"From the team's library, version 1, changed by Ada; it is not a {share_name} of this journal.", f"library {share_name} {number}: Reading {share_name}", *expected, actor=story.agent)
+    document = json.loads(story.run(f"{share_name} show library:{number} --json", actor=story.agent).output_text)
+    story.expect_rows(document["fields"]["title"] == f"Reading {share_name}", document["id"] == number)
+    story.expect_no_text(f"{share_name} list", f"Reading {share_name}", actor=story.agent)
+
+
+@SERVER_BUILD_REQUIRED
+@pytest.mark.parametrize("share_name", SHARE_NAMES)
+def test_a_plain_number_with_no_local_sequence_or_check_is_refused_with_the_library_item_of_that_number(new_story, shared_server, share_name):
+    server, tokens = shared_server
+    number = library_item(server, tokens.admin, share_name, f"Hinted {share_name}")
+    story = connected_story(new_story, server, tokens.editor)
+    story.expect_refusal(f"{share_name} show {number}", f"library {share_name} {number} exists: Hinted {share_name}; read it with journal {share_name} show library:{number}", actor=story.agent)
+
+
+@pytest.mark.parametrize("share_name", SHARE_NAMES)
+def test_a_plain_number_with_no_local_sequence_or_check_and_no_library_stays_a_plain_refusal(new_story, share_name):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal(f"{share_name} show 5000", f"no {share_name} 5000", actor=story.agent)
+
+
+@SERVER_BUILD_REQUIRED
+def test_a_library_check_lists_no_links_of_the_local_check_with_the_same_number(new_story, shared_server):
+    server, tokens = shared_server
+    number = library_item(server, tokens.admin, "check", "Library check one")
+    story = connected_story(new_story, server, tokens.editor)
+    story.expect_success('check make "Local one" --command "true" --every 0', actor=story.user)
+    story.expect_text("check show 1", "Local one", actor=story.agent)
+    story.expect_text(f"check show library:{number}", f"library check {number}: Library check one", actor=story.agent)
+    story.expect_no_text(f"check show library:{number}", "Local one", "links:", actor=story.agent)
+
+
+@pytest.mark.parametrize("share_name", SHARE_NAMES)
+def test_with_no_connection_a_library_sequence_or_check_number_is_refused_in_plain_words(new_story, share_name):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal(f"{share_name} show library:31", "This journal is not connected to a shared server.", actor=story.agent)
+
+
+@pytest.mark.parametrize("share_name", SHARE_NAMES)
+def test_a_library_number_that_is_no_number_is_a_usage_error_for_a_sequence_or_check(new_story, share_name):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_usage_error(f"{share_name} show library:twelve", actor=story.agent)
+
+
+def test_a_sequence_cannot_be_run_from_the_library_before_it_is_got(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_refusal("sequence run library:3", "get it first with journal library get sequence 3", actor=story.agent)

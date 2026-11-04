@@ -14,6 +14,7 @@ from suites.coding.modules.checks.support.passed_checks import PassedChecks
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
+from suites.coding.modules.checks.commands.check_show.check_show_subcommand import CheckShowSubcommand
 from suites.coding.modules.checks.commands.edit_check.edit_check_handler import EditCheckHandler
 from suites.coding.modules.checks.commands.edit_check.edit_check_subcommand import EditCheckSubcommand
 from suites.coding.modules.checks.commands.make_check.make_check_handler import MakeCheckHandler
@@ -47,7 +48,7 @@ from suites.coding.modules.checks.support.block_conditions.check_passed import C
 from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
 from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
 
-BUILT = ["make", "edit", "list", "delete"]
+BUILT = ["make", "edit", "show", "list", "delete"]
 
 
 class ChecksModule(Module):
@@ -66,7 +67,7 @@ class ChecksModule(Module):
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
-    subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand]
+    subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
