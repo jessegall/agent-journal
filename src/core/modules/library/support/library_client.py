@@ -12,7 +12,7 @@ from core.base.refusal import Refusal
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
-from core.modules.library.support.library_errors import LibraryFailures
+from core.modules.library.support.library_failures import LibraryFailures
 from core.base.library.library_item import LibraryItem
 from core.modules.library.support.library_item_body import LibraryItemBody
 from core.modules.library.support.library_page import LibraryPage
@@ -20,8 +20,8 @@ from core.modules.library.support.page_request import PageRequest
 from core.modules.library.support.version_request import VersionRequest
 from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.library_unchanged_error import LibraryUnchangedError
-from core.modules.library.support.library_stopped import LibraryStopped
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.library_token import LibraryToken
 from core.modules.library.support.library_tokens import LibraryTokens
@@ -42,7 +42,7 @@ T = TypeVar("T")
 
 class LibraryClient:
     """Sends one request to the shared server, only to the address a person connected to, and turns the answer into
-    a value or one of the failures in library_errors. It has no retries: the next round is the retry."""
+    a value or one of the failures in library_failures. It has no retries: the next round is the retry."""
 
     def __init__(self, settings: SettingValues, values: SecretValues, connections: LibraryConnectionQuery, certificate: LibraryCertificate) -> None:
         self.settings, self.values, self.connections, self.certificate = settings, values, connections, certificate
@@ -120,24 +120,24 @@ class LibraryClient:
                 raise LibraryUnchangedError("the server has nothing newer") from failure
             raise LibraryFailures.classify(failure.code, failure.read()) from failure
         except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as failure:
-            raise LibraryUnreachable(str(failure)) from failure
+            raise LibraryUnreachableError(str(failure)) from failure
 
     def connected_address(self) -> str:
         connection = self.connections.current()
         if connection is None:
-            raise LibraryStopped.disconnected()
+            raise LibraryStoppedError.disconnected()
         if connection.stopped:
-            raise LibraryStopped(connection.stopped)
+            raise LibraryStoppedError(connection.stopped)
         try:
             current = LibraryAddress(str(self.settings.project_value(ADDRESS_SETTING))).base
         except Refusal as invalid:
-            raise LibraryStopped.address_changed() from invalid
+            raise LibraryStoppedError.address_changed() from invalid
         if current != connection.address:
-            raise LibraryStopped.address_changed()
+            raise LibraryStoppedError.address_changed()
         return connection.address
 
     def token(self) -> str:
         values = self.values.values()
         if TOKEN_VARIABLE not in values:
-            raise LibraryStopped.disconnected()
+            raise LibraryStoppedError.disconnected()
         return values[TOKEN_VARIABLE]

@@ -6,12 +6,14 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
+from core.base.model.state_book import StateBook
 from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.base.query.queries import Queries
+from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
@@ -23,7 +25,7 @@ DELEGATED = "delegated"
 
 
 def board_group(text: str) -> TaskState | str:
-    return text if text == DELEGATED else TaskState(text)
+    return TaskState(text) if text in TaskState._value2member_map_ else text
 
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
@@ -32,8 +34,12 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     cli_name = "task"
     name = "board"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
+    def __init__(self, queries: Queries, environment_names: EnvironmentNames, book: StateBook) -> None:
+        self.queries, self.environment_names, self.book = queries, environment_names, book
+
+    def added_states(self) -> tuple[str, ...]:
+        lifecycle = self.book.lifecycle(Task)
+        return lifecycle.added_states if lifecycle is not None else ()
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -50,7 +56,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
             if arguments.state in FINISHED_STATES:
                 return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, arguments.before_closed_at, arguments.limit or FINISHED_PAGE_ROWS)]))
             return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
-        active_groups = tuple(self.group(environment_id, state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN))
+        active_groups = tuple(self.group(environment_id, state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN, *self.added_states()))
         finished = tuple(self.finished_group(environment_id, state, None, arguments.limit or FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 

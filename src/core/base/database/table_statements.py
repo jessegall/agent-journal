@@ -32,6 +32,9 @@ class TableStatements:
     def count(self) -> Statement:
         return Statement(f"SELECT count(*) FROM {self.table.name}")
 
+    def state_retirement(self, state: str, target: str, timestamp: str) -> Statement:
+        return Statement(f"UPDATE {self.table.name} SET state = ?, version = version + 1, updated_at = ? WHERE state = ?", (target, timestamp, state))
+
     def metadata_removal(self, module: str) -> Statement:
         key = f'$."{module}"'
         return Statement(f"UPDATE {self.table.name} SET metadata = json_remove(metadata, ?) WHERE json_type(metadata, ?) IS NOT NULL", (key, key))

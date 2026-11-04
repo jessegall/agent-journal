@@ -1,9 +1,11 @@
+from collections.abc import Sequence
 from enum import StrEnum
 
 from core.base.database.constraint_refusals import RULE_PREFIX
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.model.model import STATE, Model
+from core.base.model.state_book import StateBook
 from core.base.model.table import indefinite_article
 from core.base.model.tables import Tables
 
@@ -20,16 +22,16 @@ class Triggers:
     def __init__(self, database: Database, tables: Tables) -> None:
         self.database, self.tables = database, tables
 
-    def rebuild(self, models: tuple[type[Model], ...]) -> None:
+    def rebuild(self, models: Sequence[type[Model]], book: StateBook) -> None:
         with self.database.transaction():
             for row in self.database.rows(RULE_TRIGGERS):
                 self.database.update(Statement(f"DROP TRIGGER {row['name']}"))
             for model in models:
-                for sql in self.lifecycle_triggers(model) + self.enum_triggers(model):
+                for sql in self.lifecycle_triggers(model, book) + self.enum_triggers(model):
                     self.database.update(Statement(sql))
 
-    def lifecycle_triggers(self, model: type[Model]) -> tuple[str, ...]:
-        lifecycle = model.lifecycle
+    def lifecycle_triggers(self, model: type[Model], book: StateBook) -> tuple[str, ...]:
+        lifecycle = book.lifecycle(model)
         if lifecycle is None:
             return ()
         table, cli_name = self.tables.table(model).name, model.cli_name

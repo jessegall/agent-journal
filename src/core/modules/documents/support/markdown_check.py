@@ -10,7 +10,7 @@ TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}")
 CELL_BORDER = re.compile(r"(?<!\\)\|")
 HEADING_LEVEL = re.compile(r"^(#{1,6})\s")
 HEADING_WITHOUT_SPACE = re.compile(r"^#{2,6}[^#\s]")
-MOST_SHOWN = 5
+MOST_FAULTS_SHOWN = 5
 
 
 class MarkdownCheck:
@@ -20,7 +20,7 @@ class MarkdownCheck:
     def check(cls, text: str) -> None:
         faults = cls.faults(text)
         if faults:
-            shown = "; ".join(str(fault) for fault in faults[:MOST_SHOWN])
+            shown = "; ".join(str(fault) for fault in faults[:MOST_FAULTS_SHOWN])
             raise Refusal(f"the Markdown has {len(faults)} faults: {shown}", "fix those lines and save again")
 
     @classmethod

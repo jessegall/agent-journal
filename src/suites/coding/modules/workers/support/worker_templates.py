@@ -1,6 +1,6 @@
 from core.base.template.template_declaration import TemplateDeclaration
+from suites.coding.support.coding_templates import TESTING
 
-TESTING = "testing"
 WORKER_TARGETS = tuple(["worker"])
 WORKER_TEMPLATES = [
     TemplateDeclaration(

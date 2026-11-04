@@ -19,3 +19,6 @@ When a request names a template, read it with `journal template show <n>` and fo
 report linked to the row the request is about.
 
 Only a person sends a template. An agent reads one with `journal template show <n>` and follows it.
+
+A critique puts its plan under review: the plan cannot be approved or started until a report about it is filed, which
+makes it ready again, or until a person ends the review with `journal plan reviewed <n>`.

@@ -67,7 +67,7 @@ def test_the_library_hits_are_in_the_json_with_whether_the_library_was_reached(n
     story = new_story(fixture=BuilderWithUser)
     story.expect_text(f"library connect {server.address} --token {tokens.editor}", "Connected: ", actor=story.user)
     answer = json.loads(story.run("search find granite --json", actor=story.agent).output_text)
-    story.expect_rows([(hit["cli_name"], hit["title"]) for hit in answer["library"]] == [("library doc", "Granite note")], answer["library_unreachable"] is False, answer["hits"] == [])
+    story.expect_rows([(hit["cli_name"], hit["title"]) for hit in answer["library"]] == [("library doc", "Granite note")], answer["library_unreachable_error"] is False, answer["hits"] == [])
 
 
 @SERVER_BUILD_REQUIRED

@@ -27,6 +27,9 @@ try {
             set onmessage(listener) {
                 super.onmessage = (event) => { if (!window.holdEvents) listener(event); };
             }
+            addEventListener(type, listener, ...options) {
+                super.addEventListener(type, (event) => { if (!window.holdEvents) listener(event); }, ...options);
+            }
         };
     });
     const link = new URL(address);
@@ -55,6 +58,14 @@ try {
     await form.waitFor({state: "hidden"});
     const messages = await run(["message", "list", "--environment", "demo"]);
     assert.ok(messages.rows.some((message) => message.text.includes(`Please have 2 agents give plan ${plan.id} a normal read, following template`) && message.text.includes("(Find what is missing), and compile what they find into a report linked to the plan.")));
+    assert.equal((await run(["plan", "show", String(plan.id)])).state, "reviewing");
+
+    console.log("Ending the review from the card");
+    const endReview = card.getByRole("button", {name: "End the review", exact: true});
+    await endReview.waitFor();
+    assert.equal(await card.getByRole("button", {name: "Approve", exact: true}).count(), 0);
+    await endReview.click();
+    await card.getByRole("button", {name: "Approve", exact: true}).waitFor();
     assert.equal((await run(["plan", "show", String(plan.id)])).state, "ready");
 
     console.log("Checking the phone title, reachable approval and approval message sheet");
@@ -83,6 +94,7 @@ try {
     await run(["plan", "ready", String(stale.id), "--environment", "demo"]);
     const staleCard = page.locator('.chat-dock-card[aria-label="Stale approval"]');
     await staleCard.getByRole("button", {name: "Approve", exact: true}).waitFor();
+    await page.waitForLoadState("networkidle");
     await page.evaluate(() => { window.holdEvents = true; });
     await run(["plan", "cancel", String(stale.id), "--reason", "Replaced", "--environment", "demo"]);
     await staleCard.getByRole("button", {name: "Approve", exact: true}).click();

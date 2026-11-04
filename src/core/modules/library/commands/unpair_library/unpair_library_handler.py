@@ -11,7 +11,7 @@ from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.support.library_client import TOKEN_VARIABLE
 from core.modules.library.support.library_disconnection import LibraryDisconnection
 from core.modules.library.support.library_person import LibraryPerson
-from core.modules.library.support.library_stopped import LibraryStopped
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
 
 STOPPED_TEXT = "Disconnected. Connect again to sync."
 
@@ -29,7 +29,7 @@ class UnpairLibraryHandler(Handler[UnpairLibrary, LibraryDisconnection]):
         LibraryPerson.require(context, "only a person connects to the shared server or disconnects from it", "ask the user to do it on the Teams page")
         connection = self.connections.current()
         if connection is None:
-            raise LibraryStopped.disconnected()
+            raise LibraryStoppedError.disconnected()
         self.values.retire(TOKEN_VARIABLE, int(context.timestamp.value.timestamp()))
         self.certificate.remove()
         return self.deleted(connection, context) if command.include_copies else self.stopped(connection, context)

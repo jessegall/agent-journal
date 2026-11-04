@@ -9,7 +9,8 @@ import {computed, ref, watch} from "vue";
 import ButtonSlot from "../kit/ButtonSlot.vue";
 import BackButton from "../kit/BackButton.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import Dot from "../kit/Dot.vue";
+import {statusIcon} from "../domain/taskStatus.js";
+import TaskStatusIcon from "../tasks/TaskStatusIcon.vue";
 import Folded from "../kit/Folded.vue";
 import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -20,6 +21,7 @@ import CommentedRow from "./CommentedRow.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 import {delegationWord} from "../domain/plans.js";
+import {stateLabel, stateLook} from "../domain/states.js";
 
 // one plan as version 4's plan page drew it: its state and phase, how far it has come, what can be done to it, its text, and its phases as cards of tasks
 const CLOSED = new Set(["completed", "cancelled"]);
@@ -36,7 +38,6 @@ const textComments = useTextComments(() => (plan.value ? {kind: "plan", id: prop
 let reading = 0;
 
 const html = computed(() => (plan.value?.brief ? render(plan.value.brief, {env: "", rowNames: false}) : ""));
-const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const closedCount = (phase) => phase.tasks.filter((task) => CLOSED.has(task.state)).length;
 const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase.tasks.length;
 
@@ -62,8 +63,8 @@ watch(() => props.id, () => {
             </template>
             <span class="kind"><Icon name="flag" :size="13" /> Plan {{ id }}</span>
             <template v-if="plan">
-                <span :class="['status', plan.state]" data-plan-status>
-                    {{ label(plan.state) }}<template v-if="plan.current_phase"> · phase {{ plan.current_phase }} of {{ plan.phases.length }}</template>
+                <span :class="['status', stateLook('plan', plan.state)]" data-plan-status>
+                    {{ stateLabel("plan", plan.state) }}<template v-if="plan.current_phase"> · phase {{ plan.current_phase }} of {{ plan.phases.length }}</template>
                 </span>
             </template>
             <span class="grow" />
@@ -129,7 +130,7 @@ watch(() => props.id, () => {
                             <PlanPhaseAgents :tasks="phase.tasks" />
                             <template v-for="task in phase.tasks" :key="task.id">
                                 <button type="button" :class="['row', task.state]" data-resource-task @click="emit('select', task.id)">
-                                    <Dot :kind="task.state" />
+                                    <TaskStatusIcon :status="statusIcon(task.state)" />
                                     <span class="row-id">#{{ task.id }}</span>
                                     <span class="row-title">{{ task.title }}</span>
                                     <template v-if="task.helper_id">

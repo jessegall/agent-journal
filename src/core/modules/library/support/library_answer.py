@@ -1,4 +1,4 @@
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
 class LibraryAnswer:
@@ -7,12 +7,12 @@ class LibraryAnswer:
     @staticmethod
     def member(body: object, name: str) -> object:
         if not isinstance(body, dict) or name not in body:
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         return body[name]
 
     @staticmethod
     def members(body: object, name: str) -> list[object]:
         part = LibraryAnswer.member(body, name)
         if not isinstance(part, list):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         return part

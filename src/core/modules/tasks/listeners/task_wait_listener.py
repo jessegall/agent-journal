@@ -3,6 +3,7 @@ from dataclasses import replace
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
+from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -23,12 +24,12 @@ class TaskWaitListener(SaveListener):
     event = "*.*"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, tables: Tables, waits: TaskWaits) -> None:
-        self.queries, self.repository, self.tables, self.waits = queries, repository, tables, waits
+    def __init__(self, queries: Queries, repository: Repository, tables: Tables, waits: TaskWaits, book: StateBook) -> None:
+        self.queries, self.repository, self.tables, self.waits, self.book = queries, repository, tables, waits, book
 
     def handle(self, change: Change[Model]) -> None:
         row = change.row
-        lifecycle = type(row).lifecycle
+        lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
             for wait in tuple(self.waits.open_waits(row.id).all_rows()):
                 self.repository.save(replace(wait, ended_at=change.context.timestamp), change.context)

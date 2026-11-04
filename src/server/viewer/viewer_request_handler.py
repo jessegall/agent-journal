@@ -47,6 +47,7 @@ WINDOWS_ROUTE = "/api/windows"
 BUTTONS_ROUTE = "/api/buttons"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
+STATES_ROUTE = "/api/states"
 SESSION_ROUTE = "/api/session"
 SERVER_STATE_ROUTE = "/api/server-state"
 NOTICES_ROUTE = "/api/push"
@@ -153,6 +154,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path == DOCKS_ROUTE:
             self.answer(200, {"docks": viewer.routes.chat_declarations_route.docks()})
+            return
+        if route.path == STATES_ROUTE:
+            self.answer(200, {"states": viewer.routes.chat_declarations_route.states()})
             return
         if route.path == SKILLS_ROUTE:
             self.answer(200, {"skills": viewer.routes.skills_route.skills()})

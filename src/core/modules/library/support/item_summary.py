@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from core.base.library.library_hit import LibraryHit
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
 @dataclass(frozen=True)
@@ -24,12 +24,12 @@ class ItemSummary:
     @classmethod
     def parsed(cls, body: object) -> "ItemSummary":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(str(body["kind"]), int(body["id"]), int(body["version"]), str(body["title"]), str(body.get("abstract", "")), str(body.get("excerpt", "")),
                        str(body.get("creator", "")), str(body.get("updated_by", "")), str(body.get("updated_at", "")))
         except (KeyError, TypeError, ValueError) as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error
 
     def hit(self) -> LibraryHit:
         return LibraryHit(self.share, self.item_id, self.title, self.excerpt)

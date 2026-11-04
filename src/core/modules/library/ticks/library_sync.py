@@ -18,13 +18,13 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.agent_edits import AgentEdits
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_denied import LibraryDenied
-from core.modules.library.support.library_item_removed import LibraryItemRemoved
-from core.modules.library.support.library_rejected import LibraryRejected
+from core.modules.library.support.library_denied_error import LibraryDeniedError
+from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
+from core.modules.library.support.library_rejected_error import LibraryRejectedError
 from core.modules.library.support.library_shares import LibraryShares
-from core.modules.library.support.library_stale import LibraryStale
-from core.modules.library.support.library_stopped import LibraryStopped
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_stale_error import LibraryStaleError
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.round_memory import RoundMemory
 from core.modules.library.support.server_state import ServerState
 from core.modules.library.support.sync_outcome import SyncOutcome
@@ -47,31 +47,31 @@ class LibrarySync:
     def round(self, memory: RoundMemory) -> SyncOutcome:
         connection = self.connections.current()
         if connection is None:
-            return SyncOutcome.idle(LibraryStopped.disconnected().reason)
+            return SyncOutcome.idle(LibraryStoppedError.disconnected().reason)
         if not self.client.is_connected:
             return SyncOutcome.idle(connection.stopped)
         try:
             state = self.state(connection, memory)
             results = [self.sync_safely(copy, state, memory) for copy in list(self.queries.query(LibraryCopy).all_rows())]
-        except LibraryUnreachable as failure:
+        except LibraryUnreachableError as failure:
             return self.note_failure(connection, failure)
-        except LibraryStopped as stopped:
+        except LibraryStoppedError as stopped:
             return self.note_stopped(connection, stopped)
         return self.note_reached(connection, state, results)
 
     def state(self, connection: LibraryConnection, memory: RoundMemory) -> ServerState:
         state = self.client.state() if memory.state is None else self.client.newest_state(memory.state)
         if state.server_key != connection.server_key:
-            raise LibraryStopped.changed_server()
+            raise LibraryStoppedError.changed_server()
         memory.state = state
         return state
 
     def sync_safely(self, copy: LibraryCopy, state: ServerState, memory: RoundMemory) -> bool:
         try:
             return self.sync_copy(copy, state, memory)
-        except (LibraryStopped, LibraryUnreachable):
+        except (LibraryStoppedError, LibraryUnreachableError):
             raise
-        except (LibraryItemRemoved, StaleRowError):
+        except (LibraryItemRemovedError, StaleRowError):
             return False
         except Refusal as failure:
             memory.skip(copy, state.entry(copy.share, copy.item_id))
@@ -102,11 +102,11 @@ class LibrarySync:
     def send(self, copy: LibraryCopy, row: Model, digest: str, role: LibraryRole) -> bool:
         try:
             item = self.client.update(copy.share, copy.item_id, copy.base_version, self.shares.lookup(copy.share).fields(row))
-        except LibraryDenied:
+        except LibraryDeniedError:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.DENIED, note="", unsent_digest=digest, server_version=copy.base_version))
-        except LibraryRejected as refusal:
+        except LibraryRejectedError as refusal:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.REJECTED, note=str(refusal), unsent_digest=digest, server_version=copy.base_version))
-        except LibraryStale as stale:
+        except LibraryStaleError as stale:
             return self.compare(copy, row, stale.current, digest, role)
         return self.save(UpdateLibraryCopy.synced(copy.id, item.version, digest))
 
@@ -139,10 +139,10 @@ class LibrarySync:
             self.save(UpdateLibraryConnection(state.role, has_reached=True))
         return SyncOutcome.reached(len(results), sum(results), any(results))
 
-    def note_failure(self, connection: LibraryConnection, failure: LibraryUnreachable) -> SyncOutcome:
+    def note_failure(self, connection: LibraryConnection, failure: LibraryUnreachableError) -> SyncOutcome:
         has_changed = connection.failure != failure.reason and self.save(UpdateLibraryConnection(connection.role, failure=failure.reason))
         return SyncOutcome.failed(failure.reason, has_changed)
 
-    def note_stopped(self, connection: LibraryConnection, stopped: LibraryStopped) -> SyncOutcome:
+    def note_stopped(self, connection: LibraryConnection, stopped: LibraryStoppedError) -> SyncOutcome:
         has_changed = connection.stopped != stopped.reason and self.save(UpdateLibraryConnection(connection.role, stopped=stopped.reason))
         return SyncOutcome.failed(stopped.reason, has_changed)

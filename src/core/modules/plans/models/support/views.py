@@ -10,6 +10,7 @@ PLAN_PROGRESS_SELECT = (
     "SELECT plans.id AS plan_id,"
     " (SELECT count(*) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state != 'cancelled') AS task_count,"
     " (SELECT count(*) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'completed') AS completed_count,"
+    " (SELECT count(*) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'testing') AS testing_count,"
     " coalesce((SELECT min(plan_tasks.phase_position) FROM plan_tasks"
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL), 0) AS current_phase"
     " FROM plans"
@@ -17,7 +18,7 @@ PLAN_PROGRESS_SELECT = (
 
 PLAN_CARDS_SELECT = (
     "SELECT plans.id, plans.environment_id, plans.title, plans.state,"
-    " plan_progress.task_count, plan_progress.completed_count, plan_progress.current_phase,"
+    " plan_progress.task_count, plan_progress.completed_count, plan_progress.testing_count, plan_progress.current_phase,"
     " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'task_id', tasks.id, 'task_title', tasks.title))"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"

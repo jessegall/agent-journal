@@ -28,4 +28,4 @@ class SearchResult:
 
     def json(self) -> dict[str, object]:
         listed: dict[str, object] = {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in self.hits], "total": self.total}
-        return {**listed, "library": [hit.json() for hit in self.library.entries], "library_unreachable": self.library.is_unreachable} if self.library.entries or self.library.is_unreachable else listed
+        return {**listed, "library": [hit.json() for hit in self.library.entries], "library_unreachable_error": self.library.is_unreachable} if self.library.entries or self.library.is_unreachable else listed

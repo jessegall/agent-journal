@@ -2,6 +2,9 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.command.move_row import MoveRow
+from core.base.model.model import Model
+from core.base.model.state_book import StateBook
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.documents.commands.comment_text.comment_text import CommentText
@@ -18,8 +21,8 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
 
     command = SendTemplate
 
-    def __init__(self, queries: Queries, active: ActiveModules, targets: TemplateTargets, bus: Bus) -> None:
-        self.queries, self.active, self.targets, self.bus = queries, active, targets, bus
+    def __init__(self, queries: Queries, active: ActiveModules, targets: TemplateTargets, bus: Bus, book: StateBook) -> None:
+        self.queries, self.active, self.targets, self.bus, self.book = queries, active, targets, bus, book
 
     def handle(self, command: SendTemplate, context: Context) -> Message:
         if context.actor.type is not ActorType.USER:
@@ -30,4 +33,12 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
         target = self.targets.row(command.target, template, context.environment_id)
         purpose = PURPOSES.get(template.purpose, PLAIN_PURPOSE)
         commenting = CommentText(target.model, target.id, purpose.text(template, target, command.values))
-        return self.bus.dispatch(commenting, context.nested(commenting))
+        message = self.bus.dispatch(commenting, context.nested(commenting))
+        if purpose.move and self.has_move(target.model, purpose.move):
+            moving = MoveRow(target.model.model_name, target.id, purpose.move)
+            self.bus.dispatch(moving, context.nested(moving))
+        return message
+
+    def has_move(self, model: type[Model], name: str) -> bool:
+        lifecycle = self.book.lifecycle(model)
+        return lifecycle is not None and lifecycle.has_move(name)

@@ -8,6 +8,7 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.guard.lifecycle_guard import LifecycleGuard
+from core.base.model.state_book import StateBook
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
@@ -29,7 +30,7 @@ def moved(old_row: Model, new_row: Model) -> Change[Model]:
 
 def refusal(old_row: Model, new_row: Model) -> str:
     with pytest.raises(Refusal) as raised:
-        LifecycleGuard().check(moved(old_row, new_row))
+        LifecycleGuard(StateBook()).check(moved(old_row, new_row))
     return raised.value.text
 
 
@@ -38,7 +39,7 @@ def test_worktree_moves():
     delivered = cut.moved(WorktreeLifecycle.deliver)
     merged = delivered.moved(WorktreeLifecycle.merge)
     for old_row, new_row in ((WORKTREE, cut), (cut, delivered), (delivered, merged), (merged, merged.moved(WorktreeLifecycle.remove))):
-        LifecycleGuard().check(moved(old_row, new_row))
+        LifecycleGuard(StateBook()).check(moved(old_row, new_row))
 
 
 def test_worktree_move_refusal():
@@ -49,6 +50,6 @@ def test_worktree_move_refusal():
 
 def test_proof_move_refusal():
     checked = PROOF.moved(ProofLifecycle.check)
-    LifecycleGuard().check(moved(PROOF, checked))
+    LifecycleGuard(StateBook()).check(moved(PROOF, checked))
     assert refusal(checked, checked.moved(ProofLifecycle.short, shortfall="the rounding has no test")) == "proof 1 is checked, so it cannot short: checked is final"
     assert refusal(PROOF, PROOF.moved(ProofLifecycle.revise)) == "proof 1 is shown, so it cannot revise: from shown it can only go on with journal proof queue 1, journal proof check 1, journal proof short 1"

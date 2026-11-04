@@ -6,6 +6,8 @@ from core.base.model.tables import Tables
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
+from core.base.module.module_states import modules_book
+from core.base.module.state_check import StateCheck
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.provider_check import ProviderCheck
@@ -32,16 +34,19 @@ class ModuleCheck:
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
                  docks: DockCheck, settings: SettingCheck, skills: SkillCheck, moves: MoveCheck, templates: TemplateCheck,
-                 buttons: ButtonCheck, finder: ModuleFinder) -> None:
+                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
         self.settings, self.skills, self.moves = settings, skills, moves
         self.templates = templates
+        self.states = states
         self.buttons, self.finder = buttons, finder
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events: list[str] = [event for module in modules for event in module.file_events]
+        book = modules_book(modules)
         for model in self.models(modules):
-            moves = tuple(move.name for move in model.lifecycle.moves()) if model.lifecycle else ()
+            lifecycle = book.lifecycle(model)
+            moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()
             events.extend(f"{model.model_name}.{change}" for change in STANDARD_CHANGES + moves)
         return tuple(events)
 
@@ -49,7 +54,7 @@ class ModuleCheck:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
                     + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
-                    + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules)
+                    + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules())))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))

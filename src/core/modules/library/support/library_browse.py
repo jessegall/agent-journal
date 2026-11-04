@@ -7,7 +7,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient
 from core.base.library.library_item import LibraryItem
 from core.modules.library.support.library_page import LibraryPage
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.page_request import PageRequest
 
@@ -36,5 +36,5 @@ class LibraryBrowse:
     def reached(read: Callable[[], T]) -> T:
         try:
             return read()
-        except LibraryUnreachable as unreachable:
+        except LibraryUnreachableError as unreachable:
             raise Refusal("The library cannot be reached. Items you already got still work.", unreachable.reason) from unreachable

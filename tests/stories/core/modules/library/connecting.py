@@ -9,7 +9,7 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.library.support.library_client import TOKEN_VARIABLE, LibraryClient
-from core.modules.library.support.library_stopped import LibraryStopped
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.stored_text import every_stored_text
 from tests.stories.core.modules.secrets.support.private_home import private_folder
@@ -128,7 +128,7 @@ def test_with_the_address_guard_skipped_an_agent_moves_the_setting_but_no_token_
         stopped = None
         try:
             client_of(story).state()
-        except LibraryStopped as failure:
+        except LibraryStoppedError as failure:
             stopped = failure
         story.expect_rows(stopped is not None, stub.requests == [])
 

@@ -12,6 +12,7 @@ class PlanCardJsonRecord(TypedDict):
     state: str
     task_count: int
     completed_count: int
+    testing_count: int
     current_phase: int
     delegated: bool
     agents: list[PlanAgentJsonRecord]

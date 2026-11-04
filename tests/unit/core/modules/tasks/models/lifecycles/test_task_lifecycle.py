@@ -7,6 +7,7 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.guard.lifecycle_guard import LifecycleGuard
+from core.base.model.state_book import StateBook
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
@@ -25,12 +26,12 @@ def moved(old_row: Model, new_row: Model) -> Change[Model]:
 def test_task_retest_move():
     testing = STARTED.moved(TaskLifecycle.test)
     retested = testing.moved(TaskLifecycle.retest)
-    LifecycleGuard().check(moved(testing, retested))
+    LifecycleGuard(StateBook()).check(moved(testing, retested))
     assert (retested.state, retested.holder_id) == (TaskState.STARTED, 2)
 
 
 def test_task_retest_refusal():
     with pytest.raises(Refusal) as raised:
-        LifecycleGuard().check(moved(STARTED, STARTED.moved(TaskLifecycle.retest)))
+        LifecycleGuard(StateBook()).check(moved(STARTED, STARTED.moved(TaskLifecycle.retest)))
     assert raised.value.text == ("task 1 is started, so it cannot retest: from started it can only go on with journal task block 1, journal task test 1,"
                                  " journal task release 1, journal task close 1, journal task cancel 1")

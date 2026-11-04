@@ -1,6 +1,7 @@
 from core.base.container import Container
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
+from core.base.model.state_book import StateBook
 from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 
@@ -32,5 +33,6 @@ def synced_database_container(home: JournalHome, database: Database) -> Containe
     container = database_container(home, database)
     registry = Registry.read(container.get(Database))
     container.bind(Registry, registry)
+    container.bind(StateBook, registry.state_book())
     registry.bind(container)
     return container

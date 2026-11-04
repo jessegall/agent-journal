@@ -22,6 +22,12 @@ class ChatDeclarationsRoute:
         registry = self.registry()
         return [{**asdict(dock), "body_url": self.body_url(registry, dock.module, dock.body)} for dock in registry.docks]
 
+    def states(self) -> dict[str, dict[str, dict[str, object]]]:
+        added: dict[str, dict[str, dict[str, object]]] = {}
+        for entry in self.registry().state_additions:
+            added.setdefault(entry.model_name, {})[entry.state] = {"label": entry.label, "looks_like": entry.looks_like, "open_moves": list(entry.open_moves), "module": entry.module}
+        return added
+
     def registry(self) -> Registry:
         container = synced_container(self.home)
         try:

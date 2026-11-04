@@ -17,6 +17,7 @@ from core.base.guard.guard import Guard
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
+from core.base.model.state_addition import StateAddition
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
@@ -77,6 +78,7 @@ class Module:
     templates: ClassVar[list[TemplateDeclaration]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
+    added_states: ClassVar[Sequence[StateAddition]] = ()
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []

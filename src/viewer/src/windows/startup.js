@@ -1,6 +1,7 @@
 import {transport} from "../api/transport.js";
 import {shallowRef} from "vue";
 import {readMarkDeclarations} from "../domain/markRegistry.js";
+import {loadStates} from "../domain/states.js";
 import {startButtons} from "@journal/window-kit";
 import {AllowancePrompts} from "./allowancePrompts.js";
 import {lineResult} from "./windowContext.js";
@@ -47,6 +48,7 @@ export function startWindows({environment, catalogue = null, events = followEven
     const shellLine = shellReader(environment);
     const prompts = new AllowancePrompts(shellLine);
     const buttons = startButtons(environment, prompts);
+    loadStates();
     const listeners = [];
     const stop = events(environment, async (event) => {
         await Promise.all([offers.heard(event), buttons.heard(event).catch(() => {})]);

@@ -9,7 +9,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.kept_library_failure import KeptLibraryFailure
 from core.modules.library.support.library_browse import LibraryBrowse
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_failure import LibraryFailure
+from core.modules.library.support.library_failure_error import LibraryFailureError
 from core.modules.library.support.page_request import PageRequest
 
 FIND_LIMIT_SECONDS = 2
@@ -29,7 +29,7 @@ class ServerLibraryLookup(LibraryLookup):
             return LibraryHits(is_unreachable=True)
         try:
             return LibraryHits(tuple(hit for share in shares for hit in self.client.page(PageRequest(share, " ".join(terms), 1), FIND_LIMIT_SECONDS).hits()))
-        except LibraryFailure as failed:
+        except LibraryFailureError as failed:
             self.failure.keep(failed.reason)
             return LibraryHits(is_unreachable=True)
 
@@ -41,7 +41,7 @@ class ServerLibraryLookup(LibraryLookup):
             return None
         try:
             return str(self.client.item(share, item_id).fields.get("title", ""))
-        except LibraryFailure as failed:
+        except LibraryFailureError as failed:
             self.failure.keep(failed.reason)
             return None
 

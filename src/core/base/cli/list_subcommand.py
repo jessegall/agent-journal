@@ -4,7 +4,8 @@ from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.model.model import Model
+from core.base.model.model import STATE, Model
+from core.base.model.state_book import StateBook
 from core.base.model.table import Table
 from core.base.page import Page, is_page
 from core.base.query.conditions.greater import Greater
@@ -24,8 +25,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
     name = "list"
 
-    def __init__(self, table: Table[Model], queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.table, self.queries, self.environment_names = table, queries, environment_names
+    def __init__(self, table: Table[Model], queries: Queries, environment_names: EnvironmentNames, book: StateBook | None = None) -> None:
+        self.table, self.queries, self.environment_names, self.book = table, queries, environment_names, book or StateBook()
         self.cli_name = table.model.cli_name
         self.columns: tuple[str, ...] = ()
 
@@ -36,7 +37,11 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
         parser.add_argument("--columns", default="")
+        lifecycle = self.book.lifecycle(self.table.model)
         for column in self.filter_columns():
+            if column == STATE and lifecycle is not None and lifecycle.added_states:
+                parser.add_argument("--state", choices=lifecycle.state_words())
+                continue
             parser_argument(parser, f"--{filter_flag(column)}", str if column == ENVIRONMENT_COLUMN else self.table.types[column])
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:

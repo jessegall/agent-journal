@@ -3,6 +3,7 @@ from dataclasses import replace
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
+from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -19,12 +20,12 @@ class TargetResolutionListener(SaveListener):
     name = "waits.end-when-resolved"
     event = "*.*"
 
-    def __init__(self, queries: Queries, repository: Repository, tables: Tables) -> None:
-        self.queries, self.repository, self.tables = queries, repository, tables
+    def __init__(self, queries: Queries, repository: Repository, tables: Tables, book: StateBook) -> None:
+        self.queries, self.repository, self.tables, self.book = queries, repository, tables, book
 
     def handle(self, change: Change[Model]) -> None:
         row = change.row
-        lifecycle = type(row).lifecycle
+        lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, (Wait, WaitTarget)) or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
             return
         table = self.tables.table(type(row)).name

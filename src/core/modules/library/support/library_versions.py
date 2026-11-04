@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.version_line import VersionLine
 
 
@@ -14,11 +14,11 @@ class LibraryVersions:
     @classmethod
     def parsed(cls, body: object) -> "LibraryVersions":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(tuple(VersionLine.parsed(change) for change in body["versions"]))
         except (KeyError, TypeError) as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error
 
     def lines(self) -> Sequence[str]:
         return [change.line() for change in self.changes] or ["no changes on record"]

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
+from core.base.model.state_book import StateBook
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
@@ -10,6 +11,7 @@ from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_card import PlanCard
 from core.modules.plans.support.plan_board import PlanBoard
 
@@ -26,8 +28,13 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
     cli_name = "plan"
     name = "board"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
+    def __init__(self, queries: Queries, environment_names: EnvironmentNames, book: StateBook) -> None:
+        self.queries, self.environment_names, self.book = queries, environment_names, book
+
+    def open_states(self) -> tuple[str, ...]:
+        lifecycle = self.book.lifecycle(Plan)
+        added = lifecycle.added_states if lifecycle is not None else ()
+        return (*OPEN_STATES, *added)
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -40,7 +47,7 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         if environment_id is None:
             raise Refusal("the board is shown for one environment", "name it with --environment")
         plans = self.queries.query(PlanCard).filter(environment_id=environment_id)
-        opened, closed = plans.matching(Among("state", OPEN_STATES)), plans.matching(Among("state", CLOSED_STATES))
+        opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
         shown = closed if arguments.closed else opened
         older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown
         cards = tuple(older.newest().page(1, arguments.limit).rows)

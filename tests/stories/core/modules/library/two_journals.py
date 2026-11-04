@@ -6,7 +6,7 @@ import pytest
 
 from core.modules.documents.models.doc import Doc
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, connected_second, copy_of_item, new_item, second_story, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
@@ -94,7 +94,7 @@ def test_the_team_stories_run_end_to_end_on_two_journals_and_one_server(new_stor
         real_state = client.state
 
         def unreachable_state() -> object:
-            raise LibraryUnreachable("No network.")
+            raise LibraryUnreachableError("No network.")
 
         client.state = unreachable_state
         linus.expect_success('doc edit 2 --body "Edited offline."', actor=linus.user)

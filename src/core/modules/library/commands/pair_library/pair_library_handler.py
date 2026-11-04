@@ -13,10 +13,10 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.support.library_client import PROTOCOL, TOKEN_VARIABLE, LibraryClient
-from core.modules.library.support.library_failure import LibraryFailure
+from core.modules.library.support.library_failure_error import LibraryFailureError
 from core.modules.library.support.library_person import LibraryPerson
-from core.modules.library.support.library_stopped import LibraryStopped
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.server_info import ServerInfo
 from core.modules.library.support.server_user import ServerUser
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -48,11 +48,11 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
             if server.protocol != PROTOCOL:
                 raise Refusal(f"This server speaks protocol {server.protocol}, this journal {PROTOCOL}", "update whichever of the journal and the server is behind")
             return server, self.client.call(address, token, ServerUser.parsed, "GET", "/me", opener=opener)
-        except LibraryStopped as stopped:
+        except LibraryStoppedError as stopped:
             raise Refusal("The server did not accept this token.", stopped.suggestion or stopped.reason) from stopped
-        except LibraryUnreachable as unreachable:
+        except LibraryUnreachableError as unreachable:
             raise Refusal(f"The server could not be reached at {address}.", unreachable.reason) from unreachable
-        except LibraryFailure as failure:
+        except LibraryFailureError as failure:
             raise Refusal(f"The server at {address} refused the connection: {failure.reason}", failure.suggestion) from failure
 
     def keep_certificate(self, file_name: str) -> None:

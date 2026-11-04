@@ -21,6 +21,7 @@ class PlanCard(ViewModel):
     state: PlanState
     task_count: int
     completed_count: int
+    testing_count: int
     current_phase: int
     agents: str
     working: str

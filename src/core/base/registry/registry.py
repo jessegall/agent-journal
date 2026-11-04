@@ -31,7 +31,9 @@ from core.base.registry.move_entry import MoveEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.skill_entry import SkillEntry
+from core.base.model.state_book import StateBook
 from core.base.registry.stale_registry_error import StaleRegistryError
+from core.base.registry.state_addition_entry import StateAdditionEntry
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.viewer.layout_preset import LayoutPreset
@@ -70,6 +72,7 @@ class Registry:
     templates: tuple[TemplateEntry, ...] = ()
     buttons: tuple[ButtonEntry, ...] = ()
     button_slots: tuple[str, ...] = ()
+    state_additions: tuple[StateAdditionEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
@@ -126,6 +129,7 @@ class Registry:
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
+            state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
             button_slots=tuple(entries.get("button_slots", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
@@ -170,6 +174,7 @@ class Registry:
             "docks": [asdict(dock) for dock in self.docks],
             "templates": [asdict(template) for template in self.templates],
             "buttons": [asdict(button) for button in self.buttons],
+            "state_additions": [asdict(addition) for addition in self.state_additions],
             "button_slots": list(self.button_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
@@ -209,6 +214,9 @@ class Registry:
     def bind(self, container: Container) -> None:
         for interface, implementation in self.bindings.items():
             container.substitute(DottedPath(interface).loaded(), implementation.loaded())
+
+    def state_book(self) -> StateBook:
+        return StateBook(tuple(entry.addition() for entry in self.state_additions))
 
     def require_current(self, code_fingerprint: str) -> None:
         if code_fingerprint != self.fingerprint:

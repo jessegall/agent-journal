@@ -17,7 +17,12 @@ from core.base.database.migration import Migration
 from core.base.database.schema import Schema
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.triggers import Triggers
+from core.base.command.handlers.move_row_handler import MoveRowHandler
+from core.base.command.move_row import MoveRow
 from core.base.guard.lifecycle_guard import LifecycleGuard
+from core.base.module.module_states import modules_book
+from core.base.module.state_retirement import StateRetirement
+from core.base.registry.state_addition_entry import StateAdditionEntry
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.database.actor_table import ActorTable
 from core.base.database.listener_cursor_table import ListenerCursorTable
@@ -62,7 +67,7 @@ from core.base.registry.tunnel_entry import TunnelEntry
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
-                    for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler))}
+                    for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler), (MoveRow, MoveRowHandler))}
 class ModuleSync:
     """Updates the database and the registry to match the installed modules: finds, orders and checks them,
     runs the schema, gives each module its actor and each new commit listener its cursor, writes the registry,
@@ -70,7 +75,8 @@ class ModuleSync:
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
-                 entries: DriverEntries, providers: ProviderEntries, events: EventLog, home: JournalHome, notes: SyncNotes) -> None:
+                 entries: DriverEntries, providers: ProviderEntries, events: EventLog, home: JournalHome, notes: SyncNotes, retirement: StateRetirement) -> None:
+        self.retirement = retirement
         self.database, self.clock, self.finder, self.order, self.check, self.events = database, clock, finder, order, check, events
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
         self.actors, self.registry_table, self.entries, self.providers, self.home, self.notes = actors, registry_table, entries, providers, home, notes
@@ -93,7 +99,9 @@ class ModuleSync:
         migrations = self.schema.migrate(self.ordered_migrations(modules))
         views = tuple(view for module in modules for view in module.views)
         self.schema.rebuild_views(views)
-        self.triggers.rebuild(models)
+        book = modules_book(modules)
+        retired = self.retirement.retire(models, book, self.clock.timestamp().text)
+        self.triggers.rebuild(models, book)
         self.schema.check_tables(models, views)
         with self.database.transaction():
             timestamp = self.clock.timestamp().text
@@ -108,7 +116,7 @@ class ModuleSync:
                     if self.timing(listener) is ListenerTiming.COMMIT:
                         self.cursors.start(listener.name)
         self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
-        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, tuple(self.notes.lines(modules)))
+        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules)))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         return tuple(migration() for migration in module.migrations)
@@ -143,6 +151,7 @@ class ModuleSync:
             templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
+            state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},

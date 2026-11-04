@@ -16,7 +16,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with
 @pytest.fixture
 def third_party(new_story, tmp_path):
     story = new_story(SAMPLES, fixture=UserJoined)
-    for package in ("acme_review", "acme_suite", "acme_findings"):
+    for package in ("acme_review", "acme_suite", "acme_findings", "acme_legal"):
         source = Path(__file__).parent / package
         folder = tmp_path / f"{package}_{uuid4().hex}"
         shutil.copytree(source, folder)

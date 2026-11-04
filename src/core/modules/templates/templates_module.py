@@ -15,7 +15,9 @@ from core.modules.templates.commands.template_list.template_list_subcommand impo
 from core.modules.templates.commands.template_show.template_show_subcommand import TemplateShowSubcommand
 from core.modules.templates.commands.save_standard_templates.save_standard_templates_handler import SaveStandardTemplatesHandler
 from core.modules.templates.guards.standard_template_guard import StandardTemplateGuard
+from core.modules.templates.listeners.critique_report_listener import CritiqueReportListener
 from core.modules.templates.listeners.standard_templates_listener import StandardTemplatesListener
+from core.modules.templates.support.review_state import REVIEW_STATE
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.migrations.m002_template_module import TemplateModuleColumnMigration
 from core.modules.templates.models.template import Template
@@ -42,7 +44,8 @@ class TemplatesModule(Module):
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler, SendTemplateHandler]
     subcommands = [MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand, SendTemplateSubcommand]
-    listeners = [StandardTemplatesListener]
+    listeners = [StandardTemplatesListener, CritiqueReportListener]
+    added_states = tuple([REVIEW_STATE])
     guards = [StandardTemplateGuard]
     seeders = [TemplatesSeeder]
     window_extensions = [WindowExtension("messages.chat", reads=["template list"])]
@@ -51,6 +54,8 @@ class TemplatesModule(Module):
                                  condition=ButtonCondition("state", tuple(["ready"])), tip="Reviewers read it before you approve",
                                  fields=(ChoiceField("agents", "How many agents", tuple(Choice("one agent" if count == 1 else f"{count} agents", str(count)) for count in range(1, 6)), "2 agents"),
                                          ChoiceField("size", "How thorough", tuple(Choice(size, size) for size in ("a quick look", "a normal read", "a thorough review")), "a normal read"),
-                                         TemplateField("template", "Template", "plan", "critique", "General critique")))]
+                                         TemplateField("template", "Template", "plan", "critique", "General critique"))),
+               ButtonDeclaration("templates.end-review", ("dock.plans.waiting", "row.plan"), "End the review", "plan reviewed {row_id}",
+                                 condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again")]
     windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"])]

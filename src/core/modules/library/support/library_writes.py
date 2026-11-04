@@ -4,7 +4,7 @@ from typing import TypeVar
 from core.base.refusal import Refusal
 from core.modules.library.support.library_client import LibraryClient
 from core.base.library.library_item import LibraryItem
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.version_request import VersionRequest
 
 T = TypeVar("T")
@@ -42,5 +42,5 @@ class LibraryWrites:
     def reached(self, request: Callable[[], T]) -> T:
         try:
             return request()
-        except LibraryUnreachable as unreachable:
+        except LibraryUnreachableError as unreachable:
             raise unreachable.address_refusal(self.client.connected_address()) from unreachable

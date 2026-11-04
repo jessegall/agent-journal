@@ -1,3 +1,5 @@
+import {stateLook, stateOpenMoves} from "./states.js";
+
 const PLURALS = {processes: "process", memories: "memory", replies: "reply"};
 const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract"]);
 
@@ -54,4 +56,12 @@ const checkMoves = (row) => (!row || row.removed_at ? [] : [row.stopped ? {word:
 
 const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
 
-export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? [...workerMoves(row), ...agentMoves(row)] : kind === "check" ? checkMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);
+// the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
+function stateMoves(kind, row) {
+    const table = {plan: PLAN_MOVES, task: TASK_MOVES}[kind];
+    const open = row?.state ? stateOpenMoves(kind, row.state) : null;
+    if (!open) return table?.[row?.state] ?? [];
+    return (table?.[stateLook(kind, row.state)] ?? []).filter((move) => open.includes(move.word));
+}
+
+export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? [...workerMoves(row), ...agentMoves(row)] : kind === "check" ? checkMoves(row) : kind === "question" ? questionMoves(row) : stateMoves(kind, row));

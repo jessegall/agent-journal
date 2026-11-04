@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.modules.library.models.enums.library_role import LibraryRole
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
 @dataclass(frozen=True)
@@ -14,8 +14,8 @@ class ServerUser:
     @classmethod
     def parsed(cls, body: object) -> "ServerUser":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(str(body["name"]), LibraryRole(body["role"]))
         except (KeyError, ValueError) as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error

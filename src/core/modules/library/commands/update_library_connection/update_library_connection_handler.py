@@ -4,7 +4,7 @@ from core.base.repository.repository import Repository
 from core.modules.library.commands.update_library_connection.update_library_connection import UpdateLibraryConnection
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
-from core.modules.library.support.library_stopped import LibraryStopped
+from core.modules.library.support.library_stopped_error import LibraryStoppedError
 
 
 class UpdateLibraryConnectionHandler(Handler[UpdateLibraryConnection, LibraryConnection]):
@@ -18,6 +18,6 @@ class UpdateLibraryConnectionHandler(Handler[UpdateLibraryConnection, LibraryCon
     def handle(self, command: UpdateLibraryConnection, context: Context) -> LibraryConnection:
         connection = self.connections.current()
         if connection is None:
-            raise LibraryStopped.disconnected()
+            raise LibraryStoppedError.disconnected()
         reached = {"reached_at": context.timestamp} if command.has_reached else {}
         return self.repository.save(connection.changed(role=command.role, failure=command.failure, stopped=command.stopped, **reached), context)

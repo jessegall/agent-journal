@@ -126,7 +126,7 @@ class CodexProvider(Provider):
             return ""
         return CodexSessionEffort(path).read()
 
-    def session_model(self, home: JournalHome, session: str) -> str:
+    def reported_model(self, home: JournalHome, session: str) -> str:
         path = self.transcript(home.folder.parent, session)
         if path is None:
             return ""

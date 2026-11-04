@@ -103,6 +103,8 @@ def test_an_agents_task_names_its_plan_and_a_task_of_no_plan_names_none(new_stor
     story.run("task start 1", actor=story.agent)
     story.expect_text("usage agents --environment main --json", '"plan_title": "Cart plan"', actor=story.user)
     story.expect_text("usage bars --environment main --json", '"task_plan_id": 1', actor=story.user)
+    story.expect_success("task test 1", actor=story.agent)
+    story.expect_text("plan board --environment main --json", '"testing_count": 1', actor=story.user)
 
 
 def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):

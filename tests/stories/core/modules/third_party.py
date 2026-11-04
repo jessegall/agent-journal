@@ -23,6 +23,7 @@ def test_a_button_names_its_module_and_requires_a_persons_allowance(third_party,
     expect_row(button, module="acme.review", **{"from": "acme.review"}, label="Audit", runs="acme audit {row_id}",
                slots=["dock.plans.waiting", "row.plan"])
     expect_value(offered["missing"]["acme.review"], [{"label": "Audit", "line": "acme audit {row_id}"}])
+    third_party.story.expect_success("window allow button:acme.legal --type runs --environment main", actor=third_party.story.user)
     line = {"window": "messages.chat", "line": ["acme", "audit", "1"], "environment": "main"}
     third_party.expect_viewer_line(third_party_cookie, line, 200, '"code": 1')
     third_party.story.expect_success("window allow button:acme.review --type runs --environment main", actor=third_party.story.user)
@@ -46,6 +47,26 @@ def test_a_third_party_window_draws_its_own_slot_and_a_press_runs_after_the_prom
     third_party.story.expect_success("suite choose acme --environment main", actor=third_party.story.user)
     third_party.story.expect_success("window trust acme.findings --environment main", actor=third_party.story.user)
     expect_browser(third_party, "thirdPartyWindow.browser.mjs", [])
+
+
+def test_story_5_a_person_holds_a_task_and_an_agent_is_refused(third_party):
+    story = third_party.story
+    story.expect_success('task make "Fix the cart" --environment main', actor=story.user)
+    story.expect_refusal("task hold 1", "comes from a module the journal does not ship", actor=story.agent)
+    story.expect_success("task hold 1", actor=story.user)
+    story.expect_text("task show 1", "state: legal-hold", actor=story.user)
+    story.expect_success("task release-hold 1", actor=story.user)
+    story.expect_text("task show 1", "state: open", actor=story.user)
+
+
+def test_story_8_the_modules_removal_leaves_the_row_in_its_fallback_state(third_party):
+    story = third_party.story
+    story.expect_success('task make "Fix the cart" --environment main', actor=story.user)
+    story.expect_success("task hold 1", actor=story.user)
+    answer = request_answer(third_party.socket_path, "POST", "/cli", {"argv": ["module", "remove", "acme.legal"], "variables": {"USER": "Ada"}, "folder": "/"})
+    expect_value(answer.exit_code, 0)
+    story.expect_rows(story.synced()[0] == 0)
+    story.expect_text("task show 1", "state: open", actor=story.user)
 
 
 def test_another_suite_hides_templates_and_buttons_but_keeps_commands(third_party, third_party_cookie):

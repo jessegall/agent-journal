@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.library.support.library_token import LibraryToken
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_user import LibraryUser
 
 
@@ -18,11 +18,11 @@ class NewLibraryUser:
     @classmethod
     def parsed(cls, body: object) -> "NewLibraryUser":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(LibraryUser.parsed(body["user"]), LibraryToken.parsed(body["token"]), str(body["token_text"]))
         except KeyError as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error
 
     def line(self) -> str:
         return f"{self.user.line()}\ntoken (shown once): {self.token_text}"

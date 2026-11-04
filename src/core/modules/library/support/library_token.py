@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.library.support.library_answer import LibraryAnswer
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
 TOKEN_PART = "token"
@@ -22,11 +22,11 @@ class LibraryToken:
     @classmethod
     def parsed(cls, body: object) -> "LibraryToken":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(int(body["id"]), int(body["user_id"]), str(body.get("label", "")), str(body.get("last_used_at", "")), str(body.get("revoked_at", "")))
         except (KeyError, TypeError, ValueError) as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error
 
     @classmethod
     def answered(cls, body: object) -> "LibraryToken":

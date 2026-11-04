@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.library_answer import LibraryAnswer
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
 USER_PART = "user"
@@ -21,11 +21,11 @@ class LibraryUser:
     @classmethod
     def parsed(cls, body: object) -> "LibraryUser":
         if not isinstance(body, dict):
-            raise LibraryUnreachable.unreadable()
+            raise LibraryUnreachableError.unreadable()
         try:
             return cls(int(body["id"]), str(body["name"]), LibraryRole(body["role"]), str(body.get("removed_at", "")))
         except (KeyError, TypeError, ValueError) as error:
-            raise LibraryUnreachable.unreadable() from error
+            raise LibraryUnreachableError.unreadable() from error
 
     @classmethod
     def answered(cls, body: object) -> "LibraryUser":

@@ -4,6 +4,7 @@ from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMAND
 from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.module import Module
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.module_states import modules_book
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
@@ -71,10 +72,12 @@ class WindowCheck:
     @staticmethod
     def lines(modules: Sequence[type[Module]]) -> tuple[set[str], set[str]]:
         reads, runs = set(BOOKKEEPING_SUBCOMMANDS), set[str]()
+        book = modules_book(modules)
         for module in modules:
             for declaration in module.models:
                 model, excluded = declaration.model, set(declaration.excluded_subcommands)
-                moves = tuple(move.name for move in model.lifecycle.moves()) if model.lifecycle else ()
+                lifecycle = book.lifecycle(model)
+                moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()
                 reads |= {f"{model.cli_name} {name}" for name in READ_SUBCOMMANDS if name not in excluded}
                 runs |= {f"{model.cli_name} {name}" for name in (*COMMAND_SUBCOMMANDS, *moves) if name not in excluded}
             for subcommand in module.subcommands:

@@ -40,7 +40,7 @@ const choose = (chosen) => {
 };
 const shown = computed(() => board.value.plans);
 const total = computed(() => board.value[tab.value?.count_field]);
-const share = (row) => (row.task_count ? Math.round((row.completed_count / row.task_count) * 100) : 0);
+const share = (row, count) => (row.task_count ? Math.round((count / row.task_count) * 100) : 0);
 context.follow(["plan.*", "phase.*", "task.*"], load);
 load();
 </script>
@@ -65,7 +65,7 @@ load();
                         <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
                             <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span :class="['plan-state', row.state]" data-plan-state>{{ row.state }}</span></span>
                             <span class="plan-title" :title="row.title">{{ row.title }}</span>
-                            <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
+                            <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row, row.completed_count)}%`}" /><span class="plan-bar-testing" data-plan-testing :style="{width: `${share(row, row.testing_count)}%`}" /></span>
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
                             <PlanAgents :plan-id="row.id" :agents="row.agents" />
                         </div>
@@ -144,7 +144,9 @@ load();
 }
 
 .plan-bar {
+    display: flex;
     height: 4px;
+    overflow: hidden;
     border-radius: 2px;
     background: var(--chip);
 }
@@ -152,8 +154,13 @@ load();
 .plan-bar-fill {
     display: block;
     height: 100%;
-    border-radius: 2px;
     background: var(--accent);
+}
+
+.plan-bar-testing {
+    display: block;
+    height: 100%;
+    background: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .plan-foot,

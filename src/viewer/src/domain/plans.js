@@ -4,13 +4,12 @@ export const NOT_STARTED = {
     approved: "approved, not started yet",
     paused: "paused",
 };
-export const PLANNED = ["draft", "ready", "reviewing"];
+export const PLANNED = ["draft", "ready"];
 export const PLAN_RUNNING = ["started", "waiting", "delegated", "blocked", "approved"];
 
 export const PLAN_STATES = {
     draft: "Being planned",
     ready: "Ready",
-    reviewing: "Under review",
     approved: "Starting",
     started: "Work: in progress",
     waiting: "Approval: needed",

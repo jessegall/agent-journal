@@ -11,9 +11,9 @@ from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_errors import LibraryFailures
-from core.modules.library.support.library_item_removed import LibraryItemRemoved
-from core.modules.library.support.library_unreachable import LibraryUnreachable
+from core.modules.library.support.library_failures import LibraryFailures
+from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
+from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, copy_line, copy_of_item, copy_with, made_copy, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
@@ -219,7 +219,7 @@ def test_a_lost_response_is_settled_by_the_next_round_without_a_conflict(new_sto
 
     def update_without_answer(*arguments: object) -> object:
         real_update(*arguments)
-        raise LibraryUnreachable("The server did not answer.")
+        raise LibraryUnreachableError("The server did not answer.")
 
     monkeypatch.setattr(client, "update", update_without_answer)
     story.expect_text("library sync", "Did not reach the library. The server did not answer.", actor=story.agent)
@@ -305,7 +305,7 @@ def test_a_day_offline_sends_every_change_when_the_network_returns(new_story, sh
     real_state = client.state
 
     def no_network() -> object:
-        raise LibraryUnreachable("No network.")
+        raise LibraryUnreachableError("No network.")
 
     monkeypatch.setattr(client, "state", no_network)
     edit_body(story, first, "Edited offline.")
@@ -333,7 +333,7 @@ def test_a_round_cut_off_in_the_middle_is_finished_by_the_next_round_without_sen
 
     def update_failing_for_cut_copy(*arguments: object) -> object:
         if arguments[1] == cut.item_id:
-            raise LibraryUnreachable("The connection was cut.")
+            raise LibraryUnreachableError("The connection was cut.")
         return real_update(*arguments)
 
     monkeypatch.setattr(client, "update", update_failing_for_cut_copy)
@@ -349,7 +349,7 @@ def test_an_item_that_is_gone_when_its_edit_is_sent_changes_nothing(new_story, s
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Slate gone while sending")
     edit_body(story, copy, "Edited here.")
-    failing_update(monkeypatch, story.container.get(LibraryClient), LibraryItemRemoved("gone", ""))
+    failing_update(monkeypatch, story.container.get(LibraryClient), LibraryItemRemovedError("gone", ""))
     story.expect_text("library sync", CHANGED_NONE, actor=story.agent)
     story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 1, story.row(Doc, copy.row_id).body == "Edited here.")
 

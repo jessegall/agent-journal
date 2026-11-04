@@ -50,7 +50,7 @@ class Model:
         return replace(self, **values)
 
     def moved(self, move: Move, **values: object) -> Self:
-        if self.lifecycle is None or move not in self.lifecycle.moves():
+        if self.lifecycle is None:
             raise ModelError(f"{move.name} is no move of {type(self).__name__}")
         return replace(self, **{STATE: move.target, "move": move, **values})
 

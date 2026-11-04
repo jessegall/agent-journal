@@ -16,4 +16,5 @@ class PlanProgress(ViewModel):
     plan_id: int
     task_count: int
     completed_count: int
+    testing_count: int
     current_phase: int

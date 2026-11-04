@@ -4,6 +4,7 @@ from typing import TypeIs
 from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
 from core.base.model.move import Move
+from core.base.model.state_book import StateBook
 from core.base.model.table import Table
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
@@ -23,8 +24,8 @@ class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ.
     """
 
-    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks) -> None:
-        self.tables, self.queries, self.environment_names, self.links = tables, queries, environment_names, links
+    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks, book: StateBook) -> None:
+        self.tables, self.queries, self.environment_names, self.links, self.book = tables, queries, environment_names, links, book
 
     def make(self, model: type[Model]) -> MakeSubcommand[Model]:
         return MakeSubcommand(self.tables.table(model))
@@ -33,7 +34,7 @@ class DefaultSubcommands:
         return ShowSubcommand(self.tables.table(model), self.queries, self.links)
 
     def list(self, model: type[Model]) -> ListSubcommand:
-        return ListSubcommand(self.tables.table(model), self.queries, self.environment_names)
+        return ListSubcommand(self.tables.table(model), self.queries, self.environment_names, self.book)
 
     def edit(self, model: type[Model]) -> EditSubcommand:
         return EditSubcommand(self.tables.table(model))
@@ -42,7 +43,7 @@ class DefaultSubcommands:
         return DeleteSubcommand(self.tables.table(model))
 
     def moves(self, model: type[Model], command_paths: Sequence[str]) -> tuple[MoveSubcommand, ...]:
-        lifecycle = model.lifecycle
+        lifecycle = self.book.lifecycle(model)
         if lifecycle is None:
             return ()
         command_index = {command.move.name: command for command in model_move_commands(command_paths)}

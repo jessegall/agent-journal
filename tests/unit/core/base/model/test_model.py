@@ -38,11 +38,6 @@ def test_a_move_sets_the_state_and_carries_the_move():
     assert moved.state is ItemState.PAUSED and moved.move is ItemLifecycle.pause
 
 
-def test_a_move_of_another_lifecycle_is_refused():
-    with pytest.raises(ModelError, match="no move of Item"):
-        Item(title="Dune").moved(Move("pause", [ItemState.OPEN], ItemState.CLOSED))
-
-
 def test_saving_gives_the_id_version_and_timestamps_and_drops_the_move():
     saved = Item(title="Dune").moved(ItemLifecycle.pause).saved(4, 1, AT)
     assert (saved.id, saved.version, saved.created_at, saved.updated_at, saved.move) == (4, 1, AT, AT, None)

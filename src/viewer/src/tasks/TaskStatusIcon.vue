@@ -1,23 +1,27 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
+import {computed} from "vue";
+import {stateLabel, stateLook} from "../domain/states.js";
 import {STATUS_PREFIXES} from "../domain/taskBoard.js";
 
-defineProps({status: {type: String, required: true}, size: {type: Number, default: 14}});
+const props = defineProps({status: {type: String, required: true}, size: {type: Number, default: 14}});
+const look = computed(() => stateLook("task", props.status));
+const label = computed(() => STATUS_PREFIXES[props.status] ?? stateLabel("task", props.status));
 </script>
 
 <template>
     <span class="task-status-icon">
         <Transition name="turn" mode="out-in">
             <svg
-                :key="status"
-                :class="['ring', status]"
+                :key="look"
+                :class="['ring', look]"
                 :width="size"
                 :height="size"
                 viewBox="0 0 16 16"
                 role="img"
-                :aria-label="STATUS_PREFIXES[status]"
+                :aria-label="label"
             >
-                <SwitchCase :value="status">
+                <SwitchCase :value="look">
                     <template #blocked>
                         <circle cx="6.3" cy="8" r="4.7" class="stroke" />
                         <rect x="10.8" y="7.3" width="3.2" height="1.4" rx="0.7" class="fill" />

@@ -9,6 +9,7 @@ from core.base.database.statement import Statement
 from core.base.database.triggers import Triggers
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
+from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 
@@ -33,7 +34,7 @@ class Item(Model):
 def database(tmp_path):
     opened = Database.opened(JournalHome(tmp_path))
     opened.update(Statement("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL, state TEXT NOT NULL, length TEXT NOT NULL) STRICT"))
-    Triggers(opened, Tables()).rebuild([Item])
+    Triggers(opened, Tables()).rebuild([Item], StateBook())
     yield opened
     opened.close()
 
@@ -69,6 +70,6 @@ def test_an_enum_column_takes_only_its_enum_values(database):
 
 
 def test_rebuilding_twice_leaves_one_set_of_triggers(database):
-    Triggers(database, Tables()).rebuild([Item])
+    Triggers(database, Tables()).rebuild([Item], StateBook())
     names = [row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name"))]
     assert names == ["items_rule_length_insert", "items_rule_length_update", "items_rule_state_delete", "items_rule_state_insert", "items_rule_state_move"]
