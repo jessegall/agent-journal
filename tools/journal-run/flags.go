@@ -23,9 +23,26 @@ type Flags struct {
 	Folder     string
 	Parts      int
 	Aliases    []string
-	// Stripped names the commands whose filter pipes come off, one --stripped each.
-	Stripped   []string
 	MostOutput int
+}
+
+// The output settings of a run come in variables, so a runner of an older install ignores them. Each is cleared once
+// read, so a run inside this one starts with none.
+const (
+	strippedVariable   = "JOURNAL_RUN_STRIPPED"
+	mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
+)
+
+// outputSettings reads the commands to strip and the most bytes one part may keep.
+func outputSettings() ([]string, int) {
+	stripped, mostOutput := os.Getenv(strippedVariable), os.Getenv(mostOutputVariable)
+	_ = os.Unsetenv(strippedVariable)
+	_ = os.Unsetenv(mostOutputVariable)
+	bytes, _ := strconv.Atoi(mostOutput)
+	if stripped == "" {
+		return nil, bytes
+	}
+	return strings.Split(stripped, "\n"), bytes
 }
 
 // binFolder is where a journal keeps this program, inside the journal's folder.
@@ -96,12 +113,6 @@ func ParseFlags(arguments []string) (Flags, error) {
 			}
 			index++
 			flags.Aliases = strings.Split(arguments[index], ",")
-		case "--stripped":
-			if index+1 >= len(arguments) {
-				return flags, fmt.Errorf("%s needs a value", argument)
-			}
-			index++
-			flags.Stripped = append(flags.Stripped, arguments[index])
 		case "--process", "--limit", "--parts", "--most-output", "--folder":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)

@@ -40,9 +40,9 @@ func (folder Folder) Start(line string, parts []Part, script string) error {
 	if err := os.MkdirAll(folder.Path, 0o755); err != nil {
 		return err
 	}
-	texts := make([]string, len(parts))
-	for index, part := range parts {
-		texts[index] = part.Text
+	texts := make([]string, PartCount(parts))
+	for _, part := range parts {
+		texts[part.Position-1] = part.Text
 	}
 	files := map[string]string{"line": line, "parts": strings.Join(texts, "\n"), "run.sh": script}
 	for name, text := range files {

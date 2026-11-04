@@ -135,6 +135,13 @@ func (tracker *Tracker) partStarted(position int) {
 func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	tracker.partStarted(position)
 	tracker.Reported[position] = true
+	if stdout != io.Discard {
+		tracker.showPart(stdout, position)
+	}
+	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
+}
+
+func (tracker *Tracker) showPart(stdout io.Writer, position int) {
 	uncapped := tracker.Options.LimitSeconds == 0
 	mostBytes := mostReadBytes
 	if uncapped {
@@ -145,7 +152,6 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	if text == "" && tracker.Folder.CommandFailed(position) {
 		fmt.Fprintf(stdout, "the command failed and its pipes printed nothing: journal output read %d --summary\n", tracker.Options.Process)
 	}
-	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
 }
 
 // report tells the journal of an end, and tells it again while the server is away, as during a restart.

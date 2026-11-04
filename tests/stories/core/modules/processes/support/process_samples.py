@@ -15,6 +15,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_sample import HookSample
+from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.modules.processes.ticks.output_reading import OutputReading
 
@@ -32,9 +33,14 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
 
 def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, stripped: tuple[str, ...] = ()) -> str:
     """The line the rule gives the agent's tool to run in place of its own."""
-    flag = (" --background" if background else "") + (f" --most-output {(100 if stripped else 10) << 20}" if limit else "")
-    flag += (" --only-reads" if read_command else "") + "".join(f" --stripped {shlex.quote(command)}" for command in stripped)
-    return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
+    flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
+    variables = f" JOURNAL_RUN_STRIPPED={shlex.quote(chr(10).join(stripped))}" if stripped else ""
+    variables += f" JOURNAL_RUN_MOST_OUTPUT={(100 if stripped else 10) << 20}" if limit else ""
+    return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
+
+
+def monitor(command: str) -> HookSample:
+    return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_raw({"tool_input": {"command": command}})
 
 
 def with_parse_error(sample: HookSample, error: str = "unbalanced quote") -> HookSample:

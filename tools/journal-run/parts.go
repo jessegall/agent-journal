@@ -21,7 +21,7 @@ var notFilters = map[string]*regexp.Regexp{
 }
 
 // endlessCommand is a command that runs until something stops it: only a pipe that closes, such as head, ends it.
-var endlessCommand = regexp.MustCompile(`\s(--watch\b|-w\b)`)
+var endlessCommand = regexp.MustCompile(`(?i)\swatch\b|[-:]watch|\s-w\b`)
 
 // Part is one step of a line as the runner runs it: the commands joined by a pipe or || stay together, and the
 // operator after it says whether the next part waits for its success. A part stripped of its pipes runs Command alone
@@ -44,32 +44,35 @@ func Parts(line string, stripped ...string) []Part {
 	}
 	var parts []Part
 	var first *shell.Command
-	firstIndex, position, recorded := 0, 0, 0
+	firstIndex := 0
 	for index := range commands {
 		command := &commands[index]
-		if command.Recorded {
-			recorded++
-		}
 		if first == nil {
-			first, firstIndex, position = command, index, max(recorded, 1)
+			first, firstIndex = command, index
 		}
 		if command.PipedInto >= 0 || command.JoinedBy == "||" {
 			continue
 		}
 		text := first.Source[first.Start:command.End]
-		part := Part{Text: strings.TrimSpace(text), JoinedBy: command.JoinedBy, Position: position}
+		part := Part{Text: strings.TrimSpace(text), JoinedBy: command.JoinedBy, Position: firstIndex + 1}
 		if command.JoinedBy == "&" {
 			part.Text += " &"
-		} else if name := strings.TrimSpace(first.Text); slices.Contains(stripped, name) && !strings.Contains(line, "pipefail") {
+		} else if name := strings.TrimSpace(first.Text); slices.Contains(stripped, name) && !setsPipefail(line) {
 			part.Command, part.Filters = filtered(commands[firstIndex : index+1])
 		}
 		parts = append(parts, part)
 		first = nil
 	}
 	if first != nil {
-		parts = append(parts, Part{Text: strings.TrimSpace(first.Source[first.Start:commands[len(commands)-1].End]), Position: position})
+		parts = append(parts, Part{Text: strings.TrimSpace(first.Source[first.Start:commands[len(commands)-1].End]), Position: firstIndex + 1})
 	}
 	return parts
+}
+
+// setsPipefail says the line makes a pipe fail with any of its commands, in bash's spelling or zsh's, which a pipe run
+// over a stored output could not honour.
+func setsPipefail(line string) bool {
+	return strings.Contains(strings.ReplaceAll(strings.ToLower(line), "_", ""), "pipefail")
 }
 
 // filtered cuts a pipeline into its first command and the pipes after it; both are empty when any pipe does more than

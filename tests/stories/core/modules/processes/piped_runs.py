@@ -3,6 +3,7 @@ import json
 import pytest
 
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.support.runner_line import MOST_OUTPUT_VARIABLE
 from tests.stories.core.modules.processes.support.piped_runs import TEST_OUTPUT, PipedRuns
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
@@ -31,14 +32,12 @@ def test_only_the_tests_and_builds_of_a_line_go_to_the_runner_to_be_stripped(pip
 
 def test_a_test_gets_a_limit_of_100_megabytes_and_a_read_one_of_10(piped_runs):
     for line, megabytes in (("npm test", 100), ("cat notes.txt", 10)):
-        tokens = piped_runs.rewritten(line)
-        assert tokens[tokens.index("--most-output") + 1] == str(megabytes << 20)
+        assert piped_runs.variable(line, MOST_OUTPUT_VARIABLE) == str(megabytes << 20)
 
 
 def test_a_setting_changes_the_output_limit(piped_runs):
     piped_runs.story.expect_success("setting set journal.core.processes.most-output-megabytes 2 --environment main", actor=piped_runs.story.user)
-    tokens = piped_runs.rewritten("cat notes.txt")
-    assert tokens[tokens.index("--most-output") + 1] == str(2 << 20)
+    assert piped_runs.variable("cat notes.txt", MOST_OUTPUT_VARIABLE) == str(2 << 20)
 
 
 def test_a_piped_test_keeps_its_complete_output_for_its_reader(piped_runs):
@@ -70,6 +69,13 @@ def test_a_test_after_an_earlier_pipe_writes_the_file_of_its_position(piped_runs
     output, folder = piped_runs.run_line("cat notes.txt | wc -l && npm test | tail -1")
     assert output.endswith("40 passed\n")
     assert (folder / "3.out").read_text() == TEST_OUTPUT
+
+
+def test_a_test_after_an_earlier_pipe_is_read_by_its_number(piped_runs):
+    (piped_runs.folder / "notes.txt").write_text("one\ntwo\n")
+    _, folder = piped_runs.run_line("cat notes.txt | wc -l && npm test | tail -1")
+    assert "40 passed" in piped_runs.story.run(f"output peek {folder.name} --all", actor=piped_runs.story.user).output_text
+    assert "line 1\n" in piped_runs.story.run(f"output peek {folder.name} --all", actor=piped_runs.story.user).output_text
 
 
 def test_a_failing_filter_of_a_test_stops_the_chain_as_the_agent_wrote_it(piped_runs):

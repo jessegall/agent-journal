@@ -3,14 +3,10 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"]))
-
-
-def monitor(command: str):
-    return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_raw({"tool_input": {"command": command}})
 
 
 @pytest.fixture

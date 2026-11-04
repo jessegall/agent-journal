@@ -17,7 +17,7 @@ READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}')
-REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} still runs: set a Monitor on journal output monitor {output} before you stop, so it wakes you when the run ends')
+REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} still runs: set a Monitor on journal output monitor {output} before you stop')
 REQUIRED_MONITOR_COMMAND = NudgeDeclaration("processes.monitor_command_required", NudgeType.REFUSAL, 'output {output} still runs: run journal output monitor {output} before you stop, so you wait for it')
 MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: run journal output monitor {output}, which ends when the run does')
 AUTOMATIC_RUN_WATCHED = NudgeDeclaration("processes.automatic_run_watched", NudgeType.STEERING, 'output {output} is watched for you: go on working or stop; you are told when it ends, or started again if you stopped')

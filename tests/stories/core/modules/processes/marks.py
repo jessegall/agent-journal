@@ -16,7 +16,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process, tick
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, start_process, tick
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -228,7 +228,7 @@ def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
 
 def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(untitled_docked_run):
     story, process, wanted = untitled_docked_run
-    assert any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    assert any(wanted in line for line in story.hook("s-1", monitor(f"journal output monitor {process.id}")).lines)
     assert not any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
 
 

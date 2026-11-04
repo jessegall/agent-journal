@@ -42,15 +42,18 @@ class ReaderStep:
         text = ColourCodes.removed(ready_bytes.decode(errors="replace"))
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
         steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
-        passed, failed = output.steps_passed + steps.passed, output.steps_failed + steps.failed
+        restarted = offset != output.read_offset
+        passed = steps.passed if restarted else output.steps_passed + steps.passed
+        failed = steps.failed if restarted else output.steps_failed + steps.failed
         test_count = self.run.count(reader, text, output.test_count)
         progress = self.run.progress(reader, text, output.progress)
         if not reader.progress_pattern and reader.step_pattern and test_count:
             progress = min(100, (passed + failed) * 100 // test_count)
-        lines = self.run.lines(reader, text, process.state.value, output.read_lines + 1) if reader.type is ReaderType.PATTERN else []
-        return ReaderAdvance(lines, offset + len(ready_bytes), output.read_lines + counted,
+        first_line = 1 if restarted else output.read_lines + 1
+        lines = self.run.lines(reader, text, process.state.value, first_line) if reader.type is ReaderType.PATTERN else []
+        return ReaderAdvance(lines, offset + len(ready_bytes), counted if restarted else output.read_lines + counted,
                              self.run.summary(reader, text) or output.reader_summary, progress,
-                             steps_passed=passed, steps_failed=failed, test_count=test_count)
+                             steps_passed=passed, steps_failed=failed, test_count=test_count, replaces=restarted)
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         advanced = self.text_advance(process, output, reader, is_final)

@@ -3,6 +3,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from core.modules.processes.support.runner_line import STRIPPED_VARIABLE
 from tests.stories.core.modules.processes.support.read_output import ReadOutput
 from tests.stories.server.support.alias_hook import AliasHook
 from tests.stories.server.support.go_build import GoBuild
@@ -24,6 +25,9 @@ class PipedRuns(ReadOutput):
     def rewritten(self, line: str) -> list[str]:
         return shlex.split(str(self.hook.answer(line)["updatedInput"]["command"]))
 
+    def variable(self, line: str, name: str) -> str:
+        return next((token.split("=", 1)[1] for token in self.rewritten(line) if token.startswith(f"{name}=")), "")
+
     def run_line(self, line: str) -> tuple[str, Path]:
         rewritten = str(self.hook.answer(line)["updatedInput"]["command"])
         environment = GoBuild.environment(JOURNAL_HOME=str(self.story.home.folder), PATH=f"{self.bin}{os.pathsep}{os.environ['PATH']}")
@@ -35,5 +39,4 @@ class PipedRuns(ReadOutput):
         return finished.stdout, folder
 
     def stripped_commands(self, line: str) -> list[str]:
-        tokens = self.rewritten(line)
-        return [tokens[index + 1] for index, token in enumerate(tokens) if token == "--stripped"]
+        return [command for command in self.variable(line, STRIPPED_VARIABLE).split("\n") if command]

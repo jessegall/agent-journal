@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
 const fiveLines = `printf 'one\ntwo\nthree\nfour\nfive\n'`
@@ -356,16 +359,21 @@ func TestAStrippedPartRunsItsCommandAndThenItsFiltersInTheScript(t *testing.T) {
 	}
 }
 
-func TestFlagsCarryTheStrippedCommandsAndTheOutputLimit(t *testing.T) {
-	flags, err := ParseFlags([]string{"--process", "4", "--stripped", "npm test", "--stripped", "make", "--most-output", "1024", "--", "npm test"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if fmt.Sprint(flags.Stripped) != "[npm test make]" || flags.MostOutput != 1024 {
-		t.Fatalf("flags %+v", flags)
-	}
-	if setup := flags.runOptions("/home", "/bin/sh"); fmt.Sprint(setup.Stripped) != "[npm test make]" || setup.MostOutputBytes != 1024 {
+func TestVariablesCarryTheStrippedCommandsAndTheOutputLimit(t *testing.T) {
+	t.Setenv(strippedVariable, "npm test\nmake")
+	t.Setenv(mostOutputVariable, "1024")
+	setup := Flags{}.runOptions("/home", "/bin/sh")
+	if fmt.Sprint(setup.Stripped) != "[npm test make]" || setup.MostOutputBytes != 1024 {
 		t.Fatalf("options %+v", setup)
+	}
+	if os.Getenv(strippedVariable) != "" || os.Getenv(mostOutputVariable) != "" {
+		t.Fatal("a run inside this one would inherit them")
+	}
+}
+
+func TestNoVariablesMeanNothingStrippedAndTheDefaultLimit(t *testing.T) {
+	if stripped, most := outputSettings(); stripped != nil || most != 0 {
+		t.Fatalf("stripped %v, most %d", stripped, most)
 	}
 }
 
@@ -659,8 +667,70 @@ func TestACommandFinishedWithItsPipesReadingIsNotCut(t *testing.T) {
 	}
 }
 
-func TestAStrippedFlagNeedsAValue(t *testing.T) {
-	if _, err := ParseFlags([]string{"--process", "4", "--stripped"}); err == nil {
-		t.Fatal("a flag with no value was taken")
+func TestAFollowerCutsAGrowingOutput(t *testing.T) {
+	folder := outputFolder(t, strings.Repeat("old\n", 100))
+	if err := os.WriteFile(folder.Path+"/1.started", nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	tracker := Tracker{Options: Options{Process: 4, MostOutputBytes: 100}, Client: newClient(), Folder: folder, Parts: 1, Reported: map[int]bool{}}
+	tracker.reportParts(io.Discard)
+	if !strings.HasPrefix(folder.Output(1), cutLine) {
+		t.Fatal("a follower did not cut")
+	}
+}
+
+func TestAnEndedPartIsShownToTheAgent(t *testing.T) {
+	folder := outputFolder(t, "whole\n")
+	if err := os.WriteFile(folder.Path+"/1.status", []byte("0"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var shown strings.Builder
+	tracker := Tracker{Options: Options{Process: 4, CapCharacters: 100, LimitSeconds: 15}, Client: newClient(), Folder: folder, Parts: 1, Reported: map[int]bool{}}
+	tracker.reportParts(&shown)
+	if shown.String() != "whole\n" {
+		t.Fatalf("shown %q", shown.String())
+	}
+}
+
+func TestTheFirstCommandOfAnEvalLineKeepsItsOwnPosition(t *testing.T) {
+	parts := Parts("cd /x && eval 'npm test'")
+	if len(parts) < 2 || parts[0].Position == parts[1].Position {
+		t.Fatalf("parts %+v", parts)
+	}
+}
+
+func TestPartsAreNumberedAsTheHookNumbersItsCommands(t *testing.T) {
+	commands, _, err := shell.Split("cd /x && eval 'npm test' && ls | wc -l")
+	if err != nil {
+		t.Fatal(err)
+	}
+	parts := Parts("cd /x && eval 'npm test' && ls | wc -l")
+	if PartCount(parts) > len(commands) {
+		t.Fatalf("parts %+v against %d commands", parts, len(commands))
+	}
+}
+
+func TestThePartsFileHasALinePerPositionSoEveryOutputCanBeFound(t *testing.T) {
+	setup := options(t, "printf a | cat && echo next")
+	run(t, setup, newClient())
+	if lines := strings.Split(readFile(t, folderOf(setup)+"/parts"), "\n"); len(lines) != 3 || lines[2] != "echo next" {
+		t.Fatalf("parts %q", lines)
+	}
+}
+
+func TestPipefailInEverySpellingKeepsThePipe(t *testing.T) {
+	for _, line := range []string{"set -o pipefail; npm test | tail -1", "setopt PIPE_FAIL; npm test | tail -1", "setopt pipe_fail; npm test | tail -1"} {
+		parts := Parts(line, "npm test")
+		if parts[len(parts)-1].Filters != "" {
+			t.Errorf("%s was stripped", line)
+		}
+	}
+}
+
+func TestEveryWatchSpellingKeepsItsPipe(t *testing.T) {
+	for _, command := range []string{"jest --watchAll", "npm run test:watch", "tsc --watch", "vitest watch", "cargo watch -x test"} {
+		if part := Parts(command+" | head -20", command)[0]; part.Filters != "" {
+			t.Errorf("%s was stripped", command)
+		}
 	}
 }
