@@ -40,13 +40,13 @@ const questionMoves = (row) => (row?.state !== "open" ? [] : [
 // what a person can do to an agent: hold it or let it carry on, and stop its program after asking
 const agentMoves = (row) => (!row || row.ended_at ? [] : [
     row.paused_at ? {word: "resume", label: "Resume", main: true} : {word: "pause", label: "Pause"},
-    {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing."},
+    {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing.", danger: true},
 ]);
 
 // a worker is an agent too, with its own commands: its work merged, or it taken off its task; a job or a reason goes after its number
 const workerMoves = (row) => (row?.role !== "worker" || row.ended_at ? [] : [
     {noun: "worker", word: "send", label: "Send a job", ask: "What should it do?", positional: true},
-    {noun: "worker", word: "merge", label: "Merge", confirm: "Merge its work? Each point needs a checked proof."},
+    {noun: "worker", word: "merge", label: "Merge", main: true, confirm: "Merge its work? Each point needs a checked proof."},
     {noun: "worker", word: "release", label: "Release", ask: "Why is it taken off its task?", positional: true},
 ]);
 

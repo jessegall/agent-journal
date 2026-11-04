@@ -41,7 +41,7 @@ defineExpose({moves, press});
             <template v-if="asking?.confirm">
                 <div class="ask" data-resource-confirm>
                     <span class="ask-text">{{ asking.confirm }}</span>
-                    <Btn small kind="primary" data-resource-confirm-yes @click="run(asking)">{{ asking.label }}</Btn>
+                    <Btn small :kind="asking.danger ? 'ghost' : 'primary'" :bordered="asking.danger" :class="{danger: asking.danger}" data-resource-confirm-yes @click="run(asking)">{{ asking.label }}</Btn>
                     <Btn small kind="ghost" @click="asking = null">Back</Btn>
                 </div>
             </template>
@@ -58,7 +58,7 @@ defineExpose({moves, press});
             <template v-else>
                 <div class="moves">
                     <template v-for="move in moves" :key="move.word">
-                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
+                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :kind="move.main ? 'primary' : 'ghost'" :class="{danger: move.danger}" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
                     </template>
                 </div>
             </template>
@@ -104,6 +104,11 @@ defineExpose({moves, press});
     color: var(--text);
     font: inherit;
     font-size: 13px;
+}
+
+.danger {
+    border-color: color-mix(in oklab, var(--danger) 55%, var(--border-2));
+    color: var(--danger);
 }
 
 .refusal {

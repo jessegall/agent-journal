@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -9,7 +9,6 @@ import TranscriptRows from "./TranscriptRows.vue";
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {subagent: "Subagent", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
-const MILLISECONDS_PER_HOUR = 3600000;
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
@@ -37,11 +36,8 @@ const completedCount = computed(() => props.progress?.completed_count ?? tasks.v
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
 const tasksPerHour = computed(() => {
-    const started = Date.parse(props.progress?.started_at || props.row.created_at);
-    const finished = props.progress ? props.progress.finished_at : props.row.ended_at;
-    const ended = finished ? Date.parse(finished) : now.value;
-    const hours = (ended - started) / MILLISECONDS_PER_HOUR;
-    return props.row.role !== "main" && hours > 0 && completedCount.value ? `${Math.round(completedCount.value / hours)} per hour` : "";
+    const rate = perHour(completedCount.value, props.progress?.started_at || props.row.created_at, props.progress ? props.progress.finished_at : props.row.ended_at, now.value);
+    return props.row.role !== "main" && rate ? `${rate} per hour` : "";
 });
 const sections = computed(() => tasks.value.length ? TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})) : []);
 const FOLDED_STATES = new Set(["completed"]);

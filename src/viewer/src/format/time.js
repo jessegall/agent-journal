@@ -14,6 +14,19 @@ export function ago(at, nowMilliseconds = Date.now()) {
     return elapsed === "now" ? "just now" : elapsed && `${elapsed} ago`;
 }
 
+const MILLISECONDS_PER_HOUR = 3600000;
+
+// how many tasks were completed in each hour from the start to the end, or to now while it has not ended; 0 when none were or no time passed
+export function perHour(completed, startedAt, finishedAt, nowMilliseconds = Date.now()) {
+    const hours = ((finishedAt ? Date.parse(finishedAt) : nowMilliseconds) - Date.parse(startedAt)) / MILLISECONDS_PER_HOUR;
+    return hours > 0 && completed ? Math.round(completed / hours) : 0;
+}
+
+// a row's ISO time as a person reads a date: 3 Nov 2026, 12:19
+export function dated(at) {
+    return at ? new Date(at).toLocaleString([], {day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false}) : "";
+}
+
 export function fresh(at, now) {
     const s = Math.max(0, now - at);
     if (s < 5) return "now";

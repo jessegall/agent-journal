@@ -5,9 +5,8 @@ import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
-import AgentFacts from "./AgentFacts.vue";
+import AgentInspector from "./agent/AgentInspector.vue";
 import MemoryFacts from "./MemoryFacts.vue";
-import WorkerFacts from "./WorkerFacts.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
@@ -28,7 +27,7 @@ let reading = 0;
 
 const LONG_KINDS = new Set(["plan"]);
 const DOCUMENT_KINDS = new Set(["doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent-skill", ...DOCUMENT_KINDS]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_KINDS]);
 const TEXT_KINDS = new Set(["question", "memory"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const isDocument = computed(() => DOCUMENT_KINDS.has(kind.value));
@@ -63,7 +62,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
             <div v-if="opened" :class="['veil', {fades: kind === 'test-queue'}]" @click.self="close">
                 <aside
-                    :class="['panel', {wide, opening: !fullyOpen, task: kind === 'task', document: isDocument, queue: kind === 'test-queue'}]"
+                    :class="['panel', {wide, opening: !fullyOpen, task: kind === 'task', document: isDocument, queue: kind === 'test-queue', agent: kind === 'agent'}]"
                     role="dialog"
                     :aria-label="title"
                     data-resource-panel
@@ -80,6 +79,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             <div class="body">
                                 <ModuleBody :declaration="{type: 'skills.skills', body_url: catalogue.window('skills.skills').entry_url, shipped: true}" :row="{skillId: opened.id}" :environment="environment" />
                             </div>
+                        </template>
+                        <template #agent>
+                            <AgentInspector :id="opened.id" :backed="route.stack.length > 1" :read="read" :environment="environment" @close="close" @back="unpeek" />
                         </template>
                         <template #task>
                             <TaskInspector
@@ -153,12 +155,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 <template v-else>
                                     <template v-if="html">
                                         <div class="md text" data-resource-text v-html="html" />
-                                    </template>
-                                    <template v-if="kind === 'agent'">
-                                        <AgentFacts :id="opened.id" :read="read" />
-                                        <template v-if="row.role === 'worker'">
-                                            <WorkerFacts :id="opened.id" :read="read" />
-                                        </template>
                                     </template>
                                     <template v-if="kind === 'memory'">
                                         <MemoryFacts :id="opened.id" :read="read" />
@@ -237,6 +233,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .panel.task {
     width: min(640px, 100vw);
+}
+
+.panel.agent {
+    width: min(600px, 100vw);
 }
 
 .panel.wide {
