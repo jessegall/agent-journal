@@ -19,7 +19,7 @@ const withLook = (button) => ({...button, iconOnly: ICON_ONLY.includes(button.ic
 function dockButtons(item, declaration) {
     return [
         ...(leavesByItself(item, declaration) ? [pin(item)] : []),
-        ...(declaration?.buttons || []).map((button) => ({...button, action: "declared"})),
+        ...(declaration?.buttons || []).map((button) => ({...button, module: declaration.module, action: "declared"})),
         ...(!declaration?.draws_head && (declaration?.reads?.length || meta(item.target_model)) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
         own("undock", "close", "Undock", `dock remove ${item.id}`),
     ].map(withLook);

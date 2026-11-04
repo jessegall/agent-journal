@@ -38,7 +38,8 @@ function clicked(event) {
     opened.value = !opened.value;
 }
 // a row in the dock has no Dock button left, and its mark steps back in opacity
-const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filter((button) => !button.runs?.startsWith(DOCK_LINE)) : declaration.value?.buttons));
+const buttons = computed(() => (declaration.value?.buttons || []).filter((button) => !props.docked || !button.runs?.startsWith(DOCK_LINE))
+    .map((button) => ({...button, module: declaration.value.module})));
 </script>
 
 <template>

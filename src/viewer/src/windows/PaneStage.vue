@@ -4,6 +4,7 @@ import {OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
+import ButtonAllowance from "./ButtonAllowance.vue";
 import Icon from "../kit/Icon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
@@ -313,6 +314,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <SidebarPages :project="project" :windows="catalogue.pages.value" :environments="environments" :active-environments="activeEnvironments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" />
         </template>
     <div class="pane-stage" @keydown="keyed">
+        <ButtonAllowance :prompts="prompts" />
         <template v-if="phone">
             <template v-if="picked">
                 <section class="pane phone-pane">

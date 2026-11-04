@@ -28,7 +28,7 @@ async function press(button) {
     const isDeclared = button.action === "declared";
     if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
     failure.value = "";
-    const answer = await pressButton(button, props.item, context.environment);
+    const answer = await pressButton(button, {id: props.item.target_id}, context.environment);
     if (answer?.ok !== false) return;
     pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
     failure.value = answer.error;
