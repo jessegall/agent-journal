@@ -31,6 +31,7 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 		return prepared
 	}
 	prepared.Redirects = redirects
+	prepared.RetryLoop = shell.IsRetryLoop(line)
 	for _, command := range commands {
 		prepared.Parts = append(prepared.Parts, classifier.part(command, classifier.Classify(command.Text)))
 	}

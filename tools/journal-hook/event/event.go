@@ -52,12 +52,14 @@ type DiffRow struct {
 type ShellLine struct {
 	Aliases []string `json:"aliases,omitempty"`
 	// SavedCommandsKnown says the hook read the project's saved commands, so a test or build can be judged by them.
-	SavedCommandsKnown bool     `json:"saved_commands_known,omitempty"`
-	Line               string   `json:"line"`
-	Parts              []Part   `json:"parts"`
-	Redirects          []string `json:"redirects"`
-	IsJournalOnly      bool     `json:"is_journal_only"`
-	ParseError         string   `json:"parse_error"`
+	SavedCommandsKnown bool `json:"saved_commands_known,omitempty"`
+	// RetryLoop says the line runs something again until it works.
+	RetryLoop     bool     `json:"retry_loop,omitempty"`
+	Line          string   `json:"line"`
+	Parts         []Part   `json:"parts"`
+	Redirects     []string `json:"redirects"`
+	IsJournalOnly bool     `json:"is_journal_only"`
+	ParseError    string   `json:"parse_error"`
 }
 
 type Part struct {
