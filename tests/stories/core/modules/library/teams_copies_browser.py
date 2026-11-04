@@ -160,3 +160,39 @@ def test_story_12_a_sequence_arrives_without_its_trigger_and_new_steps_wait_for_
     browse(story, COPIES, SYNC, {"expect": "Status: New version to read"}, {"expect": "The steps of this sequence changed."}, {"button": "Read"}, {"expect": "Tag it"}, {"press": "Escape"},
            {"button": "Use the library's version"}, {"expect": "a sequence keeps no earlier versions"}, {"click": "[data-library-take]"}, {"expect": "Status: In sync, Version: 3"})
     story.expect_rows(len(story.row(Sequence, 1).steps) == 2)
+
+
+def user_numbers(server: SharedServerBinary, token: str) -> dict[str, int]:
+    return {user["name"]: int(str(user["id"])) for user in server.send(token, "GET", "/users")[1]["users"]}
+
+
+def test_story_7_an_admin_gives_a_read_only_user_edit_rights_from_the_page(new_story, team):
+    server, tokens = team
+    story = journal(new_story, server, tokens.admin)
+    linus = user_numbers(server, tokens.admin)["Linus"]
+    item = {"fields": {"title": "Needs edit", "abstract": "About", "body": "Text"}}
+    story.expect_rows(server.send(tokens.reader, "POST", "/items/doc", item)[0] == 403)
+    browse(story, {"tab": "People"}, {"expect": "Linus"}, {"click": f'[data-people-user="{linus}"] [data-people-role] button:has-text("Edit")'},
+           {"wait": f'[data-people-user="{linus}"] [data-people-role] button[aria-checked="true"]:has-text("Edit")'})
+    story.expect_rows(server.send(tokens.reader, "POST", "/items/doc", item)[0] == 201)
+
+
+def test_story_15_a_lost_laptop_has_its_one_token_revoked_from_the_page_and_the_other_device_keeps_working(new_story, team):
+    server, tokens = team
+    story = journal(new_story, server, tokens.admin)
+    grace = user_numbers(server, tokens.admin)["Grace"]
+    phone = server.send(tokens.admin, "POST", f"/users/{grace}/tokens", {"label": "Phone"})[1]["token_text"]
+    laptop = server.send(tokens.admin, "POST", f"/users/{grace}/tokens", {"label": "Laptop"})[1]
+    story.expect_rows(server.send(str(laptop["token_text"]), "GET", "/me")[0] == 200, server.send(str(phone), "GET", "/me")[0] == 200)
+    number = int(str(laptop["token"]["id"]))
+    browse(story, {"tab": "People"}, {"expect": "Grace"}, {"click": f'[data-people-user="{grace}"] [data-people-tokens]'}, {"expect": "Laptop, Last used:"},
+           {"click": f'[data-people-token="{number}"] [data-people-revoke]'}, {"wait": f'[data-people-token="{number}"] [data-people-revoked]'})
+    story.expect_rows(server.send(str(laptop["token_text"]), "GET", "/me")[0] == 401, server.send(str(phone), "GET", "/me")[0] == 200, server.send(tokens.editor, "GET", "/me")[0] == 200)
+
+
+def test_a_user_who_may_not_administer_sees_no_people_tab_and_the_server_refuses_the_route(new_story, team):
+    server, tokens = team
+    story = journal(new_story, server, tokens.editor)
+    browse(story, COPIES, {"expect": "On this journal"}, {"absent": "People"})
+    story.expect_refusal("library-user list", "your role cannot do this", actor=story.agent)
+    story.expect_rows(server.send(tokens.editor, "GET", "/users")[0] == 403)

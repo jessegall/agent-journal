@@ -4,6 +4,7 @@ import {Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, usePoll, useReadLine, u
 import LibraryBrowse from "./LibraryBrowse.vue";
 import LibraryConnect from "./LibraryConnect.vue";
 import LibraryCopies from "./LibraryCopies.vue";
+import LibraryPeople from "./LibraryPeople.vue";
 
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 const POLL_MILLISECONDS = 5000;
@@ -16,9 +17,11 @@ const tab = ref("library");
 const isLinked = computed(() => Boolean(status.value?.is_connected) && !status.value.stopped);
 const canWrite = computed(() => status.value?.role === "admin" || status.value?.role === "edit");
 const followed = computed(() => copies.value?.rows ?? []);
+const isAdmin = computed(() => status.value?.role === "admin");
 const tabs = computed(() => [
     {key: "library", label: "Library"},
     {key: "copies", label: "On this journal", count: followed.value.length},
+    ...(isAdmin.value ? [{key: "people", label: "People"}] : []),
 ]);
 
 // a local edit writes no copy, and the status is worked out when it is read, so the copies are read again every few seconds as well as when one changes
@@ -73,6 +76,9 @@ onMounted(() => context.follow(["library_copy.*"], load));
                     </template>
                     <template #copies>
                         <LibraryCopies :copies="followed" :role="status.role" :can-write="canWrite" @changed="load" />
+                    </template>
+                    <template #people>
+                        <LibraryPeople />
                     </template>
                 </SwitchCase>
             </template>

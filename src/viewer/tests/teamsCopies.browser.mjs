@@ -10,6 +10,7 @@ async function follow(page, step) {
     if (step.tab) await page.locator(`[data-teams-tabs] button:has-text("${step.tab}")`).click();
     if (step.click) await page.locator(step.click).first().click();
     if (step.button) await page.getByRole("button", {name: step.button, exact: true}).first().click();
+    if (step.wait) await page.locator(step.wait).waitFor({timeout: 15000});
     if (step.press) await page.keyboard.press(step.press);
     if (step.expect) await page.waitForFunction((text) => document.body.innerText.includes(text), step.expect, {timeout: 15000});
     if (step.absent) assert.ok(!(await page.locator("body").innerText()).includes(step.absent), `${step.absent} is shown`);
