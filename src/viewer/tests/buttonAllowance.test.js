@@ -55,7 +55,7 @@ async function drawn(windows, component, props) {
     app.mount(element);
     mounted.push(app);
     await settle();
-    return element;
+    return document.body;
 }
 
 test.each(["mark", "dock"])("a third party's %s asks with its label and line, and Allow runs it", async (place) => {

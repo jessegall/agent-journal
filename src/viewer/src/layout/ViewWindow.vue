@@ -90,7 +90,7 @@ watchEffect(() => {
                     <WindowPane :key="page" :name="page" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="mainAgent" :prompts="prompts" :shell-read="shellLine" />
                 </template>
             </div>
-            <ResourcePanel :read="shellLine" />
+            <ResourcePanel :read="shellLine" :catalogue="catalogue" :environment="environment" />
         </template>
     </div>
 </template>

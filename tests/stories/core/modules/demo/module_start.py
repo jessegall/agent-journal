@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import pytest
 
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser_at
@@ -10,7 +11,8 @@ from tests.stories.server.support.server_client import request_answer
 from tests.stories.support.story_checks import expect_value_with
 
 
-def test_a_demo_installs_a_module_and_draws_its_button_on_a_ready_plan(new_story):
+@pytest.mark.parametrize("page_kind", ["home", "popout", "phone"])
+def test_a_demo_installs_a_module_and_draws_its_button_on_a_ready_plan(new_story, page_kind):
     story = new_story(fixture=UserJoined)
     folder = Path(__file__).parent / "support" / "sample_review"
     outcome = story.run(f'demo start --with-module "{folder}" --json', actor=story.user)
@@ -26,6 +28,9 @@ def test_a_demo_installs_a_module_and_draws_its_button_on_a_ready_plan(new_story
         share = request_answer(socket, "POST", "/cli", {"argv": ["share", "make", "plans:6", "--json"],
                                                        "variables": {"USER": "Demo"}, "folder": str(demo_folder)})
         story.expect_rows(share.exit_code == 0)
-        expect_browser_at(lines[1], "demoModule.browser.mjs", [json.loads(share.text)["link"]])
+        pairing = request_answer(socket, "POST", "/cli", {"argv": ["phone", "pair", "--json"],
+                                                         "variables": {"USER": "Demo"}, "folder": str(demo_folder)})
+        story.expect_rows(pairing.exit_code == 0)
+        expect_browser_at(lines[1], "demoModule.browser.mjs", [json.loads(share.text)["link"], page_kind, json.loads(pairing.text)["code"]])
     finally:
         os.kill(pid, signal.SIGTERM)
