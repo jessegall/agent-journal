@@ -1,436 +1,448 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-f38d052ba308")) { const style = document.createElement("style"); style.id = "window-styles-f38d052ba308"; style.textContent = ".attachments[data-v-4619c630]{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 14px 8px 22px}.bar[data-v-4619c630]{flex-wrap:wrap;gap:10px;box-sizing:border-box;width:100%}.gallery[data-v-4619c630]{display:flex;flex-wrap:wrap;gap:8px}.tile[data-v-4619c630]{display:block;width:120px;height:90px;overflow:hidden;border:1px solid var(--border);border-radius:8px}.tile img[data-v-4619c630]{width:100%;height:100%;object-fit:cover}.row[data-v-4619c630]{display:flex;gap:10px;align-items:baseline;width:100%;font-size:13px}.name[data-v-4619c630]{flex:1;min-width:0;overflow-wrap:anywhere}.source[data-v-4619c630]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;font-size:12px;cursor:pointer}.when[data-v-4619c630]{color:var(--text-3);font-size:12px}.failure[data-v-4619c630]{margin:0;color:var(--danger);font-size:12.5px}.dump[data-v-31c6b7b3]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-31c6b7b3]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-31c6b7b3],.dump-failure[data-v-31c6b7b3]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-31c6b7b3]{display:flex;gap:8px}.question-layer[data-v-88a65a7b]{position:absolute;z-index:21;display:grid;top:0;right:0;bottom:0;left:0;padding:16px;place-items:center}.question-veil[data-v-88a65a7b]{position:absolute;top:0;right:0;bottom:0;left:0;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px) saturate(.8);backdrop-filter:blur(6px) saturate(.8)}.question-sheet[data-v-88a65a7b]{position:relative;overflow-y:auto;box-sizing:border-box;width:min(640px,100%);max-height:100%}.chat[data-v-a513e84e]{position:relative;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;height:100%;padding:0 12px 8px;min-height:0;container-type:size}.history[data-v-a513e84e]{flex:1;min-height:0;overflow-y:auto;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent)}.history[data-v-a513e84e] .row-list{gap:10px;padding:18px 0 20px}.history[data-v-a513e84e] .row-list-row:hover{background:none}.history[data-v-a513e84e] .row-list-row{padding:0 8px}.history[data-v-a513e84e] .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:-5px}html.phone .history .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:2px}.history[data-v-a513e84e] .mark.w-event{color:var(--text-3)}.pins[data-v-a513e84e]{position:relative;z-index:2;display:flex;flex-direction:column;margin:0 -12px -8px}.pin[data-v-a513e84e]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.pin-dot[data-v-a513e84e]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.pin-text[data-v-a513e84e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pin-link[data-v-a513e84e]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.pin-close[data-v-a513e84e]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-a513e84e]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-a513e84e]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-a513e84e]{background:var(--text-4)}.chat-day[data-v-a513e84e]{margin:0;padding:4px 0;color:var(--text-4);font-size:10.5px;text-align:center}.chat-foot[data-v-a513e84e]{flex:0 1 auto;min-height:0;overflow-y:auto}.jump-holder[data-v-a513e84e]{position:relative;flex:none;height:0}.jump[data-v-a513e84e]{position:absolute;z-index:3;bottom:6px;left:50%;display:inline-flex;gap:5px;align-items:center;padding:4px 11px;border:1px solid var(--text);border-radius:99px;background:var(--text);color:var(--bg);font-size:11.5px;font-weight:500;cursor:pointer;box-shadow:0 6px 18px #00000073;transform:translate(-50%)}.jump[data-v-a513e84e]:hover{border-color:var(--text-2);background:var(--text-2);color:var(--bg)}.rise-enter-active[data-v-a513e84e]{transition:opacity .22s ease-out,transform .22s cubic-bezier(.2,.8,.2,1)}.rise-leave-active[data-v-a513e84e]{transition:opacity .16s ease-in,transform .16s ease-in}.rise-enter-from[data-v-a513e84e],.rise-leave-to[data-v-a513e84e]{opacity:0;transform:translate(-50%,8px)}.composer-quote[data-v-a513e84e]{display:flex;flex:none;gap:8px;align-items:center;margin:0 0 6px;padding:4px 10px;border-left:2px solid var(--accent);color:var(--text-3);font-size:12.5px}.composer-quote-text[data-v-a513e84e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.composer-quote-drop[data-v-a513e84e]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.composer[data-v-a513e84e]{position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-a513e84e]{min-height:54px;padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.composer-row[data-v-a513e84e]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-a513e84e]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-a513e84e]{border-color:var(--accent)}.attached[data-v-a513e84e]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-a513e84e]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-a513e84e]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-a513e84e]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-a513e84e]{color:var(--text-3)}.composer-send[data-v-a513e84e]{margin-left:auto}.composer-failure[data-v-a513e84e]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { ref as n, openBlock as i, createElementBlock as f, withModifiers as Q, withDirectives as De, createElementVNode as s, vModelText as Nt, toDisplayString as _, createCommentVNode as y, createVNode as m, unref as o, withCtx as b, createTextVNode as U, onUnmounted as ne, computed as q, watch as j, onMounted as Ze, nextTick as ve, onBeforeUnmount as At, Fragment as et, renderList as tt, createBlock as R, Transition as Pt, vShow as jt, normalizeClass as xe, withKeys as me } from "vue";
-import { Btn as oe, useWindow as Bt, MarkBody as Ht, markDeclaration as Me, useRows as fe, openInChat as Vt, shownMarks as Kt, withDayLines as Ut, foldedMarks as Qt, interleaved as zt, usePins as Gt, fetchMarkDeclarations as Wt, fetchDockDeclarations as Jt, SHORT_CHAT as Xt, arrivalQueue as Yt, Icon as pe, PinsToggle as Zt, Skeleton as ea, RowList as ta, SwitchCase as aa, MessageCard as na, MarkGroup as oa, MarkHost as la, FigureFloors as sa, DockStack as ia, RunningCommand as ra, VoiceFigure as ua, dockOpening as ca, depart as da, arriveAtOnce as va, patched as ma, removed as fa } from "@journal/window-kit";
-import { _ as Oe } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const pa = {
+if (!document.getElementById("window-styles-826980a0450e")) { const style = document.createElement("style"); style.id = "window-styles-826980a0450e"; style.textContent = ".attachments[data-v-4619c630]{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 14px 8px 22px}.bar[data-v-4619c630]{flex-wrap:wrap;gap:10px;box-sizing:border-box;width:100%}.gallery[data-v-4619c630]{display:flex;flex-wrap:wrap;gap:8px}.tile[data-v-4619c630]{display:block;width:120px;height:90px;overflow:hidden;border:1px solid var(--border);border-radius:8px}.tile img[data-v-4619c630]{width:100%;height:100%;object-fit:cover}.row[data-v-4619c630]{display:flex;gap:10px;align-items:baseline;width:100%;font-size:13px}.name[data-v-4619c630]{flex:1;min-width:0;overflow-wrap:anywhere}.source[data-v-4619c630]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;font-size:12px;cursor:pointer}.when[data-v-4619c630]{color:var(--text-3);font-size:12px}.failure[data-v-4619c630]{margin:0;color:var(--danger);font-size:12.5px}.dump[data-v-31c6b7b3]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-31c6b7b3]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-31c6b7b3],.dump-failure[data-v-31c6b7b3]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-31c6b7b3]{display:flex;gap:8px}.question-layer[data-v-88a65a7b]{position:absolute;z-index:21;display:grid;top:0;right:0;bottom:0;left:0;padding:16px;place-items:center}.question-veil[data-v-88a65a7b]{position:absolute;top:0;right:0;bottom:0;left:0;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px) saturate(.8);backdrop-filter:blur(6px) saturate(.8)}.question-sheet[data-v-88a65a7b]{position:relative;overflow-y:auto;box-sizing:border-box;width:min(640px,100%);max-height:100%}.chat[data-v-8f72ac10]{position:relative;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;height:100%;padding:0 12px 8px;min-height:0;container-type:size}.history[data-v-8f72ac10]{flex:1;min-height:0;overflow-y:auto;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent)}.history[data-v-8f72ac10] .row-list{gap:10px;padding:18px 0 20px}.history[data-v-8f72ac10] .row-list-row:hover{background:none}.history[data-v-8f72ac10] .row-list-row{padding:0 8px}.history[data-v-8f72ac10] .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:-5px}html.phone .history .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:2px}.history[data-v-8f72ac10] .mark.w-event{color:var(--text-3)}.pins[data-v-8f72ac10]{position:relative;z-index:2;display:flex;flex-direction:column;margin:0 -12px -8px}.pin[data-v-8f72ac10]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.pin-dot[data-v-8f72ac10]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.pin-text[data-v-8f72ac10]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pin-link[data-v-8f72ac10]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.pin-close[data-v-8f72ac10]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-8f72ac10]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-8f72ac10]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-8f72ac10]{background:var(--text-4)}.chat-day[data-v-8f72ac10]{margin:0;padding:4px 0;color:var(--text-4);font-size:10.5px;text-align:center}.chat-foot[data-v-8f72ac10]{flex:0 1 auto;min-height:0;overflow-y:auto}.jump-holder[data-v-8f72ac10]{position:relative;flex:none;height:0}.jump[data-v-8f72ac10]{position:absolute;z-index:3;bottom:6px;left:50%;display:inline-flex;gap:5px;align-items:center;padding:4px 11px;border:1px solid var(--text);border-radius:99px;background:var(--text);color:var(--bg);font-size:11.5px;font-weight:500;cursor:pointer;box-shadow:0 6px 18px #00000073;transform:translate(-50%)}.jump[data-v-8f72ac10]:hover{border-color:var(--text-2);background:var(--text-2);color:var(--bg)}.rise-enter-active[data-v-8f72ac10]{transition:opacity .22s ease-out,transform .22s cubic-bezier(.2,.8,.2,1)}.rise-leave-active[data-v-8f72ac10]{transition:opacity .16s ease-in,transform .16s ease-in}.rise-enter-from[data-v-8f72ac10],.rise-leave-to[data-v-8f72ac10]{opacity:0;transform:translate(-50%,8px)}.composer-quote[data-v-8f72ac10]{display:flex;flex:none;gap:8px;align-items:center;margin:0 0 6px;padding:4px 10px;border-left:2px solid var(--accent);color:var(--text-3);font-size:12.5px}.composer-quote-text[data-v-8f72ac10]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.composer-quote-drop[data-v-8f72ac10]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.composer[data-v-8f72ac10]{position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-8f72ac10]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;line-height:1.45;resize:none;transition:height .16s var(--ease)}@media(prefers-reduced-motion:reduce){.composer-input[data-v-8f72ac10]{transition:none}}.composer-row[data-v-8f72ac10]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-8f72ac10]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-8f72ac10]{border-color:var(--accent)}.attached[data-v-8f72ac10]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-8f72ac10]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-8f72ac10]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-8f72ac10]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-8f72ac10]{color:var(--text-3)}.composer-send[data-v-8f72ac10]{margin-left:auto}.composer-failure[data-v-8f72ac10]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { watch as N, ref as n, openBlock as i, createElementBlock as g, withModifiers as W, withDirectives as Oe, createElementVNode as s, vModelText as Nt, toDisplayString as C, createCommentVNode as S, createVNode as p, unref as o, withCtx as T, createTextVNode as Q, onUnmounted as oe, computed as H, onMounted as et, nextTick as me, onBeforeUnmount as Pt, Fragment as tt, renderList as at, createBlock as A, Transition as jt, vShow as Bt, normalizeClass as Me, withKeys as fe } from "vue";
+import { Btn as le, useWindow as Vt, MarkBody as Kt, markDeclaration as xe, useRows as pe, openInChat as Ut, shownMarks as zt, withDayLines as Qt, foldedMarks as Wt, interleaved as Gt, usePins as Jt, fetchMarkDeclarations as Xt, fetchDockDeclarations as Yt, SHORT_CHAT as Zt, arrivalQueue as ea, Icon as ge, PinsToggle as ta, Skeleton as aa, RowList as na, SwitchCase as oa, MessageCard as la, MarkGroup as sa, MarkHost as ia, FigureFloors as ra, DockStack as ua, RunningCommand as ca, VoiceFigure as da, dockOpening as va, depart as ma, arriveAtOnce as fa, patched as pa, removed as ga } from "@journal/window-kit";
+import { _ as Re } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const ka = 3, ot = 16, ha = (r) => Math.min(Math.max(ka, r + 1), ot);
+function wa(r) {
+  const d = r.style.height || `${r.offsetHeight}px`, O = parseFloat(getComputedStyle(r).lineHeight);
+  r.style.transition = "none", r.style.height = "0px";
+  const w = ha(Math.round(r.scrollHeight / O));
+  r.style.height = d, r.offsetHeight, r.style.transition = "", r.style.overflowY = w === ot ? "auto" : "hidden", r.style.height = `${w * O}px`;
+}
+function ya(r, d) {
+  N(d, () => r.value && wa(r.value), { flush: "post" });
+}
+const _a = {
   key: 0,
   class: "dump-files"
-}, ga = { class: "dump-row" }, ka = {
+}, Sa = { class: "dump-row" }, Ca = {
   key: 1,
   class: "dump-failure"
-}, ha = 60, wa = {
+}, Ta = 60, $a = {
   __name: "DumpForm",
   props: { run: { type: Function, required: !0 } },
   emits: ["made", "close"],
-  setup(z, { emit: k }) {
-    const B = k, C = z, S = n(""), T = n([]), D = n(""), w = () => [...S.value.split(/\n\s*\n/).map((h) => h.trim()).filter(Boolean), ...T.value.map((h) => `${h.name}: ${h.text.trim()}`)], r = () => (w()[0] ?? "").replace(/\s+/g, " ").slice(0, ha);
-    async function G(h) {
-      var $;
-      const p = [...(($ = h.dataTransfer) == null ? void 0 : $.files) ?? []];
-      T.value = [...T.value, ...await Promise.all(p.map(async (J) => ({ name: J.name, text: await J.text() })))];
+  setup(r, { emit: d }) {
+    const O = d, w = r, $ = n(""), E = n([]), x = n(""), _ = () => [...$.value.split(/\n\s*\n/).map((y) => y.trim()).filter(Boolean), ...E.value.map((y) => `${y.name}: ${y.text.trim()}`)], u = () => (_()[0] ?? "").replace(/\s+/g, " ").slice(0, Ta);
+    async function G(y) {
+      var b;
+      const k = [...((b = y.dataTransfer) == null ? void 0 : b.files) ?? []];
+      E.value = [...E.value, ...await Promise.all(k.map(async (X) => ({ name: X.name, text: await X.text() })))];
     }
-    async function W() {
-      const h = await C.run(["dump", "make", r(), "--parts", w().join(" | ")]);
-      D.value = h.ok ? "" : h.error, h.ok && (S.value = "", T.value = [], B("made"));
+    async function J() {
+      const y = await w.run(["dump", "make", u(), "--parts", _().join(" | ")]);
+      x.value = y.ok ? "" : y.error, y.ok && ($.value = "", E.value = [], O("made"));
     }
-    return (h, p) => (i(), f("form", {
+    return (y, k) => (i(), g("form", {
       class: "dump",
       "data-dump-form": "",
-      onSubmit: Q(W, ["prevent"]),
-      onDragover: p[2] || (p[2] = Q(() => {
+      onSubmit: W(J, ["prevent"]),
+      onDragover: k[2] || (k[2] = W(() => {
       }, ["prevent"])),
-      onDrop: Q(G, ["prevent"])
+      onDrop: W(G, ["prevent"])
     }, [
-      De(s("textarea", {
-        "onUpdate:modelValue": p[0] || (p[0] = ($) => S.value = $),
+      Oe(s("textarea", {
+        "onUpdate:modelValue": k[0] || (k[0] = (b) => $.value = b),
         class: "dump-notes",
         rows: "4",
         placeholder: "Paste text or drop files. Each paragraph or file becomes a separate item."
       }, null, 512), [
-        [Nt, S.value]
+        [Nt, $.value]
       ]),
-      T.value.length ? (i(), f("p", pa, _(T.value.map(($) => $.name).join(", ")), 1)) : y("", !0),
-      s("div", ga, [
-        m(o(oe), {
+      E.value.length ? (i(), g("p", _a, C(E.value.map((b) => b.name).join(", ")), 1)) : S("", !0),
+      s("div", Sa, [
+        p(o(le), {
           kind: "primary",
           small: "",
-          disabled: !w().length,
+          disabled: !_().length,
           "data-dump-make": "",
-          onClick: W
+          onClick: J
         }, {
-          default: b(() => [...p[3] || (p[3] = [
-            U("Create dump", -1)
+          default: T(() => [...k[3] || (k[3] = [
+            Q("Create dump", -1)
           ])]),
           _: 1
         }, 8, ["disabled"]),
-        m(o(oe), {
+        p(o(le), {
           small: "",
-          onClick: p[1] || (p[1] = ($) => B("close"))
+          onClick: k[1] || (k[1] = (b) => O("close"))
         }, {
-          default: b(() => [...p[4] || (p[4] = [
-            U("Cancel", -1)
+          default: T(() => [...k[4] || (k[4] = [
+            Q("Cancel", -1)
           ])]),
           _: 1
         })
       ]),
-      D.value ? (i(), f("p", ka, _(D.value), 1)) : y("", !0)
+      x.value ? (i(), g("p", Ca, C(x.value), 1)) : S("", !0)
     ], 32));
   }
-}, ya = /* @__PURE__ */ Oe(wa, [["__scopeId", "data-v-31c6b7b3"]]), _a = {
+}, Ea = /* @__PURE__ */ Re($a, [["__scopeId", "data-v-31c6b7b3"]]), ba = {
   class: "question-layer",
   "data-question-overlay": ""
-}, ba = { class: "question-sheet" }, at = "questions.question", Ca = "open", Sa = 450, Ta = {
+}, Da = { class: "question-sheet" }, nt = "questions.question", Ma = "open", Oa = 450, xa = {
   __name: "QuestionOverlay",
   props: { id: { type: Number, required: !0 } },
   emits: ["close"],
-  setup(z, { emit: k }) {
-    const B = z, C = k, S = Bt();
-    async function T() {
-      const w = await S.read(`question show ${B.id}`);
-      w.ok && w.value.state !== Ca && setTimeout(() => C("close"), Sa);
+  setup(r, { emit: d }) {
+    const O = r, w = d, $ = Vt();
+    async function E() {
+      const _ = await $.read(`question show ${O.id}`);
+      _.ok && _.value.state !== Ma && setTimeout(() => w("close"), Oa);
     }
-    const D = (w) => w.key === "Escape" && C("close");
-    return window.addEventListener("keydown", D), ne(() => window.removeEventListener("keydown", D)), S.follow(["question.*"], T), (w, r) => (i(), f("div", _a, [
+    const x = (_) => _.key === "Escape" && w("close");
+    return window.addEventListener("keydown", x), oe(() => window.removeEventListener("keydown", x)), $.follow(["question.*"], E), (_, u) => (i(), g("div", ba, [
       s("div", {
         class: "question-veil",
         "data-question-veil": "",
-        onClick: r[0] || (r[0] = (G) => C("close"))
+        onClick: u[0] || (u[0] = (G) => w("close"))
       }),
-      s("div", ba, [
-        m(o(Ht), {
-          declaration: o(Me)(at) || {},
-          mark: { id: 0, type: at, target_model: "question", target_id: z.id },
+      s("div", Da, [
+        p(o(Kt), {
+          declaration: o(xe)(nt) || {},
+          mark: { id: 0, type: nt, target_model: "question", target_id: r.id },
           shown: ""
         }, null, 8, ["declaration", "mark"])
       ])
     ]));
   }
-}, $a = /* @__PURE__ */ Oe(Ta, [["__scopeId", "data-v-88a65a7b"]]), Ea = {
+}, Ra = /* @__PURE__ */ Re(xa, [["__scopeId", "data-v-88a65a7b"]]), Fa = {
   "data-pins": "",
   class: "pins"
-}, xa = { class: "pin-text" }, Da = ["title", "onClick"], Ma = ["href", "target"], Oa = ["onClick"], La = {
+}, La = { class: "pin-text" }, Ia = ["title", "onClick"], qa = ["href", "target"], Ha = ["onClick"], Aa = {
   class: "chat-day",
   "data-day-line": ""
-}, Fa = { class: "jump-holder" }, Ia = ["title"], qa = {
+}, Na = { class: "jump-holder" }, Pa = ["title"], ja = {
   "data-figure-chat-foot": "",
   class: "chat-foot"
-}, Ra = { class: "running-strip" }, Na = {
+}, Ba = { class: "running-strip" }, Va = {
   key: 2,
   class: "composer-quote",
   "data-composer-quote": ""
-}, Aa = { class: "composer-quote-text" }, Pa = {
+}, Ka = { class: "composer-quote-text" }, Ua = {
   key: 1,
   class: "attached",
   "data-attached": ""
-}, ja = ["title"], Ba = {
+}, za = ["title"], Qa = {
   key: 0,
   class: "attached-wait"
-}, Ha = ["onClick"], Va = {
+}, Wa = ["onClick"], Ga = {
   key: 3,
   class: "composer-failure"
-}, Ka = 180, Ua = 2e3, Qa = 40, za = 1500, Ga = {
+}, Ja = 180, Xa = 2e3, Ya = 40, Za = 1500, en = {
   __name: "Chat",
-  setup(z) {
-    const { rows: k, failure: B, loaded: C, load: S, loadLatest: T, older: D, act: w, context: r } = fe("message feed --limit 50", ["message.*"], { incremental: !0 });
-    r.markMotion = n(!1);
+  setup(r) {
+    const { rows: d, failure: O, loaded: w, load: $, loadLatest: E, older: x, act: _, context: u } = pe("message feed --limit 50", ["message.*"], { incremental: !0 });
+    u.markMotion = n(!1);
     async function G() {
-      const e = await r.read("setting show journal.core.developer.tools.mark-motion");
-      r.markMotion.value = e.ok && e.value.value === !0;
+      const e = await u.read("setting show journal.core.developer.tools.mark-motion");
+      u.markMotion.value = e.ok && e.value.value === !0;
     }
-    r.follow(["setting.*"], G), G();
-    const { rows: W, older: h, loadLatest: p } = fe("chat-mark main --limit 50", ["chat_mark.*"], { incremental: !0 }), { rows: $ } = fe("dock-item main", ["dock_item.*"]), J = q(() => new Set($.value.filter((e) => e.state === "docked").map((e) => `${e.target_model}:${e.target_id}`))), { rows: Le, act: Fe } = fe("pin list", ["pin.*"]), X = n(0), nt = Vt("question", (e) => (X.value = e, !0));
-    ne(nt);
-    const ot = q(() => Kt(W.value, Me, (e) => r.option(e).value)), M = n([]), Ie = (e) => k.value.some((t) => t.type === e.type && t.text === e.text && Date.parse(t.created_at) >= e.created_at - Ua);
-    j(k, () => {
-      const e = M.value.filter((t) => !Ie(t));
-      e.length !== M.value.length && (M.value = e);
+    u.follow(["setting.*"], G), G();
+    const { rows: J, older: y, loadLatest: k } = pe("chat-mark main --limit 50", ["chat_mark.*"], { incremental: !0 }), { rows: b } = pe("dock-item main", ["dock_item.*"]), X = H(() => new Set(b.value.filter((e) => e.state === "docked").map((e) => `${e.target_model}:${e.target_id}`))), { rows: Fe, act: Le } = pe("pin list", ["pin.*"]), Y = n(0), lt = Ut("question", (e) => (Y.value = e, !0));
+    oe(lt);
+    const st = H(() => zt(J.value, xe, (e) => u.option(e).value)), R = n([]), Ie = (e) => d.value.some((t) => t.type === e.type && t.text === e.text && Date.parse(t.created_at) >= e.created_at - Xa);
+    N(d, () => {
+      const e = R.value.filter((t) => !Ie(t));
+      e.length !== R.value.length && (R.value = e);
     });
-    const ge = q(() => Ut(Qt(zt([...k.value, ...M.value.filter((e) => !Ie(e))], ot.value), Me))), { visible: lt } = Gt(() => Le.value), st = (e) => {
+    const ke = H(() => Qt(Wt(Gt([...d.value, ...R.value.filter((e) => !Ie(e))], st.value), xe))), { visible: it } = Jt(() => Fe.value), rt = (e) => {
       var t;
-      return ((t = k.value.find((a) => a.id === e.parent_id)) == null ? void 0 : t.text) ?? "";
-    }, it = ["profile", "avatar", "avatar-shown"], Y = n(null);
+      return ((t = d.value.find((a) => a.id === e.parent_id)) == null ? void 0 : t.text) ?? "";
+    }, ut = ["profile", "avatar", "avatar-shown"], Z = n(null);
     async function qe() {
-      const e = await Promise.all(it.map((c) => r.read(`setting show journal.core.voices.${c}`))), [t, a, l] = e.map((c) => c.ok ? c.value.value : null);
-      Y.value = e.every((c) => c.ok) ? { profile: t, avatar: a, avatar_shown: l } : null;
+      const e = await Promise.all(ut.map((m) => u.read(`setting show journal.core.voices.${m}`))), [t, a, l] = e.map((m) => m.ok ? m.value.value : null);
+      Z.value = e.every((m) => m.ok) ? { profile: t, avatar: a, avatar_shown: l } : null;
     }
-    r.follow(["setting.*"], qe), qe();
-    const rt = () => {
+    u.follow(["setting.*"], qe), qe();
+    const ct = () => {
       var e;
-      return !((e = Y.value) != null && e.avatar) || Y.value.avatar_shown === "never" || Y.value.avatar_shown === "working" && !Z.value ? "" : Y.value.profile;
-    }, Re = q(() => {
-      const e = r.option("figure").value;
-      return e === "voice" ? rt() : e && e !== "none" ? e : "";
-    }), Z = n(""), le = n(""), Ne = n(!1), Ae = n(!1), Pe = n(Date.now() / 1e3), ke = (e) => JSON.parse(e.reactions || "[]").map((t) => `${t.actor_type}:${t.emoji}`), he = n([]);
-    let we = /* @__PURE__ */ new Map();
-    const ut = q(() => k.value.map((e) => `${e.id}:${ke(e).join("")}`).join("|"));
-    j(ut, () => {
-      const e = k.value, t = e.filter((a) => we.has(a.id)).flatMap((a) => ke(a).filter((l) => !we.get(a.id).includes(l)).map((l) => {
-        const [c, P] = l.split(":");
-        return { author: c, emoji: P, message_id: a.id, created_at: (/* @__PURE__ */ new Date()).toISOString() };
+      return !((e = Z.value) != null && e.avatar) || Z.value.avatar_shown === "never" || Z.value.avatar_shown === "working" && !ee.value ? "" : Z.value.profile;
+    }, He = H(() => {
+      const e = u.option("figure").value;
+      return e === "voice" ? ct() : e && e !== "none" ? e : "";
+    }), ee = n(""), se = n(""), Ae = n(!1), Ne = n(!1), Pe = n(Date.now() / 1e3), he = (e) => JSON.parse(e.reactions || "[]").map((t) => `${t.actor_type}:${t.emoji}`), we = n([]);
+    let ye = /* @__PURE__ */ new Map();
+    const dt = H(() => d.value.map((e) => `${e.id}:${he(e).join("")}`).join("|"));
+    N(dt, () => {
+      const e = d.value, t = e.filter((a) => ye.has(a.id)).flatMap((a) => he(a).filter((l) => !ye.get(a.id).includes(l)).map((l) => {
+        const [m, B] = l.split(":");
+        return { author: m, emoji: B, message_id: a.id, created_at: (/* @__PURE__ */ new Date()).toISOString() };
       }));
-      t.length && (he.value = [...he.value, ...t].slice(-20)), we = new Map(e.map((a) => [a.id, ke(a)]));
+      t.length && (we.value = [...we.value, ...t].slice(-20)), ye = new Map(e.map((a) => [a.id, he(a)]));
     }, { immediate: !0 });
-    const ct = q(() => !!Re.value), se = n("");
-    j(Re, (e) => {
-      e && (se.value = e);
+    const vt = H(() => !!He.value), ie = n("");
+    N(He, (e) => {
+      e && (ie.value = e);
     }, { immediate: !0 });
     async function je() {
       Pe.value = Date.now() / 1e3;
-      const e = await r.read("usage tool");
-      Z.value = e.ok ? e.value.tool : "", le.value = e.ok ? e.value.wait_target : "", Ne.value = e.ok ? !!e.value.thinking : !1, Ae.value = e.ok ? !!e.value.asking : !1;
+      const e = await u.read("usage tool");
+      ee.value = e.ok ? e.value.tool : "", se.value = e.ok ? e.value.wait_target : "", Ae.value = e.ok ? !!e.value.thinking : !1, Ne.value = e.ok ? !!e.value.asking : !1;
     }
-    r.follow(["hook_call.*", "dock_item.*", "process_part.*"], je), je();
-    const ye = n(null), _e = n(!0), Be = n(!1);
-    let He = 0, x = !0, be = 0, ee = null;
-    Ze(() => {
-      A(), Promise.all([Wt(), Jt()]), ye.value && typeof ResizeObserver < "u" && (ee = new ResizeObserver(([e]) => Be.value = e.contentRect.height < Xt), ee.observe(ye.value));
-    }), ne(() => {
-      ee == null || ee.disconnect(), clearTimeout(be);
+    u.follow(["hook_call.*", "dock_item.*", "process_part.*"], je), je();
+    const _e = n(null), Se = n(!0), Be = n(!1);
+    let Ve = 0, D = !0, Ce = 0, te = null, ae = null;
+    et(() => {
+      j(), Promise.all([Xt(), Yt()]), _e.value && typeof ResizeObserver < "u" && (te = new ResizeObserver(([e]) => Be.value = e.contentRect.height < Zt), te.observe(_e.value), ae = new ResizeObserver(() => D && c.value && (c.value.scrollTop = c.value.scrollHeight)), ae.observe(c.value));
+    }), oe(() => {
+      te == null || te.disconnect(), ae == null || ae.disconnect(), clearTimeout(Ce);
     });
-    const d = n(""), N = n(""), u = n(null), Ve = n(!0), ie = n(!1), O = n(0), H = n(!1), v = n([]), Ke = n(null), te = n(null), A = () => ve(() => {
+    const v = n(""), P = n(""), c = n(null), Ke = n(!0), re = n(!1), F = n(0), V = n(!1), f = n([]), Ue = n(null), K = n(null);
+    ya(K, v);
+    const j = () => me(() => {
       var e;
-      return (e = te.value) == null ? void 0 : e.focus();
+      return (e = K.value) == null ? void 0 : e.focus();
     });
-    let V = "";
+    let U = "";
     function L() {
-      te.value && te.value.value !== V && (V = d.value = te.value.value);
+      K.value && K.value.value !== U && (U = v.value = K.value.value);
     }
-    const dt = {
+    const mt = {
       created(e, { value: t }) {
-        e.value = V = t;
+        e.value = U = t;
       },
       beforeUpdate(e, { value: t }) {
-        e.value !== V ? L() : e.value !== t && (e.value = V = t);
+        e.value !== U ? L() : e.value !== t && (e.value = U = t);
       }
     };
-    function vt(e) {
-      V = d.value = e.target.value;
+    function ft(e) {
+      U = v.value = e.target.value;
     }
-    function re() {
-      L(), (document.activeElement === document.body || document.activeElement === null) && A();
+    function ue() {
+      L(), (document.activeElement === document.body || document.activeElement === null) && j();
     }
-    Ze(() => {
-      window.addEventListener("focus", re), document.addEventListener("visibilitychange", re);
-    }), At(() => {
-      L(), g.value || ze(d.value), window.removeEventListener("focus", re), document.removeEventListener("visibilitychange", re);
+    et(() => {
+      window.addEventListener("focus", ue), document.addEventListener("visibilitychange", ue);
+    }), Pt(() => {
+      L(), h.value || We(v.value), window.removeEventListener("focus", ue), document.removeEventListener("visibilitychange", ue);
     });
-    const ue = n(!1);
-    async function Ce(e) {
+    const ce = n(!1);
+    async function Te(e) {
       for (const t of e) {
-        if (v.value.some((c) => c.name === t.name)) continue;
+        if (f.value.some((m) => m.name === t.name)) continue;
         const a = { name: t.name, pending: "", failure: "" };
-        v.value = [...v.value, a];
-        const l = await r.upload(t);
-        a.pending = l.ok ? l.value : "", a.failure = l.ok ? "" : l.error, v.value = [...v.value];
+        f.value = [...f.value, a];
+        const l = await u.upload(t);
+        a.pending = l.ok ? l.value : "", a.failure = l.ok ? "" : l.error, f.value = [...f.value];
       }
-      A();
+      j();
     }
-    const mt = (e) => {
-      Ce([...e.target.files]), e.target.value = "";
-    }, ft = (e) => {
+    const pt = (e) => {
+      Te([...e.target.files]), e.target.value = "";
+    }, gt = (e) => {
       var a;
       const t = [...((a = e.clipboardData) == null ? void 0 : a.files) ?? []];
-      t.length && (e.preventDefault(), Ce(t));
-    }, pt = (e) => {
+      t.length && (e.preventDefault(), Te(t));
+    }, kt = (e) => {
       var t;
-      ue.value = !1, Ce([...((t = e.dataTransfer) == null ? void 0 : t.files) ?? []]);
-    }, gt = (e) => v.value = v.value.filter((t) => t !== e), Se = q(() => (d.value.trim() || v.value.length) && v.value.every((e) => e.pending)), F = n(null), E = n(null), kt = q(() => {
+      ce.value = !1, Te([...((t = e.dataTransfer) == null ? void 0 : t.files) ?? []]);
+    }, ht = (e) => f.value = f.value.filter((t) => t !== e), $e = H(() => (v.value.trim() || f.value.length) && f.value.every((e) => e.pending)), I = n(null), M = n(null), wt = H(() => {
       var e;
-      return g.value ? `Editing message ${g.value.id}` : E.value ? `Comment on: ${E.value.text}` : `Reply to: ${(e = F.value) == null ? void 0 : e.text}`;
-    }), g = n(null);
-    function ht(e) {
-      g.value = null, E.value = null, F.value = e, A();
+      return h.value ? `Editing message ${h.value.id}` : M.value ? `Comment on: ${M.value.text}` : `Reply to: ${(e = I.value) == null ? void 0 : e.text}`;
+    }), h = n(null);
+    function yt(e) {
+      h.value = null, M.value = null, I.value = e, j();
     }
-    function wt(e) {
-      g.value = null, F.value = null, E.value = e, A();
+    function _t(e) {
+      h.value = null, I.value = null, M.value = e, j();
     }
-    async function yt(e, t) {
-      const a = JSON.parse(e.reactions || "[]"), c = a.some((I) => I.actor_type === "user" && I.emoji === t) ? a.filter((I) => !(I.actor_type === "user" && I.emoji === t)) : [...a, { emoji: t, actor_type: "user" }], P = await w(["message", "react", String(e.id), t], ma(e.id, { reactions: JSON.stringify(c) }));
-      N.value = P.ok ? "" : P.error;
+    async function St(e, t) {
+      const a = JSON.parse(e.reactions || "[]"), m = a.some((q) => q.actor_type === "user" && q.emoji === t) ? a.filter((q) => !(q.actor_type === "user" && q.emoji === t)) : [...a, { emoji: t, actor_type: "user" }], B = await _(["message", "react", String(e.id), t], pa(e.id, { reactions: JSON.stringify(m) }));
+      P.value = B.ok ? "" : B.error;
     }
-    async function _t(e) {
-      const t = await w(["message", "delete", String(e.id)], fa(e.id));
-      N.value = t.ok ? "" : t.error;
+    async function Ct(e) {
+      const t = await _(["message", "delete", String(e.id)], ga(e.id));
+      P.value = t.ok ? "" : t.error;
     }
-    const Ue = () => k.value.find((e) => ["user", "comment"].includes(e.type));
-    function bt(e) {
-      d.value || !Ue() || (e.preventDefault(), g.value = Ue(), F.value = null, E.value = null, d.value = g.value.text);
+    const ze = () => d.value.find((e) => ["user", "comment"].includes(e.type));
+    function Tt(e) {
+      v.value || !ze() || (e.preventDefault(), h.value = ze(), I.value = null, M.value = null, v.value = h.value.text);
     }
-    function ce() {
-      g.value && (g.value = null, d.value = "");
+    function de() {
+      h.value && (h.value = null, v.value = "");
     }
-    async function Ct() {
-      const e = g.value, t = e.text, a = d.value;
-      e.text = a, ce();
-      const l = await r.run(["message", "edit", String(e.id), "--text", a]);
-      N.value = l.ok ? "" : l.error, l.ok || (e.text = t, g.value = e, d.value = a), S();
+    async function $t() {
+      const e = h.value, t = e.text, a = v.value;
+      e.text = a, de();
+      const l = await u.run(["message", "edit", String(e.id), "--text", a]);
+      P.value = l.ok ? "" : l.error, l.ok || (e.text = t, h.value = e, v.value = a), $();
     }
-    function St(e, t, a, l) {
+    function Et(e, t, a, l) {
       return t && !l.length ? ["message", "comment", String(t.id), a] : e && !l.length ? ["message", "reply", String(e.id), a] : ["message", "send", a, ...l];
     }
-    async function Te() {
-      if (L(), g.value) return Ct();
-      const e = { text: d.value, attached: v.value }, t = e.attached.flatMap((ae) => ["--file", ae.pending]), a = e.text || e.attached.map((ae) => ae.name).join(", "), l = F.value, c = E.value, P = c && !t.length, I = { id: `sending-${Date.now()}`, type: P ? "comment" : "user", commented_row: P ? `message:${c.id}` : "", text: a, created_at: Date.now(), files: [], local: !0 };
-      M.value = [...M.value, I], x = !0, ie.value = !1, O.value = 0, d.value = "", v.value = [], N.value = "", A(), F.value = null, E.value = null;
-      const Ye = await r.run(St(l, c, a, t));
-      Ye.ok || (N.value = Ye.error, d.value = e.text, v.value = e.attached, E.value = c), M.value = M.value.filter((ae) => ae.id !== I.id), await S();
+    async function Ee() {
+      if (L(), h.value) return $t();
+      const e = { text: v.value, attached: f.value }, t = e.attached.flatMap((ne) => ["--file", ne.pending]), a = e.text || e.attached.map((ne) => ne.name).join(", "), l = I.value, m = M.value, B = m && !t.length, q = { id: `sending-${Date.now()}`, type: B ? "comment" : "user", commented_row: B ? `message:${m.id}` : "", text: a, created_at: Date.now(), files: [], local: !0 };
+      R.value = [...R.value, q], D = !0, re.value = !1, F.value = 0, v.value = "", f.value = [], P.value = "", j(), I.value = null, M.value = null;
+      const Ze = await u.run(Et(l, m, a, t));
+      Ze.ok || (P.value = Ze.error, v.value = e.text, f.value = e.attached, M.value = m), R.value = R.value.filter((ne) => ne.id !== q.id), await $();
     }
-    const Tt = (e) => !e.shiftKey && !e.isComposing && (e.preventDefault(), L(), Se.value && Te()), $t = /* @__PURE__ */ new Set(["INPUT", "TEXTAREA", "SELECT"]);
+    const bt = (e) => !e.shiftKey && !e.isComposing && (e.preventDefault(), L(), $e.value && Ee()), Dt = /* @__PURE__ */ new Set(["INPUT", "TEXTAREA", "SELECT"]);
     function Qe(e) {
       var t, a;
-      e.key !== "/" || e.metaKey || e.ctrlKey || $t.has((t = e.target) == null ? void 0 : t.tagName) || (a = e.target) != null && a.isContentEditable || (e.preventDefault(), A());
+      e.key !== "/" || e.metaKey || e.ctrlKey || Dt.has((t = e.target) == null ? void 0 : t.tagName) || (a = e.target) != null && a.isContentEditable || (e.preventDefault(), j());
     }
-    window.addEventListener("keydown", Qe), ne(() => window.removeEventListener("keydown", Qe));
-    const $e = `journal.draft.${r.environment}`;
-    function Et() {
+    window.addEventListener("keydown", Qe), oe(() => window.removeEventListener("keydown", Qe));
+    const be = `journal.draft.${u.environment}`;
+    function Mt() {
       try {
-        return localStorage.getItem($e) ?? "";
+        return localStorage.getItem(be) ?? "";
       } catch {
         return "";
       }
     }
-    function ze(e) {
+    function We(e) {
       try {
-        e ? localStorage.setItem($e, e) : localStorage.removeItem($e);
+        e ? localStorage.setItem(be, e) : localStorage.removeItem(be);
       } catch {
         return;
       }
     }
-    d.value = Et(), j(d, (e) => !g.value && ze(e));
-    const de = n(!1);
-    async function xt() {
-      if (K || de.value || !C.value) return;
-      de.value = !0;
-      const e = u.value.scrollHeight, [t, a] = await Promise.all([D(), h()]);
-      (t || a) && (await ve(), u.value.scrollTop += u.value.scrollHeight - e), de.value = !1;
+    v.value = Mt(), N(v, (e) => !h.value && We(e));
+    const ve = n(!1);
+    async function Ot() {
+      if (z || ve.value || !w.value) return;
+      ve.value = !0;
+      const e = c.value.scrollHeight, [t, a] = await Promise.all([x(), y()]);
+      (t || a) && (await me(), c.value.scrollTop += c.value.scrollHeight - e), ve.value = !1;
     }
-    function Dt() {
-      if (Ve.value = !u.value || u.value.scrollTop < 8, Ve.value && u.value && xt(), !u.value) return;
-      const { scrollTop: e, scrollHeight: t, clientHeight: a } = u.value;
-      x = t - e - a < Qa, ie.value = !x, x && (O.value = 0);
-      const l = ca({ top: e, before: He, height: t, shown: a });
-      He = e, l !== null && (clearTimeout(be), l ? _e.value = !0 : be = setTimeout(() => _e.value = !1, Ka));
+    function xt() {
+      if (Ke.value = !c.value || c.value.scrollTop < 8, Ke.value && c.value && Ot(), !c.value) return;
+      const { scrollTop: e, scrollHeight: t, clientHeight: a } = c.value;
+      D = t - e - a < Ya, re.value = !D, D && (F.value = 0);
+      const l = va({ top: e, before: Ve, height: t, shown: a });
+      Ve = e, l !== null && (clearTimeout(Ce), l ? Se.value = !0 : Ce = setTimeout(() => Se.value = !1, Ja));
     }
-    j(() => {
+    N(() => {
       var e;
-      return (e = k.value[0]) == null ? void 0 : e.id;
+      return (e = d.value[0]) == null ? void 0 : e.id;
     }, (e, t) => {
-      t && e > t && !x && (O.value += 1);
-    }), j([ge, C], async () => {
-      await ve(), x && u.value && (u.value.scrollTop = u.value.scrollHeight);
+      t && e > t && !D && (F.value += 1);
+    }), N([ke, w], async () => {
+      await me(), D && c.value && (c.value.scrollTop = c.value.scrollHeight);
     });
-    let Ge = !1, We = 0;
-    j(C, () => We = setTimeout(() => Ge = !0, za));
-    const Ee = Yt();
-    let K = !1;
-    const Je = () => ({ pane: u.value, follows: () => Ge && x && !document.hidden && !K }), Mt = (e) => {
+    let Ge = !1, Je = 0;
+    N(w, () => Je = setTimeout(() => Ge = !0, Za));
+    const De = ea();
+    let z = !1;
+    const Xe = () => ({ pane: c.value, follows: () => Ge && D && !document.hidden && !z }), Rt = (e) => {
       var t;
-      return (t = ge.value.find((a) => a.id === e.dataset.row)) == null ? void 0 : t.row;
-    }, Ot = (e) => !!(e != null && e.local), Lt = {
+      return (t = ke.value.find((a) => a.id === e.dataset.row)) == null ? void 0 : t.row;
+    }, Ft = (e) => !!(e != null && e.local), Lt = {
       enter: (e, t) => {
-        const a = Mt(e);
-        return Ot(a) ? va(e, Je(), t) : ["user", "comment"].includes(a == null ? void 0 : a.type) ? t() : Ee(e, Je(), t);
+        const a = Rt(e);
+        return Ft(a) ? fa(e, Xe(), t) : ["user", "comment"].includes(a == null ? void 0 : a.type) ? t() : De(e, Xe(), t);
       },
-      leave: (e, t) => K || !x || !e.querySelector("[data-message]") || e.dataset.row.startsWith("message:sending-") ? t() : da(e, t)
+      leave: (e, t) => z || !D || !e.querySelector("[data-message]") || e.dataset.row.startsWith("message:sending-") ? t() : ma(e, t)
     };
-    async function Xe() {
-      if (Ee.flush(), !(document.hidden || K)) {
-        K = !0, x = !0, ie.value = !1, O.value = 0;
+    async function Ye() {
+      if (De.flush(), !(document.hidden || z)) {
+        z = !0, D = !0, re.value = !1, F.value = 0;
         try {
-          await Promise.all([T(), p()]), await ve(), u.value && (u.value.scrollTop = u.value.scrollHeight);
+          await Promise.all([E(), k()]), await me(), c.value && (c.value.scrollTop = c.value.scrollHeight);
         } finally {
-          K = !1;
+          z = !1;
         }
       }
     }
-    document.addEventListener("visibilitychange", Xe), ne(() => {
-      document.removeEventListener("visibilitychange", Xe), clearTimeout(We), Ee.flush();
+    document.addEventListener("visibilitychange", Ye), oe(() => {
+      document.removeEventListener("visibilitychange", Ye), clearTimeout(Je), De.flush();
     });
-    const Ft = () => {
+    const It = () => {
       var e;
-      return (e = u.value) == null ? void 0 : e.scrollTo({ top: u.value.scrollHeight, behavior: "smooth" });
-    }, It = (e) => e.link.startsWith("http") ? e.link : `#open=${e.link}`, qt = (e) => e.link.startsWith("!");
-    async function Rt(e) {
-      const t = await r.read("agent main");
-      t.ok && t.value.id && await Fe(["agent", "type", String(t.value.id), e.link]);
+      return (e = c.value) == null ? void 0 : e.scrollTo({ top: c.value.scrollHeight, behavior: "smooth" });
+    }, qt = (e) => e.link.startsWith("http") ? e.link : `#open=${e.link}`, Ht = (e) => e.link.startsWith("!");
+    async function At(e) {
+      const t = await u.read("agent main");
+      t.ok && t.value.id && await Le(["agent", "type", String(t.value.id), e.link]);
     }
-    return (e, t) => (i(), f("div", {
+    return (e, t) => (i(), g("div", {
       ref_key: "chat",
-      ref: ye,
+      ref: _e,
       class: "chat",
       "data-figure-world": ""
     }, [
-      s("div", Ea, [
-        (i(!0), f(et, null, tt(o(lt), (a) => (i(), f("div", {
+      s("div", Fa, [
+        (i(!0), g(tt, null, at(o(it), (a) => (i(), g("div", {
           key: a.id,
           class: "pin"
         }, [
           t[10] || (t[10] = s("span", { class: "pin-dot" }, null, -1)),
-          s("span", xa, _(a.title), 1),
-          qt(a) ? (i(), f("button", {
+          s("span", La, C(a.title), 1),
+          Ht(a) ? (i(), g("button", {
             key: 0,
             type: "button",
             class: "pin-link",
             "data-pin-run": "",
             title: a.link,
-            onClick: (l) => Rt(a)
-          }, _(a.label), 9, Da)) : (i(), f("a", {
+            onClick: (l) => At(a)
+          }, C(a.label), 9, Ia)) : (i(), g("a", {
             key: 1,
             class: "pin-link",
-            href: It(a),
+            href: qt(a),
             target: a.link.startsWith("http") ? "_blank" : void 0
-          }, _(a.label), 9, Ma)),
+          }, C(a.label), 9, qa)),
           s("button", {
             type: "button",
             class: "pin-close",
             "data-pin-close": "",
             "aria-label": "Close",
-            onClick: (l) => o(Fe)(["pin", "close", String(a.id)])
+            onClick: (l) => o(Le)(["pin", "close", String(a.id)])
           }, [
-            m(o(pe), {
+            p(o(ge), {
               name: "close",
               size: 12
             })
-          ], 8, Oa)
+          ], 8, Ha)
         ]))), 128)),
-        m(o(Zt), { "pin-rows": o(Le) }, null, 8, ["pin-rows"])
+        p(o(ta), { "pin-rows": o(Fe) }, null, 8, ["pin-rows"])
       ]),
       s("div", {
         ref_key: "scroller",
-        ref: u,
+        ref: c,
         class: "history",
         "data-figure-scroll": "",
-        onScroll: Dt
+        onScroll: xt
       }, [
-        de.value ? (i(), R(o(ea), {
+        ve.value ? (i(), A(o(aa), {
           key: 0,
           shape: "older",
           label: "Loading older messages"
-        })) : y("", !0),
-        m(o(ta), {
-          rows: ge.value,
-          failure: o(B),
-          loaded: o(C),
+        })) : S("", !0),
+        p(o(na), {
+          rows: ke.value,
+          failure: o(O),
+          loaded: o(w),
           arrival: Lt,
           shape: "messages",
           empty: "No messages yet",
           hint: "Send a message below to start a conversation."
         }, {
-          default: b(({ row: a }) => [
-            m(o(aa), {
+          default: T(({ row: a }) => [
+            p(o(oa), {
               value: a.kind
             }, {
-              day: b(() => [
-                s("p", La, _(a.title), 1)
+              day: T(() => [
+                s("p", Aa, C(a.title), 1)
               ]),
-              mark: b(() => [
-                m(o(la), {
+              mark: T(() => [
+                p(o(ia), {
                   mark: a.row,
-                  docked: J.value.has(`${a.row.target_model}:${a.row.target_id}`)
+                  docked: X.value.has(`${a.row.target_model}:${a.row.target_id}`)
                 }, null, 8, ["mark", "docked"])
               ]),
-              "mark-group": b(() => [
-                m(o(oa), { group: a }, null, 8, ["group"])
+              "mark-group": T(() => [
+                p(o(sa), { group: a }, null, 8, ["group"])
               ]),
-              default: b(() => [
-                m(o(na), {
+              default: T(() => [
+                p(o(la), {
                   message: a.row,
-                  quote: st(a.row),
-                  onReply: ht,
-                  onComment: wt,
-                  onDelete: _t,
-                  onReact: yt
+                  quote: rt(a.row),
+                  onReply: yt,
+                  onComment: _t,
+                  onDelete: Ct,
+                  onReact: St
                 }, null, 8, ["message", "quote"])
               ]),
               _: 2
@@ -439,121 +451,121 @@ const pa = {
           _: 1
         }, 8, ["rows", "failure", "loaded"])
       ], 544),
-      s("div", Fa, [
-        m(Pt, {
+      s("div", Na, [
+        p(jt, {
           name: "rise",
           persisted: ""
         }, {
-          default: b(() => [
-            De(s("button", {
+          default: T(() => [
+            Oe(s("button", {
               type: "button",
               "data-scroll-foot": "",
               "data-figure-newest": "",
               class: "jump",
-              title: O.value ? `${O.value} arrived while you were reading` : "Jump to latest",
-              onClick: Ft
+              title: F.value ? `${F.value} arrived while you were reading` : "Jump to latest",
+              onClick: It
             }, [
-              m(o(pe), { name: "down" }),
-              U(" " + _(O.value ? `${O.value} new` : "Newest"), 1)
-            ], 8, Ia), [
-              [jt, ie.value]
+              p(o(ge), { name: "down" }),
+              Q(" " + C(F.value ? `${F.value} new` : "Newest"), 1)
+            ], 8, Pa), [
+              [Bt, re.value]
             ])
           ]),
           _: 1
         })
       ]),
-      o(r).option("floors").value ? (i(), R(o(sa), { key: 0 })) : y("", !0),
-      s("div", qa, [
-        m(o(ia), {
-          items: o($),
-          folded: Be.value || !_e.value,
-          "data-figure-docked-bars": J.value.size ? "" : null
+      o(u).option("floors").value ? (i(), A(o(ra), { key: 0 })) : S("", !0),
+      s("div", ja, [
+        p(o(ua), {
+          items: o(b),
+          folded: Be.value || !Se.value,
+          "data-figure-docked-bars": X.value.size ? "" : null
         }, null, 8, ["items", "folded", "data-figure-docked-bars"])
       ]),
-      s("p", Ra, [
+      s("p", Ba, [
         s("span", {
-          class: xe(["running-dot", { idle: !Z.value }])
+          class: Me(["running-dot", { idle: !ee.value }])
         }, null, 2),
-        m(o(ra), {
-          text: Z.value,
-          idle: le.value ? `waiting for ${le.value}` : "waiting"
+        p(o(ca), {
+          text: ee.value,
+          idle: se.value ? `waiting for ${se.value}` : "waiting"
         }, null, 8, ["text", "idle"])
       ]),
-      H.value ? (i(), R(ya, {
+      V.value ? (i(), A(Ea, {
         key: 1,
-        run: o(r).run,
-        onMade: t[0] || (t[0] = (a) => H.value = !1),
-        onClose: t[1] || (t[1] = (a) => H.value = !1)
-      }, null, 8, ["run"])) : y("", !0),
-      F.value || E.value || g.value ? (i(), f("p", Na, [
-        s("span", Aa, _(kt.value), 1),
+        run: o(u).run,
+        onMade: t[0] || (t[0] = (a) => V.value = !1),
+        onClose: t[1] || (t[1] = (a) => V.value = !1)
+      }, null, 8, ["run"])) : S("", !0),
+      I.value || M.value || h.value ? (i(), g("p", Va, [
+        s("span", Ka, C(wt.value), 1),
         s("button", {
           type: "button",
           class: "composer-quote-drop",
           "aria-label": "Cancel",
-          onClick: t[2] || (t[2] = (a) => (F.value = null, E.value = null, ce()))
+          onClick: t[2] || (t[2] = (a) => (I.value = null, M.value = null, de()))
         }, "×")
-      ])) : y("", !0),
+      ])) : S("", !0),
       s("form", {
         "data-figure-home": "",
-        class: xe(["composer", { dragging: ue.value }]),
-        onSubmit: Q(Te, ["prevent"]),
-        onDragover: t[7] || (t[7] = Q((a) => ue.value = !0, ["prevent"])),
-        onDragleave: t[8] || (t[8] = (a) => ue.value = !1),
-        onDrop: Q(pt, ["prevent"])
+        class: Me(["composer", { dragging: ce.value }]),
+        onSubmit: W(Ee, ["prevent"]),
+        onDragover: t[7] || (t[7] = W((a) => ce.value = !0, ["prevent"])),
+        onDragleave: t[8] || (t[8] = (a) => ce.value = !1),
+        onDrop: W(kt, ["prevent"])
       }, [
-        se.value ? (i(), R(o(ua), {
+        ie.value ? (i(), A(o(da), {
           key: 0,
-          voice: se.value,
-          here: ct.value,
-          running: Z.value,
+          voice: ie.value,
+          here: vt.value,
+          running: ee.value,
           "heard-at": Pe.value,
-          thinking: Ne.value,
-          "waiting-for": le.value,
-          asking: Ae.value,
-          marks: o(W),
-          messages: o(k),
-          faces: he.value,
-          onGone: t[3] || (t[3] = (a) => se.value = "")
-        }, null, 8, ["voice", "here", "running", "heard-at", "thinking", "waiting-for", "asking", "marks", "messages", "faces"])) : y("", !0),
-        v.value.length ? (i(), f("ul", Pa, [
-          (i(!0), f(et, null, tt(v.value, (a) => (i(), f("li", {
+          thinking: Ae.value,
+          "waiting-for": se.value,
+          asking: Ne.value,
+          marks: o(J),
+          messages: o(d),
+          faces: we.value,
+          onGone: t[3] || (t[3] = (a) => ie.value = "")
+        }, null, 8, ["voice", "here", "running", "heard-at", "thinking", "waiting-for", "asking", "marks", "messages", "faces"])) : S("", !0),
+        f.value.length ? (i(), g("ul", Ua, [
+          (i(!0), g(tt, null, at(f.value, (a) => (i(), g("li", {
             key: a.name + a.pending,
-            class: xe(["attached-file", { failed: a.failure }]),
+            class: Me(["attached-file", { failed: a.failure }]),
             title: a.failure
           }, [
-            s("span", null, _(a.name), 1),
-            !a.pending && !a.failure ? (i(), f("span", Ba, "sending")) : y("", !0),
+            s("span", null, C(a.name), 1),
+            !a.pending && !a.failure ? (i(), g("span", Qa, "sending")) : S("", !0),
             s("button", {
               type: "button",
               "aria-label": "Remove",
-              onClick: (l) => gt(a)
+              onClick: (l) => ht(a)
             }, [
-              m(o(pe), {
+              p(o(ge), {
                 name: "close",
                 size: 10
               })
-            ], 8, Ha)
-          ], 10, ja))), 128))
-        ])) : y("", !0),
-        De(s("textarea", {
+            ], 8, Wa)
+          ], 10, za))), 128))
+        ])) : S("", !0),
+        Oe(s("textarea", {
           ref_key: "composerInput",
-          ref: te,
+          ref: K,
           class: "composer-input",
           rows: "3",
           placeholder: "Message the agent",
           onFocus: L,
           onKeyup: L,
           onKeydown: [
-            me(Tt, ["enter"]),
-            me(bt, ["up"]),
-            me(ce, ["down"]),
-            me(ce, ["esc"])
+            fe(bt, ["enter"]),
+            fe(Tt, ["up"]),
+            fe(de, ["down"]),
+            fe(de, ["esc"])
           ],
-          onInput: vt,
-          onPaste: ft
+          onInput: ft,
+          onPaste: gt
         }, null, 544), [
-          [dt, d.value]
+          [mt, v.value]
         ]),
         s("div", {
           class: "composer-row",
@@ -561,12 +573,12 @@ const pa = {
         }, [
           s("input", {
             ref_key: "picker",
-            ref: Ke,
+            ref: Ue,
             type: "file",
             multiple: "",
             hidden: "",
             "data-file-input": "",
-            onChange: mt
+            onChange: pt
           }, null, 544),
           s("button", {
             type: "button",
@@ -574,62 +586,62 @@ const pa = {
             class: "composer-attach",
             title: "Attach a file or an image",
             "aria-label": "Attach a file",
-            onClick: t[4] || (t[4] = (a) => Ke.value.click())
+            onClick: t[4] || (t[4] = (a) => Ue.value.click())
           }, [
-            m(o(pe), {
+            p(o(ge), {
               name: "clip",
               size: 16
             })
           ]),
-          Se.value ? (i(), R(o(oe), {
+          $e.value ? (i(), A(o(le), {
             key: 0,
             kind: "primary",
             small: "",
             class: "composer-send",
             "data-send": "",
-            onClick: Te
+            onClick: Ee
           }, {
-            default: b(() => [...t[11] || (t[11] = [
-              U("Send", -1)
+            default: T(() => [...t[11] || (t[11] = [
+              Q("Send", -1)
             ])]),
             _: 1
-          })) : (i(), R(o(oe), {
+          })) : (i(), A(o(le), {
             key: 1,
             small: "",
             bordered: "",
             class: "composer-send",
             "data-dump-files": "",
-            onClick: t[5] || (t[5] = (a) => H.value = !H.value)
+            onClick: t[5] || (t[5] = (a) => V.value = !V.value)
           }, {
-            default: b(() => [...t[12] || (t[12] = [
-              U("Dump files", -1)
+            default: T(() => [...t[12] || (t[12] = [
+              Q("Dump files", -1)
             ])]),
             _: 1
           })),
-          Se.value && v.value.length > 1 && !d.value.trim() ? (i(), R(o(oe), {
+          $e.value && f.value.length > 1 && !v.value.trim() ? (i(), A(o(le), {
             key: 2,
             small: "",
             bordered: "",
             class: "composer-send",
             "data-dump-offer": "",
-            onClick: t[6] || (t[6] = (a) => H.value = !0)
+            onClick: t[6] || (t[6] = (a) => V.value = !0)
           }, {
-            default: b(() => [
-              U("Dump " + _(v.value.length) + " files", 1)
+            default: T(() => [
+              Q("Dump " + C(f.value.length) + " files", 1)
             ]),
             _: 1
-          })) : y("", !0)
+          })) : S("", !0)
         ], 32)
       ], 34),
-      N.value ? (i(), f("p", Va, _(N.value), 1)) : y("", !0),
-      X.value ? (i(), R($a, {
-        key: X.value,
-        id: X.value,
-        onClose: t[9] || (t[9] = (a) => X.value = 0)
-      }, null, 8, ["id"])) : y("", !0)
+      P.value ? (i(), g("p", Ga, C(P.value), 1)) : S("", !0),
+      Y.value ? (i(), A(Ra, {
+        key: Y.value,
+        id: Y.value,
+        onClose: t[9] || (t[9] = (a) => Y.value = 0)
+      }, null, 8, ["id"])) : S("", !0)
     ], 512));
   }
-}, Ya = /* @__PURE__ */ Oe(Ga, [["__scopeId", "data-v-a513e84e"]]);
+}, on = /* @__PURE__ */ Re(en, [["__scopeId", "data-v-8f72ac10"]]);
 export {
-  Ya as default
+  on as default
 };
