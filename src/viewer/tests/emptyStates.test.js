@@ -69,7 +69,7 @@ test("a list tool says it is filtering once words are typed or open and closed i
 const closedAgent = {id: 9, session: "s-9", program: "claude", role: "worker", ended_at: "2026-11-02T10:00:00Z", created_at: "2026-11-02T09:00:00Z"};
 
 async function agents(component, answers) {
-    const element = await mounted(component, context({"agent list": page([closedAgent]), "agent running": page([]), "usage agents --closed": page([]), ...answers}));
+    const element = await mounted(component, context({...answers, "agent cards": answers?.["agent cards"] || page([]), "usage agents --closed": page([])}));
     document.body.append(element);
     host = element;
     return element;
@@ -89,16 +89,18 @@ test("the running tab of the helpers window with none running says so and what b
 });
 
 test("a search of the helpers window that finds none says nothing matches", async () => {
-    const element = await agents(helpers, {"agent running": page([{...closedAgent, id: 8, ended_at: null}])});
+    const element = await agents(helpers, {"agent cards --helpers --show running --search \"no such helper\"": page([]), "agent cards": page([{...closedAgent, id: 8, ended_at: null}])});
     await type(element, "no such helper");
     expect(words()[0]).toBe("Nothing matches");
 });
 
 test("the other tabs of the helpers window say what is empty in their own terms", async () => {
-    const element = await agents(helpers, {"agent list": page([]), "agent running": page([])});
+    const element = await agents(helpers, {"agent cards": page([])});
     const pick = (label) => pickButton(element, label, ".segmented button");
-    await pick("Closed");
-    expect(words()).toEqual(["No helper has ended yet", "A helper that finished or was stopped shows here."]);
+    await pick("Idle");
+    expect(words()).toEqual(["No helpers idle", "Helpers ready for another job show here."]);
+    await pick("Retired");
+    expect(words()).toEqual(["No helpers retired", "Helpers that will not be used again show here."]);
     await pick("All");
     expect(words()).toEqual(["No helpers yet", "The workers, subagents and reviewers the agent sends show here."]);
 });

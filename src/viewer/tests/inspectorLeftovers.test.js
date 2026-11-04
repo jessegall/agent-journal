@@ -23,7 +23,7 @@ test("a memory's panel lists its keywords, adds one and takes one off", async ()
     const read = async (line) => (lines.push(line), {ok: true, value: {rows: [{id: 7, word: "cart"}]}});
     const element = drawn(MemoryFacts, {id: 3, read});
     await settled();
-    expect(lines[0]).toEqual(["memory-keyword", "list", "--memory-id", "3"]);
+    expect(lines[0]).toEqual(["memory-keyword", "list", "--memory", "3"]);
     expect(element.querySelector("[data-memory-word]").textContent).toContain("cart");
     const form = element.querySelector("[data-memory-word-form]");
     const input = form.querySelector("input");

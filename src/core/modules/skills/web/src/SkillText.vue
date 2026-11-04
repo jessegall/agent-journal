@@ -5,9 +5,9 @@ const emit = defineEmits(["back"]);
 
 <template>
     <div class="skills">
-        <button type="button" class="skills-back" @click="emit('back')">Back</button>
+        <button type="button" class="skills-back" @click="emit('back')">Back to skills</button>
         <h3 class="skills-title">{{ skill ? skill.folder : "" }}</h3>
-        <pre class="skills-text">{{ skill ? skill.text : failure }}</pre>
+        <pre class="skills-text" data-skill-text>{{ skill ? skill.text : failure }}</pre>
     </div>
 </template>
 
@@ -16,6 +16,7 @@ const emit = defineEmits(["back"]);
     margin: 0;
     font-size: 13px;
 }
+.skills-back { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
 
 .skills-text {
     margin: 0;

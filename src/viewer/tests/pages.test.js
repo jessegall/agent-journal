@@ -24,6 +24,7 @@ const WINDOWS = [
 
 let current;
 let layoutKeys;
+let apps = [];
 
 function wire() {
     current = {suite: "coding", drivers: "main: coding.builder, worker: coding.worker"};
@@ -46,7 +47,9 @@ async function mount(page, props = {}) {
     const events = (environment, listener) => ((heard = listener), () => {});
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(page, {environment: "main", catalogue, events, ...props})).mount(element);
+    const app = createApp(() => h(page, {environment: "main", catalogue, events, ...props}));
+    apps.push(app);
+    app.mount(element);
     for (let round = 0; round < 40; round++) await new Promise((resolve) => setTimeout(resolve));
     return {element, heard: (event) => heard(event)};
 }
@@ -61,6 +64,8 @@ beforeEach(() => {
     wire();
 });
 afterEach(() => {
+    apps.forEach((app) => app.unmount());
+    apps = [];
     vi.unstubAllGlobals();
     document.body.innerHTML = "";
 });

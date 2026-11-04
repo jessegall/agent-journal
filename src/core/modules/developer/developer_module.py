@@ -14,7 +14,7 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion_subco
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.module.module import Module
-from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING
+from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
 from core.modules.developer.models.hook_request import HookRequest
 from core.modules.developer.migrations.m001_hook_requests import HookRequestsMigration
@@ -35,5 +35,5 @@ class DeveloperModule(Module):
     bindings = {RouteCostTool: DeveloperRouteCostTool}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
-               WindowDeclaration("developer.hook-requests", "Hook requests", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests"])]
+    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_DURATIONS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),
+               WindowDeclaration("developer.hook-requests", "Request log", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests"])]

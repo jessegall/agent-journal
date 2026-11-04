@@ -25,7 +25,7 @@ const runTime = computed(() => age(props.row.process_started_at || props.row.cre
 // a worker runs one turn at a time: stopped with tasks left it is not finished, the journal starts it again
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role === "worker" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
-const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.ended_at ? "closed" : props.facts?.state || "running"));
+const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const usage = computed(() => {
     const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);
@@ -52,7 +52,7 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 const context = useWindow();
 const tab = ref(context.tabs[0]);
 // a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
-const isSubagent = computed(() => props.row.role === "subagent");
+const isSubagent = computed(() => props.row.role === "subagent" || props.row.role === "reviewer");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -110,7 +110,7 @@ readCommand();
                                 </FoldGroup>
                             </div>
                         </template>
-                        <TranscriptRows :line="`agent transcript ${row.id}`" />
+                        <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
                     </div>
                 </template>
                 <template v-else>
@@ -136,7 +136,7 @@ readCommand();
                             </template>
                         </template>
                         <template #transcript>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" />
+                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
                         </template>
                         <template #file-feed>
                             <AgentFileEdits :agent="row.id" />
@@ -182,7 +182,7 @@ readCommand();
     background: var(--accent);
 }
 
-.agent-dot[data-state="closed"] {
+.agent-dot[data-state="idle"], .agent-dot[data-state="retired"] {
     background: var(--text-3);
 }
 
@@ -431,6 +431,9 @@ readCommand();
 .agent-card.open .agent-tab-body { gap: 0; margin: 0; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
 .agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.row-list-row) { gap: 8px; }
+.agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
+.agent-card.open .agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }
 .agent-card.open .agent-tab-body > .agent-subagent-brief { padding: 0; }
 .agent-task { width: 100%; padding: 7px 14px; border-radius: 0; }
 .agent-task-number { min-width: 30px; }

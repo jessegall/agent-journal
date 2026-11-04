@@ -9,7 +9,9 @@ const CATALOGUE = page([{folder: "journal-notes", description: "How to take note
 const TEXT = {ok: true, value: {folder: "journal-notes", description: "How to take notes", text: "Write a note for every decision."}};
 
 async function mounted(answers) {
-    const windowContext = context(answers, 7);
+    answers["agent main"] = {ok: true, value: {id: 7}};
+    answers["skill list"] = answers["skill list"] || CATALOGUE;
+    const windowContext = context(answers);
     const heard = [];
     windowContext.follow = (patterns, handler) => heard.push({patterns, handler});
     const element = document.createElement("div");
@@ -36,10 +38,8 @@ test("an agent that has loaded no skill is told so", async () => {
     expect(element.textContent).toContain("No skill is loaded in this conversation.");
 });
 
-test("Browse every skill switches to the catalogue with each skill's description", async () => {
+test("the page lists every skill with its description", async () => {
     const {element} = await mounted({"agent-skill list": LOADED, "skill list": CATALOGUE});
-    [...element.querySelectorAll("button")].find((button) => button.textContent.includes("Browse every skill")).click();
-    await settled();
     expect(element.textContent).toContain("How to take notes");
     expect(element.textContent).toContain("The journal");
 });

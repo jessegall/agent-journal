@@ -6,8 +6,8 @@ def window_story(new_story) -> WindowStory:
     return WindowStory(new_story(fixture=UserJoined))
 
 
-def test_the_skills_window_is_a_component_window_of_one_agent(new_story):
-    window_story(new_story).expect_declared_window("skills.skills", "component", "pane", "one-agent")
+def test_skills_are_a_project_page(new_story):
+    window_story(new_story).expect_declared_window("skills.skills", "component", "page", "environment")
 
 
 def test_the_skills_window_reads_the_loaded_skills_the_catalogue_and_one_skills_text(new_story):

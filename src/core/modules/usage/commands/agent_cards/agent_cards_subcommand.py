@@ -12,11 +12,13 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.modules.usage.conditions.ended_agents import EndedAgents
+from core.modules.usage.conditions.idle_agents import AvailableAgents
 from core.modules.usage.models.agent_listing import AgentListing
+from core.modules.usage.models.support.agent_listing_state import AgentListingState
 from core.modules.usage.models.enums.agent_list_state import AgentListState
 
 
-class AgentCardsSubcommand(ReadSubcommand[Page[AgentListing]]):
+class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
     """Reads the agents list in creation order, with its filters applied in SQLite."""
 
     cli_name = "agent"
@@ -33,7 +35,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListing]]):
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
 
-    def read(self, arguments: Namespace, caller: Caller) -> Page[AgentListing]:
+    def read(self, arguments: Namespace, caller: Caller) -> Page[AgentListingState]:
         environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the agents are shown for one environment", "name it with --environment")
@@ -41,13 +43,21 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListing]]):
         match arguments.show:
             case AgentListState.RUNNING:
                 rows = rows.matching(self.activity)
-            case AgentListState.CLOSED:
+            case AgentListState.IDLE:
+                rows = rows.matching(AvailableAgents(self.activity))
+            case AgentListState.RETIRED:
                 rows = rows.matching(EndedAgents(self.activity))
         if arguments.helpers:
             rows = rows.matching(Among("role", tuple(role for role in AgentRole if role is not AgentRole.MAIN)))
         if arguments.search.strip():
             rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "dispatch_profile", "dispatch_description"), arguments.search.split()))
-        return rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
+        page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
+        selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
+        running = {row.id for row in selected.matching(self.activity).all_rows()}
+        idle = {row.id for row in selected.matching(AvailableAgents(self.activity)).all_rows()}
+        states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
+        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED)) for row in page.rows),
+                    page.number, page.size, page.total)
 
     def write_output(self, value: object, output: Output) -> None:
         if is_page(value):

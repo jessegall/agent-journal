@@ -44,7 +44,7 @@ test("the sidebar has a header, a fold per module, counts and a foot, and the pa
 
 test("the settings page has a search, a list of sections and a filled switch", () => {
     const tree = read("../../core/modules/settings/web/src/SettingsTree.vue");
-    expect(tree).toContain("settings-search-field");
+    expect(tree).toContain("<SearchBar");
     expect(tree).toContain("settings-nav");
     expect(read("../../core/modules/settings/web/src/SettingNode.vue")).toMatch(/\.setting-switch\[aria-checked="true"\] \{[^}]*background: var\(--accent\)/);
 });

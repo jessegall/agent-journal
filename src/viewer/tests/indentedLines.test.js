@@ -12,7 +12,7 @@ function shown(text) {
 
 test("an indented line under an if line reads as code, whatever its indent, in each of two pairs", () => {
     const element = shown(MESSAGE);
-    const blocks = [...element.querySelectorAll("pre.chat-code")].map((b) => b.textContent);
+    const blocks = [...element.querySelectorAll("pre.chat-code")].map((b) => b.textContent.replace(/\n$/, ""));
 
     expect(blocks).toEqual(["if chain.tests:\n     ....", "if chain.writes:\n   ...."]);
 });
@@ -41,5 +41,5 @@ test("a list item ending in a colon with an indented line under it stays a list"
 test("a fenced block of several lines keeps its lines, one per line of the text", () => {
     const element = shown("before\n\n```python\n@dataclass\nclass Item:\n    title: str\n```\n\nafter");
 
-    expect(element.querySelector("pre.chat-code").textContent.split("\n")).toEqual(["@dataclass", "class Item:", "    title: str"]);
+    expect(element.querySelector("pre.chat-code").textContent.replace(/\n$/, "").split("\n")).toEqual(["@dataclass", "class Item:", "    title: str"]);
 });
