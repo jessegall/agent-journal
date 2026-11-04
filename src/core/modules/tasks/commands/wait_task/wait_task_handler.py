@@ -9,6 +9,7 @@ from core.modules.tasks.commands.wait_task.wait_task import WaitTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_wait import TaskWait
+from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 
 
@@ -22,10 +23,14 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
 
     def handle(self, command: WaitTask, context: Context) -> Task:
         targets = tuple(self.target(text, command.task_id) for text in command.targets)
+        if command.user_wait and not command.reason.strip():
+            raise Refusal("say what the user must do", "--until-user --reason '<words>'")
         if not (command.reason.strip() or targets or command.wait_command):
             raise Refusal("say what it waits on", f"{self.targets.target_help}, --until '<command>', or --reason '<words>'")
         reason = command.reason.strip() or command.wait_reason()
         task = self.bus.dispatch(BlockTask(command.task_id, reason), context)
+        if command.user_wait:
+            self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, target=USER_TARGET), context)
         for target in targets:
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, target=target), context)
         if command.wait_command:

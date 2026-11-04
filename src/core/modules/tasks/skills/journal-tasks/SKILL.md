@@ -36,6 +36,8 @@ A wait is a block the journal can see, never words in a log line. A blocked task
 - `journal task block <n> --on task:<m>`, or `--on question:<m>` or `--on plan:<m>`: it opens once that row ends.
 - `journal task block <n> --until '<command>' --every <minutes>`: it opens once the command passes.
 - `journal task block <n> --reason "<what it waits on>"`, and `journal task unblock <n>` when that has arrived.
+- `journal task block <n> --until-user --reason "<what the user must do>"` when only the user can move it; only a person
+  opens it again.
 - `journal task depend <n> --on <m>` makes a task wait on another without blocking it now;
   `journal task graph` shows what waits on what.
 - When you are stuck, say so with `journal wait stuck "<why>"`.

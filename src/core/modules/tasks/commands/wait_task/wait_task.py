@@ -11,6 +11,7 @@ class WaitTask(Command[Task]):
     targets: tuple[str, ...]
     wait_command: str
     interval_minutes: int
+    user_wait: bool = False
 
     def wait_reason(self) -> str:
         terms = [f"waits on {text.replace(':', ' ')}" for text in self.targets]

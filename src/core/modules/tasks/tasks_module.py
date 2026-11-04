@@ -42,6 +42,7 @@ from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subco
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
 from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
 from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
+from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
 from core.modules.tasks.rules.unlogged_write_rule import UnloggedWriteRule
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
@@ -103,7 +104,7 @@ class TasksModule(Module):
                    RemoveTaskDependencySubcommand]
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
-    guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
+    guards = [NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow]
     listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS

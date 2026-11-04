@@ -1,6 +1,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+USER_TARGET = "user"
+
 
 @dataclass(frozen=True)
 class TaskOpener:
@@ -17,5 +19,7 @@ class TaskOpener:
     def text(self) -> str:
         if self.command:
             return f"{self.command} passes"
+        if self.target == USER_TARGET:
+            return "the user acts"
         target_model, _, target_id = self.target.partition(":")
         return f"{target_model.removesuffix('s')} {target_id} is settled"
