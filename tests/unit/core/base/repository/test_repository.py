@@ -99,13 +99,13 @@ def test_a_move_keeps_its_metadata_in_the_database(container: Container):
     assert container.get(EventLog).event(2).event == "item.pause"
 
 
-def test_a_metadata_only_change_is_saved_and_logged(container: Container):
+def test_a_metadata_only_change_stays_ignored_without_an_event(container: Container):
     saved = save(container, Item(title="Dune"))
     metadata = Metadata({"items": {"review": 7}})
     updated = save(container, saved.changed(metadata=metadata))
     stored = container.get(Queries).query(Item).find(updated.id)
-    assert (stored.version, stored.metadata) == (2, metadata)
-    assert container.get(EventLog).event(2).event == "item.metadata"
+    assert (stored.version, stored.metadata) == (1, saved.metadata)
+    assert container.get(EventLog).newest_id() == 1
 
 
 def test_guards_are_asked_before_anything_is_written(container: Container):

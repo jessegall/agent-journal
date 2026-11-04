@@ -43,10 +43,10 @@ def test_a_move_from_the_state_the_row_is_in_is_still_that_move():
     assert (change.event, change.is_empty) == ("item.pause", False)
 
 
-def test_a_metadata_change_is_stored_without_becoming_a_model_field():
+def test_metadata_stays_separate_from_model_fields_and_does_not_make_an_edit():
     metadata = Metadata({"items": {"review": 7}})
     change = Change(STORED, STORED.changed(metadata=metadata), CONTEXT)
-    assert (change.event, change.fields, change.stored_fields, change.is_empty) == ("item.metadata", [], ["metadata"], False)
+    assert (change.fields, change.stored_fields, change.is_empty) == ([], ["metadata"], True)
 
 
 def test_metadata_changed_with_a_move_keeps_the_move_event():

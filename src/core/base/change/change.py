@@ -57,7 +57,7 @@ class Change(Generic[M]):
 
     @property
     def is_empty(self) -> bool:
-        return self.old_row is not None and self.new_row is not None and self.move is None and not self.stored_fields
+        return self.old_row is not None and self.new_row is not None and self.move is None and not self.fields
 
     @property
     def event(self) -> str:
@@ -66,8 +66,4 @@ class Change(Generic[M]):
             return f"{name}.create"
         if self.new_row is None:
             return f"{name}.delete"
-        if self.move is not None:
-            return f"{name}.{self.move.name}"
-        if self.has_metadata_change and not self.fields:
-            return f"{name}.{METADATA}"
-        return f"{name}.update"
+        return f"{name}.{self.move.name}" if self.move else f"{name}.update"
