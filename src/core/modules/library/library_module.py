@@ -7,6 +7,7 @@ from core.modules.library.guards.library_address_guard import LibraryAddressGuar
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
+from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 
 
 class LibraryModule(Module):
@@ -19,6 +20,6 @@ class LibraryModule(Module):
     dependencies = ["journal.core.actors", "journal.core.settings"]
     settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
                              SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
-    models = [ModelDeclaration(LibraryConnection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration]
     guards = [LibraryAddressGuard]
