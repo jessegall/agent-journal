@@ -20,7 +20,7 @@ watch(() => props.id, load, {immediate: true});
 <template>
     <template v-if="shown.length">
         <section class="rounds" data-plan-reviews>
-            <h3 class="heading">Review rounds</h3>
+            <h4 class="heading">Review rounds</h4>
             <ol class="list">
                 <template v-for="(review, index) in shown" :key="review.id">
                     <li class="round" data-plan-review>
@@ -42,15 +42,15 @@ watch(() => props.id, load, {immediate: true});
 .rounds {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 24px;
+    gap: 6px;
+    margin-top: 18px;
 }
 
 .heading {
     margin: 0;
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .list {

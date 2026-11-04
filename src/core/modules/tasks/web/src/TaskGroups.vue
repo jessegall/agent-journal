@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Icon, PriorityIcon, SearchBar, Skeleton, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
+import {Icon, PriorityIcon, SearchBar, Skeleton, TaskStatusIcon, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
@@ -141,7 +141,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                     </template>
                     <template v-for="row in folded.has(group.state) ? [] : tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
-                            <span :class="['task-mark', row.state]" />
+                            <TaskStatusIcon :status="row.state" />
                             <template v-if="display.number">
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
@@ -261,39 +261,8 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     background: var(--raised);
 }
 
-.task-mark {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid var(--text-4);
-    border-radius: 50%;
-}
-
-.task-mark.started {
-    border-color: var(--accent);
-    background: linear-gradient(90deg, var(--accent) 50%, transparent 50%);
-}
-
-.task-mark.testing {
-    border-color: var(--tone-sequence);
-    background: linear-gradient(90deg, var(--tone-sequence) 50%, transparent 50%);
-}
-
 .tasks-group[data-state="testing"] .tasks-fold {
     color: var(--tone-sequence);
-}
-
-.task-mark.blocked {
-    border-color: var(--tone-warn);
-}
-
-.task-mark.completed {
-    border-color: var(--accent);
-    background: var(--accent);
-}
-
-.task-mark.cancelled {
-    opacity: 0.4;
 }
 
 .task-id {

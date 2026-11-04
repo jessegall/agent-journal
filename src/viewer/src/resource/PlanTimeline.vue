@@ -1,15 +1,16 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
+import TaskStatusIcon from "../tasks/TaskStatusIcon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 // what happened on a plan's tasks, newest first, by day
 const EVENT_TYPES = {
-    made: {icon: "plus", word: "Made"},
+    made: {state: "open", word: "Made"},
     logged: {icon: "edits", word: "Logged"},
-    completed: {icon: "check", word: "Finished"},
-    cancelled: {icon: "close", word: "Cancelled"},
+    completed: {state: "completed", word: "Finished"},
+    cancelled: {state: "cancelled", word: "Cancelled"},
 };
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["select"]);
@@ -51,7 +52,14 @@ watch(() => props.id, load, {immediate: true});
             <ol class="events">
                 <template v-for="event in group.items" :key="`${event.time}-${event.event_type}-${event.task_id}`">
                     <li :class="['event', event.event_type]" data-plan-event>
-                        <span class="mark"><Icon :name="EVENT_TYPES[event.event_type].icon" :size="11" /></span>
+                        <span class="mark">
+                            <template v-if="EVENT_TYPES[event.event_type].state">
+                                <TaskStatusIcon :status="EVENT_TYPES[event.event_type].state" />
+                            </template>
+                            <template v-else>
+                                <Icon :name="EVENT_TYPES[event.event_type].icon" :size="14" />
+                            </template>
+                        </span>
                         <div class="what">
                             <div class="head">
                                 <span class="word">{{ EVENT_TYPES[event.event_type].word }}</span>
@@ -74,7 +82,6 @@ watch(() => props.id, load, {immediate: true});
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-top: 14px;
 }
 
 .empty {
@@ -110,14 +117,7 @@ watch(() => props.id, load, {immediate: true});
     place-items: center;
     width: 20px;
     height: 20px;
-    border: 1px solid var(--border-2);
-    border-radius: 50%;
-    background: var(--bg);
     color: var(--text-3);
-}
-
-.event.completed .mark {
-    color: var(--tone-good);
 }
 
 .what {

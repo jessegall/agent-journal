@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-32c3a4eebfb3")) { const style = document.createElement("style"); style.id = "window-styles-32c3a4eebfb3"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-agent[data-v-51f73b49]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-51f73b49]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-51f73b49]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-51f73b49]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-51f73b49]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-51f73b49]{margin:0 -12px}.tasks-fold[data-v-51f73b49]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-51f73b49]:hover{color:var(--text)}.tasks-caret.closed[data-v-51f73b49]{transform:rotate(-90deg)}.tasks-group-head[data-v-51f73b49]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-51f73b49]{margin-left:4px}.task[data-v-51f73b49]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-51f73b49]:hover{background:var(--hover)}.task.selected[data-v-51f73b49]{background:var(--raised)}.task-mark[data-v-51f73b49]{flex:none;width:12px;height:12px;border:1.5px solid var(--text-4);border-radius:50%}.task-mark.started[data-v-51f73b49]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}.task-mark.testing[data-v-51f73b49]{border-color:var(--tone-sequence);background:linear-gradient(90deg,var(--tone-sequence) 50%,transparent 50%)}.tasks-group[data-state=testing] .tasks-fold[data-v-51f73b49]{color:var(--tone-sequence)}.task-mark.blocked[data-v-51f73b49]{border-color:var(--tone-warn)}.task-mark.completed[data-v-51f73b49]{border-color:var(--accent);background:var(--accent)}.task-mark.cancelled[data-v-51f73b49]{opacity:.4}.task-id[data-v-51f73b49]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-51f73b49]{flex:1;min-width:0}.tasks-note[data-v-51f73b49]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-b32524c1]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-b32524c1]{display:flex;gap:8px;align-items:center}.title[data-v-b32524c1],.brief[data-v-b32524c1]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-b32524c1]{font-weight:500}.brief[data-v-b32524c1]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-b32524c1]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-b32524c1]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-b32524c1]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7845d61a]{overflow:auto;padding:16px 20px}.graph-note[data-v-7845d61a]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7845d61a]{position:relative}.graph-lines[data-v-7845d61a]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7845d61a]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7845d61a]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7845d61a]:hover,.graph-node.selected[data-v-7845d61a]{border-color:var(--accent)}.graph-title[data-v-7845d61a]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-7c02285a]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-7c02285a]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-7c02285a],.clear[data-v-7c02285a]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-7c02285a]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-7c02285a]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-7c02285a]{margin:0;font-size:15px;font-weight:600}.standing[data-v-7c02285a]{color:var(--text-3);font-size:12px}.grow[data-v-7c02285a]{flex:1}.tasks-body[data-v-7c02285a]{display:flex;flex:1;min-height:0}.tasks-list[data-v-7c02285a]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
-import { ref as w, computed as R, watch as ue, onUnmounted as le, openBlock as n, createElementBlock as f, createBlock as U, unref as r, toDisplayString as D, Fragment as P, createVNode as y, withCtx as h, renderSlot as $e, createCommentVNode as L, renderList as A, createElementVNode as M, normalizeClass as ae, createTextVNode as x, withKeys as se, onMounted as fe, withModifiers as de, withDirectives as ie, vModelText as ce, normalizeStyle as ke, vShow as be, nextTick as Ce, createSlots as Se } from "vue";
-import { useWindow as H, Skeleton as ye, SearchBar as _e, Icon as re, priorityLabel as xe, PriorityIcon as De, peekRef as Te, TaskStatusIcon as me, Btn as q, MenuPanel as he, MenuItem as F, SwitchCase as Ie, MenuLabel as X, Dialog as Me, Segmented as Ne, TaskInspector as Ee, steppedItem as Ke } from "@journal/window-kit";
+if (!document.getElementById("window-styles-346de816444c")) { const style = document.createElement("style"); style.id = "window-styles-346de816444c"; style.textContent = ".task-dock[data-v-3ff12b87]{display:flex;gap:8px;font-size:12px;line-height:1.45}.task-dock-state[data-v-3ff12b87]{color:var(--text-4)}.task-agent[data-v-8ad9b1f5]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-8ad9b1f5]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-8ad9b1f5]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-8ad9b1f5]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-8ad9b1f5]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-8ad9b1f5]{margin:0 -12px}.tasks-fold[data-v-8ad9b1f5]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-8ad9b1f5]:hover{color:var(--text)}.tasks-caret.closed[data-v-8ad9b1f5]{transform:rotate(-90deg)}.tasks-group-head[data-v-8ad9b1f5]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-8ad9b1f5]{margin-left:4px}.task[data-v-8ad9b1f5]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-8ad9b1f5]:hover{background:var(--hover)}.task.selected[data-v-8ad9b1f5]{background:var(--raised)}.tasks-group[data-state=testing] .tasks-fold[data-v-8ad9b1f5]{color:var(--tone-sequence)}.task-id[data-v-8ad9b1f5]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-8ad9b1f5]{flex:1;min-width:0}.tasks-note[data-v-8ad9b1f5]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-b32524c1]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-b32524c1]{display:flex;gap:8px;align-items:center}.title[data-v-b32524c1],.brief[data-v-b32524c1]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-b32524c1]{font-weight:500}.brief[data-v-b32524c1]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-b32524c1]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-b32524c1]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-b32524c1]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-7845d61a]{overflow:auto;padding:16px 20px}.graph-note[data-v-7845d61a]{margin:0;color:var(--text-2)}.graph-canvas[data-v-7845d61a]{position:relative}.graph-lines[data-v-7845d61a]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-7845d61a]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-7845d61a]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-7845d61a]:hover,.graph-node.selected[data-v-7845d61a]{border-color:var(--accent)}.graph-title[data-v-7845d61a]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-29d89535]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-29d89535]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-29d89535]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-7c02285a]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-7c02285a]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-7c02285a],.clear[data-v-7c02285a]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-7c02285a]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-7c02285a]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-7c02285a]{margin:0;font-size:15px;font-weight:600}.standing[data-v-7c02285a]{color:var(--text-3);font-size:12px}.grow[data-v-7c02285a]{flex:1}.tasks-body[data-v-7c02285a]{display:flex;flex:1;min-height:0}.tasks-list[data-v-7c02285a]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
+import { ref as w, computed as R, watch as de, onUnmounted as se, openBlock as n, createElementBlock as y, createBlock as U, unref as i, toDisplayString as D, Fragment as P, createVNode as f, withCtx as h, renderSlot as $e, createCommentVNode as L, renderList as A, createElementVNode as M, normalizeClass as oe, createTextVNode as x, withKeys as ae, onMounted as ye, withModifiers as ce, withDirectives as ie, vModelText as ke, normalizeStyle as ve, vShow as be, nextTick as Ce, createSlots as Se } from "vue";
+import { useWindow as H, Skeleton as me, SearchBar as _e, Icon as re, TaskStatusIcon as ue, priorityLabel as xe, PriorityIcon as De, peekRef as Te, Btn as q, MenuPanel as he, MenuItem as F, SwitchCase as Ie, MenuLabel as X, Dialog as Me, Segmented as Ne, TaskInspector as Ee, steppedItem as Ke } from "@journal/window-kit";
 import { _ as J } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 async function we($) {
   const K = await $.read("plan board");
@@ -27,7 +27,7 @@ const Le = { class: "tasks" }, Oe = {
   key: 2,
   class: "task-reason",
   "data-task-reason": ""
-}, je = ["title"], ze = ["data-more", "onClick"], ve = "journal.tasks.folded", oe = "Not in a plan", We = {
+}, je = ["title"], ze = ["data-more", "onClick"], pe = "journal.tasks.folded", ne = "Not in a plan", We = {
   __name: "TaskGroups",
   props: {
     selectable: Boolean,
@@ -40,17 +40,17 @@ const Le = { class: "tasks" }, Oe = {
     const I = /* @__PURE__ */ new Set(["completed", "cancelled"]), v = $, b = E, u = H(), m = w(null), S = w([]), C = w(""), t = w(!1), p = w(/* @__PURE__ */ new Set()), o = w(""), _ = u.option("rows"), O = R(() => Number(_.value) > 0 ? ` --limit ${Number(_.value)}` : "");
     function G() {
       try {
-        return new Set(JSON.parse(localStorage.getItem(ve) || "[]"));
+        return new Set(JSON.parse(localStorage.getItem(pe) || "[]"));
       } catch {
         return /* @__PURE__ */ new Set();
       }
     }
     const T = w(G());
-    function i(e) {
+    function r(e) {
       const k = new Set(T.value);
       k.delete(e) || k.add(e), T.value = k;
       try {
-        localStorage.setItem(ve, JSON.stringify([...k]));
+        localStorage.setItem(pe, JSON.stringify([...k]));
       } catch {
       }
     }
@@ -76,28 +76,28 @@ const Le = { class: "tasks" }, Oe = {
     const Q = (e) => e.total && (v.states.length ? v.states.includes(e.state) : v.display.showDone || !I.has(e.state)), Z = w([]), j = ["started", "testing", "blocked", "open"], z = (e) => e.state === "delegated" ? [...e.rows].sort((k, l) => j.indexOf(k.state) - j.indexOf(l.state)) : e.rows, ee = R(() => {
       const e = o.value.trim().toLowerCase();
       return S.value.filter(Q).map((k) => ({ group: k, tasks: z(k).filter((l) => !e || `${l.title} ${l.id}`.toLowerCase().includes(e)) })).filter(({ tasks: k }) => !e || k.length);
-    }), ne = R(() => {
+    }), le = R(() => {
       const e = new Map(Z.value.flatMap((N) => N.taskIds.map((g) => [g, N.label]))), k = /* @__PURE__ */ new Map();
       for (const N of ee.value.flatMap(({ tasks: g }) => g)) {
-        const g = e.get(N.id) ?? oe;
+        const g = e.get(N.id) ?? ne;
         k.set(g, [...k.get(g) ?? [], N]);
       }
-      return [...k.keys()].sort((N, g) => (N === oe) - (g === oe) || N.localeCompare(g)).map((N) => ({ group: { state: N, label: N, total: k.get(N).length, rows: k.get(N) }, tasks: k.get(N) }));
-    }), W = R(() => v.display.grouping === "plan" ? ne.value : ee.value);
-    ue(() => v.display.grouping, async (e) => {
+      return [...k.keys()].sort((N, g) => (N === ne) - (g === ne) || N.localeCompare(g)).map((N) => ({ group: { state: N, label: N, total: k.get(N).length, rows: k.get(N) }, tasks: k.get(N) }));
+    }), W = R(() => v.display.grouping === "plan" ? le.value : ee.value);
+    de(() => v.display.grouping, async (e) => {
       e === "plan" && (Z.value = await we(u));
     }, { immediate: !0 });
     const te = (e) => e.slice(0, 1).toUpperCase() + e.slice(1), d = (e) => v.selectable ? b("select", e) : Te(`tasks:${e}`);
-    ue(_, () => {
+    de(_, () => {
       p.value = /* @__PURE__ */ new Set(), a();
     });
     const s = u.follow(["task.*"], a);
-    return le(() => s == null ? void 0 : s()), a(), K({ board: S, groups: W, query: o, focusSearch: () => {
+    return se(() => s == null ? void 0 : s()), a(), K({ board: S, groups: W, query: o, focusSearch: () => {
       var e;
       return (e = m.value) == null ? void 0 : e.focus();
-    } }), (e, k) => (n(), f("div", Le, [
-      t.value ? C.value ? (n(), f("p", Oe, D(C.value), 1)) : (n(), f(P, { key: 2 }, [
-        y(r(_e), {
+    } }), (e, k) => (n(), y("div", Le, [
+      t.value ? C.value ? (n(), y("p", Oe, D(C.value), 1)) : (n(), y(P, { key: 2 }, [
+        f(i(_e), {
           ref_key: "search",
           ref: m,
           modelValue: o.value,
@@ -109,60 +109,60 @@ const Le = { class: "tasks" }, Oe = {
           ]),
           _: 3
         }, 8, ["modelValue"]),
-        W.value.length ? L("", !0) : (n(), f("p", Pe, D(o.value ? "No task matches" : "No tasks yet"), 1)),
-        (n(!0), f(P, null, A(W.value, ({ group: l, tasks: N }) => (n(), f("section", {
+        W.value.length ? L("", !0) : (n(), y("p", Pe, D(o.value ? "No task matches" : "No tasks yet"), 1)),
+        (n(!0), y(P, null, A(W.value, ({ group: l, tasks: N }) => (n(), y("section", {
           key: l.state,
           class: "tasks-group",
           "data-state": l.state
         }, [
-          $.display.grouping !== "none" ? (n(), f("h3", Ve, [
+          $.display.grouping !== "none" ? (n(), y("h3", Ve, [
             M("button", {
               type: "button",
               class: "tasks-fold",
               "data-fold": l.state,
               "aria-expanded": !T.value.has(l.state),
-              onClick: (g) => i(l.state)
+              onClick: (g) => r(l.state)
             }, [
-              y(r(re), {
+              f(i(re), {
                 name: "caret",
                 size: 12,
-                class: ae(["tasks-caret", { closed: T.value.has(l.state) }])
+                class: oe(["tasks-caret", { closed: T.value.has(l.state) }])
               }, null, 8, ["class"]),
               x(" " + D(l.label ?? te(l.state)) + " ", 1),
               M("span", Re, D(l.total), 1)
             ], 8, Be)
           ])) : L("", !0),
-          (n(!0), f(P, null, A(T.value.has(l.state) ? [] : N, (g) => (n(), f("div", {
+          (n(!0), y(P, null, A(T.value.has(l.state) ? [] : N, (g) => (n(), y("div", {
             key: g.id,
-            class: ae(["task", { selected: $.selectable && g.id === $.selected }]),
+            class: oe(["task", { selected: $.selectable && g.id === $.selected }]),
             "data-row": g.id,
             role: "button",
             tabindex: "0",
             onClick: (Y) => d(g.id),
-            onKeydown: se((Y) => d(g.id), ["enter"])
+            onKeydown: ae((Y) => d(g.id), ["enter"])
           }, [
-            M("span", {
-              class: ae(["task-mark", g.state])
-            }, null, 2),
-            $.display.number ? (n(), f("span", qe, D(g.id), 1)) : L("", !0),
+            f(i(ue), {
+              status: g.state
+            }, null, 8, ["status"]),
+            $.display.number ? (n(), y("span", qe, D(g.id), 1)) : L("", !0),
             M("span", Ye, D(g.title), 1),
-            g.delegated_name ? (n(), f("span", {
+            g.delegated_name ? (n(), y("span", {
               key: 1,
               class: "task-agent",
               title: `Delegated to ${g.delegated_name}, in state ${g.state}`,
               "data-task-agent": ""
             }, D(g.delegated_name), 9, Ae)) : L("", !0),
-            $.display.reason && g.reason ? (n(), f("span", Fe, D(g.reason), 1)) : L("", !0),
+            $.display.reason && g.reason ? (n(), y("span", Fe, D(g.reason), 1)) : L("", !0),
             M("span", {
-              title: `Priority: ${r(xe)(g.priority)}`,
+              title: `Priority: ${i(xe)(g.priority)}`,
               "data-task-priority": ""
             }, [
-              y(r(De), {
+              f(i(De), {
                 value: g.priority
               }, null, 8, ["value"])
             ], 8, je)
           ], 42, Ue))), 128)),
-          !T.value.has(l.state) && l.rows.length < l.total ? (n(), f("button", {
+          !T.value.has(l.state) && l.rows.length < l.total ? (n(), y("button", {
             key: 1,
             type: "button",
             class: "tasks-more",
@@ -170,13 +170,13 @@ const Le = { class: "tasks" }, Oe = {
             onClick: (g) => B(l)
           }, D(l.rows.length ? "Show more" : `Show ${l.total} ${l.total === 1 ? "task" : "tasks"}`), 9, ze)) : L("", !0)
         ], 8, Ge))), 128))
-      ], 64)) : (n(), U(r(ye), {
+      ], 64)) : (n(), U(i(me), {
         key: 0,
         shape: "rows"
       }))
     ]));
   }
-}, ge = /* @__PURE__ */ J(We, [["__scopeId", "data-v-51f73b49"]]), He = { class: "line" }, Xe = ["onKeydown"], Je = {
+}, ge = /* @__PURE__ */ J(We, [["__scopeId", "data-v-8ad9b1f5"]]), He = { class: "line" }, Xe = ["onKeydown"], Je = {
   key: 0,
   class: "failure",
   role: "alert"
@@ -190,8 +190,8 @@ const Le = { class: "tasks" }, Oe = {
       const T = await I.run(["task", "make", v.value.trim(), ...b.value.trim() ? ["--brief", b.value.trim()] : []]);
       if (u.value = T.ok ? "" : T.error, !!T.ok) {
         if (t.value) {
-          const i = await I.run(["phase", "place", String(T.value.id), "--phase", String(t.value.phaseId)]);
-          u.value = i.ok ? "" : i.error;
+          const r = await I.run(["phase", "place", String(T.value.id), "--phase", String(t.value.phaseId)]);
+          u.value = r.ok ? "" : r.error;
         }
         E("filed", T.value.id);
       }
@@ -204,39 +204,39 @@ const Le = { class: "tasks" }, Oe = {
       t.value = T, o.value = null;
     }
     const G = (T) => (T.metaKey || T.ctrlKey) && (T.preventDefault(), C());
-    return fe(() => m.value.focus()), (T, i) => (n(), f("div", {
+    return ye(() => m.value.focus()), (T, r) => (n(), y("div", {
       class: "task-draft",
       "data-task-draft": "",
-      onKeydown: i[5] || (i[5] = se(de((a) => E("cancel"), ["stop", "prevent"]), ["esc"]))
+      onKeydown: r[5] || (r[5] = ae(ce((a) => E("cancel"), ["stop", "prevent"]), ["esc"]))
     }, [
       M("div", He, [
-        y(r(me), { status: "open" }),
+        f(i(ue), { status: "open" }),
         ie(M("input", {
           ref_key: "input",
           ref: m,
-          "onUpdate:modelValue": i[0] || (i[0] = (a) => v.value = a),
+          "onUpdate:modelValue": r[0] || (r[0] = (a) => v.value = a),
           class: "title",
           placeholder: "Task title",
           "aria-label": "Task title",
-          onKeydown: se(de(C, ["prevent"]), ["enter"])
+          onKeydown: ae(ce(C, ["prevent"]), ["enter"])
         }, null, 40, Xe), [
-          [ce, v.value]
+          [ke, v.value]
         ])
       ]),
       ie(M("textarea", {
-        "onUpdate:modelValue": i[1] || (i[1] = (a) => b.value = a),
+        "onUpdate:modelValue": r[1] || (r[1] = (a) => b.value = a),
         class: "brief",
         rows: "1",
         placeholder: "Describe the work and how to tell it is done (optional).",
         "aria-label": "Brief",
-        onKeydown: se(G, ["enter"])
+        onKeydown: ae(G, ["enter"])
       }, null, 544), [
-        [ce, b.value]
+        [ke, b.value]
       ]),
-      u.value ? (n(), f("p", Je, D(u.value), 1)) : L("", !0),
+      u.value ? (n(), y("p", Je, D(u.value), 1)) : L("", !0),
       M("div", Qe, [
-        i[9] || (i[9] = M("span", { class: "hint" }, "Enter to create, Esc to cancel", -1)),
-        y(r(q), {
+        r[9] || (r[9] = M("span", { class: "hint" }, "Enter to create, Esc to cancel", -1)),
+        f(i(q), {
           small: "",
           "data-task-place": "",
           onClick: _
@@ -246,23 +246,23 @@ const Le = { class: "tasks" }, Oe = {
           ]),
           _: 1
         }),
-        o.value ? (n(), U(r(he), {
+        o.value ? (n(), U(i(he), {
           key: 0,
           anchor: o.value,
           "min-width": 260,
-          onClose: i[3] || (i[3] = (a) => o.value = null)
+          onClose: r[3] || (r[3] = (a) => o.value = null)
         }, {
           default: h(() => [
-            y(r(F), {
+            f(i(F), {
               "data-task-place-none": "",
-              onClick: i[2] || (i[2] = (a) => O(null))
+              onClick: r[2] || (r[2] = (a) => O(null))
             }, {
-              default: h(() => [...i[6] || (i[6] = [
+              default: h(() => [...r[6] || (r[6] = [
                 x("Not in a plan", -1)
               ])]),
               _: 1
             }),
-            (n(!0), f(P, null, A(p.value, (a) => (n(), U(r(F), {
+            (n(!0), y(P, null, A(p.value, (a) => (n(), U(i(F), {
               key: a.phaseId,
               "data-task-place-phase": a.phaseId,
               onClick: (c) => O(a)
@@ -275,23 +275,23 @@ const Le = { class: "tasks" }, Oe = {
           ]),
           _: 1
         }, 8, ["anchor"])) : L("", !0),
-        y(r(q), {
+        f(i(q), {
           small: "",
-          onClick: i[4] || (i[4] = (a) => E("cancel"))
+          onClick: r[4] || (r[4] = (a) => E("cancel"))
         }, {
-          default: h(() => [...i[7] || (i[7] = [
+          default: h(() => [...r[7] || (r[7] = [
             x("Cancel", -1)
           ])]),
           _: 1
         }),
-        y(r(q), {
+        f(i(q), {
           small: "",
           kind: "primary",
           disabled: !S.value,
           "data-file-task": "",
           onClick: C
         }, {
-          default: h(() => [...i[8] || (i[8] = [
+          default: h(() => [...r[8] || (r[8] = [
             x("Create task", -1)
           ])]),
           _: 1
@@ -346,38 +346,38 @@ const at = {
       b.value = t.ok ? "" : t.error, t.ok && (v.value = t.value);
     }
     const C = I.follow(["task.*"], S);
-    return le(() => C == null ? void 0 : C()), S(), (t, p) => (n(), f("div", at, [
-      b.value ? (n(), f("p", st, D(b.value), 1)) : v.value ? u.value.nodes.length ? (n(), f("div", {
+    return se(() => C == null ? void 0 : C()), S(), (t, p) => (n(), y("div", at, [
+      b.value ? (n(), y("p", st, D(b.value), 1)) : v.value ? u.value.nodes.length ? (n(), y("div", {
         key: 3,
         class: "graph-canvas",
-        style: ke({ width: `${u.value.width}px`, height: `${u.value.height}px` })
+        style: ve({ width: `${u.value.width}px`, height: `${u.value.height}px` })
       }, [
-        (n(), f("svg", {
+        (n(), y("svg", {
           class: "graph-lines",
           width: u.value.width,
           height: u.value.height,
           "aria-hidden": "true"
         }, [
-          (n(!0), f(P, null, A(u.value.lines, (o) => (n(), f("path", {
+          (n(!0), y(P, null, A(u.value.lines, (o) => (n(), y("path", {
             key: o.key,
             d: m(o),
             "data-graph-line": ""
           }, null, 8, ot))), 128))
         ], 8, nt)),
-        (n(!0), f(P, null, A(u.value.nodes, (o) => (n(), f("button", {
+        (n(!0), y(P, null, A(u.value.nodes, (o) => (n(), y("button", {
           key: o.task.id,
           type: "button",
-          class: ae(["graph-node", { selected: o.task.id === $.selected }]),
-          style: ke({ left: `${o.x}px`, top: `${o.y}px`, width: `${r(V).width}px`, height: `${r(V).height}px` }),
+          class: oe(["graph-node", { selected: o.task.id === $.selected }]),
+          style: ve({ left: `${o.x}px`, top: `${o.y}px`, width: `${i(V).width}px`, height: `${i(V).height}px` }),
           "data-graph-node": o.task.id,
           onClick: (_) => E("select", o.task.id)
         }, [
-          y(r(me), {
+          f(i(ue), {
             status: o.task.state
           }, null, 8, ["status"]),
           M("span", rt, D(o.task.id) + " " + D(o.task.title), 1)
         ], 14, it))), 128))
-      ], 4)) : (n(), f("p", lt, "Task dependencies appear here when one task is blocked by another.")) : (n(), U(r(ye), {
+      ], 4)) : (n(), y("p", lt, "Task dependencies appear here when one task is blocked by another.")) : (n(), U(i(me), {
         key: 1,
         shape: "rows"
       }))
@@ -408,18 +408,18 @@ const at = {
       ["V", "List or graph"],
       ["/", "Search"],
       ["Esc", "Close"]
-    ], u = $, m = K, S = H(), C = w(null), t = w(!1), p = w(""), o = (i) => i.slice(0, 1).toUpperCase() + i.slice(1);
-    function _(i, a) {
-      t.value = !1, p.value = "", C.value = { kind: i, anchor: a.currentTarget };
+    ], u = $, m = K, S = H(), C = w(null), t = w(!1), p = w(""), o = (r) => r.slice(0, 1).toUpperCase() + r.slice(1);
+    function _(r, a) {
+      t.value = !1, p.value = "", C.value = { kind: r, anchor: a.currentTarget };
     }
-    const O = (i) => m("states", u.states.includes(i) ? u.states.filter((a) => a !== i) : [...u.states, i]), G = (i) => m("display", { ...u.display, ...i });
+    const O = (r) => m("states", u.states.includes(r) ? u.states.filter((a) => a !== r) : [...u.states, r]), G = (r) => m("display", { ...u.display, ...r });
     async function T() {
       if (!t.value) return void (t.value = !0);
-      const i = await S.run(["task", "delete", String(u.selected)]);
-      p.value = i.ok ? "" : i.error, i.ok && (C.value = null, m("deleted"));
+      const r = await S.run(["task", "delete", String(u.selected)]);
+      p.value = r.ok ? "" : r.error, r.ok && (C.value = null, m("deleted"));
     }
-    return (i, a) => (n(), f(P, null, [
-      y(r(q), {
+    return (r, a) => (n(), y(P, null, [
+      f(i(q), {
         small: "",
         "data-menu-filter": "",
         title: $.states.length ? `Filter: ${$.states.length}` : "Filter",
@@ -430,7 +430,7 @@ const at = {
         ])]),
         _: 1
       }, 8, ["title"]),
-      y(r(q), {
+      f(i(q), {
         small: "",
         "data-menu-display": "",
         onClick: a[1] || (a[1] = (c) => _("display", c))
@@ -440,7 +440,7 @@ const at = {
         ])]),
         _: 1
       }),
-      y(r(q), {
+      f(i(q), {
         small: "",
         "data-menu-keys": "",
         onClick: a[2] || (a[2] = (c) => _("keys", c))
@@ -450,7 +450,7 @@ const at = {
         ])]),
         _: 1
       }),
-      y(r(q), {
+      f(i(q), {
         small: "",
         "data-menu-more": "",
         disabled: !$.selected,
@@ -461,7 +461,7 @@ const at = {
         ])]),
         _: 1
       }, 8, ["disabled"]),
-      C.value ? (n(), U(r(he), {
+      C.value ? (n(), U(i(he), {
         key: 0,
         anchor: C.value.anchor,
         "min-width": 240,
@@ -469,17 +469,17 @@ const at = {
         onClose: a[6] || (a[6] = (c) => C.value = null)
       }, {
         default: h(() => [
-          y(r(Ie), {
+          f(i(Ie), {
             value: C.value.kind
           }, {
             filter: h(() => [
-              y(r(X), null, {
+              f(i(X), null, {
                 default: h(() => [...a[11] || (a[11] = [
                   x("Show tasks that are", -1)
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A(E, (c) => y(r(F), {
+              (n(), y(P, null, A(E, (c) => f(i(F), {
                 key: c,
                 on: $.states.includes(c),
                 "data-filter-state": c,
@@ -490,7 +490,7 @@ const at = {
                 ]),
                 _: 2
               }, 1032, ["on", "data-filter-state", "onClick"])), 64)),
-              y(r(F), {
+              f(i(F), {
                 "data-filter-clear": "",
                 onClick: a[4] || (a[4] = (c) => (m("states", []), C.value = null))
               }, {
@@ -501,13 +501,13 @@ const at = {
               })
             ]),
             display: h(() => [
-              y(r(X), null, {
+              f(i(X), null, {
                 default: h(() => [...a[13] || (a[13] = [
                   x("Group the list by", -1)
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A(I, (c) => y(r(F), {
+              (n(), y(P, null, A(I, (c) => f(i(F), {
                 key: c.key,
                 on: $.display.grouping === c.key,
                 "data-grouping": c.key,
@@ -518,13 +518,13 @@ const at = {
                 ]),
                 _: 2
               }, 1032, ["on", "data-grouping", "onClick"])), 64)),
-              y(r(X), null, {
+              f(i(X), null, {
                 default: h(() => [...a[14] || (a[14] = [
                   x("Show on each task", -1)
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A(v, (c) => y(r(F), {
+              (n(), y(P, null, A(v, (c) => f(i(F), {
                 key: c.key,
                 on: $.display[c.key],
                 "data-shown": c.key,
@@ -535,7 +535,7 @@ const at = {
                 ]),
                 _: 2
               }, 1032, ["on", "data-shown", "onClick"])), 64)),
-              y(r(F), {
+              f(i(F), {
                 on: $.display.showDone,
                 "data-show-done": "",
                 onClick: a[5] || (a[5] = (c) => G({ showDone: !$.display.showDone }))
@@ -547,13 +547,13 @@ const at = {
               }, 8, ["on"])
             ]),
             keys: h(() => [
-              y(r(X), null, {
+              f(i(X), null, {
                 default: h(() => [...a[16] || (a[16] = [
                   x("Keys", -1)
                 ])]),
                 _: 1
               }),
-              (n(), f(P, null, A(b, ([c, B]) => M("span", {
+              (n(), y(P, null, A(b, ([c, B]) => M("span", {
                 key: c,
                 class: "key-line"
               }, [
@@ -562,13 +562,13 @@ const at = {
               ])), 64))
             ]),
             default: h(() => [
-              y(r(X), null, {
+              f(i(X), null, {
                 default: h(() => [
                   x("Task " + D($.selected), 1)
                 ]),
                 _: 1
               }),
-              y(r(F), {
+              f(i(F), {
                 "data-delete-task": "",
                 onClick: T
               }, {
@@ -577,7 +577,7 @@ const at = {
                 ]),
                 _: 1
               }),
-              p.value ? (n(), f("p", ct, D(p.value), 1)) : L("", !0)
+              p.value ? (n(), y("p", ct, D(p.value), 1)) : L("", !0)
             ]),
             _: 1
           }, 8, ["value"])
@@ -602,7 +602,7 @@ const at = {
 }, wt = {
   key: 1,
   class: "chip"
-}, gt = { class: "tasks-body" }, $t = { class: "tasks-list" }, pe = "input,textarea,select,[contenteditable],.menu-panel", bt = {
+}, gt = { class: "tasks-body" }, $t = { class: "tasks-list" }, fe = "input,textarea,select,[contenteditable],.menu-panel", bt = {
   __name: "TasksDialog",
   emits: ["close"],
   setup($, { emit: K }) {
@@ -612,7 +612,7 @@ const at = {
     ], o = w("list"), _ = w([]), O = w({ grouping: "state", number: !0, reason: !1, showDone: !1 }), G = R(() => {
       var d;
       return ((d = b.value) == null ? void 0 : d.query) ?? "";
-    }), T = R(() => o.value === "list" && !!(_.value.length || G.value)), i = (d) => d.slice(0, 1).toUpperCase() + d.slice(1);
+    }), T = R(() => o.value === "list" && !!(_.value.length || G.value)), r = (d) => d.slice(0, 1).toUpperCase() + d.slice(1);
     function a() {
       _.value = [], b.value && (b.value.query = "");
     }
@@ -620,7 +620,7 @@ const at = {
       S.value = !1, m.value = 0;
     }
     const B = I.follow(["task.*", "task_log.*"], () => t.value += 1);
-    le(() => B == null ? void 0 : B());
+    se(() => B == null ? void 0 : B());
     const Q = R(() => {
       var d;
       return (((d = b.value) == null ? void 0 : d.groups) ?? []).flatMap(({ tasks: s }) => s.map((e) => e.id));
@@ -641,7 +641,7 @@ const at = {
     function ee(d) {
       C.value = !1, j(d);
     }
-    const ne = {
+    const le = {
       ArrowDown: () => z(1),
       j: () => z(1),
       ArrowUp: () => z(-1),
@@ -661,18 +661,18 @@ const at = {
     };
     function W(d) {
       var e, k;
-      const s = ne[d.key];
-      !s || d.metaKey || d.ctrlKey || d.altKey || (k = (e = d.target).closest) != null && k.call(e, pe) || (d.preventDefault(), s());
+      const s = le[d.key];
+      !s || d.metaKey || d.ctrlKey || d.altKey || (k = (e = d.target).closest) != null && k.call(e, fe) || (d.preventDefault(), s());
     }
     function te(d) {
       var s, e;
-      d.key !== "Escape" || d.defaultPrevented || (e = (s = d.target).closest) != null && e.call(s, pe) || (S.value ? S.value = !1 : v.value = !1);
+      d.key !== "Escape" || d.defaultPrevented || (e = (s = d.target).closest) != null && e.call(s, fe) || (S.value ? S.value = !1 : v.value = !1);
     }
-    return fe(() => {
+    return ye(() => {
       window.addEventListener("keydown", W, !0), window.addEventListener("keydown", te);
-    }), le(() => {
+    }), se(() => {
       window.removeEventListener("keydown", W, !0), window.removeEventListener("keydown", te);
-    }), (d, s) => (n(), U(r(Me), {
+    }), (d, s) => (n(), U(i(Me), {
       wide: "",
       tall: "",
       bare: "",
@@ -687,12 +687,12 @@ const at = {
             s[12] || (s[12] = M("h2", null, "Tasks", -1)),
             M("span", yt, D(Z.value), 1),
             s[13] || (s[13] = M("span", { class: "grow" }, null, -1)),
-            y(r(Ne), {
+            f(i(Ne), {
               options: p,
               value: o.value,
               onPick: s[0] || (s[0] = (e) => o.value = e)
             }, null, 8, ["value"]),
-            y(vt, {
+            f(vt, {
               states: _.value,
               display: O.value,
               selected: m.value,
@@ -700,14 +700,14 @@ const at = {
               onDisplay: s[2] || (s[2] = (e) => O.value = e),
               onDeleted: c
             }, null, 8, ["states", "display", "selected"]),
-            y(r(q), {
+            f(i(q), {
               small: "",
               title: "New task (C)",
               "data-new-task": "",
               onClick: s[3] || (s[3] = (e) => C.value = !0)
             }, {
               default: h(() => [
-                y(r(re), {
+                f(i(re), {
                   name: "plus",
                   size: 12
                 }),
@@ -715,14 +715,14 @@ const at = {
               ]),
               _: 1
             }),
-            y(r(q), {
+            f(i(q), {
               small: "",
               "aria-label": "Close the tasks (Esc)",
               "data-tasks-close": "",
               onClick: s[4] || (s[4] = (e) => v.value = !1)
             }, {
               default: h(() => [
-                y(r(re), {
+                f(i(re), {
                   name: "close",
                   size: 13
                 })
@@ -730,9 +730,9 @@ const at = {
               _: 1
             })
           ]),
-          T.value ? (n(), f("div", mt, [
-            _.value.length ? (n(), f("span", ht, [
-              x(" Status: " + D(_.value.map(i).join(" or ")) + " ", 1),
+          T.value ? (n(), y("div", mt, [
+            _.value.length ? (n(), y("span", ht, [
+              x(" Status: " + D(_.value.map(r).join(" or ")) + " ", 1),
               M("button", {
                 type: "button",
                 title: "Remove this filter",
@@ -740,7 +740,7 @@ const at = {
                 onClick: s[5] || (s[5] = (e) => _.value = [])
               }, "×")
             ])) : L("", !0),
-            G.value ? (n(), f("span", wt, [
+            G.value ? (n(), y("span", wt, [
               x(" Search: “" + D(G.value) + "” ", 1),
               M("button", {
                 type: "button",
@@ -769,7 +769,7 @@ const at = {
                 onSelect: j
               }, null, 8, ["selected"])) : L("", !0),
               ie(M("div", null, [
-                y(ge, {
+                f(ge, {
                   ref_key: "list",
                   ref: b,
                   selectable: "",
@@ -782,13 +782,13 @@ const at = {
                 [be, o.value === "list"]
               ])
             ]),
-            S.value && m.value ? (n(), U(r(Ee), {
+            S.value && m.value ? (n(), U(i(Ee), {
               key: 0,
               ref_key: "inspector",
               ref: u,
               stepped: "",
               id: m.value,
-              read: r(I).run,
+              read: i(I).run,
               changes: t.value,
               onClose: s[8] || (s[8] = (e) => S.value = !1),
               onStep: z,
@@ -804,12 +804,12 @@ const at = {
   __name: "TasksWindow",
   setup($) {
     const K = H(), E = w(!1);
-    return (I, v) => (n(), f(P, null, [
-      y(ge, null, Se({ _: 2 }, [
-        r(K).shared ? void 0 : {
+    return (I, v) => (n(), y(P, null, [
+      f(ge, null, Se({ _: 2 }, [
+        i(K).shared ? void 0 : {
           name: "tools",
           fn: h(() => [
-            y(r(q), {
+            f(i(q), {
               small: "",
               bordered: "",
               "data-manage-tasks": "",
