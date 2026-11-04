@@ -1,34 +1,38 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1094217ce2d2")) { const style = document.createElement("style"); style.id = "window-styles-1094217ce2d2"; style.textContent = ".skills[data-v-949528d6]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-949528d6]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-949528d6]{display:flex;gap:8px;align-items:center;width:100%;text-align:left}.skills-catalogue[data-v-e0c54604]{margin:0;padding:0;list-style:none}.skill-entry[data-v-e0c54604]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left}.skill-description[data-v-e0c54604]{color:var(--text-3);font-size:12px}.skills-title[data-v-b646e030]{margin:0;font-size:13px}.skills-text[data-v-b646e030]{margin:0;white-space:pre-wrap;font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as g, openBlock as c, createElementBlock as k, createElementVNode as t, createVNode as y, unref as p, withCtx as x, createTextVNode as S, toDisplayString as v, toRef as L, Fragment as R, renderList as T, ref as _, createBlock as b, resolveDynamicComponent as N, normalizeProps as O, guardReactiveProps as q } from "vue";
-import { RowList as A, useListTools as I, ListTools as V, useWindow as z, useRows as D, WindowRoom as E } from "@journal/window-kit";
-const f = (e, s) => {
-  const a = e.__vccOpts || e;
-  for (const [i, n] of s)
-    a[i] = n;
-  return a;
-}, F = { class: "skills" }, M = ["onClick"], P = {
+if (!document.getElementById("window-styles-018c5c472096")) { const style = document.createElement("style"); style.id = "window-styles-018c5c472096"; style.textContent = ".skills[data-v-2178931f]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-2178931f]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-2178931f]{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-row[data-v-2178931f]:hover{background:var(--hover);color:var(--text)}h2[data-v-2178931f]{margin:0;font-size:13px;font-weight:600}.skills-catalogue[data-v-31eac374]{margin:0;padding:0;list-style:none}.skill-entry[data-v-31eac374]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:9px 10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skill-entry[data-v-31eac374]:hover{background:var(--hover);color:var(--text)}h2[data-v-31eac374]{margin:0 0 8px;font-size:13px;font-weight:600}.skill-description[data-v-31eac374]{color:var(--text-3);font-size:12px}.skills-title[data-v-4b73864f]{margin:0;font-size:13px}.skills-back[data-v-4b73864f]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-4b73864f]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-0ee5e5e4]{display:flex;flex-direction:column;gap:24px}\n"; document.head.appendChild(style); }
+import { computed as C, openBlock as u, createElementBlock as p, createElementVNode as l, createVNode as m, unref as v, withCtx as b, createTextVNode as L, toDisplayString as _, toRef as B, Fragment as T, renderList as R, ref as k, createBlock as x } from "vue";
+import { RowList as A, useListTools as I, ListTools as N, useWindow as O, WindowRoom as q } from "@journal/window-kit";
+const h = (e, s) => {
+  const n = e.__vccOpts || e;
+  for (const [r, o] of s)
+    n[r] = o;
+  return n;
+}, V = {
+  class: "skills",
+  "data-skills-loaded": ""
+}, E = ["onClick"], F = {
   __name: "LoadedSkills",
   props: { rows: { type: Array, required: !0 }, failure: { type: String, default: "" }, answered: { type: Boolean, required: !0 } },
-  emits: ["open", "browse"],
+  emits: ["open"],
   setup(e, { emit: s }) {
-    const a = e, i = s, n = g(() => [...a.rows].reverse());
-    return (r, o) => (c(), k("div", F, [
-      o[2] || (o[2] = t("p", { class: "skills-note" }, "Loaded in this window, newest last. Compacting the conversation empties it.", -1)),
-      y(p(A), {
-        rows: n.value,
+    const n = e, r = s, o = C(() => [...n.rows].reverse());
+    return (c, t) => (u(), p("div", V, [
+      t[1] || (t[1] = l("h2", null, "Loaded by the main agent", -1)),
+      t[2] || (t[2] = l("p", { class: "skills-note" }, "The skills the main agent has read in this conversation.", -1)),
+      m(v(A), {
+        rows: o.value,
         failure: e.failure,
         loaded: e.answered,
         empty: "No skill is loaded in this conversation.",
         hint: "A skill the agent reads shows here with when it read it."
       }, {
-        default: x(({ row: l }) => [
-          t("button", {
+        default: b(({ row: a }) => [
+          l("button", {
             type: "button",
             class: "skill-row",
-            onClick: (w) => i("open", l.skill)
+            onClick: (w) => r("open", a.skill)
           }, [
-            o[1] || (o[1] = t("svg", {
+            t[0] || (t[0] = l("svg", {
               class: "skill-book",
               viewBox: "0 0 16 16",
               width: "14",
@@ -38,93 +42,108 @@ const f = (e, s) => {
               "stroke-width": "1.4",
               "aria-hidden": "true"
             }, [
-              t("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
-              t("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
+              l("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
+              l("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
             ], -1)),
-            S(" " + v(l.skill), 1)
-          ], 8, M)
+            L(" " + _(a.skill), 1)
+          ], 8, E)
         ]),
         _: 1
-      }, 8, ["rows", "failure", "loaded"]),
-      t("button", {
-        type: "button",
-        class: "skills-browse",
-        onClick: o[0] || (o[0] = (l) => i("browse"))
-      }, "Browse every skill")
+      }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, W = /* @__PURE__ */ f(P, [["__scopeId", "data-v-949528d6"]]), j = { class: "skills" }, H = { class: "skills-catalogue" }, G = ["onClick"], J = { class: "skill-name" }, K = { class: "skill-description" }, Q = {
+}, M = /* @__PURE__ */ h(F, [["__scopeId", "data-v-2178931f"]]), W = {
+  class: "skills",
+  "data-skills-catalogue": ""
+}, j = { class: "skills-catalogue" }, z = ["onClick"], D = { class: "skill-name" }, H = { class: "skill-description" }, P = {
   __name: "SkillCatalogue",
   props: { rows: { type: Array, required: !0 } },
-  emits: ["open", "back"],
+  emits: ["open"],
   setup(e, { emit: s }) {
-    const a = e, i = s, n = I(L(a, "rows"), { title: (r) => r.folder });
-    return (r, o) => (c(), k("div", j, [
-      t("button", {
-        type: "button",
-        class: "skills-back",
-        onClick: o[0] || (o[0] = (l) => i("back"))
-      }, "Back"),
-      y(p(V), { tools: p(n) }, null, 8, ["tools"]),
-      t("ul", H, [
-        (c(!0), k(R, null, T(p(n).shown.value, (l) => (c(), k("li", {
-          key: l.folder
+    const n = e, r = s, o = I(B(n, "rows"), { title: (c) => c.folder });
+    return (c, t) => (u(), p("div", W, [
+      t[0] || (t[0] = l("h2", null, "All skills", -1)),
+      m(v(N), { tools: v(o) }, null, 8, ["tools"]),
+      l("ul", j, [
+        (u(!0), p(T, null, R(v(o).shown.value, (a) => (u(), p("li", {
+          key: a.folder
         }, [
-          t("button", {
+          l("button", {
             type: "button",
             class: "skill-entry",
-            onClick: (w) => i("open", l.folder)
+            onClick: (w) => r("open", a.folder)
           }, [
-            t("span", J, v(l.folder), 1),
-            t("span", K, v(l.description), 1)
-          ], 8, G)
+            l("span", D, _(a.folder), 1),
+            l("span", H, _(a.description), 1)
+          ], 8, z)
         ]))), 128))
       ])
     ]));
   }
-}, U = /* @__PURE__ */ f(Q, [["__scopeId", "data-v-e0c54604"]]), X = { class: "skills" }, Y = { class: "skills-title" }, Z = { class: "skills-text" }, ee = {
+}, G = /* @__PURE__ */ h(P, [["__scopeId", "data-v-31eac374"]]), J = { class: "skills" }, K = { class: "skills-title" }, Q = {
+  class: "skills-text",
+  "data-skill-text": ""
+}, U = {
   __name: "SkillText",
   props: { skill: { type: Object, default: null }, failure: { type: String, default: "" } },
   emits: ["back"],
   setup(e, { emit: s }) {
-    const a = s;
-    return (i, n) => (c(), k("div", X, [
-      t("button", {
+    const n = s;
+    return (r, o) => (u(), p("div", J, [
+      l("button", {
         type: "button",
         class: "skills-back",
-        onClick: n[0] || (n[0] = (r) => a("back"))
-      }, "Back"),
-      t("h3", Y, v(e.skill ? e.skill.folder : ""), 1),
-      t("pre", Z, v(e.skill ? e.skill.text : e.failure), 1)
+        onClick: o[0] || (o[0] = (c) => n("back"))
+      }, "Back to skills"),
+      l("h3", K, _(e.skill ? e.skill.folder : ""), 1),
+      l("pre", Q, _(e.skill ? e.skill.text : e.failure), 1)
     ]));
   }
-}, te = /* @__PURE__ */ f(ee, [["__scopeId", "data-v-b646e030"]]), le = {
+}, X = /* @__PURE__ */ h(U, [["__scopeId", "data-v-4b73864f"]]), Y = {
+  key: 1,
+  class: "skills-page"
+}, Z = {
   __name: "SkillRows",
   setup(e) {
-    const s = z(), { rows: a, failure: i, loaded: n } = D(s.agent ? `agent-skill list --agent ${s.agent}` : "agent-skill list", ["agent_skill.*"]), r = _("loaded"), o = _([]), l = _(null), w = _(""), $ = { loaded: W, catalogue: U, text: te }, C = g(() => ({
-      loaded: { rows: a.value, failure: i.value, answered: n.value, onOpen: h, onBrowse: B },
-      catalogue: { rows: o.value, onOpen: h, onBack: m },
-      text: { skill: l.value, failure: w.value, onBack: m }
-    })[r.value]);
-    function m() {
-      r.value = "loaded";
+    const s = O(), n = k([]), r = k(""), o = k(!1), c = k([]), t = k(null), a = k("");
+    async function w() {
+      const [f, i] = await Promise.all([s.read("agent main"), s.read("skill list")]);
+      c.value = i.ok ? i.value.rows : [];
+      const y = f.ok && f.value.id, d = y ? await s.read(`agent-skill list --agent ${y} --limit 100`) : null;
+      n.value = d != null && d.ok ? d.value.rows.filter((S) => S.state === "loaded") : [], r.value = d && !d.ok ? d.error : i.ok ? "" : i.error, o.value = !0;
     }
-    async function B() {
-      const u = await s.read("skill list");
-      o.value = u.ok ? u.value.rows : [], r.value = "catalogue";
+    s.follow(["agent.*", "agent_skill.*"], w), w();
+    function $() {
+      t.value = null, a.value = "";
     }
-    async function h(u) {
-      const d = await s.read(`skill show ${u}`);
-      w.value = d.ok ? "" : d.error, l.value = d.ok ? d.value : null, r.value = "text";
+    async function g(f) {
+      const i = await s.read(`skill show ${f}`);
+      a.value = i.ok ? "" : i.error, t.value = i.ok ? i.value : null;
     }
-    return (u, d) => (c(), b(p(E), null, {
-      default: x(() => [
-        (c(), b(N($[r.value]), O(q(C.value)), null, 16))
+    return (f, i) => (u(), x(v(q), null, {
+      default: b(() => [
+        t.value || a.value ? (u(), x(X, {
+          key: 0,
+          skill: t.value,
+          failure: a.value,
+          onBack: $
+        }, null, 8, ["skill", "failure"])) : (u(), p("div", Y, [
+          m(M, {
+            rows: n.value,
+            failure: r.value,
+            answered: o.value,
+            onOpen: g
+          }, null, 8, ["rows", "failure", "answered"]),
+          m(G, {
+            rows: c.value,
+            onOpen: g
+          }, null, 8, ["rows"])
+        ]))
       ]),
       _: 1
     }));
   }
-};
+}, le = /* @__PURE__ */ h(Z, [["__scopeId", "data-v-0ee5e5e4"]]);
 export {
   le as default
 };

@@ -3,13 +3,14 @@ import {computed} from "vue";
 import {RowList} from "@journal/window-kit";
 
 const props = defineProps({rows: {type: Array, required: true}, failure: {type: String, default: ""}, answered: {type: Boolean, required: true}});
-const emit = defineEmits(["open", "browse"]);
+const emit = defineEmits(["open"]);
 const newestLast = computed(() => [...props.rows].reverse());
 </script>
 
 <template>
-    <div class="skills">
-        <p class="skills-note">Loaded in this window, newest last. Compacting the conversation empties it.</p>
+    <div class="skills" data-skills-loaded>
+        <h2>Loaded by the main agent</h2>
+        <p class="skills-note">The skills the main agent has read in this conversation.</p>
         <RowList :rows="newestLast" :failure="failure" :loaded="answered" empty="No skill is loaded in this conversation." hint="A skill the agent reads shows here with when it read it.">
             <template #default="{row}">
                 <button type="button" class="skill-row" @click="emit('open', row.skill)">
@@ -21,7 +22,6 @@ const newestLast = computed(() => [...props.rows].reverse());
                 </button>
             </template>
         </RowList>
-        <button type="button" class="skills-browse" @click="emit('browse')">Browse every skill</button>
     </div>
 </template>
 
@@ -44,5 +44,14 @@ const newestLast = computed(() => [...props.rows].reverse());
     align-items: center;
     width: 100%;
     text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
+    font: inherit;
+    cursor: pointer;
 }
+.skill-row:hover { background: var(--hover); color: var(--text); }
+h2 { margin: 0; font-size: 13px; font-weight: 600; }
 </style>

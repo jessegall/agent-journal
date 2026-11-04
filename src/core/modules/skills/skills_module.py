@@ -7,7 +7,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_shows import WindowShows
+from core.base.viewer.window_place import WindowPlace
 from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
 from core.modules.skills.commands.load_agent_skill.load_agent_skill import LoadAgentSkill
 from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler
@@ -61,6 +61,6 @@ class SkillsModule(Module):
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", shows=WindowShows.SELECTED_AGENT, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Search the skills", ("folder", "description")),
-                                 reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Search the skills", ("folder", "description")),
+                                 reads=["agent main", "agent-skill list", "skill list", "skill show"], events=["agent_skill.*", "agent.*"])]
     seeders = [SkillsSeeder]
