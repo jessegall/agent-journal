@@ -219,6 +219,10 @@ class OutputFolder:
     def remove(self, process_id: int) -> None:
         shutil.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
 
+    def process_ids(self) -> list[int]:
+        root = self.home.folder / FOLDER_NAME
+        return sorted(int(path.name) for path in root.iterdir() if path.name.isdigit()) if root.is_dir() else []
+
     def write_number(self, process_id: int, name: str, number: int) -> None:
         self.write(process_id, name, f"{number}")
 
