@@ -10,12 +10,15 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.base.type_guards import is_list, is_mapping
+from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
 
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
+PR_ADDRESS = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
+OPEN_LABEL = "Open"
 CLAIM_WINDOW_SECONDS = 60
 BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]*)", re.IGNORECASE | re.MULTILINE)
 
@@ -45,8 +48,13 @@ class LinkPinCheck:
         pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
         return next((command for command in commands if not pins.filter(link=command).exists()), None)
 
+    def pull_request_pins(self, environment_id: int, text: str) -> list[MakePin]:
+        pins = self.queries.query(Pin).filter(environment_id=environment_id)
+        links = dict.fromkeys(PR_ADDRESS.findall(text))
+        return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
+
     def first_unpinned(self, environment_id: int, text: str) -> str | None:
-        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url))
+        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url))
         pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
         return next((url for url in links if not pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()), None)
 

@@ -12,15 +12,15 @@ def shell_call(line: str, output: str = ""):
 
 def test_a_link_in_a_commands_output_is_offered_as_a_pin(new_story):
     story = new_story(fixture=UserJoined)
-    assert any("pin this link if the user will return to it" in line and "https://github.com/shop/cart/pull/4" in line for line in story.hook("s-1", shell_call("gh pr create", "https://github.com/shop/cart/pull/4\n")).lines)
+    assert any("pin this link if the user will return to it" in line and "https://docs.example.com/pages/4" in line for line in story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/4\n")).lines)
 
 
 def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
     story = new_story(fixture=UserJoined)
-    story.run('pin make "The pull request" --link "https://github.com/shop/cart/pull/4" --environment main', actor=story.agent)
+    story.run('pin make "The pull request" --link "https://docs.example.com/pages/4" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", shell_call("cat log", "http://127.0.0.1:8000/x\n"), "pin this link")
     story.expect_absent_hook_line("s-1", shell_call("curl", "http://journal/health\n"), "pin this link")
-    story.expect_absent_hook_line("s-1", shell_call("gh pr view", "https://github.com/shop/cart/pull/4/\n"), "pin this link")
+    story.expect_absent_hook_line("s-1", shell_call("gh pr view", "https://docs.example.com/pages/4/\n"), "pin this link")
 
 
 def pin_lines(hook_answer) -> list[str]:
@@ -29,16 +29,27 @@ def pin_lines(hook_answer) -> list[str]:
 
 def test_each_link_is_offered_on_its_own_and_only_once(new_story):
     story = new_story(fixture=UserJoined)
-    assert pin_lines(story.hook("s-1", shell_call("gh pr create", "https://github.com/shop/cart/pull/4\n")))
-    assert pin_lines(story.hook("s-1", shell_call("gh pr create", "https://github.com/shop/cart/pull/5\n")))
-    assert not pin_lines(story.hook("s-1", shell_call("gh pr view", "https://github.com/shop/cart/pull/4\n")))
+    assert pin_lines(story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/4\n")))
+    assert pin_lines(story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/5\n")))
+    assert not pin_lines(story.hook("s-1", shell_call("gh pr view", "https://docs.example.com/pages/4\n")))
 
 
 def test_a_link_of_a_closed_pin_is_offered_again(new_story):
     story = new_story(fixture=UserJoined)
-    story.run('pin make "The pull request" --link "https://github.com/shop/cart/pull/4" --environment main', actor=story.agent)
+    story.run('pin make "The pull request" --link "https://docs.example.com/pages/4" --environment main', actor=story.agent)
     story.expect_success("pin close 1", actor=story.user)
-    assert pin_lines(story.hook("s-1", shell_call("gh pr view", "https://github.com/shop/cart/pull/4\n")))
+    assert pin_lines(story.hook("s-1", shell_call("gh pr view", "https://docs.example.com/pages/4\n")))
+
+
+def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
+    story = new_story(fixture=UserJoined)
+    address = "https://github.com/shop/cart/pull/4"
+    assert not pin_lines(story.hook("s-1", shell_call("gh pr create", f"{address}\n")))
+    story.expect_text("pin list --environment main", "Pull request 4", address, actor=story.user)
+    story.hook("s-1", shell_call("gh pr view", f"{address}\n"))
+    story.expect_success("pin close 1", actor=story.user)
+    story.hook("s-1", shell_call("gh pr view", f"{address}\n"))
+    story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
 
 
 def test_a_link_a_subagent_returned_is_offered(new_story):

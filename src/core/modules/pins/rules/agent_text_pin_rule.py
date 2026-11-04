@@ -22,4 +22,4 @@ class AgentTextPinRule(DriverRule):
         text = hook.event.raw.get("delta")
         if hook.event.raw.get("final") is not True or not isinstance(text, str):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, text))
+        return RuleAnswer.with_nudges(*self.check.nudges(hook.environment_id, text)).running(*self.check.pull_request_pins(hook.environment_id, text))
