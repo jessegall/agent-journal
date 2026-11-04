@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.output_folder import OutputFolder
 from core.base.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
@@ -127,3 +128,28 @@ def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monk
     story.container.get(WorkerTestLaunch).start(7, "pytest tests/cart.py", "/work/worktree", "s-1")
     command, options = calls[0]
     assert "--process 7" in command and "--background" in command and options["cwd"] == "/work/worktree"
+
+
+def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("base.txt", "rebased\n", "Base change")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    picker = story.container.get(Queries).query(Process).find(started[1])
+    story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
+                      (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
+    story.container.get(OutputFolder).write_output(picker.id, 1, "tests/other test.py\n")
+    ended(story, picker.id, 0)
+    selected = story.container.get(Queries).query(Process).find(started[2])
+    story.expect_rows(selected.line == "python3 -m pytest -q 'tests/other test.py'")
+    ended(story, selected.id, 0)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
