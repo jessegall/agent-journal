@@ -20,7 +20,7 @@ test("tasks delegated to a worker are listed in a section of their own, with the
     const delegated = element.querySelector('[data-state="delegated"]');
     expect(delegated.querySelector("[data-group-head]").textContent).toContain("Delegated");
     expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["1", "2"]);
-    expect([...delegated.querySelectorAll("[data-task-worker]")].map((worker) => worker.textContent)).toEqual(["Worker 12", "Worker 12"]);
+    expect([...delegated.querySelectorAll("[data-task-agent]")].map((agent) => agent.textContent)).toEqual(["Agent 12", "Agent 12"]);
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
     expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
     expect(element.querySelector('[data-state="open"]')).toBeNull();

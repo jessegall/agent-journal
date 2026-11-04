@@ -8,7 +8,7 @@ const at = (minutesAgo) => new Date(Date.now() - minutesAgo * MINUTE).toISOStrin
 test("with no review the window says so, in the words of version 4", async () => {
     const element = await mounted(ReviewerSteps, context({"review board": {ok: true, value: {queued: 0, reviews: []}}}, 2));
     expect(element.textContent).toContain("No review yet");
-    expect(element.textContent).toContain("The reviewer shows here what it does with each worker's work");
+    expect(element.textContent).toContain("The reviewer shows here what it does with each agent's work");
 });
 
 test("the steps of the latest review are drawn in order, a dot for each outcome and how long ago", async () => {

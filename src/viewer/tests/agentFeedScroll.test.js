@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
-import AgentFileEdits from "../../core/modules/agents/web/src/AgentFileEdits.vue";
+import AgentFileEdits from "../../suites/coding/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 

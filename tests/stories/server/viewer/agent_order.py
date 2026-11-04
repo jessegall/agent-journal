@@ -14,6 +14,6 @@ def test_both_agents_windows_keep_age_order_after_state_changes_and_a_new_agent(
     story.expect_success(f"agent end {agents[1]}")
     story.expect_success(f"agent edit {agents[0]} --paused-at {story.clock.timestamp().text}")
     with server_story(story) as server:
-        expect_browser(server, "agentOrder.browser.mjs", [",".join(map(str, agents))])
+        expect_browser(server, "agentOrder.browser.mjs", [",".join(map(str, agents)), str(story.agent.id)])
         agents.append(story.new_row_id("agent start latest codex subagent --environment main"))
-        expect_browser(server, "agentOrder.browser.mjs", [",".join(map(str, agents))])
+        expect_browser(server, "agentOrder.browser.mjs", [",".join(map(str, agents)), str(story.agent.id)])

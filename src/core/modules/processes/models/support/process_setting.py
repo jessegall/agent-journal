@@ -28,6 +28,10 @@ class ProcessSetting(Enum):
     SHORT_OUTPUT_BYTES = SettingValue("short-output", "Short output bytes", "Below how many bytes an output is shown whole and not kept.", SettingType.NUMBER,
                                       default=200)
 
+    MOST_OUTPUT_MEGABYTES = SettingValue("most-output-megabytes", "Most stored output", "How many megabytes of one command's output stay on disk; past this the oldest lines go.",
+                                         SettingType.NUMBER, default=10)
+    MOST_TEST_OUTPUT_MEGABYTES = SettingValue("most-test-output-megabytes", "Most stored test output", "How many megabytes of one test or build output stay on disk; past this the oldest lines go.",
+                                              SettingType.NUMBER, default=100)
     LARGE_OUTPUT_LINES = SettingValue("large-output-lines", "Large output lines", "Above how many lines reading a whole output tells the agent which flag reads a part of it.", SettingType.NUMBER,
                                       default=100)
 

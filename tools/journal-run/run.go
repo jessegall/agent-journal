@@ -28,7 +28,11 @@ type Options struct {
 	Shell          string
 	HeartbeatEvery time.Duration
 	CapCharacters  int
-	Detach         func(options Options)
+	// Stripped names the commands of the line whose filter pipes come off: its test runs and builds.
+	Stripped []string
+	// MostOutputBytes is how much of one part's output stays on disk.
+	MostOutputBytes int
+	Detach          func(options Options)
 	// ShellAlive says whether the shell that started the runner still lives; when it is nil the runner watches its parent.
 	ShellAlive func() bool
 }
@@ -45,7 +49,10 @@ func Run(options Options, client Client, stdout io.Writer) int {
 			options.CapCharacters = ReadCapCharacters
 		}
 	}
-	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
+	if options.MostOutputBytes == 0 {
+		options.MostOutputBytes = DefaultMostOutputBytes
+	}
+	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line, options.Stripped...)
 	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
@@ -61,7 +68,10 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: len(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}}
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Stripped: map[int]bool{}}
+	for _, part := range parts {
+		tracker.Stripped[part.Position] = part.Filters != ""
+	}
 	return tracker.Run(stdout)
 }
 
@@ -105,7 +115,7 @@ func writeHeartbeats(folder Folder, pid int, interval time.Duration) {
 
 // Detach continues a moved run in a program of its own that no tool call waits for.
 func Detach(options Options) {
-	command := exec.Command(os.Args[0], "--follow", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(len(Parts(options.Line))))
+	command := exec.Command(os.Args[0], "--follow", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(PartCount(Parts(options.Line, options.Stripped...))), "--most-output", strconv.Itoa(options.MostOutputBytes))
 	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	_ = command.Start()
 }

@@ -55,6 +55,8 @@ func bounded(t *testing.T, limit time.Duration, body func()) {
 	}
 }
 
+const secondInTest = time.Second
+
 func options(t *testing.T, line string) Options {
 	t.Helper()
 	return Options{Process: 4, LimitSeconds: 30, Line: line, Home: filepath.Join(t.TempDir(), ".journal"), Shell: "/bin/sh", HeartbeatEvery: time.Hour}

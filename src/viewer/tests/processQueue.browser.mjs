@@ -22,7 +22,7 @@ try {
     assert.equal(await page.locator('[data-queue-row="running"] .dot').count(), 1);
     assert.deepEqual(await page.locator('.spots span').first().evaluate((element) => { const style = getComputedStyle(element); return [style.width, style.height, style.borderRadius]; }), ["14px", "14px", "4px"]);
     const popupPromise = page.waitForEvent("popup");
-    await recent.getByRole("link", {name: "Open in its own window"}).click();
+    await recent.getByRole("link", {name: "Open output window"}).click();
     const popup = await popupPromise;
     await popup.getByRole("button", {name: "Whole output", exact: true}).click();
     await popup.locator("[data-output-text]").filter({hasText: "package built"}).waitFor();

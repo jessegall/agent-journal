@@ -34,7 +34,8 @@ class ReaderStep:
         return advanced
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
-        raw = self.folder.reader_bytes_after(process.id, output.reader_position, output.read_offset)
+        offset = self.folder.reader_offset(process.id, output.reader_position, output.read_offset)
+        raw = self.folder.reader_bytes_after(process.id, output.reader_position, offset)
         ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
         if not ready_bytes:
             return None
@@ -47,7 +48,7 @@ class ReaderStep:
         if not reader.progress_pattern and reader.step_pattern and test_count:
             progress = min(100, (passed + failed) * 100 // test_count)
         lines = self.run.lines(reader, text, process.state.value, output.read_lines + 1) if reader.type is ReaderType.PATTERN else []
-        return ReaderAdvance(lines, output.read_offset + len(ready_bytes), output.read_lines + counted,
+        return ReaderAdvance(lines, offset + len(ready_bytes), output.read_lines + counted,
                              self.run.summary(reader, text) or output.reader_summary, progress,
                              steps_passed=passed, steps_failed=failed, test_count=test_count)
 

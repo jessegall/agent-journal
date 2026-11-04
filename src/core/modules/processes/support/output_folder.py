@@ -132,6 +132,12 @@ class OutputFolder:
             passed += size
         return collected
 
+    def reader_offset(self, process_id: int, position: int, offset: int) -> int:
+        """Where a reader goes on: at its offset, or at the start of a file the runner cut below that offset."""
+        paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
+        size = sum(path.stat().st_size for path in paths if path.exists())
+        return offset if offset <= size else 0
+
     def reader_bytes_after(self, process_id: int, position: int, offset: int) -> bytes:
         if not position:
             return self.bytes_after(process_id, offset)

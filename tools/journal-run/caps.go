@@ -11,18 +11,18 @@ const DefaultCapCharacters = 400
 // ReadCapCharacters bounds the output returned directly by commands that only read.
 const ReadCapCharacters = 16000
 
+// DefaultMostOutputBytes is how much of one part's output stays on disk when the journal names no limit, as for the
+// runs a worker's proof or a trigger starts.
+const DefaultMostOutputBytes = 100 << 20
+
 // Shown is what the agent sees of a part's output: all of it up to the cap, or uncapped when the cap is lifted for a
 // line of journal commands; past the cap, the tail that fits half the cap, from the start of a line, and one line
 // naming the output and how to read it.
-func Shown(text string, process, capCharacters int, uncapped bool) string {
+func Shown(text string, size OutputSize, process, capCharacters int, uncapped bool) string {
 	if uncapped || len(text) <= capCharacters {
 		return text
 	}
-	lines := strings.Count(text, "\n")
-	if !strings.HasSuffix(text, "\n") {
-		lines++
-	}
-	return tail(text, capCharacters/2) + fmt.Sprintf("output %d is %d lines, %d characters: journal output read %d --summary\n", process, lines, len(text), process)
+	return tail(text, capCharacters/2) + fmt.Sprintf("output %d is %d lines, %d characters: journal output read %d --summary\n", process, size.Lines, size.Bytes, process)
 }
 
 func tail(text string, characters int) string {

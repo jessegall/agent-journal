@@ -33,6 +33,11 @@ class Background:
         return PartCommand(part.text)
 
 
+class CategoryBackground(Background):
+    def declared_category(self, shell: ShellLine) -> CommandCategory:
+        return CommandCategory.TEST_RUN
+
+
 class Rows:
     """Stands in for the process and message queries: whether the line went past the limit and whether a
     message waits."""
@@ -81,15 +86,50 @@ def test_a_journal_line_never_goes_to_the_background():
     assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal")]))
 
 
-def test_a_test_run_and_a_build_go_to_the_background_at_once():
-    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("pytest")]))
-    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("make")]))
+def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).seconds == 15
+    assert not limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).background
+    assert not limit().decide(1, line(part("make", CommandCategory.BUILD))).background
+
+
+def test_a_test_run_gets_fewer_seconds_while_a_message_waits():
+    assert limit(waiting=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN))).seconds == 10
+
+
+def test_a_test_run_that_went_past_the_limit_before_goes_to_the_background_at_once():
+    assert limit(over_limit=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN))).background
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, True, part_commands=tuple([PartCommand("ls")]))
+    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))).background
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, False, part_commands=tuple([PartCommand("ls")]))
-    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False, part_commands=tuple([PartCommand("ls")]))
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))).seconds == 15
+    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))).seconds == 10
+
+
+def test_only_test_runs_and_builds_are_named_for_stripping():
+    chain = line(part("cat", CommandCategory.READ), part("pytest", CommandCategory.TEST_RUN), part("make", CommandCategory.BUILD), part("git", CommandCategory.VERSION_CONTROL), part("mypy", CommandCategory.CHECK))
+    assert limit().decide(1, chain).stripped == ("pytest", "make")
+
+
+def test_a_line_with_no_test_or_build_names_nothing_to_strip():
+    assert limit().decide(1, line(part("sed", CommandCategory.EDIT))).stripped == ()
+
+
+def test_a_test_or_build_stores_more_output_than_any_other_line():
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).most_output_bytes == 100 << 20
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))).most_output_bytes == 10 << 20
+
+
+def test_a_line_declared_as_a_test_is_named_for_stripping_and_stores_as_much():
+    declared = limit()
+    declared.background = CategoryBackground()
+    run = declared.decide(1, line(part("sins", CommandCategory.UNKNOWN)))
+    assert run.stripped == tuple(["sins"])
+    assert run.most_output_bytes == 100 << 20
+
+
+def test_a_chain_with_a_test_stores_as_much_as_a_test():
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN))).most_output_bytes == 100 << 20

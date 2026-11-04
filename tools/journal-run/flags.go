@@ -23,6 +23,9 @@ type Flags struct {
 	Folder     string
 	Parts      int
 	Aliases    []string
+	// Stripped names the commands whose filter pipes come off, one --stripped each.
+	Stripped   []string
+	MostOutput int
 }
 
 // binFolder is where a journal keeps this program, inside the journal's folder.
@@ -93,7 +96,13 @@ func ParseFlags(arguments []string) (Flags, error) {
 			}
 			index++
 			flags.Aliases = strings.Split(arguments[index], ",")
-		case "--process", "--limit", "--parts", "--folder":
+		case "--stripped":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.Stripped = append(flags.Stripped, arguments[index])
+		case "--process", "--limit", "--parts", "--most-output", "--folder":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)
 			}
@@ -114,6 +123,8 @@ func ParseFlags(arguments []string) (Flags, error) {
 				flags.Limit = number
 			case "--parts":
 				flags.Parts = number
+			case "--most-output":
+				flags.MostOutput = number
 			}
 		default:
 			return flags, fmt.Errorf("%q is not a flag of journal-run", argument)

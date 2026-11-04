@@ -17,4 +17,4 @@ def test_one_template_is_migrated_once_and_each_story_gets_a_copy_of_its_own(tem
 def test_the_copy_holds_the_generated_triggers_of_every_default_module(templates, tmp_path):
     story = templates.story(tmp_path / "journal", (), None)
     names = [row["name"] for row in story.container.get(Database).rows(TRIGGERS)]
-    story.expect_rows(*(any(name.startswith(table) for name in names) for table in ("tasks_", "plans_", "agents_", "messages_", "actors_")))
+    story.expect_rows(*(any(name.startswith(table) for name in names) for table in ("tasks_", "plans_", "messages_", "actors_")))

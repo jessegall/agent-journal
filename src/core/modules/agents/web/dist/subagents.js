@@ -3,11 +3,11 @@ if (!document.getElementById("window-styles-2f9bcca9f9f5")) { const style = docu
 import { h as e } from "vue";
 import { A as t } from "./AgentRows-BErSMPuq.js";
 const r = {
-  running: { title: "No helpers running", hint: "A helper shows here while it works: a subagent it starts, or a reviewer." },
+  running: { title: "No helpers running", hint: "A helper shows here while it works: a subagent the agent starts, or a reviewer." },
   idle: { title: "No helpers idle", hint: "Helpers ready for another job show here." },
   retired: { title: "No helpers retired", hint: "Helpers that will not be used again show here." },
-  all: { title: "No helpers yet", hint: "The agents, subagents and reviewers the agent sends show here." }
-}, h = { render: () => e(t, { line: "agent cards --helpers", empty: "No helpers yet", texts: r }) };
+  all: { title: "No helpers yet", hint: "The helpers the agent sends show here." }
+}, n = { render: () => e(t, { line: "agent cards --helpers", empty: "No helpers yet", texts: r }) };
 export {
-  h as default
+  n as default
 };

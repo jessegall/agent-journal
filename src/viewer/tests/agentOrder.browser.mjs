@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import {chromium} from "playwright-core";
 
-const [address, ids] = process.argv.slice(2);
-const expected = ids.split(",").map(Number);
+const [address, ids, mainId] = process.argv.slice(2);
+const helpers = ids.split(",").map(Number);
 const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
 try {
     const page = await browser.newPage({viewport: {width: 1440, height: 900}});
     await page.goto(address);
-    for (const [view, capture] of [["agents.agents", "agents"], ["agents.subagents", "helpers"]]) {
+    for (const [view, capture, expected] of [["agents.agents", "agents", [Number(mainId), ...helpers]], ["agents.subagents", "helpers", helpers]]) {
         const target = new URL(page.url());
         target.searchParams.set("page", view);
         await page.goto(target.href);

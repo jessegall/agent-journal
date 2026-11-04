@@ -80,7 +80,7 @@ func TestAJournalCommandInALineFinishesBeforeTheRunMoves(t *testing.T) {
 }
 
 func TestAnAliasIsNoJournalCommandToTheRunner(t *testing.T) {
-	parts := []Part{{Text: "journal task show 1"}, {Text: "journal tests --all"}}
+	parts := []Part{{Text: "journal task show 1", Position: 1}, {Text: "journal tests --all", Position: 2}}
 	if got := LastJournal(parts, []string{"tests"}); got != 1 {
 		t.Fatalf("the last journal part is %d", got)
 	}

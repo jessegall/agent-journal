@@ -111,9 +111,9 @@ def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():
     assert list(Part.parsed(part).output_paths) == ["notes.txt"]
 
 
-def test_a_test_run_cut_with_a_pipe_is_told_its_reader_sees_only_what_is_left(new_story):
+def test_a_test_run_with_a_pipe_gets_no_warning_since_its_output_stays_whole(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     piped = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], pipe_target=1)
     cut = ShellPart("tail", CommandCategory.READ, ["-5"])
     reply = story.hook("s-1", HookSamples.shell("pytest -q && tail -5", piped, cut))
-    assert any(line.startswith("pytest is cut by a pipe") for line in reply.lines)
+    assert not any("cut by a pipe" in line for line in reply.lines)

@@ -13,5 +13,6 @@ SELECT processes.id, processes.environment_id, processes.agent_id, processes.lin
             WHEN processes.is_queued = 1 THEN 'waiting' ELSE 'running' END AS section
 FROM processes JOIN agents ON agents.id = processes.agent_id
 WHERE processes.is_queue_run = 1
-   OR (agents.role = 'main' AND processes.state IN ('running', 'background'))
+   OR processes.state NOT IN ('running', 'background')
+   OR agents.role = 'main'
 """

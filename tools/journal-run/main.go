@@ -26,7 +26,7 @@ func main() {
 	home := flags.Home()
 	client := JournalClient{Home: home}
 	if flags.Follow {
-		tracker := Tracker{Options: Options{Process: flags.Process, Home: home}, Client: client, Folder: NewFolder(home, flags.Process), Parts: flags.Parts, Reported: map[int]bool{}}
+		tracker := Tracker{Options: Options{Process: flags.Process, Home: home, MostOutputBytes: flags.MostOutput}, Client: client, Folder: NewFolder(home, flags.Process), Parts: flags.Parts, Reported: map[int]bool{}}
 		tracker.Watch()
 		return
 	}
@@ -36,7 +36,7 @@ func main() {
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
 	return Options{Count: flags.Count, Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
-		HeartbeatEvery: HeartbeatInterval, Detach: Detach}
+		Stripped: flags.Stripped, MostOutputBytes: flags.MostOutput, HeartbeatEvery: HeartbeatInterval, Detach: Detach}
 }
 
 // HeartbeatInterval is how often a run's heartbeat is written while its shell lives.

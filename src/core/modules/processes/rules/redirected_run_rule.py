@@ -1,6 +1,6 @@
 import re
 
-from core.modules.processes.support.process_nudges import PIPED_RUN, REDIRECTED_RUN
+from core.modules.processes.support.process_nudges import REDIRECTED_RUN
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -13,7 +13,7 @@ STANDARD_OUTPUT_REDIRECT = re.compile(r"(?:1?>>?|&>>?)\s*[^&\s]")
 
 class RedirectedRunRule(DriverRule):
     """Refuses a tool call that sends a test run, a build or a check to a file or to /dev/null, which no reader
-    would see, and tells an agent that one it cuts with a pipe reaches its reader badly."""
+    would see."""
 
     name = "processes.redirected-run"
     hook = HookEventName.PRE_TOOL_USE
@@ -24,13 +24,7 @@ class RedirectedRunRule(DriverRule):
         if shell is None or shell.parse_error:
             return RuleAnswer.allowed()
         redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
-        if redirected:
-            return RuleAnswer.refused(REDIRECTED_RUN.nudge(programs=', '.join(redirected)))
-        piped = list(dict.fromkeys(part.program for part in shell.parts if self.is_piped(part)))
-        return RuleAnswer.with_nudges(PIPED_RUN.nudge(programs=', '.join(piped))) if piped else RuleAnswer.allowed()
-
-    def is_piped(self, part: Part) -> bool:
-        return part.classification.category.is_watched and part.pipe_target is not None
+        return RuleAnswer.refused(REDIRECTED_RUN.nudge(programs=', '.join(redirected))) if redirected else RuleAnswer.allowed()
 
     def is_redirected(self, part: Part, shell: ShellLine) -> bool:
         return part.classification.category.is_watched and any(redirect in part.text and STANDARD_OUTPUT_REDIRECT.match(redirect) for redirect in shell.redirects)

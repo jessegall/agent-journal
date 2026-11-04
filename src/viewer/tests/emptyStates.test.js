@@ -84,7 +84,7 @@ const type = async (element, text) => {
 
 test("the running tab of the helpers window with none running says so and what brings one, though closed helpers exist", async () => {
     const element = await agents(helpers);
-    expect(words()).toEqual(["No helpers running", "A helper shows here while it works: a worker the agent sends, a subagent it starts, or a reviewer."]);
+    expect(words()).toEqual(["No helpers running", "A helper shows here while it works: a subagent the agent starts, or a reviewer."]);
     expect(element.textContent).not.toContain("Nothing matches");
 });
 
@@ -102,7 +102,7 @@ test("the other tabs of the helpers window say what is empty in their own terms"
     await pick("Retired");
     expect(words()).toEqual(["No helpers retired", "Helpers that will not be used again show here."]);
     await pick("All");
-    expect(words()).toEqual(["No helpers yet", "The workers, subagents and reviewers the agent sends show here."]);
+    expect(words()).toEqual(["No helpers yet", "The helpers the agent sends show here."]);
 });
 
 test("a window with no texts declared says its one empty line on every tab", async () => {

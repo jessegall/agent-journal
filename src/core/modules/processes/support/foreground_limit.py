@@ -11,13 +11,15 @@ from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 
+MEGABYTE = 1 << 20
+
 
 class ForegroundLimit:
     """How a shell line is run: no limit to move at for a line of journal commands, in the
-    background at once for an alias marked so, a test run, a build or a part that went past the
-    limit in an earlier run, else the seconds the settings give, fewer while the user waits on a
-    message; a line that runs an alias is judged by the command under the alias, as the hook
-    classified it, and read by the alias's reader."""
+    background at once for an alias marked so or a part that went past the limit in an earlier
+    run, else the seconds the settings give, fewer while the user waits on a message; a line that
+    runs an alias is judged by the command under the alias, as the hook classified it, and read by
+    the alias's reader. The test runs and builds of a line keep their whole output."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries
@@ -28,11 +30,12 @@ class ForegroundLimit:
         if shell.is_journal_line and (not alias_runs or all(part.classification.category is CommandCategory.JOURNAL for part in shell.parts)):
             return ForegroundRun(0, False, part_commands=part_commands)
         declared = self.background.declared_category(shell)
-        categories = {part.classification.category for part in shell.parts}
-        categories.update(category for category in [declared] if category is not None)
-        is_long = any(category.is_long_running for category in categories) or any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.parts)
+        is_long = any(self.processes.has_moved_run(environment_id, part.text, self.seconds_allowed(environment_id)) for part in shell.parts)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
-        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands)
+        stripped = tuple(part.text for part in shell.parts if part.classification.category.is_long_running or (declared is not None and declared.is_long_running))
+        output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if stripped else ProcessSetting.MOST_OUTPUT_MEGABYTES
+        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared, part_commands=part_commands,
+                             stripped=stripped, most_output_bytes=self.settings.integer(output_setting, environment_id) * MEGABYTE)
 
     def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).exists()

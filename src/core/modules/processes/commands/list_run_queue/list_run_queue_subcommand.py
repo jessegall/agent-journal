@@ -61,7 +61,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
 
     def recent_rows(self, query: Query[ProcessQueueRow], environment_id: int) -> list[ProcessQueueRow]:
-        ended = self.queries.query(Process).filter(environment_id=environment_id, is_queue_run=True).descending("ended_at", "id").limited(RECENT_RUNS)
+        ended = self.queries.query(Process).filter(environment_id=environment_id).descending("ended_at", "id").limited(RECENT_RUNS)
         return query.matching(Among("id", tuple(process.id for process in ended))).filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(RECENT_RUNS)
 
     def write_output(self, value: object, output: Output) -> None:

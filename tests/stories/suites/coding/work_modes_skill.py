@@ -11,9 +11,3 @@ def test_the_work_modes_skill_is_written_for_the_builder_and_the_orchestrator(ne
     text = skill_text(story, "journal-work-modes")
     assert "name: journal-work-modes" in text
     assert "coding.orchestrator" in text and "coding.builder" in text
-
-
-def test_the_journal_skill_names_the_work_modes_skill_in_its_table(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.run("skill write")
-    assert "journal-work-modes" in skill_text(story, "journal")

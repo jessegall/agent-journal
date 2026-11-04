@@ -128,7 +128,7 @@ def test_a_helpers_reminder_does_not_fire_at_the_main_agent(new_story):
 
 def test_a_helpers_question_is_refused_and_it_reports_to_the_agent_that_sent_it_instead(new_story):
     story = new_story(fixture=SubagentStarted)
-    story.expect_refusal(QUESTION_LINE, "put it in the worker's report", actor=story.subagent)
+    story.expect_refusal(QUESTION_LINE, "put it in your report to the main agent", actor=story.subagent)
 
 
 def test_a_main_agents_question_still_reaches_the_chat(new_story):

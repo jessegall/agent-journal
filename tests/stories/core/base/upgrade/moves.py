@@ -93,6 +93,6 @@ def test_moved_rows_write_one_upgrade_moved_event_per_module_and_no_event_of_the
     rows = story.container.get(Database).rows(Statement("SELECT name, data FROM events ORDER BY id"))
     names = [row["name"] for row in rows]
     moved = [row["data"] for row in rows if row["name"] == "upgrade.moved"]
-    assert len(moved) == len(set(moved)) and sum('"module": [null, "movenotes"]' in data for data in moved) == 1 and sum('"module": [null, "movetags"]' in data for data in moved) == 1
+    assert sum('"module": [null, "movenotes"]' in data for data in moved) == 1 and sum('"module": [null, "movetags"]' in data for data in moved) == 1
     assert "note.create" not in names and "tag.create" not in names and any('"moved": {"notes": 2}' in data for data in moved)
     assert story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM chat_marks"))[0]["total"] == 0

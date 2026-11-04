@@ -3,7 +3,7 @@ from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_sto
 
 def test_each_module_that_moved_rows_logs_one_upgrade_moved_event_with_its_counts(new_story):
     story = upgraded_story(new_story)
-    events = story.run("event list --json").output_text
+    events = story.run("event list --json --limit 100").output_text
     for module in ("journal.core.tasks", "journal.core.questions", "journal.core.memories"):
         assert events.count(f'"{module}"') >= 1, module
     assert "upgrade.moved" in events

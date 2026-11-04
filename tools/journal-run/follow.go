@@ -24,6 +24,8 @@ type Tracker struct {
 	Reported    map[int]bool
 	Started     map[int]bool
 	Shown       int
+	// Stripped holds the parts that reach the agent only through their pipes.
+	Stripped map[int]bool
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
@@ -46,6 +48,9 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 // mayMove says whether the run may go to the background: never before the line's last journal command has finished.
 func (tracker *Tracker) mayMove(started time.Time) bool {
 	for position := 1; position <= tracker.LastJournal; position++ {
+		if _, isPart := tracker.Stripped[position]; !isPart {
+			continue
+		}
 		if _, ended := tracker.Folder.Status(position); !ended {
 			return false
 		}
@@ -80,11 +85,27 @@ func (tracker *Tracker) Watch() {
 	}
 }
 
+// lastEnded is the last part with a status: every part before it has ended too or was skipped, so reading from the
+// end first keeps the parts in the order of the line while the shell races ahead.
+func (tracker *Tracker) lastEnded() int {
+	for position := tracker.Parts; position >= 1; position-- {
+		if _, ended := tracker.Folder.Status(position); ended {
+			return position
+		}
+	}
+	return 0
+}
+
 // reportParts reports each part that began and then each that ended, in the order of the line, so a part's start is
 // always told before its end.
 func (tracker *Tracker) reportParts(stdout io.Writer) {
+	last := tracker.lastEnded()
 	for position := 1; position <= tracker.Parts; position++ {
 		code, ended := tracker.Folder.Status(position)
+		ended = ended && position <= last
+		if tracker.Folder.Started(position) {
+			tracker.Folder.CutOutput(position, tracker.Options.MostOutputBytes)
+		}
 		if (ended || tracker.Folder.Started(position)) && !tracker.Reported[position] {
 			tracker.partStarted(position)
 		}
@@ -115,7 +136,15 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	tracker.partStarted(position)
 	tracker.Reported[position] = true
 	uncapped := tracker.Options.LimitSeconds == 0
-	io.WriteString(stdout, Shown(tracker.Folder.Output(position), tracker.Options.Process, tracker.Options.CapCharacters, uncapped))
+	mostBytes := mostReadBytes
+	if uncapped {
+		mostBytes = tracker.Options.MostOutputBytes
+	}
+	text, size := tracker.Folder.Result(position, mostBytes)
+	io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, uncapped))
+	if text == "" && tracker.Folder.CommandFailed(position) {
+		fmt.Fprintf(stdout, "the command failed and its pipes printed nothing: journal output read %d --summary\n", tracker.Options.Process)
+	}
 	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
 }
 
@@ -170,11 +199,14 @@ func (tracker *Tracker) orphan(stdout io.Writer) int {
 
 // move leaves the shell running, tells the agent where its output will be and goes on in the background.
 func (tracker *Tracker) move(stdout io.Writer) int {
+	tracker.reportParts(stdout)
 	process := strconv.Itoa(tracker.Options.Process)
 	for position := 1; position <= tracker.Parts; position++ {
-		if _, ended := tracker.Folder.Status(position); !ended && !tracker.Reported[position] {
-			if text, started := tracker.startedOutput(position); started {
-				io.WriteString(stdout, Shown(text, tracker.Options.Process, tracker.Options.CapCharacters, false))
+		stripped, isPart := tracker.Stripped[position]
+		if _, ended := tracker.Folder.Status(position); isPart && !ended && !tracker.Reported[position] {
+			if _, started := tracker.startedOutput(position); started && !stripped {
+				text, size := tracker.Folder.Result(position, mostReadBytes)
+				io.WriteString(stdout, Shown(text, size, tracker.Options.Process, tracker.Options.CapCharacters, false))
 			}
 			break
 		}

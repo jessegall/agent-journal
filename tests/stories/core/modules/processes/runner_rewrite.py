@@ -32,10 +32,10 @@ def test_a_journal_only_line_has_limit_0(new_story):
     assert dict(story.hook("s-1", JOURNAL).updated_input) == {"command": runner_line(story, 1, "journal task show 1", limit=0)}
 
 
-def test_a_test_run_and_a_build_go_to_the_background_at_once(new_story):
+def test_a_test_run_and_a_build_run_in_line_and_are_named_for_stripping(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    assert dict(story.hook("s-1", TESTS).updated_input) == {"command": runner_line(story, 1, "pytest -q", background=True)}
-    assert dict(story.hook("s-1", BUILD).updated_input) == {"command": runner_line(story, 2, "make build", background=True)}
+    assert dict(story.hook("s-1", TESTS).updated_input) == {"command": runner_line(story, 1, "pytest -q", stripped=tuple(["pytest -q"]))}
+    assert dict(story.hook("s-1", BUILD).updated_input) == {"command": runner_line(story, 2, "make build", stripped=tuple(["make build"]))}
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
@@ -130,7 +130,7 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, background=True)}
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, stripped=tuple(["pytest -q"]))}
 
 
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):
