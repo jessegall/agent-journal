@@ -1,12 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
-import {WindowRoom, usePoll, useReadLine} from "@journal/window-kit";
+import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
 
 const {value: requests, failure, load} = useReadLine(() => "developer hook-requests");
 const rows = computed(() => requests.value?.rows ?? []);
 const openedNumber = ref(0);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
-const shown = (value) => JSON.stringify(value, null, 2);
+const shown = (value) => highlight(JSON.stringify(value, null, 2), "json").join("\n");
 const isRefused = (row) => row.outcome === "refused";
 const isSlow = (row) => !isRefused(row) && row.duration_ms >= 500;
 const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
@@ -55,9 +55,9 @@ usePoll(load, () => true);
                             <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.outcome }} · {{ durationOf(opened) }}</span>
                         </div>
                         <h3 class="heading">Headers</h3>
-                        <pre data-hook-request-headers>{{ shown(opened.headers) }}</pre>
+                        <pre data-hook-request-headers v-html="shown(opened.headers)" />
                         <h3 class="heading">Body</h3>
-                        <pre data-hook-request-body>{{ shown(opened.body) }}</pre>
+                        <pre data-hook-request-body v-html="shown(opened.body)" />
                     </div>
                 </template>
                 <template v-else>

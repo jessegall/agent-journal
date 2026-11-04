@@ -18,7 +18,7 @@ const LANGUAGES = {
     sh: {keywords: SH_KEYWORDS, line: "#", quotes: ['"', "'"]},
     css: {keywords: "", block: ["/*", "*/"], quotes: ['"', "'"], property: true},
     html: {keywords: "", block: ["<!--", "-->"], quotes: ['"', "'"], tags: true},
-    json: {keywords: "true false null", quotes: ['"']},
+    json: {keywords: "true false null", quotes: ['"'], keyed: true},
     yaml: {keywords: "true false null yes no", line: "#", quotes: ['"', "'"]},
     sql: {keywords: SQL_KEYWORDS, line: "--", block: ["/*", "*/"], quotes: ["'"], lower: true},
     md: {keywords: "", quotes: [], markdown: true},
@@ -85,7 +85,7 @@ function tokenize(text, lang) {
         if (spec.quotes.includes(c)) {
             let j = i + 1;
             while (j < text.length && text[j] !== c && (c === "`" || text[j] !== "\n")) j += text[j] === "\\" ? 2 : 1;
-            push("string", text.slice(i, j + 1));
+            push(spec.keyed && /^\s*:/.test(text.slice(j + 1)) ? "property" : "string", text.slice(i, j + 1));
             i = j + 1;
             continue;
         }

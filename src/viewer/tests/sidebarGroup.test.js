@@ -9,7 +9,7 @@ const windows = [
     {name: "documents.documents", module: "journal.core.documents", title: "Documents"},
 ];
 
-test("the pages of every module stand in the sidebar under Environment, and none is a heading of its own", () => {
+test("the pages of every module stand in one list in the sidebar, and none is a heading of its own", () => {
     const element = document.createElement("div");
     const app = createApp({render: () => h(SidebarPages, {windows, environments: [], current: "main"})});
     app.mount(element);
@@ -17,7 +17,7 @@ test("the pages of every module stand in the sidebar under Environment, and none
     const items = [...element.querySelectorAll("[data-sidebar-window]")].map((item) => item.dataset.sidebarWindow);
     app.unmount();
     expect(groups.filter((name) => ["Tasks", "Plans", "Documents"].includes(name))).toEqual([]);
-    expect(groups).toContain("Environment");
+    expect(groups).not.toContain("Environment");
     expect(items).toEqual(["tasks.tasks", "plans.plans", "documents.documents"]);
 });
 

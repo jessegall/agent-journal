@@ -19,7 +19,10 @@ test("opening a hook request shows its headers and its body", async () => {
     element.querySelector("[data-hook-request='7']").click();
     await settle();
     expect(element.querySelector("[data-hook-request-headers]").textContent).toContain("firing-1");
-    expect(element.querySelector("[data-hook-request-body]").textContent).toContain('"event": "stop"');
+    const body = element.querySelector("[data-hook-request-body]");
+    expect(body.textContent).toContain('"event": "stop"');
+    expect(body.querySelector(".tok-property").textContent).toBe('"event"');
+    expect(body.querySelector(".tok-string").textContent).toBe('"stop"');
 });
 
 test("slow requests are amber and refused requests stay red even when slow", async () => {
