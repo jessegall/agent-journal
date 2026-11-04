@@ -68,3 +68,42 @@ def test_a_plugin_s_readers_arrive_on_install_for_its_aliases_and_go_with_the_pl
     story.expect_text("alias show 1", f"reader_id: {reader['id']}", actor=story.user)
     story.run("plugin remove sample", actor=story.user)
     story.expect_absent("reader list", "sample-reader", actor=story.user)
+
+
+def upgraded_with(story, aliases):
+    story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
+    manifest = json.loads((story.plugin_folder / "journal-plugin.json").read_text())
+    (story.plugin_folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "2.0.0", "aliases": aliases}))
+    story.expect_text("plugin upgrade sample --yes", "2.0.0", actor=story.user)
+
+
+def test_an_upgrade_adds_an_alias_the_new_version_declares(new_story):
+    story = plugin_with_aliases(new_story)
+    upgraded_with(story, [*ALIASES, {"name": "extra", "line": "bin/greet", "description": "Added in 2"}])
+    story.expect_text("alias show 3", "name: extra", "description: Added in 2", actor=story.user)
+
+
+def test_an_upgrade_updates_an_alias_whose_declaration_changed(new_story):
+    story = plugin_with_aliases(new_story)
+    upgraded_with(story, [{**ALIASES[0], "category": "build", "description": "Judge, version 2"}, ALIASES[1]])
+    story.expect_text("alias show 1", "name: sample-judge", "category: build", "description: Judge, version 2", actor=story.user)
+
+
+def test_an_upgrade_gives_an_alias_the_category_a_new_version_declares(new_story):
+    story = plugin_with_aliases(new_story)
+    upgraded_with(story, [ALIASES[0], {**ALIASES[1], "category": "check"}])
+    story.expect_text("alias show 2", "name: greet", "category: check", actor=story.user)
+
+
+def test_an_upgrade_removes_an_alias_the_new_version_no_longer_declares(new_story):
+    story = plugin_with_aliases(new_story)
+    upgraded_with(story, [ALIASES[0]])
+    story.expect_no_text("alias list", "greet", actor=story.user)
+    story.expect_text("alias list", "sample-judge", actor=story.user)
+
+
+def test_an_upgrade_leaves_alone_a_name_the_project_holds(new_story):
+    story = plugin_with_aliases(new_story, [ALIASES[0]])
+    story.run('alias add extra "echo mine"', actor=story.user)
+    upgraded_with(story, [ALIASES[0], {"name": "extra", "line": "bin/greet"}])
+    story.expect_success("extra", "mine", actor=story.user)
