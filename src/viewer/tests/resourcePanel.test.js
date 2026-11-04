@@ -1,5 +1,5 @@
 import {createApp, h, nextTick} from "vue";
-import {afterEach, expect, test} from "vitest";
+import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
 import {cliOf, movesOf} from "../src/domain/resourceKinds.js";
 import {pageOf} from "../src/sync/paging.js";
@@ -59,6 +59,19 @@ test("a plan opens with its document, its phases and its tasks, and a task opens
     shown().querySelector("[data-resource-back]").click();
     await later();
     expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
+});
+
+test("the inspector shows a skeleton while it opens and its content once it is fully open", async () => {
+    location.hash = "#?open=plans:5";
+    await later();
+    const element = document.createElement("div");
+    document.body.append(element);
+    app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN)})});
+    app.mount(element);
+    expect(shown().querySelector("[data-resource-opening]")).not.toBeNull();
+    expect(shown().classList.contains("opening")).toBe(true);
+    await vi.waitFor(() => expect(shown().querySelector("[data-resource-opening]")).toBeNull());
+    expect(shown().classList.contains("opening")).toBe(false);
 });
 
 test("a plan shows how far it has come, the phase it is in and which phases are finished", async () => {

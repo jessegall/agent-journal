@@ -23,6 +23,7 @@ const opened = computed(() => route.value.open);
 const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
 const failure = ref("");
+const fullyOpen = ref(false);
 let reading = 0;
 
 const LONG_KINDS = new Set(["plan"]);
@@ -59,14 +60,17 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <Teleport to="body">
-        <Transition name="side" appear>
+        <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
             <div v-if="opened" :class="['veil', {fades: kind === 'test-queue'}]" @click.self="close">
                 <aside
-                    :class="['panel', {wide, task: kind === 'task', document: isDocument, queue: kind === 'test-queue'}]"
+                    :class="['panel', {wide, opening: !fullyOpen, task: kind === 'task', document: isDocument, queue: kind === 'test-queue'}]"
                     role="dialog"
                     :aria-label="title"
                     data-resource-panel
                 >
+                    <template v-if="!fullyOpen">
+                        <div class="panel-opening" data-resource-opening><Skeleton /></div>
+                    </template>
                     <SwitchCase :value="kind">
                         <template #agent-skill>
                             <header class="head">
@@ -195,6 +199,22 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     border-left: 1px solid var(--border);
     background: var(--bg);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+}
+
+.panel-opening {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    padding: 20px 24px;
+}
+
+.panel > :not(.panel-opening) {
+    transition: opacity 0.18s ease;
+}
+
+.panel.opening > :not(.panel-opening) {
+    opacity: 0;
+    transition: none;
 }
 
 .panel.queue {
