@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.module import Module
+from core.base.module.module_finder import ModuleFinder
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
@@ -16,7 +17,11 @@ from core.base.module.window_extensions import WindowExtensions
 class WindowCheck:
     """Checks the windows the modules declare before a sync writes anything: each name is used once and
     starts with its module's name, a file it loads is in its module's web/dist, it reads only read
-    subcommands and runs only commands, and it follows only events of models it reads."""
+    subcommands and runs only commands, and it follows only events of models it reads. A module the journal
+    does not ship adds no commands to a window the journal ships, which asks for no permission."""
+
+    def __init__(self, finder: ModuleFinder) -> None:
+        self.finder = finder
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
         names = [window.name for module in modules for window in module.windows]
@@ -25,6 +30,7 @@ class WindowCheck:
         problems = list(NameGroups.duplicates([("windows", names)]))
         extensions = WindowExtensions(modules)
         owners = {window.name: module.name for module in modules for window in module.windows}
+        shipped = {module.name for module in self.finder.default_modules()}
         for module in modules:
             for extension in module.window_extensions:
                 if extension.window not in owners:
@@ -33,6 +39,8 @@ class WindowCheck:
                 owner = owners[extension.window]
                 if owner != module.name and owner not in module.dependencies:
                     problems.append(f"module {module.name} extends window {extension.window} without depending on {owner}")
+                if owner in shipped and module.name not in shipped:
+                    problems += [f"{module.name} adds {line} to {extension.window}, which the journal ships" for line in extension.runs]
             for window in map(extensions.extend, module.windows):
                 problems += window.problems(module.name, module.web_folder(), provided)
         return tuple(problems)

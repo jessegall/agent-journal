@@ -3,6 +3,7 @@ from core.base.module.module import Module
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import tabs
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.toggle_option import ToggleOption
@@ -44,6 +45,17 @@ class UnknownReadModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("reads.board", reads=["task fly"])]
+
+
+class ChatCommandExtensionModule(Module):
+    name = "extender"
+    requires_core = ">=5,<6"
+    dependencies = [*DEPENDENCIES, "journal.core.messages"]
+    window_extensions = [WindowExtension("messages.chat", runs=["task start"])]
+
+
+class ChatReadExtensionModule(ChatCommandExtensionModule):
+    window_extensions = [WindowExtension("messages.chat", reads=["task list"])]
 
 
 class UnknownRunModule(Module):

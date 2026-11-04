@@ -5,6 +5,10 @@ from core.base.module.move_check import MoveCheck
 from core.base.module.skill_check import SkillCheck
 from core.base.module.button_check import ButtonCheck
 from dataclasses import dataclass
+from pathlib import Path
+
+from core.base.journal_home import JournalHome
+from core.base.module.module_finder import ModuleFinder
 
 import pytest
 
@@ -124,5 +128,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck())
 

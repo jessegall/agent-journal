@@ -2,6 +2,14 @@ from tests.stories.core.base.viewer.support.window_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
+def test_a_module_the_journal_does_not_ship_cannot_add_commands_to_a_shipped_window(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ChatCommandExtensionModule", "extender adds task start to messages.chat, which the journal ships")
+
+
+def test_a_module_the_journal_does_not_ship_may_add_reads_to_a_shipped_window(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_success(f"{PATH}:ChatReadExtensionModule")
+
+
 def test_a_window_name_used_twice_is_refused_at_sync(new_story):
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:DuplicateWindowModule", "two windows named twice.board")
 
