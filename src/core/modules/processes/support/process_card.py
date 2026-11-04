@@ -1,8 +1,10 @@
 from core.modules.processes.support.process_card_json_record import ProcessCardJsonRecord
+from core.base.driver.command_category import CommandCategory
 from dataclasses import dataclass
 
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.run_title import RunTitle
 
 
@@ -13,9 +15,13 @@ class ProcessCard:
     process: Process
     output: Output | None
     temporary_title: str
+    reader: Reader | None
+    category: CommandCategory
 
     @property
     def title(self) -> str:
+        if self.category is CommandCategory.TEST_RUN:
+            return RunTitle.tests(self.process, self.output, self.reader)
         return self.output.title if self.output and RunTitle.is_descriptive(self.output.title, self.process.line) else self.temporary_title
 
     def json(self) -> ProcessCardJsonRecord:

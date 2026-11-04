@@ -8,6 +8,7 @@ from core.modules.processes.commands.skip_reader_request.skip_reader_request_han
 from core.modules.processes.commands.skip_reader_request.skip_reader_request_subcommand import SkipReaderRequestSubcommand
 from core.modules.processes.rules.reader_request_rule import ReaderRequestRule
 from core.modules.processes.migrations.m027_reader_request_chat_history import ReaderRequestChatHistoryMigration
+from core.modules.processes.migrations.m029_stock_test_titles import StockTestTitlesMigration
 from core.modules.processes.listeners.reader_failure_listener import ReaderFailureListener
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.migrations.m022_reader_requests import ReaderRequestsMigration
@@ -19,6 +20,7 @@ from core.base.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
+from core.modules.processes.ticks.run_folder_pruning import RunFolderPruning
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -59,6 +61,7 @@ from core.modules.processes.listeners.ended_process_watch_listener import EndedP
 from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
 from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
 from core.modules.processes.commands.prune_outputs.prune_outputs_handler import PruneOutputsHandler
+from core.modules.processes.commands.prune_run_folders.prune_run_folders_handler import PruneRunFoldersHandler
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.rules.leftover_run_rule import LeftoverRunRule
@@ -134,7 +137,7 @@ from core.modules.processes.migrations.m024_process_work import ProcessWorkMigra
 from core.modules.processes.migrations.m025_stock_reader_summaries import StockReaderSummariesMigration
 from core.modules.processes.migrations.m026_process_queue_indexes import ProcessQueueIndexesMigration
 from core.modules.processes.migrations.m028_process_part_visibility import ProcessPartVisibilityMigration
-from core.modules.processes.migrations.m029_process_owner import ProcessOwnerMigration
+from core.modules.processes.migrations.m030_process_owner import ProcessOwnerMigration
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
@@ -164,7 +167,8 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
     tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots"),
-                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery")]
+                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery"),
+                     TickHandler(TickInterval(seconds=15 * 60), RunFolderPruning(), "run folder pruning")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
@@ -174,8 +178,8 @@ class ProcessesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks"]
     models = [ModelDeclaration(ReaderRequest, query=ReaderRequestQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"])]
     views = [ProcessRow, ProcessQueueRow]
-    migrations = [ProcessOwnerMigration, ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration,ProcessWorkMigration,ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
-    handlers = [SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
+    migrations = [ProcessOwnerMigration, StockTestTitlesMigration, ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration,ProcessWorkMigration,ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration]
+    handlers = [PruneRunFoldersHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
     subcommands = [InspectRunQueueSubcommand, MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]

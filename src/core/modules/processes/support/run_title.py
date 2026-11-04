@@ -4,6 +4,11 @@ from re import Match
 
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.models.process import Process
+from core.modules.processes.models.output import Output
+from core.modules.processes.models.enums.process_state import ProcessState
+from core.base.driver.command_category import CommandCategory
+from core.modules.processes.support.reader_judge import ReaderJudge
 
 TOPIC = "{topic}"
 TEMPORARY_TITLES = {"rm": "Removing files", "python": "Running Python", "python3": "Running Python"}
@@ -11,6 +16,17 @@ TEMPORARY_TITLES = {"rm": "Removing files", "python": "Running Python", "python3
 
 class RunTitle:
     """Names a run from its reader or first program without showing its script as a title."""
+
+    @staticmethod
+    def tests(process: Process, output: Output | None, reader: Reader | None) -> str:
+        title = reader.title if reader and not ReaderJudge.fields_missing(reader, CommandCategory.TEST_RUN) else "tests"
+        title = title.removeprefix("Running ")
+        if process.is_queued:
+            return f"Queued: {title}"
+        if process.state in (ProcessState.RUNNING, ProcessState.BACKGROUND):
+            return f"Running {title}"
+        count = f"{output.test_count} " if output and output.test_count else ""
+        return f"Ran {count}{title}"
 
     @staticmethod
     def temporary(part: ProcessPart | None) -> str:

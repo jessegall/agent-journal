@@ -8,6 +8,7 @@ from core.base.timestamp import Timestamp
 from core.modules.processes.support.colour_codes import ColourCodes
 
 FOLDER_NAME = "processes"
+READS_FILE = "reads"
 LINE_FILE = "line"
 PARTS_FILE = "parts"
 PID_FILE = "pid"
@@ -218,6 +219,19 @@ class OutputFolder:
 
     def remove(self, process_id: int) -> None:
         shutil.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
+
+    def read_mark(self, process_id: int, mark: str) -> str:
+        path = self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE
+        marks = dict(line.rsplit(" ", 1) for line in path.read_text().splitlines()) if path.is_file() else {}
+        return marks.get(mark, "")
+
+    def write_read_mark(self, process_id: int, mark: str, read_at: str) -> None:
+        with (self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE).open("a") as marks:
+            marks.write(f"{mark} {read_at}\n")
+
+    def process_ids(self) -> list[int]:
+        root = self.home.folder / FOLDER_NAME
+        return sorted(int(path.name) for path in root.iterdir() if path.name.isdigit()) if root.is_dir() else []
 
     def write_number(self, process_id: int, name: str, number: int) -> None:
         self.write(process_id, name, f"{number}")

@@ -7,7 +7,7 @@ const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row
 </script>
 
 <template>
-    <WindowRoom>
+    <WindowRoom padding="0">
         <div class="questions">
             <ListTools :tools="tools" />
             <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions" hint="A question the agent asks you shows here until you answer it." :searching="tools.filtering.value">

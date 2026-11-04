@@ -14,7 +14,7 @@ class ReaderCandidates:
     count: tuple[str, ...]
 
 
-TEST_CANDIDATES = ReaderCandidates("Running tests", (
+TEST_CANDIDATES = ReaderCandidates("Tests", (
     r"(?i)failed|error|passed|tests?:|tests? +[0-9]",
 ),
                                    (r"\[ *([0-9]+)%\]", r"([0-9]+)/([0-9]+)"),

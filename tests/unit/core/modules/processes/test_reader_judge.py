@@ -59,13 +59,22 @@ def test_no_tests_ran_is_not_a_sample_result_but_a_real_test_result_still_is():
     assert "--summary found nothing" in judge().misses(counted, CommandCategory.BUILD, "no tests ran in 1s\n")
 
 
+def test_a_run_that_crashed_before_any_test_says_nothing_about_a_reader():
+    counted = reader(count_pattern=r"collected ([0-9]+)", summary_pattern="result", lines_pattern="result")
+    crashes = ("Traceback (most recent call last):\n  File x\nNameError: name 'x' is not defined\n", "sh: vitest: command not found\n")
+    for text in crashes:
+        assert judge().misses(counted, CommandCategory.TEST_RUN, text) == ()
+        assert judge().misses(counted, CommandCategory.BUILD, text) == ()
+    assert judge().misses(counted, CommandCategory.TEST_RUN, "collected 2 items\nTraceback (most recent call last):\n") != ()
+
+
 def test_a_test_reader_requires_progress_and_a_build_reader_requires_its_other_fields():
-    assert judge().fields_missing(reader(), CommandCategory.TEST_RUN) == ("--count", "--progress or --step with --count")
+    assert judge().fields_missing(reader(title="Go tests"), CommandCategory.TEST_RUN) == ("--count", "--progress or --step with --count")
     assert judge().fields_missing(reader(title="", lines_pattern="", summary_pattern=""), CommandCategory.BUILD) == ("--title", "--lines or --script", "--summary")
 
 
 def test_a_test_reader_can_use_steps_and_count_for_progress():
-    counted = reader(count_pattern=r"collected ([0-9]+)", step_pattern="[.FE]")
+    counted = reader(title="Go tests", count_pattern=r"collected ([0-9]+)", step_pattern="[.FE]")
     assert judge().fields_missing(counted, CommandCategory.TEST_RUN) == ()
     assert "--count found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")
     assert "--progress found nothing" not in judge().misses(counted, CommandCategory.TEST_RUN, "collected 4\ndone 2/4\n.F\n")

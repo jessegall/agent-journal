@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {Btn, peekRef, RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
@@ -61,21 +61,26 @@ const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const heldBack = computed(() => shown.value.length - visible.value.length);
 const toggle = (row) => (openId.value = openId.value === row.id ? null : row.id);
 watch(words, (typed) => typed.trim() && (openId.value = null));
+const closeOnEscape = (event) => { if (event.key === "Escape" && openId.value) openId.value = null; };
+window.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
     <div :class="['agents', {focused: openRow}]">
-            <SearchBar v-model="words" data-agents-search>
+        <template v-if="!openRow"><SearchBar v-model="words" data-agents-search>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
                 <Btn small bordered title="Open the process queue" data-agents-queue @click="peekRef('test_queue:0')">Process queue <span class="agents-queue-count" data-agents-queue-count>{{ waiting }}</span></Btn>
-            </SearchBar>
-        <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        </SearchBar></template>
+        <Transition name="agents-view" mode="out-in">
+        <RowList :key="openRow ? 'open' : 'list'" :rows="visible" :failure="failure" :loaded="loaded" :more="more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
         </RowList>
+        </Transition>
         <template v-if="openRow && heldBack">
             <button type="button" class="agents-held" data-agents-held @click="openId = null">{{ heldBack }} more</button>
         </template>
@@ -87,7 +92,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: 400px;
+    min-width: 0;
     min-height: 0;
 }
 
@@ -127,7 +132,7 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
     padding: 7px 12px;
     border: 0;
     border-top: 1px solid var(--border);
-    background: none;
+    background: var(--side);
     color: var(--text-3);
     font: inherit;
     font-size: 12px;
@@ -145,5 +150,10 @@ watch(words, (typed) => typed.trim() && (openId.value = null));
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
 }
+
+.agents-view-enter-active { transition: opacity 160ms ease; }
+.agents-view-leave-active { transition: opacity 140ms ease; }
+.agents-view-enter-from, .agents-view-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .agents-view-enter-active, .agents-view-leave-active { transition: none; } }
 
 </style>

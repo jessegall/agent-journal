@@ -522,6 +522,7 @@ async function runCommand(pin) {
     height: 100%;
     padding: 0 12px 8px;
     min-height: 0;
+    container-type: size;
 }
 
 .history {

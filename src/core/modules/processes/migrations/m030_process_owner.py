@@ -4,5 +4,5 @@ from core.base.database.migration import Migration
 class ProcessOwnerMigration(Migration):
     """Records the agent responsible for a run started by another agent."""
 
-    number = 29
+    number = 30
     statements = ["ALTER TABLE processes ADD COLUMN owner_agent_id INTEGER REFERENCES agents(id)"]

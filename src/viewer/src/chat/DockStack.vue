@@ -84,7 +84,7 @@ function release(item) {
         <template v-if="shared">
             <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">
                 <template #head>
-                    <button type="button" class="dock-runs-toggle" aria-expanded="false" title="Show each run as its own card" data-dock-runs-open @click="opened = true"><MarkIcon name="runs" /> {{ runs.length }} runs <FoldSign /></button>
+                    <button type="button" class="dock-runs-toggle" aria-expanded="false" title="Show each run on a card" data-dock-runs-open @click="opened = true"><MarkIcon name="runs" /> {{ runs.length }} runs <FoldSign /></button>
                     <span class="dock-runs-chips">
                         <template v-for="run in runs" :key="run.id">
                             <RunChip :item="run" @click="chooseRun(run)" />

@@ -19,16 +19,16 @@ class StockReader:
 
 
 STOCK_READERS = (
-    StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Running tests",
+    StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Python tests",
                   r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$",
                   r"\[ *([0-9]+)%\]", r"^(=+ )?[0-9]+ passed", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:([0-9]+ failed), )?([0-9]+ passed)",
                   count=r"^collected ([0-9]+) items?|^([0-9]+) tests? collected|\[([0-9]+) items?\]", count_command="{part} --collect-only -q"),
-    StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Running tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", "",
+    StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Vitest tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", r"^\s*Test Files\s+(\d+) passed.*\((\d+)\)",
                   r"^\s*(Test Files|Tests)\s+[0-9]", r"^\s*FAIL |^\s*Tests\s+[0-9]+ failed", r"^\s*Tests\s+(?:([0-9]+ failed)\s*\|\s*)?([0-9]+ passed)",
                   count=r"^\S+\.(?:test|spec)\.\w+ > ", count_command='$(printf %s "{part}" | sed "s/ run / list /")'),
-    StockReader("dotnet-test", "dotnet test*", "Running tests", r"Failed |error |Passed!|Failed!|Total tests", "", r"Passed!|Total tests", r"Failed |Failed!|error ",
+    StockReader("dotnet-test", "dotnet test*", ".NET tests", r"Failed |error |Passed!|Failed!|Total tests", "", r"Passed!|Total tests", r"Failed |Failed!|error ",
                   r"(Failed: +[0-9]+, Passed: +[0-9]+)"),
-    StockReader("phpunit", "*phpunit*,*pest*,artisan test*", "Running tests", r"FAILURES!|ERRORS!|Tests: |FAIL |Failed asserting|OK \(", r"\( *([0-9]+)%\)",
+    StockReader("phpunit", "*phpunit*,*pest*,artisan test*", "PHP tests", r"FAILURES!|ERRORS!|Tests: |FAIL |Failed asserting|OK \(", r"\( *([0-9]+)%\)",
                   r"OK \(|Tests: ", r"FAILURES!|ERRORS!|FAIL |Failed asserting|Tests: ",
                   r"(OK \([0-9]+ tests?|Tests: +[0-9]+)"),
 )

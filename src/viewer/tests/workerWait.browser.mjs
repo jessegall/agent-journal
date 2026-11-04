@@ -12,7 +12,7 @@ try {
     const card = page.locator(`[data-agent-open="${worker}"]`);
     await card.locator("[data-agent-waiting]").waitFor();
     await page.locator(".window-cover").waitFor({state: "detached"});
-    assert.equal(await card.locator("[data-agent-waiting]").textContent(), `Waiting: ${reason}`);
+    assert.equal((await card.locator("[data-agent-waiting]").textContent()).trim(), `Waiting: ${reason}`);
     assert.equal(await card.locator(".agent-dot").getAttribute("data-state"), "waiting");
     await card.screenshot({path: `/tmp/journal-worker-wait-461-${reason.split(" ").at(-1)}.png`});
 } finally {

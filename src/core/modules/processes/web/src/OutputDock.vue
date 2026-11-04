@@ -147,7 +147,8 @@ usePoll(load, isRunning, () => (opened.value ? OPENED_MILLISECONDS : CLOSED_MILL
 
 .output-dock-terminal {
     overflow: auto;
-    max-height: 280px;
+    /* the chat's foot takes at most 40% of the chat: the card fits it, its head and margins left out */
+    max-height: min(280px, calc(40cqh - 72px));
     margin: 0 12px 10px;
     padding: 8px 10px;
     border: 1px solid var(--border);

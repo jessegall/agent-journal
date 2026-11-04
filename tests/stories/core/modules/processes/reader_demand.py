@@ -25,7 +25,7 @@ def test_an_alias_counts_as_the_line_it_names_and_its_reader_reads_it(new_story)
     process = story.container.get(ProcessQuery).find(1)
     end_run(story, process, "runner noise\n Tests  12 passed (12)\n")
     story.expect_text("output read 1 --summary", "summary: 12 passed", actor=story.agent)
-    story.expect_absent("output read 1 --summary", "runner noise", actor=story.agent)
+    story.expect_absent("output read 1 --summary --again", "runner noise", actor=story.agent)
     story.expect_text("process-part show 1", "command: npx vitest run cart", actor=story.agent)
 
 
@@ -37,7 +37,7 @@ def test_an_alias_that_names_its_own_reader_reads_with_that_reader(new_story):
     process = story.container.get(ProcessQuery).find(1)
     end_run(story, process, "viewer result: done\n Tests  12 passed (12)\n")
     story.expect_text("output read 1 --summary", "viewer result: done", actor=story.agent)
-    story.expect_absent("output read 1 --summary", "Tests  12 passed", actor=story.agent)
+    story.expect_absent("output read 1 --summary --again", "Tests  12 passed", actor=story.agent)
 
 
 def test_a_reader_that_finds_no_summary_on_a_kept_output_is_refused_naming_the_output(new_story):
@@ -163,3 +163,11 @@ def test_a_quiet_run_and_an_empty_output_do_not_make_the_stock_test_reader_poor(
     reader = story.container.get(ReaderQuery).filter(name="pytest").page(1, 1).rows[0]
     assert judge.misses(reader, CommandCategory.TEST_RUN, "") == ()
     assert judge.misses(reader, CommandCategory.TEST_RUN, "...  [100%]\n3 passed, 11 deselected in 1.15s\n") == ()
+
+
+def test_a_test_reader_title_cannot_contain_a_path_or_flag(new_story):
+    story = new_story(fixture=BuilderStarted)
+    reader_id = story.new_row_id('reader add titled --commands "go*test*" --title "Go tests ./..." --lines "FAIL" --summary "FAIL" --count "total ([0-9]+)" --progress "([0-9]+)%"', actor=story.agent)
+    reader = story.container.get(ReaderQuery).find(reader_id)
+    missing = story.container.get(ReaderJudge).fields_missing(reader, CommandCategory.TEST_RUN)
+    assert any("without paths, flags or command arguments" in reason for reason in missing)

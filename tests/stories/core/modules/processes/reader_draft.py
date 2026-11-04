@@ -33,7 +33,7 @@ def test_a_draft_from_a_pytest_output_finds_each_field_and_saves(draft_sample):
 
 def test_a_draft_offers_an_existing_reader_that_already_passes(draft_sample):
     story, request = draft_sample
-    story.run('reader add project-tests --commands "legacy-test*" --title "Running project tests" --lines "passed" --summary "([0-9]+) passed" --count "collected ([0-9]+)" --progress "\\[([0-9]+)%\\]"', actor=story.agent)
+    story.run('reader add project-tests --commands "legacy-test*" --title "Project tests" --lines "passed" --summary "([0-9]+) passed" --count "collected ([0-9]+)" --progress "\\[([0-9]+)%\\]"', actor=story.agent)
     story.expect_text(f"reader draft {request.id}", "journal reader add project-tests", "legacy-test*,custom-test run", actor=story.agent)
 
 

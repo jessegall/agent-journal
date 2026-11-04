@@ -1,7 +1,10 @@
+import re
+
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.driver.project_paths import ProjectPaths
+from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
@@ -13,8 +16,10 @@ from core.modules.processes.models.enums.process_mark_variant import ProcessMark
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
+from core.modules.processes.support.run_title import RunTitle
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
@@ -47,11 +52,18 @@ class ProcessEndMarkListener(CommitListener):
         if part is None:
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
+        reader = self.queries.query(Reader).find(output.reader_id) if output and output.reader_id else None
         variant = ProcessMarkVariant.QUEUED if process.is_queued else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
         text = self.text(process, output.title if output else "", ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS])
+        if part.category is CommandCategory.TEST_RUN:
+            text = RunTitle.tests(process, output, reader)
+        outcome = OUTCOMES.get(process.state, MarkOutcome.RUNNING)
+        if process.state in ENDED and output and reader:
+            if reader.failed_pattern and re.search(reader.failed_pattern, self.folder.reader_text(process.id, output.reader_position), re.MULTILINE):
+                outcome = MarkOutcome.FAILED
         self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
-                              row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
+                              row_model="process", row_id=process.id, outcome=outcome, figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
 
