@@ -20,7 +20,7 @@ class Database:
         self.nested: list[str] = []
         self.tally = PointTally()
         self.read_actor_id: int | None = None
-        self.transaction_changes = connection.total_changes
+        self.rollback_count = 0
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
@@ -51,18 +51,14 @@ class Database:
     def has_transaction(self) -> bool:
         return self.connection.in_transaction
 
-    @property
-    def has_uncommitted_changes(self) -> bool:
-        return self.has_transaction and self.connection.total_changes != self.transaction_changes
-
     @contextmanager
     def transaction(self):
         self.connection.execute("BEGIN IMMEDIATE")
-        self.transaction_changes = self.connection.total_changes
         try:
             yield
             self.connection.execute("COMMIT")
         except BaseException:
+            self.rollback_count += 1
             if self.connection.in_transaction:
                 self.connection.execute("ROLLBACK")
             raise
@@ -78,6 +74,7 @@ class Database:
             yield
             self.connection.execute(f"RELEASE {name}")
         except BaseException:
+            self.rollback_count += 1
             if self.connection.in_transaction:
                 self.connection.execute(f"ROLLBACK TO {name}")
                 self.connection.execute(f"RELEASE {name}")

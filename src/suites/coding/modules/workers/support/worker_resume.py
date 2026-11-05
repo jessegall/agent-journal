@@ -41,12 +41,16 @@ class WorkerResume:
             return
         environment = self.queries.query(Environment).find(worktree.environment_id)
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
-        if answer is LaunchAnswer.STARTED and job.state is AgentLineState.WAITING:
-            self.bus.run(EnterAgentLine(job.id), actor, environment_id=worktree.environment_id)
+        if answer is not LaunchAnswer.STARTED:
+            return
+        job = self.queries.query(AgentLine).find(job.id)
+        if job.state is not AgentLineState.WAITING:
+            return
+        self.bus.run(EnterAgentLine(job.id), actor, environment_id=worktree.environment_id)
 
     def is_job_delivering(self, worker: Agent, ended_at: Timestamp) -> bool:
-        start = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
-        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", start)).exists()
+        delivery_cutoff_at = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
+        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 
     def lost_job(self, worker: Agent, ended_at: Timestamp) -> AgentLine | None:
         entered = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", ended_at.text)).newest().all_rows()

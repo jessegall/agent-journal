@@ -10,15 +10,17 @@ T = TypeVar("T")
 
 
 class KeptRows:
-    """Keeps each caller's committed table reads until the table changes."""
+    """Keeps each caller's table reads until the table changes or a transaction rolls back."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
         self.kept: dict[str, KeptValue] = {}
+        self.rollback_count = database.rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        if self.database.has_uncommitted_changes:
-            return loader()
+        if self.rollback_count != self.database.rollback_count:
+            self.kept.clear()
+            self.rollback_count = self.database.rollback_count
         cache_key = f"{name}:{table}:{condition}:{tuple(parameters)}"
         change_mark = self.database.change_mark()
         if cache_key in self.kept and self.kept[cache_key].change_mark == change_mark:

@@ -77,3 +77,19 @@ def test_distinct_named_loaders_of_one_table_keep_their_own_values(database):
     kept = KeptRows(database)
     assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])
     assert kept.read("notes", lambda: len(texts(database)), name="notes.count") == 1
+
+
+def test_a_write_transaction_reuses_reads_until_another_write(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def load_texts():
+        calls.append(True)
+        return texts(database)
+
+    with database.transaction():
+        database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
+        assert kept.read("notes", load_texts, name="notes.text") == tuple(["Temporary"])
+        table_reads = dict(database.tally.points().tables)
+        assert kept.read("notes", load_texts, name="notes.text") == tuple(["Temporary"])
+        assert len(calls) == 1 and database.tally.points().tables == table_reads
