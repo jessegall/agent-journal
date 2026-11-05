@@ -17,6 +17,7 @@ class ActorTable:
 
     def __init__(self, database: Database) -> None:
         self.database = database
+        self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
 
     def core_actor(self, timestamp: str) -> None:
@@ -27,7 +28,7 @@ class ActorTable:
         return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
 
     def module_actor_id(self, module: str) -> int:
-        return KeptRows(self.database).read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value],
+        return self.kept.read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value],
                                             name="base.module_actors")[module]
 
     def module_actor_ids(self) -> dict[str, int]:

@@ -8,12 +8,12 @@ from core.base.error_log import ErrorLog
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
+from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
@@ -28,8 +28,9 @@ class AgentHookRoute(HookRoute):
     other than a stop, gives back the stored answer of a hook sent twice, and lets through,
     without a record, a hook from an agent it does not know."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues) -> None:
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, sessions: AgentSessions) -> None:
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
+        self.sessions = sessions
 
     def answer(self, event: HookEvent) -> HookReply:
         self.durations.begin()
@@ -59,9 +60,9 @@ class AgentHookRoute(HookRoute):
         return subagent
 
     def session_agent(self, event: HookEvent) -> Agent | None:
-        ended = self.queries.query(Agent).filter(session=event.session).limited(1)
-        if ended:
-            return self.started(event, ended[0].role, ended[0].parent_id)
+        ended = self.sessions.find(event.session)
+        if ended is not None:
+            return self.started(event, ended.role, ended.parent_id)
         return None if event.launch else self.started(event, AgentRole.MAIN, None)
 
     def launch_name_agent(self, event: HookEvent) -> Agent | None:
@@ -69,15 +70,15 @@ class AgentHookRoute(HookRoute):
             return None
         agent = self.open_agent(event.launch)
         if agent is None:
-            if self.queries.query(Agent).filter(session=event.session).exists():
+            if self.sessions.find(event.session) is not None:
                 return None
             self.errors.noted(f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
             return None
         return self.bus.run(BindAgentSession(agent.id, event.session), Actor.core(), environment_id=agent.environment_id)
 
     def open_agent(self, session: str) -> Agent | None:
-        rows = self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).limited(1)
-        return rows[0] if rows else None
+        agent = self.sessions.find(session)
+        return agent if agent is not None and agent.ended_at is None else None
 
     def started(self, event: HookEvent, role: str, parent_id: int | None) -> Agent | None:
         session = event.subagent if event.subagent and role == AgentRole.SUBAGENT else event.session
