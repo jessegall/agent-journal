@@ -75,3 +75,36 @@ def test_a_stop_with_no_open_job_reports_nothing(new_story):
     story = new_story(fixture=EndedHelper)
     story.hook(the_helper(story).session, stop_with_report("Nothing to add."))
     story.expect_no_text(LINES.format(agent=story.agent.id), "Nothing to add.")
+
+
+def exited(story, code, terminal=""):
+    helper = the_helper(story)
+    path = story.home.terminal_file(helper.id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(terminal)
+    story.expect_success(f"agent exited {helper.id} {code}")
+    story.run_listeners()
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("code, terminal, reason", [(1, "API Error: 429 rate limit reached", "it hit a rate limit"), (1, "Please run /login", "its login expired"),
+                                                    (1, "unknown model gpt-9", "its model is not known"), (137, "", "its program exited with code 137")],
+                         ids=["rate limit", "login", "model", "killed"])
+def test_a_program_that_exits_with_no_report_tells_the_parent_why(new_story, helper_fixture, code, terminal, reason):
+    story = new_story(fixture=helper_fixture)
+    exited(story, code, terminal)
+    story.expect_text(LINES.format(agent=story.agent.id), reason)
+    story.expect_rows(the_helper(story).ended_at is not None, jobs_of(story, the_helper(story))[0].ended_at is not None)
+
+
+def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
+    story = reported(new_story, StartedHelper, "The cart adds tax twice.")
+    exited(story, 0)
+    story.expect_rows(the_helper(story).ended_at is not None)
+    story.expect_no_text(LINES.format(agent=story.agent.id), "without a report")
+
+
+def test_a_main_agents_exit_leaves_its_row(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f"agent exited {story.agent.id} 0")
+    story.expect_text(f"agent show {story.agent.id}", "role: main")

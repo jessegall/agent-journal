@@ -181,6 +181,11 @@ func (journal CommandJournal) TellMenuAnswer(agentID int, question, answer strin
 	_, _ = journal.Run("agent", "menu-answer", strconv.Itoa(agentID), question, answer)
 }
 
+// TellProgramExit tells the journal a program it asked for has exited; an older journal ends the row by its idle rule.
+func (journal CommandJournal) TellProgramExit(agentID, exitCode int) {
+	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode))
+}
+
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.
 func HookTrustLine(trust string) string {
 	switch trust {

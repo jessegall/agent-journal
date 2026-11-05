@@ -18,9 +18,9 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOC
 
 
 class WorkerStopRule(DriverRule):
-    """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues, or
-    while a reader is needed. Its run, tests or helper's report restart it; otherwise it must deliver or report
-    that it is stuck."""
+    """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues,
+    or while a reader is needed. Its run, tests or helper's report restart it; otherwise it delivers or says
+    it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP

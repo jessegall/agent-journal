@@ -10,6 +10,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {subagent: "Helper", helper: "Helper", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
+const ENDED_WITHOUT_REPORT = "It ended without a report";
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
@@ -21,6 +22,7 @@ const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
 const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role, props.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · "));
+const endedReason = computed(() => (props.row.ended_at && props.facts?.job_result?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_result : ""));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
@@ -113,6 +115,7 @@ readCommand();
                     <template v-if="isRunningHelper"><Btn kind="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
+                <p v-if="endedReason" class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p>
                 <template v-if="isReader">
                     <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
                         <template v-if="facts?.instruction">
@@ -154,6 +157,11 @@ readCommand();
 </template>
 
 <style scoped>
+.agent-ended-reason {
+    margin: 4px 0;
+    color: var(--danger, var(--text));
+}
+
 .agent-card {
     position: relative;
     display: flex;

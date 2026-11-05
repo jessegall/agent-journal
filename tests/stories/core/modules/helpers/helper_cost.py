@@ -41,3 +41,9 @@ def test_the_cost_window_drops_an_ended_helper_once_its_parent_ended(new_story):
     save_helper_status(story, 1.5)
     story.run(f"agent end {story.agent.id}", actor=story.user)
     story.expect_no_text("usage show --environment main", "$1.50", actor=story.user)
+
+
+def test_a_helpers_card_shows_why_it_ended(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f"agent exited {the_helper(story).id} 137")
+    story.expect_text(f"{CARDS.replace('--json', '--closed --json')}", "its program exited with code 137", actor=story.user)

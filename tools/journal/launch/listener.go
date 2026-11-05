@@ -60,6 +60,7 @@ type ProcessStarter struct {
 	Home          string
 	Inputs        *TerminalInputs
 	OnAnswer      func(agentID int, question, explanation string)
+	OnExit        func(agentID, exitCode int)
 	openLog       func(string) (*TerminalLog, error)
 	startTerminal func(*exec.Cmd, io.Reader, io.Writer, io.Writer) (func() error, error)
 }
@@ -108,13 +109,29 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	go watcher.Watch(stop)
 	go func() {
 		defer close(stop)
-		defer log.Close()
 		defer starter.Inputs.Close(start.AgentID)
-		if err := wait(); err != nil {
+		err := wait()
+		if err != nil {
 			_, _ = fmt.Fprintln(log, "agent program ended:", err)
+		}
+		_ = log.Close()
+		if starter.OnExit != nil {
+			starter.OnExit(start.AgentID, exitCode(err))
 		}
 	}()
 	return nil
+}
+
+// exitCode is the code a program ended with; a program killed by a signal has none of its own, so it counts as failed.
+func exitCode(err error) int {
+	var exited *exec.ExitError
+	if errors.As(err, &exited) {
+		return exited.ExitCode()
+	}
+	if err != nil {
+		return 1
+	}
+	return 0
 }
 
 // Listen takes requests on the launcher's socket: it starts each worker's program with its identity, and types a line
