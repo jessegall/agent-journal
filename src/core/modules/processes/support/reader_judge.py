@@ -8,6 +8,7 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_judgement import ReaderJudgement
@@ -18,6 +19,8 @@ WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
 TEST_ABSENCE_PATTERN = re.compile(r"^(?:=+ )?no tests ran\b", re.MULTILINE)
+CHECK_ABSENCE_PATTERN = re.compile(r"^Nothing to judge\s*$", re.IGNORECASE)
+REJECTED_COMMAND_PATTERN = re.compile(r"^usage:|^(?:error: )?(?:unknown option|unrecognized arguments|no such option|invalid choice)|has no subcommand", re.MULTILINE | re.IGNORECASE)
 CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |^error: could not find .*Cargo\.toml|^error: fatalError$|: command not found$|^\S+ command not found$", re.MULTILINE)
 CRASHING_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 FEW_LINES = 5
@@ -35,7 +38,13 @@ class ReaderJudge:
         self.run, self.folder, self.parts = run, folder, parts
 
     def judged(self, reader: Reader, category: CommandCategory) -> ReaderJudgement:
-        samples = tuple(part for part in self.samples(reader) if part.category is category)
+        return self.judged_samples(reader, category, self.samples(reader))
+
+    def judged_command(self, reader: Reader, category: CommandCategory, scope: ReaderSampleScope) -> ReaderJudgement:
+        return self.judged_samples(reader, category, self.command_samples(reader, scope))
+
+    def judged_samples(self, reader: Reader, category: CommandCategory, parts: Sequence[ProcessPart]) -> ReaderJudgement:
+        samples = tuple(part for part in parts if part.category is category)
         missing = self.fields_missing(reader, category)
         if category is CommandCategory.TEST_RUN and any(self.has_argument(reader.title, part.text) for part in samples):
             missing = (*missing, "--title must name the tests without command arguments, such as Go tests")
@@ -53,12 +62,23 @@ class ReaderJudge:
         return self.tested_samples(reader, self.samples(reader))
 
     def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderJudgement:
-        samples = tuple(part for part in islice(parts, SAMPLE_OUTPUTS)
-                        if part.exit_code in (None, 0) or self.run.summary(reader, self.output_text(part.process_id, part.position)))
-        missed = tuple(f"on output {part.process_id}: {', '.join(misses)}" for part in samples
-                       if (misses := self.misses(reader, part.category, self.output_text(part.process_id, part.position))))
-        output_id = samples[0].process_id if samples and not missed else None
-        return ReaderJudgement(missed=missed, output_id=output_id)
+        sampled_ids = []
+        missed = []
+        for part in islice(parts, SAMPLE_OUTPUTS):
+            text = self.output_text(part.process_id, part.position)
+            if self.is_rejected(part.exit_code, text):
+                continue
+            if part.exit_code not in (None, 0) and not self.run.summary(reader, text):
+                continue
+            sampled_ids.append(part.process_id)
+            if misses := self.misses(reader, part.category, text):
+                missed.append(f"on output {part.process_id}: {', '.join(misses)}")
+        output_id = sampled_ids[0] if sampled_ids and not missed else None
+        return ReaderJudgement(missed=tuple(missed), output_id=output_id)
+
+    @staticmethod
+    def is_rejected(exit_code: int | None, text: str) -> bool:
+        return exit_code == 2 and bool(REJECTED_COMMAND_PATTERN.search(text))
 
     @staticmethod
     def fields_missing(reader: Reader, category: CommandCategory) -> tuple[str, ...]:
@@ -89,6 +109,8 @@ class ReaderJudge:
         count = self.run.count(reader, text, 0)
         if category is CommandCategory.TEST_RUN and count == 0 and TEST_ABSENCE_PATTERN.search(text):
             return ()
+        if category is CommandCategory.CHECK and count == 0 and CHECK_ABSENCE_PATTERN.fullmatch(text.strip()):
+            return ()
         if category in CRASHING_CATEGORIES and count == 0 and CRASHED_START_PATTERN.search(text):
             return ()
         total = len(text.splitlines())
@@ -117,3 +139,7 @@ class ReaderJudge:
 
     def output_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))
+
+    def command_samples(self, reader: Reader, scope: ReaderSampleScope) -> tuple[ProcessPart, ...]:
+        parts = self.parts.kept_samples(["*"], scope.environment_id).matching(scope).page(1, SAMPLE_PARTS).rows
+        return tuple(part for part in parts if ReaderSelection.reads(reader, part))

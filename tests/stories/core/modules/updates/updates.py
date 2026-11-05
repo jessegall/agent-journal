@@ -1,4 +1,5 @@
 from datetime import timedelta
+import threading
 
 import json
 from urllib.error import HTTPError
@@ -11,6 +12,8 @@ from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, i
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_last, expect_answers
+from install.code_handover import CodeHandover
+from server.server_files import ServerFiles
 
 
 def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_in(new_story, tmp_path):
@@ -20,10 +23,41 @@ def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_i
 
 def test_install_puts_the_newest_release_into_the_journals_code_and_records_it(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    story.expect_success("update install", "the newest release is installed: a new server takes over when it has proved the code", actor=story.user)
+    story.expect_success("update install", "the newest release is installed", actor=story.user)
     story.expect_text("update check", "up to date: this journal runs the newest release", actor=story.agent)
     story.expect_text("release list", "1", actor=story.user)
     story.expect_rows(installed_marker(story) == "release one")
+
+
+def test_a_pending_handover_records_no_installed_release(new_story, tmp_path, monkeypatch):
+    story = released_story(new_story, tmp_path / "release")
+    ServerFiles(story.home).pid_file.write_text("running")
+    release = threading.Event()
+    finished = threading.Event()
+
+    def takeover_status(self, tag):
+        release.wait(5)
+        finished.set()
+        return 503
+
+    monkeypatch.setattr(CodeHandover, "takeover_status", takeover_status)
+    try:
+        story.expect_success("update install", actor=story.agent)
+        releases = json.loads(story.run("release list --json").output_text)["rows"]
+        story.expect_rows(releases == [])
+        expect_pending_update(story)
+    finally:
+        release.set()
+        finished.wait(5)
+        for thread in threading.enumerate():
+            if thread.name == "code handover":
+                thread.join(5)
+
+
+def expect_pending_update(story):
+    check = json.loads(story.run("update check --json").output_text)
+    assert check["is_current"] is False, check
+    assert "installation started" in check["line"], check
 
 
 def test_a_newer_release_is_found_by_its_checksum(new_story, tmp_path):

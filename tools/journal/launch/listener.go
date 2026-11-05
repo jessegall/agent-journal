@@ -3,6 +3,7 @@ package launch
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -56,14 +57,19 @@ type Starter interface {
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
 // terminal log under the journal's folder and read for its status file.
 type ProcessStarter struct {
-	Home     string
-	Inputs   *TerminalInputs
-	OnAnswer func(agentID int, question, explanation string)
+	Home          string
+	Inputs        *TerminalInputs
+	OnAnswer      func(agentID int, question, explanation string)
+	openLog       func(string) (*TerminalLog, error)
+	startTerminal func(*exec.Cmd, io.Reader, io.Writer, io.Writer) (func() error, error)
 }
 
 // Start starts the program and leaves it running.
 func (starter ProcessStarter) Start(start ProgramStart) error {
-	if starter.Inputs.IsOpen(start.AgentID) {
+	if len(start.Command) == 0 {
+		return errors.New("no agent program was given")
+	}
+	if !starter.Inputs.Reserve(start.AgentID) {
 		return ErrProgramRunning
 	}
 	command := exec.Command(start.Command[0], start.Command[1:]...)
@@ -72,9 +78,13 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	for name, value := range start.Variables {
 		command.Env = append(command.Env, name+"="+value)
 	}
-	starter.Inputs.Track(start.AgentID, command)
-	log, err := OpenTerminalLog(TerminalFile(starter.Home, start.AgentID))
+	openLog := starter.openLog
+	if openLog == nil {
+		openLog = OpenTerminalLog
+	}
+	log, err := openLog(TerminalFile(starter.Home, start.AgentID))
 	if err != nil {
+		starter.Inputs.Close(start.AgentID)
 		return err
 	}
 	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, explanation string) {
@@ -82,13 +92,27 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 			starter.OnAnswer(start.AgentID, question, explanation)
 		}
 	})
+	startTerminal := starter.startTerminal
+	if startTerminal == nil {
+		startTerminal = StartInTerminal
+	}
+	wait, err := startTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher, NewProgramStatus(starter.Home)))
+	if err != nil {
+		_, _ = fmt.Fprintln(log, "could not start agent program:", err)
+		_ = log.Close()
+		starter.Inputs.Close(start.AgentID)
+		return err
+	}
+	starter.Inputs.Track(start.AgentID, command)
 	stop := make(chan struct{})
 	go watcher.Watch(stop)
 	go func() {
 		defer close(stop)
 		defer log.Close()
 		defer starter.Inputs.Close(start.AgentID)
-		_ = RunInTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher, NewProgramStatus(starter.Home)))
+		if err := wait(); err != nil {
+			_, _ = fmt.Fprintln(log, "agent program ended:", err)
+		}
 	}()
 	return nil
 }

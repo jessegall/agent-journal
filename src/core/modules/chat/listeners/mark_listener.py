@@ -1,4 +1,5 @@
 from enum import StrEnum
+from dataclasses import replace
 from typing import ClassVar
 
 from core.base.actor_type import ActorType
@@ -10,13 +11,14 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.chat.models.chat_mark import ChatMark
+from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
+from core.modules.chat.queries.conditions.mark_round_key import MarkRoundKey
 from core.base.change.event_subscriber import E
 
 
 class MarkListener(CommitListener[E]):
-    """What every module's mark listener shares: showing one mark, as the module that declares its type,
-    for the event that caused it, keyed by the variant, the row and the event so a listener run twice for
-    one event leaves one mark, unless it names the key of a process mark it keeps up and ends."""
+    """Shows a module's marks after commit and keeps each explicit listener key in its current round."""
 
     module_name: ClassVar[str]
 
@@ -27,10 +29,23 @@ class MarkListener(CommitListener[E]):
         return logged.command == command and self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.AGENT
 
     def show(self, logged: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
-             row_model: str = "", row_id: int | None = None, detail: str = "", key: str = "", ended: bool = True, outcome: MarkOutcome = MarkOutcome.NONE) -> None:
+             row_model: str = "", row_id: int | None = None, detail: str = "", key: str | None = None, ended: bool = True, outcome: MarkOutcome = MarkOutcome.NONE) -> None:
         environment_id = environment_id or logged.environment_id
         if environment_id is None:
             return
-        key = key or f"{variant.value}:{logged.row_id}:{logged.id}"
-        self.bus.run(ShowMark(environment_id, type, variant, key, text, agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, outcome=outcome),
-                     self.actors.actor(self.module_name), cause_id=logged.id, environment_id=environment_id)
+        command: ShowMark | None = ShowMark(environment_id, type, variant, key if key is not None else f"{variant.value}:{logged.row_id}:{logged.id}", text,
+                                          agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, outcome=outcome)
+        if key is not None:
+            command = self.round_mark(logged, command)
+        if command is None:
+            return
+        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id, environment_id=environment_id)
+
+    def round_mark(self, logged: LoggedEvent, command: ShowMark) -> ShowMark | None:
+        keys = MarkRoundKey(command.key)
+        mark = self.queries.query(ChatMark).filter(environment_id=command.environment_id).matching(keys).newest().first()
+        if mark is None:
+            return command
+        if mark.state is ChatMarkState.ENDED and command.ended:
+            return None
+        return replace(command, key=keys.new_key(logged.id) if mark.state is ChatMarkState.ENDED else mark.key)

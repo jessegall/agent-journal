@@ -111,10 +111,10 @@ class ModuleSync:
             registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
             if registry_changed:
                 self.events.write_registry_sync(CORE_ACTOR_ID, registry.fingerprint, timestamp)
-            for module in modules:
-                for listener in module.listeners:
-                    if self.timing(listener) is ListenerTiming.COMMIT:
-                        self.cursors.start(listener.name)
+            listeners = [entry.name for entry in registry.listeners if entry.timing is ListenerTiming.COMMIT]
+            self.cursors.remove_absent(listeners)
+            for listener in listeners:
+                self.cursors.start(listener)
         self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules)))
 

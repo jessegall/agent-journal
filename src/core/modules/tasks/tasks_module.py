@@ -1,3 +1,8 @@
+from core.modules.tasks.models.task_block_renewal import TaskBlockRenewal
+from core.modules.tasks.models.task_block_review import TaskBlockReview
+from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRenewalsMigration
+from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
+from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
@@ -95,23 +100,23 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
     requires_core = ">=5,<6"
-    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead]
+    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
-              ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskClosedCursorIndexMigration]
+              ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration]
     subcommands = [AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand]
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
-    views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow]
-    listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
+    views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
+    listeners = [TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
-              runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_log.*"])]
+              runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_log.*", "task_block_renewal.*"])]
     seeders = [TasksSeeder]

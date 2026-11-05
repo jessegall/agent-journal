@@ -27,7 +27,8 @@ class ActorTable:
         return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
 
     def module_actor_id(self, module: str) -> int:
-        return KeptRows(self.database).read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value])[module]
+        return KeptRows(self.database).read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value],
+                                            name="base.module_actors")[module]
 
     def module_actor_ids(self) -> dict[str, int]:
         return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}

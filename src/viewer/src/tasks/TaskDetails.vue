@@ -3,6 +3,7 @@ import TimeAgo from "../../kit/TimeAgo.vue";
 import {updatedAt} from "../domain/row.js";
 import {statusIcon} from "../domain/taskStatus.js";
 import TaskFacts from "./TaskFacts.vue";
+import TaskBlockRenewals from "./TaskBlockRenewals.vue";
 import TaskSections from "./TaskSections.vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 
@@ -43,6 +44,7 @@ const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
         </template>
         <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="emit('priority', $event)" />
         <TaskSections :task="task" @select="emit('select', $event)" />
+        <TaskBlockRenewals :renewals="task.block_renewals" />
     </div>
 </template>
 

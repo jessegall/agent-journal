@@ -1,9 +1,13 @@
 import os
+import fnmatch
+import hashlib
+import json
 import shutil
 import socket
 import subprocess
 import sys
 import threading
+import tarfile
 import time
 from collections.abc import Generator
 from pathlib import Path
@@ -16,7 +20,7 @@ from core.base.refusal import Refusal
 from core.testing.expect_row import expect_row
 from install.code_handover import CodeHandover
 from install.install_journal import InstallJournal
-from install.unix_connection import UnixConnection
+from core.base.unix_connection import UnixConnection
 from server.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4
 from tests.stories.server.support.server_client import request_answer
@@ -28,7 +32,7 @@ START_LIMIT_SECONDS = 60
 
 
 def health_status(home: JournalHome) -> int:
-    connection = UnixConnection(str(ServerFiles(home).socket), START_LIMIT_SECONDS)
+    connection = UnixConnection(str(ServerFiles(home).socket), START_LIMIT_SECONDS, "journal")
     try:
         connection.request("GET", "/health")
         return connection.getresponse().status
@@ -49,11 +53,18 @@ def wait_started(home: JournalHome) -> None:
 
 
 @pytest.fixture
-def home(tmp_path: Path) -> Generator[JournalHome]:
+def home(tmp_path: Path, request) -> Generator[JournalHome]:
     project = tmp_path / "project"
     project.mkdir()
     assert InstallJournal(project, SOURCE).run() == 0
     journal = JournalHome(project / ".journal")
+    if getattr(request, "param", "") == "takeover-error":
+        (journal.folder / "src" / "server" / "successor_start.py").write_text(
+            "PROOF_LIMIT_SECONDS = 180\n"
+            "class SuccessorStart:\n"
+            "    def __init__(self, *args): pass\n"
+            "    def run(self, tag): raise OSError('takeover connection failed')\n"
+        )
     server = subprocess.Popen([sys.executable, str(journal.folder / "src" / "server" / "server.py"), "--home", str(journal.folder)], cwd=project,
                               env={**os.environ, "PYTHONPATH": str(journal.folder / "src")}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     wait_started(journal)
@@ -130,6 +141,97 @@ def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
                             {"argv": ["template", "list", "--target", "plan", "--purpose", "critique"], "variables": {}, "folder": str(tmp_path)})
     expect_row(listed, status=200, exit_code=0)
     expect_value_4("Folder review" in listed.text)
+
+
+def publish_release(home, folder, source):
+    folder.mkdir()
+    archive = folder / "agent-journal.tar.gz"
+
+    def included(info):
+        return None if any(fnmatch.fnmatch(part, pattern) for part in Path(info.name).parts for pattern in IGNORED) else info
+
+    with tarfile.open(archive, "w:gz") as target:
+        target.add(source, arcname="src", filter=included)
+    checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+    (folder / "checksums.txt").write_text(f"{checksum}  agent-journal.tar.gz\n")
+    answer = cli_answer(home, ["setting", "set", "journal.core.updates.release-address", folder.as_uri(), "--project"])
+    expect_row(answer, exit_code=0)
+
+
+def cli_answer(home, argv):
+    return request_answer(ServerFiles(home).socket, "POST", "/cli", {"argv": argv, "variables": {}, "folder": str(home.folder.parent)})
+
+
+def wait_install(home, step):
+    deadline = time.monotonic() + START_LIMIT_SECONDS
+    answer = None
+    while time.monotonic() < deadline:
+        answer = cli_answer(home, ["release-install", "list", "--json"])
+        if answer.exit_code != 0:
+            raise AssertionError(answer)
+        rows = json.loads(answer.text)["rows"]
+        if rows and rows[0]["step"] == step:
+            return rows[0]
+        time.sleep(0.02)
+    raise AssertionError(f"installation did not reach {step}: {answer}")
+
+
+def expect_update_available(home):
+    check = cli_answer(home, ["update", "check", "--json"])
+    expect_row(check, exit_code=0)
+    data = json.loads(check.text)
+    assert data["is_current"] is False, data
+    assert "retry" in data["line"].lower(), data
+    releases = cli_answer(home, ["release", "list", "--json"])
+    assert json.loads(releases.text)["rows"] == [], releases
+
+
+def test_a_refused_release_proof_keeps_the_old_server_and_the_update_available(home, tmp_path):
+    broken = tmp_path / "broken-release"
+    (broken / "server").mkdir(parents=True)
+    (broken / "server" / "server.py").write_text("raise SystemExit(1)\n")
+    publish_release(home, tmp_path / "published", broken)
+    running_pid = ServerFiles(home).pid_file.read_text()
+    expect_row(cli_answer(home, ["update", "install"]), exit_code=0)
+    wait_install(home, "failed")
+    expect_pid_file_server(home, running_pid)
+    expect_health_status(home, 200)
+    expect_update_available(home)
+
+
+@pytest.mark.parametrize("home", ["takeover-error"], indirect=True)
+def test_a_failed_release_takeover_keeps_the_old_server_and_allows_retry(home, tmp_path):
+    publish_release(home, tmp_path / "published", SOURCE)
+    running_pid = ServerFiles(home).pid_file.read_text()
+    expect_row(cli_answer(home, ["update", "install"]), exit_code=0)
+    wait_install(home, "failed")
+    expect_pid_file_server(home, running_pid)
+    expect_health_status(home, 200)
+    expect_update_available(home)
+    expect_row(cli_answer(home, ["update", "install"]), exit_code=0)
+
+
+def test_an_asynchronous_release_is_recorded_only_after_the_successor_takes_over(home, tmp_path):
+    publish_release(home, tmp_path / "published", SOURCE)
+    running_pid = ServerFiles(home).pid_file.read_text()
+    answer = cli_answer(home, ["update", "install"])
+    expect_row(answer, exit_code=0)
+    expect_install_started(answer)
+    wait_install(home, "finished")
+    expect_changed_pid_file_server(home, running_pid)
+    expect_health_status(home, 200)
+    expect_installed_release(home)
+
+
+def expect_install_started(answer):
+    assert "installation started" in answer.text, answer
+
+
+def expect_installed_release(home):
+    check = cli_answer(home, ["update", "check", "--json"])
+    assert json.loads(check.text)["is_current"] is True, check
+    releases = cli_answer(home, ["release", "list", "--json"])
+    assert len(json.loads(releases.text)["rows"]) == 1, releases
 
 
 def expect_health_status(home: JournalHome, expected) -> None:

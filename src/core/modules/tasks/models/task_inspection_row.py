@@ -18,5 +18,6 @@ class TaskInspectionRow(ViewModel):
     waits: str
     logs: str
     openers: str
+    block_renewals: str
     helper_id: int | None
     helper_name: str | None

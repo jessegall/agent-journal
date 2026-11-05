@@ -1,25 +1,49 @@
+from dataclasses import replace
+
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.block_until import BlockUntil
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.queries.task_query import TaskQuery
-from core.modules.tasks.support.task_nudges import UNOPENABLE_BLOCKS
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.task_block_review import TaskBlockReview
+from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
+from core.modules.tasks.support.task_nudges import BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, BLOCK_REVIEW_INTERVAL, USER_BLOCK_REVIEW
 
 SHOWN_TASK_COUNT = 10
 
 
 class UnopenableBlockRule(DriverRule):
-    """Blocked tasks with nothing that opens them are named to the main agent, at the interval of the line."""
+    """Periodically holds the main agent until it reviews tasks that need manual release."""
 
     name = "tasks.unopenable-blocks"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, tasks: TaskQuery) -> None:
-        self.tasks = tasks
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        blocked = self.tasks.unopenable_blocks(hook.environment_id).oldest().page(1, SHOWN_TASK_COUNT).rows
-        return RuleAnswer.with_nudges(UNOPENABLE_BLOCKS.nudge(tasks=", ".join(str(task.id) for task in blocked))) if blocked else RuleAnswer.allowed()
+        tasks = tuple(self.queries.query(TaskBlockReview).filter(agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).all_rows())
+        if not tasks:
+            return RuleAnswer.allowed()
+        blocks = self.queries.query(AgentBlock).filter(agent_id=hook.agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(IsNull("closed_at")).page(1, 1).rows
+        if blocks and TaskBlocksReviewed.stored(blocks[0].condition_text).pending(tasks):
+            return RuleAnswer.allowed()
+        passed = BLOCK_REVIEW_INTERVAL.has_passed_many(self.queries, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)
+        due = [task for task, passed_span in zip(tasks, passed) if passed_span][:SHOWN_TASK_COUNT]
+        notices = [replace((USER_BLOCK_REVIEW if task.user_wait else BLOCK_REVIEW).nudge(task=task.task_id),
+                           key=f"{BLOCK_REVIEW.key}.{task.task_id}", interval=None, declaration=None) for task in due]
+        manual = [task for task in due if not task.user_wait]
+        answer = RuleAnswer.with_nudges(*notices)
+        if not manual:
+            return answer
+        condition = TaskBlocksReviewed.build(manual)
+        refusal = BLOCK_REVIEW_REQUIRED.nudge(tasks=", ".join(str(task.task_id) for task in manual))
+        return answer.running(BlockUntil(hook.agent_id, refusal, condition),
+                              BlockUntil(hook.agent_id, replace(refusal, key=refusal.key + ".stop"), condition, blocks_stop=True))

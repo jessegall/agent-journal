@@ -42,7 +42,7 @@ class AliasShellAliases(ShellAliases):
     def alias(self, name: str) -> Alias | None:
         if name in self.names.command_names():
             return None
-        return self.kept.read("aliases", lambda: self.saved_alias(name), "name = ?", [name])
+        return self.kept.read("aliases", lambda: self.saved_alias(name), "name = ?", [name], name="aliases.row")
 
     def saved_alias(self, name: str) -> Alias | None:
         rows = self.aliases.with_name(name).page(1, 1).rows
