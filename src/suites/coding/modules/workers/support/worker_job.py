@@ -1,5 +1,7 @@
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 
+SILENT_AGENT_SOURCE = "workers.silent-agent"
+SILENT_FAILURE_SOURCE = "workers.silent-agent-failed"
 WORKER_JOB_SOURCE = "workers.worker-job"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"
 UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"

@@ -13,6 +13,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.server_client import server_story, viewer_answer
@@ -62,6 +63,7 @@ class RecoveryCase:
         self.story.advance(timedelta(seconds=seconds))
 
     def tick(self):
+        WorkerResumeRetry()(self.story.container)
         self.story.tick("s-1")
         self.story.run_listeners()
 
@@ -164,7 +166,8 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
     recovery.tick()
     recovery.tick()
     recovery.story.expect_rows(len(recovery.launches) == 3)
-    recovery.story.expect_rows(len(recovery.lines(recovery.story.agent.id, FAILED_SOURCE)) == 1)
+    notices = recovery.lines(recovery.story.agent.id, FAILED_SOURCE)
+    recovery.story.expect_rows(sum(f"agent:{recovery.worker.id} " in line.text for line in notices) == 1)
 
 
 

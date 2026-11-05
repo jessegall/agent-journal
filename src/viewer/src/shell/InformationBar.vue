@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, toRef, watch} from "vue";
 import AgentSkillsMenu from "./AgentSkillsMenu.vue";
+import ConnectionStatus from "./ConnectionStatus.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -114,6 +115,7 @@ const uptime = computed(() => {
             <button type="button" class="fact lead" data-agent-start @click="openMenu($event, 'start')"><Icon name="agents" :size="12" /> Start an agent</button>
         </template>
         <span class="space" />
+        <ConnectionStatus class="fact" />
         <template v-if="controls.failure.value">
             <span class="fact failure" role="alert" data-agent-failure :title="controls.failure.value">{{ controls.failure.value }}</span>
         </template>

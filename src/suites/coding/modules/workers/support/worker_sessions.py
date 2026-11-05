@@ -17,7 +17,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import RecordWorkerLaunchFailure
+from suites.coding.modules.workers.commands.recover_silent_agents.report_silent_agent import ReportSilentAgent
 from suites.coding.modules.workers.support.worker_session_state import WorkerSessionState
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 
@@ -63,7 +63,7 @@ class WorkerSessions:
             return WorkerSessionState.RUNNING
         if self.stop_tree(current.pid, program):
             return WorkerSessionState.READY
-        self.bus.run(RecordWorkerLaunchFailure(current.id), Actor.core(), environment_id=current.environment_id)
+        self.bus.run(ReportSilentAgent(current.id, "its process could not be stopped", activity.last_hook_at if activity.last_hook_at is not None else activity.created_at), Actor.core(), environment_id=current.environment_id)
         return WorkerSessionState.BLOCKED
 
     def stop_tree(self, pid: int, program: str) -> bool:

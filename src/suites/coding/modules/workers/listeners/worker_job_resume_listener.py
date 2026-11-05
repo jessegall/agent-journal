@@ -10,9 +10,12 @@ from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from core.base.change.updated import Updated
+from core.base.change.created import Created
+from core.modules.drivers.models.agent_line import AgentLine
+from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 
 
-class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
+class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent] | Created[AgentLine]]):
     """A worker that ends with a job still waiting, sent after its last stop, resumes for that job; one a
     person or another agent stopped stays ended, with its job waiting."""
 
@@ -22,7 +25,13 @@ class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
     def __init__(self, queries: Queries, resume: WorkerResume, stop: WorkerStop) -> None:
         self.queries, self.worker_resume, self.stop = queries, resume, stop
 
-    def handle(self, event: AgentEnded | Updated[Agent], logged: LoggedEvent) -> None:
+    def handle(self, event: AgentEnded | Updated[Agent] | Created[AgentLine], logged: LoggedEvent) -> None:
+        if isinstance(event.row, AgentLine):
+            if event.row.source == SILENT_AGENT_SOURCE:
+                worker = self.queries.query(Agent).find(event.row.agent_id)
+                if worker.role == AgentRole.WORKER:
+                    self.worker_resume.restart(worker, event.row, Actor.core())
+            return
         worker = event.row
         ended_worker = worker.role == AgentRole.WORKER and worker.ended_at is not None
         if ended_worker and not self.stop.is_final(worker, logged.actor_id):

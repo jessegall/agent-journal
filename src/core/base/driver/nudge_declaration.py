@@ -26,6 +26,7 @@ class NudgeDeclaration:
     plural_text: str = ""
     wakes_agent: bool = False
     path_fields: Sequence[str] = ()
+    repeats_without_hook: bool = False
 
     @property
     def limit(self) -> int:

@@ -1,3 +1,4 @@
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -31,7 +32,7 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
     story.run_listeners()
     story.expect_text(f"output read {process.id} --summary", "73 passed", actor=worker)
     reader = story.container.get(ReaderQuery).with_name("python3").page(1, 1).rows[0]
-    expect_reason_2(story, parts, reader, "")
+    expect_reason_2(story, parts, reader, worker.id, "")
     bus.run(StartProcess.single_part(worker.id, parts[1].text, "/work", CommandCategory.TEST_RUN, 30), worker, environment_id=1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
@@ -41,7 +42,7 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     sample = worker_run(story)
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30), second, environment_id=1)
-    expect_count_open(story, 1)
+    expect_count_open(story, 2)
     end_run(story, sample, "compile\n" * 8 + "done\n")
     story.expect_success('reader add custom --commands "custom-build*" --title Building --lines done --summary done', actor=story.agent)
     story.run_listeners()
@@ -63,6 +64,6 @@ def expect_count_open(story, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_reason_2(story, parts, reader, expected) -> None:
-    actual = story.container.get(ReaderDemands).reason(parts[1], reader)
+def expect_reason_2(story, parts, reader, agent_id, expected) -> None:
+    actual = story.container.get(ReaderDemands).reason(parts[1], reader, ReaderSampleScope(1, agent_id, parts[1].text))
     assert actual == expected, actual

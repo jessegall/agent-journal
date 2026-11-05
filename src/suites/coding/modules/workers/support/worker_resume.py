@@ -17,6 +17,7 @@ from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from suites.coding.modules.workers.models.worktree import Worktree
 
 JOB_DELIVERY_SECONDS = 120
 
@@ -39,6 +40,16 @@ class WorkerResume:
         job = job or self.lost_job(worker, worker.ended_at)
         if job is None:
             return
+        self.launch_job(worker, worktree, job, actor)
+
+    def restart(self, worker: Agent, job: AgentLine, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(worker.id)
+        last_started_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
+        if worktree is None or worker.paused_at is not None or self.is_job_delivering(worker, last_started_at):
+            return
+        self.launch_job(worker, worktree, job, actor)
+
+    def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> None:
         environment = self.queries.query(Environment).find(worktree.environment_id)
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
         if answer is not LaunchAnswer.STARTED:
