@@ -2,6 +2,7 @@ import json
 
 from core.base.actor import Actor
 from core.base.command.context import Context
+from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.nudge_record import NudgeRecord
@@ -19,6 +20,7 @@ INSPECT_READS_ALLOWED = 2
 
 
 def selects_of(story, line: str) -> list[str]:
+    story.container.get(ActorTable).row_owner(story.agent.id)
     connection = story.container.get(Database).connection
     statements: list[str] = []
     connection.set_trace_callback(statements.append)
@@ -28,6 +30,7 @@ def selects_of(story, line: str) -> list[str]:
 
 
 def rows_loaded(story, line: str) -> int:
+    story.container.get(ActorTable).row_owner(story.agent.id)
     database_counts = story.container.get(Database).tally
     previous_count = database_counts.rows
     story.run(line, actor=story.agent)

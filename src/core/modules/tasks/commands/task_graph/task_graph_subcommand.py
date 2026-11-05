@@ -1,10 +1,9 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.commands.support.task_graph import TaskGraph
@@ -19,14 +18,11 @@ class TaskGraphSubcommand(ReadSubcommand[TaskGraph]):
     cli_name = "task"
     name = "graph"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskGraph:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the graph is shown for one environment", "name it with --environment")
         tasks = {task.id: task for task in self.queries.query(TaskCard).filter(environment_id=environment_id).matching(Among("state", UNFINISHED_STATES)).all_rows()}

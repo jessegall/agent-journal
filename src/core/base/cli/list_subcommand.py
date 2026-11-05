@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from enum import StrEnum
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.model.model import STATE, Model
@@ -25,8 +24,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
     name = "list"
 
-    def __init__(self, table: Table[Model], queries: Queries, environment_names: EnvironmentNames, book: StateBook | None = None) -> None:
-        self.table, self.queries, self.environment_names, self.book = table, queries, environment_names, book or StateBook()
+    def __init__(self, table: Table[Model], queries: Queries, book: StateBook | None = None) -> None:
+        self.table, self.queries, self.book = table, queries, book or StateBook()
         self.cli_name = table.model.cli_name
         self.columns: tuple[str, ...] = ()
 
@@ -42,14 +41,14 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
             if column == STATE and lifecycle is not None and lifecycle.added_states:
                 parser.add_argument("--state", choices=lifecycle.state_words())
                 continue
-            parser_argument(parser, f"--{filter_flag(column)}", str if column == ENVIRONMENT_COLUMN else self.table.types[column])
+            if column != ENVIRONMENT_COLUMN:
+                parser_argument(parser, f"--{filter_flag(column)}", self.table.types[column])
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:
         self.columns = tuple(column for column in arguments.columns.split(",") if column)
         values = {column: getattr(arguments, filter_flag(column).replace("-", "_")) for column in self.filter_columns()}
         if values.get(ENVIRONMENT_COLUMN) is not None:
-            environment_text = str(values[ENVIRONMENT_COLUMN])
-            values[ENVIRONMENT_COLUMN] = int(environment_text) if environment_text.isdigit() else self.environment_names.environment_id(environment_text)
+            values[ENVIRONMENT_COLUMN] = caller.environment_id
         query = self.queries.query(self.table.model).filter(**{column: value for column, value in values.items() if value is not None})
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))

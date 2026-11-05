@@ -5,11 +5,11 @@ MAIN_AGENT = "__main__"
 
 @dataclass(frozen=True)
 class RowOwner:
-    """The agent that work is scoped on and its environment. Every main agent of an environment is one agent,
-    named main, whichever session runs it, and a row of the main agent stores no agent id."""
+    """The agent and environment that work is scoped on; a person's request has no agent. Every main agent of an
+    environment is one agent, named __main__, whichever session runs it, and its rows store no agent id."""
 
-    agent: int | str
-    environment_id: int
+    agent: int | str | None
+    environment_id: int | None
 
     @property
     def is_main(self) -> bool:

@@ -1,7 +1,6 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
@@ -14,14 +13,11 @@ class ProjectWorktreeListSubcommand(ReadSubcommand[RowList]):
     cli_name = "project-worktree"
     name = "list"
 
-    def __init__(self, worktrees: ProjectWorktrees, environment_names: EnvironmentNames) -> None:
-        self.worktrees, self.environment_names = worktrees, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, worktrees: ProjectWorktrees) -> None:
+        self.worktrees = worktrees
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         return RowList([worktree.row() for worktree in self.worktrees.listed(environment_id)])
 
     def write_output(self, value: object, output: Output) -> None:

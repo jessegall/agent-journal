@@ -4,7 +4,6 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
@@ -30,15 +29,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     cli_name = "usage"
     name = "agents"
 
-    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames, providers: Providers, home: JournalHome, suites: SuiteChoice) -> None:
-        self.queries, self.files, self.environment_names, self.providers, self.home, self.suites = queries, files, environment_names, providers, home, suites
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice) -> None:
+        self.queries, self.files, self.providers, self.home, self.suites = queries, files, providers, home, suites
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the agents are shown for one environment", "name it with --environment")
         cards = self.queries.query(AgentCard).filter(environment_id=environment_id)

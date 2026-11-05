@@ -2,7 +2,6 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.settings.commands.support.current_setting_output import CurrentSettingOutput
-from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.refusal import Refusal
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
@@ -18,15 +17,14 @@ class SettingShowSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSetting]
     cli_name = "setting"
     name = "show"
 
-    def __init__(self, values: SettingReader, environment_names: EnvironmentNames, declared: SettingCatalogue, undeclared: UndeclaredSettings) -> None:
-        self.values, self.environment_names, self.declared, self.undeclared = values, environment_names, declared, undeclared
+    def __init__(self, values: SettingReader, declared: SettingCatalogue, undeclared: UndeclaredSettings) -> None:
+        self.values, self.declared, self.undeclared = values, declared, undeclared
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("key")
-        parser.add_argument("--environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> CurrentSetting:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         try:
             return self.values.current(arguments.key, environment_id)
         except Refusal:

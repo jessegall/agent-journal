@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.environment_names import EnvironmentNames
 from core.base.refusal import Refusal
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -16,16 +15,15 @@ class WindowSettingSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSettin
     cli_name = "window"
     name = "setting"
 
-    def __init__(self, reader: SettingReader, keys: WindowSettingKeys, environment_names: EnvironmentNames) -> None:
-        self.reader, self.keys, self.environment_names = reader, keys, environment_names
+    def __init__(self, reader: SettingReader, keys: WindowSettingKeys) -> None:
+        self.reader, self.keys = reader, keys
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("window")
         parser.add_argument("key")
-        parser.add_argument("--environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> CurrentSetting:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("a window's settings belong to an environment", "name one with --environment")
         setting = self.reader.current(self.keys.key(arguments.window, arguments.key), environment_id)

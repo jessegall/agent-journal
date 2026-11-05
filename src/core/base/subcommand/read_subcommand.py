@@ -22,7 +22,7 @@ class ReadSubcommand(Generic[R]):
     help: str = ""
 
     def arguments(self, parser: ArgumentParser) -> None:
-        raise NotImplementedError
+        return None
 
     def read(self, arguments: Namespace, caller: Caller) -> R:
         raise NotImplementedError

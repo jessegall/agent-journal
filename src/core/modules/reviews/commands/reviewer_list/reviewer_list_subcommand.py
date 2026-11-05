@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
@@ -19,11 +19,8 @@ class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
     def __init__(self, reviewers: ReviewerQuery, reviews: ReviewQuery) -> None:
         self.reviewers, self.reviews = reviewers, reviews
 
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment", type=int)
-
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerListing:
-        environment_id = arguments.environment or caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("reviewers are listed for an environment", "name one with --environment <id>")
         reviewers = tuple(self.reviewers.environment(environment_id).active().oldest().all_rows())

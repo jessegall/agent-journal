@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.environment_names import EnvironmentNames
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.caller.caller import Caller
@@ -15,17 +14,16 @@ class ViewerLayoutCurrentSubcommand(ReadSubcommand[ViewerLayout]):
     cli_name = "viewer-layout"
     name = "current"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--suite", required=True)
         parser.add_argument("--page", required=True)
         parser.add_argument("--driver", default="")
-        parser.add_argument("--environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewerLayout:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         rows = self.queries.query(ViewerLayout).filter(environment_id=environment_id, person_id=caller.actor.id, suite=arguments.suite,
                                                        page=arguments.page, driver=arguments.driver).limited(1)
         if not rows:

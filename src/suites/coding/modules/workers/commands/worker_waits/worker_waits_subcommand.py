@@ -1,7 +1,6 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
@@ -14,14 +13,11 @@ class WorkerWaitsSubcommand(ReadSubcommand[tuple[WorkerWait, ...]]):
     cli_name = "worker"
     name = "waits"
 
-    def __init__(self, queries: Queries, environments: EnvironmentNames) -> None:
-        self.queries, self.environments = queries, environments
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[WorkerWait, ...]:
-        environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the workers are shown for one environment", "name it with --environment")
         rows = self.queries.query(WorkerWait).filter(environment_id=environment_id).ordered("agent_id").all_rows()

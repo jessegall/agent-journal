@@ -11,6 +11,8 @@ class EnvironmentTableNames(EnvironmentNames):
         self.queries = queries
 
     def environment_id(self, name: str) -> int:
+        if name.isdigit():
+            return int(name)
         row = self.queries.query(Environment).filter(name=name).first()
         if row is None:
             raise Refusal(f"no environment named {name}", "journal environment list shows them")

@@ -1,4 +1,5 @@
 import io
+from dataclasses import replace
 from contextlib import redirect_stderr, redirect_stdout
 from typing import TextIO
 
@@ -103,14 +104,15 @@ class Console:
         except SystemExit as exit_request:
             output.stream.write(captured_output.getvalue())
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        caller = replace(caller, environment_id=environment_id)
         if not isinstance(subcommand, Subcommand):
-            with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id):
+            with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
                 value = subcommand.read(arguments, caller)
             subcommand.write_output(value, output)
             return SUCCESS_CODE
         self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
