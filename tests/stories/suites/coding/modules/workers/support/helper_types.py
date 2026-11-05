@@ -14,8 +14,8 @@ class ClerkRegistered(StoryFixture):
 
 
 class HelperSession(StoryFixture):
-    parent = ClerkRegistered
     role: ClassVar[str]
+    parent = ClerkRegistered
 
     def steps(self, story: Story) -> None:
         story.expect_success(f"agent start s-{self.role} claude {self.role} --parent {story.agent.id} --environment main")
