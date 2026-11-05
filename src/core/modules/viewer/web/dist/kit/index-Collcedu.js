@@ -5219,18 +5219,20 @@ function Cr(e, t) {
 }
 const Or = Cr("/api/marks", "marks"), ew = Or.fetchAll, jp = Or.find, qp = 2e3;
 function Tr(e, t, n = qp) {
-  let a = null;
-  const s = () => {
-    a = setTimeout(
+  let a = null, s = !1;
+  const o = () => {
+    s || (a = setTimeout(
       async () => {
-        t() && await e(), s();
+        t() && await e(), o();
       },
       typeof n == "function" ? n() : n
-    );
+    ));
   };
   Te(async () => {
-    await e(), s();
-  }), Tt(() => clearTimeout(a));
+    await e(), o();
+  }), Tt(() => {
+    s = !0, clearTimeout(a);
+  });
 }
 const Fp = ["data-ref"], Wp = ["data-ref"], Hp = { class: "mark-row" }, Up = "dock add", zp = {
   __name: "MarkHost",
@@ -10124,7 +10126,7 @@ const S2 = /* @__PURE__ */ x2(M2), _2 = ["width", "height", "viewBox"], E2 = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, ox = /* @__PURE__ */ Y(O2, [["__scopeId", "data-v-47e67f04"]]), rx = Il(() => import("./VoiceFigure-hu3zcW-9.js").then((e) => e.V)), lx = "1.1.0", ix = "3.5";
+}, ox = /* @__PURE__ */ Y(O2, [["__scopeId", "data-v-47e67f04"]]), rx = Il(() => import("./VoiceFigure-C0VvHKRn.js").then((e) => e.V)), lx = "1.1.0", ix = "3.5";
 export {
   ry as $,
   xe as A,
