@@ -16,6 +16,8 @@ OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.REFUSAL, "yo
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.REFUSAL, "this journal command reaches past the journal: say in your report what should be run")
 LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
 ENDED_HELPER = NudgeDeclaration("drivers.ended_helper", NudgeType.REFUSAL, "this helper has ended: stop your work, nothing more is recorded")
+NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.REFUSAL, 'use journal helper start <profile> --brief "<job>"; journal profile list names them')
+NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
 
-ACCESS_NUDGES = [ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, SUBAGENT_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]

@@ -224,3 +224,26 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
     story.hook(session, HookSamples.stop())
     story.run_listeners()
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == lines_at_end)
+
+
+def main_story(new_story):
+    return new_story(fixture=BuilderWithUser)
+
+
+@pytest.mark.parametrize("name, category", [("Agent", ToolType.AGENT), ("Task", ToolType.AGENT), ("collaborationspawn_agent", ToolType.AGENT), ("spawn_agent", ToolType.UNCATEGORISED), ("collaborationwait", ToolType.UNCATEGORISED)])
+def test_a_programs_own_subagent_tool_is_refused_with_the_way_on(new_story, name, category):
+    story = main_story(new_story)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_hook_refusal("s-1", tool(name, category), "journal helper start")
+    launcher.server.close()
+
+
+def test_with_no_launcher_the_refusal_says_to_keep_the_work(new_story):
+    story = main_story(new_story)
+    story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "keep this work yourself")
+
+
+def test_a_wait_does_not_lift_the_subagent_refusal(new_story):
+    story = main_story(new_story)
+    story.run('wait stuck "no way on"', actor=story.agent)
+    story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "keep this work yourself")

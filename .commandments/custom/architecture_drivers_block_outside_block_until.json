@@ -15,7 +15,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "/rules/(runner_rewrite_rule|access_rule|allowed_command_types_rule|allowed_tools_rule|denied_programs_rule|denied_tools_rule|no_full_test_run_rule|saved_command_rule)\\.py$"
+                "fileMatches": "/rules/(runner_rewrite_rule|access_rule|native_subagent_rule|allowed_command_types_rule|allowed_tools_rule|denied_programs_rule|denied_tools_rule|no_full_test_run_rule|saved_command_rule)\\.py$"
             },
             {
                 "testCode": true
