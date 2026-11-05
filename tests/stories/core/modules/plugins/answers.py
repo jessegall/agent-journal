@@ -6,6 +6,7 @@ from tests.stories.core.modules.plugins.hooks import installed_story
 
 STATUS_SAMPLE = HookSamples.shell("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]))
 DIFF_SAMPLE = HookSamples.shell("git diff", ShellPart("git", CommandCategory.VERSION_CONTROL, ["diff"]))
+SHOW_SAMPLE = HookSamples.shell("git show", ShellPart("git", CommandCategory.VERSION_CONTROL, ["show"]))
 LOG_SAMPLE = HookSamples.shell("git log", ShellPart("git", CommandCategory.VERSION_CONTROL, ["log"]))
 
 
@@ -14,6 +15,13 @@ def test_a_card_in_a_plugins_answer_shows_in_the_chat_after_the_reply_with_the_p
     story.hook("s-1", STATUS_SAMPLE)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "sample: Branch is clean", actor=story.user)
+
+
+def test_a_card_whose_answer_says_how_long_the_plugin_took_shows_that_duration(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", SHOW_SAMPLE)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --columns figure,text", "sample: Branch was judged  1.2 s", actor=story.user)
 
 
 def test_a_card_for_a_worker_stays_out_of_the_main_chat(new_story):

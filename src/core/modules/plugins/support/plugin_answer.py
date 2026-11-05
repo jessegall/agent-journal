@@ -9,7 +9,8 @@ from core.modules.plugins.support.plugin_card import PluginCard
 @dataclass(frozen=True)
 class PluginAnswer:
     """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line,
-    with the cards it shows, the journal commands it runs and the skills it requires; an empty output allows.
+    with the cards it shows, the journal commands it runs, the skills it requires and how long it took in
+    milliseconds; an empty output allows.
     """
 
     answer: str
@@ -19,6 +20,7 @@ class PluginAnswer:
     commands: tuple[str, ...]
     output: str
     required_skills: tuple[str, ...]
+    judged_ms: int = 0
 
     @classmethod
     def parsed(cls, output: str) -> "PluginAnswer":
@@ -33,7 +35,11 @@ class PluginAnswer:
         return cls(str(fields["answer"]) if "answer" in fields else "allow", cls.text(fields, "reason"), cls.text(fields, "tell"),
                    tuple(cls.card(entry) for entry in cards if is_mapping(entry)) if is_list(cards) else (),
                    tuple(str(line) for line in commands) if is_list(commands) else (), last_line,
-                   tuple(str(name) for name in skills) if is_list(skills) else ())
+                   tuple(str(name) for name in skills) if is_list(skills) else (), cls.milliseconds(fields))
+
+    @staticmethod
+    def milliseconds(fields: Mapping[object, object]) -> int:
+        return int(str(fields["judged_ms"])) if "judged_ms" in fields else 0
 
     @staticmethod
     def text(fields: Mapping[object, object], key: str) -> str:
@@ -42,6 +48,9 @@ class PluginAnswer:
     @classmethod
     def card(cls, entry: Mapping[object, object]) -> PluginCard:
         return PluginCard(cls.text(entry, "key"), cls.text(entry, "kind"), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
+
+    def duration_text(self) -> str:
+        return f"{self.judged_ms / 1000:.1f} s" if self.judged_ms else ""
 
     def has_output(self) -> bool:
         return bool(self.cards or self.commands or self.required_skills)
