@@ -12,5 +12,5 @@ class LoadedSkills:
 
     def names(self, agent_id: int) -> tuple[str, ...]:
         digests = {skill.folder: skill.digest for skill in self.catalogue.skills()}
-        rows = self.queries.query(AgentSkill).filter(agent_id=agent_id, state=AgentSkillState.LOADED).all_rows()
+        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.LOADED).all_rows()
         return tuple(sorted(row.skill for row in rows if digests.get(row.skill) == row.digest))

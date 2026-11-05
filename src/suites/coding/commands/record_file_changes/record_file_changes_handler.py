@@ -1,9 +1,12 @@
+from dataclasses import replace
+
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.file_access import FileAccess
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit import DeliverFileEdit
 from core.modules.processes.models.process import Process
@@ -18,15 +21,17 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     command = RecordFileChanges
 
-    def __init__(self, queries: Queries, bus: Bus, files: FileAccess) -> None:
-        self.queries, self.bus, self.files = queries, bus, files
+    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes) -> None:
+        self.queries, self.bus, self.files, self.scopes = queries, bus, files, scopes
 
     def handle(self, command: RecordFileChanges, context: Context) -> None:
         agent = self.scan_agent(command)
         report = FileChangeReport.parsed(self.files.read(command.report_path))
-        for change in report.changes:
-            self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows), context)
-            self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), context)
+        scoped = replace(context, environment_id=agent.environment_id)
+        with self.scopes.opened(None, agent.environment_id):
+            for change in report.changes:
+                self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows), scoped)
+                self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), scoped)
 
     def scan_agent(self, command: RecordFileChanges) -> Agent:
         if command.process_id is not None:

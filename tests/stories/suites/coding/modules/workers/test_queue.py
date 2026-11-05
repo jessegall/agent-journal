@@ -43,7 +43,7 @@ def queued_story(new_story, monkeypatch):
 
 
 def ended(story, process_id: int, code: int) -> None:
-    owner = Actor(story.container.get(Queries).query(Process).find(process_id).agent_id, ActorType.AGENT)
+    owner = Actor(story.container.get(Queries).query(Process).find(process_id).session_agent_id, ActorType.AGENT)
     story.container.get(Bus).run(EndProcess(process_id, code, 0, 0), owner, environment_id=1)
     story.run_listeners()
 

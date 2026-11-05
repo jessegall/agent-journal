@@ -16,7 +16,7 @@ class DevelopmentToolsOn(StoryFixture):
 
     def steps(self, story) -> None:
         tools = story.container.get(PerformanceTools)
-        tools.run(ReaderTimeTool, "vitest", 12, 1)
+        tools.run(ReaderTimeTool, "vitest", 12)
         tools.run(RouteCostTool, "/cli", Points(rows=4))
         story.expect_rows(json.loads(story.run("developer numbers --json", actor=story.user).output_text)["rows"] == [])
         story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)

@@ -28,8 +28,8 @@ def test_the_counts_keep_the_average_and_slowest_of_each_hook_and_sort_by_the_sl
 def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
     story = new_story(fixture=DevelopmentToolsOn)
     tools = story.container.get(PerformanceTools)
-    tools.run(ReaderTimeTool, "vitest", 12, 1)
-    tools.run(ReaderTimeTool, "vitest", 30, 1)
+    tools.run(ReaderTimeTool, "vitest", 12)
+    tools.run(ReaderTimeTool, "vitest", 30)
     expect_numbers(story, [{"id": "reader vitest", "hook": "reader vitest", "count": 2, "most_points": 30, "average_points": 21}])
 
 
