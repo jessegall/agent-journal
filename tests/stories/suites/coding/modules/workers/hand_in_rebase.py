@@ -31,7 +31,7 @@ def worker_on_a_moved_base(story, repository, line="worker dispatch --model sonn
 
 def worktree_row(story, worker):
     rows = json.loads(story.run("worker-worktree list --json").output_text)["rows"]
-    return next(row for row in rows if row["agent_id"] == worker.id)
+    return next(row for row in rows if row["session_agent_id"] == worker.id)
 
 
 def expect_on_the_tip(story, repository, worker):

@@ -1,40 +1,42 @@
+from typing import TypeVar
+
+from core.base.command.bus import Bus
+from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.conflict_files import ConflictFiles
 from pathlib import Path
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
-from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
-from core.modules.drivers.support.nudger import Nudger
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
+from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
+from suites.coding.modules.workers.commands.record_worktree_removal.record_worktree_removal import RecordWorktreeRemoval
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
-from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
-from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
+
+R = TypeVar("R")
 
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
     4.5. A moved base is rebased under the worker's uncommitted changes first; only a clash that stays goes
-    back to the worker."""
+    back to the worker. Git runs outside any transaction, so its wait holds no write lock."""
 
     command = MergeWorker
     disabled_scopes = [ActorScope]
+    transactional = False
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, environments: EnvironmentRows) -> None:
-        self.queries, self.worktrees, self.checks, self.repository, self.git, self.nudger = queries, worktrees, checks, repository, git, nudger
-        self.advance, self.environments = advance, environments
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus) -> None:
+        self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
+        self.environments, self.bus = environments, bus
 
     def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -42,25 +44,22 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
         environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
-        task = self.queries.query(Task).find(worktree.task_id)
+        task = self.rows.required(Task, worktree.task_id)
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
                           f"worker {worktree.session_agent_id} changes them too: commit or stash them, then merge again")
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
-            return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
+            return self.recorded(RecordWorktreeMerge(worktree.id, conflicts), context)
         self.git.rebuild(worktree, environment.folder)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
-        for delivered in self.delivered_tasks(worktree, task):
-            self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
-        merged = self.repository.save_change(worktree, worktree.merge(context.timestamp, context.actor), context)
-        self.git.remove(environment.folder, merged)
-        return MergeOutcome(self.repository.save_change(merged, merged.remove(context.timestamp, context.actor), context), ())
+        merged = self.recorded(RecordWorktreeMerge(worktree.id, ()), context)
+        self.git.remove(environment.folder, merged.worktree)
+        return MergeOutcome(self.recorded(RecordWorktreeRemoval(worktree.id), context), ())
 
-    def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
-        delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id, state=TaskState.TESTING).all_rows())
-        return [row for row in (task, *delivered) if row.state is TaskState.TESTING and (row is task or row.id != task.id)]
+    def recorded(self, command: Command[R], context: Context) -> R:
+        return self.bus.run(command, context.actor, environment_id=context.environment_id)
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         ConflictFiles(Path(environment.folder)).check()
@@ -70,8 +69,3 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if head != worktree.base_branch:
             raise Refusal(f"the checkout of environment {environment.name} is on {head}, not on {worktree.base_branch}; the merge waits until it is back",
                           f"switch the checkout back to {worktree.base_branch}, then merge again")
-
-    def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
-        self.advance.restart_task(worktree, task, context)
-        self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
-        return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

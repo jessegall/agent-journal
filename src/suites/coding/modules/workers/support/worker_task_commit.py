@@ -1,9 +1,10 @@
-from core.base.command.context import Context
+from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.repository.repository import Repository
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.commands.record_worktree_base.record_worktree_base import RecordWorktreeBase
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -13,12 +14,13 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 class WorkerTaskCommit:
     """Commits a worker's worktree for its current task on the latest of its base branch, once each point of the
-    task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree."""
+    task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree. It runs before
+    the hand-in's transaction opens, so git's wait holds no write lock."""
 
-    def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, repository: Repository) -> None:
-        self.proofs, self.git, self.queries, self.repository = proofs, git, queries, repository
+    def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus) -> None:
+        self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus
 
-    def commit(self, worktree: Worktree, task: Task, context: Context) -> Worktree:
+    def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
@@ -32,4 +34,4 @@ class WorkerTaskCommit:
             raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
-        return self.repository.save_change(worktree, current, context)
+        self.bus.run(RecordWorktreeBase(worktree.id, base_commit), actor, environment_id=worktree.environment_id)

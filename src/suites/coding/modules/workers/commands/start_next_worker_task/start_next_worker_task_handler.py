@@ -1,7 +1,9 @@
 from core.base.command.bus import Bus
+from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
+from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
@@ -25,8 +27,17 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries) -> None:
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
+        self.queries = queries
+
+    def prepare(self, command: StartNextWorkerTask, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(actor.id)
+        if worktree is None or worktree.state is not WorktreeState.CUT:
+            return
+        task = self.queries.query(Task).find(worktree.task_id)
+        if task.state is TaskState.STARTED and self.tasks.next_delegated(actor.id) is not None:
+            self.task_commit.commit(worktree, task, actor)
 
     def handle(self, command: StartNextWorkerTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
@@ -46,10 +57,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
             started = self.bus.dispatch(StartTask(following.id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
             return started
-        committed = self.task_commit.commit(worktree, task, context)
         tested = self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        if self.proof_queue.queue(committed, context):
+        if self.proof_queue.queue(worktree, context):
             return tested
         started = self.bus.dispatch(StartTask(following.id), context)
-        self.repository.save_change(committed, committed.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
         return started
