@@ -12,5 +12,5 @@ QUESTIONS_FAMILY = MarkFamily("questions.questions", "Questions", "question", Ma
 QUESTION_MARKS = [MarkDeclaration(QuestionMarkType.QUESTION, QuestionMarkVariant, QUESTIONS_FAMILY, "Question", "question", click=MarkClick.OPEN_ROW, process=True, body="question-card.js", card=True),
                   MarkDeclaration(QuestionMarkType.ANSWER, QuestionMarkVariant, QUESTIONS_FAMILY, "Question answered", "question", click=MarkClick.OPEN_ROW)]
 
-QUESTION_DOCKS = [DockDeclaration(QuestionDockType.QUESTION, "question", "Question {row_id}", "question-dock.js", most=6, reads=["question show"]),
-                  DockDeclaration(QuestionDockType.OPEN, "question", "Agent asked questions", "open-questions-dock.js", draws_head=True, reads=["question list"])]
+QUESTION_DOCKS = [DockDeclaration(QuestionDockType.QUESTION, "questions", "{row_title}", "question-dock.js", most=6, reads=["question show"]),
+                  DockDeclaration(QuestionDockType.OPEN, "questions", "Agent asked questions", "open-questions-dock.js", draws_head=True, waits_on_you=True, reads=["question list"])]

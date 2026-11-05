@@ -11,11 +11,9 @@ const rule = useDockRow("rule");
 
 <style scoped>
 .rule-dock {
-    margin: 0;
-    padding: 8px 10px;
-    border: 1px solid var(--warn);
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--warn) 12%, transparent);
+    margin: 3px 0 6px;
+    border-block: 1px solid var(--border-inner);
+    padding: 7px 14px 8px 36px;
     color: var(--text);
     font-size: 13px;
     line-height: 1.5;

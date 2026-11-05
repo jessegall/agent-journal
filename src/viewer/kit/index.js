@@ -19,6 +19,7 @@ export {default as AgentRowList} from "./AgentRowList.vue";
 export {default as Dashboard} from "../src/kit/Dashboard.vue";
 export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
+export {default as SkeletonLine} from "../src/kit/SkeletonLine.vue";
 export {default as Skeleton} from "../src/kit/Skeleton.vue";
 export {default as SkeletonParts} from "../src/kit/SkeletonParts.vue";
 export {default as WindowSkeleton} from "../src/kit/WindowSkeleton.vue";

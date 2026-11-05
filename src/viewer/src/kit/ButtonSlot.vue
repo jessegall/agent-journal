@@ -7,8 +7,8 @@ import SplitButton from "./SplitButton.vue";
 import {buttonCatalogue, buttonsAt} from "@journal/window-kit";
 import {pressButton} from "../chat/markButtons.js";
 
-const props = defineProps({name: {type: String, required: true}, row: {type: Object, default: null}, environment: {type: String, required: true}, readOnly: Boolean});
-const emit = defineEmits(["done"]);
+const props = defineProps({name: {type: String, required: true}, row: {type: Object, default: null}, environment: {type: String, required: true}, readOnly: Boolean, externalFailure: Boolean});
+const emit = defineEmits(["done", "failure"]);
 const catalogue = computed(() => buttonCatalogue(props.environment));
 const waiting = computed(() => !props.readOnly && catalogue.value?.loading.value && (!catalogue.value.loaded.value || catalogue.value.failed.value));
 const failed = computed(() => !props.readOnly && catalogue.value?.failed.value);
@@ -25,10 +25,13 @@ async function press(button) {
         asking.value = button;
         return;
     }
+    failure.value = "";
+    emit("failure", "");
     sending.value = true;
     const answer = await pressButton(button, props.row, props.environment);
     sending.value = false;
     failure.value = answer.ok ? "" : answer.error;
+    emit("failure", answer.ok ? "" : `Could not ${button.label.toLowerCase()}: ${answer.error}`);
     if (answer.ok) emit("done");
 }
 </script>
@@ -55,7 +58,7 @@ async function press(button) {
                     <Btn small :kind="button.primary ? 'primary' : 'ghost'" :bordered="!button.primary" :icon="button.icon" :disabled="sending" :title="tip(button)" :data-button="button.name" @click="press(button)">{{ button.label }}</Btn>
                 </template>
             </template>
-            <template v-if="failure && !readOnly">
+            <template v-if="failure && !readOnly && !externalFailure">
                 <span class="button-slot-failure" role="alert">{{ failure }}</span>
             </template>
             <template v-if="asking && !readOnly">

@@ -1,10 +1,13 @@
 <script setup>
-import {computed, ref, watch} from "vue";
-import {peekRef, useWindow} from "@journal/window-kit";
+import {computed, ref, watch, unref} from "vue";
+import {peekRef, SkeletonLine, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
 const context = useWindow();
 const item = context.option("row");
+const foot = context.option("foot");
+const progress = ref(null);
+const loading = ref(true);
 const phases = ref([]);
 const planAgents = ref([]);
 const agents = computed(() => [...new Map(planAgents.value.map((agent) => [agent.id, agent])).values()]);
@@ -12,7 +15,9 @@ const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES))
 async function load() {
     const planId = item.value?.target_id;
     if (!planId) return;
-    const answer = await context.read(`plan outline ${planId}`);
+    const [answer, counts] = await Promise.all([context.read(`plan outline ${planId}`), context.read(`plan progress ${planId}`), new Promise(resolve => setTimeout(resolve, 150))]);
+    if (counts.ok) progress.value = counts.value;
+    loading.value = false;
     phases.value = answer.ok ? answer.value.phases : [];
     planAgents.value = answer.ok ? answer.value.agents : [];
 }
@@ -22,8 +27,13 @@ watch(() => item.value?.target_id, load, {immediate: true});
 </script>
 
 <template>
+    <Teleport v-if="unref(foot)" :to="unref(foot)">
+        <SkeletonLine v-if="loading" :bars="[{width: '80px', height: 10}]" />
+        <span v-else-if="progress">Tasks: <b>{{ progress.completed_count ? `${progress.completed_count} of ${progress.task_count}` : progress.task_count }}</b></span>
+    </Teleport>
+    <SkeletonLine v-if="loading" class="plan-dock-loading" :bars="[{width: '70%', height: 12}, {width: '45%', height: 12}]" />
     <template v-if="agents.length">
-        <div class="plan-dock-agents" data-plan-dock-agents>
+        <div class="plan-dock-agents" data-plan-dock-agents><span>Agents:</span>
             <template v-for="agent in agents" :key="agent.id">
                 <button type="button" class="plan-dock-agent" :title="`Open ${agent.name}`" data-plan-dock-agent @click="peekRef(`agents:${agent.id}`)">{{ agent.name }}</button>
             </template>
@@ -31,7 +41,7 @@ watch(() => item.value?.target_id, load, {immediate: true});
     </template>
     <ol class="plan-dock-phases">
         <template v-for="(phase, index) in phases.slice(0, PREVIEW_PHASES)" :key="phase.id">
-            <li class="plan-dock-phase">
+            <li :class="['plan-dock-phase', {current: progress?.current_phase === index + 1}]">
                 <span class="plan-dock-number">{{ index + 1 }}</span>
                 <span class="plan-dock-name">{{ phase.title }}</span>
                 <span class="plan-dock-tasks">{{ phase.tasks.length ? `${phase.tasks.length} task${phase.tasks.length === 1 ? "" : "s"}` : "" }}</span>
@@ -52,11 +62,15 @@ watch(() => item.value?.target_id, load, {immediate: true});
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 0 12px 6px 16px;
+    padding: 7px 14px 0 36px;
+    align-items: center;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .plan-dock-agent {
     padding: 0 8px;
+    height: 20px;
     border: 1px solid var(--border-2);
     border-radius: 99px;
     background: none;
@@ -69,15 +83,15 @@ watch(() => item.value?.target_id, load, {immediate: true});
 
 .plan-dock-phases {
     margin: 0;
-    padding: 0 12px 9px 16px;
+    padding: 4px 14px 5px;
     list-style: none;
 }
 
 .plan-dock-phase {
     display: grid;
-    grid-template-columns: 18px minmax(0, 1fr) auto;
+    grid-template-columns: 22px minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: 8px;
+
     height: 24px;
     font-size: 12.5px;
 }
@@ -103,4 +117,8 @@ watch(() => item.value?.target_id, load, {immediate: true});
     color: var(--text-4);
     font-size: 11.5px;
 }
+.plan-dock-agent:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.plan-dock-phase.current .plan-dock-name { color: var(--text); }
+.plan-dock-phase.current .plan-dock-tasks { color: var(--text-3); }
+.plan-dock-loading { margin: 8px 36px; }
 </style>

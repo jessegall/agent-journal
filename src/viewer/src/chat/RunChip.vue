@@ -16,7 +16,7 @@ const props = defineProps({item: {type: Object, required: true}});
 const environment = inject(WINDOW_CONTEXT, null)?.environment ?? "";
 const card = ref(null);
 const running = computed(() => !card.value || card.value.state === "running" || card.value.state === "background");
-const name = computed(() => card.value?.title || card.value?.line || props.item.title || `Run ${props.item.target_id}`);
+const name = computed(() => card.value?.title || card.value?.line || props.item.title || "");
 const tone = computed(() => (running.value ? TONES.running : TONES[card.value.state] ?? "var(--text-3)"));
 
 async function load() {
@@ -59,6 +59,8 @@ usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
     font: inherit;
     cursor: pointer;
 }
+
+.run-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .run-chip:hover {
     border-color: var(--border-2);

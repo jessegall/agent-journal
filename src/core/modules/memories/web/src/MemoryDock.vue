@@ -1,27 +1,9 @@
 <script setup>
-import {useDockRow} from "@journal/window-kit";
-
+import {unref} from "vue";
+import {useDockRow, useWindow} from "@journal/window-kit";
 const row = useDockRow("memory");
+const foot = useWindow().option("foot");
 </script>
-
 <template>
-    <div class="memory-dock">
-        <template v-if="row">
-            <span class="memory-dock-weight">weight {{ row.weight }}</span>
-            <span class="memory-dock-text">{{ row.text }}</span>
-        </template>
-    </div>
+    <Teleport v-if="unref(foot) && row" :to="unref(foot)"><span>Weight: <b>{{ row.weight }}</b></span></Teleport>
 </template>
-
-<style scoped>
-.memory-dock {
-    display: flex;
-    gap: 8px;
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-.memory-dock-weight {
-    color: var(--text-4);
-}
-</style>

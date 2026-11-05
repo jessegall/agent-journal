@@ -7,7 +7,7 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 
 // the body file a module gives a chat mark or a docked item, loaded through the window host: as a component for a module the journal ships or
 // the person trusts, and in a sandboxed frame for any other
-const props = defineProps({declaration: {type: Object, required: true}, row: {type: Object, default: null}, head: {type: Object, default: null}, environment: {type: String, default: ""}});
+const props = defineProps({declaration: {type: Object, required: true}, row: {type: Object, default: null}, head: {type: Object, default: null}, foot: {type: Object, default: null}, actions: {type: Object, default: null}, time: {type: Object, default: null}, folded: Boolean, environment: {type: String, default: ""}});
 const ANY_EVENT = "*.*";
 const host = inject(WINDOW_CONTEXT, null);
 const subscriptions = new WindowSubscriptions();
@@ -32,7 +32,7 @@ const entry = computed(() => ({
 
 <template>
     <template v-if="asComponent">
-        <PageWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row, head}" />
+        <PageWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row, head, foot, actions, time, folded}" />
     </template>
     <template v-else>
         <FrameWindow :entry="entry" :subscriptions="subscriptions" :environment="env" :permissions="permissions" :options="{row}" />

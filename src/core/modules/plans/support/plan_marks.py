@@ -13,4 +13,4 @@ PLAN_MARKS = [MarkDeclaration(PlanMarkType.PLAN, PlanMarkVariant, PLANS_FAMILY, 
 
 PLAN_DOCK_READS = ["plan show", "plan progress", "plan outline"]
 PLAN_BADGES = {PlanDockType.DRAFT: "Planned", PlanDockType.STARTED: "Started", PlanDockType.PAUSED: "Paused", PlanDockType.COMPLETED: "Done", PlanDockType.CANCELLED: "Cancelled"}
-PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS, badge=PLAN_BADGES.get(dock_type, "")) for dock_type in PlanDockType]
+PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS, badge=PLAN_BADGES.get(dock_type, ""), folds="Phases", waits_on_you=dock_type == PlanDockType.WAITING) for dock_type in PlanDockType]

@@ -42,10 +42,14 @@ test("a docked process's card shows the title and steps its output keeps, in pla
     });
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})}[key]);
     await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-title").textContent).toBe("Running tests");
-    expect(head.querySelector("[data-output-steps]").textContent).toBe("12 passed, 1 failed");
+    expect(foot.querySelector("[data-output-steps]").textContent).toBe("Steps: 12 passed, 1 failed");
 });
 
 test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
@@ -53,10 +57,14 @@ test("a chained run's temporary title never shows its script in the header or to
     const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})}[key]);
     await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-title").textContent).toBe("Removing files");
-    expect(head.querySelector("[data-output-toggle]").title).toBe("Removing files");
+    expect(head.querySelector(".output-dock-title").title).toBe("Removing files");
     expect(head.textContent).not.toContain("python3");
     expect(head.innerHTML).not.toContain("private script");
 });
@@ -68,12 +76,16 @@ test("a docked process's card shows the run live, and unfolded its whole termina
     });
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})}[key]);
     const element = await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
     expect(head.querySelector(".output-dock-title").textContent).toBe("Running make");
     expect(window.reads.some((line) => line.startsWith("output page"))).toBe(false);
-    head.querySelector("[data-output-toggle]").click();
+    folded.value = false;
     await settle();
     expect(window.reads).toContain("output page 3");
     expect(element.querySelector("[data-output-terminal]").textContent).toBe("compiling the cart\n[ 40%]");
@@ -102,9 +114,13 @@ test("a docked process's running time moves on with the clock, with no read", as
         window.read = async (line) => (reads.push(line), {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0, created_at: "2026-11-02T10:00:00Z"}});
         const head = document.createElement("span");
         document.body.append(head);
-        window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+        const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})}[key]);
         await mounted(OutputDock, window);
-        const shown = () => [...head.querySelectorAll(".output-dock-figure")].map((figure) => figure.textContent).join(" ");
+        const shown = () => [...time.querySelectorAll(".output-dock-figure")].map((figure) => figure.textContent).join(" ");
         expect(shown()).toContain("10s");
         const readsBefore = reads.length;
         vi.advanceTimersByTime(1000);

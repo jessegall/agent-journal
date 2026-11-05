@@ -4,6 +4,7 @@ import {useNow} from "../composables/now.js";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {pressButton} from "./markButtons.js";
 import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
+import Btn from "../kit/Btn.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import DockWrapper from "./DockWrapper.vue";
@@ -28,11 +29,12 @@ const closed = ref(new Set());
 const refusals = ref({});
 
 async function undock(item, button) {
+    refusals.value = {...refusals.value, [item.id]: ""};
     closed.value = new Set([...closed.value, item.id]);
     const answer = await pressButton(button, {id: item.target_id}, context.environment);
     if (answer?.ok !== false) return;
     closed.value = new Set([...closed.value].filter((id) => id !== item.id));
-    refusals.value = {...refusals.value, [item.id]: answer.error};
+    refusals.value = {...refusals.value, [item.id]: `Could not close this card: ${answer.error}`};
 }
 
 const docked = computed(() => dockedItems(props.items.filter((item) => !closed.value.has(item.id)), now.value, held.value));
@@ -43,7 +45,7 @@ const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, gr
 
 // a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
-const foldedFor = (item) => dockFolded(byHand.value[item.id], props.folded);
+const foldedFor = (item) => Boolean(dockDeclaration(item.type)?.folds) && dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded);
 function fold(item) {
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
 }
@@ -75,7 +77,7 @@ function release(item) {
         </template>
         <template v-if="grouped && opened">
             <div key="runs-head" class="dock-runs-head">
-                <button type="button" class="dock-runs-toggle" aria-expanded="true" title="Fold the runs into one line" data-dock-runs-fold @click="foldRuns">{{ runs.length }} runs <FoldSign open /></button>
+                <span>{{ runs.length }} runs</span><Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">Runs <FoldSign open /></Btn>
             </div>
         </template>
         <template v-for="item in shared ? [] : runs" :key="item.id">
@@ -84,12 +86,15 @@ function release(item) {
         <template v-if="shared">
             <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">
                 <template #head>
-                    <button type="button" class="dock-runs-toggle" aria-expanded="false" title="Show each run on a card" data-dock-runs-open @click="opened = true"><MarkIcon name="runs" /> {{ runs.length }} runs <FoldSign /></button>
+                    <MarkIcon name="runs" /><span class="dock-runs-title">{{ runs.length }} runs</span>
+                </template>
+                <template #foot>
                     <span class="dock-runs-chips">
                         <template v-for="run in runs" :key="run.id">
                             <RunChip :item="run" @click="chooseRun(run)" />
                         </template>
                     </span>
+                    <Btn small bordered aria-expanded="false" data-dock-runs-open @click="opened = true">Runs <FoldSign /></Btn>
                 </template>
             </ChatDock>
         </template>
@@ -100,7 +105,7 @@ function release(item) {
 .dock-stack {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    border-bottom: 1px solid var(--border);
 }
 
 .dock-runs-toggle {
@@ -128,14 +133,19 @@ function release(item) {
     flex: 1;
     gap: 4px;
     min-width: 0;
-    margin-left: 10px;
+
 }
 
 .dock-runs-head {
     display: flex;
     align-items: center;
-    height: 20px;
-    margin-bottom: -2px;
+    height: 32px;
+    justify-content: space-between;
+    padding: 0 14px 0 36px;
+    border-top: 1px solid var(--border);
+    background: var(--raised);
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .dock-runs-head .dock-runs-toggle {
@@ -143,4 +153,5 @@ function release(item) {
     color: var(--text-3);
     font-size: 11.5px;
 }
+.dock-runs-title { color: var(--text); font-size: 13px; font-weight: 500; }
 </style>

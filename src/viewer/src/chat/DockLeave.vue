@@ -14,7 +14,7 @@ const run = {animationDuration: `${LEAVE_SECONDS}s`, animationDelay: `${(left - 
 <style scoped>
 .dock-leave {
     position: absolute;
-    top: 0;
+    top: -1px;
     right: 0;
     left: 0;
     z-index: 1;

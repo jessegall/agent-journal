@@ -8,7 +8,7 @@ import ModuleBody from "../windows/ModuleBody.vue";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
-const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}});
+const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}, foot: {type: Object, default: null}, actions: {type: Object, default: null}, time: {type: Object, default: null}, folded: Boolean});
 
 const context = inject(WINDOW_CONTEXT);
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
@@ -21,7 +21,7 @@ const pages = useOutputPages((words) => context.run(words), () => props.mark.tar
 const outputLines = pages.lines;
 const outputLoaded = ref(false);
 const outputFailure = ref("");
-const hasOutput = computed(() => props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
+const hasOutput = computed(() => !props.declaration.body_url && props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
 async function readOutput(step = pages.follow) {
     const answer = await step();
     outputLoaded.value = true;
@@ -43,7 +43,7 @@ onUnmounted(stopPoll);
     <div :class="['mark-more', {open: shown}]" @click.stop>
         <div class="mark-more-inner">
             <template v-if="declaration.body_url">
-                <ModuleBody :declaration="declaration" :row="mark" :head="head" />
+                <ModuleBody :declaration="declaration" :row="mark" :head="head" :foot="foot" :actions="actions" :time="time" :folded="folded" />
             </template>
             <template v-else>
                 <template v-if="stopReason">
