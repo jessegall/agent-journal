@@ -5,6 +5,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.modules.memories.models.enums.memory_state import MemoryState
@@ -17,6 +18,7 @@ class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
     as the reason."""
 
     name = "memories.task-memory-remover"
+    disabled_scopes = [ActorScope]
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
     def __init__(self, bus: Bus, queries: Queries) -> None:

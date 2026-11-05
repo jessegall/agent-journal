@@ -5,6 +5,7 @@ from core.base.database.nesting_error import NestingError
 from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
+from core.base.scope.row_owner import RowOwner
 
 PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
@@ -22,6 +23,7 @@ class Database:
         self.tally = PointTally()
         self.read_actor_id: int | None = None
         self.write_rollback_count = 0
+        self.row_owner: RowOwner | None = None
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":

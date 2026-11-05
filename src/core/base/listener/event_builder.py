@@ -1,4 +1,5 @@
 from dataclasses import replace
+from collections.abc import Sequence
 from typing import TypeVar
 
 from core.base.change.changed import Changed
@@ -32,6 +33,10 @@ class EventBuilder:
         if not issubclass(event_class, Updated):
             return event_class(row)
         return event_class(row, self.old_row(row, logged), self.move(row, logged))
+
+    def prepare(self, event_type: EventType, events: Sequence[LoggedEvent]) -> None:
+        if event_type.model is not None and issubclass(event_type.event_class, Changed):
+            self.rows.prepare(event_type.model, [event.row_id for event in events])
 
     def event_class(self, declared: type, logged: LoggedEvent) -> type:
         if declared is not Changed:

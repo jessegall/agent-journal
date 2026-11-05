@@ -9,7 +9,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.memories.rules.support.hook_memories import HookMemories
+from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.modules.memories.support.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_TOOL_USES_SETTING, MARKS_SETTING
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
@@ -28,7 +28,7 @@ class OpenMarkRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
 
-    def __init__(self, marks: MarkTracker, settings: SettingValues, memories: HookMemories, providers: Providers, home: JournalHome) -> None:
+    def __init__(self, marks: MarkTracker, settings: SettingValues, memories: ActiveMemoryQuery, providers: Providers, home: JournalHome) -> None:
         self.marks, self.settings, self.memories, self.providers, self.home = marks, settings, memories, providers, home
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -41,6 +41,6 @@ class OpenMarkRule(DriverRule):
             return RuleAnswer.allowed()
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING, hook.environment_id)
         uses = dict(zip(marks, tool_uses)).get(reached, tool_uses[-1])
-        memories = list(self.memories.query(hook).weight_order().all_rows())
+        memories = list(self.memories.weight_order().all_rows())
         return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(
             OpenMemoryMark(hook.agent_id, reached), BlockUntil(hook.agent_id, WEIGH_FIRST.nudge(), MemoriesWeighed(), Interval(ToolUseSpan(uses)), WEIGH_COUNTDOWN.nudge("{left}")))

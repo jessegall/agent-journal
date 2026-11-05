@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
 from core.base.driver.hook_event_name import HookEventName
@@ -25,8 +26,9 @@ COMPACTION_LIMIT_SECONDS = 600
 class HookCallQuery(Query[HookCall]):
     """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, HookCall)
+        self.kept = kept
 
     def agent(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
@@ -40,16 +42,18 @@ class HookCallQuery(Query[HookCall]):
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(1)
         return bool(stops) and stops[0].answer == HookAnswer.REFUSED
 
-    def is_idle(self, agent_id: int, current_time: Timestamp) -> bool:
-        calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
-        if not calls:
+    def is_idle(self, agent_id: int, checked_at: Timestamp) -> bool:
+        call = self.kept.read(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
+                              "agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
+        if call is None:
             return False
-        is_silent = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
-        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED and not calls[0].is_compaction_start) or bool(calls[0].metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+        is_silent = call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS
+        return is_silent or (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or bool(call.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
 
-    def is_compacting(self, agent_id: int, current_time: Timestamp) -> bool:
-        calls = self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().limited(1)
-        return bool(calls) and calls[0].is_compaction and calls[0].creation_timestamp().elapsed_seconds(current_time) < COMPACTION_LIMIT_SECONDS
+    def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
+        call = self.kept.read(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,
+                              "agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS, HookEventName.COMPACT], name="drivers.latest_compaction_turn")
+        return call is not None and call.is_compaction and call.creation_timestamp().elapsed_seconds(checked_at) < COMPACTION_LIMIT_SECONDS
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
@@ -57,12 +61,11 @@ class HookCallQuery(Query[HookCall]):
     def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
 
-    # How many tools the agent used after each start, all counted in one query over the newest start's range.
     def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
         parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
         row = self.database.rows(Statement(tool_use_counts_select(len(starts)), parameters))[0]
         return [int(count) for count in row]
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
-        calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().limited(1)
-        return calls[0] if calls else None
+        return self.kept.read(self.table.name, self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().first,
+                              "agent_id = ? AND hook <> ?", [agent_id, HookEventName.TICK], name="drivers.latest_agent_hook")

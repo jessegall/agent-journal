@@ -3,6 +3,8 @@ from copy import copy
 from typing import Generic, Self, TypeVar
 from core.base.database.database import Database
 from core.base.missing_rows_error import MissingRowsError
+from core.base.model.agent_scoped import AgentScoped
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.model.table import stored
@@ -10,15 +12,18 @@ from core.base.model.tables import Tables
 from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.own_rows import OwnRows
 from core.base.page import Page
 from core.base.query.select import Select
+from core.base.scope.row_owner import RowOwner
 from core.base.query.unknown_column_error import UnknownColumnError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
 AGENT_COLUMN = "agent_id"
+ENVIRONMENT_COLUMN = "environment_id"
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time.
     """
@@ -109,12 +114,22 @@ class Query(Generic[M]):
         return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
 
     def scoped(self, select: Select) -> Select:
+        owner = self.database.row_owner
+        if owner is not None and issubclass(self.model, EnvironmentScoped):
+            select = select.matching(Equal(ENVIRONMENT_COLUMN, owner.environment_id))
+        if issubclass(self.model, AgentScoped):
+            return self.owner_rows(select, owner)
         actor_id = self.database.read_actor_id
         if actor_id is None or self.model.shared_rows or not self.table.has_column(AGENT_COLUMN):
             return select
         if self.table.has_nullable_column(AGENT_COLUMN):
             return select.matching(OwnRows(actor_id))
         return select.matching(Equal(AGENT_COLUMN, actor_id))
+
+    def owner_rows(self, select: Select, owner: RowOwner | None) -> Select:
+        if owner is None:
+            return select
+        return select.matching(IsNull(AGENT_COLUMN)) if owner.is_main else select.matching(Equal(AGENT_COLUMN, owner.agent))
 
     def typed(self, row: Model | ViewModel) -> M:
         if isinstance(row, self.model):

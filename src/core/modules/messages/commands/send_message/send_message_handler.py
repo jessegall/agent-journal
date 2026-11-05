@@ -5,7 +5,7 @@ from core.base.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.messages.commands.send_message.send_message import SendMessage
@@ -25,17 +25,17 @@ class SendMessageHandler(Handler[SendMessage, Message]):
 
     command = SendMessage
 
-    def __init__(self, repository: Repository, files: MessageFiles, queries: Queries, targets: MessageTargets) -> None:
-        self.repository, self.files, self.queries = repository, files, queries
+    def __init__(self, repository: Repository, files: MessageFiles, rows: EventRows, targets: MessageTargets) -> None:
+        self.repository, self.files, self.rows = repository, files, rows
         self.targets = targets
 
     def handle(self, command: SendMessage, context: Context) -> Message:
         if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
             raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
-        if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
+        if actor.type is ActorType.AGENT and self.rows.required(Agent, actor.id).role != AgentRole.MAIN:
             raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
-        parent = self.queries.query(Message).find(command.parent_id) if command.parent_id is not None else None
+        parent = self.rows.required(Message, command.parent_id) if command.parent_id is not None else None
         environment_id = parent.environment_id if parent is not None else context.environment_id
         if environment_id is None:
             raise Refusal("a message is sent in an environment", "name it with --environment")

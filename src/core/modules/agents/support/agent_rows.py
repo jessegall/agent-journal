@@ -22,3 +22,10 @@ class AgentRows:
     def running_mains(self) -> tuple[Agent, ...]:
         return self.kept.read("agents", lambda: MainAgentFinder.all_running(self.queries),
                               "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_mains")
+
+    def main_agent(self, environment_id: int) -> Agent | None:
+        return max((agent for agent in self.running_mains() if agent.environment_id == environment_id), key=lambda agent: agent.id, default=None)
+
+    def main_agents(self, environment_id: int) -> tuple[Agent, ...]:
+        main = self.main_agent(environment_id)
+        return tuple([main]) if main is not None else ()

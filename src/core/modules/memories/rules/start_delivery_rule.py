@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.memories.rules.support.hook_memories import HookMemories
+from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.base.role_group import RoleGroup
 
 
@@ -17,9 +17,9 @@ class StartDeliveryRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.ANY
 
-    def __init__(self, memories: HookMemories) -> None:
+    def __init__(self, memories: ActiveMemoryQuery) -> None:
         self.memories = memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        count = self.memories.query(hook).count()
+        count = self.memories.count()
         return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()

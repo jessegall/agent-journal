@@ -7,7 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.base.driver.hook_keywords import hook_keywords
-from core.modules.memories.rules.support.hook_memories import HookMemories
+from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -26,7 +26,7 @@ class KeywordDeliveryRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
 
-    def __init__(self, queries: Queries, settings: SettingValues, memories: HookMemories) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, memories: ActiveMemoryQuery) -> None:
         self.queries, self.settings, self.memories = queries, settings, memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -35,7 +35,7 @@ class KeywordDeliveryRule(DriverRule):
             return RuleAnswer.allowed()
         memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).all_rows()]
         limit = self.settings.number(KEYWORD_LIMIT, hook.environment_id)
-        rows = self.memories.query(hook).among(memory_ids).absent_memories(hook.agent_id).weight_order().all_rows()
+        rows = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().all_rows()
         memories = list(rows)[:limit]
         if not memories:
             return RuleAnswer.allowed()

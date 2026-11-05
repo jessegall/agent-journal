@@ -1,8 +1,6 @@
-from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
+from core.base.database.kept_rows import KeptRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -20,8 +18,9 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
 
     name = "processes.waiting-message-run"
 
-    def __init__(self, targets: MessageTargets, processes: ProcessQuery, folder: OutputFolder) -> None:
+    def __init__(self, targets: MessageTargets, processes: ProcessQuery, folder: OutputFolder, kept: KeptRows) -> None:
         self.targets, self.processes, self.folder = targets, processes, folder
+        self.kept = kept
 
     def handle(self, event: Created[Message], logged: LoggedEvent) -> None:
         message = event.row
@@ -30,5 +29,7 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         target = self.targets.recipient(message)
         if target is None:
             return
-        for process in tuple(self.processes.environment(message.environment_id).filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()):
+        processes = self.kept.read("processes", lambda: tuple(self.processes.environment(message.environment_id).filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()),
+                                   "environment_id = ? AND agent_id = ? AND state = ?", [message.environment_id, target.id, ProcessState.RUNNING], name="processes.message_foreground_runs")
+        for process in processes:
             self.folder.write(process.id, MOVE_FILE, "1")

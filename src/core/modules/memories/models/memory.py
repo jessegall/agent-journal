@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from core.base.model.agent_scoped import AgentScoped
+from core.base.model.environment_scoped import EnvironmentScoped
+
 from core.base.actor import Actor
 from core.base.model.model import Model
 from core.base.refusal import Refusal
@@ -15,13 +18,12 @@ FADING_REMOVAL_REASON = "faded to weight 0"
 
 
 @dataclass(frozen=True, kw_only=True)
-class Memory(Model):
-    """What the journal gives back to an agent: for one environment, or for one helper with agent_id; a weight
-    from 0 to 10, given only above 0, which fades.
+class Memory(AgentScoped, EnvironmentScoped, Model):
+    """What the journal gives back to the agent that made it: a text with a weight from 0 to 10, given only above
+    0, which fades.
     """
 
     model_name = "memory"
-    shared_rows = True
     cli_name = "memory"
     search_fields = ["text", "reason"]
     lifecycle = MemoryLifecycle

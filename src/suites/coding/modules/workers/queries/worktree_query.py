@@ -20,3 +20,15 @@ class WorktreeQuery(Query[Worktree]):
     def environment_worktrees(self, environment_id: int) -> list[Worktree]:
         return list(self.kept.read(self.table.name, lambda: tuple(self.filter(environment_id=environment_id).matching(IsNull("removed_at")).oldest().all_rows()),
                                    "environment_id = ? AND removed_at IS NULL", [environment_id], name="workers.environment_worktrees"))
+
+    def remember(self, worktree: Worktree) -> None:
+        self.replace_cached(worktree, tuple([worktree]) if worktree.removed_at is None else ())
+
+    def remove(self, worktree: Worktree) -> None:
+        self.replace_cached(worktree, ())
+
+    def replace_cached(self, worktree: Worktree, active: tuple[Worktree, ...]) -> None:
+        self.kept.update(self.table.name, lambda previous: next(iter(active), None), "agent_id = ? AND removed_at IS NULL",
+                         [worktree.agent_id], name="workers.worker_worktree")
+        self.kept.update(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(active), key=lambda row: row.id)),
+                         "environment_id = ? AND removed_at IS NULL", [worktree.environment_id], name="workers.environment_worktrees")

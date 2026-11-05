@@ -1,7 +1,7 @@
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
@@ -23,8 +23,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     command = DeliverTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
-        self.queries, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = queries, worktrees, proof_queue, repository, task_commit, tasks
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
+        self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
 
     def handle(self, command: DeliverTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
@@ -33,8 +33,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         following = self.tasks.next_delegated(context.actor.id)
         if following is not None:
             raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
-        committed = self.task_commit.commit(worktree, self.queries.query(Task).find(worktree.task_id), context)
+        committed = self.task_commit.commit(worktree, self.rows.required(Task, worktree.task_id), context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
-            self.repository.save(started.moved(TaskLifecycle.test), context)
-        self.proof_queue.queue(self.repository.save(committed.moved(WorktreeLifecycle.deliver), context), context)
-        return self.queries.query(Task).find(worktree.task_id)
+            self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
+        self.proof_queue.queue(self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver), context), context)
+        return self.rows.required(Task, worktree.task_id)

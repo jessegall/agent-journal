@@ -20,4 +20,4 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
         agent = self.queries.query(Agent).find(command.row_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
-        return self.repository.save(agent.ended(context.timestamp, self.suites.agent_policy(agent.environment_id)), context)
+        return self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy(agent.environment_id)), context)

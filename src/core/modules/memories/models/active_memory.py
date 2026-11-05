@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
+from core.base.model.agent_scoped import AgentScoped
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.modules.memories.models.support.views import ACTIVE_MEMORIES_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class ActiveMemory(ViewModel):
+class ActiveMemory(AgentScoped, EnvironmentScoped, ViewModel):
     """An active memory above weight 0."""
 
     cli_name = "active-memory"

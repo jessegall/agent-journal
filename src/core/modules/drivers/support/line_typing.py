@@ -1,9 +1,8 @@
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
@@ -19,8 +18,8 @@ class LineTyping:
     cannot give it too; a line that could not be typed, for any reason, waits again for the next hook, and so
     does a line for an agent that is compacting."""
 
-    def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus, hook_calls: HookCallQuery, clock: Clock) -> None:
-        self.queries, self.typing, self.bus, self.hook_calls, self.clock = queries, typing, bus, hook_calls, clock
+    def __init__(self, agents: AgentRows, typing: TerminalTyping, bus: Bus, hook_calls: HookCallQuery, clock: Clock) -> None:
+        self.agents, self.typing, self.bus, self.hook_calls, self.clock = agents, typing, bus, hook_calls, clock
 
     def enter_line(self, line: AgentLine, actor: Actor, environment_id: int | None) -> bool:
         if self.hook_calls.is_compacting(line.agent_id, self.clock.timestamp()):
@@ -30,7 +29,7 @@ class LineTyping:
         except Refusal:
             return False
         try:
-            self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
+            self.typing.type_line(self.agents.find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
         except Exception as error:
             self.bus.run(ReleaseAgentLine(line.id), actor, environment_id=environment_id)
             if isinstance(error, Refusal):

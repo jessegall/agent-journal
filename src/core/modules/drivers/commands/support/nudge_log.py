@@ -5,6 +5,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answers import RuleAnswers
+from core.base.driver.span_queries import SpanQueries
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.timestamp import Timestamp
@@ -17,8 +18,9 @@ class NudgeLog:
     repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a
     number that changes in its text does not start it again. A refusal is never held back."""
 
-    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
+    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows, spans: SpanQueries) -> None:
         self.queries, self.repository, self.kept = queries, repository, kept
+        self.spans = spans
 
     def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         lines = answers.line_nudges
@@ -31,7 +33,7 @@ class NudgeLog:
         delivered_at = self.record(agent_id, nudge).last_delivered_at
         if delivered_at is None:
             return False
-        if nudge.interval and not nudge.interval.has_passed(self.queries, agent_id, delivered_at, timestamp):
+        if nudge.interval and not nudge.interval.has_passed(self.spans, agent_id, delivered_at, timestamp):
             return True
         return nudge.turn_limited and (turn_start is None or delivered_at.text >= turn_start.text)
 
