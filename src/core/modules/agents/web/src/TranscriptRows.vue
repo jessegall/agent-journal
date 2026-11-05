@@ -38,11 +38,13 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
                     </template>
                 </RowList>
             </AutoScrollPane>
-            <form v-if="agent !== null" class="agent-message" @submit.prevent="send">
-                <textarea v-model="message" aria-label="Message this agent" placeholder="Message this agent" rows="2" @keydown.enter="sendOnEnter" />
-                <Btn :disabled="sending || !message.trim()" @click="send">Send</Btn>
-                <p v-if="sendFailure" role="alert">{{ sendFailure }}</p>
-            </form>
+            <template v-if="agent !== null">
+                <form class="agent-message" @submit.prevent="send">
+                    <textarea v-model="message" aria-label="Message this agent" placeholder="Message this agent" rows="2" @keydown.enter="sendOnEnter" />
+                    <Btn :disabled="sending || !message.trim()" @click="send">Send</Btn>
+                    <template v-if="sendFailure"><p role="alert">{{ sendFailure }}</p></template>
+                </form>
+            </template>
         </div>
     </WindowRoom>
 </template>

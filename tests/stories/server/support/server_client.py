@@ -143,6 +143,7 @@ class ServerStory:
         assert answered == status and text in answer, (answered, headers, answer)
 
     def viewer_line_value(self, cookie: str, body: dict[str, object]) -> dict[str, object]:
+        self.story.steps.append(f"viewer line {json.dumps(body, sort_keys=True)}")
         status, _, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
         answered = json.loads(answer)
         assert status == 200 and answered["code"] == 0, (status, answer)

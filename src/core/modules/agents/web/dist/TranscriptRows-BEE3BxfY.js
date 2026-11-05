@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-import { ref as f, computed as T, openBlock as v, createBlock as N, unref as a, withCtx as u, createElementVNode as i, createVNode as h, toDisplayString as c, createElementBlock as w, withModifiers as R, withDirectives as V, withKeys as B, vModelText as D, createTextVNode as M, createCommentVNode as x } from "vue";
-import { useRows as C, WindowRoom as E, AutoScrollPane as K, RowList as O, Btn as L } from "@journal/window-kit";
+import { ref as v, computed as N, openBlock as h, createBlock as b, unref as a, withCtx as u, createElementVNode as i, createVNode as _, toDisplayString as c, createElementBlock as w, withModifiers as R, withDirectives as V, withKeys as B, vModelText as C, createTextVNode as D, createCommentVNode as x } from "vue";
+import { useRows as M, WindowRoom as E, AutoScrollPane as K, RowList as O, Btn as L } from "@journal/window-kit";
 const q = (n, s) => {
   const r = n.__vccOpts || n;
   for (const [m, p] of s)
@@ -13,26 +13,26 @@ const q = (n, s) => {
   __name: "TranscriptRows",
   props: { line: { type: String, required: !0 }, agent: { type: Number, default: null }, padding: { type: String, default: "8px 22px 8px 27px" } },
   setup(n) {
-    const s = n, { rows: r, failure: m, loaded: p, context: y } = C(s.line, ["hook_call.*"]), o = f(""), l = f(!1), g = f("");
-    async function _() {
+    const s = n, { rows: r, failure: m, loaded: p, context: y } = M(s.line, ["hook_call.*"]), o = v(""), l = v(!1), g = v("");
+    async function f() {
       if (s.agent === null || !o.value.trim() || l.value) return;
       l.value = !0;
       const e = await y.run(["message", "send", o.value, "--target-agent", String(s.agent)]);
       g.value = e.ok ? "" : e.error, e.ok && (o.value = ""), l.value = !1;
     }
     function k(e) {
-      e.shiftKey || e.isComposing || (e.preventDefault(), _());
+      e.shiftKey || e.isComposing || (e.preventDefault(), f());
     }
-    const S = T(() => {
+    const S = N(() => {
       var e;
       return ((e = r.value.at(-1)) == null ? void 0 : e.id) ?? 0;
-    }), b = (e) => e.time ? new Date(e.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
-    return (e, d) => (v(), N(a(E), { padding: n.padding }, {
+    }), T = (e) => e.time ? new Date(e.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
+    return (e, d) => (h(), b(a(E), { padding: n.padding }, {
       default: u(() => [
         i("div", A, [
-          h(a(K), { "row-count": S.value }, {
+          _(a(K), { "row-count": S.value }, {
             default: u(() => [
-              h(a(O), {
+              _(a(O), {
                 rows: a(r),
                 failure: a(m),
                 loaded: a(p),
@@ -49,17 +49,17 @@ const q = (n, s) => {
                     class: "time",
                     "data-row-time": "",
                     datetime: t.time
-                  }, c(b(t)), 9, P)
+                  }, c(T(t)), 9, P)
                 ]),
                 _: 1
               }, 8, ["rows", "failure", "loaded"])
             ]),
             _: 1
           }, 8, ["row-count"]),
-          n.agent !== null ? (v(), w("form", {
+          n.agent !== null ? (h(), w("form", {
             key: 0,
             class: "agent-message",
-            onSubmit: R(_, ["prevent"])
+            onSubmit: R(f, ["prevent"])
           }, [
             V(i("textarea", {
               "onUpdate:modelValue": d[0] || (d[0] = (t) => o.value = t),
@@ -68,25 +68,25 @@ const q = (n, s) => {
               rows: "2",
               onKeydown: B(k, ["enter"])
             }, null, 544), [
-              [D, o.value]
+              [C, o.value]
             ]),
-            h(a(L), {
-              type: "submit",
-              disabled: l.value || !o.value.trim()
+            _(a(L), {
+              disabled: l.value || !o.value.trim(),
+              onClick: f
             }, {
               default: u(() => [...d[1] || (d[1] = [
-                M("Send", -1)
+                D("Send", -1)
               ])]),
               _: 1
             }, 8, ["disabled"]),
-            g.value ? (v(), w("p", U, c(g.value), 1)) : x("", !0)
+            g.value ? (h(), w("p", U, c(g.value), 1)) : x("", !0)
           ], 32)) : x("", !0)
         ])
       ]),
       _: 1
     }, 8, ["padding"]));
   }
-}, G = /* @__PURE__ */ q(W, [["__scopeId", "data-v-b879d32d"]]);
+}, G = /* @__PURE__ */ q(W, [["__scopeId", "data-v-d93e3dc9"]]);
 export {
   G as T,
   q as _

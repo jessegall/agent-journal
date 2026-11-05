@@ -1,3 +1,6 @@
+from tests.stories.core.support.fixtures import UserJoined
+from core.modules.processes.models.reader import Reader
+from core.base.query.queries import Queries
 import pytest
 
 from core.base.driver.command_category import CommandCategory
@@ -105,3 +108,10 @@ def test_every_stock_reader_is_stored_and_none_is_a_default(new_story):
     story.expect_rows(sorted(stock.name for stock in STOCK_READERS if stock.name not in stored) == [])
     story.expect_rows(sorted(stock.name for stock in new_readers if (stored[stock.name].step_pattern, stored[stock.name].count_pattern) != (stock.step, stock.count)) == [])
     story.expect_rows(sorted(name for name, reader in stored.items() if reader.is_default) == [])
+
+
+@pytest.mark.parametrize("line", ["collected 20 items / 19 deselected / 1 selected", "1/20 tests collected (19 deselected) in 0.05s"])
+def test_a_filtered_pytest_collect_counts_only_the_selected_tests(new_story, line):
+    story = new_story(fixture=UserJoined)
+    pytest_reader = story.container.get(Queries).query(Reader).filter(name="pytest").first()
+    story.expect_rows(story.container.get(ReaderRun).count(pytest_reader, line, 0) == 1)
