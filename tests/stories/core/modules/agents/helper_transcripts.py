@@ -38,13 +38,13 @@ def deliver_line(story, agent_id: int, creator_id: int, text: str) -> None:
 def test_a_workers_own_rows_say_worker_and_not_assistant(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-2", row("assistant", "The cart is fixed"))
     story = new_story(fixture=TranscriptWorker)
-    story.expect_text(f"agent transcript {story.subagent.id}", "1  worker  assistant  The cart is fixed")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  worker  assistant  The cart is fixed")
 
 
 def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agent_sent_is_tagged_main_agent(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "your tests failed: two"), row("user", "Fix the footer too"))
     story = new_story(fixture=TranscriptWorker)
-    worker = story.subagent.id
+    worker = story.helper.id
     deliver_line(story, worker, 1, "your tests failed: two")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
     story.expect_text(f"agent transcript {worker}", "1  journal  user  your tests failed: two", "2  main agent  user  Fix the footer too")
@@ -53,13 +53,13 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
 def test_a_row_of_a_worker_that_no_line_matches_is_tagged_journal_and_never_user(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "Tell me what to do"))
     story = new_story(fixture=TranscriptWorker)
-    story.expect_text(f"agent transcript {story.subagent.id}", "1  journal  user  Tell me what to do")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  journal  user  Tell me what to do")
 
 
 def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "[journal] your next task"), row("user", "[journal] look at the cart"))
     story = new_story(fixture=TranscriptWorker)
-    worker = story.subagent.id
+    worker = story.helper.id
     deliver_line(story, worker, story.agent.id, "[journal] look at the cart")
     story.expect_text(f"agent transcript {worker}", "1  journal  user  [journal] your next task", "2  main agent  user  [journal] look at the cart")
 
@@ -67,7 +67,7 @@ def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(new
 def test_a_monitor_event_in_a_workers_transcript_stays_a_monitor_row(new_story, tmp_path, monkeypatch):
     transcript_of(tmp_path, monkeypatch, "s-2", row("user", "<task-notification>ended</task-notification>"))
     story = new_story(fixture=TranscriptWorker)
-    story.expect_text(f"agent transcript {story.subagent.id}", "1  monitor  user  <task-notification>ended</task-notification>")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  monitor  user  <task-notification>ended</task-notification>")
 
 
 def test_the_main_agents_rows_keep_user_and_assistant(new_story, tmp_path, monkeypatch):
@@ -96,4 +96,4 @@ class TranscriptWorker(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story):
-        story.subagent = Actor(worker_of(story), ActorType.AGENT)
+        story.helper = Actor(worker_of(story), ActorType.AGENT)

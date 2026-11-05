@@ -66,28 +66,28 @@ def profile_definition(story, name: str):
     return next(profile for profile in SHIPPED_PROFILES if profile.name == name)
 
 
-def run_subagent_command(story, profile: str, command: str) -> None:
+def run_helper_command(story, profile: str, command: str) -> None:
     definition = profile_definition(story, profile)
     prefix = " ".join(shlex.split(command)[:2])
     assert f"journal {prefix}" in definition.body, (profile, prefix)
-    story.expect_success(f"agent edit {story.subagent.id} --profile {profile}")
-    sample = HookSamples.shell(f"journal {command}", ShellPart("journal", CommandCategory.JOURNAL, shlex.split(command), subcommand=command.split()[0])).with_fields(subagent="sub-1")
+    story.expect_success(f"agent edit {story.helper.id} --profile {profile}")
+    sample = HookSamples.shell(f"journal {command}", ShellPart("journal", CommandCategory.JOURNAL, shlex.split(command), subcommand=command.split()[0])).with_fields(helper="sub-1")
     story.expect_hook_allowed("s-1", sample)
-    story.expect_success(command, actor=story.subagent)
+    story.expect_success(command, actor=story.helper)
 
 
-def expect_subagent_commands(story) -> None:
-    run_subagent_command(story, "journal-planner", 'doc make "Cart design" --abstract "Plan the cart" --body "Keep totals in cents."')
-    run_subagent_command(story, "journal-planner", 'plan make "Cart" --brief "Keep totals correct" --environment main')
-    run_subagent_command(story, "journal-planner", 'phase make --plan 1 "Totals" --goal "Totals use cents"')
-    run_subagent_command(story, "journal-planner", 'task make "Use cents" --brief "Store integer cents" --environment main')
-    run_subagent_command(story, "journal-researcher", 'report make "Cart findings" --abstract "Totals" --body "Totals use cents."')
-    run_subagent_command(story, "journal-researcher", 'doc make "Cart evidence" --abstract "Totals" --body "The cart stores cents."')
-    run_subagent_command(story, "journal-plan-reviewer", "plan outline 1")
-    run_subagent_command(story, "journal-debugger", "task show 1")
-    run_subagent_command(story, "code-reviewer", 'task make "Check the cents" --brief "Check integer totals" --priority critical --environment main')
-    run_subagent_command(story, "plan-reviewer", "plan outline 1")
-    run_subagent_command(story, "designer", "task show 1")
+def expect_helper_commands(story) -> None:
+    run_helper_command(story, "journal-planner", 'doc make "Cart design" --abstract "Plan the cart" --body "Keep totals in cents."')
+    run_helper_command(story, "journal-planner", 'plan make "Cart" --brief "Keep totals correct" --environment main')
+    run_helper_command(story, "journal-planner", 'phase make --plan 1 "Totals" --goal "Totals use cents"')
+    run_helper_command(story, "journal-planner", 'task make "Use cents" --brief "Store integer cents" --environment main')
+    run_helper_command(story, "journal-researcher", 'report make "Cart findings" --abstract "Totals" --body "Totals use cents."')
+    run_helper_command(story, "journal-researcher", 'doc make "Cart evidence" --abstract "Totals" --body "The cart stores cents."')
+    run_helper_command(story, "journal-plan-reviewer", "plan outline 1")
+    run_helper_command(story, "journal-debugger", "task show 1")
+    run_helper_command(story, "code-reviewer", 'task make "Check the cents" --brief "Check integer totals" --priority critical --environment main')
+    run_helper_command(story, "plan-reviewer", "plan outline 1")
+    run_helper_command(story, "designer", "task show 1")
 
 
 def expect_worker_commands(story) -> None:

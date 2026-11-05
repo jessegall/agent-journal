@@ -52,7 +52,7 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
 
 
-def test_a_link_a_subagent_returned_is_offered(new_story):
+def test_a_link_a_helper_returned_is_offered(new_story):
     story = new_story(fixture=UserJoined)
     response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1"}]}
     sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})

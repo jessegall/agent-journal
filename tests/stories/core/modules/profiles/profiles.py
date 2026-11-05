@@ -99,9 +99,9 @@ def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_fold
     expect_absent_exists_project_folder_2(story, ".codex", "agents", "critic.toml")
 
 
-def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
+def test_starting_a_helper_under_a_profile_counts_its_use(new_story):
     story = saved_profile_story(new_story)
-    start = HookSamples.subagent().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
+    start = HookSamples.helper().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
     story.hook("s-1", start)
     story.expect_text("profile list", "critic  helper  sonnet  used 1", actor=story.user)
 

@@ -14,7 +14,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_reply import expect_absent_reply_refusal
@@ -141,11 +141,11 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
     story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2: journal task show 2")
 
 
-def test_a_task_is_not_assigned_to_a_subagent_and_the_refusal_names_who_takes_one(new_story):
-    story = new_story(fixture=SubagentStarted)
+def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(new_story):
+    story = new_story(fixture=HelperUnderBuilder)
     story.expect_success('task make "Fix the cart" --environment main')
-    story.expect_refusal(f"task assign 1 --to {story.subagent.id}", "is a subagent and takes no task", actor=story.agent)
-    story.expect_refusal(f"task assign 1 --to {story.subagent.id}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.helper.id}", "is a helper and takes no task", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.helper.id}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
 
 

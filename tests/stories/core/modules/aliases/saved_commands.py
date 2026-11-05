@@ -57,9 +57,9 @@ def expect_saved_names(story: Story, names: list[str]) -> None:
     assert sorted(json.loads(story.home.saved_command_file.read_text())) == names
 
 
-def expect_subagent_refusal(story: Story, text: str) -> None:
+def expect_helper_refusal(story: Story, text: str) -> None:
     part = Part("make all", "make", "", (), Classification(CommandCategory.BUILD, ()), (), (), "", None)
-    refusal = story.container.get(SavedCommandRule).refusal(part, AgentRole.SUBAGENT)
+    refusal = story.container.get(SavedCommandRule).refusal(part, AgentRole.HELPER)
     assert refusal is not None and text in refusal.text
 
 
@@ -93,9 +93,9 @@ def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
     saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "use a saved build")
 
 
-def test_a_subagent_is_told_to_ask_its_parent(new_story):
+def test_a_helper_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_subagent_refusal(story, "a subagent only reads: ask your parent to run journal alias add for this build")
+    expect_helper_refusal(story, "a helper only reads: ask your parent to run journal alias add for this build")
 
 
 def test_saving_a_build_writes_its_name_for_the_hook(new_story):

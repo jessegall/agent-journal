@@ -65,11 +65,11 @@ def test_a_sessions_transcript_is_found_under_the_config_folder(provider, tmp_pa
     assert (provider.transcript(FOLDER, "s-1"), provider.transcript(FOLDER, "s-9")) == (transcript, None)
 
 
-def test_a_subagents_hook_names_the_subagents_own_transcript(provider):
+def test_a_helpers_hook_names_the_helpers_own_transcript(provider):
     example = json.loads(STOP_EXAMPLE.read_text())
     raw = {"transcript_path": "/talks/main.jsonl", "agent_transcript_path": "/talks/helper.jsonl"}
     main = HookEvent.parsed({**example, "raw": raw})
-    helper = HookEvent.parsed({**example, "subagent": "a1", "raw": raw})
+    helper = HookEvent.parsed({**example, "helper": "a1", "raw": raw})
     assert (provider.transcript_path(main), provider.transcript_path(helper)) == (Path("/talks/main.jsonl"), Path("/talks/helper.jsonl"))
 
 

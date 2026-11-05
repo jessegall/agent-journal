@@ -10,16 +10,16 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 import os
 
 
-def test_open_worker_and_subagent_details_fill_the_window_and_scroll_inside_it(new_story, tmp_path, monkeypatch):
+def test_open_worker_and_helper_details_fill_the_window_and_scroll_inside_it(new_story, tmp_path, monkeypatch):
     story = new_story(fixture=UserJoined)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     transcript = [row("assistant", f"Transcript row {number}\n" + "A longer message in the agent conversation.\n" * 8) for number in range(120)]
     transcript_of(tmp_path, monkeypatch, "detail-worker", *transcript)
-    transcript_of(tmp_path, monkeypatch, "detail-subagent", *transcript)
+    transcript_of(tmp_path, monkeypatch, "detail-helper", *transcript)
     worker = story.new_row_id(f"agent start detail-worker claude worker --parent {story.agent.id} --environment main")
-    subagent = story.new_row_id(f"agent start detail-subagent claude subagent --parent {story.agent.id} --environment main")
+    helper = story.new_row_id(f"agent start detail-helper claude helper --parent {story.agent.id} --environment main")
     with server_story(story) as server:
-        expect_browser(server, "agentDetail.browser.mjs", [str(worker), str(subagent), "/tmp/journal-worker-475-agent-detail.png"])
+        expect_browser(server, "agentDetail.browser.mjs", [str(worker), str(helper), "/tmp/journal-worker-475-agent-detail.png"])
 
 
 def test_agent_details_animate_and_lists_reach_the_edges(new_story, tmp_path, monkeypatch):

@@ -5,7 +5,7 @@ from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
+from core.modules.drivers.commands.bind_helper_dispatch.bind_helper_dispatch import BindSubagentDispatch
 from core.base.change.created import Created
 from core.base.query.queries import Queries
 from core.modules.helpers.listeners.helper_job_mark_listener import HelperJobMarkListener
@@ -46,19 +46,19 @@ def test_a_change_to_a_finished_dispatch_leaves_its_ended_mark_alone(researcher_
     story.expect_text("chat-mark show 1", "state: ended")
 
 
-def test_a_dispatch_mark_opens_its_subagent_once_that_has_started(researcher_dispatched):
+def test_a_dispatch_mark_opens_its_helper_once_that_has_started(researcher_dispatched):
     story, sample = researcher_dispatched
     story.expect_absent("chat-mark show 1", "target_model: agents")
-    subagent = story.new_row_id(f"agent start s-sub claude subagent --parent {story.agent.id} --environment main")
-    story.container.get(Bus).run(BindSubagentDispatch(story.agent.id, "journal-researcher", subagent), story.agent, environment_id=1)
+    helper = story.new_row_id(f"agent start s-sub claude helper --parent {story.agent.id} --environment main")
+    story.container.get(Bus).run(BindSubagentDispatch(story.agent.id, "journal-researcher", helper), story.agent, environment_id=1)
     story.run_listeners()
-    story.expect_text("chat-mark show 1", "target_model: agents", f"target_id: {subagent}")
+    story.expect_text("chat-mark show 1", "target_model: agents", f"target_id: {helper}")
     story.hook("s-1", sample.with_fields(event="post_tool_use"))
     story.run_listeners()
-    story.expect_text("chat-mark show 1", "state: ended", "target_model: agents", f"target_id: {subagent}")
+    story.expect_text("chat-mark show 1", "state: ended", "target_model: agents", f"target_id: {helper}")
 
 
-def test_a_main_agent_started_shows_no_subagent_mark(new_story):
+def test_a_main_agent_started_shows_no_helper_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run_listeners()
     expect_absent_marks_text(story, "Subagent")
@@ -71,14 +71,14 @@ def test_the_agents_module_writes_only_its_own_marks(new_story):
         story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.agents"), environment_id=1)
 
 
-def test_the_subagent_mark_is_declared_as_version_4_showed_it(new_story):
+def test_the_helper_mark_is_declared_as_version_4_showed_it(new_story):
     expect_declared_appearance(new_story(fixture=BuilderStarted), SUBAGENT)
 
 
 @pytest.fixture
 def researcher_dispatched(new_story):
     story = new_story(fixture=BuilderStarted)
-    sample = HookSamples.subagent().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
+    sample = HookSamples.helper().with_raw({"tool_use_id": "t-1", "tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
     story.hook("s-1", sample)
     story.run_listeners()
     return story, sample

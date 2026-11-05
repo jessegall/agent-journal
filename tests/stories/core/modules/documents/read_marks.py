@@ -36,7 +36,7 @@ def test_document_and_report_reads_show_one_clickable_mark_per_row_in_a_turn(new
     expect_value(declaration.click, "open row")
 
 
-@pytest.mark.parametrize("role", ["worker", "subagent"])
+@pytest.mark.parametrize("role", ["worker", "helper"])
 def test_another_agents_reads_make_no_document_marks(new_story, role):
     story = new_story(fixture=ReadableTexts)
     worker = story.new_row_id(f"agent start s-reader claude {role} --parent {story.agent.id} --environment main")

@@ -18,7 +18,7 @@ SAMPLES = {
     "edit": HookSamples.edit("src/cart.py", 3, 1),
     "shell": HookSamples.shell("git status && journal task show 1", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"], subcommand="status"),
                                ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"])),
-    "subagent": HookSamples.subagent(),
+    "helper": HookSamples.helper(),
 }
 
 

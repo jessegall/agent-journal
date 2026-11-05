@@ -60,7 +60,7 @@ def test_a_report_ends_the_job_and_stays_out_of_the_chat(new_story, helper_fixtu
     story = reported(new_story, helper_fixture, "The total is wrong.")
     message, job = report_of(story), jobs_of(story, the_helper(story))[0]
     story.expect_rows(message.is_chat_visible is False, job.report_message_id == message.id, job.returned == "The total is wrong.", job.ended_at is not None)
-    story.expect_text("chat-mark list --environment 1", "Finished journal-researcher")
+    story.expect_text("chat-mark list --environment 1", f"Agent {the_helper(story).id} reported back")
 
 
 def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent(new_story):

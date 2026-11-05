@@ -1,6 +1,6 @@
 import json
 
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, SubagentStarted
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
@@ -22,10 +22,10 @@ def test_the_agent_cards_list_a_worker_and_never_the_main_agent(new_story):
     expect_id_cards(cards, [worker.id])
 
 
-def test_the_agent_cards_list_a_subagent_and_never_the_main_agent(new_story):
-    story = new_story(fixture=SubagentStarted)
+def test_the_agent_cards_list_a_helper_and_never_the_main_agent(new_story):
+    story = new_story(fixture=HelperUnderBuilder)
     cards = json.loads(story.run("agent cards --environment main --show all --json", actor=story.agent).output_text)["rows"]
-    expect_id_cards(cards, [story.subagent.id])
+    expect_id_cards(cards, [story.helper.id])
 
 
 def expect_id_cards(cards, expected) -> None:

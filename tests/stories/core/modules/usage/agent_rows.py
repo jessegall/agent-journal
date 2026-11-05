@@ -26,7 +26,7 @@ def expect_unlisted(story, *agent_ids: int) -> None:
 
 def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_story):
     story = new_story(fixture=BuilderWithUser)
-    oldest = story.new_row_id("agent start oldest claude subagent --environment main")
+    oldest = story.new_row_id("agent start oldest claude helper --environment main")
     story.advance(timedelta(seconds=1))
     middle = story.new_row_id("agent start middle codex worker --environment main")
     story.advance(timedelta(seconds=1))
@@ -40,7 +40,7 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
 def test_agent_rows_filter_search_and_page_before_answering(new_story):
     story = new_story(fixture=BuilderWithUser)
     for session in ("first", "second", "third"):
-        story.run(f"agent start {session} claude subagent --environment main")
+        story.run(f"agent start {session} claude helper --environment main")
         story.advance(timedelta(seconds=1))
     rows = json.loads(story.run("agent cards --environment main --show all --limit 1 --page 2 --json", actor=story.user).output_text)["rows"]
     expect_session_matching(rows, ["second"])
@@ -55,10 +55,10 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     transcript.write_text(json.dumps({"type": "assistant", "message": {"content": "The review is complete"}}) + "\n")
     story = new_story(fixture=BuilderWithUser)
     main = story.new_row_id("agent start main-session claude main --environment main")
-    helper = story.new_row_id("agent start helper-session claude subagent --environment main")
+    helper = story.new_row_id("agent start helper-session claude helper --environment main")
     reviewer = story.new_row_id("agent start review-session claude reviewer --environment main")
     worker = story.new_row_id("agent start worker-session codex worker --environment main")
-    running_helper = story.new_row_id("agent start running-helper claude subagent --environment main")
+    running_helper = story.new_row_id("agent start running-helper claude helper --environment main")
     running_worker = story.new_row_id("agent start running-worker codex worker --environment main")
     retired_main = story.new_row_id("agent start retired-main claude main --environment main")
     story.run(f"agent end {helper}")
@@ -86,7 +86,7 @@ def expect_session_matching(matching_rows, expected) -> None:
     assert actual == expected, actual
 
 
-@pytest.mark.parametrize(("role", "job_enabled"), [("worker", True), ("main", False), ("subagent", False)])
+@pytest.mark.parametrize(("role", "job_enabled"), [("worker", True), ("main", False), ("helper", False)])
 def test_the_suite_selects_which_agent_cards_show_their_job(new_story, role, job_enabled):
     story = new_story(fixture=BuilderWithUser)
     agent_id = story.new_row_id(f"agent start policy-session codex {role} --environment main")

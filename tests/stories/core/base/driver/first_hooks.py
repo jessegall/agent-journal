@@ -10,10 +10,10 @@ def test_a_sessions_first_hook_starts_its_agent_and_gives_its_drivers_opening_li
     story.expect_text("agent list --role main", "s-1")
 
 
-def test_a_subagents_first_hook_starts_a_subagent_row_under_its_agent(new_story):
+def test_a_helpers_first_hook_starts_a_helper_row_under_its_agent(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.hook("s-1", HookSamples.session_start().with_fields(subagent="sub-1"))
-    story.expect_text(f"agent list --parent {story.agent.id} --role subagent", "sub-1")
+    story.hook("sub-1", HookSamples.session_start())
+    story.expect_text(f"agent list --parent {story.agent.id} --role helper", "sub-1")
 
 
 def test_a_resumed_sessions_first_hook_reopens_its_agent_instead_of_starting_another(new_story):

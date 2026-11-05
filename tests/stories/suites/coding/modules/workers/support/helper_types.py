@@ -29,8 +29,8 @@ class WorkerStarted(HelperSession):
     role = "worker"
 
 
-class NativeSubagentStarted(HelperSession):
-    role = "subagent"
+class NativeHelperUnderBuilder(HelperSession):
+    role = "helper"
 
 
 class ClerkStarted(HelperSession):

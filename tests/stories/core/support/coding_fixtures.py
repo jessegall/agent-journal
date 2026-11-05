@@ -57,16 +57,16 @@ class OrchestratorWithOpenTask(StoryFixture):
         story.expect_text(lines.CURRENT_SUITE, "main: coding.orchestrator")
 
 
-class SubagentStarted(StoryFixture):
-    """The builder's session s-1 sent a subagent, sub-1, whose first hook started story.subagent under it."""
+class HelperUnderBuilder(StoryFixture):
+    """The builder's session s-1 has a helper with session sub-1 under it: story.helper."""
 
     parent = BuilderStarted
 
     def steps(self, story: Story) -> None:
-        story.subagent = hook_agent(story, story.hook("s-1", HookSamples.prompt("Find where the cart total is worked out").with_fields(subagent="sub-1")))
+        story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.subagent.id}", "role: subagent", f"parent_id: {story.agent.id}")
+        story.expect_success(f"agent show {story.helper.id}", "role: helper", f"parent_id: {story.agent.id}")
 
 
 class BuilderWithStartedTask(StoryFixture):

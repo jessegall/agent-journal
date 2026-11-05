@@ -78,11 +78,11 @@ def test_a_prompt_of_the_user_holding_a_keyword_makes_the_skill_due(prompt_skill
     expect_due(story, "journal-notes")
 
 
-def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due(started_skill_environment):
+def test_a_journal_line_a_plugins_notice_or_a_helpers_notice_makes_nothing_due(started_skill_environment):
     story = started_skill_environment
     for text in ("[journal] take a note of that", "[plugin:ledger] take a note of that"):
         story.hook("s-1", HookSamples.prompt(text))
-    story.hook("s-1", HookSamples.prompt("take a note of that").with_fields(subagent="a-1"))
+    story.hook("a-1", HookSamples.prompt("take a note of that"))
     story.run_listeners()
     expect_skills_absent(story, "journal-notes")
 

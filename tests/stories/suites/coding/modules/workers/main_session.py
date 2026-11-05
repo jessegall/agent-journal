@@ -61,5 +61,5 @@ def test_a_main_session_in_another_environment_does_not_take_over_a_worker(new_s
 
 def test_a_new_helper_session_does_not_take_over_a_worker(new_story):
     story, worker = delivered_story(new_story)
-    story.expect_success(f"agent start s-helper claude subagent --parent {story.agent.id} --environment main")
+    story.expect_success(f"agent start s-helper claude helper --parent {story.agent.id} --environment main")
     story.expect_text(f"agent show {worker.id}", f"parent_id: {story.agent.id}")

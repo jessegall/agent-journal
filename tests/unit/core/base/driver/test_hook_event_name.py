@@ -9,7 +9,7 @@ from core.base.driver.hook_event_name import HookEventName
 
 SCHEMA = Path(__file__).parents[5] / "tools" / "journal-hook" / "event" / "hook_event.schema.json"
 STOP_BODY = {"version": HOOK_EVENT_VERSION, "program": "claude", "event": "stop", "session": "s-1", "firing": "f-1", "fired_at_ms": 1, "actor": "agent", "environment": "main",
-             "subagent": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []}
+             "helper": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []}
 EVENT_NAMES = ["pre_tool_use", "post_tool_use", "post_tool_use_failure", "prompt", "stop", "stop_failure", "session_start", "session_end", "compact",
                "message_display", "tick"]
 
@@ -22,7 +22,7 @@ def test_the_hook_events_are_the_eleven_names_of_every_program():
     assert [name.value for name in HookEventName] == EVENT_NAMES
 
 
-def test_a_subagent_start_and_stop_are_no_event_names_of_their_own():
+def test_a_helper_start_and_stop_are_no_event_names_of_their_own():
     assert not {"subagent_start", "subagent_stop"} & {name.value for name in HookEventName}
 
 

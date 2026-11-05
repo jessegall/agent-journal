@@ -13,7 +13,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, SubagentStarted
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, HelperUnderBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
 
@@ -223,40 +223,40 @@ def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
     story.expect_text("usage agents --environment main --json", '"effort": "high"', actor=story.user)
 
 
-def test_a_subagents_facts_carry_its_profile_given_name_and_instruction(new_story):
+def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     dispatch = {"subagent_type": "journal-researcher", "model": "sonnet", "description": "Madame Curie, reader of the cart", "prompt": "Read the cart"}
     story.hook("s-1", HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": dispatch, "tool_use_id": "tool-1"}))
-    story.hook("s-1", HookSamples.sample("session_start").with_fields(subagent="sub-1").with_raw({"agent_type": "journal-researcher"}))
+    story.hook("sub-1", HookSamples.sample("session_start").with_raw({"agent_type": "journal-researcher"}))
     story.expect_text("usage agents --environment main --json", '"profile": "journal-researcher"', '"given_name": "Madame Curie"', '"instruction": "Read the cart"')
 
 
-def test_the_tool_of_a_subagent_is_read_by_its_agent_number(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1).with_fields(subagent="sub-1"))
-    story.expect_text(f"usage tool --agent {story.subagent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
+def test_the_tool_of_a_helper_is_read_by_its_agent_number(new_story):
+    story = new_story(fixture=HelperUnderBuilder)
+    story.hook("sub-1", HookSamples.edit("src/cart.py", 3, 1))
+    story.expect_text(f"usage tool --agent {story.helper.id}", "Edit src/cart.py +3 -1", actor=story.agent)
     story.expect_absent(f"usage tool --agent {story.agent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
 
 
-def test_a_subagent_s_chained_command_is_named_by_the_part_it_runs(new_story):
-    story = install_runner(new_story(fixture=SubagentStarted))
+def test_a_helper_s_chained_command_is_named_by_the_part_it_runs(new_story):
+    story = install_runner(new_story(fixture=HelperUnderBuilder))
     chained = HookSamples.shell("ls src && cat notes.md", ShellPart("ls", CommandCategory.PROCESS, ["src"]), ShellPart("cat", CommandCategory.PROCESS, ["notes.md"]))
-    story.hook("s-1", chained.with_fields(subagent="sub-1"))
-    story.expect_text(f"usage tool --agent {story.subagent.id}", "ls src", actor=story.agent)
-    story.expect_absent(f"usage tool --agent {story.subagent.id}", "cat notes.md", actor=story.agent)
+    story.hook("sub-1", chained)
+    story.expect_text(f"usage tool --agent {story.helper.id}", "ls src", actor=story.agent)
+    story.expect_absent(f"usage tool --agent {story.helper.id}", "cat notes.md", actor=story.agent)
 
 
-def test_a_subagent_that_ran_no_command_says_so_plainly(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.expect_text(f"usage tool --agent {story.subagent.id}", "has run no command yet", actor=story.agent)
-    story.expect_text(f"usage tool --agent {story.subagent.id} --json", '"note": "has run no command yet"', actor=story.agent)
+def test_a_helper_that_ran_no_command_says_so_plainly(new_story):
+    story = new_story(fixture=HelperUnderBuilder)
+    story.expect_text(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
+    story.expect_text(f"usage tool --agent {story.helper.id} --json", '"note": "has run no command yet"', actor=story.agent)
 
 
-def test_a_subagent_that_stopped_after_a_command_says_nothing_of_having_run_none(new_story):
-    story = new_story(fixture=SubagentStarted)
-    story.hook("s-1", HookSamples.edit("src/cart.py").with_fields(subagent="sub-1"))
-    story.hook("s-1", HookSamples.stop().with_fields(subagent="sub-1"))
-    story.expect_absent(f"usage tool --agent {story.subagent.id}", "has run no command yet", actor=story.agent)
+def test_a_helper_that_stopped_after_a_command_says_nothing_of_having_run_none(new_story):
+    story = new_story(fixture=HelperUnderBuilder)
+    story.hook("sub-1", HookSamples.edit("src/cart.py"))
+    story.hook("sub-1", HookSamples.stop())
+    story.expect_absent(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
 
 
 def test_agent_running_lists_every_running_agent_and_no_ended_one(new_story):

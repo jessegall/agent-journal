@@ -34,7 +34,7 @@ def test_a_job_shows_one_mark_that_says_it_started(new_story):
 
 def test_a_finished_job_ends_its_mark_in_place(new_story):
     story = new_story(fixture=EndedHelper)
-    story.expect_text(MARKS, "Finished journal-researcher")
+    story.expect_text(MARKS, "reported back")
     story.expect_no_text(MARKS, "Started journal-researcher")
 
 

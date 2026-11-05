@@ -205,7 +205,7 @@ def test_a_module_cannot_take_over_an_existing_own_profile_name(profile_story):
 
 
 @pytest.mark.parametrize("source,suffix,text", [
-    (".claude/agents", ".md", "---\nname: critic\ndescription: |\n  Reads changes\n  and their tests\nkind: subagent\nmodel: inherit\nindependent: true\ntools: Read, Edit, mcp__wiki__search\n---\nRead the diff.\n"),
+    (".claude/agents", ".md", "---\nname: critic\ndescription: |\n  Reads changes\n  and their tests\nkind: helper\nmodel: inherit\nindependent: true\ntools: Read, Edit, mcp__wiki__search\n---\nRead the diff.\n"),
     (".codex/agents", ".toml", 'name = "critic"\ndescription = "Reads changes"\nmodel = "inherit"\nsandbox_mode = "read-only"\nindependent = true\nmcp_tools = ["mcp__wiki__search"]\ndeveloper_instructions = "Read the diff."\n'),
 ])
 def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profile_story, source, suffix, text):
@@ -277,7 +277,7 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     native = story.home.project_folder / ".claude/agents/journal-researcher.md"
     expect_value(native.is_file(), True)
     expect_value("tools:" in FileAccess.shared().read(native), False)
-    story.hook("s-1", HookSamples.subagent().with_raw({"tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read one question", "prompt": "Read one question"}}))
+    story.hook("s-1", HookSamples.helper().with_raw({"tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read one question", "prompt": "Read one question"}}))
     expect_value(profile_row(story, "journal-researcher")["uses"], 1)
 
 

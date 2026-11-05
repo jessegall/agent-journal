@@ -23,4 +23,4 @@ class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
         if row.ended_at is None:
             self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Started {row.profile} . {row.program_model}: {row.description}", row.session_agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
         else:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Finished {row.profile}", row.session_agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Agent {row.helper_id} reported back" if row.report_message_id else f"Finished {row.profile}", row.session_agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)

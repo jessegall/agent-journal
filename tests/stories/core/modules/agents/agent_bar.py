@@ -128,7 +128,7 @@ def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
 def test_the_agent_windows_hear_task_changes_so_their_cards_update_without_a_refresh():
     declared = {window.name: window for window in AgentsModule.windows}
     expect_events_agents_declared_with(declared, "task.*")
-    expect_events_agents_subagents_with(declared, "task.*")
+    expect_events_agents_helpers_with(declared, "task.*")
 
 
 def expect_events_agents_declared_with(declared, expected) -> None:
@@ -136,7 +136,7 @@ def expect_events_agents_declared_with(declared, expected) -> None:
     assert expected in actual, actual
 
 
-def expect_events_agents_subagents_with(declared, expected) -> None:
+def expect_events_agents_helpers_with(declared, expected) -> None:
     actual = declared['agents.helpers'].events
     assert expected in actual, actual
 

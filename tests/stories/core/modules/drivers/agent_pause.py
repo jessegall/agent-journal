@@ -17,7 +17,7 @@ from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, SubagentStarted
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, HelperUnderBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_refusal_hook
 
@@ -90,7 +90,7 @@ def test_pausing_and_resuming_must_fit_the_state(new_story):
 
 def test_a_helper_of_a_paused_agent_cannot_resume_it(new_story):
     story = new_story(fixture=UserJoined)
-    helper = Actor(story.new_row_id(f"agent start s-sub claude subagent --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    helper = Actor(story.new_row_id(f"agent start s-sub claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent resume {story.agent.id}", "neither can its helpers", actor=helper)
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
@@ -131,12 +131,12 @@ def test_a_paused_agent_can_still_run_journal_lines(paused_task_holder):
     story.expect_hook_allowed("s-1", JOURNAL_LINE)
 
 
-def test_a_subagent_of_a_paused_agent_is_paused_too(new_story):
-    story = paused_story(new_story, SubagentStarted)
+def test_a_helper_of_a_paused_agent_is_paused_too(new_story):
+    story = paused_story(new_story, HelperUnderBuilder)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    story.expect_hook_refusal("s-1", BUILD_SAMPLE.with_fields(subagent="sub-1"), "the user paused you")
+    story.expect_hook_refusal("sub-1", BUILD_SAMPLE, "the user paused you")
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    story.expect_hook_allowed("s-1", BUILD_SAMPLE.with_fields(subagent="sub-1"))
+    story.expect_hook_allowed("sub-1", BUILD_SAMPLE)
 
 
 def test_the_pause_ends_with_the_agent(paused_task_holder):
@@ -146,7 +146,7 @@ def test_the_pause_ends_with_the_agent(paused_task_holder):
 
 
 def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_story):
-    story = paused_story(new_story, SubagentStarted)
+    story = paused_story(new_story, HelperUnderBuilder)
     worker = next(agent for agent in story.container.get(Queries).query(Agent).all_rows() if agent.parent_id == story.agent.id)
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     overlay = PausedOverlay(story.container.get(Queries))
