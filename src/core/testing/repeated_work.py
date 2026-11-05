@@ -33,6 +33,8 @@ SMALL_TABLES = {
     "rules": "Standing project instructions are a small set delivered together.",
     "listener_cursors": "One cursor per declared listener is read together at the start of a listener round.",
     "mcp_servers": "Configured MCP endpoints form a small catalogue loaded together.",
+    "plugins": "Installed plugins form a small configuration catalogue, not event history.",
+    "releases": "Available releases form a small upstream catalogue, not event history.",
 }
 
 
@@ -47,11 +49,13 @@ class RepeatedWork(PointTally):
         self.commands: Counter[str] = Counter()
         self.findings: list[str] = []
         self.checked_plans: set[Statement] = set()
+        self.allowed_scans: dict[Statement, str] = {}
 
     @contextmanager
     def request(self) -> Generator[None]:
         self.reads, self.commands, self.findings = Counter(), Counter(), []
         self.checked_plans.clear()
+        self.allowed_scans.clear()
         watch_commands()
         token = OPEN_REQUEST.set(self)
         try:
@@ -75,18 +79,30 @@ class RepeatedWork(PointTally):
             return
         self.checked_plans.add(statement)
         page = BOUNDED_PAGE.fullmatch(statement.sql)
-        for plan in self.database.query_plan(statement):
+        plans = self.database.query_plan(statement)
+        for plan in plans:
             if "USING COVERING INDEX" in plan or plan == "SCAN CONSTANT ROW":
                 continue
             match = SCAN_TABLE.search(plan)
             if match is None or match.group(1) in SMALL_TABLES:
+                continue
+            if self.is_logical_scan(match.group(1), plans):
                 continue
             if page is not None and page.group(1) == match.group(1):
                 continue
             index = SCAN_INDEX.search(plan)
             if index is not None and self.database.is_partial_index(index.group(1)):
                 continue
+            if statement.scan_reason is not None:
+                self.allowed_scans[statement] = statement.scan_reason
+                continue
             self.findings.append(f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}\n{self.caller_lines()}")
+
+    @staticmethod
+    def is_logical_scan(table: str, plans: Sequence[str]) -> bool:
+        if table == "json_each":
+            return any(plan.startswith("SCAN json_each VIRTUAL TABLE INDEX") for plan in plans)
+        return any(plan in (f"CO-ROUTINE {table}", f"MATERIALIZE {table}") for plan in plans)
 
     @staticmethod
     def caller_lines() -> str:

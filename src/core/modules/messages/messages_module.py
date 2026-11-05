@@ -1,3 +1,4 @@
+from core.modules.messages.migrations.m012_message_reply_index import MessageReplyIndexMigration
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.modules.messages.listeners.read_message_line_listener import ReadMessageLineListener
 from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
@@ -86,7 +87,7 @@ class MessagesModule(Module):
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration]
+    migrations = [MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = [RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]

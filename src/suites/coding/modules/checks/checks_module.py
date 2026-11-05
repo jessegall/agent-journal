@@ -1,3 +1,6 @@
+from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import OpenCheckHiddenIndexMigration
+from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
+from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
@@ -67,7 +70,7 @@ class ChecksModule(Module):
     library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
-    migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
+    migrations = [OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]

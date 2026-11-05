@@ -4,6 +4,14 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.base.query.conditions.contains_every import ContainsEvery
+from core.base.query.conditions.among import Among
+from core.base.query.queries import Queries
+from core.base.query.select import Select
+from core.modules.messages.models.message import Message
+from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.sequences.models.sequence_run_row import SequenceRunRow
+from core.base.scope.scopes import Scopes
 from core.testing.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
@@ -58,3 +66,53 @@ def test_a_partial_index_scans_only_the_rows_it_indexes(new_story):
     story = new_story()
     with story.repeated_work.request():
         story.container.get(Database).rows(Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"))
+
+
+def test_a_user_substring_search_records_why_it_scans(new_story):
+    story = new_story()
+    statement = Select("tasks").matching(ContainsEvery(["title"], ["cart"])).sliced(25, 0).statement()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(statement)
+    expect_value(story.repeated_work.allowed_scans[statement], statement.scan_reason)
+
+
+def test_a_recursive_cte_scans_its_working_rows_instead_of_a_stored_table(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement(
+            "WITH RECURSIVE chain(id) AS (VALUES (1) UNION ALL SELECT id + 1 FROM chain WHERE id < 2) SELECT * FROM chain"))
+
+
+def test_json_each_scans_a_value_instead_of_a_stored_table(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement("SELECT value FROM json_each(?)", ['["a", "b"]']))
+
+
+def test_an_empty_id_filter_needs_no_database_read(new_story):
+    story = new_story()
+    query = story.container.get(Queries).query(Message).matching(Among("id", []))
+    with patch.object(story.container.get(Database), "rows", wraps=story.container.get(Database).rows) as rows:
+        with story.repeated_work.request():
+            expect_value(list(query.all_rows()), [])
+            expect_value(query.count(), 0)
+            expect_value(query.exists(), False)
+    expect_value(rows.call_count, 0)
+
+
+def test_a_materialized_subquery_is_not_a_stored_table(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement(
+            "SELECT * FROM (SELECT value, row_number() OVER () AS position FROM json_each(?)) AS listed", ['[1, 2]']))
+
+
+@pytest.mark.parametrize("model", [AgentBlock, SequenceRunRow])
+def test_a_required_agent_column_has_no_null_branch(new_story, model):
+    story = new_story()
+    query = story.container.get(Queries).query(model)
+    with story.container.get(Scopes).read_scope((), 1):
+        statement = query.scoped(query.select).statement()
+        expect_value("OR agent_id IS NULL" in statement.sql, False)
+        with story.repeated_work.request():
+            list(query.all_rows())

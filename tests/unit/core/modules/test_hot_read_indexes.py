@@ -30,6 +30,22 @@ def database(tmp_path):
     (Statement("SELECT * FROM phones WHERE state = ? AND notice_waiting = ?", ("paired", 0)), "phones_state_notice"),
     (Statement("SELECT * FROM reviewers WHERE environment_id = ? AND state = ?", (1, "idle")), "reviewers_environment_state"),
     (Statement("SELECT count(*) FROM memories"), "memories_environment_agent_weight"),
+    (Statement("SELECT * FROM reminders WHERE environment_id = ? AND ended_at IS NULL ORDER BY id", [1]), "reminders_open_environment"),
+    (Statement("SELECT * FROM questions WHERE agent_id = ? AND state = ? ORDER BY id", (1, "answered")), "questions_agent_state"),
+    (Statement("SELECT * FROM dumps WHERE closed_at IS NULL ORDER BY id LIMIT 1"), "dumps_closed_at"),
+    (Statement("SELECT * FROM messages WHERE parent_id = ? AND type = ? LIMIT 1", (1, "agent")), "messages_parent_type"),
+    (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ? AND last_passed = ? ORDER BY id LIMIT 25", (0, 0)), "checks_open_result"),
+    (Statement("SELECT * FROM secrets WHERE deleted_at IS NULL ORDER BY id"), "secrets_active"),
+    (Statement("SELECT 1 FROM agent_lines WHERE source = ? AND text = ? LIMIT 1", ("workers.launch-failed", "Could not start")), "agent_lines_source_text"),
+    (Statement("SELECT * FROM agent_blocks WHERE agent_id = ?", [1]), "agent_blocks_open"),
+    (Statement("SELECT * FROM reader_requests WHERE sample_process_id = ?", [1]), "reader_requests_sample_process"),
+    (Statement("SELECT * FROM sequence_runs WHERE agent_id = ?", [1]), "sequence_runs_agent"),
+    (Statement("SELECT * FROM checks WHERE task_wait_id = ?", [1]), "checks_task_wait"),
+    (Statement("SELECT * FROM affected_tests WHERE worktree_id = ? ORDER BY id DESC LIMIT 1", [1]), "affected_tests_worktree"),
+    (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ?", [1]), "worker_worktrees_environment"),
+    (Statement("SELECT * FROM proofs WHERE state IN (?, ?) ORDER BY id LIMIT 25", ("queued", "running")), "proofs_state"),
+    (Statement("SELECT * FROM affected_tests WHERE state = ? ORDER BY id LIMIT 25", ["queued"]), "affected_tests_state"),
+    (Statement("SELECT * FROM checks WHERE hidden = ? AND removed_at IS NULL ORDER BY id", [0]), "checks_open_hidden"),
 ])
 def test_a_hot_read_uses_its_index(database, statement, index):
     plans = [row[3] for row in database.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters)]

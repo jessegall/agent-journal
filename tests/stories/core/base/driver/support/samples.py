@@ -85,6 +85,7 @@ class EditLocksTable(Migration):
     statements = (
         "CREATE TABLE edit_locks (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE RESTRICT, state TEXT NOT NULL DEFAULT 'open',"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
+        "CREATE INDEX edit_locks_agent_state ON edit_locks (agent_id, state)",
     )
 
 

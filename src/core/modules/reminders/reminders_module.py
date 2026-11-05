@@ -1,3 +1,4 @@
+from core.modules.reminders.migrations.m002_open_reminder_index import OpenReminderIndexMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -25,7 +26,7 @@ class RemindersModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.memories"]
     models = [ModelDeclaration(Reminder, excluded_subcommands=["make", "edit"])]
-    migrations = [RemindersTableMigration]
+    migrations = [OpenReminderIndexMigration, RemindersTableMigration]
     handlers = [MakeReminderHandler, RecordReminderFiredHandler]
     subcommands = [MakeReminderSubcommand]
     listeners = [ReminderMadeMarkListener]

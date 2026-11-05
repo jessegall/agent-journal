@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from dataclasses import MISSING, fields
 from types import NoneType, UnionType
 from enum import StrEnum
+from functools import cached_property
 from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 from core.base.metadata import Metadata
 from core.base.model.added_state import AddedState
@@ -52,6 +53,14 @@ class Table(Generic[R]):
 
     def has_column(self, column: str) -> bool:
         return column in self.types
+
+    @cached_property
+    def nullable_columns(self) -> frozenset[str]:
+        hints = get_type_hints(self.model)
+        return frozenset(column for column in self.columns if NoneType in get_args(hints[column]))
+
+    def has_nullable_column(self, column: str) -> bool:
+        return column in self.nullable_columns
 
     def row(self, model: Model, columns: Sequence[str]) -> dict[str, object]:
         return {column: stored(getattr(model, column)) for column in columns}

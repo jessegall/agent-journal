@@ -16,6 +16,10 @@ class Select:
     limit: int = 0
     offset: int = 0
 
+    @property
+    def is_empty(self) -> bool:
+        return any(condition.statement().is_false for condition in self.conditions)
+
     def matching(self, condition: Condition) -> "Select":
         return replace(self, conditions=(*self.conditions, condition))
 

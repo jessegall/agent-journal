@@ -1,3 +1,4 @@
+from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -43,7 +44,7 @@ class DumpsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking"]
     skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"])]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
-    migrations = [DumpsTablesMigration, ProjectDumpsMigration]
+    migrations = [DumpClosedIndexMigration, DumpsTablesMigration, ProjectDumpsMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     views = [DumpRow]
