@@ -117,6 +117,9 @@
                 "fileMatches": "(^|/)src/core/base/file_access\\.py$"
             },
             {
+                "fileMatches": "(^|/)samples/query_rules/"
+            },
+            {
                 "fileMatches": "(^|/)(${file_reads_process_output_uses_bounded_ranges})$"
             },
             {
