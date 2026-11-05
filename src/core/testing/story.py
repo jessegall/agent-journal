@@ -33,7 +33,9 @@ from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
 from core.base.recorded_refusal import RecordedRefusal
 from core.base.caller.caller import Caller
+from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.overview.support.overview_first import OverviewFirst
+from core.testing.story_helper_programs import StoryHelperPrograms
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.plugins.support.login_path import LoginPath
@@ -273,6 +275,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(ProcessTable, process_table)
     container.bind(ShellSandbox, StoryShellSandbox(home))
     container.bind(OverviewFirst, StoryOverviewFirst())
+    container.bind(HelperPrograms, StoryHelperPrograms())
     container.bind(SkillRequirement, StorySkillRequirement())
     container.bind(MainAgentSkills, StoryMainAgentSkills())
     container.bind(LoginPath, StoryLoginPath(home))
