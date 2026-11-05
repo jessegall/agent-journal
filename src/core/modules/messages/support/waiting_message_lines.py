@@ -27,6 +27,15 @@ class WaitingMessageLines:
     def oldest_unread(self, environment_id: int) -> Message | None:
         return self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().first()
 
+    def waking_message(self, environment_id: int, agent_id: int) -> Message | None:
+        message = self.oldest_unread(environment_id)
+        if message is None or message.delivered_at is None:
+            return message
+        call = self.hook_calls.newest_agent_hook(agent_id)
+        if call is None or call.creation_timestamp() <= message.delivered_at:
+            return None
+        return self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().first()
+
     def waiting(self, agent_id: int):
         return self.queries.query(AgentLine).filter(agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.WAITING).newest()
 

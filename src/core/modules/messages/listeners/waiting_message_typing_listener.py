@@ -30,8 +30,8 @@ class WaitingMessageTypingListener(CommitListener[Created[AgentLine]]):
         if line.source != WAITING_MESSAGE_SOURCE or line.state is not AgentLineState.WAITING:
             return
         agent = self.queries.query(Agent).find(line.agent_id)
-        message = self.lines.oldest_unread(agent.environment_id)
-        if message is None or message.delivered_at is not None or not self.lines.names(line, message):
+        message = self.lines.waking_message(agent.environment_id, agent.id)
+        if message is None or not self.lines.names(line, message):
             self.lines.drop(line, logged)
             return
         actor = Actor(logged.actor_id, ActorType.USER)
