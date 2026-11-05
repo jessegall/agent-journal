@@ -72,6 +72,32 @@ const fromMenu = async (element, item) => {
     await settle();
 };
 
+test.each([true, false])("a plugin switch changes before the answer and returns on refusal, enabled=%s", async (enabled) => {
+    let reply;
+    const pending = new Promise((resolve) => (reply = resolve));
+    const window = context({
+        "plugin list": page([{...PLUGIN, enabled}]),
+        "plugin dashboards": page([]),
+        "plugin descriptions": page([]),
+        "plugin services": page([]),
+    });
+    const ran = [];
+    window.run = (line) => {
+        ran.push(line);
+        return pending;
+    };
+    const element = await mounted(PluginRows, window);
+    const control = element.querySelector('[data-row="1"] [role="switch"]');
+    control.click();
+    await settle();
+    expect(control.getAttribute("aria-checked")).toBe(String(!enabled));
+    reply({ok: false, error: "Plugin change refused"});
+    await settle();
+    expect(control.getAttribute("aria-checked")).toBe(String(enabled));
+    expect(element.querySelector("[data-plugin-refusal]").textContent).toBe("Plugin change refused");
+    expect(ran).toEqual([["plugin", enabled ? "disable" : "enable", "sins"]]);
+});
+
 test("checking for updates says what the source has", async () => {
     const {element} = await drawn();
     await fromMenu(element, "[data-plugin-latest]");

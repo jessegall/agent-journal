@@ -1,4 +1,5 @@
 import {computed, onMounted, ref, watch} from "vue";
+import {runChanged} from "../../kit/runChanged.js";
 
 // what the agent bar does to the agent: each change shows in the client at once, the server is told after it, and a refusal undoes it
 export function useAgentControls(agent, run, changed) {
@@ -20,26 +21,21 @@ export function useAgentControls(agent, run, changed) {
         programs.value = answer.ok ? answer.value.rows : [];
     }
 
-    async function send(line, undo = () => {}) {
+    async function send(line, change = null) {
         failure.value = "";
-        const answer = await run(line);
-        if (!answer.ok) {
-            undo();
-            failure.value = answer.error;
-        }
+        const answer = await runChanged(change, line, run);
+        failure.value = answer.ok ? "" : answer.error;
         changed();
+        return answer;
     }
 
     const choose = (key, choice) => {
-        const before = chosen.value[key];
-        chosen.value = {...chosen.value, [key]: choice.label};
-        return send(["agent", "control", String(agent.value.id), key, choice.value], () => (chosen.value = {...chosen.value, [key]: before}));
+        return send(["agent", "control", String(agent.value.id), key, choice.value], {target: chosen, fields: {value: {...chosen.value, [key]: choice.label}}});
     };
 
     const stop = () => {
         asking.value = false;
-        agent.value.ended_at = new Date().toISOString();
-        return send(["agent", "stop", String(agent.value.id)], () => (agent.value.ended_at = null));
+        return send(["agent", "stop", String(agent.value.id)], {target: agent.value, fields: {ended_at: new Date().toISOString()}});
     };
 
     const start = (program) => send(["agent", "launch", program.name]);

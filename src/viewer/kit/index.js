@@ -58,6 +58,7 @@ export {matchesSearch} from "./searchFields.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";
 export {useReadLine} from "./useReadLine.js";
 export {useRunLine} from "./useRunLine.js";
+export {runChanged} from "./runChanged.js";
 export {usageRead, useUsage} from "./useUsage.js";
 export {default as RowCards} from "./RowCards.vue";
 export {default as SwitchCase} from "../src/kit/SwitchCase.vue";
