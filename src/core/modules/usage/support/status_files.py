@@ -2,6 +2,7 @@ from core.base.file_access import FileAccess
 import json
 import shutil
 import time
+from collections.abc import Mapping
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
@@ -29,9 +30,12 @@ class StatusFiles:
         path = self.folder / f"{session}.json"
         return self.reported(path if path.is_file() else self.ended_folder / f"{session}.json")
 
-    def plan_windows(self) -> tuple[PlanWindow, ...]:
+    def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
         files = sorted((path for path in self.folder.glob("*.json") if path != self.plan_file), key=lambda path: path.stat().st_mtime, reverse=True) if self.folder.is_dir() else []
-        return next((windows for path in [*files, self.plan_file] if (windows := self.reported(path).windows)), ())
+        return next((windows for path in [*files, self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
+
+    def file_status(self, path: Path, statuses: Mapping[str, SessionStatus]) -> SessionStatus:
+        return statuses[path.stem] if path.stem in statuses else self.reported(path)
 
     def retire(self, session: str) -> None:
         path = self.folder / f"{session}.json"

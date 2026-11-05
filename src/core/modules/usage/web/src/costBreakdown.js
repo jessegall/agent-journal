@@ -11,4 +11,5 @@ function grouped(agents, keyOf) {
 
 export const byModel = (agents) => grouped(agents, (agent) => agent.model || NO_MODEL);
 export const byAgent = (agents) => grouped(agents, (agent) => `${agent.role} ${agent.id}`);
+export const byProfile = (agents) => grouped(agents.filter((agent) => agent.profile), (agent) => agent.profile);
 export {dollars};

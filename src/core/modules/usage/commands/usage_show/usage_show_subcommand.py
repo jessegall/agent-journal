@@ -1,8 +1,12 @@
 from argparse import Namespace
 
+from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -28,8 +32,16 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("usage is shown for one environment", "name it with --environment")
-        agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at")).oldest().all_rows()
-        return EnvironmentUsage(tuple((agent, self.files.status(agent.session)) for agent in agents), self.files.plan_windows())
+        agents = self.queries.query(Agent).filter(environment_id=environment_id)
+        opened = tuple(agents.matching(IsNull("ended_at")).oldest().all_rows())
+        counted = (*opened, *self.ended_helpers(agents, opened))
+        statuses = {agent.session: self.files.status(agent.session) for agent in counted}
+        return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses))
+
+    @staticmethod
+    def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
+        helpers = agents.filter(role=AgentRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened)))
+        return tuple(helpers.oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, EnvironmentUsage):

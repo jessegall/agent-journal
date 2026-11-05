@@ -25,6 +25,12 @@ test("the cost dropdown breaks the cost down by model and by agent, the dearest 
     expect(texts(element, "[data-cost-agent]")).toEqual(["main 1 $1052.50", "worker 7 $12.25", "worker 9 $3.50"]);
 });
 
+test("the cost dropdown adds helpers up by profile, leaving out an agent with no profile or no cost", async () => {
+    const agents = [...AGENTS, {id: 12, role: "helper", profile: "journal-researcher", model: "Haiku 5.5", cost_dollars: 0.5}, {id: 13, role: "helper", profile: "journal-researcher", model: "Haiku 5.5", cost_dollars: 0.25}, {id: 14, role: "helper", profile: "journal-debugger", model: "gpt", cost_dollars: null}];
+    const element = await mounted(CostPanel, context({"usage show": {ok: true, value: {...USAGE, agents}}}, 1));
+    expect(texts(element, "[data-cost-profile]")).toEqual(["journal-researcher $0.75"]);
+});
+
 test("the cost of this session reads the same in the dropdown as in the bar's figure", async () => {
     const element = await mounted(CostPanel, context({"usage show": {ok: true, value: USAGE}}, 1));
     expect(element.querySelector("[data-cost-session]").textContent).toContain("$1052.50");
