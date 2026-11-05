@@ -50,17 +50,16 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         parser.add_argument("--limit", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
-        environment_id = caller.environment_id
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
-                return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, self.finished_cursor(arguments), arguments.limit or FINISHED_PAGE_ROWS)]))
-            return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
-        active_groups = tuple(self.group(environment_id, state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN, *self.added_states()))
-        finished = tuple(self.finished_group(environment_id, state, None, arguments.limit or FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
+                return TaskBoard(tuple([self.finished_group(arguments.state, self.finished_cursor(arguments), arguments.limit or FINISHED_PAGE_ROWS)]))
+            return TaskBoard(tuple([self.group(arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
+        active_groups = tuple(self.group(state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN, *self.added_states()))
+        finished = tuple(self.finished_group(state, None, arguments.limit or FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
-    def group(self, environment_id: int, state: TaskState | str, previous_id: int | None, size: int) -> TaskGroup:
-        cards = self.cards(environment_id, state)
+    def group(self, state: TaskState | str, previous_id: int | None, size: int) -> TaskGroup:
+        cards = self.cards(state)
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(str(state), cards.count(), tuple(rows.newest().limited(size)))
 
@@ -72,12 +71,12 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
             return Less("closed_at", arguments.before_closed_at)
         return ClosedTaskCursor(arguments.before_closed_at, arguments.before_id)
 
-    def finished_group(self, environment_id: int, state: TaskState, cursor: Condition | None, size: int) -> TaskGroup:
-        cards = self.cards(environment_id, state)
+    def finished_group(self, state: TaskState, cursor: Condition | None, size: int) -> TaskGroup:
+        cards = self.cards(state)
         rows = cards.matching(cursor) if cursor is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(size)))
 
-    def cards(self, environment_id: int, state: TaskState | str) -> Query[TaskCard]:
+    def cards(self, state: TaskState | str) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard)
         if state == DELEGATED:
             return cards.matching(HasValue("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))

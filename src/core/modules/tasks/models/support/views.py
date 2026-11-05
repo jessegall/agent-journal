@@ -55,4 +55,4 @@ ENVIRONMENT_CARDS_SELECT = (
 
 def closed_task_counts_select(start_count: int) -> str:
     sums = ", ".join("coalesce(sum(closed_at > ?), 0)" for _ in range(start_count))
-    return f"SELECT {sums} FROM tasks WHERE environment_id = ? AND closed_at > ?"
+    return f"SELECT {sums} FROM tasks WHERE environment_id = COALESCE(?, environment_id) AND closed_at > ?"

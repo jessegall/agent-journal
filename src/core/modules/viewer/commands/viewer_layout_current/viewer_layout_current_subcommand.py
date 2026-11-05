@@ -23,7 +23,6 @@ class ViewerLayoutCurrentSubcommand(ReadSubcommand[ViewerLayout]):
         parser.add_argument("--driver", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewerLayout:
-        environment_id = caller.environment_id
         rows = self.queries.query(ViewerLayout).filter(person_id=caller.actor.id, suite=arguments.suite,
                                                        page=arguments.page, driver=arguments.driver).limited(1)
         if not rows:

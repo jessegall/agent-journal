@@ -17,4 +17,4 @@ class AllowedStopListener(CommitListener[StopAllowed]):
 
     def handle(self, event: StopAllowed, logged: LoggedEvent) -> None:
         if logged.environment_id is not None:
-            self.bus.run(RecordWaitingMessageLine(logged.environment_id, event.row.agent_id), Actor(logged.actor_id, ActorType.AGENT))
+            self.bus.run(RecordWaitingMessageLine(event.row.agent_id), Actor(logged.actor_id, ActorType.AGENT))

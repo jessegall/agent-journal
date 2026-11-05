@@ -40,7 +40,7 @@ class InactiveHelperRule(DriverRule):
         self.types = types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return self.warning(hook).running(SendSilentAgentLines(hook.environment_id))
+        return self.warning(hook).running(SendSilentAgentLines())
 
     def warning(self, hook: AgentHook) -> RuleAnswer:
         span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)

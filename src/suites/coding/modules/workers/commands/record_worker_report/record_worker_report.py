@@ -9,6 +9,5 @@ class RecordWorkerReport(Command[Message]):
     """Saves a worker's report and gives its main agent the message number."""
 
     agent_id: int
-    environment_id: int
     main_agent_id: int
     text: str

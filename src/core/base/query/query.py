@@ -32,6 +32,11 @@ class Query(Generic[M]):
         self.database, self.model, self.table = database, model, tables.table(model)
         self.select = Select(self.table.name)
 
+    @property
+    def scope_environment_id(self) -> int | None:
+        owner = self.database.row_owner
+        return owner.environment_id if owner is not None else None
+
     def find(self, row_id: int) -> M:
         return self.find_many([row_id])[0]
 

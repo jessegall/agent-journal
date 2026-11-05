@@ -26,4 +26,4 @@ class ReviewQueuedListener(SaveListener[Created[Review]]):
         needs_reviewer = self.settings.enabled(review.environment_id) and not reviewers.idle().exists()
         if needs_reviewer and slots_available:
             self.bus.dispatch(AddReviewer(), context)
-        self.bus.dispatch(AssignNextReview(review.environment_id), context)
+        self.bus.dispatch(AssignNextReview(), context)

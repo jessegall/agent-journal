@@ -13,5 +13,5 @@ class PinQuery(Query[Pin]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Pin)
 
-    def open_ones(self, environment_id: int) -> Self:
+    def open_ones(self) -> Self:
         return self.matching(IsNull("closed_at"))

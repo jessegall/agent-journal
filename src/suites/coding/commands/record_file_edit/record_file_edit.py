@@ -11,6 +11,5 @@ class RecordFileEdit(Command[FileEdit]):
     """Records one file an agent edited or wrote, with the lines it added and removed."""
 
     agent_id: int
-    environment_id: int
     diff: DiffCount
     rows: tuple[Mapping[str, object], ...] = ()

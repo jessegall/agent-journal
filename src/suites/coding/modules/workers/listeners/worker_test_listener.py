@@ -54,7 +54,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
         self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
 
     def start_next(self, environment_id: int, logged: LoggedEvent) -> None:
-        self.bus.run(StartWorkerTests(environment_id), Actor.core(), cause_id=logged.id)
+        self.bus.run(StartWorkerTests(), Actor.core(), cause_id=logged.id)
 
     def launched(self, proof: Proof) -> None:
         if proof.process_id is None:

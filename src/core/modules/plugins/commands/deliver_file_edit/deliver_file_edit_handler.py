@@ -29,4 +29,4 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
         for plugin in self.plugins.enabled_ones():
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if FILE_EDITED in manifest.event_names and (role == AgentRole.MAIN or manifest.reaches_role(FILE_EDITED, role)):
-                self.bus.dispatch(DeliverPluginEvent(plugin.id, command.environment_id, command.agent_id, FILE_EDITED, data), context)
+                self.bus.dispatch(DeliverPluginEvent(plugin.id, command.agent_id, FILE_EDITED, data), context)

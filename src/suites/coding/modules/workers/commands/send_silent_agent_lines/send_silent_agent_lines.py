@@ -7,4 +7,3 @@ from core.base.command.command import Command
 class SendSilentAgentLines(Command[None]):
     """Sends waking lines to silent agents with unfinished work."""
 
-    environment_id: int

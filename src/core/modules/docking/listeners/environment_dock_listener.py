@@ -18,4 +18,4 @@ class EnvironmentDockListener(CommitListener[Created[Environment]]):
         self.bus, self.actors = bus, actors
 
     def handle(self, event: Created[Environment], logged: LoggedEvent) -> None:
-        self.bus.run(MakeDock(logged.row_id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=logged.row_id)
+        self.bus.run(MakeDock(), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=logged.row_id)

@@ -15,4 +15,4 @@ class SilentHelperRule(DriverRule):
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(EndSilentHelpers(hook.environment_id))
+        return RuleAnswer.allowed().running(EndSilentHelpers())

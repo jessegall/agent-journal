@@ -22,7 +22,7 @@ class ReviewQuery(Query[Review]):
     def unfinished(self) -> Self:
         return self.matching(Among("state", UNFINISHED))
 
-    def queued(self, environment_id: int) -> Self:
+    def queued(self) -> Self:
         return self.filter(state=ReviewState.QUEUED).oldest()
 
     def reviewing(self) -> Self:

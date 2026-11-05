@@ -8,4 +8,3 @@ from core.modules.docking.models.dock import Dock
 class MakeDock(Command[Dock]):
     """Makes the dock above an environment's chat, or gives back the one it has."""
 
-    environment_id: int

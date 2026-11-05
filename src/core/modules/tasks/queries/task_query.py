@@ -31,7 +31,7 @@ class TaskQuery(Query[Task]):
     def started(self) -> Self:
         return self.filter(state=TaskState.STARTED)
 
-    def unopenable_blocks(self, environment_id: int) -> Self:
+    def unopenable_blocks(self) -> Self:
         return self.filter(state=TaskState.BLOCKED).matching(SubqueryMatch("id", Select("task_waits").matching(IsNull("ended_at")).column("task_id"), negated=True))
 
     def no_open_dependency(self) -> Condition:
@@ -41,17 +41,17 @@ class TaskQuery(Query[Task]):
         delegated = self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()
         return min(delegated, key=lambda task: (-task.priority, task.id), default=None)
 
-    def open_tasks(self, environment_id: int) -> Self:
+    def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def next_open(self, environment_id: int, excluded_id: int | None, exclusion: Condition) -> Task | None:
+    def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
         free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
         return min((task for task in free_tasks if task.id != excluded_id), key=lambda task: (-task.priority, task.id), default=None)
 
 
-    def closed_counts(self, environment_id: int, starts: Sequence[Timestamp]) -> list[int]:
+    def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
         if not starts:
             return []
-        parameters = (*(start.text for start in starts), environment_id, min(start.text for start in starts))
+        parameters = (*(start.text for start in starts), self.scope_environment_id, min(start.text for start in starts))
         row = self.database.rows(Statement(closed_task_counts_select(len(starts)), parameters))[0]
         return [int(count) for count in row]

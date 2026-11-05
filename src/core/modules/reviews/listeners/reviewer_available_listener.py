@@ -18,4 +18,4 @@ class ReviewerAvailableListener(SaveListener[Created[Reviewer] | Moved[Reviewer]
         self.bus = bus
 
     def handle(self, event: Created[Reviewer] | Moved[Reviewer], context: Context) -> None:
-        self.bus.dispatch(AssignNextReview(event.row.environment_id), context)
+        self.bus.dispatch(AssignNextReview(), context)

@@ -29,4 +29,4 @@ class ScheduledJobRule(DriverRule):
         matches = JOB_ID.search(str(hook.event.raw.get("tool_response", "")))
         if matches is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordScheduledJob(hook.agent_id, hook.environment_id, matches.group(0), str(fields.get("cron", "")), str(fields.get("prompt", "")), fields.get("recurring", True) is not False))
+        return RuleAnswer.allowed().running(RecordScheduledJob(hook.agent_id, matches.group(0), str(fields.get("cron", "")), str(fields.get("prompt", "")), fields.get("recurring", True) is not False))

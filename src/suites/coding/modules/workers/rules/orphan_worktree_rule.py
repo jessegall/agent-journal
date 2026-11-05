@@ -17,4 +17,4 @@ class OrphanWorktreeRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.timestamp.value.minute != 0:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RemoveOrphanWorktrees(hook.environment_id))
+        return RuleAnswer.allowed().running(RemoveOrphanWorktrees())

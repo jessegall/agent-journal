@@ -9,7 +9,7 @@ class MainAgentFinder:
     """The running main agent of an environment: its newest, should two ever run."""
 
     @staticmethod
-    def rows(queries: Queries, environment_id: int) -> tuple[Agent, ...]:
+    def rows(queries: Queries) -> tuple[Agent, ...]:
         row = queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
         return () if row is None else tuple([row])
 
@@ -18,7 +18,7 @@ class MainAgentFinder:
         return tuple(queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows())
 
     @staticmethod
-    def newest(queries: Queries, environment_id: int) -> Agent | None:
+    def newest(queries: Queries) -> Agent | None:
         return next(iter(MainAgentFinder.rows(queries)), None)
 
     @staticmethod

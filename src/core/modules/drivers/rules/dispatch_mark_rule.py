@@ -42,9 +42,9 @@ class DispatchMarkRule(DriverRule):
         key, profile = f"{hook.event.raw.get('tool_use_id', hook.event.firing)}", f"{dispatch.get('subagent_type') or DEFAULT_PROFILE}"
         model, description, instruction = f"{dispatch.get('model', '')}", f"{dispatch.get('description', '')}", f"{dispatch.get('prompt', '')}"
         if hook.event.event is HookEventName.PRE_TOOL_USE:
-            return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.environment_id, hook.agent_id, key, profile, model, description, instruction))
+            return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.agent_id, key, profile, model, description, instruction))
         if hook.event.event is HookEventName.POST_TOOL_USE and not self.is_background_launch(hook):
-            return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.environment_id, hook.agent_id, key, profile, model, description, instruction, f"{hook.event.raw.get('tool_response', '')}", True))
+            return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.agent_id, key, profile, model, description, instruction, f"{hook.event.raw.get('tool_response', '')}", True))
         return RuleAnswer.allowed()
 
     @staticmethod
@@ -66,4 +66,4 @@ class DispatchMarkRule(DriverRule):
         if not rows or parent is None:
             return RuleAnswer.allowed()
         row = rows[0]
-        return RuleAnswer.allowed().running(RecordSubagentDispatch(row.environment_id, parent, row.tool_key, row.profile, row.program_model, row.description, row.instruction, f"{hook.event.raw.get(RETURNED_FIELD, '')}", True))
+        return RuleAnswer.allowed().running(RecordSubagentDispatch(parent, row.tool_key, row.profile, row.program_model, row.description, row.instruction, f"{hook.event.raw.get(RETURNED_FIELD, '')}", True))

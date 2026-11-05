@@ -23,8 +23,8 @@ class MessageQuery(Query[Message]):
     def agent_messages(self) -> Self:
         return self.filter(type=MessageType.AGENT)
 
-    def addressed(self, agent_id: int, environment_id: int) -> Self:
+    def addressed(self, agent_id: int) -> Self:
         return self.matching(MessageTarget(agent_id))
 
-    def unread(self, agent_id: int, environment_id: int) -> Self:
+    def unread(self, agent_id: int) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))

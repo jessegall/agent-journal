@@ -11,4 +11,4 @@ class ProcessPruning:
 
     def __call__(self, container: Container) -> None:
         for environment in container.get(Queries).query(Environment).all_rows():
-            container.get(Bus).run(PruneProcesses(environment.id), Actor.core(), environment_id=environment.id)
+            container.get(Bus).run(PruneProcesses(), Actor.core(), environment_id=environment.id)

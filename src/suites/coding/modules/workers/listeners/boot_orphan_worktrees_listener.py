@@ -24,6 +24,6 @@ class BootOrphanWorktreesListener(CommitListener[JournalBooting]):
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
         for environment in tuple(self.queries.query(Environment).all_rows()):
             try:
-                self.bus.run(RemoveOrphanWorktrees(environment.id), Actor.core(), environment_id=environment.id)
+                self.bus.run(RemoveOrphanWorktrees(), Actor.core(), environment_id=environment.id)
             except Refusal:
                 continue

@@ -9,7 +9,6 @@ class RecordScheduledJob(Command[ScheduledJob]):
     """An agent's program scheduled a job."""
 
     agent_id: int
-    environment_id: int
     job_id: str
     cron: str
     prompt: str
