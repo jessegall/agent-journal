@@ -4,7 +4,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.modules.drivers.queries.helper_job_query import HelperJobQuery
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
@@ -19,7 +19,7 @@ class SendHelperHandler(Handler[SendHelper, None]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobQuery, nudger: Nudger, repository: Repository, folders: AgentFolders) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
 
     def handle(self, command: SendHelper, context: Context) -> None:
@@ -34,5 +34,5 @@ class SendHelperHandler(Handler[SendHelper, None]):
 
     def check_resume(self, helper: Agent) -> None:
         self.limits.checked_slot(helper.environment_id)
-        if not self.folders.keeps_folder(helper):
+        if not self.folders.has_folder(helper):
             raise Refusal(f"helper {helper.id} worked in a folder that is gone", "start a new helper with --fresh")

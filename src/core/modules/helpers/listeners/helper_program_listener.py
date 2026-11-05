@@ -8,7 +8,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.drivers.queries.helper_job_query import HelperJobQuery
 from core.modules.helpers.support.helper_command import HelperCommand
 from core.modules.helpers.support.helper_resume import HelperResume
 
@@ -18,16 +17,16 @@ class HelperProgramListener(CommitListener[Created[HelperJob]]):
 
     name = "helpers.helper-program-request"
 
-    def __init__(self, launcher: AgentLauncher, helper_command: HelperCommand, bus: Bus, environments: EnvironmentRows, agents: AgentRows, jobs: HelperJobQuery, resume: HelperResume) -> None:
+    def __init__(self, launcher: AgentLauncher, helper_command: HelperCommand, bus: Bus, environments: EnvironmentRows, agents: AgentRows, resume: HelperResume) -> None:
         self.launcher, self.helper_command, self.bus, self.environments, self.agents = launcher, helper_command, bus, environments, agents
-        self.jobs, self.helper_resume = jobs, resume
+        self.helper_resume = resume
 
     def handle(self, event: Created[HelperJob], logged: LoggedEvent) -> None:
         helper_id = event.row.helper_id
         if helper_id is None:
             return
         helper = self.agents.find(helper_id)
-        if len(self.jobs.helper_jobs(helper_id)) > 1:
+        if event.row.tool_key != helper.session:
             self.helper_resume.resume(helper, event.row.brief)
             return
         try:

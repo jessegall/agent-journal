@@ -1,27 +1,22 @@
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.drivers.queries.helper_job_query import HelperJobQuery
+from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.helpers.commands.stop_helper.stop_helper import StopHelper
 from core.modules.helpers.support.helper_reach import HelperReach
 
-STOPPED = "Stopped"
-
 
 class StopHelperHandler(Handler[StopHelper, None]):
-    """Ends a helper's open job as stopped and ends the helper; the launcher stops a program whose row ended."""
+    """Stops a helper's program when its process is known and ends its row; its job ends with it."""
 
     command = StopHelper
 
-    def __init__(self, reach: HelperReach, jobs: HelperJobQuery, bus: Bus, repository: Repository) -> None:
-        self.reach, self.jobs, self.bus, self.repository = reach, jobs, bus, repository
+    def __init__(self, reach: HelperReach, bus: Bus) -> None:
+        self.reach, self.bus = reach, bus
 
     def handle(self, command: StopHelper, context: Context) -> None:
         helper = self.reach.checked_helper(command.helper_id, context)
-        for job in self.jobs.helper_jobs(helper.id):
-            if job.ended_at is None:
-                self.repository.save(job.changed(ended_at=context.timestamp, returned=STOPPED), context)
-        if helper.ended_at is None:
-            self.bus.dispatch(EndAgent(helper.id), context)
+        if helper.ended_at is not None:
+            return
+        self.bus.dispatch(EndAgent(helper.id) if helper.pid is None else StopAgent(helper.id), context)

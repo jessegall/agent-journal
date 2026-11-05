@@ -13,7 +13,7 @@ class AgentFolders:
     def __init__(self, agents: AgentRows, environments: EnvironmentRows) -> None:
         self.agents, self.environments = agents, environments
 
-    def keeps_folder(self, agent: Agent) -> bool:
+    def has_folder(self, agent: Agent) -> bool:
         return True
 
     def folder(self, agent: Agent) -> Path:

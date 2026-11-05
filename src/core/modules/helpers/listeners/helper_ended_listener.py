@@ -8,10 +8,13 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.drivers.queries.helper_job_query import HelperJobQuery
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.end_helper_job.end_helper_job import EndHelperJob
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.support.helper_resume import HelperResume
+
+
+STOPPED = "Stopped"
 
 
 class HelperEndedListener(CommitListener[AgentEnded]):
@@ -20,7 +23,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, jobs: HelperJobQuery, resume: HelperResume, bus: Bus) -> None:
+    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus) -> None:
         self.queries, self.jobs, self.resume, self.bus = queries, jobs, resume, bus
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
@@ -34,4 +37,5 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         if waiting is not None:
             self.resume.resume(helper, waiting.text)
             return
-        self.bus.run(EndHelperJob(open_jobs[-1].id), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)
+        returned = "" if logged.actor_id == helper.id else STOPPED
+        self.bus.run(EndHelperJob(open_jobs[-1].id, returned), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)

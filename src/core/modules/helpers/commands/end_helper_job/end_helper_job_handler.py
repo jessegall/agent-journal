@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.commands.end_helper_job.end_helper_job import EndHelperJob
@@ -11,9 +11,9 @@ class EndHelperJobHandler(Handler[EndHelperJob, None]):
 
     command = EndHelperJob
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository) -> None:
+        self.rows, self.repository = rows, repository
 
     def handle(self, command: EndHelperJob, context: Context) -> None:
-        job = self.queries.query(HelperJob).find(command.job_id)
-        self.repository.save(job.changed(ended_at=context.timestamp), context)
+        job = self.rows.required(HelperJob, command.job_id)
+        self.repository.save(job.changed(ended_at=context.timestamp, returned=command.returned), context)
