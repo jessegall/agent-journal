@@ -44,3 +44,10 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
     story.expect_text(f"agent-line list --agent {worker.id}", "The cart adds tax twice.")
     story.expect_text("worker-worktree show 1", "state: cut")
     story.expect_text("task show 1", "state: started")
+
+
+def test_a_workers_release_stops_its_helpers_first(new_story):
+    story, worker = worker_with_helper(new_story)
+    story.expect_success(f'worker release {worker.id} "No longer needed"', actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(helper_of(story, worker).ended_at is not None)

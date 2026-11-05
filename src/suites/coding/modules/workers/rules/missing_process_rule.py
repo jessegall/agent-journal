@@ -17,7 +17,7 @@ class MissingProcessRule(DriverRule):
     name = "drivers.missing-process"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, queries: Queries, processes: ProcessTable) -> None:
         self.queries, self.processes = queries, processes

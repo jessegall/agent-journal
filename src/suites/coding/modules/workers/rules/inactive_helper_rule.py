@@ -30,8 +30,8 @@ class InactiveHelperRule(DriverRule):
 
     name = "workers.inactive-helper"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator"]
-    roles = [AgentRole.MAIN]
+    drivers = ["*"]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook) -> None:

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from core.base.actor import Actor
@@ -5,6 +7,8 @@ from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, SHORT_REPORT_CHARACTERS
 from core.modules.messages.models.message import Message
+from core.modules.drivers.ticks.silent_helper_ending import SilentHelperEnding
+from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, jobs_of, the_helper
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
@@ -108,3 +112,29 @@ def test_a_main_agents_exit_leaves_its_row(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent exited {story.agent.id} 0")
     story.expect_text(f"agent show {story.agent.id}", "role: main")
+
+
+def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
+    story = new_story(fixture=EndedHelper)
+    story.expect_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
+
+
+def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.advance(timedelta(minutes=31))
+    SilentHelperEnding()(story.container)
+    story.run_listeners()
+    story.expect_rows(the_helper(story).ended_at is not None)
+
+
+def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+    story.run_listeners()
+    story.expect_rows(jobs_of(story, the_helper(story))[0].ended_at is None)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    story.expect_rows(len(launcher.requests) == 1)

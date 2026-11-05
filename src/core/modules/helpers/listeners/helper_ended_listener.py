@@ -5,7 +5,10 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.events.agent_ended import AgentEnded
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -19,8 +22,9 @@ STOPPED = "Stopped"
 
 
 class HelperEndedListener(CommitListener[AgentEnded]):
-    """A helper that ends with a job line still waiting resumes for it; otherwise its open job ends with it, and one
-    ended by another agent or a person has its program stopped."""
+    """A helper that ends with a job line still waiting resumes for it; while it or its parent is paused its job
+    stays held; otherwise its open job ends with a report so the parent always hears, and one ended by another
+    agent or a person has its program stopped."""
 
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
@@ -33,13 +37,23 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         if helper.role != AgentRole.HELPER:
             return
         open_jobs = [job for job in self.jobs.helper_jobs(helper.id) if job.ended_at is None]
-        if not open_jobs:
+        if not open_jobs or self.is_paused(helper):
             return
         waiting = self.queries.query(AgentLine).filter(session_agent_id=helper.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).oldest().first()
         if waiting is not None:
             self.resume.resume(helper, waiting.text)
             return
         stopped = logged.actor_id != helper.id
-        self.bus.run(EndHelperJob(open_jobs[-1].id, STOPPED if stopped else ""), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)
+        self.end_job(helper, open_jobs[-1], STOPPED if stopped else "", logged)
         if stopped:
             self.launcher.stop(helper.id)
+
+    def is_paused(self, helper: Agent) -> bool:
+        parent = self.queries.query(Agent).find(helper.parent_id) if helper.parent_id is not None else None
+        return helper.paused_at is not None or (parent is not None and parent.paused_at is not None)
+
+    def end_job(self, helper: Agent, job: HelperJob, text: str, logged: LoggedEvent) -> None:
+        if helper.parent_id is None:
+            self.bus.run(EndHelperJob(job.id, text), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)
+            return
+        self.bus.run(RecordParentReport(helper.id, helper.parent_id, text, job.id), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)

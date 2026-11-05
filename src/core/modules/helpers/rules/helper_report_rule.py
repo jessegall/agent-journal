@@ -22,6 +22,7 @@ class HelperReportRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     roles = [AgentRole.HELPER]
+    overlay_proof = True
 
     def __init__(self, agents: AgentRows, jobs: HelperJobRows, providers: Providers, folders: AgentFolders) -> None:
         self.agents, self.jobs, self.providers, self.folders = agents, jobs, providers, folders

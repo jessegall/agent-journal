@@ -11,6 +11,7 @@ from core.modules.helpers.commands.start_helper.start_helper_subcommand import S
 from core.modules.helpers.listeners.helper_program_listener import HelperProgramListener
 from core.modules.helpers.commands.record_program_exit.record_program_exit_handler import RecordProgramExitHandler
 from core.modules.helpers.commands.record_program_exit.record_program_exit_subcommand import RecordProgramExitSubcommand
+from core.modules.helpers.listeners.helper_resume_listener import HelperResumeListener
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
@@ -27,5 +28,5 @@ class HelpersModule(Module):
     settings = HELPER_SETTINGS
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler]
     subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand]
-    listeners = [HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
+    listeners = [HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule]
