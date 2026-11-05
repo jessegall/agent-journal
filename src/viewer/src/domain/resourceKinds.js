@@ -1,10 +1,7 @@
 import {stateLook, stateOpenMoves} from "@journal/window-kit";
 
-const PLURALS = {processes: "process", memories: "memory", replies: "reply"};
+export {cliOf} from "./modelNames.js";
 const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract"]);
-
-// the command name of a row's kind, from the table or model name a reference holds: plans:5 and plan:5 both read plan
-export const cliOf = (table) => (PLURALS[table] ?? table.replace(/s$/, "")).replace(/_/g, "-");
 
 export const titleOf = (kind, row, id) => row?.title || row?.name || `${kind} ${id}`;
 

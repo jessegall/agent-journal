@@ -7,7 +7,7 @@ import {WINDOW_CONTEXT} from "./windowContextKey.js";
 import Icon from "../src/kit/Icon.vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
-import {render} from "../src/text/index.js";
+import {useTextRender} from "../src/text/useTextRender.js";
 import {peekChip, peekRef} from "../src/route.js";
 import {meta, tableOfWord} from "../src/domain/tables.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
@@ -39,10 +39,11 @@ async function copy() {
     copied.value = true;
     setTimeout(() => (copied.value = false), COPIED_MS);
 }
-const html = computed(() => render(props.message.text ?? "", {env: ""}));
+const render = useTextRender();
+const html = computed(() => render(props.message.text ?? ""));
 const edges = computed(() => JSON.parse(props.message.flowchart_edges || "[]"));
 const chartOpen = ref(false);
-const quoteHtml = computed(() => render(props.quote || EARLIER, {env: ""}));
+const quoteHtml = computed(() => render(props.quote || EARLIER));
 function goToQuoted() {
     const shown = document.querySelector(`[data-ref="message:${props.message.parent_id}"]`);
     if (shown) shown.scrollIntoView({block: "center", behavior: "smooth"});
