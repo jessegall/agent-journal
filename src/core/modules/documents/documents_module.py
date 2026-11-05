@@ -61,6 +61,8 @@ from core.modules.documents.listeners.new_report_dock_listener import NewReportD
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.stored_row_links import StoredRowLinks
 from core.modules.documents.support.text_docks import TEXT_DOCKS
+from core.modules.documents.support.text_marks import TEXT_MARKS
+from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
 from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
@@ -73,7 +75,7 @@ class DocumentsModule(Module):
 
     name = "journal.core.documents"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     settings = [SettingValue("revision-minutes", "Revision minutes", "Combine edits by the same person into one revision within this many minutes.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
@@ -87,7 +89,8 @@ class DocumentsModule(Module):
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, TaskMentionListener, PlanMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener]
+    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, TaskMentionListener, PlanMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
+    marks = TEXT_MARKS
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks}
     subcommands = [CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
