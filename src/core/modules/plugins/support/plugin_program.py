@@ -10,6 +10,7 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
@@ -27,14 +28,15 @@ class PluginProgram:
     plugin's fault. A plugin whose answering service has its socket open is asked there instead, and the
     program answers once it is gone."""
 
-    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths) -> None:
-        self.home, self.folders, self.sockets = home, folders, sockets
+    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills) -> None:
+        self.home, self.folders, self.sockets, self.skills = home, folders, sockets, skills
 
     def run(self, call: PluginCall, limit_ms: int) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
-        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "data": dict(call.event.data)})
+        skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
+        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "data": dict(call.event.data)})
         socket_services = [service.name for service in manifest.services if service.answers]
         if socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
             try:
