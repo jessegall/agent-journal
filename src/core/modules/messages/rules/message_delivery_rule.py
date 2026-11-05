@@ -31,6 +31,7 @@ class MessageDeliveryRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    overlay_proof = True
 
     def __init__(self, queries: Queries, home: JournalHome) -> None:
         self.queries, self.home = queries, home

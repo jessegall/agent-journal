@@ -58,7 +58,10 @@ class PluginQueue:
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 return
             reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
-            path.rename(reserved_file)
+            try:
+                path.rename(reserved_file)
+            except FileNotFoundError:
+                return
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
 
     def restore_reservations(self, committed_names: Collection[str]) -> None:
