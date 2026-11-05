@@ -16,19 +16,20 @@ const pollInterval = 20 * time.Millisecond
 // journal folder, the shell and how often the heartbeat is written. Detach continues a moved run without the
 // runner; when it is nil the run goes on in this program.
 type Options struct {
-	Count          string
-	Process        int
-	LimitSeconds   int
-	Background     bool
-	Queue          bool
-	QueueWait      time.Duration
-	OnlyReads      bool
-	Aliases        []string
-	Line           string
-	Home           string
-	Shell          string
-	HeartbeatEvery time.Duration
-	CapCharacters  int
+	Count                string
+	Process              int
+	LimitSeconds         int
+	Background           bool
+	Queue                bool
+	QueueWait            time.Duration
+	SlotWaitLimitSeconds int
+	OnlyReads            bool
+	Aliases              []string
+	Line                 string
+	Home                 string
+	Shell                string
+	HeartbeatEvery       time.Duration
+	CapCharacters        int
 	// MostOutputBytes is how much of one part's output stays on disk.
 	MostOutputBytes int
 	// ReadFlags say what the agent reads of a saved command, by position; the whole output stays on disk.
@@ -54,7 +55,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		options.MostOutputBytes = DefaultMostOutputBytes
 	}
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue)+Script(parts, folder.Path)); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count)+SlotWait(options.Home, options.Process, options.Queue, options.SlotWaitLimitSeconds)+Script(parts, folder.Path)); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}

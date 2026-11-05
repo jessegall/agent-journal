@@ -26,19 +26,37 @@ func LockWait(home string, process int, parts []Part, aliases []string, onlyRead
 	return processExport + fmt.Sprintf("__journal_waited=0\nwhile [ -e %s ] && [ \"$__journal_waited\" -lt %d ]; do sleep 1; __journal_waited=$((__journal_waited+1)); done\n", mark, RunLockLimitSeconds)
 }
 
-// isJournalLine says every part is a journal command; an alias is the command under it, so it waits like any other.
 // SlotWaitLimitSeconds is how long a queued run waits for its spot at most, so a queue that died leaves no run waiting.
 const SlotWaitLimitSeconds = 1800
 
 // SlotWait holds a queued run until the journal has written its spot into its folder.
-func SlotWait(home string, process int, queued bool) string {
+func SlotWait(home string, process int, queued bool, limits ...int) string {
 	if !queued {
 		return ""
 	}
-	mark := quoted(filepath.Join(home, "processes", strconv.Itoa(process), "slot"))
-	return fmt.Sprintf("__journal_slot=0\nwhile [ ! -e %s ] && [ \"$__journal_slot\" -lt %d ]; do sleep 1; __journal_slot=$((__journal_slot + 1)); done\n", mark, SlotWaitLimitSeconds)
+	limitSeconds := SlotWaitLimitSeconds
+	if len(limits) > 0 && limits[0] > 0 {
+		limitSeconds = limits[0]
+	}
+	folder := filepath.Join(home, "processes", strconv.Itoa(process))
+	mark := quoted(filepath.Join(folder, "slot"))
+	return fmt.Sprintf(`__journal_slot=0
+while [ ! -e %s ] && [ "$__journal_slot" -lt %d ] && [ -d %s ]; do
+    sleep 1
+    __journal_slot=$((__journal_slot + 1))
+done
+if [ ! -d %s ]; then
+    printf 'queue folder is missing: no command was started\n' >&2
+    exit 125
+fi
+if [ ! -e %s ]; then
+    printf 'queue slot wait expired: no command was started\n' >&2
+    exit 124
+fi
+`, mark, limitSeconds, quoted(folder), quoted(folder), mark)
 }
 
+// isJournalLine says every part is a journal command; an alias is the command under it, so it waits like any other.
 func isJournalLine(parts []Part, aliases []string) bool {
 	for _, part := range parts {
 		arguments := strings.Fields(part.Text)
