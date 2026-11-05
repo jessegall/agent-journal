@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {context, drawn, mounted} from "./support/windowContext.js";
+import {context, drawn, mountedDock} from "./support/windowContext.js";
 import Dumps from "../../core/modules/dumps/web/src/dumps.js";
 import DumpDock from "../../core/modules/dumps/web/src/dump-dock.js";
 
@@ -24,8 +24,9 @@ test("an empty dumps list shows an empty state", async () => {
     expect(await drawn(Dumps, context(board([])))).toContain("No dumps");
 });
 
-test("the dock body shows the dump's title and its notes", async () => {
-    const text = (await mounted(DumpDock, context({}), {row: {id: 1, title: "", brief: "Notes from the call", outcome: ""}})).textContent;
-    expect(text).toContain("Dump 1");
-    expect(text).toContain("Notes from the call");
+test("the dump dock adds its item count to the card's bottom line", async () => {
+    const window = context({"dump items 1": {ok: true, value: [{id: 2}, {id: 3}]}});
+    const element = await mountedDock(DumpDock, window, {target_id: 1});
+    expect(element.querySelector("footer").textContent).toBe("Items: 2");
+    expect(window.reads).toEqual(["dump items 1"]);
 });
