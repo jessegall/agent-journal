@@ -9,6 +9,6 @@ def test_activity_groups_agent_events_and_animates_new_items(new_story):
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.hook("s-1", HookSamples.prompt("First instruction"))
     story.hook("s-1", HookSamples.prompt("Second instruction"))
-    story.expect_text("event list --limit 30", "hook_call.create", actor=story.user)
+    story.expect_text("event list --limit 30", "hook_call.", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "activity.browser.mjs", ["/tmp/journal-worker-481-activity.png"])

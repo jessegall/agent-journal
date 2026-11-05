@@ -1,3 +1,4 @@
+from functools import cache
 import os
 import subprocess
 from pathlib import Path
@@ -13,6 +14,7 @@ TYPE_CHECK_MARK = "type_check"
 INSTALL_MARK = "install_job"
 INSTALL_FOLDER = "install"
 BROWSER_MARK = "browser_job"
+BROWSER_CALL = "expect_browser("
 READER_MARK = "reader_job"
 SEPARATE_JOBS = (TYPE_CHECK_MARK, INSTALL_MARK, BROWSER_MARK, READER_MARK)
 os.environ.pop("JOURNAL_AGENT_SESSION", None)
@@ -39,9 +41,16 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if INSTALL_FOLDER in item.path.parts[item.path.parts.index("tests"):]:
             item.add_marker(INSTALL_MARK)
+        if drives_a_browser(item.path):
+            item.add_marker(BROWSER_MARK)
     kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and is_in_this_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
     items[:] = kept
+
+
+@cache
+def drives_a_browser(path: Path) -> bool:
+    return BROWSER_CALL in path.read_text()
 
 
 def is_in_this_job(item: pytest.Item, config: pytest.Config) -> bool:

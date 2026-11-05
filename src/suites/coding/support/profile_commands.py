@@ -24,7 +24,7 @@ PLAN_COMMANDS = (
     "place it with journal phase place <task> --phase <phase>. "
     "The plan actions are journal plan make, journal plan edit, journal plan list, journal plan show, "
     "journal plan outline, journal plan progress, journal plan inspect, journal plan board, journal plan timeline, "
-    "journal plan place, journal plan ready, journal plan review, journal plan start, journal plan block, journal plan unblock, "
+    "journal plan place, journal plan ready, journal plan review, journal plan reviewed, journal plan start, journal plan block, journal plan unblock, "
     "journal plan cancel, journal plan close, journal plan delete, journal plan comment and journal plan comments. "
     "Only the user runs journal plan approve; prepare the plan and mark it ready for that approval. "
     "The phase actions are journal phase make, journal phase edit, journal phase list, journal phase show, "
