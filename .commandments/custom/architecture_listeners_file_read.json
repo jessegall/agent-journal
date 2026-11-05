@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"any": [
+                {"nameIn": ["glob", "rglob", "read_text", "read_bytes", "plugin_skills"]},
+                {"all": [
+                    {"name": "skills"},
+                    {"of": "child:func", "all": [
+                        {"of": "child:value", "resolves": "core.modules.skills.support.skill_catalogue.SkillCatalogue"}
+                    ]}
+                ]}
+            ]},
+            {"any": [
+                {"extendsAny": "CommitListener", "of": "enclosingType"},
+                {"all": [
+                    {"name": "SkillCatalogue", "of": "enclosingType"},
+                    {"name": "plugin_skills", "of": "enclosingFunction"}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/core/modules/drivers/listeners/bypass_log_listener\\.py$"},
+            {"fileMatches": "/core/modules/skills/(listeners/(skill_event_listener|keyword_skills_listener|skill_request_listener)|support/skill_catalogue)\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "file-read-in-a-listener",
+        "description": "A commit listener scans files or asks the skill catalogue to scan them.",
+        "rule": "Read file declarations when they change and supply the held declarations to listeners. The skill catalogue scanner is reached from skill listeners and is checked too. Task 6606 owns the named skill files until its cache merges; remove those temporary exceptions then. BypassLogListener consumes and removes a new log written by the external Go hook, so reading that new input is required.",
+        "skill": "plain-code-words"
+    }
+}

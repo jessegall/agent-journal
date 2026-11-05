@@ -5,13 +5,13 @@
         "select": "call",
         "where": [
             {
-                "name": "find"
+                "nameIn": ["find", "filter"]
             },
             {
                 "fileMatches": "(^|/)src/(core/modules|suites)/.+/(listeners|guards)/[^/]+\\.py$"
             },
             {
-                "argument": {
+                "any": [{"all": [{"name": "find"}, {"argument": {
                     "at": 0,
                     "all": [
                         {
@@ -21,7 +21,14 @@
                             "name": "row_id"
                         }
                     ]
-                }
+                }}]}, {"all": [
+                    {"name": "filter"},
+                    {"descendant": {"all": [
+                        {"kind": "keyword"},
+                        {"name": "id"},
+                        {"of": "child:value", "all": [{"is": "member-access"}, {"name": "row_id"}]}
+                    ]}}
+                ]}]
             }
         ],
         "reject": [
@@ -29,14 +36,14 @@
                 "testCode": true
             },
             {
-                "fileMatches": "/(worker_test_listener|reply_link_listener|memory_mark_listener)\\.py$"
+                "fileMatches": "/(worker_test_listener|reply_link_listener|memory_mark_listener|process_end_mark_listener|reviewer_ended_listener)\\.py$"
             }
         ]
     },
     "sin": {
         "name": "row-loaded-from-an-event",
         "description": "A listener loads the row its event names, which the runner has already loaded.",
-        "rule": "Declare the row's event as the type parameter and read event.row.",
+        "rule": "Declare the row's event as the type parameter and read event.row. The five existing listener files named in reject await task 6608 and the final judge after both workers merge; their row reloads are temporary exceptions, not the pattern for a new listener.",
         "skill": "plain-code-words"
     }
 }
