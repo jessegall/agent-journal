@@ -1,15 +1,15 @@
 import {afterEach, expect, test, vi} from "vitest";
-import {buttonLine, pressButton} from "../src/chat/markButtons.js";
+import {pressButton} from "../src/chat/markButtons.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
-async function pressed(button, mark) {
+async function pressed(button, mark, values = {}) {
     const asked = [];
     vi.stubGlobal("fetch", async (url, init) => {
         asked.push(JSON.parse(init.body));
         return {json: async () => ({code: 0, value: null, error: ""})};
     });
-    await pressButton(button, mark, "main");
+    await pressButton(button, mark, "main", values);
     return asked;
 }
 
@@ -23,12 +23,12 @@ test("a line without a row place is sent as declared", async () => {
     expect(await pressed(button, null)).toEqual([{window: "messages.chat", line: ["window", "open", "memories.list"], environment: "main"}]);
 });
 
-test("a typed message stays one word with spaces, quotes, equal signs and leading flags", () => {
+test("a typed message stays one word with spaces, quotes, equal signs and leading flags", async () => {
     const message = '--skip=all A "quoted" message';
-    expect(buttonLine({runs: "task edit {row_id} --brief={message}"}, {id: 12}, {message})).toEqual(["task", "edit", "12", `--brief=${message}`]);
+    expect(await pressed({runs: "task edit {row_id} --brief={message}"}, {id: 12}, {message})).toEqual([{window: "messages.chat", line: ["task", "edit", "12", `--brief=${message}`], environment: "main"}]);
 });
 
-test("quoted and escaped declaration arguments keep their boundaries", () => {
-    expect(buttonLine({runs: `note edit {row_id} --brief="With spaces" --note=two\\ words --empty=''`}, {id: 12}))
-        .toEqual(["note", "edit", "12", "--brief=With spaces", "--note=two words", "--empty="]);
+test("quoted and escaped declaration arguments keep their boundaries", async () => {
+    expect(await pressed({runs: `note edit {row_id} --brief="With spaces" --note=two\\ words --empty=''`}, {id: 12}))
+        .toEqual([{window: "messages.chat", line: ["note", "edit", "12", "--brief=With spaces", "--note=two words", "--empty="], environment: "main"}]);
 });

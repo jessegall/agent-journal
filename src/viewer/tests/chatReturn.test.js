@@ -24,7 +24,7 @@ test("returning to a chat replaces older pages with the newest fifty and jumps t
     vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
     const frames = [];
     vi.stubGlobal("requestAnimationFrame", (frame) => frames.push(frame));
-    const feed = {"message feed": page(messages(51, 100)), "chat-mark main": page([])};
+    const feed = {"message feed": {ok: true, value: {rows: messages(51, 100)}}, "chat-mark main": page([])};
     const window_ = context(feed);
     const read = window_.read;
     window_.read = async (line) => line.includes("--before-id") ? page(messages(1, 50)) : read(line);

@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {WindowSubscriptions} from "../../src/windows/windowSubscriptions.js";
 
 export const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total: rows.length}});
 
@@ -12,6 +13,7 @@ export function context(answers, agent = null) {
         agent,
         tabs: [],
         sources: [],
+        subscriptions: new WindowSubscriptions(),
         links: {},
         visible: {value: true},
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},

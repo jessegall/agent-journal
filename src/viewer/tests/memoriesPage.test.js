@@ -29,5 +29,5 @@ test("a memory made on a tab is made in that tab's environment", async () => {
     await settle();
     element.querySelector("[data-memory-form]").dispatchEvent(new Event("submit"));
     await settle();
-    expect(lines).toEqual([["memory", "make", "Keep this", "--type", "fact", "--environment", "main"]]);
+    expect(lines).toEqual([["memory", "make", "Keep this", "--environment", "main"]]);
 });

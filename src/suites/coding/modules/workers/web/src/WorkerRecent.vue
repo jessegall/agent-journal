@@ -6,7 +6,7 @@ const {rows, failure, loaded, older, more} = useRows("chat-mark main --type work
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" :older="older" :more="more" empty="No worker has done anything noteworthy yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" :older="older" :more="more" empty="No worker has done anything noteworthy yet" hint="Worker activity appears here as work starts and finishes.">
         <template #default="{row}">
             <button type="button" class="worker-moment" data-worker-moment @click="peekRef(`${row.target_model}:${row.target_id}`)">
                 <span class="worker-moment-text">{{ row.text }}</span>

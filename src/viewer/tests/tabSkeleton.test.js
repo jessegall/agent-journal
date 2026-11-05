@@ -1,11 +1,11 @@
 import {readdirSync, readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
-import {h} from "vue";
+import {h, nextTick} from "vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import WorkerDropdown from "../../suites/coding/modules/workers/web/src/WorkerDropdown.vue";
-import {context, mounted, page, settleTransition} from "./support/codingWindowContext.js";
+import {context, mounted, page} from "./support/codingWindowContext.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 vi.stubGlobal("ResizeObserver", class {
@@ -17,6 +17,7 @@ vi.stubGlobal("ResizeObserver", class {
 // a skeleton shows at the least 150 ms; the tests answer at once unless the mode says it is not a test
 beforeEach(() => vi.stubEnv("MODE", "production"));
 afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllEnvs();
     document.body.innerHTML = "";
 });
@@ -27,12 +28,16 @@ const skeleton = (element) => element.querySelector("[data-tab-skeleton]");
 
 // the tab is chosen, the skeleton shows at once, still shows before the minimum has passed, and is gone after it
 async function expectMinimumOnSwitch(element, tabKey, content) {
+    vi.useFakeTimers({toFake: ["setTimeout", "clearTimeout", "performance"]});
     element.querySelector(`[data-tab="${tabKey}"]`).click();
-    await settleTransition();
+    await vi.advanceTimersByTimeAsync(0);
+    await nextTick();
     expect(skeleton(element)).not.toBeNull();
-    await wait(MINIMUM_MS / 3);
+    await vi.advanceTimersByTimeAsync(MINIMUM_MS - 1);
+    await nextTick();
     expect(skeleton(element)).not.toBeNull();
-    await wait(MINIMUM_MS);
+    await vi.advanceTimersByTimeAsync(1);
+    await nextTick();
     expect(skeleton(element)).toBeNull();
     expect(element.querySelector(content)).not.toBeNull();
 }

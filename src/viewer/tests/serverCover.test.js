@@ -59,7 +59,7 @@ test("the server saying a restart is marked keeps the cover up", async () => {
 
 test("a broken stream with the server well shows nothing", async () => {
     vi.stubGlobal("fetch", answers(WELL));
-    const source = {close: vi.fn()};
+    const source = {close: vi.fn(), addEventListener: vi.fn()};
     vi.spyOn(transport, "stream").mockReturnValue(source);
     followEvents("main", () => {});
     await source.onerror();
