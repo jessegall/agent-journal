@@ -40,7 +40,7 @@ class CartMemory(StoryFixture):
 
 def test_a_start_memory_a_keyword_gave_before_the_listener_ran_is_given_once(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_success('memory make "The cart rounds to cents" --type fact --keywords cart --project', actor=story.user)
+    story.expect_success('memory make "The cart rounds to cents" --type fact --keywords cart --environment main', actor=story.user)
     story.hook("s-1", HookSamples.session_start())
     story.hook("s-1", HookSamples.prompt("Look at the cart"))
     story.run_listeners()

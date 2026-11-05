@@ -9,14 +9,14 @@ from core.base.role_group import RoleGroup
 
 
 class StartDeliveryRule(DriverRule):
-    """At a session start and after a compaction, tells the agent how many active memories of its scope and the
-    project's it has whose type gives at start and that have no due time; StartMemoriesListener records them."""
+    """At a session start and after a compaction, tells the agent how many active memories of its scope it has
+    whose type gives at start and that have no due time; StartMemoriesListener records them."""
 
     name = "memories.start-delivery"
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    role_group = RoleGroup.PROMPT
+    role_group = RoleGroup.ANY
 
     def __init__(self, memories: HookMemories) -> None:
         self.memories = memories

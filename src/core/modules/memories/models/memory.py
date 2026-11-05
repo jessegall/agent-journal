@@ -15,8 +15,8 @@ FADING_REMOVAL_REASON = "faded to weight 0"
 
 @dataclass(frozen=True, kw_only=True)
 class Memory(Model):
-    """What the journal gives back to an agent: for one environment, for one helper with agent_id, or for the
-    whole project with neither; a weight from 0 to 10, given only above 0; quiet until due_at when it has one.
+    """What the journal gives back to an agent: for one environment, or for one helper with agent_id; a weight
+    from 0 to 10, given only above 0; quiet until due_at when it has one.
     """
 
     model_name = "memory"
@@ -26,7 +26,7 @@ class Memory(Model):
     lifecycle = MemoryLifecycle
     table = "memories"
 
-    environment_id: int | None = None
+    environment_id: int
     agent_id: int | None = None
     task_id: int | None = None
     creator_id: int

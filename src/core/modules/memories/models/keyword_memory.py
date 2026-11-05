@@ -23,7 +23,6 @@ class KeywordMemory(ViewModel):
     text: str
     weight: int
     due_at: Timestamp | None
-    fades: bool
     start_delivery: bool
     mark_delivery: bool
     keyword_delivery: bool

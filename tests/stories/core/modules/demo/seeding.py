@@ -14,7 +14,7 @@ SHOWN = {
     "messages": ("message list --oldest", "Fix the cart total first", "On it"),
     "questions open": ("question list", "Which database?"),
     "questions answered": ("question show 2", "state: answered", "answer: Cart"),
-    "memories": ("memory list", "fact", "rule", "reminder"),
+    "memories": ("memory list", "fact", "reminder"),
     "reviews": ("review list", "task"),
     "review steps": ("review-step list --review 1 --oldest", "Started reviewing task"),
     "docked items": ("dock-item list --oldest", "docked"),

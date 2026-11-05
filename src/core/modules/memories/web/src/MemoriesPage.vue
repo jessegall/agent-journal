@@ -5,7 +5,7 @@ import MemoryRows from "./MemoryRows.vue";
 
 const ALL = "";
 
-// the project's memories: one tab per environment, and one for all of them, which also holds those of no environment
+// the project's memories: one tab per environment, and one for all of them
 const context = useWindow();
 const {rows: environments} = useRows("environment list", ["environment.*"]);
 const tab = ref(context.environment);

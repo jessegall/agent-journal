@@ -1,4 +1,3 @@
-import json
 import re
 
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text, expect_upgrade_without_text
@@ -56,23 +55,20 @@ def test_a_long_reminder_moves_whole_into_a_document_and_nothing_is_cut_or_skipp
     memories = story.run("memory list --json")
     memories.expect_text("A long reminder. A long reminder.")
     memories.expect_text("whole text in doc")
-    expect_upgrade_text(story, "3 memory texts longer than 400 characters moved whole into documents")
+    expect_upgrade_text(story, "2 memory texts longer than 400 characters moved whole into documents")
     expect_upgrade_without_text(story, "cut to")
     expect_upgrade_without_text(story, "skipped reminders")
 
 
-def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_their_keywords(new_story):
+def test_a_version_4_rule_moves_as_a_rule_and_a_reminder_as_a_reminder_memory(new_story):
     story = upgraded_story(new_story)
+    story.expect_text("rule list --state active", "Always keep totals in cents")
     memories = story.run("memory list --json")
-    memories.expect_text("Always keep totals in cents")
+    memories.expect_no_text("Always keep totals in cents")
     memories.expect_text("Run the cart tests before a commit")
-    memories.expect_text('"type": "rule"')
     memories.expect_text('"type": "reminder"')
 
 
-def test_a_long_project_wide_rule_moves_into_a_project_document(new_story):
+def test_a_long_rule_moves_whole(new_story):
     story = upgraded_story(new_story)
-    rule = next(memory for memory in json.loads(story.run("memory list --json").output_text)["rows"] if memory["text"].startswith("A long project rule."))
-    document = re.search(r"whole text in doc (\d+)", rule["text"])
-    expect_value_4(document)
-    story.run(f"doc show {document.group(1)} --json").expect_no_text("environment_id")
+    story.expect_no_text("rule list --state active", "whole text in doc")

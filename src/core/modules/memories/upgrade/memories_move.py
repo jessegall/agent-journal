@@ -18,16 +18,16 @@ from core.modules.memories.models.memory import FADING_REMOVAL_REASON, LOWEST_WE
 
 TABLE = "memories"
 TYPE = "fact"
-RULES, REMINDERS = "rules", "reminders"
+REMINDERS = "reminders"
 EMPTY_CONDITION = "{}"
 KEYWORD_LIMITS = (2, 40)
 
 
 class MemoriesMove(VersionFourMove):
-    """Imports version 4 memories, rules and reminders, preserving content and removing zero-weight facts."""
+    """Imports version 4 memories and reminders, preserving content and removing zero-weight facts."""
 
     name = "memories"
-    reads = ["memories", RULES, REMINDERS]
+    reads = ["memories", REMINDERS]
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.tasks"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
@@ -50,26 +50,23 @@ class MemoriesMove(VersionFourMove):
 
     def move_instructions(self, source: VersionFourSource, rows: RowInsert, documents: WholeTextDocuments, creators: CreatorResolver, map: MoveMap,
                           report: MoveReport, context: MoveContext) -> None:
-        for table, memory_type in ((RULES, "rule"), (REMINDERS, "reminder")):
-            for row in source.rows(table):
-                if table == REMINDERS and row["due_at"]:
-                    report.count(table, map.transfer(table, row["id"], REMINDERS, partial(self.insert_timed_reminder, rows, row, creators.actor_id(row["creator"]), context)))
-                    continue
-                if row["trigger"] or (row["condition"] and row["condition"] != EMPTY_CONDITION):
-                    report.note(f"{memory_type} {row['id']} had a trigger or a condition version 5 does not carry: it moved without it")
-                report.count(table, map.transfer(table, row["id"], TABLE, partial(self.insert_instruction, rows, documents, row, table, memory_type,
-                                                                                 creators.actor_id(row["creator"]), context)))
+        for row in source.rows(REMINDERS):
+            if row["due_at"]:
+                report.count(REMINDERS, map.transfer(REMINDERS, row["id"], REMINDERS, partial(self.insert_timed_reminder, rows, row, creators.actor_id(row["creator"]), context)))
+                continue
+            if row["trigger"] or (row["condition"] and row["condition"] != EMPTY_CONDITION):
+                report.note(f"reminder {row['id']} had a trigger or a condition version 5 does not carry: it moved without it")
+            report.count(REMINDERS, map.transfer(REMINDERS, row["id"], TABLE, partial(self.insert_reminder, rows, documents, row, creators.actor_id(row["creator"]), context)))
 
     def insert_timed_reminder(self, rows: RowInsert, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         return rows.insert(REMINDERS, {"environment_id": row["environment_id"], "creator_id": creator_id, "text": row["text"], "due_at": row["due_at"], "single_use": 1,
                                              "created_at": created, "updated_at": row["updated_at"] or created})
 
-    def insert_instruction(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, table: str, memory_type: str, creator_id: int, context: MoveContext) -> int:
+    def insert_reminder(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"] if table == REMINDERS else None, "creator_id": creator_id, "type": memory_type,
+        memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"], "creator_id": creator_id, "type": "reminder",
                                         "text": documents.fitting_text(row, creator_id, created),
-                                        "reason": row["reason"] if table == RULES else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})
         self.keep_words(rows, memory_id, creator_id, row["keywords"], created)
         return memory_id

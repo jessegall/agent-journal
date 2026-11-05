@@ -1,19 +1,24 @@
+from datetime import timedelta
+
 from core.testing.story_fixture import StoryFixture
 
 import pytest
 
+from core.modules.drivers.rules.agent_block_rule import COUNTDOWN_USES
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 EDIT = HookSamples.edit("src/cart.py")
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["src/cart.py"], "diff": None})
+SECOND = timedelta(seconds=1)
+MARK_TOOL_USES = [(55, 50, 10), (85, 80, 5), (95, 90, 2)]
 
 
 def fact_mark(story) -> int:
     fact_id = 1
     story.report_context_percent("s-1", 55)
-    story.expect_hook_allowed("s-1", EDITED, f"context at 50%: weigh your 1 memories, heaviest first: {fact_id}; journal memory read <number> reads one")
+    story.expect_hook_allowed("s-1", EDITED, f"context at 50%: 10 tool uses to weigh your 1 memories, heaviest first: {fact_id}")
     return fact_id
 
 
@@ -21,10 +26,25 @@ def test_passing_half_the_context_window_opens_a_mark_and_gives_the_facts_to_wei
     fact_mark(new_story(fixture=ContextFact))
 
 
-def test_while_a_mark_is_open_a_write_is_refused_and_a_read_goes_through(open_context_mark):
+def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_lets_reads_through(new_story):
+    story = new_story(fixture=ContextFact)
+    for percent, mark, uses in MARK_TOOL_USES:
+        story.report_context_percent("s-1", percent)
+        story.advance(SECOND)
+        story.expect_hook_allowed("s-1", EDITED, f"context at {mark}%: {uses} tool uses to weigh your 1 memories, heaviest first: 1")
+        for remaining in reversed(range(uses)):
+            story.advance(SECOND)
+            story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_USES else []))
+        story.advance(SECOND)
+        story.expect_hook_refusal("s-1", EDIT, "journal memory weigh")
+        story.expect_hook_allowed("s-1", READ)
+        story.expect_success('memory skip "nothing here changed"', actor=story.agent)
+        story.expect_hook_allowed("s-1", READ)
+
+
+def test_a_stop_waits_for_the_weighing_from_the_moment_a_mark_opens(open_context_mark):
     story = open_context_mark
-    story.expect_hook_refusal("s-1", EDIT, "journal memory weigh")
-    story.expect_hook_allowed("s-1", READ)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "journal memory weigh")
 
 
 def test_weighing_a_memory_closes_the_mark(context_memory):

@@ -1,6 +1,6 @@
 from tests.stories.core.support.fixtures import UserJoined
 
-TYPE_COMMAND = 'memory-type make decision journal.core.memories "a choice made and why" --fades'
+TYPE_COMMAND = 'memory-type make decision journal.core.memories "a choice made and why"'
 
 
 def test_an_agent_makes_a_memory_type(new_story):

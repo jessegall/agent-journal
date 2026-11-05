@@ -3,17 +3,15 @@ from collections.abc import Sequence
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.modules.memories.support.mark_tracker import MarkTracker
-from core.modules.memories.rules.weigh_first_rule import WeighFirstRule
 from core.modules.memories.rules.weigh_first_stop_rule import WeighFirstStopRule
 
 
 class WeighingOverlay(Overlay):
-    """While an agent has an open memory mark, its writes and stops wait until it weighs, makes, corrects
-    or removes a memory, or skips with a reason."""
+    """While an agent has an open memory mark, its stops wait until it weighs, makes, corrects or removes a
+    memory, or skips with a reason."""
 
     name = "memories.weighing"
-    exclusive = True
-    rules = [WeighFirstRule, WeighFirstStopRule]
+    rules = [WeighFirstStopRule]
 
     def __init__(self, marks: MarkTracker) -> None:
         self.marks = marks

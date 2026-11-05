@@ -7,10 +7,12 @@ description: Keep what matters beyond the context window with weighted memories;
 
 Use a fact by default for something worth remembering. Facts can go stale; remove one when it is no longer true.
 
-- `journal memory make "<what to keep in mind>" --type fact --weight 7` keeps one, in one or two plain sentences. Every
-  compaction lowers the weight of facts in your own scope by one. At weight 0 the fact is removed.
-  A higher weight lasts through more compactions. Project-wide memories do not fade.
-- Rules are rare user instructions that must keep applying. Rules do not fade; do not turn stale facts into rules.
+- `journal memory make "<what to keep in mind>" --type fact --weight 7` keeps one, in one or two plain sentences. A
+  memory belongs to one environment. Every compaction lowers the weight of the memories in your own scope by one, and
+  at weight 0 a memory is removed. A higher weight lasts through more compactions.
+- What must keep applying is a rule, not a memory: see the journal-rules skill.
+- A worker, helper or subagent reads the main agent's memories at its start. What it keeps itself stays its own, and
+  reaches neither the main agent nor another helper.
 - `--task <n>` ties it to a task and `--keywords a,b` to words that bring it back. Something to be told at a time or on an
   interval is a reminder, not a memory: `journal reminder make`.
 - `journal memory list` names every memory; `journal memory read <n>` reads one whole.
@@ -21,4 +23,5 @@ Use a fact by default for something worth remembering. Facts can go stale; remov
   `journal memory faded` those removed after fading to weight 0. To bring one back, restore it with
   `journal memory restore <n>` and give it a positive weight.
 - At each context mark you weigh your memories, or say why nothing needs keeping with `journal memory skip "<why>"`.
-  Reads and journal commands go through until you do.
+  The line says how many tool uses you have: by default 10 at 50 percent, 5 at 80 and 2 at 90. After them you are held
+  until you do, and a stop waits for it too. Reads and journal commands still go through.

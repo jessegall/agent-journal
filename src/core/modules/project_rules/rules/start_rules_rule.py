@@ -16,7 +16,7 @@ class StartRulesRule(DriverRule):
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    role_group = RoleGroup.PROMPT
+    role_group = RoleGroup.ANY
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

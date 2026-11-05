@@ -10,10 +10,10 @@ def four_memories(story) -> None:
     story.run('memory make "The cart total is in cents" --type fact --weight 4 --environment main', actor=story.agent)
     story.run('memory make "The checkout runs in euros" --type fact --weight 8 --environment main', actor=story.agent)
     story.run('memory make "Log after each step" --type reminder --environment main', actor=story.agent)
-    story.run('memory make "Always run the tests before a commit" --type rule --project')
+    story.run('memory make "Always run the tests before a commit" --type fact --environment main', actor=story.agent)
 
 
-def test_a_session_start_gives_rules_then_reminders_then_facts_heaviest_first(new_story):
+def test_a_session_start_gives_reminders_then_facts_heaviest_first(new_story):
     story = new_story(fixture=BuilderStarted)
     four_memories(story)
     story.expect_hook_allowed("s-1", SESSION_START, f"4 memories to read: journal skill require {story.agent.id} journal-memory, cat the path it gives, then journal memory list")

@@ -1,7 +1,7 @@
 ACTIVE_MEMORIES_SELECT = (
     "SELECT memories.id AS memory_id, memories.environment_id, memories.agent_id, memories.type, memories.text,"
-    " memories.weight, memories.due_at, memory_types.fades, memory_types.start_delivery, memory_types.mark_delivery,"
-    " memory_types.keyword_delivery, CASE memories.type WHEN 'rule' THEN 0 WHEN 'reminder' THEN 1 WHEN 'fact' THEN 2 ELSE 3 END AS delivery_order"
+    " memories.weight, memories.due_at, memory_types.start_delivery, memory_types.mark_delivery,"
+    " memory_types.keyword_delivery, CASE memories.type WHEN 'reminder' THEN 0 WHEN 'fact' THEN 1 ELSE 2 END AS delivery_order"
     " FROM memories JOIN memory_types ON memory_types.name = memories.type"
     " WHERE memories.state = 'active' AND memories.weight > 0"
 )

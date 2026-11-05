@@ -4,7 +4,6 @@ import {Btn, ListTools, peekRef, RowList, Segmented, useListTools, useRows, useW
 
 const TYPES = [
     {key: "fact", label: "Fact"},
-    {key: "rule", label: "Rule"},
     {key: "reminder", label: "Reminder"},
 ];
 

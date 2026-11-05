@@ -29,9 +29,6 @@ class ActiveMemoryQuery(Query[ActiveMemory]):
     def environment_memories(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id).matching(IsNull("agent_id"))
 
-    def fading(self) -> Self:
-        return self.filter(fades=True)
-
     def start_memories(self) -> Self:
         return self.filter(start_delivery=True)
 

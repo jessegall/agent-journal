@@ -11,14 +11,14 @@ def database(tmp_path) -> Database:
     return MemoryJournal.synced(tmp_path).database
 
 
-def test_the_migration_seeds_fact_rule_and_reminder_with_their_weights(tmp_path):
-    rows = database(tmp_path).rows(Statement("SELECT name, fades, starting_weight FROM memory_types ORDER BY name"))
-    assert [tuple(row) for row in rows] == [("fact", 1, 5), ("reminder", 0, 5), ("rule", 0, 10)]
+def test_the_migration_seeds_fact_and_reminder_with_their_weights(tmp_path):
+    rows = database(tmp_path).rows(Statement("SELECT name, starting_weight FROM memory_types ORDER BY name"))
+    assert [tuple(row) for row in rows] == [("fact", 5), ("reminder", 5)]
 
 
 def test_each_seeded_type_is_on_in_every_suite(tmp_path):
     rows = database(tmp_path).rows(Statement("SELECT type, suite, enabled FROM memory_type_switches ORDER BY type"))
-    assert [tuple(row) for row in rows] == [("fact", "*", 1), ("reminder", "*", 1), ("rule", "*", 1)]
+    assert [tuple(row) for row in rows] == [("fact", "*", 1), ("reminder", "*", 1)]
 
 
 def test_a_memory_for_one_agent_needs_its_environment(tmp_path):

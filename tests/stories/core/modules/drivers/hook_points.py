@@ -31,7 +31,7 @@ def filled(story) -> None:
     for number in range(ROW_COUNT):
         story.run(f'task make "Task {number}" --brief "A job to do" --environment main', actor=story.user)
         story.run(f'message send "Message {number}" --environment main', actor=story.user)
-        story.expect_success(f'memory make "Fact {number}" --type fact --project', actor=story.user)
+        story.expect_success(f'memory make "Fact {number}" --type fact --environment main', actor=story.user)
 
 
 @pytest.mark.parametrize("elapsed_seconds", [0, 35])
