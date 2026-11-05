@@ -19,6 +19,7 @@ from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.testing.story import Story
+from core.testing.story_line_run import StoryLineRun
 from core.testing.line_outcome import LineOutcome
 from core.base.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
@@ -297,6 +298,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     login = ViewerLogin(phones, ShareSessions(phones.journal_output))
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                             HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), ServerTunnel(home), STORY_HOOK_LIMIT_SECONDS)
+    context.viewer.routes.line_route.line_run = StoryLineRun(home, listener_runner=ListenerWake(listener_thread))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
