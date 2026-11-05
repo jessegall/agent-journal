@@ -88,11 +88,11 @@ def test_a_folder_no_environment_holds_runs_in_no_environment(new_story):
     story.expect_requested_exit(TASK_LINE, CallerRequest(folder="/elsewhere"), REFUSED_CODE, "needs an environment")
 
 
-def test_an_ended_agent_clears_its_process_and_a_command_from_that_pid_names_no_agent(new_story):
+def test_an_ended_agent_preserves_its_process_identity_but_a_command_from_it_names_no_agent(new_story):
     story, agent_id = agent_with_pid(new_story)
     story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, AGENT_START_TIME))
     story.run(f"agent end {agent_id}")
-    story.expect_absent(f"agent show {agent_id}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
+    story.expect_text(f"agent show {agent_id}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
     story.expect_requested_success(f"{TASK_LINE} --environment main", CallerRequest(pid=900), f"creator_id: {CORE_ACTOR_ID}")
 
 

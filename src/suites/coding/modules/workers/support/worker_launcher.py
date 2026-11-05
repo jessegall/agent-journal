@@ -1,3 +1,5 @@
+from suites.coding.modules.workers.support.worker_sessions import WorkerSessions
+from suites.coding.modules.workers.support.worker_session_state import WorkerSessionState
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.provider.launch_command import LaunchCommand
@@ -19,10 +21,19 @@ class WorkerLauncher:
     session, as Codex does, is bound to this row by its first hook. A launcher older than this journal answers
     nothing, which counts as started; no launcher at all counts as failed."""
 
-    def __init__(self, link: LauncherLink, bus: Bus) -> None:
-        self.link, self.bus = link, bus
+    def __init__(self, link: LauncherLink, bus: Bus, sessions: WorkerSessions) -> None:
+        self.link, self.bus, self.sessions = link, bus, sessions
 
     def hand(self, worker: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
+        with self.sessions.lock(worker.session) as available:
+            if not available:
+                return LaunchAnswer.RUNNING
+            state = self.sessions.prepare(worker)
+            if state is not WorkerSessionState.READY:
+                return LaunchAnswer.FAILED if state is WorkerSessionState.BLOCKED else LaunchAnswer.RUNNING
+            return self.start(worker, environment, command)
+
+    def start(self, worker: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         answer = self.link.sent({"agent_id": worker.id, "session": worker.session, "environment": environment.name, "folder": str(command.folder),
                                  "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: worker.session}}, ANSWER_BYTES)
         if answer == RUNNING_ANSWER:
