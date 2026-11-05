@@ -40,7 +40,7 @@ class RunnerRewriteRule(DriverRule):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
-        decided = self.limits.decide(hook.environment_id, shell)
+        decided = self.limits.decide(hook.environment_id, shell, hook.role)
         run = replace(decided, read_command=shell.is_readonly)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
