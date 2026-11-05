@@ -20,9 +20,9 @@ from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 
 
 class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
-    """Ends the row of an agent whose program exited, so a program that fires no last hook still ends; an open job
-    is written off through a report, with what the transcript holds or why the program ended. It reads the terminal
-    log and the transcript outside any transaction."""
+    """Ends the row of an agent whose program exited, so a program that fires no last hook still ends; an open
+    job ends through a report, with what the transcript holds or why the program ended. It reads the terminal log
+    and the transcript outside any transaction."""
 
     command = RecordProgramExit
     transactional = False
@@ -36,15 +36,16 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
             return
         actor = Actor(agent.id, ActorType.AGENT)
         job = next((row for row in self.jobs.helper_jobs(agent.id) if row.ended_at is None), None)
-        if job is not None and agent.parent_id is not None and not self.has_waiting_job(agent):
-            self.write_off(agent, job, command.exit_code, actor)
+        if job is not None and self.owes_report(agent):
+            self.report_exit(agent, job, command, actor)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
 
-    def has_waiting_job(self, agent: Agent) -> bool:
-        return self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
+    def owes_report(self, agent: Agent) -> bool:
+        has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
+        return agent.parent_id is not None and not has_waiting_job
 
-    def write_off(self, agent: Agent, job: HelperJob, exit_code: int, actor: Actor) -> None:
-        last_words = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
-        text = last_words or self.reasons.reason(agent, exit_code)
+    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor) -> None:
+        transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
+        text = transcript_text or self.reasons.reason(agent, command)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)

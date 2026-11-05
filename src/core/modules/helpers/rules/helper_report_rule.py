@@ -35,5 +35,5 @@ class HelperReportRule(DriverRule):
         return RuleAnswer.allowed().running(RecordParentReport(helper.id, helper.parent_id, self.report(hook, helper), job.id))
 
     def report(self, hook: AgentHook, helper: Agent) -> str:
-        last_words = f"{hook.event.raw.get(REPORT_FIELD, '')}".strip()
-        return last_words or self.providers.provider(hook.event.program).last_reply(self.folders.folder(helper), helper.session)
+        stop_text = f"{hook.event.raw.get(REPORT_FIELD, '')}".strip()
+        return stop_text or self.providers.provider(hook.event.program).last_reply(self.folders.folder(helper), helper.session)

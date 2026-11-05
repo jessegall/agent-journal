@@ -2,8 +2,6 @@ from core.base.agent_role import AgentRole
 from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -28,9 +26,12 @@ class NewMainHelpersListener(SaveListener[Created[Agent]]):
         agent = event.row
         if agent.role != AgentRole.MAIN:
             return
-        ended_ids = tuple(row.id for row in self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(Greater("ended_at", "")).all_rows())
-        for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).matching(Among("parent_id", ended_ids)).all_rows()):
-            self.repository.save(helper.changed(parent_id=agent.id), context)
-        waiting = self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).matching(Among("session_agent_id", ended_ids))
-        for line in tuple(waiting.all_rows()):
-            self.repository.save(line.changed(session_agent_id=agent.id), context)
+        for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
+            if helper.parent_id is not None and self.has_ended(helper.parent_id):
+                self.repository.save(helper.changed(parent_id=agent.id), context)
+        for line in tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).all_rows()):
+            if self.has_ended(line.session_agent_id):
+                self.repository.save(line.changed(session_agent_id=agent.id), context)
+
+    def has_ended(self, agent_id: int) -> bool:
+        return self.queries.query(Agent).find(agent_id).ended_at is not None

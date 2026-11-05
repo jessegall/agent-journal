@@ -3,8 +3,13 @@
 package launch
 
 import (
+	"bufio"
+	"encoding/json"
 	"errors"
+	"net"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
 )
@@ -36,5 +41,43 @@ func TestAStopEndsAProgramThatIgnoresTheFirstSignal(t *testing.T) {
 	}()
 	if !inputs.StopProgram(5) || inputs.IsOpen(5) {
 		t.Error("the program stayed")
+	}
+}
+
+func TestASecondLaunchKeepsTheFirstsProgramsReachable(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "launcher")
+	first, second := NewTerminalInputs(), NewTerminalInputs()
+	program := exec.Command("sh", "-c", "sleep 60")
+	program.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := program.Start(); err != nil {
+		t.Fatal(err)
+	}
+	first.Track(5, program)
+	go func() {
+		_ = program.Wait()
+		first.Close(5)
+	}()
+	firstSocket, err := Listen(path, ProcessStarter{Inputs: first}, first)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer firstSocket.Close()
+	secondSocket, err := Listen(path, ProcessStarter{Inputs: second}, second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	connection, err := net.Dial("unix", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer connection.Close()
+	_ = json.NewEncoder(connection).Encode(WorkerRequest{AgentID: 5, Stop: true})
+	answer, _ := bufio.NewReader(connection).ReadString('\n')
+	if strings.TrimSpace(answer) != StoppedAnswer {
+		t.Errorf("a stop of the first launch's program answered %q", answer)
+	}
+	_ = secondSocket.Close()
+	if _, err := net.Dial("unix", path); err != nil {
+		t.Errorf("the first launch did not get its socket back: %v", err)
 	}
 }

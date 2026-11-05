@@ -115,7 +115,7 @@ readCommand();
                     <template v-if="isRunningHelper"><Btn kind="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
-                <p v-if="endedReason" class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p>
+                <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
                 <template v-if="isReader">
                     <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
                         <template v-if="facts?.instruction">

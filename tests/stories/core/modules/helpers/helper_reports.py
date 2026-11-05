@@ -155,3 +155,10 @@ def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
     story.expect_text("message reports --environment main", f"message:{report_of(story).id}", actor=second)
+
+
+def test_a_helper_stopped_as_its_launch_ended_tells_the_parent_so(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f"agent exited {the_helper(story).id} 143 --launch-ended")
+    story.run_listeners()
+    story.expect_text(LINES.format(agent=story.agent.id), "the journal launch that ran it ended")

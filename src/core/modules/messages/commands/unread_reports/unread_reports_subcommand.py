@@ -11,7 +11,7 @@ from core.modules.messages.models.message import Message
 
 
 class UnreadReportsSubcommand(ReadSubcommand[tuple[Message, ...]]):
-    """`journal message reports`: the reports of helpers and workers nobody has read yet, with their numbers."""
+    """`journal message reports`: the reports agents sent that nobody has read yet, with their numbers."""
 
     cli_name = "message"
     name = "reports"
