@@ -15,7 +15,7 @@ class WorkerFolders(AgentFolders):
         super().__init__(agents, environments)
         self.worktrees = worktrees
 
-    def keeps_folder(self, agent: Agent) -> bool:
+    def has_folder(self, agent: Agent) -> bool:
         parent = self.agents.find(agent.parent_id) if agent.parent_id is not None else None
         return parent is None or parent.role != AgentRole.WORKER or self.worktrees.worker_worktree(parent.id) is not None
 

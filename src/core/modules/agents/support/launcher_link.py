@@ -6,6 +6,7 @@ from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
 
 ANSWER_LIMIT_SECONDS = 5
 ANSWER_BYTES = 16
+STOPPED_ANSWER = b"stopped\n"
 
 
 class LauncherLink:
@@ -18,6 +19,9 @@ class LauncherLink:
     @property
     def is_running(self) -> bool:
         return self.home.socket(LAUNCHER_SOCKET).exists()
+
+    def stop(self, agent_id: int) -> bool:
+        return self.sent({"agent_id": agent_id, "stop": True}, ANSWER_BYTES) == STOPPED_ANSWER
 
     def sent(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
         path = self.home.socket(LAUNCHER_SOCKET)

@@ -10,12 +10,11 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
-STOPPED_ANSWER = b"stopped\n"
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):
@@ -33,7 +32,7 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already")
-        if agent.pid is None and self.launcher.sent({"agent_id": agent.id, "stop": True}, ANSWER_BYTES) != STOPPED_ANSWER:
+        if agent.pid is None and not self.launcher.stop(agent.id):
             raise Refusal(f"the journal does not know the process of agent {agent.id}", "stop it in its own terminal")
         self.bus.run(ClearDelegatedTasks(agent.id), actor, environment_id=agent.environment_id)
         if agent.pid is not None:

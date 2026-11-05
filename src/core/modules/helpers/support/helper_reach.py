@@ -1,6 +1,6 @@
+from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
-from core.base.command.context import Context
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -12,11 +12,11 @@ class HelperReach:
     def __init__(self, agents: AgentRows) -> None:
         self.agents = agents
 
-    def checked_helper(self, helper_id: int, context: Context) -> Agent:
+    def checked_helper(self, helper_id: int, actor: Actor) -> Agent:
         helper = self.agents.find(helper_id)
         if helper.role != AgentRole.HELPER:
             raise Refusal(f"agent {helper_id} is no helper", "journal agent cards lists the helpers")
-        if context.actor.type is ActorType.AGENT and not self.may_reach(helper, context.actor.id):
+        if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
             raise Refusal(f"helper {helper.id} answers to agent:{helper.parent_id}", "only its parent, the main agent or a person sends to it or stops it")
         return helper
 

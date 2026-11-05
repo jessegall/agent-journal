@@ -40,7 +40,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
         self.limits.checked_slot(parent.environment_id)
-        if not command.fresh and not profile.independent:
+        if not command.new_helper and not profile.independent:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or profile.program_model(program), parent.environment_id)
@@ -52,6 +52,6 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         return helper
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
-        known = self.reuse.known_job(parent.id, profile.name, brief)
-        if known is not None:
-            raise Refusal(f"agent:{known.helper_id} knows these files", f"journal helper send {known.helper_id} \"<job>\", or start a new one with --fresh")
+        job = self.reuse.known_job(parent.id, profile.name, brief)
+        if job is not None:
+            raise Refusal(f"agent:{job.helper_id} knows these files", f"journal helper send {job.helper_id} \"<job>\", or start a new one with --fresh")

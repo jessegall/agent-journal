@@ -33,7 +33,7 @@ class SubagentReuseRule(DriverRule):
         profile = f"{dispatch.get('subagent_type') or DEFAULT_PROFILE}"
         if profile in INDEPENDENT_PROFILES:
             return RuleAnswer.allowed()
-        known = self.reuse.known_job(hook.agent_id, profile, f"{dispatch.get('prompt', '')}")
-        if known is None or known.helper_id is None:
+        job = self.reuse.known_job(hook.agent_id, profile, f"{dispatch.get('prompt', '')}")
+        if job is None or job.helper_id is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(known.helper_id).session))
+        return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(job.helper_id).session))

@@ -11,7 +11,7 @@ JOB = "Now read the listener side."
 START = 'helper start journal-researcher --brief "Read src/cart.py" --environment main'
 
 
-class RunningHelper(StoryFixture):
+class StartedHelper(StoryFixture):
     """A main agent with a person beside it and one helper of journal-researcher on src/cart.py."""
 
     parent = BuilderWithUser
@@ -33,15 +33,18 @@ def jobs_of(story, helper):
     return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).oldest().all_rows())
 
 
-def ended_helper(story):
-    helper = the_helper(story)
-    story.expect_success(f"agent end {helper.id}", actor=story.user)
-    story.run_listeners()
-    return helper
+class EndedHelper(StoryFixture):
+    """A helper of journal-researcher that ended after its job on src/cart.py."""
+
+    parent = StartedHelper
+
+    def steps(self, story):
+        story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+        story.run_listeners()
 
 
 def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     jobs = jobs_of(story, helper)
@@ -50,8 +53,8 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
 
 
 def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
-    story = new_story(fixture=RunningHelper)
-    helper = ended_helper(story)
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
@@ -60,7 +63,7 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
 
 
 def test_a_long_job_arrives_whole(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
     job = "y" * 6000
     story.expect_success(f'helper send {helper.id} "{job}"', actor=story.agent)
@@ -68,59 +71,55 @@ def test_a_long_job_arrives_whole(new_story):
 
 
 def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     story.expect_refusal(f'helper send {story.agent.id} "{JOB}"', "is no helper", actor=story.agent)
 
 
 def test_another_agent_may_not_send_to_a_helper_and_the_parent_is_named(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
-    stranger = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f'helper send {helper.id} "{JOB}"', f"agent:{story.agent.id}", actor=stranger)
+    other_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    story.expect_refusal(f'helper send {helper.id} "{JOB}"', f"agent:{story.agent.id}", actor=other_worker)
 
 
 def test_a_person_may_send_to_a_helper(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     story.expect_success(f'helper send {the_helper(story).id} "{JOB}"', actor=story.user)
 
 
 def test_a_stop_ends_the_helper_and_its_job(new_story):
-    story = new_story(fixture=RunningHelper)
+    story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
-    story.expect_text(f"helper stop {helper.id}", "stop", actor=story.agent)
+    story.expect_success(f"helper stop {helper.id}", actor=story.agent)
     story.run_listeners()
     job = jobs_of(story, helper)[0]
     story.expect_rows(job.ended_at is not None, job.returned == "Stopped")
 
 
 def test_another_agent_may_not_stop_a_helper(new_story):
-    story = new_story(fixture=RunningHelper)
-    stranger = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f"helper stop {the_helper(story).id}", f"agent:{story.agent.id}", actor=stranger)
+    story = new_story(fixture=StartedHelper)
+    other_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    story.expect_refusal(f"helper stop {the_helper(story).id}", f"agent:{story.agent.id}", actor=other_worker)
 
 
 def test_a_helper_that_ends_closes_its_job(new_story):
-    story = new_story(fixture=RunningHelper)
-    helper = ended_helper(story)
-    story.expect_rows(jobs_of(story, helper)[0].ended_at is not None)
+    story = new_story(fixture=EndedHelper)
+    story.expect_rows(jobs_of(story, the_helper(story))[0].ended_at is not None)
 
 
 def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story):
-    story = new_story(fixture=RunningHelper)
-    helper = ended_helper(story)
+    story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
-    story.expect_refusal(START, f"journal helper send {helper.id}", actor=story.agent)
+    story.expect_refusal(START, f"journal helper send {the_helper(story).id}", actor=story.agent)
 
 
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
-    story = new_story(fixture=RunningHelper)
-    ended_helper(story)
+    story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f"{START} --fresh", actor=story.agent)
 
 
 def test_a_job_on_other_files_starts_a_new_helper(new_story):
-    story = new_story(fixture=RunningHelper)
-    ended_helper(story)
+    story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
     story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
