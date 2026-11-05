@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.chat.dock_declaration import DockDeclaration
 from core.base.command.bus import Bus
 from core.base.module.module import Module
+from core.base.module.module_finder import ModuleFinder
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.models.dock_item import DockItem
 from core.testing.story import Story
@@ -53,3 +54,9 @@ def docked_state(story: Story, item: DockItem) -> str:
 def expect_docked_state(story: Story, item: DockItem, expected) -> None:
     actual = docked_state(story, item)
     assert actual == expected, actual
+
+
+def leave_tick(story: Story) -> None:
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "dock item leaves"]
+    story.expect_rows(len(handlers) == 1)
+    handlers[0].handler(story.container)
