@@ -43,7 +43,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         return self.repository.save(item.changed(leaves_at=self.leave_time.departure(item, context.timestamp)), context)
 
     def free_place(self, docked_items: DockItemQuery, capacity: int, limit_text: str, context: Context) -> None:
-        docked = docked_items.oldest().all_rows()
+        docked = list(docked_items.oldest().all_rows())
         if len(docked) < capacity:
             return
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None) or next((item for item in docked if not item.kept and not self.leave_time.is_running(item)), None)

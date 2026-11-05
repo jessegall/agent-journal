@@ -1,10 +1,7 @@
 from collections.abc import Iterator, Sequence
 from copy import copy
-import sqlite3
 from typing import Generic, Self, TypeVar
 from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
-from core.base.database.statement import Statement
 from core.base.missing_rows_error import MissingRowsError
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
@@ -87,12 +84,10 @@ class Query(Generic[M]):
             offset += size
 
     def count(self) -> int:
-        select = self.scoped(self.select)
-        return self.read_selection(select, select.count_statement())[0][0]
+        return self.database.rows(self.scoped(self.select).count_statement())[0][0]
 
     def exists(self) -> bool:
-        select = self.scoped(self.select)
-        return bool(self.read_selection(select, select.exists_statement()))
+        return bool(self.database.rows(self.scoped(self.select).exists_statement()))
 
     def with_select(self, select: Select) -> Self:
         query = copy(self)
@@ -100,14 +95,7 @@ class Query(Generic[M]):
         return query
 
     def rows(self, select: Select) -> list[M]:
-        select = self.scoped(select)
-        return [self.typed(self.table.row_model(row)) for row in self.read_selection(select, select.statement())]
-
-    def read_selection(self, select: Select, statement: Statement) -> tuple[sqlite3.Row, ...]:
-        if not self.table.has_column("version"):
-            return tuple(self.database.rows(statement))
-        condition = Statement.all_joined(tuple(item.statement() for item in select.conditions), " AND ") if select.conditions else Statement("1 = 1")
-        return KeptRows(self.database).read(self.table.name, lambda: tuple(self.database.rows(statement)), condition.sql, condition.parameters, selection=statement)
+        return [self.typed(self.table.row_model(row)) for row in self.database.rows(self.scoped(select).statement())]
 
     def scoped(self, select: Select) -> Select:
         actor_id = self.database.read_actor_id

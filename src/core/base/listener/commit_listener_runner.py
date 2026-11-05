@@ -81,7 +81,6 @@ class CommitListenerRunner:
         events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
-        self.container.get(EventBuilder).prepare(events)
         due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
@@ -104,7 +103,6 @@ class CommitListenerRunner:
         if self.log.newest_id() == events[-1].id:
             return
         newer_events = self.log.events_past(events[0].id - 1)
-        self.container.get(EventBuilder).prepare(newer_events)
         for listener in urgent_entries:
             self.run_listener(listener, newer_events)
 

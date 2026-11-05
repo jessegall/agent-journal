@@ -30,7 +30,7 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
         row = event.row
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
-            for wait in self.waits.open_waits(row.id).all_rows():
+            for wait in tuple(self.waits.open_waits(row.id).all_rows()):
                 self.repository.update(wait, context, ended_at=context.timestamp)
         if isinstance(row, TaskWait) or lifecycle is None:
             return

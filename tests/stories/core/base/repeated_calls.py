@@ -1,3 +1,4 @@
+import io
 import subprocess
 
 import pytest
@@ -5,15 +6,14 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.cli.console import Console
+from core.base.caller.caller import Caller
+from core.base.actor import Actor
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.testing.repeated_calls_error import RepeatedCallsError
 from core.testing.repeated_work import READ_LIMIT_REPEATS
 from core.testing.story_line_run import StoryLineRun
-from server.viewer.line_route import LineRoute
-from server.listener_thread import ListenerThread
-from tests.stories.core.support.fixtures import MainEnvironment
 
 REPEATED_READ = Statement("SELECT 1")
 
@@ -57,6 +57,7 @@ def test_a_per_row_read_loop_raises_even_when_each_row_has_a_different_id(new_st
     with pytest.raises(RepeatedCallsError, match="SELECT \\?"), story.repeated_work.request():
         for row_id in range(11):
             database.rows(Statement("SELECT ?", [row_id]))
+            database.update(Statement("UPDATE settings SET version = version WHERE 1 = 0"))
 
 
 def test_ten_reads_with_different_parameters_are_within_the_loop_limit(new_story):
@@ -75,6 +76,14 @@ def test_a_loop_of_query_objects_with_different_ids_still_raises(new_story):
             query.filter(id=row_id).first()
 
 
+def test_a_write_returning_rows_does_not_count_as_a_repeated_read(new_story):
+    story = new_story()
+    database = story.container.get(Database)
+    with story.repeated_work.request():
+        for _ in range(2):
+            database.rows(Statement("UPDATE settings SET version = version WHERE 1 = 0 RETURNING version"))
+
+
 def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):
     story = new_story()
     database = story.container.get(Database)
@@ -89,7 +98,7 @@ def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):
 
 
 def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
-    story = new_story(fixture=MainEnvironment)
+    story = new_story()
 
     def run(console, argv, caller, stream):
         database = console.events.table.database
@@ -98,11 +107,10 @@ def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
         stream.write("{}")
         return 0
 
-    route = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None))
-    route.line_run = StoryLineRun(story.home)
+    runner = StoryLineRun(story.home)
     monkeypatch.setattr(Console, "run", run)
     with pytest.raises(RepeatedCallsError, match="SELECT 1"):
-        route.answer("tasks.tasks", ["task", "list"], story.user.id, "main")
+        runner.run_as(["task", "list"], lambda container: Caller(Actor.core()), io.StringIO())
 
 
 def test_a_request_that_starts_one_command_past_the_limit_raises_and_names_the_command(new_story):
@@ -116,22 +124,3 @@ def test_a_new_request_starts_every_count_at_zero(new_story):
     repeat_read(story, READ_LIMIT_REPEATS)
 
 
-def test_a_cached_query_reuses_rows_and_reloads_after_its_table_changes(new_story):
-    story = new_story(fixture=MainEnvironment)
-    database = story.container.get(Database)
-    query = story.container.get(Queries).query(Environment)
-    with story.repeated_work.request():
-        story.expect_rows(query.find(1).name == "main")
-        story.expect_rows(query.find(1).name == "main")
-        database.update(Statement("UPDATE environments SET name = ?, version = version + 1 WHERE id = ?", ("renamed", 1)))
-        story.expect_rows(query.find(1).name == "renamed")
-
-
-def test_a_cache_of_one_row_does_not_replace_a_cache_of_all_rows(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_success("environment make other /work/other")
-    query = story.container.get(Queries).query(Environment).oldest()
-    with story.repeated_work.request():
-        first = query.first()
-        story.expect_rows(first is not None and first.name == "main")
-        story.expect_rows([row.name for row in query.all_rows()] == ["main", "other"])

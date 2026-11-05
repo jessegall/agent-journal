@@ -36,7 +36,6 @@ class EventLog:
     def __init__(self, database: Database, tables: Tables) -> None:
         self.tables = tables
         self.table = BookkeepingTable(database, "events", "event")
-        self.events: dict[int, LoggedEvent] = {}
 
     def write(self, change: Change[Model], skipped_guards: frozenset[str]) -> int:
         context = change.context
@@ -86,12 +85,7 @@ class EventLog:
                 for name in names}
 
     def event(self, event_id: int) -> LoggedEvent:
-        if event_id in self.events:
-            return self.events[event_id]
-        event = LoggedEvent.parsed(self.table.row(event_id))
-        if not self.table.database.has_transaction:
-            self.events[event_id] = event
-        return event
+        return LoggedEvent.parsed(self.table.row(event_id))
 
     def events_past(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]

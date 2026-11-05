@@ -13,6 +13,10 @@ class Statement:
     def __post_init__(self) -> None:
         object.__setattr__(self, "parameters", tuple(self.parameters))
 
+    @property
+    def is_read(self) -> bool:
+        return self.sql.lstrip().upper().startswith(("SELECT", "WITH", "EXPLAIN", "PRAGMA"))
+
     def joined(self, tail: "Statement", separator: str = " ") -> "Statement":
         return Statement(f"{self.sql}{separator}{tail.sql}", (*self.parameters, *tail.parameters))
 

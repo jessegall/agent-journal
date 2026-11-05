@@ -20,8 +20,8 @@ class KeptRows:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, selection: Statement | None = None) -> T:
-        cache_key = f"{table}:{condition}:{tuple(parameters)}:{selection}"
+    def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = ()) -> T:
+        cache_key = f"{table}:{condition}:{tuple(parameters)}"
         kept = KEPT.setdefault(self.database, {})
         change_mark = self.database.change_mark()
         if cache_key in kept and kept[cache_key].change_mark == change_mark:

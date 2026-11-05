@@ -23,7 +23,6 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
-    ("core/base/change/event_log.py", "event"): "An event's cause chain is discovered one entry at a time; immutable entries are cached after their first read.",
     ("core/testing/repeated_work.py", "reread"): "A cached selection reloads only after its table signature changes; unrelated writes keep the cached value.",
 }
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
@@ -55,6 +54,8 @@ class RepeatedWork(PointTally):
     def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:
         super().loaded(rows, statement)
         if OPEN_REQUEST.get() is not self:
+            return
+        if not statement.is_read:
             return
         if self.is_refreshed(statement) or self.is_allowed_read():
             return
