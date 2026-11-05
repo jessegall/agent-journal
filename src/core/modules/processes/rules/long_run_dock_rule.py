@@ -40,7 +40,7 @@ class LongRunDockRule(DriverRule):
         return [RUN_NAME.nudge(process=process.id) for process in due if not self.has_title(process)]
 
     def has_title(self, process: Process) -> bool:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         return bool(kept) and RunTitle.is_descriptive(kept[0].title, process.line)
 
     def needs_dock(self, process: Process, hook: AgentHook) -> bool:

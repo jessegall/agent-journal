@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
 from core.base.clock import Clock
@@ -115,7 +116,7 @@ class ModuleSync:
             self.cursors.remove_absent(listeners)
             for listener in listeners:
                 self.cursors.start(listener)
-        self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
+        FileAccess.shared().write(self.home.program_table, ProgramTable([provider for module in modules for provider in module.providers]).text())
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules)))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
@@ -196,7 +197,7 @@ class ModuleSync:
             for skill in module.skills:
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
-                                          SkillDigest.digest(path.read_text()), str(path), module in shipped))
+                                          SkillDigest.digest(FileAccess.shared().read(path)), str(path), module in shipped))
         return tuple(entries)
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:

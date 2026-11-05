@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -24,7 +25,7 @@ class ReaderFile:
 
     @classmethod
     def parsed(cls, path: Path) -> "ReaderFile":
-        lines = path.read_text().splitlines()
+        lines = FileAccess.shared().read(path).splitlines()
         if path.suffix == SCRIPT_SUFFIX:
             notes = [line.removeprefix(NOTE_MARK).strip() for line in lines if line.startswith(NOTE_MARK) and not line.startswith("#!")]
             return cls(path.stem, ReaderType.SCRIPT, "", str(path), cls.read_settings(notes))

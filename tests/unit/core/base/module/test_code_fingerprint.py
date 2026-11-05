@@ -13,6 +13,22 @@ def sample_file(folder, name, text="x = 1\n"):
     return path
 
 
+def test_selecting_another_module_in_the_same_folder_changes_the_fingerprint():
+    class FirstModule(Module):
+        name = "sample.first"
+
+    class SecondModule(Module):
+        name = "sample.second"
+
+    fingerprint = CodeFingerprint()
+    first = fingerprint.text([FirstModule])
+    assert fingerprint.text([FirstModule]) == first
+    assert fingerprint.text([FirstModule, FirstModule]) == first
+    assert fingerprint.text([SecondModule]) != first
+    assert fingerprint.refreshed([FirstModule]) == first
+    assert fingerprint.text([FirstModule, SecondModule]) == fingerprint.text([SecondModule, FirstModule])
+
+
 def test_a_built_window_file_changes_its_modules_version(tmp_path):
     class SampleModule(Module):
         @classmethod

@@ -28,5 +28,5 @@ class UnreadMessageShowRule(DriverRule):
         numbers = shell.journal_command_numbers("message show") if shell is not None else ()
         if not numbers:
             return RuleAnswer.allowed()
-        unread = self.queries.query(Message).matching(Among("id", numbers)).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
+        unread = self.queries.query(Message).matching(Among("id", numbers)).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
         return RuleAnswer.refused(UNREAD_DISPLAY_REFUSAL.nudge(message=unread[0].id)) if unread else RuleAnswer.allowed()

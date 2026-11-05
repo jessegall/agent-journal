@@ -15,8 +15,9 @@ class Database:
     """The connection to the journal's database, with transactions that save everything or nothing,
     and a tally of the points the work asks of it."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: sqlite3.Connection, identity: str | sqlite3.Connection) -> None:
         self.connection = connection
+        self.identity = identity
         self.nested: list[str] = []
         self.tally = PointTally()
         self.read_actor_id: int | None = None
@@ -37,7 +38,8 @@ class Database:
         connection.row_factory = sqlite3.Row
         for pragma in PRAGMAS:
             connection.execute(f"PRAGMA {pragma}")
-        database = cls(connection)
+        database_file = connection.execute("PRAGMA database_list").fetchone()[2]
+        database = cls(connection, database_file or connection)
         database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
         return database
 
@@ -91,6 +93,13 @@ class Database:
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement)
         return rows
+
+    def query_plan(self, statement: Statement) -> tuple[str, ...]:
+        return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
+
+    def is_partial_index(self, name: str) -> bool:
+        row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
+        return row is not None and bool(row[0])
 
     def insert(self, statement: Statement) -> int:
         self.tally.count_write(statement.sql)

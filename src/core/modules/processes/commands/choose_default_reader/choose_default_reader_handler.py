@@ -21,7 +21,7 @@ class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
 
     def handle(self, command: ChooseDefaultReader, context: Context) -> Reader:
         self.writers.check(context.actor)
-        matching = self.readers.with_name(command.name).page(1, 1).rows
+        matching = self.readers.with_name(command.name).limited(1)
         if not matching:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
         for previous_default in tuple(self.readers.filter(commands=matching[0].commands).defaults().all_rows()):

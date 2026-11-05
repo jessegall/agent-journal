@@ -18,5 +18,5 @@ class BindSubagentDispatchHandler(Handler[BindSubagentDispatch, SubagentDispatch
         self.queries, self.repository = queries, repository
 
     def handle(self, command: BindSubagentDispatch, context: Context) -> SubagentDispatch | None:
-        rows = self.queries.query(SubagentDispatch).filter(agent_id=command.parent_id, profile=command.profile).matching(IsNull("subagent_id")).oldest().page(1, 1).rows
+        rows = self.queries.query(SubagentDispatch).filter(agent_id=command.parent_id, profile=command.profile).matching(IsNull("subagent_id")).oldest().limited(1)
         return self.repository.save(replace(rows[0], subagent_id=command.subagent_id), context) if rows else None

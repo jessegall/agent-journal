@@ -1,4 +1,6 @@
 from core.base.database.rebuild_migration import RebuildMigration
+from core.base.database.database import Database
+from core.base.database.index_table import IndexTable
 
 
 class PlainMemoriesMigration(RebuildMigration):
@@ -22,3 +24,9 @@ class PlainMemoriesMigration(RebuildMigration):
         "DROP TABLE memory_type_switches",
         "DROP TABLE memory_types",
     )
+
+    def rebuild(self, database: Database) -> None:
+        indexes = IndexTable(database)
+        statements = indexes.statements("memories")
+        super().rebuild(database)
+        indexes.restore(statements)

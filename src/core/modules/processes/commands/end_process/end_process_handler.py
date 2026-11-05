@@ -28,7 +28,7 @@ class EndProcessHandler(Handler[EndProcess, Process]):
         if not self.outputs.process(process.id).exists():
             return ended
         self.bus.dispatch(ReadNewOutput(process.id, is_final=True), context)
-        output = self.outputs.process(process.id).page(1, 1).rows[0]
+        output = self.outputs.process(process.id).limited(1)[0]
         self.repository.save(replace(output, byte_count=command.byte_count, line_count=command.line_count, ended_at=context.timestamp), context)
         return ended
 

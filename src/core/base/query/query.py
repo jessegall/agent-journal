@@ -81,13 +81,21 @@ class Query(Generic[M]):
         offset = 0
         while rows := self.rows(self.select.sliced(size, offset)):
             yield from rows
+            if len(rows) < size:
+                return
             offset += size
 
     def count(self) -> int:
-        return self.database.rows(self.scoped(self.select).count_statement())[0][0]
+        select = self.scoped(self.select)
+        if select.is_empty:
+            return 0
+        return self.database.rows(select.count_statement())[0][0]
 
     def exists(self) -> bool:
-        return bool(self.database.rows(self.scoped(self.select).exists_statement()))
+        select = self.scoped(self.select)
+        if select.is_empty:
+            return False
+        return bool(self.database.rows(select.exists_statement()))
 
     def with_select(self, select: Select) -> Self:
         query = copy(self)
@@ -95,13 +103,18 @@ class Query(Generic[M]):
         return query
 
     def rows(self, select: Select) -> list[M]:
-        return [self.typed(self.table.row_model(row)) for row in self.database.rows(self.scoped(select).statement())]
+        select = self.scoped(select)
+        if select.is_empty:
+            return []
+        return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
 
     def scoped(self, select: Select) -> Select:
         actor_id = self.database.read_actor_id
         if actor_id is None or self.model.shared_rows or not self.table.has_column(AGENT_COLUMN):
             return select
-        return select.matching(OwnRows(actor_id))
+        if self.table.has_nullable_column(AGENT_COLUMN):
+            return select.matching(OwnRows(actor_id))
+        return select.matching(Equal(AGENT_COLUMN, actor_id))
 
     def typed(self, row: Model | ViewModel) -> M:
         if isinstance(row, self.model):

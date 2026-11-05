@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -48,18 +49,18 @@ class ProfileFiles:
     def save(self, profile: AgentProfile) -> AgentProfile:
         path = self.folder(CLAUDE_FOLDER) / f"{profile.name}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(self.claude_text(profile))
+        FileAccess.shared().write(path, self.claude_text(profile))
         if (self.home.project_folder / CODEX_HOME).is_dir():
             codex_path = self.folder(CODEX_FOLDER) / f"{profile.name}.toml"
             codex_path.parent.mkdir(parents=True, exist_ok=True)
-            codex_path.write_text(self.codex_text(profile))
+            FileAccess.shared().write(codex_path, self.codex_text(profile))
         return self.read(path)
 
     def folder(self, program_folder: str) -> Path:
         return self.home.project_folder / program_folder
 
     def read(self, path: Path) -> AgentProfile:
-        text = path.read_text()
+        text = FileAccess.shared().read(path)
         head, _, body = text.partition(FRONT_MATTER_END) if text.startswith(FRONT_MATTER_START) else ("", "", text)
         fields = {key.strip(): value.strip() for key, value in (line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)}
         return AgentProfile(path.stem, fields.get("description", ""), fields.get("tools", ""), body.strip("\n"), fields.get("kind", SUBAGENT), fields.get("model", ""), fields.get("codex-model", ""),

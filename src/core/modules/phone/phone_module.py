@@ -1,3 +1,4 @@
+from core.modules.phone.migrations.m004_phone_notice_index import PhoneNoticeIndexMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
@@ -50,7 +51,7 @@ class PhoneModule(Module):
     models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make", "edit"]),
               ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]
-    migrations = [PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
+    migrations = [PhoneNoticeIndexMigration, PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
     subcommands = [PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand]
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]
     listeners = [QuestionNoticeListener, PlanNoticeListener]

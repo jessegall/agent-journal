@@ -11,6 +11,7 @@ from core.base.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
 from core.base.query.query import Query
 from core.base.query.unknown_column_error import UnknownColumnError
@@ -74,6 +75,22 @@ def test_every_row_is_walked_page_by_page_without_counting(entries: Query[LogEnt
     monkeypatch.setattr(Query, "count", lambda self: counted.append(1) or 0)
     assert [entry.id for entry in entries.oldest().all_rows(size=3)] == [1, 2, 3, 4, 5, 6, 7]
     assert counted == []
+
+
+@pytest.mark.parametrize(("row_count", "statement_count"), [(0, 1), (3, 1), (25, 2), (26, 2)])
+def test_all_rows_stops_after_a_short_page(entries: Query[LogEntry], row_count: int, statement_count: int):
+    statements = TableStatements(entries.table)
+    for number in range(8, row_count + 1):
+        entry = LogEntry(title=f"Book {number}")
+        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), AT))
+    reads: list[str] = []
+    entries.database.connection.set_trace_callback(reads.append)
+
+    rows = list(entries.matching(Less("id", row_count + 1)).oldest().all_rows(size=25))
+
+    entries.database.connection.set_trace_callback(None)
+    assert [row.id for row in rows] == list(range(1, row_count + 1))
+    assert len(reads) == statement_count
 
 
 class ShelfEntries(Query[LogEntry]):

@@ -20,6 +20,6 @@ class ConfigurePluginHandler(Handler[ConfigurePlugin, PluginSetting]):
     def handle(self, command: ConfigurePlugin, context: Context) -> PluginSetting:
         plugin = self.plugins.find_name(command.name)
         value = PluginManifest.read(self.folders.code(plugin.name)).setting(command.key).value_text(command.value)
-        rows = self.queries.query(PluginSetting).filter(plugin_id=plugin.id, key=command.key).page(1, 1).rows
+        rows = self.queries.query(PluginSetting).filter(plugin_id=plugin.id, key=command.key).limited(1)
         setting = rows[0].changed(value=value) if rows else PluginSetting(plugin_id=plugin.id, creator_id=context.actor.id, key=command.key, value=value)
         return self.repository.save(setting, context)

@@ -1,3 +1,4 @@
+from core.modules.sharing.migrations.m003_share_comment_index import ShareCommentIndexMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
@@ -40,7 +41,7 @@ class SharingModule(Module):
     models = [ModelDeclaration(ShareLink, commands=[RevokeShareLink, DenyShareLink], excluded_subcommands=["make", "edit", "accept"]),
               ModelDeclaration(ShareComment, excluded_subcommands=["make", "edit", "delete"])]
     guards = [ShareLinkRowGuard]
-    migrations = [ShareLinksTableMigration, ShareOptionsMigration]
+    migrations = [ShareCommentIndexMigration, ShareLinksTableMigration, ShareOptionsMigration]
     subcommands = [MakeShareLinkSubcommand, ShareSessionSubcommand, AcceptShareLinkSubcommand, CountShareViewSubcommand, ShareUnlockSubcommand, LeaveShareCommentSubcommand, ShareCommentsSubcommand, ShareOpensSubcommand]
     handlers = [MakeShareLinkHandler, AcceptShareLinkHandler, CountShareViewHandler, LeaveShareCommentHandler]
     moves = [ShareMove]

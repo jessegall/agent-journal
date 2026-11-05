@@ -1,5 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
 from core.modules.docking.commands.add_dock_item.add_dock_item_handler import AddDockItemHandler
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_handler import KeepDockItemHandler
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_handler import RemoveDockItemHandler
@@ -25,10 +27,12 @@ from core.modules.docking.migrations.m002_docks_of_existing_environments import 
 from core.modules.docking.migrations.m003_dock_item_labels import DockItemLabelsMigration
 from core.modules.docking.migrations.m004_dock_item_indexes import DockItemIndexesMigration
 from core.modules.docking.migrations.m005_dock_item_agents import DockItemAgentsMigration
+from core.modules.docking.migrations.m006_dock_item_due_index import DockItemDueIndexMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
 from core.modules.docking.seeders.docking_seeder import DockingSeeder
+from core.modules.docking.ticks.dock_item_leaves import DockItemLeaves
 
 
 class DockingModule(Module):
@@ -40,9 +44,10 @@ class DockingModule(Module):
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
-    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration]
+    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
     seeders = [DockingSeeder]
+    tick_handlers = [TickHandler(TickInterval(seconds=2), DockItemLeaves(), "dock item leaves")]

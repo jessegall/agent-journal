@@ -29,13 +29,20 @@ class CodeFingerprint:
     def text(self, modules: Sequence[type[Module]]) -> str:
         folders = self.folders(modules)
         if (self.ticked or Journal.is_running_unit_tests()) and folders in self.kept_texts:
-            return self.kept_texts[folders]
+            return self.selected_text(self.kept_texts[folders], modules)
         return self.refreshed(modules)
 
     def refreshed(self, modules: Sequence[type[Module]]) -> str:
         folders = self.folders(modules)
         self.kept_texts[folders] = SourceHash.text(folders) if Journal.is_running_unit_tests() else self.folder_text(folders)
-        return self.kept_texts[folders]
+        return self.selected_text(self.kept_texts[folders], modules)
+
+    @staticmethod
+    def selected_text(code_text: str, modules: Sequence[type[Module]]) -> str:
+        digest = hashlib.sha256(code_text.encode())
+        paths = sorted({f"{module.__module__}.{module.__qualname__}" for module in modules})
+        digest.update(("\n" + "\n".join(paths)).encode())
+        return digest.hexdigest()
 
     @staticmethod
     def folders(modules: Sequence[type[Module]]) -> tuple[Path, ...]:

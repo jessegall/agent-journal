@@ -61,9 +61,9 @@ class CommitListenerRunner:
         return self.run_order(entry) < 0
 
     def run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None:
+        state = self.container.get(PerformanceState)
+        boot_event = state.boot_event()
         for _ in range(CHAIN_LIMIT_ROUNDS):
-            state = self.container.get(PerformanceState)
-            boot_event = state.boot_event()
             if boot_event and not self.cursors.has_pending_events(boot_event):
                 state.finish_start()
             if not self.cursors.has_unhandled_events():

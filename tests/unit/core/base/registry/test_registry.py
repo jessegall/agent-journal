@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import sys
 
 import pytest
@@ -89,6 +90,44 @@ def test_a_second_read_of_the_same_row_parses_nothing_and_a_sync_is_seen_at_once
     RegistryTable(database).write("newer code", first.entries_text(), "2026-11-03T22:00:00+00:00")
     changed = Registry.read(database)
     assert changed is not first and changed.fingerprint == "newer code"
+
+
+def test_changed_entries_with_the_same_fingerprint_are_read_after_sync(database):
+    first = Registry.read(database)
+    changed_entries = replace(first, listeners=tuple(replace(listener, actor_id=77) for listener in first.listeners))
+    RegistryTable(database).write(first.fingerprint, changed_entries.entries_text(), "2026-11-05T13:00:00+00:00")
+    changed = Registry.read(database)
+    assert changed is not first
+    assert {listener.actor_id for listener in changed.listeners} == {77}
+
+
+def test_equal_versions_in_two_databases_keep_listener_actor_ids_separate(database, tmp_path):
+    first = Registry.read(database)
+    second_database = Database.opened(JournalHome(tmp_path / "second"))
+    try:
+        database.connection.backup(second_database.connection)
+        copied = Registry.read(second_database)
+        assert copied is not first
+        changed_entries = replace(first, listeners=tuple(replace(listener, actor_id=88) for listener in first.listeners))
+        RegistryTable(second_database).write(first.fingerprint, changed_entries.entries_text(), "2026-11-05T13:00:00+00:00")
+        first_entries = replace(first, listeners=tuple(replace(listener, actor_id=99) for listener in first.listeners))
+        RegistryTable(database).write(first.fingerprint, first_entries.entries_text(), "2026-11-05T13:00:00+00:00")
+        assert {listener.actor_id for listener in Registry.read(second_database).listeners} == {88}
+        assert {listener.actor_id for listener in Registry.read(database).listeners} == {99}
+    finally:
+        second_database.close()
+
+
+def test_an_in_memory_database_has_its_own_registry(database):
+    first = Registry.read(database)
+    memory = Database.configured(sqlite3.connect(":memory:", autocommit=True))
+    try:
+        database.connection.backup(memory.connection)
+        copied = Registry.read(memory)
+        assert copied is not first
+        assert Registry.read(memory) is copied
+    finally:
+        memory.close()
 
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):

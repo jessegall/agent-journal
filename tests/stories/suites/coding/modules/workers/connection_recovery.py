@@ -1,0 +1,263 @@
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import timedelta
+
+import pytest
+
+from core.base.actor import Actor
+from core.base.leftover_process import LeftoverProcess
+from core.base.query.queries import Queries
+from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.drivers.models.agent_line import AgentLine
+from core.base.driver.command_category import CommandCategory
+from core.testing.hook_samples import HookSamples
+from core.testing.story import Story
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from tests.stories.core.modules.processes.support.process_samples import start_process
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+
+RECOVERY_SOURCE = "workers.silent-agent"
+FAILED_SOURCE = "workers.silent-agent-failed"
+SILENT_SECONDS = 180
+WORKER_PID = 9123
+
+
+@dataclass
+class RecoveryCase:
+    """A worker, a replaceable connection answer and recorded launch requests."""
+
+    story: Story
+    worker: Actor
+    session: str
+    online: bool = True
+    live: bool = False
+    stubborn: bool = False
+    launches: list[dict[str, object]] = field(default_factory=list)
+    typed: list[tuple[int, str]] = field(default_factory=list)
+    stopped: list[int] = field(default_factory=list)
+    on_launch: Callable[[], None] | None = None
+
+    def request(self, link, request, answer_bytes=0):
+        if "typed" in request:
+            self.typed.append((request["agent_id"], request["typed"]))
+            return b"typed"
+        if "command" in request:
+            self.launches.append(request)
+            callback, self.on_launch = self.on_launch, None
+            if callback is not None:
+                callback()
+        return b"started\n"
+
+    def command_line(self, pid):
+        return f"claude -p --resume {self.session}" if self.live and pid == WORKER_PID else ""
+
+    def stop(self, pid, program):
+        self.stopped.append(pid)
+        if not self.stubborn:
+            self.live = False
+
+    def advance(self, seconds):
+        self.story.advance(timedelta(seconds=seconds))
+
+    def tick(self):
+        WorkerResumeRetry()(self.story.container)
+        self.story.tick("s-1")
+        self.story.run_listeners()
+
+    def lines(self, agent_id, source=RECOVERY_SOURCE):
+        return list(self.story.container.get(Queries).query(AgentLine).filter(agent_id=agent_id, source=source).all_rows())
+
+
+@pytest.fixture
+def recovery(new_story, monkeypatch):
+    from core.base.connection_probe import ConnectionProbe
+
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    session = worker_session(story, worker)
+    case = RecoveryCase(story, worker, session)
+    monkeypatch.setattr(ConnectionProbe, "is_online", lambda probe: case.online)
+    monkeypatch.setattr(LauncherLink, "sent", lambda link, request, answer_bytes=0: case.request(link, request, answer_bytes))
+    monkeypatch.setattr(TerminalTyping, "type_line", lambda typing, agent_id, line: case.typed.append((agent_id, line)))
+    monkeypatch.setattr(LeftoverProcess, "command_line", case.command_line)
+    monkeypatch.setattr(LeftoverProcess, "stop", case.stop)
+    story.hook(session, HookSamples.prompt("Finish the assigned task"))
+    return case
+
+
+
+@pytest.fixture
+def offline_recovery(recovery):
+    recovery.online = False
+    recovery.tick()
+    recovery.advance(SILENT_SECONDS)
+    return recovery
+
+
+@pytest.fixture
+def live_recovery(recovery):
+    recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
+    recovery.live = True
+    return recovery
+
+
+@pytest.fixture
+def first_recovery(recovery):
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    return recovery
+
+
+@pytest.fixture(params=[False, True])
+def recovered_live_worker(live_recovery, request):
+    live_recovery.stubborn = request.param
+    live_recovery.advance(SILENT_SECONDS)
+    live_recovery.tick()
+    live_recovery.tick()
+    return live_recovery
+
+
+@pytest.fixture
+def nested_recovery(recovery):
+    recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
+    recovery.launches.clear()
+    recovery.on_launch = lambda: recovery.story.expect_success(
+        f'worker send {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    return recovery
+
+def test_a_reconnection_resumes_a_silent_worker_once(offline_recovery):
+    recovery = offline_recovery
+    recovery.online = True
+    recovery.tick()
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 1, len(recovery.lines(recovery.worker.id)) == 1)
+    recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.typed))
+
+
+def test_a_running_or_queued_shell_command_prevents_recovery(recovery):
+    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    recovery.story.agent = recovery.worker
+    process = start_process(recovery.story, "sleep 30", category=CommandCategory.TEST_RUN)
+    recovery.online = False
+    recovery.tick()
+    recovery.advance(SILENT_SECONDS)
+    recovery.online = True
+    recovery.tick()
+    recovery.story.expect_rows(not recovery.launches, not recovery.lines(recovery.worker.id))
+
+
+def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(first_recovery):
+    recovery = first_recovery
+    recovery.story.expect_rows(len(recovery.launches) == 1)
+    recovery.advance(SILENT_SECONDS * 2 - 1)
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 1)
+    recovery.advance(1)
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 2)
+    recovery.advance(SILENT_SECONDS * 4)
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 3)
+    recovery.advance(SILENT_SECONDS * 8)
+    recovery.tick()
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 3)
+    notices = recovery.lines(recovery.story.agent.id, FAILED_SOURCE)
+    recovery.story.expect_rows(sum(f"agent:{recovery.worker.id} " in line.text for line in notices) == 1)
+
+
+
+def test_a_live_worker_must_stop_before_its_session_can_resume(recovered_live_worker):
+    recovery = recovered_live_worker
+    recovery.story.expect_rows(recovery.stopped == [WORKER_PID])
+    if recovery.stubborn:
+        recovery.story.expect_rows(not recovery.launches, recovery.live)
+        recovery.story.expect_rows(len(recovery.lines(recovery.story.agent.id, FAILED_SOURCE)) == 1)
+    else:
+        recovery.story.expect_rows(not recovery.live, len(recovery.launches) == 1)
+
+def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(recovery):
+    recovery.live = True
+    recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
+    recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
+    recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
+    recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
+    recovery.advance(121)
+    recovery.story.expect_success(f'worker send {recovery.worker.id} "Go on with task 1"', actor=recovery.story.agent)
+    recovery.story.run_listeners()
+    recovery.story.expect_rows(not recovery.launches, not recovery.stopped)
+
+
+def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
+    recovery.story.expect_success("driver choose coding.builder --environment main", actor=recovery.story.user)
+    recovery.story.expect_success('task make "Main work" --brief "Finish the main task" --environment main')
+    recovery.story.expect_success("task start 2", actor=recovery.story.agent)
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    recovery.story.expect_rows(any(agent_id == recovery.story.agent.id for agent_id, line in recovery.typed))
+
+
+def test_the_connection_state_is_available_to_the_viewer(offline_recovery):
+    import json
+
+    recovery = offline_recovery
+    with server_story(recovery.story) as server:
+        status, headers, text = viewer_answer(server.viewer_port(), "/api/server-state", "", "")
+        recovery.story.expect_rows(status == 200, json.loads(text)["connection"] == "offline")
+        recovery.online = True
+        recovery.advance(10)
+        recovery.tick()
+        status, headers, text = viewer_answer(server.viewer_port(), "/api/server-state", "", "")
+        recovery.story.expect_rows(status == 200, json.loads(text)["connection"] == "online")
+
+
+@pytest.mark.parametrize("line", [
+    'question ask "Which database?" --options sqlite postgres --environment main',
+    'review request task 1 --points 1 --environment main',
+])
+def test_a_worker_waiting_for_an_answer_or_review_is_not_restarted(recovery, line):
+    target = recovery.story.agent if line.startswith("question ") else recovery.worker
+    recovery.story.expect_success(line, actor=target)
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    recovery.story.expect_rows(not recovery.lines(target.id), not any(request["agent_id"] == target.id for request in recovery.launches))
+
+
+def test_any_recent_hook_prevents_silence_recovery(recovery):
+    recovery.advance(SILENT_SECONDS - 1)
+    recovery.story.hook(recovery.session, HookSamples.prompt("Still working"))
+    recovery.advance(SILENT_SECONDS - 1)
+    recovery.tick()
+    recovery.story.expect_rows(not recovery.launches)
+
+
+def test_the_silence_setting_changes_the_first_wake_delay(recovery):
+    recovery.story.expect_success("setting set journal.suites.coding.workers.silent-agent-minutes 6 --environment main")
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    recovery.story.expect_rows(not recovery.launches)
+    recovery.advance(SILENT_SECONDS)
+    recovery.tick()
+    recovery.story.expect_rows(len(recovery.launches) == 1)
+
+
+def test_reconnection_wakes_each_silent_worker_with_work(recovery):
+    task_id = recovery.story.new_row_id('task make "Second job" --brief "Finish it" --environment main')
+    second = dispatched_worker(recovery.story, f"worker dispatch --model sonnet {task_id}")
+    recovery.launches.clear()
+    recovery.online = False
+    recovery.tick()
+    recovery.advance(SILENT_SECONDS)
+    recovery.online = True
+    recovery.tick()
+    recovery.story.expect_rows({request["agent_id"] for request in recovery.launches} == {recovery.worker.id, second.id})
+
+
+def test_a_second_wake_during_a_session_launch_does_not_start_another_process(nested_recovery):
+    nested_recovery.story.expect_rows(len(nested_recovery.launches) == 1)

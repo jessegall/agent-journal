@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import shlex
 
@@ -29,8 +30,9 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
     def handle(self, event: FilePublishing | Touched[Alias], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
         lines = {alias.name: self.line(alias) for alias in self.aliases.all_rows() if alias.name not in commands}
-        self.home.alias_file.write_text(json.dumps(lines))
-        self.home.saved_command_file.write_text(json.dumps([alias.name for alias in self.aliases.all_rows() if alias.name in lines and alias.category and alias.category.is_long_running]))
+        self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
+        FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in self.aliases.all_rows() if alias.name in lines and alias.category and alias.category.is_long_running]))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.connection_status import ConnectionStatus
+
 
 @dataclass(frozen=True)
 class ServerState:
@@ -9,3 +11,4 @@ class ServerState:
     restarting: bool
     updating: bool
     started_at: str = ""
+    connection: ConnectionStatus = ConnectionStatus.UNKNOWN

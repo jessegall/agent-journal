@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import shutil
 import time
@@ -58,6 +59,6 @@ class StatusFiles:
         if not path.is_file():
             return SessionStatus()
         try:
-            return SessionStatus.reported(json.loads(path.read_text() or "{}"))
+            return SessionStatus.reported(json.loads(FileAccess.shared().read(path) or "{}"))
         except json.JSONDecodeError:
             return SessionStatus()

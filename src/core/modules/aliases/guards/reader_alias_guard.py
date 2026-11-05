@@ -14,6 +14,6 @@ class ReaderAliasGuard(Guard[Deleted[Reader]]):
         self.aliases = aliases
 
     def check(self, event: Deleted[Reader], context: Context) -> None:
-        aliases = self.aliases.filter(reader_id=event.row.id).page(1, 1).rows
+        aliases = self.aliases.filter(reader_id=event.row.id).limited(1)
         if aliases:
             raise Refusal(f"reader is referenced by alias {aliases[0].name}", "remove or edit the alias first")

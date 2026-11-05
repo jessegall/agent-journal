@@ -25,7 +25,7 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
         self.outputs, self.processes, self.step, self.folder, self.repository = outputs, processes, step, folder, repository
 
     def handle(self, command: ReadNewOutput, context: Context) -> Output:
-        kept = self.outputs.process(command.process_id).page(1, 1).rows
+        kept = self.outputs.process(command.process_id).limited(1)
         if not kept:
             raise Refusal(f"process {command.process_id} keeps no output", "a short run keeps none")
         process = self.processes.find(command.process_id)

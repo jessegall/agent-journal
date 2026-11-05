@@ -19,7 +19,7 @@ class RecordSubagentDispatchHandler(Handler[RecordSubagentDispatch, SubagentDisp
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordSubagentDispatch, context: Context) -> SubagentDispatch:
-        rows = self.queries.query(SubagentDispatch).filter(agent_id=command.agent_id, tool_key=command.tool_key).page(1, 1).rows
+        rows = self.queries.query(SubagentDispatch).filter(agent_id=command.agent_id, tool_key=command.tool_key).limited(1)
         if rows and command.is_ended:
             return self.repository.save(replace(rows[0], returned=command.returned[:DETAIL_CHARACTERS], ended_at=context.timestamp), context)
         if rows:

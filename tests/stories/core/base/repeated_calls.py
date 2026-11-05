@@ -32,7 +32,7 @@ def repeat_command(story, count: int) -> None:
 
 
 def watch_text_reads(story) -> None:
-    story.container.get(Database).tally = RepeatedWork(read_text_limit=READ_TEXT_LIMIT_REPEATS)
+    story.container.get(Database).tally = RepeatedWork(story.container.get(Database), read_text_limit=READ_TEXT_LIMIT_REPEATS)
 
 
 def test_a_request_that_repeats_one_read_past_the_limit_raises_and_names_the_read(new_story):

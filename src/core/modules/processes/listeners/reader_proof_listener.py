@@ -27,7 +27,7 @@ class ReaderProofListener(SaveListener[OutputEnded | Updated[Output]]):
         reader = self.readers.find(output.reader_id)
         if reader.proved_on is not None:
             return
-        parts = self.parts.process(output.process_id).filter(position=output.reader_position).page(1, 1).rows
+        parts = self.parts.process(output.process_id).filter(position=output.reader_position).limited(1)
         if not parts:
             return
         if self.judge.misses_read_output(reader, parts[0].category, output):

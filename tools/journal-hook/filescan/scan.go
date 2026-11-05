@@ -153,8 +153,8 @@ func Scan(root, state string) ([]Change, error) {
 
 func differing(previous, current map[string]Fingerprint) []string {
 	paths := []string{}
-	for path, after := range current {
-		if earlier, seen := previous[path]; !seen || earlier != after {
+	for path, currentFingerprint := range current {
+		if previousFingerprint, exists := previous[path]; !exists || previousFingerprint != currentFingerprint {
 			paths = append(paths, path)
 		}
 	}

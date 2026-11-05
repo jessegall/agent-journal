@@ -35,7 +35,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         task = self.queries.query(Task).find(worktree.task_id)
         if task.state is TaskState.TESTING:
             raise Refusal(f"the tests of task {task.id} are running: your next task comes when they pass")
-        started_task = next(iter(self.tasks.holder(context.actor.id).started().page(1, 1).rows), None)
+        started_task = next(iter(self.tasks.holder(context.actor.id).started().limited(1)), None)
         if task.state is not TaskState.STARTED and started_task is not None:
             self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return started_task

@@ -13,7 +13,7 @@ import (
 func checkout(t *testing.T) (root, state string) {
 	t.Helper()
 	root, state = t.TempDir(), t.TempDir()
-	put(t, root, "cart.py", "TOTAL = 0\n")
+	writeFile(t, root, "cart.py", "TOTAL = 0\n")
 	for _, arguments := range [][]string{{"init", "-q"}, {"add", "."}, {"-c", "user.name=a", "-c", "user.email=a@b", "commit", "-qm", "first"}} {
 		if output, err := exec.Command("git", append([]string{"-C", root}, arguments...)...).CombinedOutput(); err != nil {
 			t.Skipf("git is not at hand: %s", output)
@@ -25,17 +25,17 @@ func checkout(t *testing.T) (root, state string) {
 	return root, state
 }
 
-func put(t *testing.T, root, path, text string) {
+func writeFile(t *testing.T, root, path, text string) {
 	t.Helper()
-	full := filepath.Join(root, path)
-	if err := os.MkdirAll(filepath.Dir(full), 0o700); err != nil {
+	absolutePath := filepath.Join(root, path)
+	if err := os.MkdirAll(filepath.Dir(absolutePath), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(full, []byte(text), 0o600); err != nil {
+	if err := os.WriteFile(absolutePath, []byte(text), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	moved := time.Now().Add(time.Duration(sequence()) * time.Millisecond)
-	if err := os.Chtimes(full, moved, moved); err != nil {
+	if err := os.Chtimes(absolutePath, moved, moved); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -70,7 +70,7 @@ func expectOne(t *testing.T, changes []Change, path string, added, removed int, 
 
 func TestAnEditOfACommittedFileCountsAgainstTheCommit(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, "cart.py", "TOTAL = 1\n")
+	writeFile(t, root, "cart.py", "TOTAL = 1\n")
 	change := expectOne(t, scanned(t, root, state), "cart.py", 1, 1, true)
 	if len(change.Rows) != 2 || change.Rows[0].LineType != "del" || change.Rows[1].Text != "TOTAL = 1" {
 		t.Fatalf("the rows are %+v", change.Rows)
@@ -82,22 +82,22 @@ func TestFourEditsOfOneFileAreFourEditsEachAgainstTheOneBefore(t *testing.T) {
 	text := "TOTAL = 0\n"
 	for number := 1; number <= 4; number++ {
 		text += fmt.Sprintf("LINE = %d\n", number)
-		put(t, root, "cart.py", text)
+		writeFile(t, root, "cart.py", text)
 		expectOne(t, scanned(t, root, state), "cart.py", 1, 0, true)
 	}
 }
 
 func TestAFileThatWasAlreadyChangedCountsOnlyWhatThisLineChanged(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, "cart.py", "TOTAL = 1\n")
+	writeFile(t, root, "cart.py", "TOTAL = 1\n")
 	scanned(t, root, state)
-	put(t, root, "cart.py", "TOTAL = 1\nTAX = 2\n")
+	writeFile(t, root, "cart.py", "TOTAL = 1\nTAX = 2\n")
 	expectOne(t, scanned(t, root, state), "cart.py", 1, 0, true)
 }
 
 func TestANewFileIsNewAndADeletedFileCountsItsLines(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, "fresh.py", "ONE = 1\nTWO = 2\n")
+	writeFile(t, root, "fresh.py", "ONE = 1\nTWO = 2\n")
 	expectOne(t, scanned(t, root, state), "fresh.py", 2, 0, false)
 	if err := os.Remove(filepath.Join(root, "fresh.py")); err != nil {
 		t.Fatal(err)
@@ -107,7 +107,7 @@ func TestANewFileIsNewAndADeletedFileCountsItsLines(t *testing.T) {
 
 func TestATouchedFileWithTheSameTextIsNoEdit(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, "cart.py", "TOTAL = 0\n")
+	writeFile(t, root, "cart.py", "TOTAL = 0\n")
 	if changes := scanned(t, root, state); len(changes) != 0 {
 		t.Fatalf("a touch is no edit: %v", changes)
 	}
@@ -115,12 +115,12 @@ func TestATouchedFileWithTheSameTextIsNoEdit(t *testing.T) {
 
 func TestLeftOutFoldersAndIgnoredFilesAreNotRead(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, ".gitignore", "*.log\n/build\n")
+	writeFile(t, root, ".gitignore", "*.log\n/build\n")
 	scanned(t, root, state)
-	put(t, root, "run.log", "a\n")
-	put(t, root, "build/out.txt", "a\n")
-	put(t, root, "node_modules/a.js", "a\n")
-	put(t, root, "web/dist/a.js", "a\n")
+	writeFile(t, root, "run.log", "a\n")
+	writeFile(t, root, "build/out.txt", "a\n")
+	writeFile(t, root, "node_modules/a.js", "a\n")
+	writeFile(t, root, "web/dist/a.js", "a\n")
 	if changes := scanned(t, root, state); len(changes) != 0 {
 		t.Fatalf("these are no edits: %v", changes)
 	}
@@ -129,7 +129,7 @@ func TestLeftOutFoldersAndIgnoredFilesAreNotRead(t *testing.T) {
 func TestALineThatChangesManyFilesIsNoEdit(t *testing.T) {
 	root, state := checkout(t)
 	for number := 0; number <= ChangedFilesMost; number++ {
-		put(t, root, fmt.Sprintf("file%d.py", number), "A = 1\n")
+		writeFile(t, root, fmt.Sprintf("file%d.py", number), "A = 1\n")
 	}
 	if changes := scanned(t, root, state); len(changes) != 0 {
 		t.Fatalf("a merge or a checkout is no edit: %d changes", len(changes))
@@ -141,7 +141,7 @@ func TestALineThatChangesManyFilesIsNoEdit(t *testing.T) {
 
 func TestABinaryFileIsNoEdit(t *testing.T) {
 	root, state := checkout(t)
-	put(t, root, "image.png", "a\x00b")
+	writeFile(t, root, "image.png", "a\x00b")
 	if changes := scanned(t, root, state); len(changes) != 0 {
 		t.Fatalf("a binary file is no edit: %v", changes)
 	}

@@ -21,6 +21,6 @@ class OneReplyPerMessageGuard(Guard[Created[Message]]):
         message = event.row
         if message.type is not MessageType.AGENT or message.parent_id is None:
             return
-        answered = self.messages.replies(message.parent_id).agent_messages().page(1, 1).rows
+        answered = self.messages.replies(message.parent_id).agent_messages().limited(1)
         if answered:
             raise Refusal(f"message {message.parent_id} already has your reply {answered[0].id}", "send it again only if it adds something new")

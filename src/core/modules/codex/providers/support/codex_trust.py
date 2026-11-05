@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import re
 import tomllib
@@ -32,10 +33,10 @@ class CodexTrust:
                  if key.startswith(source) and target + key.removeprefix(source) not in states}
         if added:
             tables = "\n".join(self.state_table(key, state) for key, state in added.items())
-            self.config_file.write_text(self.config_file.read_text().rstrip("\n") + "\n\n" + tables)
+            FileAccess.shared().write(self.config_file, FileAccess.shared().read(self.config_file).rstrip("\n") + "\n\n" + tables)
 
     def states(self) -> Mapping[str, object]:
-        settings: object = tomllib.loads(self.config_file.read_text()) if self.config_file.is_file() else {}
+        settings: object = tomllib.loads(FileAccess.shared().read(self.config_file)) if self.config_file.is_file() else {}
         hooks = settings.get("hooks") if is_mapping(settings) else None
         states = hooks.get("state") if is_mapping(hooks) else None
         return {str(key): state for key, state in states.items()} if is_mapping(states) else {}
@@ -48,9 +49,9 @@ class CodexTrust:
         if not moved:
             return
         states.update(moved)
-        settings = STATE_TABLE.sub("", self.config_file.read_text()).rstrip("\n")
+        settings = STATE_TABLE.sub("", FileAccess.shared().read(self.config_file)).rstrip("\n")
         tables = "\n".join(self.state_table(key, state) for key, state in states.items())
-        self.config_file.write_text(f"{settings}\n\n{tables}")
+        FileAccess.shared().write(self.config_file, f"{settings}\n\n{tables}")
 
     @staticmethod
     def positions(hook_file: Path, events: object) -> dict[str, str]:

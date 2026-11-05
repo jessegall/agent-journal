@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
@@ -35,7 +36,7 @@ class BypassLogListener(CommitListener[Changed[HookCall]]):
             return
         claimed = log.with_suffix(".taken")
         log.replace(claimed)
-        count = sum(1 for line in claimed.read_text(errors="replace").splitlines() if line.strip())
+        count = sum(1 for line in FileAccess.shared().read(claimed, errors="replace").splitlines() if line.strip())
         claimed.unlink()
         if not count:
             return

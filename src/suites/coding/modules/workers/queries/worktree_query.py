@@ -12,7 +12,7 @@ class WorktreeQuery(Query[Worktree]):
         super().__init__(database, tables, Worktree)
 
     def worker_worktree(self, agent_id: int) -> Worktree | None:
-        rows = self.filter(agent_id=agent_id).matching(IsNull("removed_at")).page(1, 1).rows
+        rows = self.filter(agent_id=agent_id).matching(IsNull("removed_at")).limited(1)
         return rows[0] if rows else None
 
     def environment_worktrees(self, environment_id: int) -> list[Worktree]:

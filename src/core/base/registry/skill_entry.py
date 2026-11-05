@@ -1,6 +1,9 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any
+
+from core.base.change.event_pattern import EventPattern
 
 
 @dataclass(frozen=True)
@@ -18,6 +21,13 @@ class SkillEntry:
     digest: str
     path: str
     shipped: bool
+
+    @cached_property
+    def event_patterns(self) -> tuple[EventPattern, ...]:
+        return tuple(EventPattern(pattern) for pattern in self.events)
+
+    def covers_event(self, event: str) -> bool:
+        return any(pattern.matches(event) for pattern in self.event_patterns)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SkillEntry":

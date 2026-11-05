@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
@@ -42,7 +43,7 @@ class CodeVersions:
             for name in sorted(name for name in files if not self.is_ignored(name)):
                 path = Path(folder) / name
                 digest.update(str(path.relative_to(source)).encode())
-                digest.update(path.read_bytes())
+                digest.update(FileAccess.shared().binary(path))
         return digest.hexdigest()[:TAG_CHARACTERS]
 
     def is_ignored(self, name: str) -> bool:
@@ -71,7 +72,7 @@ class CodeVersions:
         self.new_link.symlink_to(self.version(tag).relative_to(self.home.folder))
         running = self.running_version()
         if running not in ("", tag):
-            self.previous_file.write_text(running)
+            FileAccess.shared().write(self.previous_file, running)
         os.replace(self.new_link, self.link)
         self.prune()
 
@@ -86,7 +87,7 @@ class CodeVersions:
         return FIRST_VERSION
 
     def prune(self) -> None:
-        kept = {self.link.resolve().name, self.previous_file.read_text() if self.previous_file.is_file() else ""}
+        kept = {self.link.resolve().name, FileAccess.shared().read(self.previous_file) if self.previous_file.is_file() else ""}
         for version in self.folder.iterdir():
             if version.is_dir() and version.suffix != PARTIAL_VERSION and version.name not in kept:
                 shutil.rmtree(version)

@@ -147,8 +147,8 @@ def publish_release(home, folder, source):
     folder.mkdir()
     archive = folder / "agent-journal.tar.gz"
 
-    def included(info):
-        return None if any(fnmatch.fnmatch(part, pattern) for part in Path(info.name).parts for pattern in IGNORED) else info
+    def included(entry):
+        return None if any(fnmatch.fnmatch(part, pattern) for part in Path(entry.name).parts for pattern in IGNORED) else entry
 
     with tarfile.open(archive, "w:gz") as target:
         target.add(source, arcname="src", filter=included)

@@ -30,6 +30,6 @@ class TableHookHistory(HookHistory):
 
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
         if key not in self.kept:
-            rows = self.queries.query(RuleHistory).filter(agent_id=key.agent_id, rule=key.rule, layer=key.layer).page(1, 1).rows
+            rows = self.queries.query(RuleHistory).filter(agent_id=key.agent_id, rule=key.rule, layer=key.layer).limited(1)
             self.kept[key] = rows[0] if rows else None
         return self.kept[key]

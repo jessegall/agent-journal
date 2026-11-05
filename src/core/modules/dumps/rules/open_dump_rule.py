@@ -21,5 +21,5 @@ class OpenDumpRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        dumps = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().page(1, 1).rows
+        dumps = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().limited(1)
         return RuleAnswer.with_nudges(DUMP_OPEN.nudge(dump=dumps[0].id)) if dumps else RuleAnswer.allowed()

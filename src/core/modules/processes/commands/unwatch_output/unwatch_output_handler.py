@@ -16,7 +16,7 @@ class UnwatchOutputHandler(Handler[UnwatchOutput, Watch]):
         self.watches, self.repository = watches, repository
 
     def handle(self, command: UnwatchOutput, context: Context) -> Watch:
-        open_watches = self.watches.open(context.actor.id).process(command.process_id).page(1, 1).rows
+        open_watches = self.watches.open(context.actor.id).process(command.process_id).limited(1)
         if not open_watches:
             raise Refusal(f"you have no open watch on output {command.process_id}", "journal watch list shows your watches")
         return self.repository.save(open_watches[0].end(context.timestamp, context.actor), context)
