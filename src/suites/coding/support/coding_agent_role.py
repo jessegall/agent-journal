@@ -6,5 +6,6 @@ class CodingAgentRole(StrEnum):
 
     MAIN = "main"
     WORKER = "worker"
+    HELPER = "helper"
     REVIEWER = "reviewer"
     VERIFIER = "verifier"

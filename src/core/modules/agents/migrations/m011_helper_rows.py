@@ -6,5 +6,4 @@ class HelperRowsMigration(Migration):
 
     number = 11
     statements = ["UPDATE agents SET access = 'read-only', ended_at = coalesce(ended_at, updated_at) WHERE role = 'subagent'",
-                  "UPDATE agents SET role = 'helper' WHERE role = 'subagent'",
-                  "UPDATE settings SET key = 'journal.core.drivers.driver.helper' WHERE key = 'journal.core.drivers.driver.subagent'"]
+                  "UPDATE agents SET role = 'helper' WHERE role = 'subagent'"]
