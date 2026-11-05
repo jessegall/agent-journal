@@ -133,3 +133,31 @@ func closingParen(characters []rune) int {
 	}
 	return -1
 }
+
+// A heredoc whose end word is quoted: the shell leaves its text as it stands.
+var closedHeredoc = regexp.MustCompile(`<<-?\s*(?:'(\w+)'|"(\w+)")`)
+
+// withoutClosedHeredocs takes out the text of heredocs the shell does not expand, so no word in it reads as a command.
+func withoutClosedHeredocs(text string) string {
+	for _, found := range closedHeredoc.FindAllStringSubmatchIndex(text, -1) {
+		word := closedWord(text, found)
+		start := strings.Index(text[found[1]:], "\n")
+		if start < 0 {
+			continue
+		}
+		bodyStart := found[1] + start
+		end := strings.Index(text[bodyStart:], "\n"+word)
+		if end < 0 {
+			return text[:bodyStart]
+		}
+		return text[:bodyStart] + withoutClosedHeredocs(text[bodyStart+end+1+len(word):])
+	}
+	return text
+}
+
+func closedWord(text string, found []int) string {
+	if found[2] >= 0 {
+		return text[found[2]:found[3]]
+	}
+	return text[found[4]:found[5]]
+}

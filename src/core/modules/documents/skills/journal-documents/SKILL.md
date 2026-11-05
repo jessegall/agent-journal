@@ -12,6 +12,8 @@ their own numbers, so write the kind with the number: doc 12, report 3.
   file. `journal report make` takes the same.
 - A subagent files its own documents and reports with these commands, even though it writes no files: they show in the
   viewer and dock in the chat. Name the number in your report rather than handing the text back.
+- A long text goes through standard input, so no word in it reads as a command, and a read-only agent files it this way:
+  `journal report make "<title>" --body - <<'EOF'`, the text, then a line `EOF`. Keep the quotes around `'EOF'`.
 - `journal doc show <n>` gives its outline; ask for a section, its bullets, a search or the whole with the flags
   `journal doc show --help` lists. Read narrowly.
 - `journal doc edit <n> --abstract "<one line>" --body "<text>"` writes the whole text anew; `journal doc keep <n>` keeps

@@ -79,6 +79,11 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		fmt.Fprintf(stderr, "the journal's server did not start; this line runs directly. %s\n", LastLogLines(home, 3))
 		return DirectRun(home, argv, stdout, stderr)
 	}
+	argv, inputErr := BodyFromInput(argv, os.Stdin)
+	if inputErr != nil {
+		fmt.Fprintln(stderr, "standard input could not be read:", inputErr)
+		return 1
+	}
 	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder())
 	if len(argv) == 1 && argv[0] == "viewer" {
 		return ViewerLink(client, request, stdout, stderr)

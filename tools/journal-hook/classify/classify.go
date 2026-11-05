@@ -110,7 +110,7 @@ func interpreted(classification Classification, row *Row, text string) Classific
 // a shell, eval, find or ssh is handed.
 func (classifier *Classifier) innerClassifications(text string) []Classification {
 	var classifications []Classification
-	for _, groups := range substitutions.FindAllStringSubmatch(unexpanded(text), -1) {
+	for _, groups := range substitutions.FindAllStringSubmatch(unexpanded(withoutClosedHeredocs(text)), -1) {
 		body := ""
 		for _, group := range groups[1:] {
 			if group == "" {

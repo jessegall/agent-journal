@@ -1,3 +1,5 @@
+import shlex
+
 import pytest
 
 from core.base.actor import Actor
@@ -7,6 +9,8 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType
 from core.modules.drivers.support.access_nudges import OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
+from core.base.query.queries import Queries
+from core.modules.documents.models.report import Report
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
@@ -185,3 +189,12 @@ def test_a_read_only_helper_acts_on_no_other_agent(new_story, helper_fixture, ar
 def test_a_read_only_helper_cannot_name_another_session(new_story, helper_fixture, line):
     story, session = helper_story(new_story, helper_fixture)
     story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list")), OUTWARD_JOURNAL_LINE.nudge().text)
+
+
+REPORT_TEXT = "Run `rm -rf a` in $HOME and \"tests/stories/core/a.py\" with python3 and curl.\n" * 800
+
+
+def test_a_long_report_holding_program_names_is_filed_whole(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f'report make Findings --abstract "What was read" --body {shlex.quote(REPORT_TEXT)} --environment main', actor=story.agent)
+    story.expect_rows(len(REPORT_TEXT) > 60000, story.container.get(Queries).query(Report).filter(title="Findings").first().body == REPORT_TEXT)
