@@ -126,6 +126,7 @@ class ModuleSync:
         listeners = [(module, listener) for module in modules for listener in module.listeners]
         return Registry(
             fingerprint=self.fingerprint.text(modules),
+            events=self.check.known_events(modules),
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             module_suites={module.name: tuple(dict.fromkeys([suite for suite in
                            (module.parent_suite, *(suite.name for suite in module.suites)) if suite is not None]))

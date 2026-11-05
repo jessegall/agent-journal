@@ -83,6 +83,7 @@ class Registry:
     moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
     module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    events: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -132,6 +133,7 @@ class Registry:
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
             button_slots=tuple(entries.get("button_slots", [])),
+            events=tuple(entries.get("events", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
@@ -145,6 +147,7 @@ class Registry:
 
     def entries_text(self) -> str:
         return json.dumps({
+            "events": list(self.events),
             "models": {cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
@@ -225,7 +228,7 @@ class Registry:
 
     @cached_property
     def event_lookup(self) -> EventLookup:
-        return EventLookup(self.guards, self.listeners)
+        return EventLookup(self.guards, self.listeners, self.events)
 
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
         return self.event_lookup.guards_of(event)

@@ -83,13 +83,12 @@ class CommitListenerRunner:
         due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
-        progress = [self.run_entry(entry, urgent_entries) for entry in due_entries]
+        progress = [self.run_entry(entry, urgent_entries, events[-1].id) for entry in due_entries]
         return bool(moved_count) or any(progress)
 
-    def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
-        newest_before = self.log.newest_id() if urgent_entries else 0
+    def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], newest_seen: int) -> bool:
         handled = self.run_listener(entry)
-        if handled and urgent_entries and self.log.newest_id() != newest_before:
+        if handled and urgent_entries and self.log.newest_id() != newest_seen:
             for listener in urgent_entries:
                 self.run_listener(listener)
         return handled
