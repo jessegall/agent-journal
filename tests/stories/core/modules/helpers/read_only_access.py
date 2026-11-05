@@ -220,7 +220,7 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
     story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_HELPER.nudge().text)
-    before = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
+    lines_at_end = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     story.hook(session, HookSamples.stop())
     story.run_listeners()
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == before)
+    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == lines_at_end)

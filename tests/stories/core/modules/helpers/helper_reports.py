@@ -138,3 +138,20 @@ def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(
     story.run_listeners()
     launcher.thread.join(timeout=5)
     story.expect_rows(len(launcher.requests) == 1)
+
+
+def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.run(f"agent end {story.agent.id}", actor=story.user)
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
+    story.expect_rows(the_helper(story).parent_id == second.id)
+    story.hook(the_helper(story).session, stop_with_report("The cart adds tax twice."))
+    story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
+
+
+def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story):
+    story = reported(new_story, StartedHelper, "The cart adds tax twice.")
+    story.run(f"agent end {story.agent.id}", actor=story.user)
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
+    story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
+    story.expect_text("message reports --environment main", f"message:{report_of(story).id}", actor=second)
