@@ -1,4 +1,5 @@
 import io
+import os
 import sys
 from collections import OrderedDict
 from collections.abc import Generator
@@ -42,6 +43,7 @@ class FileAccess:
                 return kept.data
             data = path.read_bytes()
             self.contents[path] = FileContents(status.st_mtime_ns, status.st_size, status.st_ino, data)
+            self.contents.move_to_end(path)
             if len(self.contents) > CACHE_SIZE_FILES:
                 self.contents.popitem(last=False)
             return data
@@ -76,6 +78,32 @@ class FileAccess:
         finally:
             with self.lock:
                 self.invalidate(path)
+
+    @contextmanager
+    def descriptor_writer(self, file: Path | str, flags: int, permissions: int) -> Generator[int]:
+        path = Path(file).resolve()
+        with self.lock:
+            self.invalidate(path)
+        descriptor = os.open(path, flags, permissions)
+        try:
+            yield descriptor
+        finally:
+            with self.lock:
+                self.invalidate(path)
+            os.close(descriptor)
+
+    @contextmanager
+    def private_writer(self, file: Path | str) -> Generator[IO[str]]:
+        with self.descriptor_writer(file, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600) as descriptor:
+            with os.fdopen(descriptor, "w", closefd=False) as output:
+                yield output
+
+    def replace(self, source: Path | str, target: Path | str) -> Path:
+        source_path, target_path = Path(source), Path(target)
+        with self.lock:
+            self.invalidate(source_path.parent.resolve() / source_path.name)
+            self.invalidate(target_path.parent.resolve() / target_path.name)
+            return source_path.replace(target_path)
 
     def invalidate(self, path: Path) -> None:
         self.contents.pop(path, None)

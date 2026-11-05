@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import os
 from pathlib import Path
@@ -24,7 +25,7 @@ class SecretValues:
         path = self.folder.file(VALUES_SUFFIX)
         if path is None or not path.is_file():
             return {}
-        return dict(pair for pair in map(self.parsed, path.read_text().splitlines()) if pair is not None)
+        return dict(pair for pair in map(self.parsed, FileAccess.shared().read(path).splitlines()) if pair is not None)
 
     def hidden_values(self) -> dict[str, str]:
         shown = self.shown()
@@ -48,7 +49,7 @@ class SecretValues:
 
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)
-        return set(path.read_text().split()) if path is not None and path.is_file() else set()
+        return set(FileAccess.shared().read(path).split()) if path is not None and path.is_file() else set()
 
     def write(self, values: dict[str, str]) -> None:
         self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
@@ -23,7 +24,7 @@ class SkillCatalogue:
         paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
         for path in [paths[name] for name in sorted(paths)]:
             try:
-                text = path.read_text()
+                text = FileAccess.shared().read(path)
             except FileNotFoundError:
                 continue
             fields = self.front_matter(text)

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import codecs
 import shutil
 import os
@@ -41,8 +42,8 @@ class OutputFolder:
     def write_start(self, process_id: int, line: str, part_texts: list[str]) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / LINE_FILE).write_text(line)
-        (folder / PARTS_FILE).write_text("\n".join(part_texts))
+        FileAccess.shared().write(folder / LINE_FILE, line)
+        FileAccess.shared().write(folder / PARTS_FILE, "\n".join(part_texts))
 
     def line(self, process_id: int) -> str:
         return self.text(process_id, LINE_FILE)
@@ -54,7 +55,7 @@ class OutputFolder:
     def write_slot(self, process_id: int) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / SLOT_FILE).touch()
+        FileAccess.shared().update_timestamp(folder / SLOT_FILE)
 
     def has_slot(self, process_id: int) -> bool:
         return (self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE).exists()
@@ -90,7 +91,7 @@ class OutputFolder:
         path = self.home.folder / FOLDER_NAME / f"tick-{agent_id}"
         previous = path.read_text() if path.exists() else timestamp.text
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(timestamp.text)
+        FileAccess.shared().write(path, timestamp.text)
         return Timestamp.parsed(previous).elapsed_seconds(timestamp)
 
     def heartbeat(self, process_id: int) -> Timestamp | None:
@@ -313,7 +314,7 @@ class OutputFolder:
     def write(self, process_id: int, name: str, text: str) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / name).write_text(text)
+        FileAccess.shared().write(folder / name, text)
 
     def text(self, process_id: int, name: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / name

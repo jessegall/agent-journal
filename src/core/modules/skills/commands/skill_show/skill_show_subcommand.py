@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
@@ -24,7 +25,7 @@ class SkillShowSubcommand(ReadSubcommand[SkillText]):
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == arguments.folder), None)
         if skill is None:
             raise Refusal(f"no module declares the skill {arguments.folder}", "journal skill list shows the skills")
-        return SkillText(skill.folder, skill.description, skill.digest, Path(skill.path).read_text())
+        return SkillText(skill.folder, skill.description, skill.digest, FileAccess.shared().read(Path(skill.path)))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, SkillText):

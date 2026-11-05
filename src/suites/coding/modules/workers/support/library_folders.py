@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -45,7 +46,7 @@ class LibraryFolders:
         if not names:
             return
         exclude_file = self.git.exclude_file(target)
-        lines = exclude_file.read_text().splitlines() if exclude_file.exists() else []
+        lines = FileAccess.shared().read(exclude_file).splitlines() if exclude_file.exists() else []
         added = [f"/{name}" for name in names if f"/{name}" not in lines]
         exclude_file.parent.mkdir(parents=True, exist_ok=True)
-        exclude_file.write_text("\n".join([*lines, *added]) + "\n")
+        FileAccess.shared().write(exclude_file, "\n".join([*lines, *added]) + "\n")

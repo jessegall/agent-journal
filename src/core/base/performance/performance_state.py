@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from collections.abc import Generator
 from contextlib import contextmanager
 
@@ -24,14 +25,14 @@ class PerformanceState:
                     or self.restart.is_restarting or self.restart.is_updating)
 
     def begin_start(self) -> None:
-        self.starting.write_text("0")
+        FileAccess.shared().write(self.starting, "0")
 
     def keep_boot_event(self, event_id: int) -> None:
-        self.starting.write_text(str(event_id))
+        FileAccess.shared().write(self.starting, str(event_id))
 
     def boot_event(self) -> int:
         try:
-            text = self.starting.read_text()
+            text = FileAccess.shared().read(self.starting)
         except FileNotFoundError:
             return 0
         return int(text) if text else 0
@@ -44,11 +45,11 @@ class PerformanceState:
             self.tests.unlink(missing_ok=True)
             return
         self.tests.parent.mkdir(parents=True, exist_ok=True)
-        self.tests.touch()
+        FileAccess.shared().update_timestamp(self.tests)
 
     @contextmanager
     def reload(self) -> Generator[None]:
-        self.reloading.touch()
+        FileAccess.shared().update_timestamp(self.reloading)
         try:
             yield
         finally:

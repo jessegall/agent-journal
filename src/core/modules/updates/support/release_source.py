@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import hashlib
 import json
 import re
@@ -68,7 +69,7 @@ class ReleaseSource:
 
     def keep(self, values: dict[str, object]) -> None:
         self.home.newest_release_file.parent.mkdir(parents=True, exist_ok=True)
-        self.home.newest_release_file.write_text(json.dumps({**values, "at": self.clock.timestamp().text}))
+        FileAccess.shared().write(self.home.newest_release_file, json.dumps({**values, "at": self.clock.timestamp().text}))
 
     def unpacked(self, release: PublishedRelease, folder: Path) -> Path:
         archive, _ = self.fetched(f"{release.address}/{ARCHIVE}")

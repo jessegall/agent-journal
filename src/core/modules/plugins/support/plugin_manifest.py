@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -53,7 +54,7 @@ class PluginManifest:
         path = folder / MANIFEST_FILE
         if not path.is_file():
             raise Refusal(f"{folder} contains no plugin: {MANIFEST_FILE} is missing", "name the folder of a plugin")
-        fields: object = json.loads(path.read_text())
+        fields: object = json.loads(FileAccess.shared().read(path))
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
             raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         program = str(fields["program"]) if "program" in fields else ""
@@ -130,7 +131,7 @@ class PluginManifest:
     def read_settings(cls, folder: Path, settings_file: str) -> tuple[ManifestSetting, ...]:
         if not settings_file:
             return ()
-        listed: object = json.loads((folder / settings_file).read_text())
+        listed: object = json.loads(FileAccess.shared().read(folder / settings_file))
         return tuple(cls.manifest_setting(entry) for entry in listed) if is_list(listed) else ()
 
     @staticmethod

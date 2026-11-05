@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import os
 from pathlib import Path
 
@@ -24,18 +25,18 @@ class PrivateFolder:
 
     def file(self, suffix: str) -> Path | None:
         path = self.home.folder / PROJECT_ID_FILE
-        return self.folder / f"{path.read_text().strip()}{suffix}" if path.is_file() else None
+        return self.folder / f"{FileAccess.shared().read(path).strip()}{suffix}" if path.is_file() else None
 
     def made_file(self, suffix: str) -> Path:
         path = self.home.folder / PROJECT_ID_FILE
         if not path.is_file():
-            path.write_text(os.urandom(16).hex())
-        return self.made_folder() / f"{path.read_text().strip()}{suffix}"
+            FileAccess.shared().write(path, os.urandom(16).hex())
+        return self.made_folder() / f"{FileAccess.shared().read(path).strip()}{suffix}"
 
     def made_folder(self) -> Path:
         self.folder.mkdir(parents=True, exist_ok=True)
         self.folder.chmod(FOLDER_MODE)
         ignore = self.folder / ".gitignore"
         if not ignore.is_file():
-            ignore.write_text("*\n")
+            FileAccess.shared().write(ignore, "*\n")
         return self.folder

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from pathlib import Path
 
 from core.base.query.queries import Queries
@@ -50,7 +51,7 @@ class ProjectFiles:
         place = self.resolved_path(root, path)
         if not place.is_file():
             raise Refusal(f"{path} is no file", "name a file of the project")
-        data = place.read_bytes()
+        data = FileAccess.shared().binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
         return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES)

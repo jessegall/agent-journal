@@ -11,7 +11,9 @@ languages: [python]
 Use `FileAccess.shared()` from `core.base.file_access`. Read text with `read(path)` and bytes with
 `binary(path)`. Write text with `write(path, text)` and bytes with `write_binary(path, data)`.
 Use `writer(path, mode)` for a streamed write and `update_timestamp(path)` for a file touch.
-Only this class opens files for writing. A write invalidates that path, including after a streamed write.
+Use `descriptor_writer(path, flags, permissions)` for atomic descriptor writes, `private_writer(path)`
+for owner-only text files, and `replace(source, target)` for atomic replacement. Only this class opens
+files for writing. A write invalidates that path, including after a streamed write.
 
 The bounded cache keeps bytes by canonical path and modified time, size and inode. A read checks metadata
 before using cached bytes. It preserves text encoding, error handling and newline conversion. A write

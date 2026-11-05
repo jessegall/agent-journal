@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -64,13 +65,13 @@ class ProgramHooks:
 
     @staticmethod
     def read(path: Path) -> dict[object, object]:
-        loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
+        loaded: object = json.loads(FileAccess.shared().read(path) or "{}") if path.is_file() else {}
         return dict(loaded) if is_mapping(loaded) else {}
 
     @staticmethod
     def store(path: Path, settings: Mapping[object, object]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(dict(settings), indent=2) + "\n")
+        FileAccess.shared().write(path, json.dumps(dict(settings), indent=2) + "\n")
 
     @staticmethod
     def partitioned(stored_hooks: object) -> HookPartition:

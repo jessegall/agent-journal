@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from core.modules.plugins.support.plugin_services_subcommand_row_record import PluginServicesSubcommandRowRecord
 from argparse import ArgumentParser, Namespace
 
@@ -35,7 +36,7 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
 
     def row(self, plugin_name: str, service: ManifestService) -> PluginServicesSubcommandRowRecord:
         pid_file = self.sockets.pid(plugin_name, service.name)
-        pid = int(pid_file.read_text()) if pid_file.is_file() else None
+        pid = int(FileAccess.shared().read(pid_file)) if pid_file.is_file() else None
         program = str(self.folders.code(plugin_name) / service.command[0])
         running = pid is not None and program in LeftoverProcess.command_line(pid)
         return {"id": f"{plugin_name} {service.name}", "plugin": plugin_name, "service": service.name, "restart": service.restart.value, "running": running, "pid": pid if running else None}

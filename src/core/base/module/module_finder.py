@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import sys
 
@@ -37,7 +38,7 @@ class ModuleFinder:
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():
             return ()
-        listed: object = json.loads(self.home.module_list.read_text())
+        listed: object = json.loads(FileAccess.shared().read(self.home.module_list))
         if not is_list(listed):
             raise ModuleError(f"{self.home.module_list} must list module paths, such as [\"reviews.module:ReviewsModule\"]")
         paths: list[str] = []

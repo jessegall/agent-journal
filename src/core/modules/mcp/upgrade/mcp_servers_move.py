@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import sqlite3
 from pathlib import Path
@@ -51,4 +52,4 @@ class McpServersMove(VersionFourMove):
     @staticmethod
     def version_four_keys(context: MoveContext) -> dict[str, str]:
         path = Path.home() / ".journal" / "keys" / f"{str(Path(context.project_folder).resolve()).strip('/').replace('/', '-')}.json"
-        return {str(name): str(value) for name, value in json.loads(path.read_text()).items()} if path.is_file() else {}
+        return {str(name): str(value) for name, value in json.loads(FileAccess.shared().read(path)).items()} if path.is_file() else {}

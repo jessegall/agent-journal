@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import importlib
 import json
 import keyword
@@ -32,20 +33,20 @@ class ModuleAddition:
             raise ModuleError(f"module folder {target} is already installed")
         if source.name in sys.modules:
             raise ModuleError(f"Python package {source.name} is already imported; choose another folder name")
-        saved_list = self.home.module_list.read_text() if self.home.module_list.exists() else None
+        saved_list = FileAccess.shared().read(self.home.module_list) if self.home.module_list.exists() else None
         listed = self.finder.plugin_paths()
         self.home.modules_folder.mkdir(parents=True, exist_ok=True)
         try:
             shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             importlib.invalidate_caches()
             path = self.module_path(source.name)
-            self.home.module_list.write_text(json.dumps([*listed, path]))
+            FileAccess.shared().write(self.home.module_list, json.dumps([*listed, path]))
             return self.sync.run()
         except (ModuleError, SchemaMismatchError, OSError) as error:
             if saved_list is None:
                 self.home.module_list.unlink(missing_ok=True)
             else:
-                self.home.module_list.write_text(saved_list)
+                FileAccess.shared().write(self.home.module_list, saved_list)
             if target.exists():
                 shutil.rmtree(target)
             for name in tuple(sys.modules):

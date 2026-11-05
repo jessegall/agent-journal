@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 from collections.abc import Sequence
 from pathlib import Path
@@ -28,14 +29,14 @@ class ClaudeServerFile:
         kept = {name: entry for name, entry in settings.get(SERVERS, {}).items() if name not in dropped}
         settings[SERVERS] = {**kept, **{server.name: ClaudeServerFile.entry(server) for server in servers}}
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(settings, indent=2) + "\n")
+        FileAccess.shared().write(path, json.dumps(settings, indent=2) + "\n")
 
     def read(self) -> dict[str, dict[str, object]]:
         return self.read_file(self.path)
 
     @staticmethod
     def read_file(path: Path) -> dict[str, dict[str, object]]:
-        return json.loads(path.read_text() or "{}") if path.is_file() else {}
+        return json.loads(FileAccess.shared().read(path) or "{}") if path.is_file() else {}
 
     @staticmethod
     def entry(server: McpServer) -> dict[str, object]:

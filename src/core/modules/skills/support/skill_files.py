@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import shutil
 from collections.abc import Sequence
 from pathlib import Path
@@ -40,13 +41,13 @@ class SkillFiles:
         return {skill.folder: any(tuple(self.write(project, skill) for project in projects)) for skill in skills}
 
     def write(self, project: Path, skill: SkillEntry) -> bool:
-        text, changed = Path(skill.path).read_text(), False
+        text, changed = FileAccess.shared().read(Path(skill.path)), False
         for program_folder in self.providers.skill_folders():
             target = project / program_folder / skill.folder / SKILL_FILE
-            if target.exists() and SkillDigest.digest(target.read_text()) == SkillDigest.digest(text):
+            if target.exists() and SkillDigest.digest(FileAccess.shared().read(target)) == SkillDigest.digest(text):
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(text)
+            FileAccess.shared().write(target, text)
             changed = True
         return changed
 

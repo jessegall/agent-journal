@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import fcntl
 import json
 import os
@@ -75,7 +76,7 @@ class ManagedHooks:
     def _read(self) -> list[ManagedHook]:
         if not self.path.is_file():
             return []
-        stored = json.loads(self.path.read_text())
+        stored = json.loads(FileAccess.shared().read(self.path))
         return [ManagedHook(**{**{key: value for key, value in hook.items() if key != "clash"}, "state": ManagedState(hook["state"]),
                               "effects": tuple(HookEffect(value) for value in hook.get("clash", [])),
                               "sources": tuple(HookSource(**source) for source in hook.get("sources", []))}) for hook in stored["hooks"]]

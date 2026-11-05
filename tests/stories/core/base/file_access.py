@@ -7,6 +7,7 @@ import pytest
 
 from core.modules.documents.commands.support.text_body import TextBody
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
+from core.base.file_access import FileAccess
 from core.testing.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
@@ -86,3 +87,14 @@ def test_different_paths_to_the_same_file_count_as_a_repeat(document_file):
         with story.repeated_work.request():
             TextBody.given(arguments)
             TextBody.given(Namespace(body=None, file=str(linked)))
+
+
+def test_an_atomic_replacement_allows_reading_the_changed_target_in_the_same_request(document_file):
+    story, path, arguments = document_file
+    temporary = path.with_name("replacement.md")
+    files = FileAccess.shared()
+    files.write(temporary, "After replacement")
+    with story.repeated_work.request():
+        expect_value(TextBody.given(arguments), "First draft")
+        files.replace(temporary, path)
+        expect_value(TextBody.given(arguments), "After replacement")

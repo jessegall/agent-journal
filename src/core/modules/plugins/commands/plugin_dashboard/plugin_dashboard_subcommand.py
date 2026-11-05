@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 from argparse import ArgumentParser, Namespace
 
@@ -36,7 +37,7 @@ class PluginDashboardSubcommand(ReadSubcommand[PluginDashboard]):
         if not saved.is_file():
             return PluginDashboard({"missing": f"{plugin.name} has written nothing on its dashboard yet."})
         try:
-            dashboard: object = json.loads(saved.read_text())
+            dashboard: object = json.loads(FileAccess.shared().read(saved))
         except json.JSONDecodeError:
             return PluginDashboard({"broken": f"{saved.name} is not valid JSON."})
         if not is_mapping(dashboard) or not all(key in dashboard for key in ("start", "pages")):

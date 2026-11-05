@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import os
 import time
 
@@ -26,7 +27,7 @@ class ServerRestartState:
         maintenance_file = self.home.folder / MAINTENANCE_FILE
         if not maintenance_file.is_file() or time.time() - maintenance_file.stat().st_mtime >= MAINTENANCE_LIMIT_SECONDS:
             return False
-        text = maintenance_file.read_text().strip()
+        text = FileAccess.shared().read(maintenance_file).strip()
         return not text.isdigit() or self.is_running(int(text))
 
     @staticmethod
