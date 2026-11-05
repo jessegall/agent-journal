@@ -11,6 +11,7 @@ class RevokeLibraryTokenSubcommand(ShowLibraryLineSubcommand[RevokeLibraryToken,
 
     cli_name = "library-user"
     name = "revoke"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("token_id", metavar="token", type=int)

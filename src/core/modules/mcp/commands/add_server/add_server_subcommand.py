@@ -13,6 +13,7 @@ class AddServerSubcommand(Subcommand[AddServer, McpServer]):
 
     cli_name = "mcp"
     name = "add"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

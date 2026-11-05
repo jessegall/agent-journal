@@ -12,6 +12,7 @@ class EndProcessSubcommand(Subcommand[EndProcess, Process]):
 
     cli_name = "process"
     name = "end"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

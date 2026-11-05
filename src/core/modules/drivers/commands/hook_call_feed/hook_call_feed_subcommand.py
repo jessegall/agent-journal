@@ -10,3 +10,4 @@ class HookCallFeedSubcommand(ViewRowsSubcommand):
     filters = ["session_agent_id"]
     cli_name = "hook-call"
     name = "feed"
+    outward = True

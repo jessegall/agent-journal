@@ -11,6 +11,7 @@ class RemovePersonPresetSubcommand(Subcommand[RemovePersonPreset, PersonPreset])
 
     cli_name = "person-preset"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

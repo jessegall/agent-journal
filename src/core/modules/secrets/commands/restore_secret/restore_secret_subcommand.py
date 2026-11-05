@@ -12,6 +12,7 @@ class RestoreSecretSubcommand(Subcommand[ChangeSecretDeletion, Secret]):
 
     cli_name = "secret"
     name = "restore"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("n", type=int)

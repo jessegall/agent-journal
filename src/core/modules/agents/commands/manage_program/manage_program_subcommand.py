@@ -11,6 +11,7 @@ class ManageProgramSubcommand(Subcommand[ManageProgram, int]):
 
     cli_name = "program"
     name = "manage"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("program")

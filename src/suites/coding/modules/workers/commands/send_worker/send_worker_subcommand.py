@@ -15,6 +15,7 @@ class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
 
     cli_name = "worker"
     name = "send"
+    outward = True
 
     def __init__(self, home: JournalHome, agents: AgentRows) -> None:
         self.home, self.agents = home, agents

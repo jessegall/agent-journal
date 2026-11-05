@@ -12,6 +12,7 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
 
     cli_name = "proof"
     name = "make"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("point", type=int)

@@ -10,6 +10,7 @@ class EditCheckSubcommand(ShowCheckLineSubcommand[EditCheck]):
 
     cli_name = "check"
     name = "edit"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

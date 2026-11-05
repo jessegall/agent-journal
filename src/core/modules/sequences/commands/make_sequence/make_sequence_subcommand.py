@@ -12,6 +12,7 @@ class MakeSequenceSubcommand(Subcommand[MakeSequence, Sequence]):
 
     cli_name = "sequence"
     name = "make"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")

@@ -14,6 +14,7 @@ class StartAgentSubcommand(Subcommand[StartAgent, Agent]):
 
     cli_name = "agent"
     name = "start"
+    outward = True
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

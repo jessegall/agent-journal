@@ -15,6 +15,7 @@ class RedeemPhoneCodeSubcommand(Subcommand[RedeemPhoneCode, Phone]):
 
     cli_name = "phone"
     name = "redeem"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("code")

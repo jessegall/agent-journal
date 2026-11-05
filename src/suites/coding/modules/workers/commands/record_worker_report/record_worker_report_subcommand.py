@@ -16,6 +16,7 @@ class RecordWorkerReportSubcommand(Subcommand[RecordWorkerReport, Message]):
 
     cli_name = "worker"
     name = "report"
+    outward = True
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

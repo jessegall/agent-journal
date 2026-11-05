@@ -11,6 +11,7 @@ class SetVoiceAddressSubcommand(Subcommand[SetVoiceAddress, str]):
 
     cli_name = "voice"
     name = "address"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--title", default=None)

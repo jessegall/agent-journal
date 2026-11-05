@@ -13,6 +13,7 @@ class ScheduleTriggerSubcommand(ShowTriggerLineSubcommand[ScheduleTrigger]):
 
     cli_name = "trigger"
     name = "schedule"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")

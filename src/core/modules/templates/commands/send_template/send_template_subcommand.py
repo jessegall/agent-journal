@@ -13,6 +13,7 @@ class SendTemplateSubcommand(Subcommand[SendTemplate, Message]):
 
     cli_name = "template"
     name = "send"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("template_id", type=int)

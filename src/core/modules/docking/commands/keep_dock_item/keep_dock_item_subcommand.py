@@ -11,6 +11,7 @@ class KeepDockItemSubcommand(Subcommand[KeepDockItem, DockItem]):
 
     cli_name = "dock"
     name = "keep"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("item_id", type=int)

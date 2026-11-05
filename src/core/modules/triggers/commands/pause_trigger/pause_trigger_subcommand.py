@@ -12,6 +12,7 @@ class PauseTriggerSubcommand(Subcommand[PauseTrigger, Trigger]):
 
     cli_name = "trigger"
     name = "pause"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

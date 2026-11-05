@@ -12,6 +12,7 @@ class EnablePluginSubcommand(Subcommand[SwitchPlugin, Plugin]):
 
     cli_name = "plugin"
     name = "enable"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plugin")

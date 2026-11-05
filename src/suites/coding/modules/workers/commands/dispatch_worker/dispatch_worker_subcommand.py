@@ -20,6 +20,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
 
     cli_name = "worker"
     name = "dispatch"
+    outward = True
 
     def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks) -> None:
         self.home, self.plan_tasks = home, plan_tasks

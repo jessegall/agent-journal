@@ -14,6 +14,7 @@ class SkipAgentBlockSubcommand(Subcommand[CloseAgentBlock, AgentBlock]):
 
     cli_name = "agent-block"
     name = "skip"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_block_id", type=int)

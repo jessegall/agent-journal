@@ -9,6 +9,7 @@ from core.modules.profiles.commands.reset_profile.reset_profile import ResetProf
 class ResetProfileSubcommand(Subcommand[ResetProfile, str]):
     cli_name = "profile"
     name = "reset"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")

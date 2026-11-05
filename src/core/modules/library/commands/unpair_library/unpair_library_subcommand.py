@@ -13,6 +13,7 @@ class UnpairLibrarySubcommand(Subcommand[UnpairLibrary, LibraryDisconnection]):
 
     cli_name = "library"
     name = "disconnect"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--forget", action="store_true")

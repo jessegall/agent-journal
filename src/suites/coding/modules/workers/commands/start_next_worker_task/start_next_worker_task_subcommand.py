@@ -16,6 +16,7 @@ class StartNextWorkerTaskSubcommand(Subcommand[StartNextWorkerTask, Task]):
 
     cli_name = "worker"
     name = "next"
+    outward = True
 
     def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck) -> None:
         self.worktrees, self.step_check = worktrees, step_check

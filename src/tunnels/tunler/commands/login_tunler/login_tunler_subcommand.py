@@ -13,6 +13,7 @@ class LoginTunlerSubcommand(Subcommand[LoginTunler, TunlerLogin]):
 
     cli_name = "tunler"
     name = "login"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("host")

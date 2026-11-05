@@ -107,6 +107,13 @@ when each job needs a fresh review. `model` and `codex_model` select models for 
 `Module.profiles` and register their types in `Module.agent_types`; sync names that correction
 when a plugin still uses the old fields. The profile CLI keeps its `--type` option.
 
+## Keep a read-only agent inside the journal
+
+A read-only agent may run a journal command that reads, or that writes only its own rows or a new row of its own. A
+subcommand that writes any row, changes the project's files, runs a program or changes another agent sets
+`outward = True`, and a read-only agent is refused it. A subcommand that sets nothing passes, so set it on every
+subcommand of those kinds. A model's built `edit`, `delete` and moves count as outward without being set.
+
 ## Join a suite or add one
 
 `parent_suite = "coding"` makes the review module's templates and buttons active in environments

@@ -2,6 +2,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType
@@ -142,3 +143,45 @@ def test_a_wait_does_not_lift_the_limit(new_story, helper_fixture):
 def test_a_writing_main_agent_is_not_held_to_reading(new_story):
     story = new_story(fixture=StartedHelper)
     expect_reply_allowed(story.hook("s-1", tool("mcp__wiki__edit")))
+
+
+def journal_line(*arguments):
+    return shell(f"journal {' '.join(arguments)}", part("journal", CommandCategory.JOURNAL, *arguments))
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("arguments", [("task", "list"), ("task", "show", "1"), ("report", "make", "x"), ("doc", "make", "x"), ("task", "make", "x"), ("task", "log", "1", "x"), ("memory", "make", "x")],
+                         ids=["reads a list", "reads a row", "report", "doc", "new task", "task log", "memory"])
+def test_a_read_only_helper_reads_and_writes_rows_of_its_own(new_story, helper_fixture, arguments):
+    story, session = helper_story(new_story, helper_fixture)
+    expect_reply_allowed(story.hook(session, journal_line(*arguments)))
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "edit", "1"), ("doc", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
+                         ids=["close a task", "edit a task", "delete a doc", "start a plan", "make a rule", "set a setting"])
+def test_a_read_only_helper_writes_no_row_of_another(new_story, helper_fixture, arguments):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("arguments", [("worker", "merge", "5"), ("skill", "require", "x"), ("plugin", "install", "x")], ids=["merge", "skill", "plugin"])
+def test_a_read_only_helper_changes_no_project_file(new_story, helper_fixture, arguments):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("arguments", [("agent", "start", "s-9", "claude", "main"), ("agent", "stop", "1"), ("agent", "type", "1", "x"), ("worker", "release", "5", "x"), ("helper", "start", "x"), ("worker", "dispatch", "1")],
+                         ids=["agent start", "agent stop", "agent type", "worker release", "helper start", "worker dispatch"])
+def test_a_read_only_helper_acts_on_no_other_agent(new_story, helper_fixture, arguments):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("line", [f"{SESSION_VARIABLE}=s-1 journal task list", f"env {SESSION_VARIABLE}=s-1 journal task list", f"export {SESSION_VARIABLE}=s-1"], ids=["prefix", "env", "export"])
+def test_a_read_only_helper_cannot_name_another_session(new_story, helper_fixture, line):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list")), OUTWARD_JOURNAL_LINE.nudge().text)

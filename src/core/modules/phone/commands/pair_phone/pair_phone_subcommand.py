@@ -12,6 +12,7 @@ class PairPhoneSubcommand(Subcommand[PairPhone, PhoneInvitation]):
 
     cli_name = "phone"
     name = "pair"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return

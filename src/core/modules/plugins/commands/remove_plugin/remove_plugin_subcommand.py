@@ -11,6 +11,7 @@ class RemovePluginSubcommand(Subcommand[RemovePlugin, str]):
 
     cli_name = "plugin"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plugin")

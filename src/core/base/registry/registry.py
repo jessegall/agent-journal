@@ -51,6 +51,7 @@ from core.base.viewer.layout_shape import loaded_layout, stored_layout
 LEGACY_PLACES = {"environment": "pane", "agent": "pane"}
 LEGACY_SHOWS = {"agent": "one-agent"}
 KEPT_REGISTRIES = 8
+BUILT_READS = ("make", "show", "list")
 
 
 @dataclass(frozen=True)
@@ -298,6 +299,12 @@ class Registry:
 
     def dock(self, type_name: str) -> DockEntry | None:
         return next((dock for dock in self.docks if dock.type == type_name), None)
+
+    def is_outward(self, line: str) -> bool:
+        cli_name, _, verb = line.partition(" ")
+        if line in self.subcommands:
+            return line in self.outward_lines
+        return cli_name in self.models and verb not in BUILT_READS
 
     def has_window(self, name: str) -> bool:
         return any(window.name == name for window in self.windows)

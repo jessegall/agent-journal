@@ -11,6 +11,7 @@ class StartProcessPartSubcommand(Subcommand[StartProcessPart, ProcessPart]):
 
     cli_name = "process"
     name = "part-start"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("process_id", type=int)

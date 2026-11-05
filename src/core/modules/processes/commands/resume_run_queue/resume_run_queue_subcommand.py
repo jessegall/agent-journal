@@ -11,6 +11,7 @@ class ResumeRunQueueSubcommand(Subcommand[ResumeRunQueue, str]):
 
     cli_name = "queue"
     name = "resume"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

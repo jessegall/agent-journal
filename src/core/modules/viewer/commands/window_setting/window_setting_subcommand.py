@@ -14,6 +14,7 @@ class WindowSettingSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSettin
 
     cli_name = "window"
     name = "setting"
+    outward = True
     environment_refusal = "a window's settings belong to an environment"
 
     def __init__(self, reader: SettingReader, keys: WindowSettingKeys) -> None:

@@ -12,6 +12,7 @@ class AcceptShareLinkSubcommand(Subcommand[AcceptShareLink, ShareInvitation]):
 
     cli_name = "share"
     name = "accept"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("link_id", type=int)

@@ -12,6 +12,7 @@ class EndProcessPartSubcommand(Subcommand[EndProcessPart, ProcessPart]):
 
     cli_name = "process"
     name = "part-end"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("process_id", type=int)

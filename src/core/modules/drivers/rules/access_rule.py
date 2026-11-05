@@ -1,6 +1,9 @@
 from core.base.access import Access
+from core.base.caller.caller_request import SESSION_VARIABLE
+from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
@@ -38,9 +41,17 @@ class AccessRule(ReadonlyRule):
             return RuleAnswer.refused(OLD_HOOK_LINE.nudge())
         if shell is not None and shell.has_uncertain_part:
             return RuleAnswer.refused(UNJUDGED_LINE.nudge())
-        if shell is not None and shell.parts_running_journal_command(*self.registry.outward_lines):
+        if shell is not None and self.reaches_outward(shell):
             return RuleAnswer.refused(OUTWARD_JOURNAL_LINE.nudge())
         return super().answer(hook)
+
+    def reaches_outward(self, shell: ShellLine) -> bool:
+        if any(variable in shell.display_text for variable in self.identity_variables()):
+            return True
+        return any(self.registry.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command())
+
+    def identity_variables(self) -> tuple[str, ...]:
+        return (SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))
 
     def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
         if tool.name in self.providers.provider(hook.event.program).safe_tools:

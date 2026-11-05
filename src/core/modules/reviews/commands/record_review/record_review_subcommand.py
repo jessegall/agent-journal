@@ -12,6 +12,7 @@ class RecordReviewSubcommand(Subcommand[RecordReview, Review]):
 
     cli_name = "review"
     name = "record"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("report")

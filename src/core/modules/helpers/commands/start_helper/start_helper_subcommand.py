@@ -11,6 +11,7 @@ class StartHelperSubcommand(Subcommand[StartHelper, Agent]):
 
     cli_name = "helper"
     name = "start"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile")

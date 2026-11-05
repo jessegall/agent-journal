@@ -11,6 +11,7 @@ class AddDockItemSubcommand(Subcommand[AddDockItem, DockItem]):
 
     cli_name = "dock"
     name = "add"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("type")

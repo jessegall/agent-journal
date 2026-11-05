@@ -11,6 +11,7 @@ class HaltRunQueueSubcommand(Subcommand[HaltRunQueue, str]):
 
     cli_name = "queue"
     name = "halt"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("reason")

@@ -10,6 +10,7 @@ class RecordMarkMotionSubcommand(Subcommand[RecordMarkMotion, None]):
 
     cli_name = "developer"
     name = "record-mark-motion"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("frames")

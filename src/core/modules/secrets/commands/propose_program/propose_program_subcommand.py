@@ -12,6 +12,7 @@ class ProposeProgramSubcommand(Subcommand[ProposeProgram, SecretProgram]):
 
     cli_name = "secret"
     name = "propose"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("n", type=int)

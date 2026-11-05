@@ -11,6 +11,7 @@ class RecordMenuAnswerSubcommand(Subcommand[RecordMenuAnswer, MenuAnswer]):
 
     cli_name = "agent"
     name = "menu-answer"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)

@@ -11,6 +11,7 @@ class AllowEssentialRuleSubcommand(Subcommand[AllowEssentialRule, Setting]):
 
     cli_name = "driver"
     name = "allow-essential"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("rule")

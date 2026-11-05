@@ -14,6 +14,7 @@ class DemoStartSubcommand(DemoReportWriting, ReadSubcommand[DemoReport]):
 
     cli_name = "demo"
     name = "start"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--with-module", type=Path, dest="module_folder", help="Install a module folder in the demo before seeding it")

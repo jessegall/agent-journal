@@ -14,6 +14,7 @@ class MakeLibraryCopySubcommand(ItemArguments, Subcommand[MakeLibraryCopy, NewLi
 
     cli_name = "library"
     name = "get"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         super().arguments(parser)

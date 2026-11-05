@@ -11,6 +11,7 @@ class RenamePersonPresetSubcommand(Subcommand[RenamePersonPreset, PersonPreset])
 
     cli_name = "person-preset"
     name = "rename"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

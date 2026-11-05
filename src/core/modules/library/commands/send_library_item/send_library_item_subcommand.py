@@ -12,6 +12,7 @@ class SendLibraryItemSubcommand(Subcommand[SendLibraryItem, SharedLibraryItem]):
 
     cli_name = "library"
     name = "share"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("share", metavar="kind")

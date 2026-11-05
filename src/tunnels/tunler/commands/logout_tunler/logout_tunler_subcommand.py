@@ -10,6 +10,7 @@ class LogoutTunlerSubcommand(Subcommand[LogoutTunler, str]):
 
     cli_name = "tunler"
     name = "logout"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

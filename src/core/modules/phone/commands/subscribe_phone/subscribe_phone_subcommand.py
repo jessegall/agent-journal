@@ -12,6 +12,7 @@ class SubscribePhoneSubcommand(Subcommand[SubscribePhone, Phone]):
 
     cli_name = "phone"
     name = "subscribe"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("token_digest")

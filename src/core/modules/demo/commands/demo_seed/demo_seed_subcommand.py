@@ -20,6 +20,7 @@ class DemoSeedSubcommand(DemoReportWriting, ReadSubcommand[DemoReport]):
 
     cli_name = "demo"
     name = "seed"
+    outward = True
 
     def __init__(self, order: DemoOrder, container: Container, actors: ActorQuery) -> None:
         self.order, self.container, self.actors = order, container, actors

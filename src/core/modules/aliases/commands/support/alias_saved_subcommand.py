@@ -8,3 +8,4 @@ class AliasSavedSubcommand(ViewRowsSubcommand):
     model = SavedCommand
     cli_name = "alias"
     name = "saved"
+    outward = True

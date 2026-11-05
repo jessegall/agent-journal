@@ -11,6 +11,7 @@ class RecordFileChangesSubcommand(Subcommand[RecordFileChanges, None]):
 
     cli_name = "file-edit"
     name = "record-changes"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("report_path")

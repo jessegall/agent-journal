@@ -11,6 +11,7 @@ class PruneHookCallsSubcommand(Subcommand[PruneHookCalls, int]):
 
     cli_name = "hook-call"
     name = "prune"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         pass

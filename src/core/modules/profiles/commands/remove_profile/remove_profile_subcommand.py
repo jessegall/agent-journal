@@ -9,6 +9,7 @@ from core.modules.profiles.commands.remove_profile.remove_profile import RemoveP
 class RemoveProfileSubcommand(Subcommand[RemoveProfile, str]):
     cli_name = "profile"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")

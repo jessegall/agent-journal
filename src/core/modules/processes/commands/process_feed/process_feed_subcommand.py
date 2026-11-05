@@ -16,6 +16,7 @@ class ProcessFeedSubcommand(ViewRowsSubcommand):
     filters = ("id", "session_agent_id")
     cli_name = "process"
     name = "feed"
+    outward = True
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
         return query if arguments.id is not None or arguments.session_agent_id is not None else query.matching(MainAgentRows())

@@ -12,6 +12,7 @@ class SetLibraryRoleSubcommand(ShowLibraryLineSubcommand[SetLibraryRole, Library
 
     cli_name = "library-user"
     name = "role"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("user_id", metavar="user", type=int)

@@ -13,6 +13,7 @@ class AddLibraryUserSubcommand(ShowLibraryLineSubcommand[AddLibraryUser, NewLibr
 
     cli_name = "library-user"
     name = "add"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("user_name", metavar="name")

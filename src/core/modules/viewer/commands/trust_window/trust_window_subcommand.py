@@ -12,6 +12,7 @@ class TrustWindowSubcommand(Subcommand[TrustWindow, WindowPermission]):
 
     cli_name = "window"
     name = "trust"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("module")

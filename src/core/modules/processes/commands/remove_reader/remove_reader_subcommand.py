@@ -11,6 +11,7 @@ class RemoveReaderSubcommand(Subcommand[RemoveReader, Reader]):
 
     cli_name = "reader"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("reader_name")

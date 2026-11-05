@@ -13,6 +13,7 @@ class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
 
     cli_name = "worker"
     name = "release"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)

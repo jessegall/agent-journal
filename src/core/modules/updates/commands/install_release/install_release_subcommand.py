@@ -14,6 +14,7 @@ class InstallReleaseSubcommand(Subcommand[InstallRelease, ReleaseInstall]):
 
     cli_name = "update"
     name = "install"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

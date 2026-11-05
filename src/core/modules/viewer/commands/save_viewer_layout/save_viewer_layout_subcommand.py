@@ -12,6 +12,7 @@ class SaveViewerLayoutSubcommand(Subcommand[SaveViewerLayout, ViewerLayout]):
 
     cli_name = "viewer-layout"
     name = "save"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--suite", required=True)

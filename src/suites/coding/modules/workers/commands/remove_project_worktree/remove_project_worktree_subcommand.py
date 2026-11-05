@@ -12,6 +12,7 @@ class RemoveProjectWorktreeSubcommand(Subcommand[RemoveProjectWorktree, str]):
 
     cli_name = "project-worktree"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("folder")

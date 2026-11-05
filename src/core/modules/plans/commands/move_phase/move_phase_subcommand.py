@@ -10,6 +10,7 @@ class MovePhaseSubcommand(Subcommand[MovePhase, Phase]):
 
     cli_name = "phase"
     name = "move"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("phase_id", type=int)

@@ -11,6 +11,7 @@ class ChooseDefaultReaderSubcommand(Subcommand[ChooseDefaultReader, Reader]):
 
     cli_name = "reader"
     name = "default"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("reader_name")

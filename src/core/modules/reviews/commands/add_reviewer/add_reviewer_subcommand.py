@@ -11,6 +11,7 @@ class AddReviewerSubcommand(Subcommand[AddReviewer, Reviewer]):
 
     cli_name = "reviewer"
     name = "add"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

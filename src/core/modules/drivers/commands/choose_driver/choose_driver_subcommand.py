@@ -12,6 +12,7 @@ class ChooseDriverSubcommand(Subcommand[ChooseDriver, Setting]):
 
     cli_name = "driver"
     name = "choose"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("driver")

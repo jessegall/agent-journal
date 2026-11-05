@@ -15,6 +15,7 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
 
     cli_name = "worker"
     name = "deliver"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

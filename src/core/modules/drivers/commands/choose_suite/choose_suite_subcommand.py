@@ -11,6 +11,7 @@ class ChooseSuiteSubcommand(Subcommand[ChooseSuite, Setting]):
 
     cli_name = "suite"
     name = "choose"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("suite")

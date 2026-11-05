@@ -14,6 +14,7 @@ class RestoreLibraryItemSubcommand(ItemArguments, Subcommand[RestoreLibraryItem,
 
     cli_name = "library"
     name = "restore"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         super().arguments(parser)

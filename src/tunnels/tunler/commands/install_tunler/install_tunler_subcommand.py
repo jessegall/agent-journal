@@ -10,6 +10,7 @@ class InstallTunlerSubcommand(Subcommand[InstallTunler, str]):
 
     cli_name = "tunler"
     name = "install"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("server")

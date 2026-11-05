@@ -10,6 +10,7 @@ class ReleaseTunlerDomainSubcommand(Subcommand[ReleaseTunlerDomain, str]):
 
     cli_name = "tunler"
     name = "release"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("domain")

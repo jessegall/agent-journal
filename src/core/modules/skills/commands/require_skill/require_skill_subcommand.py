@@ -15,6 +15,7 @@ class RequireSkillSubcommand(Subcommand[RequireSkill, AgentSkill]):
 
     cli_name = "skill"
     name = "require"
+    outward = True
 
     def __init__(self, files: SkillFiles) -> None:
         self.files = files

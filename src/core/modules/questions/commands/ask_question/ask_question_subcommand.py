@@ -16,6 +16,7 @@ class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
 
     cli_name = "question"
     name = "ask"
+    outward = True
 
     def __init__(self, refs: RowRefs) -> None:
         self.refs = refs

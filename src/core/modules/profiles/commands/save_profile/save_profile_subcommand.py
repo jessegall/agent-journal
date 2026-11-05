@@ -18,6 +18,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
 
     cli_name = "profile"
     name = "save"
+    outward = True
 
     def __init__(self, files: ProfileFiles) -> None:
         self.files = files

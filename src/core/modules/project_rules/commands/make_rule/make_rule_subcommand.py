@@ -11,6 +11,7 @@ class MakeRuleSubcommand(Subcommand[MakeRule, ProjectRule]):
 
     cli_name = "rule"
     name = "make"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")

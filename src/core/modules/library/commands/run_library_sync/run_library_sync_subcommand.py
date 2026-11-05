@@ -12,6 +12,7 @@ class RunLibrarySyncSubcommand(Subcommand[RunLibrarySync, SyncOutcome]):
 
     cli_name = "library"
     name = "sync"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

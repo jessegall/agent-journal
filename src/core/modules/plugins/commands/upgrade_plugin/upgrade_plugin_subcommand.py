@@ -13,6 +13,7 @@ class UpgradePluginSubcommand(Subcommand[UpgradePlugin, PluginUpgrade]):
 
     cli_name = "plugin"
     name = "upgrade"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

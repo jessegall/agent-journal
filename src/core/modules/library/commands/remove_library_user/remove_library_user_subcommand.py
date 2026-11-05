@@ -11,6 +11,7 @@ class RemoveLibraryUserSubcommand(ShowLibraryLineSubcommand[RemoveLibraryUser, L
 
     cli_name = "library-user"
     name = "remove"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("user_id", metavar="user", type=int)

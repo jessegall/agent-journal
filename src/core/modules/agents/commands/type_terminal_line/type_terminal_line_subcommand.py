@@ -12,6 +12,7 @@ class TypeTerminalLineSubcommand(Subcommand[TypeTerminalLine, Agent]):
 
     cli_name = "agent"
     name = "type"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)

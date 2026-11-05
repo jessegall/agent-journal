@@ -12,6 +12,7 @@ class RetireReviewerSubcommand(Subcommand[RetireReviewer, Reviewer]):
 
     cli_name = "reviewer"
     name = "retire"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

@@ -12,6 +12,7 @@ class SavePersonPresetSubcommand(Subcommand[SavePersonPreset, PersonPreset]):
 
     cli_name = "person-preset"
     name = "save"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", required=True)

@@ -12,6 +12,7 @@ class KeepRevisionSubcommand(Subcommand[KeepRevision, DocRevision]):
 
     cli_name = "doc"
     name = "keep"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

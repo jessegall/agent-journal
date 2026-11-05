@@ -16,6 +16,7 @@ class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
 
     cli_name = "worker"
     name = "merge"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)

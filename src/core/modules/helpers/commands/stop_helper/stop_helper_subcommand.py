@@ -10,6 +10,7 @@ class StopHelperSubcommand(Subcommand[StopHelper, None]):
 
     cli_name = "helper"
     name = "stop"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("helper_id", type=int)

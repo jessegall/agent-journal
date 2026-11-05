@@ -10,6 +10,7 @@ class SendHelperSubcommand(Subcommand[SendHelper, None]):
 
     cli_name = "helper"
     name = "send"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("helper_id", type=int)

@@ -10,6 +10,7 @@ from core.modules.processes.models.process import Process
 class RecordSandboxSubcommand(Subcommand[RecordSandbox, Process]):
     cli_name = "process"
     name = "sandbox"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("process_id", type=int)

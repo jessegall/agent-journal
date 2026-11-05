@@ -15,6 +15,7 @@ class ChatMessagesSubcommand(ViewRowsSubcommand):
     filters = ["target_agent_id"]
     cli_name = "message"
     name = "feed"
+    outward = True
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
         return query.matching(MainMessageTarget()) if arguments.target_agent_id is None else query

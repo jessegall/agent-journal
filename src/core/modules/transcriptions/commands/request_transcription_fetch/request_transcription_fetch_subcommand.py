@@ -13,6 +13,7 @@ class RequestTranscriptionFetchSubcommand(Subcommand[RequestTranscriptionFetch, 
 
     cli_name = "transcription"
     name = "fetch"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("server")

@@ -11,6 +11,7 @@ class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
 
     cli_name = "task"
     name = "assign"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)

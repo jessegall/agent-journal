@@ -14,6 +14,7 @@ class WaitTaskSubcommand(Subcommand[WaitTask, Task]):
 
     cli_name = "task"
     name = "block"
+    outward = True
 
     def __init__(self, targets: TaskWaitTargets) -> None:
         self.targets = targets

@@ -12,6 +12,7 @@ class StrikeTriggerSubcommand(Subcommand[StrikeTrigger, Trigger]):
 
     cli_name = "trigger"
     name = "strike"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

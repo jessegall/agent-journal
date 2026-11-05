@@ -12,6 +12,7 @@ class StopCheckSubcommand(Subcommand[StopCheck, Check]):
 
     cli_name = "check"
     name = "stop"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

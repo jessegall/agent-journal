@@ -11,6 +11,7 @@ class RestoreHooksSubcommand(Subcommand[RestoreHooks, int]):
 
     cli_name = "hooks"
     name = "give-back"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         pass

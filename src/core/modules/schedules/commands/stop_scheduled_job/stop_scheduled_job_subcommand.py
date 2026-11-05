@@ -12,6 +12,7 @@ class StopScheduledJobSubcommand(Subcommand[StopScheduledJob, ScheduledJob]):
 
     cli_name = "scheduled-job"
     name = "stop"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

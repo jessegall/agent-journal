@@ -11,6 +11,7 @@ class StopProcessSubcommand(Subcommand[StopProcess, Process]):
 
     cli_name = "output"
     name = "stop"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

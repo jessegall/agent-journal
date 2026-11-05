@@ -12,6 +12,7 @@ class SetManagedHookSubcommand(Subcommand[SetManagedHook, ManagedHook]):
 
     cli_name = "managed-hook"
     name = "set"
+    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("hook_id")
