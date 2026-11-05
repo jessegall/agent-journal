@@ -12,17 +12,19 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class ExceptionLineListener(CommitListener[Created[JournalException]]):
-    """With the setting on, an exception that shows in the chat also reaches the running main agent."""
+    """With the setting on, an exception that shows in the chat reaches the running main agent, once per text."""
 
     name = "developer.exception-line"
     disabled_scopes = [ActorScope]
 
     def __init__(self, settings: SettingValues, agents: AgentRows, bus: Bus) -> None:
         self.settings, self.agents, self.bus = settings, agents, bus
+        self.told_messages: set[str] = set()
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
         main_agent = self.agents.main_agent()
-        if main_agent is None or not self.settings.flag(EXCEPTION_LINES_SETTING):
+        if main_agent is None or event.row.message in self.told_messages or not self.settings.flag(EXCEPTION_LINES_SETTING):
             return
+        self.told_messages.add(event.row.message)
         command = SendExceptionLine(main_agent.id, event.row.source, event.row.message)
         self.bus.run(command, Actor.core(), cause_id=logged.id, environment_id=main_agent.environment_id)
