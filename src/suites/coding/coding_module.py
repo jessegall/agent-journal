@@ -82,5 +82,5 @@ class CodingModule(Module):
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_EDITS_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, skeleton=CODING_TERMINAL_SKELETON, icon=WindowIcon.TERMINAL, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.create"],
+                                 reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.*"],
                                  options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]
