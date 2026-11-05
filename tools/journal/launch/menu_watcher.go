@@ -37,7 +37,7 @@ type MenuWatcher struct {
 	changedAt      time.Time
 	menuSignature  string
 	menuDetectedAt time.Time
-	Now            func() time.Time
+	CurrentTime    func() time.Time
 	KeyedAt        func() time.Time
 	TypedAt        func() time.Time
 	Press          func(keys string) bool
@@ -47,11 +47,11 @@ type MenuWatcher struct {
 // NewMenuWatcher watches the agent's terminal through its input, and tells of what it pressed.
 func NewMenuWatcher(inputs *TerminalInputs, agentID int, onAnswer func(question, explanation string)) *MenuWatcher {
 	return &MenuWatcher{
-		Now:      time.Now,
-		KeyedAt:  func() time.Time { return inputs.KeyedAt(agentID) },
-		TypedAt:  func() time.Time { return inputs.TypedAt(agentID) },
-		Press:    func(keys string) bool { return inputs.PressKeys(agentID, keys) },
-		OnAnswer: onAnswer,
+		CurrentTime: time.Now,
+		KeyedAt:     func() time.Time { return inputs.KeyedAt(agentID) },
+		TypedAt:     func() time.Time { return inputs.TypedAt(agentID) },
+		Press:       func(keys string) bool { return inputs.PressKeys(agentID, keys) },
+		OnAnswer:    onAnswer,
 	}
 }
 
@@ -63,7 +63,7 @@ func (watcher *MenuWatcher) Write(output []byte) (int, error) {
 	if len(watcher.screen) > menuScreenBytes {
 		watcher.screen = watcher.screen[len(watcher.screen)-menuScreenBytes:]
 	}
-	watcher.changedAt = watcher.Now()
+	watcher.changedAt = watcher.CurrentTime()
 	return len(output), nil
 }
 
@@ -96,23 +96,23 @@ func (watcher *MenuWatcher) CheckMenu() *MenuAnswer {
 func (watcher *MenuWatcher) answered() *MenuAnswer {
 	watcher.mutex.Lock()
 	defer watcher.mutex.Unlock()
-	now := watcher.Now()
+	currentAt := watcher.CurrentTime()
 	menu := ReadTerminalMenu(string(watcher.screen))
 	if menu == nil || !menu.Foreign() {
 		watcher.menuSignature = ""
 		return nil
 	}
 	if watcher.menuSignature != menu.Signature() {
-		watcher.menuSignature, watcher.menuDetectedAt = menu.Signature(), now
+		watcher.menuSignature, watcher.menuDetectedAt = menu.Signature(), currentAt
 	}
-	if now.Sub(watcher.changedAt) < menuQuiet {
+	if currentAt.Sub(watcher.changedAt) < menuQuiet {
 		return nil
 	}
-	yours := watcher.KeyedAt().After(watcher.menuDetectedAt.Add(-menuYoursWithin))
-	if yours && !menu.Confirming() {
+	keyboardRequested := watcher.KeyedAt().After(watcher.menuDetectedAt.Add(-menuYoursWithin))
+	if keyboardRequested && !menu.Confirming() {
 		return nil
 	}
-	requested := yours || watcher.TypedAt().After(watcher.menuDetectedAt.Add(-menuCausedWithin))
+	requested := keyboardRequested || watcher.TypedAt().After(watcher.menuDetectedAt.Add(-menuCausedWithin))
 	keys, explanation := menuDecision(menu, requested)
 	if !watcher.Press(keys) {
 		return nil

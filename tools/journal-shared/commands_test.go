@@ -10,9 +10,9 @@ import (
 
 func runIn(t *testing.T, folder string, arguments ...string) (string, int) {
 	t.Helper()
-	var out, errs bytes.Buffer
-	status := run(append(arguments, "--data", folder), &out, &errs)
-	return out.String() + errs.String(), status
+	var output, errs bytes.Buffer
+	status := run(append(arguments, "--data", folder), &output, &errs)
+	return output.String() + errs.String(), status
 }
 
 func tokenIn(output string) string {
@@ -25,9 +25,9 @@ func tokenIn(output string) string {
 }
 
 func TestVersionPrintsTheReleaseAndTheProtocol(t *testing.T) {
-	var out bytes.Buffer
-	if run([]string{"--version"}, &out, &out) != 0 || out.String() != "journal-shared dev protocol 1\n" {
-		t.Fatalf("%q", out.String())
+	var output bytes.Buffer
+	if run([]string{"--version"}, &output, &output) != 0 || output.String() != "journal-shared dev protocol 1\n" {
+		t.Fatalf("%q", output.String())
 	}
 }
 
@@ -85,9 +85,9 @@ func TestTheCommandsChangeRolesMakeAndRevokeTokensAndRemoveUsers(t *testing.T) {
 }
 
 func TestACommandWithoutADataFolderOrWithABadRoleFails(t *testing.T) {
-	var out bytes.Buffer
-	if run([]string{"user", "add", "Ada", "--role", "admin"}, &out, &out) != 1 || !strings.Contains(out.String(), "--data") {
-		t.Errorf("%q", out.String())
+	var output bytes.Buffer
+	if run([]string{"user", "add", "Ada", "--role", "admin"}, &output, &output) != 1 || !strings.Contains(output.String(), "--data") {
+		t.Errorf("%q", output.String())
 	}
 	if output, status := runIn(t, t.TempDir(), "user", "add", "Ada", "--role", "boss"); status != 1 || !strings.Contains(output, "admin, edit or read") {
 		t.Errorf("%d %q", status, output)

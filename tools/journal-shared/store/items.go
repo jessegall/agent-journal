@@ -80,7 +80,7 @@ type querier interface {
 }
 
 // CreateItem makes an item at version 1; every field of the kind is needed.
-func (store *Store) CreateItem(kind Kind, fields Fields, caller Caller) (Item, error) {
+func (store *Store) CreateItem(kind ItemType, fields Fields, caller Caller) (Item, error) {
 	checked, err := kind.checked(fields, true)
 	if err != nil {
 		return Item{}, err
@@ -90,8 +90,8 @@ func (store *Store) CreateItem(kind Kind, fields Fields, caller Caller) (Item, e
 		return Item{}, err
 	}
 	defer transaction.Rollback()
-	now := store.timestamp()
-	columns, marks, values := "creator_id, created_at, updated_at", "?, ?, ?", []any{caller.User.ID, now, now}
+	currentAt := store.timestamp()
+	columns, marks, values := "creator_id, created_at, updated_at", "?, ?, ?", []any{caller.User.ID, currentAt, currentAt}
 	for _, field := range kind.Fields {
 		columns, marks, values = columns+", "+field, marks+", ?", append(values, checked[field])
 	}
@@ -111,7 +111,7 @@ func (store *Store) CreateItem(kind Kind, fields Fields, caller Caller) (Item, e
 }
 
 // ReadItem reads one item, removed or not.
-func (store *Store) ReadItem(kind Kind, id int64) (Item, error) {
+func (store *Store) ReadItem(kind ItemType, id int64) (Item, error) {
 	return readItem(store.DB, kind, id)
 }
 
@@ -119,7 +119,7 @@ func (store *Store) ReadItem(kind Kind, id int64) (Item, error) {
 // transaction. The answer is read inside that transaction, so it is the version this call wrote and never a later one.
 // It returns the newest item with ErrStale when another write came first, and ErrRemoved on a removed item. A field
 // that is not sent keeps its value, and fields that change nothing write nothing.
-func (store *Store) UpdateItem(kind Kind, id, baseVersion int64, fields Fields, caller Caller) (Item, error) {
+func (store *Store) UpdateItem(kind ItemType, id, baseVersion int64, fields Fields, caller Caller) (Item, error) {
 	checked, err := kind.checked(fields, false)
 	if err != nil {
 		return Item{}, err
@@ -158,16 +158,16 @@ func (store *Store) UpdateItem(kind Kind, id, baseVersion int64, fields Fields, 
 }
 
 // RemoveItem marks an item removed from the library, as a new version; an item removed already stays as it is.
-func (store *Store) RemoveItem(kind Kind, id int64, caller Caller) (Item, error) {
+func (store *Store) RemoveItem(kind ItemType, id int64, caller Caller) (Item, error) {
 	return store.markRemoved(kind, id, true, caller)
 }
 
 // RestoreItem clears the removed mark, as a new version; an item that is not removed stays as it is.
-func (store *Store) RestoreItem(kind Kind, id int64, caller Caller) (Item, error) {
+func (store *Store) RestoreItem(kind ItemType, id int64, caller Caller) (Item, error) {
 	return store.markRemoved(kind, id, false, caller)
 }
 
-func (store *Store) markRemoved(kind Kind, id int64, removing bool, caller Caller) (Item, error) {
+func (store *Store) markRemoved(kind ItemType, id int64, removing bool, caller Caller) (Item, error) {
 	transaction, err := store.DB.Begin()
 	if err != nil {
 		return Item{}, err
@@ -180,12 +180,12 @@ func (store *Store) markRemoved(kind Kind, id int64, removing bool, caller Calle
 	if (current.RemovedAt != "") == removing {
 		return current, nil
 	}
-	now, action := store.timestamp(), ActionRestore
+	currentAt, action := store.timestamp(), ActionRestore
 	var removedAt any
 	if removing {
-		removedAt, action = now, ActionRemove
+		removedAt, action = currentAt, ActionRemove
 	}
-	if _, err := transaction.Exec("UPDATE "+kind.Table+" SET removed_at = ?, version = version + 1, updated_at = ? WHERE id = ?", removedAt, now, id); err != nil {
+	if _, err := transaction.Exec("UPDATE "+kind.Table+" SET removed_at = ?, version = version + 1, updated_at = ? WHERE id = ?", removedAt, currentAt, id); err != nil {
 		return Item{}, err
 	}
 	changed, err := store.record(transaction, kind, id, action, caller)
@@ -197,7 +197,7 @@ func (store *Store) markRemoved(kind Kind, id int64, removing bool, caller Calle
 
 // PurgeItem deletes an item and all its versions for good, and adds one purge row with no fields, so the history still
 // shows that the item is gone. The number is never used again. It returns how many versions were deleted.
-func (store *Store) PurgeItem(kind Kind, id int64, caller Caller) (int64, error) {
+func (store *Store) PurgeItem(kind ItemType, id int64, caller Caller) (int64, error) {
 	transaction, err := store.DB.Begin()
 	if err != nil {
 		return 0, err
@@ -226,7 +226,7 @@ func (store *Store) PurgeItem(kind Kind, id int64, caller Caller) (int64, error)
 
 // ListItems lists one page of the items of a kind that are not removed, newest change first. Every word of search
 // has to be in one of the kind's search fields, and each row then carries an excerpt around the first word.
-func (store *Store) ListItems(kind Kind, search string, pageNumber, size int) (Page, error) {
+func (store *Store) ListItems(kind ItemType, search string, pageNumber, size int) (Page, error) {
 	terms := strings.Fields(search)
 	conditions, arguments := "t.removed_at IS NULL", []any{}
 	for _, term := range terms {
@@ -281,7 +281,7 @@ func (store *Store) ListItems(kind Kind, search string, pageNumber, size int) (P
 const updatedBySQL = `COALESCE((SELECT u.name FROM item_versions v JOIN users u ON u.id = v.user_id
 	WHERE v.kind = ? AND v.item_id = t.id ORDER BY v.id DESC LIMIT 1), '')`
 
-func readItem(database querier, kind Kind, id int64) (Item, error) {
+func readItem(database querier, kind ItemType, id int64) (Item, error) {
 	columns := "t.id, t.version, COALESCE(t.removed_at, ''), t.updated_at, c.name, " + updatedBySQL
 	for _, field := range kind.Fields {
 		columns += ", t." + field
@@ -306,7 +306,7 @@ func readItem(database querier, kind Kind, id int64) (Item, error) {
 }
 
 // record adds the history row of a write and reads the item as that write left it.
-func (store *Store) record(transaction *sql.Tx, kind Kind, id int64, action string, caller Caller) (Item, error) {
+func (store *Store) record(transaction *sql.Tx, kind ItemType, id int64, action string, caller Caller) (Item, error) {
 	recordedItem, err := readItem(transaction, kind, id)
 	if err != nil {
 		return Item{}, err
@@ -321,7 +321,7 @@ func (store *Store) record(transaction *sql.Tx, kind Kind, id int64, action stri
 	return readItem(transaction, kind, id)
 }
 
-func (store *Store) addVersion(transaction *sql.Tx, kind Kind, id, version int64, action, fields string, caller Caller) error {
+func (store *Store) addVersion(transaction *sql.Tx, kind ItemType, id, version int64, action, fields string, caller Caller) error {
 	var token sql.NullInt64
 	if caller.TokenID != 0 {
 		token = sql.NullInt64{Int64: caller.TokenID, Valid: true}
@@ -333,7 +333,7 @@ func (store *Store) addVersion(transaction *sql.Tx, kind Kind, id, version int64
 
 // checked keeps the fields of the kind, with numbers as whole numbers; a field that is not named in the kind is left
 // out, so a newer journal can send more than this server knows.
-func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
+func (kind ItemType) checked(fields Fields, creating bool) (Fields, error) {
 	checked := Fields{}
 	for _, field := range kind.Fields {
 		value, exists := fields[field]
@@ -361,7 +361,7 @@ func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 	return checked, nil
 }
 
-func (kind Kind) hasField(field string) bool {
+func (kind ItemType) hasField(field string) bool {
 	for _, name := range kind.Fields {
 		if name == field {
 			return true
@@ -392,9 +392,9 @@ func excerptAround(term string, texts []string) string {
 			if !sameLetters(characters[start:start+len(wanted)], wanted) {
 				continue
 			}
-			from, endIndex := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
-			excerpt := strings.Join(strings.Fields(string(characters[from:endIndex])), " ")
-			if from > 0 {
+			startIndex, endIndex := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
+			excerpt := strings.Join(strings.Fields(string(characters[startIndex:endIndex])), " ")
+			if startIndex > 0 {
 				excerpt = "…" + excerpt
 			}
 			if endIndex < len(characters) {

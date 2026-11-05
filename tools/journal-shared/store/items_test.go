@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func docKind() Kind {
+func docKind() ItemType {
 	kind, _ := KindByName("doc")
 	return kind
 }

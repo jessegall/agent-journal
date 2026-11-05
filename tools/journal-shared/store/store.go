@@ -24,10 +24,10 @@ const FileName = "shared.db"
 
 // Store is the open database of one data folder.
 type Store struct {
-	DB         *sql.DB
-	Now        func() time.Time
-	ServerKey  string
-	ServerName string
+	DB          *sql.DB
+	CurrentTime func() time.Time
+	ServerKey   string
+	ServerName  string
 }
 
 // Open opens shared.db in the folder, made if it is not there, in WAL mode with foreign keys on, and runs the
@@ -45,7 +45,7 @@ func Open(folder string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	store := &Store{DB: database, Now: time.Now}
+	store := &Store{DB: database, CurrentTime: time.Now}
 	if err := store.migrate(); err != nil {
 		database.Close()
 		return nil, err

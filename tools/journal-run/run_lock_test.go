@@ -44,20 +44,20 @@ func TestALineThatOnlyReadsDoesNotWaitOnTheRunLock(t *testing.T) {
 // awayClient refuses the first report of the end and is unreachable from then until the report is tried again.
 type awayClient struct {
 	*recordingClient
-	away     bool
-	refusals int
+	unreachable bool
+	refusals    int
 }
 
 func (client *awayClient) Run(arguments ...string) error {
 	if arguments[1] == "end" && client.refusals > 0 {
 		client.refusals--
-		client.away = true
+		client.unreachable = true
 		return os.ErrClosed
 	}
 	return client.recordingClient.Run(arguments...)
 }
 
-func (client *awayClient) Reachable() bool { return !client.away }
+func (client *awayClient) Reachable() bool { return !client.unreachable }
 
 func (client *awayClient) Restarting() bool { return false }
 
@@ -86,4 +86,3 @@ func TestAQueuedRunWaitsForItsSpotAndAnyOtherDoesNot(t *testing.T) {
 		t.Error("a run that is not queued waits")
 	}
 }
-

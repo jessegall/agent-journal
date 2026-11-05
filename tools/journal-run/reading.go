@@ -34,9 +34,9 @@ func readLines(text, selection string) string {
 		last = min(len(lines), count)
 	case "cut":
 		start, end, _ := strings.Cut(value, "-")
-		from, _ := strconv.Atoi(start)
+		startLine, _ := strconv.Atoi(start)
 		endLine, _ := strconv.Atoi(end)
-		first, last = max(0, from-1), min(len(lines), endLine)
+		first, last = max(0, startLine-1), min(len(lines), endLine)
 	}
 	if first >= last {
 		return ""

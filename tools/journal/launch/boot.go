@@ -246,9 +246,9 @@ func (menu *boot) conversation() (bool, error) {
 	} else {
 		mains = limited(mains)
 	}
-	options, sessions, now := []string{}, map[string]string{}, time.Now()
+	options, sessions, currentAt := []string{}, map[string]string{}, time.Now()
 	for _, conversation := range mains {
-		label := conversation.Label(now)
+		label := conversation.Label(currentAt)
 		options, sessions[label] = append(options, label), conversation.Session
 	}
 	answer, err := menu.answer(Question{Title: ConversationQuestion, Options: append(options, FreshConversation)})

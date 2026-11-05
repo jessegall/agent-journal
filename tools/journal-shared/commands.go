@@ -44,7 +44,7 @@ func openData(folder string) (*store.Store, error) {
 	return store.Open(folder)
 }
 
-func userCommand(name string, arguments []string, out, errs io.Writer) error {
+func userCommand(name string, arguments []string, output, errs io.Writer) error {
 	flags, data := newFlags("user "+name, errs)
 	role := flags.String("role", "", "admin, edit or read")
 	var wanted int
@@ -67,16 +67,16 @@ func userCommand(name string, arguments []string, out, errs io.Writer) error {
 	defer database.Close()
 	switch name {
 	case "add":
-		return addUser(database, positional[0], *role, out)
+		return addUser(database, positional[0], *role, output)
 	case "role":
-		return changeRole(database, positional[0], positional[1], out)
+		return changeRole(database, positional[0], positional[1], output)
 	case "remove":
-		return removeUser(database, positional[0], out)
+		return removeUser(database, positional[0], output)
 	}
-	return listTokens(database, positional[0], out)
+	return listTokens(database, positional[0], output)
 }
 
-func addUser(database *store.Store, name, roleName string, out io.Writer) error {
+func addUser(database *store.Store, name, roleName string, output io.Writer) error {
 	role, err := store.ParseRole(roleName)
 	if err != nil {
 		return err
@@ -85,10 +85,10 @@ func addUser(database *store.Store, name, roleName string, out io.Writer) error 
 	if err != nil {
 		return err
 	}
-	return printNewToken(database, user, "", out)
+	return printNewToken(database, user, "", output)
 }
 
-func changeRole(database *store.Store, name, roleName string, out io.Writer) error {
+func changeRole(database *store.Store, name, roleName string, output io.Writer) error {
 	role, err := store.ParseRole(roleName)
 	if err != nil {
 		return err
@@ -99,23 +99,23 @@ func changeRole(database *store.Store, name, roleName string, out io.Writer) err
 	}
 	user, err = database.SetRole(user.ID, role)
 	if err == nil {
-		fmt.Fprintf(out, "user %s is now %s\n", user.Name, user.Role)
+		fmt.Fprintf(output, "user %s is now %s\n", user.Name, user.Role)
 	}
 	return err
 }
 
-func removeUser(database *store.Store, name string, out io.Writer) error {
+func removeUser(database *store.Store, name string, output io.Writer) error {
 	user, err := database.UserByName(name)
 	if err != nil {
 		return err
 	}
 	if _, err = database.RemoveUser(user.ID); err == nil {
-		fmt.Fprintf(out, "user %s removed, and every token of theirs revoked\n", user.Name)
+		fmt.Fprintf(output, "user %s removed, and every token of theirs revoked\n", user.Name)
 	}
 	return err
 }
 
-func listTokens(database *store.Store, name string, out io.Writer) error {
+func listTokens(database *store.Store, name string, output io.Writer) error {
 	user, err := database.UserByName(name)
 	if err != nil {
 		return err
@@ -129,12 +129,12 @@ func listTokens(database *store.Store, name string, out io.Writer) error {
 		if token.RevokedAt != "" {
 			state = "revoked " + token.RevokedAt
 		}
-		fmt.Fprintf(out, "token %d  %q  made %s  %s\n", token.ID, token.Label, token.CreatedAt, state)
+		fmt.Fprintf(output, "token %d  %q  made %s  %s\n", token.ID, token.Label, token.CreatedAt, state)
 	}
 	return err
 }
 
-func tokenCommand(name string, arguments []string, out, errs io.Writer) error {
+func tokenCommand(name string, arguments []string, output, errs io.Writer) error {
 	flags, data := newFlags("token "+name, errs)
 	label := flags.String("label", "", "what the token is for, such as a laptop")
 	if name != "new" && name != "revoke" {
@@ -150,36 +150,36 @@ func tokenCommand(name string, arguments []string, out, errs io.Writer) error {
 	}
 	defer database.Close()
 	if name == "revoke" {
-		return revokeToken(database, positional[0], out)
+		return revokeToken(database, positional[0], output)
 	}
 	user, err := database.UserByName(positional[0])
 	if err != nil {
 		return err
 	}
-	return printNewToken(database, user, *label, out)
+	return printNewToken(database, user, *label, output)
 }
 
-func revokeToken(database *store.Store, number string, out io.Writer) error {
+func revokeToken(database *store.Store, number string, output io.Writer) error {
 	id, err := strconv.ParseInt(number, 10, 64)
 	if err != nil {
 		return fmt.Errorf("%q is not a token number", number)
 	}
 	if _, err = database.RevokeToken(id); err == nil {
-		fmt.Fprintf(out, "token %d revoked\n", id)
+		fmt.Fprintf(output, "token %d revoked\n", id)
 	}
 	return err
 }
 
-func printNewToken(database *store.Store, user store.User, label string, out io.Writer) error {
+func printNewToken(database *store.Store, user store.User, label string, output io.Writer) error {
 	text, token, err := database.NewToken(user.ID, label)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "user %s (%s), token %d\n%s\nthis token is shown once and is kept nowhere\n", user.Name, user.Role, token.ID, text)
+	fmt.Fprintf(output, "user %s (%s), token %d\n%s\nthis token is shown once and is kept nowhere\n", user.Name, user.Role, token.ID, text)
 	return nil
 }
 
-func itemCommand(name string, arguments []string, out, errs io.Writer) error {
+func itemCommand(name string, arguments []string, output, errs io.Writer) error {
 	flags, data := newFlags("item "+name, errs)
 	if name != "history" && name != "purge" {
 		return fmt.Errorf("there is no item command %q", name)
@@ -202,34 +202,34 @@ func itemCommand(name string, arguments []string, out, errs io.Writer) error {
 	}
 	defer database.Close()
 	if name == "purge" {
-		return purgeItem(database, kind, id, out)
+		return purgeItem(database, kind, id, output)
 	}
-	return printHistory(database, kind, id, out)
+	return printHistory(database, kind, id, output)
 }
 
-func printHistory(database *store.Store, kind store.Kind, id int64, out io.Writer) error {
+func printHistory(database *store.Store, kind store.ItemType, id int64, output io.Writer) error {
 	versions, err := database.ItemVersions(kind, id)
 	for _, version := range versions {
-		fmt.Fprintf(out, "version %d  %s  by %s with token %q  at %s\n", version.Version, version.Action, version.User, version.Token, version.CreatedAt)
+		fmt.Fprintf(output, "version %d  %s  by %s with token %q  at %s\n", version.Version, version.Action, version.User, version.Token, version.CreatedAt)
 	}
 	return err
 }
 
 // purgeItem is written in the name of the first admin, because the purge row needs a user and this command is run by
 // whoever has the server's data folder.
-func purgeItem(database *store.Store, kind store.Kind, id int64, out io.Writer) error {
+func purgeItem(database *store.Store, kind store.ItemType, id int64, output io.Writer) error {
 	admin, err := database.FirstAdmin()
 	if err != nil {
 		return errors.New("a purge is written in the name of the first admin, and there is none: user add makes one")
 	}
 	deleted, err := database.PurgeItem(kind, id, store.Caller{User: admin})
 	if err == nil {
-		fmt.Fprintf(out, "%s %d purged with its %d versions; its number is never used again\n", kind.Name, id, deleted)
+		fmt.Fprintf(output, "%s %d purged with its %d versions; its number is never used again\n", kind.Name, id, deleted)
 	}
 	return err
 }
 
-func backupCommand(arguments []string, out, errs io.Writer) error {
+func backupCommand(arguments []string, output, errs io.Writer) error {
 	flags, data := newFlags("backup", errs)
 	positional, err := parse(flags, arguments, 1)
 	if err != nil {
@@ -243,6 +243,6 @@ func backupCommand(arguments []string, out, errs io.Writer) error {
 	if err := database.Backup(positional[0]); err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "backup written to %s\n", positional[0])
+	fmt.Fprintf(output, "backup written to %s\n", positional[0])
 	return nil
 }

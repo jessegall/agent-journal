@@ -108,7 +108,7 @@ func foundOrNot(err error) error {
 }
 
 func (store *Store) timestamp() string {
-	return store.Now().UTC().Format(time.RFC3339)
+	return store.CurrentTime().UTC().Format(time.RFC3339)
 }
 
 // AddUser makes a user with a role.
@@ -126,8 +126,8 @@ func (store *Store) AddUser(name string, role Role) (User, error) {
 	if matchingUsers > 0 {
 		return User{}, ErrNameTaken
 	}
-	now := store.timestamp()
-	result, err := store.DB.Exec("INSERT INTO users (name, role, created_at, updated_at) VALUES (?, ?, ?, ?)", name, role, now, now)
+	currentAt := store.timestamp()
+	result, err := store.DB.Exec("INSERT INTO users (name, role, created_at, updated_at) VALUES (?, ?, ?, ?)", name, role, currentAt, currentAt)
 	if err != nil {
 		return User{}, err
 	}
@@ -197,14 +197,14 @@ func (store *Store) RemoveUser(id int64) (User, error) {
 		return User{}, err
 	}
 	defer transaction.Rollback()
-	now := store.timestamp()
-	if _, err := transaction.Exec("UPDATE users SET removed_at = ?, updated_at = ? WHERE id = ?", now, now, id); err != nil {
+	currentAt := store.timestamp()
+	if _, err := transaction.Exec("UPDATE users SET removed_at = ?, updated_at = ? WHERE id = ?", currentAt, currentAt, id); err != nil {
 		return User{}, err
 	}
-	if _, err := transaction.Exec("UPDATE tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL", now, id); err != nil {
+	if _, err := transaction.Exec("UPDATE tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL", currentAt, id); err != nil {
 		return User{}, err
 	}
-	user.RemovedAt, user.UpdatedAt = now, now
+	user.RemovedAt, user.UpdatedAt = currentAt, currentAt
 	return user, transaction.Commit()
 }
 
@@ -274,9 +274,9 @@ func (store *Store) Authenticate(text string) (Caller, error) {
 	if err != nil {
 		return Caller{}, err
 	}
-	now := store.Now().UTC()
+	currentAt := store.CurrentTime().UTC()
 	_, err = store.DB.Exec("UPDATE tokens SET last_used_at = ? WHERE id = ? AND (last_used_at IS NULL OR last_used_at <= ?)",
-		now.Format(time.RFC3339), caller.TokenID, now.Add(-time.Minute).Format(time.RFC3339))
+		currentAt.Format(time.RFC3339), caller.TokenID, currentAt.Add(-time.Minute).Format(time.RFC3339))
 	return caller, err
 }
 
