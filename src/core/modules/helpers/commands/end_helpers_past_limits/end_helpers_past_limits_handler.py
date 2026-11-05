@@ -13,8 +13,8 @@ from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
-from core.modules.helpers.commands.enforce_helper_limits.enforce_helper_limits import EnforceHelperLimits
-from core.modules.helpers.commands.warn_helper_limit.warn_helper_limit import WarnHelperLimit
+from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits import EndHelpersPastLimits
+from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_warning import SendHelperLimitWarning
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST, HELPER_MAX_MINUTES
 from core.modules.helpers.support.helper_spend import HelperSpend
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -23,18 +23,18 @@ from core.modules.usage.support.status_files import StatusFiles
 WARNING_SHARE = 0.8
 
 
-class EnforceHelperLimitsHandler(Handler[EnforceHelperLimits, None]):
+class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     """Tells a parent once at 80 percent of a limit, and past it reports the job and stops the helper. It reads the
     status files and stops programs outside any transaction, and leaves every other kind of agent alone."""
 
-    command = EnforceHelperLimits
+    command = EndHelpersPastLimits
     transactional = False
 
     def __init__(self, queries: Queries, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus, launcher: LauncherLink) -> None:
         self.queries, self.jobs, self.settings, self.files, self.scopes = queries, jobs, settings, files, scopes
         self.bus, self.launcher = bus, launcher
 
-    def handle(self, command: EnforceHelperLimits, context: Context) -> None:
+    def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
         for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
             job = next((row for row in self.jobs.helper_jobs(helper.id) if row.ended_at is None), None)
             if job is not None and helper.parent_id is not None:
@@ -47,10 +47,10 @@ class EnforceHelperLimitsHandler(Handler[EnforceHelperLimits, None]):
         if spend.share >= 1:
             self.stop(helper, job, spend)
         elif spend.share >= WARNING_SHARE and not self.was_warned(helper, job):
-            self.bus.run(WarnHelperLimit(helper.id, helper.parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
+            self.bus.run(SendHelperLimitWarning(helper.id, helper.parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
 
     def was_warned(self, helper: Agent, job: HelperJob) -> bool:
-        return self.queries.query(AgentLine).filter(session_agent_id=helper.parent_id, source=WarnHelperLimit.source(job.id)).exists()
+        return self.queries.query(AgentLine).filter(session_agent_id=helper.parent_id, source=SendHelperLimitWarning.source(job.id)).exists()
 
     def stop(self, helper: Agent, job: HelperJob, spend: HelperSpend) -> None:
         text = f"It was stopped at its {spend.limit_name} limit."

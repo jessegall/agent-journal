@@ -6,7 +6,7 @@ LIMIT_WARNING_SOURCE = "helpers.limit-warning"
 
 
 @dataclass(frozen=True)
-class WarnHelperLimit(Command[None]):
+class SendHelperLimitWarning(Command[None]):
     """Tells a parent its helper is near a limit."""
 
     helper_id: int
