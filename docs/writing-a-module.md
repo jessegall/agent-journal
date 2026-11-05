@@ -81,6 +81,32 @@ Drivers, driver rules, suite defaults and an `AgentPolicy` must name registered 
 refuses unknown roles, duplicate keys, invalid rosters, missing base types and inheritance loops
 before changing the stored registry. Register a role in `agent_types` before using it elsewhere.
 
+## Register a profile
+
+Declare profiles on the module that owns them. Each profile names a registered agent type:
+
+```python
+from core.base.module.module import Module
+from core.base.profile.agent_profile import AgentProfile
+
+
+class NotesProfilesModule(Module):
+    name = "acme.notes-profiles"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+    profiles = [AgentProfile("notes-reader", "Reads and explains notes", "Read the notes and report the findings.",
+                             agent_type="helper")]
+```
+
+A name uses letters, digits, dashes or underscores. Profiles need a description and instructions.
+Sync refuses duplicate names, unknown agent types and writing access above the type's allowance.
+An agent type's `default_profile` must name a profile of that same type. Set `independent=True`
+when each job needs a fresh review. `model` and `codex_model` select models for the two programs.
+
+`Suite.profiles` and `Suite.profile_types` are no longer declarations. Move profiles to
+`Module.profiles` and register their types in `Module.agent_types`; sync names that correction
+when a plugin still uses the old fields. The profile CLI keeps its `--type` option.
+
 ## Join a suite or add one
 
 `parent_suite = "coding"` makes the review module's templates and buttons active in environments

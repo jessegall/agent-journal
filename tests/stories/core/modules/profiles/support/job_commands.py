@@ -6,14 +6,18 @@ from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import JournalHome
 from core.base.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
-from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
+
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, dispatched_worker
 
+SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
+
 ROOT = Path(__file__).resolve().parents[6]
 PROFILE_COMMANDS = {
+    "journal-worker": tuple(["journal task --help"]),
     "journal-planner": ("journal plan make", "journal phase make", "journal task make", "journal doc make"),
     "journal-researcher": ("journal search find", "journal doc make", "journal report make"),
     "journal-debugger": ("journal search find", "journal task show", "journal output read"),
@@ -34,7 +38,6 @@ def expect_published_commands(story) -> None:
     files.publish()
     assert set(PROFILE_COMMANDS) == {profile.name for profile in SHIPPED_PROFILES}
     for profile in SHIPPED_PROFILES:
-        assert "Bash" in profile.tools.split(", "), profile.name
         claude = files.read(files.folder(".claude/agents") / f"{profile.name}.md")
         codex = tomllib.loads((files.folder(".codex/agents") / f"{profile.name}.toml").read_text())
         assert claude.body == codex["developer_instructions"], profile.name

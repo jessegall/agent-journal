@@ -30,4 +30,5 @@ class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile]]):
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, AgentProfile)] if is_tuple(value) else []
-        output.write("\n".join(f"{row.name}  {row.profile_type}  {row.model or '-'}  used {row.uses}" for row in listed), {"rows": [output.values(row) for row in listed], "types": list(self.files.profile_types)})
+        output.write("\n".join(f"{row.name}  {row.agent_type}  {row.model or '-'}  used {row.uses}" for row in listed),
+                     {"rows": [{**output.values(row), "shipped": row.is_builtin} for row in listed], "types": list(self.files.profile_types)})

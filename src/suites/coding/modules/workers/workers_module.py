@@ -1,3 +1,4 @@
+from suites.coding.support.shipped_profiles import WORKER_PROFILES
 from suites.coding.modules.workers.listeners.reader_sample_ready_listener import ReaderSampleReadyListener
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_subcommand import RecordWorkerReportSubcommand
 from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
@@ -161,6 +162,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
+    profiles = WORKER_PROFILES
     agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
                              default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster)]
     parent_suite = "coding"

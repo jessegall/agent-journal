@@ -1,4 +1,7 @@
-from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
+
+
+SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 
 MODELS = {profile.name: (profile.model, profile.codex_model) for profile in SHIPPED_PROFILES}
 

@@ -16,6 +16,8 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.profile.agent_profile import AgentProfile
+from core.base.access import Access
+from core.base.registry.profile_entry import ProfileEntry
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.registry.template_entry import TemplateEntry
@@ -134,14 +136,18 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
     assert [(window.place, window.shows) for window in registry.windows] == [("pane", "environment"), ("pane", "one-agent"), ("dropdown", "environment")]
 
 
-def test_suite_profiles_and_their_types_survive_registry_storage(database):
-    profile = AgentProfile("notes-reader", "Reads notes", "Read", "Read the notes.", "reader", "small", "small")
+def test_registered_profiles_restore(database):
+    profile = AgentProfile("notes-reader", "Reads notes", "Read the notes.", agent_type="reader", model="small", codex_model="small",
+                           access=Access.READ, program="codex", independent=True, mcp_tools=tuple(["mcp__notes__read"]),
+                           changed=tuple(["model"]), module_text_changed=True)
     policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
-    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, tuple([profile]), tuple(["reader"]), policy, shipped=True)
-    registry = replace(Registry.read(database), suites=tuple([suite]))
+    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, policy, shipped=True)
+    entry = ProfileEntry.declared("notes", profile)
+    registry = replace(Registry.read(database), suites=tuple([suite]), profiles=tuple([entry]))
     restored = Registry.parsed("profiles", registry.entries_text())
-    assert restored.suites[0].profiles == tuple([profile])
-    assert restored.suites[0].profile_types == tuple(["reader"])
+    assert restored.profile("notes-reader") == entry
+    assert restored.profile("notes-reader").profile.access is Access.READ
+    assert restored.profile("notes-reader").profile.is_builtin
     assert restored.suites[0].agent_policy == policy
     assert restored.suites[0].shipped is True
 

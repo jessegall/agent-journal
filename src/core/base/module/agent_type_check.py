@@ -29,6 +29,14 @@ class AgentTypeCheck:
         book = AgentTypeBook(entries)
         problems.extend(problem for module in modules for declaration in module.agent_types
                         for problem in self.inheritance_problems(module.name, declaration, book))
+        profiles = {profile.name: profile for module in modules for profile in module.profiles}
+        for declaration in (declaration for module in modules for declaration in module.agent_types if declaration.default_profile):
+            if declaration.default_profile not in profiles:
+                problems.append(f"{declaration.key}: default profile {declaration.default_profile} is not registered")
+                continue
+            profile = profiles[declaration.default_profile]
+            if profile.agent_type != declaration.key:
+                problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, not {declaration.key}")
         names = frozenset(entry.key for entry in entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
         uses.extend((suite.name, role) for module in modules for suite in module.suites for role in suite.defaults)

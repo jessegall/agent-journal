@@ -5,7 +5,7 @@ from tests.stories.core.support.fixtures import UserJoined
 NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesModule"
 
 
-def test_another_suite_supplies_its_profiles_and_profile_types(new_story):
+def test_a_module_supplies_profiles_for_its_registered_type(new_story):
     story = new_story(NOTES_MODULE, fixture=UserJoined)
     story.container.get(ProfileFiles).publish()
     story.expect_text("profile list", "journal-notes-reader", actor=story.user)

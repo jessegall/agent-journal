@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
-from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
 
 
@@ -22,8 +21,6 @@ class SuiteEntry:
     windows: Sequence[str]
     layouts: Mapping[str, LayoutShape]
     presets: Mapping[str, Sequence[LayoutPreset]]
-    profiles: Sequence[AgentProfile] = ()
-    profile_types: Sequence[str] = tuple(["subagent"])
     agent_policy: AgentPolicy = AgentPolicy()
     task_assigner: str = ""
     shipped: bool = False

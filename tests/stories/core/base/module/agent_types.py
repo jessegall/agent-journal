@@ -1,8 +1,6 @@
 import pytest
 
 from core.base.agent_type_book import AgentTypeBook
-from core.base.database.database import Database
-from core.base.registry.registry import Registry
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
@@ -26,10 +24,7 @@ MODULES = "tests.stories.core.base.module.support.agent_type_modules"
 ])
 def test_sync_refuses_an_invalid_agent_type_before_writing_the_registry(new_story, module, message):
     story = new_story()
-    registry = Registry.read(story.container.get(Database)).entries_text()
-    code, text = story.synced_with(f"{MODULES}:{module}")
-    story.expect_rows(code != 0, message in text,
-                      Registry.read(story.container.get(Database)).entries_text() == registry)
+    story.expect_sync_refusal(f"{MODULES}:{module}", message)
 
 
 def test_a_registered_type_survives_registry_storage_and_can_start(new_story):

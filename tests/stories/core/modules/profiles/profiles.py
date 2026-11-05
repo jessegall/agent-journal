@@ -3,11 +3,14 @@ import pytest
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
-from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
+from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
+
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.support.story_checks import expect_value
+
+SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 
 SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
 
@@ -79,13 +82,13 @@ def test_a_saved_profile_is_listed_whether_a_person_or_an_agent_saved_it(new_sto
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(SAVE_PROFILE, "saved critic in .claude/agents/critic.md", actor=story.agent)
     story.expect_success(SAVE_PROFILE, "saved critic in .claude/agents/critic.md", actor=story.user)
-    story.expect_text("profile list", "critic  subagent  -  used 0", actor=story.user)
+    story.expect_text("profile list", "critic  helper  -  used 0", actor=story.user)
 
 
 def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal('profile save "no good" --description "x"', "no good cannot name a profile", actor=story.user)
-    story.expect_refusal('profile save critic --description "x" --type boss', "a profile is a subagent or a worker, not boss", actor=story.user)
+    story.expect_refusal('profile save critic --description "x" --type boss', "boss is no agent type: no installed module registers it", actor=story.user)
     story.expect_refusal("profile save critic", "a profile needs a description", actor=story.user)
 
 
@@ -101,7 +104,7 @@ def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
     story = saved_profile_story(new_story)
     start = HookSamples.subagent().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
     story.hook("s-1", start)
-    story.expect_text("profile list", "critic  subagent  -  used 1", actor=story.user)
+    story.expect_text("profile list", "critic  helper  -  used 1", actor=story.user)
 
 
 def test_a_person_cannot_save_a_profile_under_a_shipped_name(new_story):

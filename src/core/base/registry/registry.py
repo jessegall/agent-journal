@@ -1,6 +1,7 @@
 import json
 from collections.abc import Sequence
-from core.base.profile.agent_profile import AgentProfile
+from core.base.registry.profile_entry import ProfileEntry
+from core.base.refusal import Refusal
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
 from core.base.agent_type_book import AgentTypeBook
@@ -76,6 +77,7 @@ class Registry:
     button_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
     agent_types: tuple[AgentTypeEntry, ...] = ()
+    profiles: tuple[ProfileEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
@@ -117,7 +119,6 @@ class Registry:
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
-                                    tuple(AgentProfile(**profile) for profile in suite.get("profiles", [])), tuple(suite.get("profile_types", ["subagent"])),
                                     AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""), suite.get("shipped", False))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
@@ -135,6 +136,7 @@ class Registry:
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
             agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
+            profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
             button_slots=tuple(entries.get("button_slots", [])),
             events=tuple(entries.get("events", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
@@ -165,7 +167,6 @@ class Registry:
                        "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
-                        "profiles": [asdict(profile) for profile in suite.profiles], "profile_types": list(suite.profile_types),
                         "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner, "shipped": suite.shipped,
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
@@ -183,6 +184,7 @@ class Registry:
             "buttons": [asdict(button) for button in self.buttons],
             "state_additions": [asdict(addition) for addition in self.state_additions],
             "agent_types": [asdict(entry) for entry in self.agent_types],
+            "profiles": [asdict(entry) for entry in self.profiles],
             "button_slots": list(self.button_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
@@ -228,6 +230,12 @@ class Registry:
 
     def agent_type_book(self) -> AgentTypeBook:
         return AgentTypeBook(self.agent_types)
+
+    def profile(self, name: str) -> ProfileEntry:
+        for entry in self.profiles:
+            if entry.profile.name == name:
+                return entry
+        raise Refusal(f"profile {name} is not registered", "register profiles on a module")
 
     def require_current(self, code_fingerprint: str) -> None:
         if code_fingerprint != self.fingerprint:

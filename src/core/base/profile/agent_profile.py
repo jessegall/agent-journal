@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-
-SUBAGENT = "subagent"
+from collections.abc import Mapping
+from typing import Any
+from core.base.access import Access
 
 
 @dataclass(frozen=True)
@@ -9,12 +10,26 @@ class AgentProfile:
 
     name: str
     description: str
-    tools: str
     body: str
-    profile_type: str = SUBAGENT
+    agent_type: str = "helper"
+    access: Access | None = None
+    program: str = ""
     model: str = ""
     codex_model: str = ""
-    shipped: bool = False
+    independent: bool = False
+    mcp_tools: tuple[str, ...] = ()
+    module: str = ""
+    changed: tuple[str, ...] = ()
+    module_text_changed: bool = False
     path: str = ""
     uses: int = 0
     last_used: int = 0
+
+    @property
+    def is_builtin(self) -> bool:
+        return bool(self.module)
+
+    @classmethod
+    def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
+        access = Access(fields["access"]) if fields["access"] is not None else None
+        return cls(**{**fields, "access": access, "mcp_tools": tuple(fields["mcp_tools"]), "changed": tuple(fields["changed"])})

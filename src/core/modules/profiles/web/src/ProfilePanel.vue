@@ -2,13 +2,11 @@
 import {computed, ref, watch} from "vue";
 import {Btn, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
 
-// one profile in the panel at the side, as version 4's: the name for a new one, when it is used, its tools, its kind, a model picker for each agent
-// program and its instructions, with Cancel and Save in the foot
 const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}});
 const emit = defineEmits(["close", "save"]);
 
 const choices = computed(() => props.types.map((type) => ({key: type, label: type.slice(0, 1).toUpperCase() + type.slice(1)})));
-const FIELDS = ["description", "tools", "profile_type", "model", "codex_model", "body"];
+const FIELDS = ["description", "agent_type", "model", "codex_model", "body"];
 
 const draft = ref({});
 watch(
@@ -23,7 +21,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
 </script>
 
 <template>
-    <SidePanel :title="profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, tools and a model for an agent'" @close="emit('close')">
+    <SidePanel :title="profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
         <div class="profile-panel" data-profile-panel>
             <template v-if="!profile.name">
                 <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
@@ -33,11 +31,8 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to start it.">
                 <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
             </FormField>
-            <FormField label="Tools" for="profile-tools" help="Comma separated. A profile that only reads keeps to Read, Grep, Glob and the like.">
-                <TextInput id="profile-tools" :value="draft.tools" placeholder="Read, Grep, Glob" @input="draft.tools = $event.target.value" />
-            </FormField>
-            <FormField label="Kind" for="profile-kind" help="The agent roles your suite supports.">
-                <Segmented :options="choices" :value="draft.profile_type" @pick="draft.profile_type = $event" />
+            <FormField label="Type" for="profile-kind" help="The kind of agent that runs this profile.">
+                <Segmented :options="choices" :value="draft.agent_type" @pick="draft.agent_type = $event" />
             </FormField>
             <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
                 <ModelPicker provider="claude" inherits :value="draft.model" data-profile-model="claude" @pick="draft.model = $event" />

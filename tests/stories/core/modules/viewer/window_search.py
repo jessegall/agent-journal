@@ -60,7 +60,7 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
     windows = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
     searches = {
         "settings.settings": ("setting tree", "Find a setting", ["title", "description", "key"]),
-        "profiles.profiles": ("profile list", "Find a profile", ["name", "description", "profile_type", "model", "codex_model"]),
+        "profiles.profiles": ("profile list", "Find a profile", ["name", "description", "agent_type", "model", "codex_model"]),
         "search.search": ("search find", "Search the journal", []),
         "skills.skills": ("skill list", "Search the skills", ["folder", "description"]),
         "messages.attachments": ("attachment list", "Search file names and their messages", ["name", "message_text"]),

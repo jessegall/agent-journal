@@ -4,7 +4,6 @@ from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
 from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
 from suites.coding.support.next_task import NextTask
-from suites.coding.support.shipped_profiles import SHIPPED_PROFILES
 from core.base.agent_policy import AgentPolicy
 
 AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.subagents")
@@ -18,8 +17,6 @@ class CodingSuite(Suite):
 
     name = "coding"
     task_assigner = NextTask
-    profiles = SHIPPED_PROFILES
-    profile_types = ("subagent", "worker")
     agent_policy = AgentPolicy(
         job_roles=tuple(["worker"]),
         task_roles=("main", "worker"), prompt_roles=("main", "worker"), plugin_roles=("main", "worker"),
