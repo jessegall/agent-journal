@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from dataclasses import replace
 
 import pytest
 
@@ -77,3 +78,11 @@ def test_a_skipped_guard_and_a_short_flag_reach_the_context(tmp_path):
 def test_without_explain_the_first_refusal_stops_the_command(tmp_path):
     with pytest.raises(GuardRefusal, match="no item may be titled Dune"):
         sample_container(tmp_path, registry()).get(Bus).run(MakeItem(title="Dune"), AGENT)
+
+
+def test_a_shared_short_flag_skips_related_guards():
+    current = registry()
+    guards = (replace(current.guards[0], short_flag="today"), current.guards[1])
+    flags, parser = WriteFlags(replace(current, guards=guards)), ArgumentParser()
+    flags.add(parser)
+    assert flags.skipped_guards(parser.parse_args(["--today"])) == frozenset({"items.no-dune", "items.closed-today"})

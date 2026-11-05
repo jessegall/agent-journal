@@ -14,9 +14,8 @@ class WriteFlags:
         parser.add_argument("--environment")
         parser.add_argument("--skip-guard", action="append", default=[], dest="skip_guard")
         parser.add_argument("--explain", action="store_true")
-        for guard in self.registry.guards:
-            if guard.short_flag:
-                parser.add_argument(f"--{guard.short_flag}", action="store_true", dest=self.destination(guard.short_flag))
+        for short_flag in dict.fromkeys(guard.short_flag for guard in self.registry.guards if guard.short_flag):
+            parser.add_argument(f"--{short_flag}", action="store_true", dest=self.destination(short_flag))
 
     def skipped_guards(self, arguments: Namespace) -> frozenset[str]:
         flag_guards: list[str] = list(arguments.skip_guard)
