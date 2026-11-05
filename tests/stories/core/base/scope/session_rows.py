@@ -3,11 +3,25 @@ from core.base.database.statement import Statement
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.scope.environment_rows import TwoEnvironmentsAtWork, staging_agent
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, agent_of, started_agent
 
 MAIN_QUESTION = "Ship on Friday?"
 PERSON_MESSAGE = "Hello main"
+
+
+class StartedTaskMark(StoryFixture):
+    """The main agent of environment main started task 1, which shows a mark in its chat."""
+
+    parent = TwoEnvironmentsAtWork
+
+    def steps(self, story):
+        story.run("task start 1", actor=story.agent)
+        story.run_listeners()
+
+    def expect(self, story):
+        story.expect_text("chat-mark list", "Task 1")
 
 
 def asked_main_question(story):
@@ -55,24 +69,20 @@ def test_a_main_agent_of_another_environment_reads_no_hook_call_here(new_story):
 
 
 def test_a_main_agent_of_another_environment_reads_no_chat_mark_here(new_story):
-    story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run('task start 1', actor=story.agent)
-    story.run_listeners()
+    story = new_story(fixture=StartedTaskMark)
     story.expect_text("chat-mark list", "Task 1", actor=story.agent)
     story.expect_no_text("chat-mark list", "Task 1", actor=staging_agent(story))
 
 
 def test_a_new_main_session_reads_the_chat_marks_of_the_session_before_it(new_story):
-    story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run('task start 1', actor=story.agent)
-    story.run_listeners()
+    story = new_story(fixture=StartedTaskMark)
     story.expect_text("chat-mark list", "Task 1", actor=started_agent(story, "s-4", "main"))
 
 
 def test_a_person_reads_the_rows_of_every_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     asked_main_question(story)
-    story.expect_text("question list", MAIN_QUESTION, actor=story.user)
+    story.expect_text("question list --environment main", MAIN_QUESTION, actor=story.user)
 
 
 def test_a_message_to_the_main_agent_stores_no_target(new_story):
