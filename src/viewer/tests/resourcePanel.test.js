@@ -79,7 +79,8 @@ test("a plan shows how far it has come, the phase it is in and which phases are 
         {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 1, title: "One", state: "completed"}]},
         {id: 2, title: "Second", goal: "They pass", checkpoint: true, tasks: [{id: 2, title: "Two", state: "started"}, {id: 3, title: "Three", state: "open"}]},
     ]}}}));
-    expect(shown().querySelector("[data-plan-status]").textContent).toContain("phase 2 of 2");
+    expect(shown().querySelector("[data-plan-status]").textContent).toBe("Started");
+    expect(shown().querySelector(".phase-count").textContent).toBe("Phase 2 of 2");
     expect(shown().querySelector("[data-plan-progress]").textContent).toContain("1 of 3 done");
     const [first, second] = shown().querySelectorAll("[data-resource-phase]");
     expect(first.classList.contains("done")).toBe(true);
