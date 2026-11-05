@@ -8,6 +8,7 @@ import pytest
 from core.modules.documents.commands.support.text_body import TextBody
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.base.file_access import FileAccess
+from core.base.module.module_finder import ModuleFinder
 from core.testing.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
@@ -98,3 +99,17 @@ def test_an_atomic_replacement_allows_reading_the_changed_target_in_the_same_req
         expect_value(TextBody.given(arguments), "First draft")
         files.replace(temporary, path)
         expect_value(TextBody.given(arguments), "After replacement")
+
+
+def test_a_write_invalidates_parsed_values_when_the_modified_time_is_unchanged(new_story):
+    story = new_story()
+    files = FileAccess.shared()
+    path = story.home.module_list
+    files.write(path, '["alpha.module:Alpha"]')
+    finder = story.container.get(ModuleFinder)
+    with story.repeated_work.request():
+        expect_value(finder.plugin_paths(), ("alpha.module:Alpha",))
+        status = path.stat()
+        files.write(path, '["bravo.module:Bravo"]')
+        os.utime(path, ns=(status.st_atime_ns, status.st_mtime_ns))
+        expect_value(finder.plugin_paths(), ("bravo.module:Bravo",))

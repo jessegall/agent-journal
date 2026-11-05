@@ -66,7 +66,7 @@ class ManagedHooks:
     @contextmanager
     def _locked(self) -> Generator[None]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.with_suffix(".lock").open("a") as lock:
+        with FileAccess.shared().writer(self.path.with_suffix(".lock"), "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:
                 yield

@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
 import os
 from pathlib import Path
 
@@ -16,6 +17,7 @@ class PrivateFolder:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
+        self.project_ids: dict[FileVersion, str] = {}
 
     @property
     def folder(self) -> Path:
@@ -25,13 +27,21 @@ class PrivateFolder:
 
     def file(self, suffix: str) -> Path | None:
         path = self.home.folder / PROJECT_ID_FILE
-        return self.folder / f"{FileAccess.shared().read(path).strip()}{suffix}" if path.is_file() else None
+        return self.folder / f"{self.project_id()}{suffix}" if path.is_file() else None
 
     def made_file(self, suffix: str) -> Path:
         path = self.home.folder / PROJECT_ID_FILE
         if not path.is_file():
             FileAccess.shared().write(path, os.urandom(16).hex())
-        return self.made_folder() / f"{FileAccess.shared().read(path).strip()}{suffix}"
+            self.project_ids.clear()
+        return self.made_folder() / f"{self.project_id()}{suffix}"
+
+    def project_id(self) -> str:
+        path = self.home.folder / PROJECT_ID_FILE
+        version = FileAccess.shared().version(path)
+        if version not in self.project_ids:
+            self.project_ids = {version: FileAccess.shared().read(path).strip()}
+        return self.project_ids[version]
 
     def made_folder(self) -> Path:
         self.folder.mkdir(parents=True, exist_ok=True)

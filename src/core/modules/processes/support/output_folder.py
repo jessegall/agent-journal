@@ -301,7 +301,7 @@ class OutputFolder:
         return marks.get(mark, "")
 
     def write_read_mark(self, process_id: int, mark: str, read_at: str) -> None:
-        with (self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE).open("a") as marks:
+        with FileAccess.shared().writer(self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE, "a") as marks:
             marks.write(f"{mark} {read_at}\n")
 
     def process_ids(self) -> list[int]:

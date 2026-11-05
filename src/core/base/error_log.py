@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import traceback
 from datetime import datetime, timezone
 
@@ -14,13 +15,13 @@ class ErrorLog:
 
     def noted(self, line: str) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.open("a") as log_file:
+        with FileAccess.shared().writer(self.path, "a") as log_file:
             log_file.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} {line}\n")
 
     def reported(self, argv: list[str], error: BaseException, environment_id: int | None = None) -> str:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        with self.path.open("a") as log_file:
+        with FileAccess.shared().writer(self.path, "a") as log_file:
             log_file.write(f"{timestamp} journal {' '.join(argv)}\n{''.join(traceback.format_exception(error))}\n")
         self.recorded(argv, error, environment_id)
         return f"the journal failed: {type(error).__name__}: {error} (written to {self.path})"

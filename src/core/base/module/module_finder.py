@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
 import json
 import sys
 
@@ -22,6 +23,7 @@ class ModuleFinder:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
+        self.plugin_lists: dict[FileVersion, tuple[str, ...]] = {}
 
     def modules(self) -> tuple[type[Module], ...]:
         return (*self.default_modules(), *(self.checked(DottedPath(path)) for path in self.plugin_paths()))
@@ -38,6 +40,9 @@ class ModuleFinder:
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():
             return ()
+        version = FileAccess.shared().version(self.home.module_list)
+        if version in self.plugin_lists:
+            return self.plugin_lists[version]
         listed: object = json.loads(FileAccess.shared().read(self.home.module_list))
         if not is_list(listed):
             raise ModuleError(f"{self.home.module_list} must list module paths, such as [\"reviews.module:ReviewsModule\"]")
@@ -46,7 +51,8 @@ class ModuleFinder:
             if not isinstance(item, str):
                 raise ModuleError(f"{self.home.module_list} lists {item!r}, which is no module path")
             paths.append(item)
-        return tuple(paths)
+        self.plugin_lists = {version: tuple(paths)}
+        return self.plugin_lists[version]
 
     def checked(self, path: DottedPath) -> type[Module]:
         self.enable_imports()

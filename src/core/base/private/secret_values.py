@@ -1,6 +1,5 @@
 from core.base.file_access import FileAccess
 import json
-import os
 from pathlib import Path
 
 from core.base.private.private_folder import PrivateFolder
@@ -9,7 +8,6 @@ VALUES_SUFFIX = ".env"
 SHOWN_SUFFIX = ".shown"
 RETIRED_PREFIX = "RETIRED_"
 RETIRED_TIME_MARK = "_AT_"
-FILE_MODE = 0o600
 HEADER = "# The values of this project's secrets, written by agent-journal.\n# One line per field: NAME=\"value\". The journal never copies this file anywhere.\n"
 
 
@@ -60,9 +58,9 @@ class SecretValues:
     @staticmethod
     def write_file(path: Path, text: str) -> None:
         writing = path.with_name(f"{path.name}.writing")
-        with os.fdopen(os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, FILE_MODE), "w") as output:
+        with FileAccess.shared().private_writer(writing) as output:
             output.write(text)
-        os.replace(writing, path)
+        FileAccess.shared().replace(writing, path)
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:

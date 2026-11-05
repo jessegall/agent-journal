@@ -1,8 +1,10 @@
 from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from functools import lru_cache
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
@@ -54,9 +56,7 @@ class PluginManifest:
         path = folder / MANIFEST_FILE
         if not path.is_file():
             raise Refusal(f"{folder} contains no plugin: {MANIFEST_FILE} is missing", "name the folder of a plugin")
-        fields: object = json.loads(FileAccess.shared().read(path))
-        if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
-            raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
+        fields = cls.loaded_fields(path, FileAccess.shared().version(path))
         program = str(fields["program"]) if "program" in fields else ""
         settings_file = str(fields["settings"]) if "settings" in fields else ""
         names: object = fields["hears"] if "hears" in fields else None
@@ -70,6 +70,14 @@ class PluginManifest:
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "")
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
+        fields: object = json.loads(FileAccess.shared().read(path))
+        if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
+            raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
+        return fields
 
     @staticmethod
     def read_dashboard(dashboard: object) -> ManifestDashboard | None:
@@ -131,7 +139,13 @@ class PluginManifest:
     def read_settings(cls, folder: Path, settings_file: str) -> tuple[ManifestSetting, ...]:
         if not settings_file:
             return ()
-        listed: object = json.loads(FileAccess.shared().read(folder / settings_file))
+        path = folder / settings_file
+        return cls.loaded_settings(path, FileAccess.shared().version(path))
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def loaded_settings(cls, path: Path, version: FileVersion) -> tuple[ManifestSetting, ...]:
+        listed: object = json.loads(FileAccess.shared().read(path))
         return tuple(cls.manifest_setting(entry) for entry in listed) if is_list(listed) else ()
 
     @staticmethod

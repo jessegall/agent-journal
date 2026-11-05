@@ -8,8 +8,11 @@ from functools import cache
 from pathlib import Path
 from threading import RLock
 from typing import IO, Any
+from weakref import WeakValueDictionary
 
 from core.base.file_contents import FileContents
+from core.base.file_version import FileVersion
+from core.base.file_changes import FileChanges
 
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"
@@ -21,6 +24,7 @@ class FileAccess:
 
     def __init__(self) -> None:
         self.contents: OrderedDict[Path, FileContents] = OrderedDict()
+        self.versions: WeakValueDictionary[Path, FileChanges] = WeakValueDictionary()
         self.lock = RLock()
 
     @staticmethod
@@ -36,17 +40,27 @@ class FileAccess:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))
         with self.lock:
-            status = path.stat()
+            version = self.version(path)
             kept = self.contents.get(path)
-            if kept is not None and kept.matches(status):
+            if kept is not None and kept.version == version:
                 self.contents.move_to_end(path)
                 return kept.data
             data = path.read_bytes()
-            self.contents[path] = FileContents(status.st_mtime_ns, status.st_size, status.st_ino, data)
+            self.contents[path] = FileContents(version, data)
             self.contents.move_to_end(path)
             if len(self.contents) > CACHE_SIZE_FILES:
                 self.contents.popitem(last=False)
             return data
+
+    def version(self, file: Path | str) -> FileVersion:
+        path = Path(file).resolve()
+        with self.lock:
+            status = path.stat()
+            changes = self.versions.get(path)
+            if changes is None:
+                changes = FileChanges()
+                self.versions[path] = changes
+            return FileVersion(status.st_mtime_ns, status.st_size, status.st_ino, changes.count, changes)
 
     def write(self, file: Path | str, text: str, encoding: str | None = None, errors: str | None = None, newline: str | None = None) -> int:
         path = Path(file).resolve()
@@ -106,5 +120,8 @@ class FileAccess:
             return source_path.replace(target_path)
 
     def invalidate(self, path: Path) -> None:
+        changes = self.versions.get(path)
+        if changes is not None:
+            changes.count += 1
         self.contents.pop(path, None)
         sys.audit(FILE_CHANGE_EVENT, str(path))

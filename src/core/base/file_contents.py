@@ -1,15 +1,10 @@
 from dataclasses import dataclass
-from os import stat_result
+from core.base.file_version import FileVersion
 
 
 @dataclass(frozen=True)
 class FileContents:
     """Cached file contents with the metadata that identifies their version."""
 
-    modified_at: int
-    size_bytes: int
-    inode: int
+    version: FileVersion
     data: bytes
-
-    def matches(self, status: stat_result) -> bool:
-        return self.modified_at == status.st_mtime_ns and self.size_bytes == status.st_size and self.inode == status.st_ino

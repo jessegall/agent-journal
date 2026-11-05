@@ -27,4 +27,4 @@ class ClaudeTrust:
         state["projects"] = projects
         temporary_file = self.state_file.with_name(f".{self.state_file.name}.{os.getpid()}.journal")
         FileAccess.shared().write(temporary_file, json.dumps(state, indent=2) + "\n")
-        temporary_file.replace(self.state_file)
+        FileAccess.shared().replace(temporary_file, self.state_file)
