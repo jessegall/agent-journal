@@ -7,11 +7,19 @@ from core.base.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
 
+COMPACTION = "compact"
+SESSION_START = "session_start"
+PROMPT = "prompt"
+STOP_ALLOWED = "stop_allowed"
+STOP_REFUSED = "stop_refused"
+
+
 @dataclass(frozen=True, kw_only=True)
 class HookCall(Model):
     """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
     its answer; the rules asked, the layers and any command dropped are in its metadata."""
 
+    change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
     cli_name = "hook-call"
 

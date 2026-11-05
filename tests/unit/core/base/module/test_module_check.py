@@ -27,6 +27,7 @@ from core.base.module.suite_check import SuiteCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.setting_check import SettingCheck
+from core.base.module.state_check import StateCheck
 from core.base.module.template_check import TemplateCheck
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
@@ -129,5 +130,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))))
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck())
 

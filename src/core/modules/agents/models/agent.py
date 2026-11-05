@@ -5,6 +5,7 @@ from core.base.agent_policy import AgentPolicy
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
+END = "end"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -13,6 +14,7 @@ class Agent(Model):
     number in every row and every event. The pid and start time of the agent program's process identify it
     among a command's ancestor processes while the session is open."""
 
+    change_names = tuple([END])
     model_name = "agent"
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]

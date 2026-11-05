@@ -47,7 +47,7 @@ class ModuleCheck:
         for model in self.models(modules):
             lifecycle = book.lifecycle(model)
             moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()
-            events.extend(f"{model.model_name}.{change}" for change in STANDARD_CHANGES + moves)
+            events.extend(f"{model.model_name}.{change}" for change in (*STANDARD_CHANGES, *moves, *model.change_names))
         return tuple(events)
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:

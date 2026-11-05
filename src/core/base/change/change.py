@@ -62,8 +62,11 @@ class Change(Generic[M]):
     @property
     def event(self) -> str:
         name = self.row.model_name
-        if self.old_row is None:
-            return f"{name}.create"
         if self.new_row is None:
             return f"{name}.delete"
-        return f"{name}.{self.move.name}" if self.move else f"{name}.update"
+        if self.old_row is not None and self.move is not None:
+            return f"{name}.{self.move.name}"
+        change_name = self.new_row.change_name(self.old_row)
+        if change_name is not None:
+            return f"{name}.{change_name}"
+        return f"{name}.create" if self.old_row is None else f"{name}.update"

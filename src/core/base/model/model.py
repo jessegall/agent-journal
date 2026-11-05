@@ -21,6 +21,7 @@ class Model:
     filter_fields: ClassVar[Sequence[str]] = ()
     search_fields: ClassVar[Sequence[str]] = ()
     shared_rows: ClassVar[bool] = False
+    change_names: ClassVar[Sequence[str]] = ()
 
     id: int = 0
     version: int = 0
@@ -28,6 +29,9 @@ class Model:
     created_at: Timestamp | None = None
     updated_at: Timestamp | None = None
     move: Move | None = field(default=None, compare=False)
+
+    def change_name(self, old_row: Self | None) -> str | None:
+        return None
 
     def creation_timestamp(self) -> Timestamp:
         if self.created_at is None:

@@ -6,9 +6,14 @@ from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle
 
 
+END = "end"
+
+
 @dataclass(frozen=True, kw_only=True)
 class Output(Model):
     """A process's stored output, reader results and reading progress."""
+
+    change_names = tuple([END])
 
     model_name = "output"
     cli_name = "output"
