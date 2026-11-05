@@ -1,6 +1,6 @@
 from tests.stories.core.support.fixtures import UserJoined
 
-FACT_COMMAND = 'memory make "The cart total is in cents" --type fact --environment main'
+FACT_COMMAND = 'memory make "The cart total is in cents" --environment main'
 
 
 def test_a_removed_memory_keeps_its_row_with_the_reason(new_story):

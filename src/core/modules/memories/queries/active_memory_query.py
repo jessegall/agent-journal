@@ -29,26 +29,11 @@ class ActiveMemoryQuery(Query[ActiveMemory]):
     def environment_memories(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id).matching(IsNull("agent_id"))
 
-    def start_memories(self) -> Self:
-        return self.filter(start_delivery=True)
-
-    def mark_memories(self) -> Self:
-        return self.filter(mark_delivery=True)
-
-    def types(self, type_names: Sequence[str]) -> Self:
-        return self.matching(Among("type", type_names))
-
-    def undated(self) -> Self:
-        return self.matching(IsNull("due_at"))
-
     def among(self, memory_ids: Sequence[int]) -> Self:
         return self.matching(Among("memory_id", memory_ids))
 
     def weight_order(self) -> Self:
         return self.descending("weight")
-
-    def delivery_order(self) -> Self:
-        return self.ordered("delivery_order").descending("weight")
 
     def absent_memories(self, agent_id: int) -> Self:
         context_memory_ids = Select(ContextMemory.view).matching(Equal("agent_id", agent_id)).column("memory_id")

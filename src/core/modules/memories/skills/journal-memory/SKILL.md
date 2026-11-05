@@ -5,9 +5,10 @@ description: Keep what matters beyond the context window with weighted memories;
 
 # Memory
 
-Use a fact by default for something worth remembering. Facts can go stale; remove one when it is no longer true.
+A memory is something worth keeping in mind. It has a weight and it fades. Memories can go stale; remove one when it is no
+longer true.
 
-- `journal memory make "<what to keep in mind>" --type fact --weight 7` keeps one, in one or two plain sentences. A
+- `journal memory make "<what to keep in mind>" --weight 7` keeps one, in one or two plain sentences. A
   memory belongs to one environment. Every compaction lowers the weight of the memories in your own scope by one, and
   at weight 0 a memory is removed. A higher weight lasts through more compactions.
 - What must keep applying is a rule, not a memory: see the journal-rules skill.

@@ -13,13 +13,13 @@ pytestmark = pytest.mark.browser_job
 
 def test_a_memory_of_any_type_faded_to_zero_is_removed(new_story):
     story = new_story(fixture=BuilderStarted)
-    fact = story.new_row_id('memory make "A temporary fact" --type fact --weight 1 --environment main')
-    reminder = story.new_row_id('memory make "Log each step" --type reminder --weight 1 --environment main')
+    fact = story.new_row_id('memory make "A temporary fact" --weight 1 --environment main')
+    reminder = story.new_row_id('memory make "Log each step" --weight 1 --environment main')
     compacted(story)
     expect_removed(story, fact)
     expect_removed(story, reminder)
     expect_round(story, [], [(fact, 1, 0), (reminder, 1, 0)], [])
-    story.expect_success("memory faded --environment main", f"{fact}  fact  A temporary fact")
+    story.expect_success("memory faded --environment main", f"{fact}  A temporary fact")
     compacted(story)
     expect_faded_mark_count(story, 1)
 
@@ -27,8 +27,8 @@ def test_a_memory_of_any_type_faded_to_zero_is_removed(new_story):
 def test_a_helpers_compaction_removes_only_its_own_faded_fact(new_story):
     story = new_story(fixture=BuilderStarted)
     helper = Actor(story.new_row_id("agent start s-9 codex worker --environment main"), ActorType.AGENT)
-    own = story.new_row_id('memory make "My temporary fact" --type fact --weight 1 --own --environment main', actor=helper)
-    environment = story.new_row_id('memory make "Environment context" --type fact --weight 1 --environment main')
+    own = story.new_row_id('memory make "My temporary fact" --weight 1 --own --environment main', actor=helper)
+    environment = story.new_row_id('memory make "Environment context" --weight 1 --environment main')
     compacted(story, "s-9")
     expect_removed(story, own)
     expect_unchanged(story, [environment], 1)

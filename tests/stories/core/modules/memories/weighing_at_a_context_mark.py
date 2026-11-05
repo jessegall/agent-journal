@@ -95,4 +95,4 @@ class ContextFact(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story):
-        story.expect_success('memory make "The cart total is in cents" --type fact --environment main', "created: memory:1", actor=story.agent)
+        story.expect_success('memory make "The cart total is in cents" --environment main', "created: memory:1", actor=story.agent)

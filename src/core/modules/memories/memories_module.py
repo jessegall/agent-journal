@@ -10,13 +10,11 @@ from core.base.viewer.window_search import WindowSearch
 from core.modules.memories.support.memory_searcher import MemorySearcher
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
-from core.modules.memories.guards.type_availability_guard import TypeAvailabilityGuard
 from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
 from core.modules.memories.listeners.compaction_mark_listener import CompactionMarkListener
 from core.modules.memories.listeners.memory_faded_mark_listener import MemoryFadedMarkListener
 from core.modules.memories.listeners.memory_given_mark_listener import MemoryGivenMarkListener
 from core.modules.memories.listeners.start_memories_listener import StartMemoriesListener
-from core.modules.memories.listeners.reminder_acknowledged_mark_listener import ReminderAcknowledgedMarkListener
 from core.modules.memories.listeners.memory_made_mark_listener import MemoryMadeMarkListener
 from core.modules.memories.listeners.memory_removed_mark_listener import MemoryRemovedMarkListener
 from core.modules.memories.listeners.memory_weighed_mark_listener import MemoryWeighedMarkListener
@@ -47,8 +45,6 @@ from core.modules.memories.models.memory_delivery import MemoryDelivery
 from core.modules.memories.models.context_memory import ContextMemory
 from core.modules.memories.models.memory_keyword import MemoryKeyword
 from core.modules.memories.models.memory_mark import MemoryMark
-from core.modules.memories.models.memory_type import MemoryType
-from core.modules.memories.models.memory_type_switch import MemoryTypeSwitch
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTablesMigration
 from core.modules.memories.migrations.m002_memory_types_drop_agent_writable import MemoryTypesDropAgentWritableMigration
@@ -63,7 +59,7 @@ from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
 
 
 class MemoriesModule(Module):
-    """Adds memories: what the journal gives back to an agent, typed, weighed and fading, with the
+    """Adds memories: what the journal gives back to an agent, weighed and fading, with the
     keywords that bring one back and the context marks that ask the agent to weigh them."""
 
     name = "journal.core.memories"
@@ -74,19 +70,18 @@ class MemoriesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
     skills = [SkillDeclaration("journal-memory", "Keep what matters beyond the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
-    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
+    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
     migrations = [MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
     moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
-    guards = [TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
+    guards = [AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
-                 MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener,
-                 ReminderAcknowledgedMarkListener]
+                 MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS

@@ -9,8 +9,8 @@ from core.base.role_group import RoleGroup
 
 
 class StartDeliveryRule(DriverRule):
-    """At a session start and after a compaction, tells the agent how many active memories of its scope it has
-    whose type gives at start and that have no due time; StartMemoriesListener records them."""
+    """At a session start and after a compaction, tells the agent how many active memories of its scope it has;
+    StartMemoriesListener records them."""
 
     name = "memories.start-delivery"
     start_line_rule = True
@@ -22,6 +22,6 @@ class StartDeliveryRule(DriverRule):
         self.memories = memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        count = self.memories.query(hook).start_memories().undated().count()
+        count = self.memories.query(hook).count()
         line = START_MEMORIES if hook.role == AgentRole.MAIN else START_SHARED_MEMORIES
         return RuleAnswer.with_nudges(line.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()

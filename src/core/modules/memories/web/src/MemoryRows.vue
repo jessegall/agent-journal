@@ -1,11 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, ListTools, peekRef, RowList, Segmented, useListTools, useRows, useWindow} from "@journal/window-kit";
-
-const TYPES = [
-    {key: "fact", label: "Fact"},
-    {key: "reminder", label: "Reminder"},
-];
+import {Btn, ListTools, peekRef, RowList, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const props = defineProps({environment: {type: String, default: ""}});
 const scope = props.environment ? ["--environment", props.environment] : [];
@@ -16,11 +11,10 @@ const {rows, failure, loaded, more, load, older} = useRows(["memory list", ...sc
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "active"});
 const making = ref(false);
 const text = ref("");
-const type = ref("fact");
 const refusal = ref("");
 
 async function make() {
-    const answer = await context.run(["memory", "make", text.value.trim(), "--type", type.value, ...scope]);
+    const answer = await context.run(["memory", "make", text.value.trim(), ...scope]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     text.value = "";
@@ -37,7 +31,6 @@ async function make() {
         <template v-if="making">
             <form class="memories-form" data-memory-form @submit.prevent="make">
                 <textarea v-model="text" rows="2" placeholder="What should be remembered?" aria-label="What should be remembered?" />
-                <Segmented :options="TYPES" :value="type" @pick="type = $event" />
                 <Btn small kind="primary" type="submit" :disabled="!text.trim()">Save memory</Btn>
             </form>
         </template>
@@ -49,7 +42,7 @@ async function make() {
             <template #default="{row}">
                 <button type="button" class="memory" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">
                     <span class="memory-text">{{ row.text }}</span>
-                    <span class="memory-kind">{{ row.type }} · weight {{ row.weight }}</span>
+                    <span class="memory-kind">Weight: {{ row.weight }}</span>
                 </button>
             </template>
         </RowList>

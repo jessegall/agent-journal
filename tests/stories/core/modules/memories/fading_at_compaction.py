@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithOpenTask
 
-FACT_COMMAND = 'memory make "The cart total is in cents" --type fact --environment main'
+FACT_COMMAND = 'memory make "The cart total is in cents" --environment main'
 COMPACTION = HookSamples.sample("compact")
 
 
@@ -15,7 +15,7 @@ def compacted(story, session: str = "s-1") -> None:
 def test_a_main_agent_s_compaction_fades_its_environment_s_memories_of_every_type(new_story):
     story = new_story(fixture=BuilderStarted)
     fact_id = story.new_row_id(FACT_COMMAND, actor=story.agent)
-    reminder_id = story.new_row_id('memory make "Log each step" --type reminder --environment main', actor=story.agent)
+    reminder_id = story.new_row_id('memory make "Log each step" --environment main', actor=story.agent)
     compacted(story)
     story.expect_success(f"memory show {fact_id}", "weight: 4")
     story.expect_success(f"memory show {reminder_id}", "weight: 4")
@@ -24,17 +24,17 @@ def test_a_main_agent_s_compaction_fades_its_environment_s_memories_of_every_typ
 def test_a_main_agent_s_compaction_leaves_a_helper_s_own_facts(new_story):
     story = new_story(fixture=BuilderStarted)
     helper = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    own_id = story.new_row_id('memory make "My worktree is clean" --type fact --own --environment main', actor=helper)
+    own_id = story.new_row_id('memory make "My worktree is clean" --own --environment main', actor=helper)
     compacted(story)
     story.expect_success(f"memory show {own_id}", "weight: 5")
 
 
 def test_a_fact_at_1_fades_to_0_and_is_listed_as_faded(new_story):
     story = new_story(fixture=BuilderStarted)
-    fact_id = story.new_row_id('memory make "The cart total is in cents" --type fact --weight 1 --environment main', actor=story.agent)
+    fact_id = story.new_row_id('memory make "The cart total is in cents" --weight 1 --environment main', actor=story.agent)
     compacted(story)
     story.expect_success(f"memory show {fact_id}", "weight: 0")
-    story.expect_success("memory faded --environment main", f"{fact_id}  fact  The cart total is in cents")
+    story.expect_success("memory faded --environment main", f"{fact_id}  The cart total is in cents")
 
 
 def test_a_compaction_during_a_wait_still_fades(new_story):

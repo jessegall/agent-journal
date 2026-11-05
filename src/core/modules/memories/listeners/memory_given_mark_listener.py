@@ -11,12 +11,11 @@ from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_delivery import MemoryDelivery
 
 REMINDING_CAUSES = [DeliveryCause.KEYWORD]
-REMINDER_TYPE = "reminder"
 
 
 class MemoryGivenMarkListener(MemoryMarkListener):
-    """When a memory is given back to an agent by a keyword, or a rule or reminder
-    at any time, the chat shows that the agent was reminded, with the memory's words."""
+    """When a memory is given back to an agent by a keyword, the chat shows that the agent was reminded, with
+    the memory's words."""
 
     name = "memories.given-mark"
     event = "memory_delivery.create"
@@ -27,6 +26,6 @@ class MemoryGivenMarkListener(MemoryMarkListener):
     def handle(self, event: LoggedEvent) -> None:
         delivery = self.queries.query(MemoryDelivery).find(event.row_id)
         memory = self.queries.query(Memory).find(delivery.memory_id)
-        if delivery.cause in REMINDING_CAUSES or memory.type == REMINDER_TYPE:
+        if delivery.cause in REMINDING_CAUSES:
             environment_id = self.queries.query(Agent).find(delivery.agent_id).environment_id
             self.show_memory(event, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, environment_id, delivery.agent_id, row_id=memory.id)

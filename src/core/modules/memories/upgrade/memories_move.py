@@ -17,7 +17,6 @@ from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.memories.models.memory import FADING_REMOVAL_REASON, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS
 
 TABLE = "memories"
-TYPE = "fact"
 REMINDERS = "reminders"
 EMPTY_CONDITION = "{}"
 KEYWORD_LIMITS = (2, 40)
@@ -65,7 +64,7 @@ class MemoriesMove(VersionFourMove):
 
     def insert_reminder(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"], "creator_id": creator_id, "type": "reminder",
+        memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"], "creator_id": creator_id,
                                         "text": documents.fitting_text(row, creator_id, created),
                                         "created_at": created, "updated_at": row["updated_at"] or created})
         self.keep_words(rows, memory_id, creator_id, row["keywords"], created)
@@ -76,7 +75,7 @@ class MemoriesMove(VersionFourMove):
         task_id = map.new_id("tasks", expiry.number) if expiry.table == "tasks" and expiry.number is not None else None
         faded = row["weight"] == LOWEST_WEIGHT and not row["removed_at"]
         removed_at = context.timestamp if faded else row["removed_at"]
-        memory_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "task_id": task_id, "creator_id": creator_id, "type": TYPE,
+        memory_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "task_id": task_id, "creator_id": creator_id,
                                         "text": documents.fitting_text(row, creator_id, created), "weight": row["weight"], "removed_at": removed_at,
                                         "reason": FADING_REMOVAL_REASON if faded else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})

@@ -1,9 +1,6 @@
 ACTIVE_MEMORIES_SELECT = (
-    "SELECT memories.id AS memory_id, memories.environment_id, memories.agent_id, memories.type, memories.text,"
-    " memories.weight, memories.due_at, memory_types.start_delivery, memory_types.mark_delivery,"
-    " memory_types.keyword_delivery, CASE memories.type WHEN 'reminder' THEN 0 WHEN 'fact' THEN 1 ELSE 2 END AS delivery_order"
-    " FROM memories JOIN memory_types ON memory_types.name = memories.type"
-    " WHERE memories.state = 'active' AND memories.weight > 0"
+    "SELECT memories.id AS memory_id, memories.environment_id, memories.agent_id, memories.text, memories.weight"
+    " FROM memories WHERE memories.state = 'active' AND memories.weight > 0"
 )
 
 CONTEXT_MEMORIES_SELECT = (
@@ -16,5 +13,4 @@ CONTEXT_MEMORIES_SELECT = (
 KEYWORD_MEMORIES_SELECT = (
     "SELECT memory_keywords.id AS keyword_id, memory_keywords.word, active_memories.*"
     " FROM memory_keywords JOIN active_memories ON active_memories.memory_id = memory_keywords.memory_id"
-    " WHERE active_memories.keyword_delivery = 1"
 )

@@ -85,7 +85,7 @@ def test_a_helpers_dock_item_stays_out_of_the_main_chat_and_pushes_nothing_out(n
     story = new_story(fixture=SubagentStarted)
     story.run(DOC_LINE, actor=story.agent)
     story.run_listeners()
-    story.run('memory make "The cart counts in cents" --type fact --weight 5 --environment main', actor=story.subagent)
+    story.run('memory make "The cart counts in cents" --weight 5 --environment main', actor=story.subagent)
     story.expect_success("dock add memories.memory memory 1 --environment main", actor=story.subagent)
     story.expect_absent(MAIN_DOCK, "memories.memory")
     story.expect_text("dock-item list", "memories.memory")

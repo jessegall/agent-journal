@@ -14,9 +14,8 @@ MODULE_NAME = "journal.core.memories"
 
 
 class StartMemoriesListener(CommitListener):
-    """Records the memories a session start gave its agent after the hook has answered, rules first, facts heaviest
-    first, so a hook costs the same however many memories the project holds; one a keyword gave first is not
-    given again."""
+    """Records the memories a session start gave its agent after the hook has answered, heaviest first, so a hook
+    costs the same however many memories the project holds; one a keyword gave first is not given again."""
 
     name = "memories.start-memories"
     event = "hook_call.create"
@@ -29,7 +28,7 @@ class StartMemoriesListener(CommitListener):
         call = self.queries.query(HookCall).find(event.row_id)
         if not call.is_session_start or self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
-        rows = self.memories.agent_query(call.agent_id, call.environment_id).start_memories().undated().absent_memories(call.agent_id).delivery_order().all_rows()
+        rows = self.memories.agent_query(call.agent_id, call.environment_id).absent_memories(call.agent_id).weight_order().all_rows()
         memory_ids = tuple(row.memory_id for row in rows)
         if memory_ids:
             self.bus.run(GiveMemories(call.agent_id, memory_ids, DeliveryCause.START), self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=call.environment_id)

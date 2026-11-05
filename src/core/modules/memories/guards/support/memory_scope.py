@@ -18,6 +18,6 @@ class MemoryScope:
         if memory.environment_id != writer.environment_id:
             raise Refusal(f"an agent writes memories only in its own environment, and memory {memory.id} is another's", "ask the user")
         if memory.agent_id is not None and memory.agent_id != agent.id:
-            raise Refusal(f"memory {memory.id} is another helper's own memory", "make your own with journal memory make '<text>' --type fact --own")
+            raise Refusal(f"memory {memory.id} is another helper's own memory", "make your own with journal memory make '<text>' --own")
         if memory.agent_id is None and writer.role != AgentRole.MAIN:
-            raise Refusal(f"memory {memory.id} is the main agent's", "make your own with journal memory make '<text>' --type fact --own")
+            raise Refusal(f"memory {memory.id} is the main agent's", "make your own with journal memory make '<text>' --own")

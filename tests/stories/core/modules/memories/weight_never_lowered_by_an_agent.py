@@ -1,6 +1,6 @@
 from tests.stories.core.support.fixtures import UserJoined
 
-FACT_COMMAND = 'memory make "The cart total is in cents" --type fact --weight 6 --environment main'
+FACT_COMMAND = 'memory make "The cart total is in cents" --weight 6 --environment main'
 
 
 def test_an_agent_raises_a_weight(new_story):

@@ -20,8 +20,8 @@ from core.base.role_group import RoleGroup
 
 class OpenMarkRule(DriverRule):
     """When the agent's context window, as its program's provider reads it, passes a mark of memories.marks
-    it has not reached since its last compaction, a mark opens and the agent is given its memories of a
-    type given at a mark, heaviest first, to weigh. It is blocked once the mark's tool uses have passed."""
+    it has not reached since its last compaction, a mark opens and the agent is given its memories,
+    heaviest first, to weigh. It is blocked once the mark's tool uses have passed."""
 
     name = "memories.open-mark"
     hook = HookEventName.POST_TOOL_USE
@@ -41,6 +41,6 @@ class OpenMarkRule(DriverRule):
             return RuleAnswer.allowed()
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING, hook.environment_id)
         uses = dict(zip(marks, tool_uses)).get(reached, tool_uses[-1])
-        memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
+        memories = list(self.memories.query(hook).weight_order().all_rows())
         return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(
             OpenMemoryMark(hook.agent_id, reached), BlockUntil(hook.agent_id, WEIGH_FIRST.nudge(), MemoriesWeighed(), Interval(ToolUseSpan(uses)), WEIGH_COUNTDOWN.nudge("{left}")))

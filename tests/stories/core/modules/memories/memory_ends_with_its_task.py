@@ -1,7 +1,7 @@
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
-TASK_FACT = 'memory make "The cart test needs the euro fixture" --type fact --task 1 --environment main'
+TASK_FACT = 'memory make "The cart test needs the euro fixture" --task 1 --environment main'
 
 
 def test_a_memory_of_a_cancelled_task_is_removed(new_story):

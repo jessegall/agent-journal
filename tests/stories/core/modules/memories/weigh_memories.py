@@ -4,7 +4,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 
 def facts(story) -> list[int]:
-    return [story.new_row_id(f'memory make "Fact {number}" --type fact --weight 3 --environment main', actor=story.agent) for number in (1, 2, 3)]
+    return [story.new_row_id(f'memory make "Fact {number}" --weight 3 --environment main', actor=story.agent) for number in (1, 2, 3)]
 
 
 def test_one_weight_given_for_several_memories_goes_to_all_of_them(new_story):

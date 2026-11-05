@@ -9,6 +9,7 @@ from core.modules.memories.models.enums.memory_state import MemoryState
 
 LOWEST_WEIGHT = 0
 HIGHEST_WEIGHT = 10
+STARTING_WEIGHT = 5
 TEXT_LIMIT_CHARACTERS = 400
 FADING_REMOVAL_REASON = "faded to weight 0"
 
@@ -16,7 +17,7 @@ FADING_REMOVAL_REASON = "faded to weight 0"
 @dataclass(frozen=True, kw_only=True)
 class Memory(Model):
     """What the journal gives back to an agent: for one environment, or for one helper with agent_id; a weight
-    from 0 to 10, given only above 0; quiet until due_at when it has one.
+    from 0 to 10, given only above 0, which fades.
     """
 
     model_name = "memory"
@@ -30,12 +31,10 @@ class Memory(Model):
     agent_id: int | None = None
     task_id: int | None = None
     creator_id: int
-    type: str
     text: str
     reason: str = ""
     weight: int = 5
     state: MemoryState = MemoryState.ACTIVE
-    due_at: Timestamp | None = None
     removed_at: Timestamp | None = None
 
     def __post_init__(self) -> None:

@@ -19,7 +19,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 
 
 def expect_memory_start(story) -> None:
-    story.expect_success('memory make "Totals are cents" --type fact --environment main')
+    story.expect_success('memory make "Totals are cents" --environment main')
     story.expect_success("skill write")
     answer = story.hook("s-1", HookSamples.session_start().with_fields(program="codex"))
     line = next(line for line in answer.lines if "memories to read" in line)

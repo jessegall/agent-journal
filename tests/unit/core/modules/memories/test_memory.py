@@ -7,7 +7,7 @@ from core.modules.memories.models.memory import HIGHEST_WEIGHT, LOWEST_WEIGHT, T
 
 
 def memory(**fields: object) -> Memory:
-    return Memory(**{"environment_id": 1, "creator_id": 1, "type": "fact", "text": "The cart total is cents.", **fields})
+    return Memory(**{"environment_id": 1, "creator_id": 1, "text": "The cart total is cents.", **fields})
 
 
 def test_a_weight_outside_0_to_10_is_refused():

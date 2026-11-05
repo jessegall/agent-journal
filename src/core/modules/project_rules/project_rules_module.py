@@ -13,6 +13,7 @@ from core.modules.project_rules.commands.make_rule.make_rule_subcommand import M
 from core.modules.project_rules.listeners.rule_dock_listener import RuleDockListener
 from core.modules.project_rules.migrations.m001_rules import RulesTableMigration
 from core.modules.project_rules.migrations.m002_memory_rules import MemoryRulesMigration
+from core.modules.project_rules.migrations.m003_plain_memories import PlainMemoriesMigration
 from core.modules.project_rules.models.enums.rule_dock_type import RuleDockType
 from core.modules.project_rules.models.project_rule import ProjectRule
 from core.modules.project_rules.rules.start_rules_rule import StartRulesRule
@@ -31,9 +32,9 @@ class ProjectRulesModule(Module):
     name = "journal.core.project-rules"
     seed_reason = "the demo shows no rules yet"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.settings", "journal.core.viewer"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]
     models = [ModelDeclaration(ProjectRule, excluded_subcommands=["make"])]
-    migrations = [RulesTableMigration, MemoryRulesMigration]
+    migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]
     moves = [RulesMove]
     handlers = [MakeRuleHandler]
     subcommands = [MakeRuleSubcommand]

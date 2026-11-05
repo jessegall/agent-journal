@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_row import expect_row
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text, marks_text
 
-FACT = 'memory make "The cart total is in cents" --type fact --environment main'
+FACT = 'memory make "The cart total is in cents" --environment main'
 CART_EDIT = HookSamples.edit("src/cart.py")
 
 
@@ -46,8 +46,8 @@ def test_a_memory_removed_shows_its_mark(fact_memory):
 
 def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.new_row_id('memory make "Almost gone" --type fact --weight 1 --environment main', actor=story.agent)
-    story.new_row_id('memory make "Still strong" --type fact --weight 5 --environment main', actor=story.agent)
+    story.new_row_id('memory make "Almost gone" --weight 1 --environment main', actor=story.agent)
+    story.new_row_id('memory make "Still strong" --weight 5 --environment main', actor=story.agent)
     story.run_listeners()
     starting_count = mark_count(story)
     story.hook("s-1", HookSamples.sample("compact"))
@@ -58,7 +58,7 @@ def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
 
 def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run('memory make "The cart total is in cents" --type fact --keywords cart --environment main', actor=story.agent)
+    story.run('memory make "The cart total is in cents" --keywords cart --environment main', actor=story.agent)
     story.run_listeners()
     story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
@@ -95,19 +95,9 @@ def test_a_memory_is_docked_with_dock_add_and_the_guards_pass(new_story):
     story.expect_refusal(f"dock add memories.memory task 1 --environment main", "reads no task", actor=story.user)
 
 
-def test_a_reminder_removed_shows_an_acknowledged_mark_and_no_removed_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    reminder_id = story.new_row_id('memory make "Check the cart totals" --type reminder --environment main', actor=story.agent)
-    story.run_listeners()
-    story.expect_success(f'memory remove {reminder_id} --reason "done"', actor=story.agent)
-    story.run_listeners()
-    expect_marks_text(story, f"Reminder {reminder_id} acknowledged")
-    expect_absent_marks_text(story, f"Memory {reminder_id} removed")
-
-
 def test_a_reminder_given_back_shows_a_reminded_mark_of_the_reminders_family(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run('memory make "Always run the tests before a commit" --type reminder --keywords cart --environment main', actor=story.user)
+    story.run('memory make "Always run the tests before a commit" --keywords cart --environment main', actor=story.user)
     story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.reminder")

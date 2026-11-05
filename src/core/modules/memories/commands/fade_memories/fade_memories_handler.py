@@ -10,7 +10,7 @@ from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 
 
 class FadeMemoriesHandler(Handler[FadeMemories, None]):
-    """Lowers by one the weight of each active memory of a fading type in the agent's own scope: the
+    """Lowers by one the weight of each active memory in the agent's own scope: the
     environment's memories for a main agent, its own for a helper; the project's never fade."""
 
     command = FadeMemories

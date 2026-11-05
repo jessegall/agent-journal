@@ -27,4 +27,4 @@ class MemoryFadedSubcommand(ReadSubcommand[Page[FadedMemory]]):
     def read(self, arguments: Namespace, caller: Caller) -> Page[FadedMemory]:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         page = self.queries.query(Memory).filter(environment_id=environment_id, weight=LOWEST_WEIGHT, state=MemoryState.REMOVED, reason=FADING_REMOVAL_REASON).page(arguments.page, arguments.limit)
-        return Page(tuple(FadedMemory(memory.id, memory.type, memory.text) for memory in page.rows), page.number, page.size, page.total)
+        return Page(tuple(FadedMemory(memory.id, memory.text) for memory in page.rows), page.number, page.size, page.total)

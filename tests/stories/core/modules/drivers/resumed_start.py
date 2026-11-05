@@ -9,7 +9,7 @@ MEMORY = "1 memories to read"
 
 def kept_memory_story(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run('memory make "Keep the totals in cents" --type fact --weight 5 --environment main', actor=story.agent)
+    story.run('memory make "Keep the totals in cents" --weight 5 --environment main', actor=story.agent)
     return story
 
 

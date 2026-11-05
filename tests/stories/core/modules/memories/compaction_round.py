@@ -10,9 +10,9 @@ pytestmark = pytest.mark.browser_job
 
 def test_the_round_and_browser_count_only_memories_changed_by_this_compaction(new_story):
     story = new_story(fixture=BuilderStarted)
-    prior_round = story.new_row_id('memory make "An earlier round faded this" --type fact --weight 0 --environment main')
-    shown = story.new_row_id('memory make "The cart stores cents" --type fact --weight 2 --environment main')
-    faded = story.new_row_id('memory make "The last temporary detail" --type fact --weight 1 --environment main')
+    prior_round = story.new_row_id('memory make "An earlier round faded this" --weight 0 --environment main')
+    shown = story.new_row_id('memory make "The cart stores cents" --weight 2 --environment main')
+    faded = story.new_row_id('memory make "The last temporary detail" --weight 1 --environment main')
     compacted(story)
     mark = expect_round(story, [(shown, 2, 1)], [(faded, 1, 0)], [prior_round])
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
@@ -22,7 +22,7 @@ def test_the_round_and_browser_count_only_memories_changed_by_this_compaction(ne
 
 def test_an_already_faded_memory_is_not_reported_again_at_the_next_compaction(new_story):
     story = new_story(fixture=BuilderStarted)
-    memory = story.new_row_id('memory make "One temporary detail" --type fact --weight 1 --environment main')
+    memory = story.new_row_id('memory make "One temporary detail" --weight 1 --environment main')
     compacted(story)
     expect_round(story, [], [(memory, 1, 0)], [])
     compacted(story)
