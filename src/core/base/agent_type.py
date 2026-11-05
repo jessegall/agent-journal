@@ -11,7 +11,7 @@ class AgentType:
     key: str
     label: str
     extends: str = ""
-    access: Access = Access.READING
+    access: Access = Access.READ
     separate_folder: bool = False
     default_profile: str = ""
     start_line: str = ""

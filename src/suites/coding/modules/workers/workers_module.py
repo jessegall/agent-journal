@@ -39,6 +39,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.access import Access
 from core.base.agent_type import AgentType
+from suites.coding.modules.workers.support.worker_roster import WorkerRoster
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.part_visibility import PartVisibility
 from suites.coding.modules.workers.support.worker_part_visibility import WorkerPartVisibility
@@ -161,7 +162,7 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
-                             default_profile="journal-worker", start_line="journal worker dispatch")]
+                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster)]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
