@@ -8,6 +8,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.agent_type_book import AgentTypeBook
 from core.base.access import Access
 from core.base.agent_write_folder import AgentWriteFolder
+from core.base.shell_sandbox import ShellSandbox
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -34,17 +35,18 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
         self.types = types
         self.folders = folders
+        self.shell_sandbox = shell_sandbox
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
         agent_type = self.types.find(hook.role)
-        sandbox = agent_type.access is Access.READ or agent_type.separate_folder
+        sandbox = self.shell_sandbox.is_required and (agent_type.access is Access.READ or agent_type.separate_folder)
         if shell.parse_error:
             if sandbox:
                 return RuleAnswer.refused(SANDBOX_PARSE_ERROR.nudge())
@@ -54,8 +56,8 @@ class RunnerRewriteRule(DriverRule):
                 return RuleAnswer.refused(SANDBOX_RUNNER_MISSING.nudge())
             return self.missing(hook)
         decided = self.limits.decide(hook.environment_id, shell, hook.agent_id)
-        folder = self.folders.folder(hook.agent_id) if agent_type.separate_folder and agent_type.access is Access.WRITING else None
-        if agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
+        folder = self.folders.folder(hook.agent_id) if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING else None
+        if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
             return RuleAnswer.refused(SANDBOX_FOLDER_MISSING.nudge())
         run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))

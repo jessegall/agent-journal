@@ -128,6 +128,10 @@ usePoll(load, isRunning, () =>
         <span class="output-dock-title" :title="run?.title || run?.line">{{
           run?.title || run?.line
         }}</span>
+        <template v-if="isRunning() && !fraction && !steps"
+          ><span class="output-dock-pending" data-output-pending aria-label="Pending"
+            ><i /><i /><i /></span
+        ></template>
         <template v-if="fraction > 0 || ended">
           <div
             class="output-dock-bar"
@@ -203,6 +207,40 @@ usePoll(load, isRunning, () =>
 @keyframes output-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+.output-dock-pending {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 3px;
+}
+.output-dock-pending i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: output-pending 1.2s ease-in-out infinite;
+}
+.output-dock-pending i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.output-dock-pending i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes output-pending {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .output-dock-pending i {
+    animation: none;
   }
 }
 .output-dock-title {

@@ -8,6 +8,8 @@ from core.base.sandbox_level import SandboxLevel
 class ShellSandbox:
     """Checks the installed runner can refuse a protected write."""
 
+    is_required = True
+
     def __init__(self, home: JournalHome) -> None:
         self.home = home
 

@@ -6,6 +6,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.support import story_lines as lines
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
 WORKER_SESSION = "s-2"
@@ -51,7 +52,7 @@ def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_sto
 
 
 def test_a_worker_is_refused_a_whole_chain_with_a_full_test_run_and_may_run_named_tests(new_story):
-    story = new_story(fixture=WorkingAgent)
+    story = install_runner(new_story(fixture=WorkingAgent))
     suite_sample = HookSamples.shell("echo before && pytest tests", ShellPart("echo", "read", ["before"]), ShellPart("pytest", "test run", ["tests"], is_full_test_run=True))
     cart_sample = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", "test run", ["tests/cart.py"]))
     story.expect_hook_refusal(WORKER_SESSION, suite_sample, "never the whole suite")
