@@ -7,7 +7,7 @@ const browser = await chromium.launch({headless: true, executablePath: process.e
 try {
     const page = await browser.newPage({viewport: {width: 1440, height: 900}});
     await page.goto(address);
-    for (const [view, capture, expected] of [["agents.agents", "agents", helpers], ["agents.subagents", "helpers", helpers]]) {
+    for (const [view, capture, expected] of [["agents.agents", "agents", helpers], ["agents.helpers", "helpers", helpers]]) {
         const target = new URL(page.url());
         target.searchParams.set("page", view);
         await page.goto(target.href);

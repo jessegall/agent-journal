@@ -18,13 +18,17 @@ class KeptRows:
         self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
+        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT count(*), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters)))
+
+    def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
+        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))
+
+    def kept_value(self, cache_key: str, loader: Callable[[], T], signature_read: Statement) -> T:
         self.check_rollback()
-        cache_key = self.key(table, condition, parameters, name)
         change_mark = self.database.change_mark()
         if cache_key in self.kept and self.kept[cache_key].change_mark == change_mark:
             return cast(T, self.kept[cache_key].value)
-        count, version_total, last_updated_at = self.database.rows(Statement(f"SELECT count(*), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters)))[0]
-        signature = (count, version_total, last_updated_at or "")
+        signature = tuple(tuple(row) for row in self.database.rows(signature_read))
         if cache_key in self.kept and self.kept[cache_key].signature == signature:
             self.kept[cache_key] = replace(self.kept[cache_key], change_mark=change_mark)
             return cast(T, self.kept[cache_key].value)

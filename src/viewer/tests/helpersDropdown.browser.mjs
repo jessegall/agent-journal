@@ -7,7 +7,7 @@ try {
     const page = await browser.newPage({viewport: {width: 1440, height: 900}});
     await page.goto(address);
     await page.locator("[data-helpers]").click();
-    const dropdown = page.locator('[data-dropdown="agents.subagents"]');
+    const dropdown = page.locator('[data-dropdown="agents.helpers"]');
     const card = dropdown.locator(`[data-agent-open="${helper}"]`);
     await card.waitFor();
     const before = await dropdown.boundingBox();
