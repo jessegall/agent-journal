@@ -4,6 +4,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.queries.question_query import QuestionQuery
@@ -22,8 +23,13 @@ class QuestionChanges:
         questions = self.questions.agent(hook.agent_id).state(state)
         if last_answer_at is not None:
             questions = questions.matching(Greater("updated_at", last_answer_at.text))
-        lines = [line.nudge(question=question.id) for question in questions.oldest().all_rows() if not self.waiting(question.id)]
+        rows = tuple(questions.oldest().all_rows())
+        waiting_ids = self.waiting_ids([question.id for question in rows])
+        lines = [line.nudge(question=question.id) for question in rows if question.id not in waiting_ids]
         return RuleAnswer.with_nudges(*lines)
 
-    def waiting(self, question_id: int) -> bool:
-        return self.queries.query(WaitTarget).filter(row_table="questions", row_id=question_id).matching(IsNull("resolved_at")).exists()
+    def waiting_ids(self, question_ids: list[int]) -> set[int]:
+        if not question_ids:
+            return set()
+        return {target.row_id for target in self.queries.query(WaitTarget).filter(row_table="questions")
+                .matching(Among("row_id", question_ids)).matching(IsNull("resolved_at")).all_rows()}

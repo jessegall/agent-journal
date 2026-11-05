@@ -6,6 +6,7 @@ from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_disp
 from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
 from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDispatchesMigration
 from core.modules.drivers.migrations.m024_helper_jobs import HelperJobsMigration
+from core.modules.drivers.migrations.m025_helper_job_helper_index import HelperJobHelperIndexMigration
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.dispatch_marks import DISPATCH_MARKS
 from core.modules.drivers.rules.dispatch_mark_rule import DispatchMarkRule
@@ -58,7 +59,9 @@ from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import 
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
 from core.modules.drivers.commands.release_agent_line.release_agent_line import ReleaseAgentLine
+from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line_handler import SendJournalStartedLineHandler
 from core.modules.drivers.listeners.claimed_line_release_listener import ClaimedLineReleaseListener
+from core.modules.drivers.listeners.journal_started_listener import JournalStartedListener
 from core.modules.drivers.listeners.stop_line_typing_listener import StopLineTypingListener
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_handler import AllowEssentialRuleHandler
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_subcommand import AllowEssentialRuleSubcommand
@@ -139,12 +142,12 @@ class DriversModule(Module):
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(HelperJob, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow, NudgeTotal, AgentActivity]
-    migrations = [HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
-    handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    migrations = [HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
+    handlers = [SendJournalStartedLineHandler, BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [ManageHooksListener, DispatchMarkListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [JournalStartedListener, ManageHooksListener, DispatchMarkListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]

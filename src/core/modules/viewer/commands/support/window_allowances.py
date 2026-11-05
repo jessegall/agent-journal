@@ -1,4 +1,5 @@
 import json
+from core.base.database.kept_rows import KeptRows
 
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
@@ -10,12 +11,13 @@ class WindowAllowances:
     """What one person allowed in one environment: the lines of a window's reads or runs, and whether a
     module's code is trusted in the page, which holds only at the code fingerprint it was trusted at."""
 
-    def __init__(self, queries: Queries, registry: Registry) -> None:
-        self.queries, self.registry = queries, registry
+    def __init__(self, queries: Queries, registry: Registry, kept: KeptRows) -> None:
+        self.queries, self.registry, self.kept = queries, registry, kept
 
     def permission(self, person_id: int, subject: str, permission_type: WindowPermissionType) -> WindowPermission | None:
-        rows = self.queries.query(WindowPermission).filter(person_id=person_id, subject=subject, type=permission_type).limited(1)
-        return rows[0] if rows else None
+        query = self.queries.query(WindowPermission).filter(person_id=person_id, subject=subject, type=permission_type)
+        return self.kept.read_in_scope("window_permissions", query.first, "person_id = ? AND subject = ? AND type = ?",
+                                       [person_id, subject, permission_type], name="viewer.permission")
 
     def allowed_lines(self, person_id: int, window: str, permission_type: WindowPermissionType) -> list[str]:
         permission = self.permission(person_id, window, permission_type)

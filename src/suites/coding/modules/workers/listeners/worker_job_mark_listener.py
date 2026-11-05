@@ -24,6 +24,6 @@ class WorkerJobMarkListener(MarkListener[Created[Message]]):
         message = event.row
         if not WorkerRecipient.matches_worker(message.recipient):
             return
-        worker = self.queries.query(Agent).find(WorkerRecipient.worker_id(message.recipient))
+        worker = self.event_rows.required(Agent, WorkerRecipient.worker_id(message.recipient))
         name = worker.given_name or f"Worker {worker.id}"
         self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.NEXT_JOB, f"{name} was sent its next job", None, AGENTS_TABLE, worker.id, detail=message.text)

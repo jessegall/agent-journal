@@ -5,7 +5,7 @@ from core.base.provider.providers import Providers
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
-from suites.coding.modules.workers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.allowed_models import AllowedModels
 
 
 class WorkerModelsSubcommand(ReadSubcommand[RowList]):

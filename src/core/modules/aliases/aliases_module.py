@@ -1,6 +1,7 @@
 from core.base.cli.shell_aliases import ShellAliases
 from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
 from core.modules.aliases.guards.reader_alias_guard import ReaderAliasGuard
+from core.modules.aliases.guards.saved_command_guard import SavedCommandGuard
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.aliases.commands.add_alias.add_alias_handler import AddAliasHandler
@@ -42,6 +43,6 @@ class AliasesModule(Module):
     bindings = {ShellAliases: AliasShellAliases}
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
-    guards = [ReaderAliasGuard]
+    guards = [ReaderAliasGuard, SavedCommandGuard]
     driver_rules = [AliasExpansionRule, SavedCommandRule]
     nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT]

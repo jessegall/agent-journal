@@ -19,4 +19,4 @@ class UpdateLibraryCopyHandler(Handler[UpdateLibraryCopy, LibraryCopy]):
     def handle(self, command: UpdateLibraryCopy, context: Context) -> LibraryCopy:
         copy = self.queries.query(LibraryCopy).find(command.copy_id)
         given = {name: value for name, value in asdict(command).items() if name != "copy_id" and value is not None}
-        return self.repository.save(copy.changed(**given), context)
+        return self.repository.update(copy, context, **given)

@@ -8,11 +8,9 @@ from core.base.caller.process_chain import ProcessChain
 from core.base.timestamp import Timestamp
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.modules.agents.support.agent_rows import AgentRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
 from core.base.agent_type_book import AgentTypeBook
 from core.base.access import Access
 from core.base.actor import Actor
@@ -26,9 +24,10 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox, scopes: Scopes) -> None:
-        self.queries, self.repository, self.chain = queries, repository, chain
-        self.types, self.sandbox, self.scopes = types, sandbox, scopes
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
+        self.agents, self.repository, self.chain = agents, repository, chain
+        self.types = types
+        self.sandbox = sandbox
 
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
@@ -38,12 +37,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
         self.types.find(command.role)
-        started = self.session_agents(command.session)
-        if started and started[0].ended_at is None:
+        started = self.agents.session(command.session)
+        if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
-        if started:
-            self.check_resume(started[0], command, context.environment_id)
-            return self.repository.save(replace(started[0], ended_at=None, pid=command.pid,
+        if started is not None:
+            self.check_resume(started, command, context.environment_id)
+            return self.repository.save(replace(started, ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.process_start(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
@@ -51,10 +50,6 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       process_started_at=command.process_started_at or self.process_start(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         return self.repository.save(agent, context)
-
-    def session_agents(self, session: str) -> list[Agent]:
-        with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.queries.query(Agent).filter(session=session).limited(1)
 
     def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:
         if agent.environment_id != environment_id:

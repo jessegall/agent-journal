@@ -73,7 +73,7 @@ def test_a_go_test_of_a_worker_is_counted(new_story):
     story = new_story(fixture=TestLimitSetup)
     install_runner(story)
     process = worker_run(story, "go test ./classify", CommandCategory.TEST_RUN)
-    story.expect_rows("-list ." in story.container.get(WorkerTestListings).line(process))
+    story.expect_rows('-list "$pattern"' in story.container.get(WorkerTestListings).line(process), "pattern=." in story.container.get(WorkerTestListings).line(process))
 
 
 def test_a_part_that_ran_over_the_limit_last_time_is_refused_at_the_hook(limited_run):

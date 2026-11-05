@@ -40,6 +40,7 @@ from suites.coding.commands.project_file_list.project_file_list_subcommand impor
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
 from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
+from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
@@ -70,7 +71,7 @@ class CodingModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
-    drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
+    drivers = [BuilderDriver, OrchestratorDriver, HelperDriver, SubagentDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration, FileEditRowsMigration]

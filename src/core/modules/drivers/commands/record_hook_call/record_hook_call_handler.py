@@ -19,7 +19,7 @@ from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.timing import Timing
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
@@ -47,14 +47,15 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog, nudger: Nudger) -> None:
+                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows) -> None:
         self.required_commands = required_commands
+        self.agents = agents
         self.nudges, self.nudger = nudges, nudger
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
-        agent = self.queries.query(Agent).find(command.agent_id)
+        agent = self.agents.find(command.agent_id)
         suite, driver = self.choice.suite(agent.environment_id), self.choice.driver(agent.environment_id, agent.role)
         hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
                          suite=suite.name if suite is not None else "")

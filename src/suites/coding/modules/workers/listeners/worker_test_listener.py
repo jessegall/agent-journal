@@ -1,21 +1,21 @@
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
+from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
@@ -24,17 +24,18 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 QUEUED_EVENT, RUN_EVENT = "proof.queue", "proof.run"
 
 
-class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest]]):
+class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest]]):
     """Moves a worker's tests along: a queued test starts when there is room, a test moved
     to running is launched, and a test whose process ended is recorded, which makes room for the next."""
 
     name = "workers.tests"
-    moves = [ProofLifecycle.queue, ProofLifecycle.run]
+    moves = [ProofLifecycle.queue, ProofLifecycle.run, ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
-    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch) -> None:
+    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch, rows: EventRows) -> None:
         self.bus, self.queries, self.launch = bus, queries, launch
+        self.rows = rows
 
-    def handle(self, event: Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
+    def handle(self, event: Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
             self.start_next(logged)
             return
@@ -50,8 +51,8 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
             return
         if selected.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or selected.process_id is None:
             return
-        process = self.queries.query(Process).find(selected.process_id)
-        self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
+        process = self.rows.required(Process, selected.process_id)
+        self.launch.start(process.id, process.line, process.folder, self.rows.required(Agent, process.agent_id).session)
 
     def start_next(self, logged: LoggedEvent) -> None:
         self.bus.run(StartWorkerTests(), Actor.core(), cause_id=logged.id)
@@ -59,8 +60,8 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
     def launched(self, proof: Proof) -> None:
         if proof.process_id is None:
             return
-        process = self.queries.query(Process).find(proof.process_id)
-        self.launch.start(process.id, proof.test_command, process.folder, self.queries.query(Agent).find(process.agent_id).session)
+        process = self.rows.required(Process, proof.process_id)
+        self.launch.start(process.id, proof.test_command, process.folder, self.rows.required(Agent, process.agent_id).session)
 
     def ended(self, process: Process, logged: LoggedEvent) -> None:
         if process.ended_at is None:

@@ -14,7 +14,7 @@ from core.base.database.statement import Statement
 from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from core.testing.repeated_calls_error import RepeatedCallsError
 
-READ_LIMIT_REPEATS = 5
+READ_LIMIT_REPEATS = 1
 READ_TEXT_LIMIT_REPEATS = 10
 COMMAND_LIMIT_REPEATS = 3
 CALLER_FRAMES = 14
@@ -51,11 +51,12 @@ READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeepin
 class RepeatedWork(PointTally):
     """Counts database work and rejects repeated reads and commands within each story request."""
 
-    def __init__(self, database: Database | None = None, read_text_limit: int | None = None) -> None:
+    def __init__(self, database: Database | None = None, read_text_limit: int = READ_TEXT_LIMIT_REPEATS) -> None:
         super().__init__()
         self.database = database
         self.read_text_limit = read_text_limit
         self.reads: Counter[Statement] = Counter()
+        self.read_origins: dict[Statement, str] = {}
         self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[str] = []
@@ -66,6 +67,7 @@ class RepeatedWork(PointTally):
     @contextmanager
     def request(self) -> Generator[None]:
         self.reads, self.read_texts, self.commands, self.findings = Counter(), Counter(), Counter(), []
+        self.read_origins.clear()
         self.checked_plans.clear()
         self.allowed_scans.clear()
         self.file_reads.clear()
@@ -90,15 +92,12 @@ class RepeatedWork(PointTally):
             return
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
+        if self.reads[statement] == 1:
+            self.read_origins[statement] = self.caller_lines()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times without a write: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
-        if self.read_text_limit is not None and self.read_texts[statement.sql] == self.read_text_limit + 1:
-            self.reject(f"one request read this SQL more than {self.read_text_limit} times without a write: {statement.sql}\n{self.caller_lines()}")
-
-    def count_write(self, sql: str) -> None:
-        super().count_write(sql)
-        self.reads.clear()
-        self.read_texts.clear()
+            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read:\n{self.read_origins[statement]}repeated read:\n{self.caller_lines()}")
+        if self.read_texts[statement.sql] == self.read_text_limit + 1:
+            self.reject(f"one request read this SQL more than {self.read_text_limit} times: {statement.sql}\n{self.caller_lines()}")
 
     def reject(self, finding: str) -> None:
         self.findings.append(finding)

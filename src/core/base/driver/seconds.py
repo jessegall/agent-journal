@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.driver.span import Span
 
-from core.base.query.queries import Queries
+from core.base.driver.span_queries import SpanQueries
 from core.base.timestamp import MINUTE_SECONDS, Timestamp
 
 @dataclass(frozen=True)
@@ -21,5 +21,5 @@ class Seconds(Span):
     def whole_minutes(self) -> int:
         return self.count // MINUTE_SECONDS
 
-    def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
+    def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
         return start.elapsed_seconds(timestamp) >= self.count

@@ -14,6 +14,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 TEST_LIMIT_SECONDS = 3600
 
@@ -24,11 +25,12 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     command = StartWorkerTests
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus
+        self.worktrees = worktrees
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
-        worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).all_rows()}
+        worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees()}
         proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         for proof in proofs:
@@ -43,16 +45,16 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 continue
             worktree = worktrees[selected.worktree_id]
             if self.queries.query(Proof).filter(worktree_id=worktree.id, state=ProofState.SHORT).exists():
-                self.repository.save(selected.changed(state=AffectedTestState.CANCELLED), context)
+                self.repository.update(selected, context, state=AffectedTestState.CANCELLED)
                 continue
             self.start_picker(selected, worktree, context)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
         start = StartProcess.single_part(worktree.agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=proof.task_id), context)
-        self.repository.save(proof.moved(ProofLifecycle.run, process_id=process.id), context)
+        self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, selected: AffectedTest, worktree: Worktree, context: Context) -> None:
         start = StartProcess.single_part(worktree.agent_id, selected.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
-        self.repository.save(selected.changed(state=AffectedTestState.PICKING, process_id=process.id), context)
+        self.repository.update(selected, context, state=AffectedTestState.PICKING, process_id=process.id)

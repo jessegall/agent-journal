@@ -2,24 +2,25 @@ from core.base.file_access import FileAccess
 from core.base.change.logged_event import LoggedEvent
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
 from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
 from core.modules.settings.models.setting import Setting
-from core.base.change.touched import Touched
+from core.base.change.changed import Changed
+from core.base.change.deleted import Deleted
 
 
-class HookWaitFileListener(CommitListener[Touched[Setting]]):
+class HookWaitFileListener(CommitListener[Changed[Setting]]):
     """Writes the hook wait a person sets to a file, since the Go hook reads it before it can ask the journal
     anything."""
 
     name = "drivers.hook-wait-file"
 
-    def __init__(self, queries: Queries, home: JournalHome) -> None:
-        self.queries, self.home = queries, home
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
 
-    def handle(self, event: Touched[Setting], logged: LoggedEvent) -> None:
-        settings = self.queries.query(Setting).filter(key=HOOK_WAIT_SECONDS).newest().limited(1)
-        if settings:
-            FileAccess.shared().write(self.home.hook_wait_file, f"{settings[0].value}\n")
-        else:
+    def handle(self, event: Changed[Setting], logged: LoggedEvent) -> None:
+        if event.row.key != HOOK_WAIT_SECONDS:
+            return
+        if isinstance(event, Deleted):
             self.home.hook_wait_file.unlink(missing_ok=True)
+            return
+        FileAccess.shared().write(self.home.hook_wait_file, f"{event.row.value}\n")

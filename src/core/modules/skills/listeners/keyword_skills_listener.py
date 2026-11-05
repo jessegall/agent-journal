@@ -1,6 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_keywords import text_keywords
-from core.modules.agents.models.agent import Agent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.drivers.events.prompt_submitted import PromptSubmitted
@@ -18,7 +17,7 @@ class KeywordSkillsListener(SkillListener[PromptSubmitted]):
         call = event.row
         if call.summary.lstrip().startswith(NOTICE_OPENING):
             return
-        if self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+        if self.agents.find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         terms = text_keywords(call.summary)
         for skill in self.catalogue.skills():

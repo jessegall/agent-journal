@@ -1,6 +1,8 @@
 from functools import cached_property
 
 from core.base.change.event_log import EventLog
+from core.base.change.changed import Changed
+from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
@@ -110,9 +112,9 @@ class CommitListenerRunner:
         position = self.positions[entry.name]
         events = [event for event in round_events if event.id > position]
         progress = False
-        for event in events:
-            if not entry.event.matches(event.event):
-                continue
+        matching = [event for event in events if entry.event.matches(event.event)]
+        self.prepare_rows(entry, matching)
+        for event in matching:
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions = self.cursors.positions()
                 return progress
@@ -127,6 +129,21 @@ class CommitListenerRunner:
                 self.positions[entry.name] = events[-1].id
             return advanced or progress
         return progress
+
+    def prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None:
+        listener_class = entry.path.loaded()
+        if not issubclass(listener_class, CommitListener):
+            return
+        groups: dict[tuple[EventType, int | None], list[LoggedEvent]] = {}
+        for event in events:
+            event_type = listener_class.event_type(event.event)
+            if event_type.model is None or not issubclass(event_type.event_class, Changed):
+                continue
+            with self.scopes.event_scope(listener_class.disabled_scopes, event):
+                groups.setdefault((event_type, self.scopes.actor_id), []).append(event)
+        for (event_type, actor_id), grouped in groups.items():
+            with self.scopes.opened(actor_id):
+                self.container.get(EventBuilder).prepare(event_type, grouped)
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()

@@ -352,6 +352,15 @@ func (classifier *Classifier) Program(text string) (program string, subcommand s
 	if len(tokens) == 0 {
 		return "", "", []string{}
 	}
+	if lines := innerLines[baseName(tokens[0])]; lines != nil && isTestOrBuild(classifier.Classify(text).Category) {
+		for _, line := range lines(tokens[1:]) {
+			for _, part := range classifier.Line(line).Parts {
+				if isTestOrBuild(part.Classification.Category) {
+					return part.Program, part.Subcommand, part.Arguments
+				}
+			}
+		}
+	}
 	if row := classifier.row(tokens); row != nil {
 		_, items, _ := classifier.walked(row, tokens[1:])
 		subcommand = strings.Join(items, " ")

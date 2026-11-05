@@ -23,10 +23,10 @@ class NextTask:
         return most_urgent if most_urgent is not None and most_urgent.priority >= URGENT_PRIORITY else None
 
     def following(self, excluded_id: int | None = None) -> Task | None:
-        urgent = self.urgent(excluded_id)
-        if urgent is not None:
-            return urgent
+        open_task = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
+        if open_task is not None and open_task.priority >= URGENT_PRIORITY:
+            return open_task
         planned = self.plan_tasks.environment_task()
         if planned is not None and planned.id != excluded_id:
             return planned
-        return self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
+        return open_task

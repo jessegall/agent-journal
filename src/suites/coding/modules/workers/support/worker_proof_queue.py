@@ -29,9 +29,9 @@ class WorkerProofQueue:
             if not proof.test_command:
                 continue
             if proof.state is ProofState.SHORT:
-                proof = self.repository.save(proof.revise(context.timestamp, context.actor, proof.text), context)
+                proof = self.repository.save_change(proof, proof.revise(context.timestamp, context.actor, proof.text), context)
             if proof.state is ProofState.SHOWN:
-                self.repository.save(proof.moved(ProofLifecycle.queue), context)
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
                 queued_count += 1
         self.send_untested_line(worktree, context)
         picker = self.settings.text(AFFECTED_TESTS_COMMAND, worktree.environment_id).strip()

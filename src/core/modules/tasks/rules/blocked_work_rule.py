@@ -6,6 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.agent_role import AgentRole
+from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 BLOCKED_TASK_PAGE_SIZE = 10
 
@@ -19,11 +20,12 @@ class BlockedWorkRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, tasks: TaskQuery, calls: HookCallQuery) -> None:
+    def __init__(self, tasks: TaskQuery, calls: HookCallQuery, current: CurrentTasks) -> None:
         self.tasks, self.calls = tasks, calls
+        self.current = current
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.tasks.holder(hook.agent_id).started().exists() or self.tasks.open_tasks().exists():
+        if self.current.started_tasks(hook.agent_id) or self.tasks.open_tasks().exists():
             return RuleAnswer.allowed()
         blocked = self.tasks.unopenable_blocks().oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked or self.calls.last_stop_refused(hook.agent_id):

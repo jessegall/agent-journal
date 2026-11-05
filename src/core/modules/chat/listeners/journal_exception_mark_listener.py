@@ -3,6 +3,7 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
@@ -22,8 +23,8 @@ class JournalExceptionMarkListener(MarkListener[Created[JournalException]]):
     disabled_scopes = [ActorScope]
     module_name = "journal.core.chat"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, clock: Clock) -> None:
-        super().__init__(bus, actors, queries)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, clock: Clock, event_rows: EventRows) -> None:
+        super().__init__(bus, actors, queries, event_rows)
         self.clock = clock
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:

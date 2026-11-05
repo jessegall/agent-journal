@@ -13,6 +13,7 @@ from core.base.journal_home import JournalHome
 from core.base.leftover_process import LeftoverProcess
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_session_state import AgentSessionState
@@ -30,9 +31,9 @@ class WorkerSessions(AgentLaunchGuard):
     """Serializes session launches and confirms its previous process tree has ended before a resume."""
 
     def __init__(self, home: JournalHome, queries: Queries, processes: ProcessQuery, settings: SettingValues,
-                 clock: Clock, providers: Providers, process_table: ProcessTable, bus: Bus) -> None:
+                 clock: Clock, providers: Providers, process_table: ProcessTable, bus: Bus, rows: EventRows) -> None:
         self.home, self.queries, self.processes, self.settings = home, queries, processes, settings
-        self.clock, self.providers, self.process_table, self.bus = clock, providers, process_table, bus
+        self.clock, self.providers, self.process_table, self.bus, self.rows = clock, providers, process_table, bus, rows
 
     @contextmanager
     def lock(self, session: str) -> Generator[bool]:
@@ -51,7 +52,7 @@ class WorkerSessions(AgentLaunchGuard):
                 fcntl.flock(opened, fcntl.LOCK_UN)
 
     def prepare(self, worker: Agent) -> AgentSessionState:
-        current = self.queries.query(Agent).find(worker.id)
+        current = self.rows.required(Agent, worker.id)
         if current.pid is None:
             return AgentSessionState.READY
         program = self.providers.provider(current.program).executable

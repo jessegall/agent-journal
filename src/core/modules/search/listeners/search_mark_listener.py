@@ -4,6 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.processes.models.process import Process
@@ -25,8 +26,8 @@ class SearchMarkListener(MarkListener[Created[ProcessPart]]):
     name = "search.search-mark"
     module_name = "journal.core.search"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, search: RowSearch) -> None:
-        super().__init__(bus, actors, queries)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, search: RowSearch, event_rows: EventRows) -> None:
+        super().__init__(bus, actors, queries, event_rows)
         self.search = search
 
     def handle(self, event: Created[ProcessPart], logged: LoggedEvent) -> None:

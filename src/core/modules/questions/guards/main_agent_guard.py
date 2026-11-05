@@ -1,8 +1,7 @@
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.questions.models.question import Question
@@ -15,9 +14,9 @@ class MainAgentGuard(Guard[Created[Question]]):
 
     name = "questions.asked-by-the-main-agent"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, rows: EventRows) -> None:
+        self.rows = rows
 
     def check(self, event: Created[Question], context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT or self.queries.query(Agent).find(context.actor.id).role != AgentRole.MAIN:
+        if context.actor.type is not ActorType.AGENT or self.rows.required(Agent, context.actor.id).role != AgentRole.MAIN:
             raise Refusal("nobody can answer a question asked from here", "put it in your report to the main agent instead")

@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -18,8 +18,8 @@ class WorkerTaskWaitListener(SaveListener[AgentEnded | Updated[Agent] | Changed[
 
     name = "workers.task-waits"
 
-    def __init__(self, targets: WorkerTaskWaitTargets, queries: Queries) -> None:
-        self.targets, self.queries = targets, queries
+    def __init__(self, targets: WorkerTaskWaitTargets, rows: EventRows) -> None:
+        self.targets, self.rows = targets, rows
 
     def handle(self, event: AgentEnded | Updated[Agent] | Changed[Worktree] | Changed[Proof], context: Context) -> None:
         self.changed(event.row, context)
@@ -38,5 +38,5 @@ class WorkerTaskWaitListener(SaveListener[AgentEnded | Updated[Agent] | Changed[
 
     @changed.register
     def proof_changed(self, row: Proof, context: Context) -> None:
-        worktree = self.queries.query(Worktree).find(row.worktree_id)
+        worktree = self.rows.required(Worktree, row.worktree_id)
         self.targets.resolve_waits(worktree.agent_id, context)

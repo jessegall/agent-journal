@@ -3,6 +3,7 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -66,7 +67,7 @@ class SequencesModule(Module):
     subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
-    listeners = [SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
+    listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
     marks = SEQUENCE_MARKS
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]

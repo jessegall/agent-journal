@@ -15,6 +15,7 @@ from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.chat.queries.conditions.mark_round_key import MarkRoundKey
 from core.base.change.event_subscriber import E
+from core.base.listener.event_rows import EventRows
 
 
 class MarkListener(CommitListener[E]):
@@ -22,8 +23,9 @@ class MarkListener(CommitListener[E]):
 
     module_name: ClassVar[str]
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, event_rows: EventRows) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries
+        self.event_rows = event_rows
 
     def is_agent_command(self, logged: LoggedEvent, command: str) -> bool:
         return logged.command == command and self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.AGENT

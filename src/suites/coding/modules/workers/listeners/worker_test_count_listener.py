@@ -2,7 +2,7 @@ from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
@@ -26,8 +26,9 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
     name = WORKER_TEST_LIMIT_SOURCE
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows) -> None:
         self.queries, self.settings, self.bus, self.nudger = queries, settings, bus, nudger
+        self.rows = rows
 
     def handle(self, event: Changed[Output], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -37,10 +38,10 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             return
         if event.old_row is not None and event.old_row.test_count == output.test_count:
             return
-        process = self.queries.query(Process).find(output.process_id)
+        process = self.rows.required(Process, output.process_id)
         if process.state not in RUNNING_STATES or process.creator_id != process.agent_id:
             return
-        agent = self.queries.query(Agent).find(process.agent_id)
+        agent = self.rows.required(Agent, process.agent_id)
         limit = self.settings.number(WORKER_TEST_LIMIT, process.environment_id)
         if agent.role != AgentRole.WORKER or not 0 < limit < output.test_count:
             return

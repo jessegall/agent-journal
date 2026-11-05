@@ -21,6 +21,7 @@ from core.modules.docking.guards.type_capacity_guard import TypeCapacityGuard
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
+from core.modules.docking.listeners.pending_dock_items_listener import PendingDockItemsListener
 from core.modules.docking.listeners.environment_dock_listener import EnvironmentDockListener
 from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
@@ -28,6 +29,7 @@ from core.modules.docking.migrations.m003_dock_item_labels import DockItemLabels
 from core.modules.docking.migrations.m004_dock_item_indexes import DockItemIndexesMigration
 from core.modules.docking.migrations.m005_dock_item_agents import DockItemAgentsMigration
 from core.modules.docking.migrations.m006_dock_item_due_index import DockItemDueIndexMigration
+from core.modules.docking.migrations.m007_pending_dock_items_index import PendingDockItemsIndexMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
@@ -44,10 +46,10 @@ class DockingModule(Module):
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
-    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration]
+    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
-    listeners = [EnvironmentDockListener, DockItemLeaveListener]
+    listeners = [EnvironmentDockListener, DockItemLeaveListener, PendingDockItemsListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
     seeders = [DockingSeeder]
     tick_handlers = [TickHandler(TickInterval(seconds=2), DockItemLeaves(), "dock item leaves")]

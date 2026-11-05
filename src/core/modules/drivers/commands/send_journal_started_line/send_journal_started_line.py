@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+
+from core.base.command.command import Command
+
+
+@dataclass(frozen=True)
+class SendJournalStartedLine(Command[None]):
+    """Tells a running main agent that the journal has started."""
+
+    agent_id: int

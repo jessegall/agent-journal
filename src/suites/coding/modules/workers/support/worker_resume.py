@@ -32,11 +32,13 @@ class WorkerResume:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
 
     def resume(self, worker: Agent, actor: Actor) -> None:
+        if worker.ended_at is None or worker.paused_at is not None:
+            return
         worktree = self.worktrees.worker_worktree(worker.id)
+        if worktree is None or self.is_job_delivering(worker, worker.ended_at):
+            return
         lines = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE) if line.source in RESUMING_SOURCES), None)
-        if worktree is None or worker.ended_at is None or worker.paused_at is not None or self.is_job_delivering(worker, worker.ended_at):
-            return
         job = job or self.lost_job(worker, worker.ended_at)
         if job is None:
             return

@@ -5,6 +5,7 @@ from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import DisabledScopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
@@ -23,8 +24,8 @@ class WorkerStopMarkListener(MarkListener[E]):
     disabled_scopes: ClassVar[DisabledScopes] = [ActorScope]
     module_name = "journal.suites.coding.workers"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, unfinished: WorkerUnfinishedTasks, detail: WorkerStopDetail) -> None:
-        super().__init__(bus, actors, queries)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, unfinished: WorkerUnfinishedTasks, detail: WorkerStopDetail, event_rows: EventRows) -> None:
+        super().__init__(bus, actors, queries, event_rows)
         self.unfinished, self.detail = unfinished, detail
 
     def show_stop(self, logged: LoggedEvent, worker: Agent, variant: WorkerMarkVariant, move: str) -> None:

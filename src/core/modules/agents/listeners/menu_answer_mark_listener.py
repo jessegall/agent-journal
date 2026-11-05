@@ -19,7 +19,7 @@ class MenuAnswerMarkListener(MarkListener[Created[MenuAnswer]]):
 
     def handle(self, event: Created[MenuAnswer], logged: LoggedEvent) -> None:
         menu_answer = event.row
-        agent = self.queries.query(Agent).find(menu_answer.agent_id)
+        agent = self.event_rows.required(Agent, menu_answer.agent_id)
         text = f'A menu in the agent\'s terminal was answered: "{menu_answer.question}" The journal {menu_answer.answer}.'
         key = f"menu:{menu_answer.id}"
         self.bus.run(ShowMark(AgentMarkType.MENU, AgentMarkVariant.ANSWERED, key, text, agent_id=agent.id, outcome=MarkOutcome.PASSED, ended=True),

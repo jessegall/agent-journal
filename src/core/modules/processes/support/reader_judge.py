@@ -134,12 +134,16 @@ class ReaderJudge:
 
     def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:
         patterns = tuple(pattern.strip() for pattern in reader.commands.split(","))
-        parts = self.parts.kept_samples(patterns).page(1, SAMPLE_PARTS).rows
+        parts = self.parts.kept_samples(patterns).limited(SAMPLE_PARTS)
         return tuple(part for part in parts if ReaderSelection.reads(reader, part))
+
+    def reader_samples(self, readers: Sequence[Reader]) -> dict[int, tuple[ProcessPart, ...]]:
+        samples = self.parts.reader_samples(readers, SAMPLE_PARTS)
+        return {reader.id: tuple(part for part in samples[reader.id] if ReaderSelection.reads(reader, part)) for reader in readers}
 
     def output_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))
 
     def command_samples(self, reader: Reader, scope: ReaderSampleScope) -> tuple[ProcessPart, ...]:
-        parts = self.parts.kept_samples(["*"]).matching(scope).page(1, SAMPLE_PARTS).rows
+        parts = self.parts.kept_samples(["*"]).matching(scope).limited(SAMPLE_PARTS)
         return tuple(part for part in parts if ReaderSelection.reads(reader, part))

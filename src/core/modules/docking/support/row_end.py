@@ -1,6 +1,6 @@
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.missing_rows_error import MissingRowsError
 from core.base.registry.registry import Registry
 from core.modules.docking.models.dock_item import DockItem
@@ -10,8 +10,8 @@ class RowEnd:
     """Whether the row an item points at has ended: it is gone, it has no lifecycle, or it stands in a
     state that only moves back to a first state, such as a closed task that can be reopened."""
 
-    def __init__(self, registry: Registry, queries: Queries, book: StateBook) -> None:
-        self.registry, self.queries, self.book = registry, queries, book
+    def __init__(self, registry: Registry, rows: EventRows, book: StateBook) -> None:
+        self.registry, self.rows, self.book = registry, rows, book
 
     def ended(self, item: DockItem) -> bool:
         entry = self.registry.models.get(item.target_model)
@@ -19,7 +19,7 @@ class RowEnd:
             return True
         model = entry.model.checked_class(Model)
         try:
-            row = self.queries.query(model).find(item.target_id)
+            row = self.rows.required(model, item.target_id)
         except MissingRowsError:
             return True
         lifecycle = self.book.lifecycle(model)

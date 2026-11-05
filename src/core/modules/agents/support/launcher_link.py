@@ -15,6 +15,10 @@ class LauncherLink:
     def __init__(self, home: JournalHome) -> None:
         self.home = home
 
+    @property
+    def is_running(self) -> bool:
+        return self.home.socket(LAUNCHER_SOCKET).exists()
+
     def sent(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
         path = self.home.socket(LAUNCHER_SOCKET)
         if not path.exists():

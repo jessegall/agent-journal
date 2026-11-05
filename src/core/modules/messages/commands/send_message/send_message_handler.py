@@ -5,7 +5,7 @@ from core.base.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
@@ -26,19 +26,19 @@ class SendMessageHandler(Handler[SendMessage, Message]):
 
     command = SendMessage
 
-    def __init__(self, repository: Repository, files: MessageFiles, queries: Queries, targets: MessageTargets, scopes: Scopes) -> None:
-        self.repository, self.files, self.queries = repository, files, queries
+    def __init__(self, repository: Repository, files: MessageFiles, rows: EventRows, targets: MessageTargets, scopes: Scopes) -> None:
+        self.repository, self.files, self.rows = repository, files, rows
         self.targets, self.scopes = targets, scopes
 
     def handle(self, command: SendMessage, context: Context) -> Message:
         if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
             raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
-        if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
+        if actor.type is ActorType.AGENT and self.rows.required(Agent, actor.id).role != AgentRole.MAIN:
             raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
         if command.parent_id is None:
             return self.sent(command, None, context)
-        parent = self.queries.query(Message).find(command.parent_id)
+        parent = self.rows.required(Message, command.parent_id)
         with self.scopes.row_scope(parent):
             return self.sent(command, parent, context)
 

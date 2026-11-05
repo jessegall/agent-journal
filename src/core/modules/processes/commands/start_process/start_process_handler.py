@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.duration import Duration
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -26,15 +26,16 @@ class StartProcessHandler(Handler[StartProcess, Process]):
 
     command = StartProcess
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility) -> None:
-        self.queries, self.repository, self.folder, self.readers, self.kept = queries, repository, folder, readers, kept
+    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows) -> None:
+        self.repository, self.folder, self.readers, self.kept = repository, folder, readers, kept
         self.requests = requests
         self.slots = slots
         self.visibility = visibility
+        self.rows = rows
 
     def handle(self, command: StartProcess, context: Context) -> Process:
         timeouts = tuple(Duration.parse(value).seconds for value in command.timeout_durations)
-        agent = self.queries.query(Agent).find(command.agent_id)
+        agent = self.rows.required(Agent, command.agent_id)
         process = self.repository.save(Process(agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
@@ -47,19 +48,20 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None
             if explicit_reader_id is not None:
-                reader = self.readers.find(explicit_reader_id)
+                reader = self.rows.required(Reader, explicit_reader_id)
             request_id = self.requests.request(process, spec, reader, context) if self.requests.needed(process, agent) else None
             parts.append(self.repository.save(part.changed(reader_request_id=request_id), context))
         if command.reader_id is not None and not any(part.reader_request_id is not None for part in parts):
-            reader = self.readers.find(command.reader_id)
+            reader = self.rows.required(Reader, command.reader_id)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id, title=RunTitle.title(reader, command.line)), context)
         else:
             part_reader = ReaderSelection.choose(self.all_readers(), [part for part in parts if part.reader_request_id is None])
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
+        self.slots.remember(process)
         self.slots.grant(process.environment_id, context)
-        return self.queries.query(Process).find(process.id)
+        return self.rows.required(Process, process.id)
 
     def all_readers(self) -> tuple[Reader, ...]:
         return self.kept.read("readers", lambda: tuple(self.readers.all_rows()), name="processes.readers")

@@ -1,7 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
@@ -18,9 +15,6 @@ class MemoryGivenMarkListener(MemoryMarkListener[Created[MemoryDelivery]]):
     the memory's words."""
 
     name = "memories.given-mark"
-
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        super().__init__(bus, actors, queries)
 
     def handle(self, event: Created[MemoryDelivery], logged: LoggedEvent) -> None:
         delivery = event.row

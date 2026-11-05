@@ -3,9 +3,8 @@ from core.base.change.event_log import JOURNAL_BOOTING_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.environments.models.environment import Environment
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
 from core.base.change.journal_booting import JournalBooting
 
@@ -18,11 +17,11 @@ class BootOrphanWorktreesListener(CommitListener[JournalBooting]):
     name = "workers.boot-worktree-sweep"
     run_order = -1
 
-    def __init__(self, queries: Queries, bus: Bus) -> None:
-        self.queries, self.bus = queries, bus
+    def __init__(self, environments: EnvironmentRows, bus: Bus) -> None:
+        self.environments, self.bus = environments, bus
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
-        for environment in tuple(self.queries.query(Environment).all_rows()):
+        for environment in self.environments.all():
             try:
                 self.bus.run(RemoveOrphanWorktrees(), Actor.core(), environment_id=environment.id)
             except Refusal:

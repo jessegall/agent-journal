@@ -1,6 +1,5 @@
 from core.modules.tasks.support.task_nudges import TASK_REOPENED
-from dataclasses import replace
-
+from core.base.database.kept_rows import KeptRows
 from core.base.command.context import Context
 from core.modules.drivers.support.nudger import Nudger
 from core.base.query.conditions.is_null import IsNull
@@ -19,14 +18,15 @@ WAIT_ENDED_SOURCE = "tasks.wait-ended"
 class TaskWaits:
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, kept: KeptRows) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger
+        self.kept = kept
 
     def resolved(self, wait: TaskWait, context: Context) -> None:
-        self.repository.save(replace(wait, ended_at=context.timestamp), context)
+        self.repository.update(wait, context, ended_at=context.timestamp)
         task = self.queries.query(Task).find(wait.task_id)
-        if task.state is TaskState.BLOCKED and not self.open_waits(task.id).exists():
-            self.repository.save(task.moved(TaskLifecycle.unblock), context)
+        if task.state is TaskState.BLOCKED and not self.pending_task(task.id):
+            self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
             self.notify_agents(task, context)
 
     def notify_agents(self, task: Task, context: Context) -> None:
@@ -35,3 +35,23 @@ class TaskWaits:
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))
+
+    def pending_task(self, task_id: int) -> tuple[TaskWait, ...]:
+        return tuple(wait for wait in self.pending_rows() if wait.task_id == task_id)
+
+    def pending_target(self, target: str) -> tuple[TaskWait, ...]:
+        return tuple(wait for wait in self.pending_rows() if wait.target == target)
+
+    def pending_rows(self) -> tuple[TaskWait, ...]:
+        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().all_rows()),
+                              "ended_at IS NULL", name="tasks.pending_waits")
+
+    def remember(self, wait: TaskWait) -> None:
+        self.replace_cached(wait, tuple([wait]) if wait.ended_at is None else ())
+
+    def remove(self, wait: TaskWait) -> None:
+        self.replace_cached(wait, ())
+
+    def replace_cached(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
+        self.kept.update("task_waits", lambda waits: tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id)),
+                         "ended_at IS NULL", name="tasks.pending_waits")

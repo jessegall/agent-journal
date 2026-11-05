@@ -11,6 +11,7 @@ from core.base.database.database import Database
 from core.base.database.table_statements import TableStatements
 from core.base.guard.guards import Guards
 from core.base.listener.listeners import Listeners
+from core.base.listener.event_rows import EventRows
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables
@@ -29,9 +30,10 @@ class Repository:
     reading it a second time."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
-                 constraint_refusals: ConstraintRefusals, scopes: Scopes) -> None:
+                 constraint_refusals: ConstraintRefusals, scopes: Scopes, event_rows: EventRows) -> None:
         self.database, self.tables, self.queries = database, tables, queries
         self.guards, self.listeners, self.log, self.constraint_refusals, self.scopes = guards, listeners, log, constraint_refusals, scopes
+        self.event_rows = event_rows
 
     def save(self, model: M, context: Context) -> M:
         return self.save_change(self.stored(model), model, context)
@@ -46,6 +48,7 @@ class Repository:
             return change.old_row
         skipped = self.guards.ask(change)
         saved = self.persist(model, change)
+        self.event_rows.remember(saved)
         saved_change = replace(change, new_row=replace(saved, move=model.move))
         self.log.write(saved_change, skipped)
         self.listeners.run_save_listeners(saved_change)
@@ -54,15 +57,23 @@ class Repository:
     def merge(self, existing: M | None, model: M, context: Context) -> M:
         if existing is None:
             return self.save(model, context)
-        return self.save(replace(existing, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in IDENTITY_FIELDS}), context)
+        return self.save_change(existing, replace(existing, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in IDENTITY_FIELDS}), context)
 
     def delete(self, model: Model, context: Context) -> None:
-        stored = self.stored(model)
+        self.delete_change(self.stored(model), model, context)
+
+    def delete_stored(self, model: Model, context: Context) -> None:
+        self.delete_change(model, model, context)
+
+    def delete_change(self, stored: Model | None, model: Model, context: Context) -> None:
         change: Change[Model] = Change(stored, None, context)
         skipped = self.guards.ask(change)
         self.listeners.run_deletion_listeners(change)
         table = self.tables.table(type(model))
-        self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
+        deleted_count = self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
+        if deleted_count == 0:
+            raise StaleRowError(model.cli_name, model.id)
+        self.event_rows.remove(model)
         self.log.write(change, skipped)
         self.listeners.run_save_listeners(change)
 

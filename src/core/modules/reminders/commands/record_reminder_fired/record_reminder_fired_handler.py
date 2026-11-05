@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -18,4 +16,4 @@ class RecordReminderFiredHandler(Handler[RecordReminderFired, Reminder]):
 
     def handle(self, command: RecordReminderFired, context: Context) -> Reminder:
         reminder = self.queries.query(Reminder).find(command.reminder_id)
-        return self.repository.save(replace(reminder, last_fired_at=context.timestamp, ended_at=context.timestamp if reminder.has_one_firing else None), context)
+        return self.repository.update(reminder, context, last_fired_at=context.timestamp, ended_at=context.timestamp if reminder.has_one_firing else None)

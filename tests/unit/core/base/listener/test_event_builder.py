@@ -36,13 +36,7 @@ class ItemRows:
     def __init__(self, row: Item | None) -> None:
         self.row = row
 
-    def query(self, model: type) -> "ItemRows":
-        return self
-
-    def filter(self, **values: object) -> "ItemRows":
-        return self
-
-    def first(self) -> Item | None:
+    def find(self, model: type, row_id: int) -> Item | None:
         return self.row
 
 

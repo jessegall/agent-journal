@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.message import Message
@@ -14,14 +14,14 @@ class ReadMessageHandler(Handler[ReadMessage, Message]):
 
     command = ReadMessage
 
-    def __init__(self, queries: Queries, repository: Repository, messages: MessageQuery) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository, messages: MessageQuery) -> None:
+        self.rows, self.repository = rows, repository
         self.messages = messages
 
     def handle(self, command: ReadMessage, context: Context) -> Message:
-        message = self.queries.query(Message).find(command.message_id)
+        message = self.rows.required(Message, command.message_id)
         if context.actor.type is ActorType.AGENT and not self.messages.addressed(context.actor.id).filter(id=message.id).exists():
             raise Refusal("this message is addressed to another agent", "read your messages with journal message unread")
         if message.read_at is not None:
             return message
-        return self.repository.save(message.changed(read_at=context.timestamp), context)
+        return self.repository.update(message, context, read_at=context.timestamp)

@@ -85,6 +85,7 @@ from suites.coding.modules.workers.rules.inactive_worker_retire_rule import Inac
 from suites.coding.modules.workers.rules.orphan_worktree_rule import OrphanWorktreeRule
 from suites.coding.modules.workers.listeners.boot_orphan_worktrees_listener import BootOrphanWorktreesListener
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees_handler import RemoveOrphanWorktreesHandler
+from suites.coding.modules.workers.migrations.m015_allowed_models_key import AllowedModelsKeyMigration
 from suites.coding.modules.workers.rules.worker_file_rule import WorkerFileRule
 from suites.coding.modules.workers.rules.worker_read_rule import WorkerReadRule
 from suites.coding.modules.workers.rules.worker_judge_scope_rule import WorkerJudgeScopeRule
@@ -143,6 +144,7 @@ from suites.coding.modules.workers.commands.short_proof.short_proof_subcommand i
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.listeners.worktree_rows_listener import WorktreeRowsListener
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from suites.coding.modules.workers.support.worker_folders import WorkerFolders
@@ -193,7 +195,7 @@ class WorkersModule(Module):
     models = [ModelDeclaration(AffectedTest, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration]
+    migrations = [AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
@@ -202,7 +204,7 @@ class WorkersModule(Module):
     driver_rules = [WorkerReadRule, WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
     bindings = {AgentFolders: WorkerFolders, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
-    listeners = [SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    listeners = [WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),

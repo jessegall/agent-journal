@@ -1,6 +1,7 @@
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.modules.chat.models.chat_mark import ChatMark
@@ -9,8 +10,15 @@ from core.modules.chat.models.chat_mark import ChatMark
 class ChatMarkQuery(Query[ChatMark]):
     """Reads chat marks, by environment, by agent and by the run they belong to."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, ChatMark)
+        self.kept = kept
+
+    def keyed(self, key: str) -> ChatMark | None:
+        return self.kept.read_in_scope(self.table.name, self.filter(key=key).first, "key = ?", [key], name="chat.keyed_mark")
+
+    def remember(self, mark: ChatMark) -> None:
+        self.kept.update_in_scope(self.table.name, lambda previous: mark, "key = ?", [mark.key], name="chat.keyed_mark")
 
     def agent_marks(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
