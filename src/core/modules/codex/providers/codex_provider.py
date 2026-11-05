@@ -56,6 +56,7 @@ class CodexProvider(Provider):
     tool_categories = {"Bash": ToolType.SHELL, "apply_patch": ToolType.EDIT, "write_file": ToolType.NEW_FILE,
                        "read_file": ToolType.READ, "view_image": ToolType.READ, "collaborationspawn_agent": ToolType.AGENT,
                        "request_user_input": ToolType.QUESTION}
+    safe_tools = ("webrun", "list_mcp_resources", "create_goal", "update_goal", "clocksleep", "clockcurr_time")
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",
