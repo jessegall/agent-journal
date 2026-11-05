@@ -11,6 +11,7 @@ class AgentListingState:
     environment_id: int
     session: str
     role: AgentRole
+    access: str
     program: str
     program_model: str
     profile: str

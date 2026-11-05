@@ -12,6 +12,7 @@ import {useSharedNow} from "../composables/now.js";
 import {ago} from "../format/time.js";
 import {cliOf} from "../domain/resourceKinds.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
+import {leaveSeconds} from "../domain/dockItems.js";
 import {dockLook} from "../domain/dockLook.js";
 import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
@@ -83,7 +84,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         :data-figure-closing="leaving ? '' : null"
     >
         <template #edge>
-            <template v-if="leaving && !item.kept"><DockLeave :ends-at="item.leaves_at" /></template>
+            <template v-if="leaving && !item.kept"><DockLeave :ends-at="leaveSeconds(item)" /></template>
         </template>
         <template #head>
             <template v-if="declaration?.draws_head"><span ref="head" class="dock-head" data-dock-head /></template>

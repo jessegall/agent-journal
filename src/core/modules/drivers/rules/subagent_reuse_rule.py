@@ -7,7 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.rules.dispatch_mark_rule import DEFAULT_PROFILE
 from core.modules.drivers.support.driver_nudges import SUBAGENT_REUSE
 
@@ -35,7 +35,7 @@ class SubagentReuseRule(DriverRule):
         paths = PathMentions.found(f"{dispatch.get('prompt', '')}")
         if not paths or profile in INDEPENDENT_PROFILES:
             return RuleAnswer.allowed()
-        for row in self.queries.query(SubagentDispatch).filter(agent_id=hook.agent_id, profile=profile).newest().all_rows():
-            if row.ended_at is not None and row.subagent_id is not None and PathMentions.overlap(paths, PathMentions.found(row.instruction)):
-                return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(row.subagent_id).session))
+        for row in self.queries.query(HelperJob).filter(agent_id=hook.agent_id, profile=profile).newest().all_rows():
+            if row.ended_at is not None and row.helper_id is not None and PathMentions.overlap(paths, PathMentions.found(row.instruction)):
+                return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(row.helper_id).session))
         return RuleAnswer.allowed()

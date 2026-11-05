@@ -26,7 +26,7 @@ afterEach(() => {
 const process = (extra) => ({id: 1, type: "processes.output", state: "docked", kept: false, leaves_at: null, target_model: "processes", target_id: 3, text: "", ...extra});
 
 test("a docked process that has completed shows a line along its top and undocks after 5 seconds", async () => {
-    const host = stacked([process({leaves_at: Date.now() / 1000 + LEAVE_SECONDS})]);
+    const host = stacked([process({leaves_at: new Date(Date.now() + LEAVE_SECONDS * 1000).toISOString()})]);
     await nextTick();
     expect(host.querySelector("[data-dock-action=undock]")).not.toBeNull();
     expect(host.querySelector(".dock-leave i").style.animationDuration).toBe("5s");

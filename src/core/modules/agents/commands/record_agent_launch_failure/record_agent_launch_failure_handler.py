@@ -1,3 +1,4 @@
+from core.base.agent_type_book import AgentTypeBook
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -13,17 +14,18 @@ SOURCE = "agents.launch-failed"
 
 
 class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
-    """Ends the row of an agent whose program could not start, so it holds no place, and tells its parent why."""
+    """Tells an agent's parent that its program could not start, and ends the row of one with no folder of its own,
+    so it holds no place; an agent with a folder of its own keeps its row, to start again."""
 
     command = RecordAgentLaunchFailure
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus) -> None:
-        self.queries, self.nudger, self.bus = queries, nudger, bus
+    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: AgentTypeBook) -> None:
+        self.queries, self.nudger, self.bus, self.types = queries, nudger, bus, types
 
     def handle(self, command: RecordAgentLaunchFailure, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        if agent.ended_at is None:
+        if agent.ended_at is None and not self.types.find(agent.role).separate_folder:
             self.bus.dispatch(EndAgent(agent.id), context)
         notice = AGENT_START_FAILED.nudge(agent=agent.id)
         if agent.parent_id is not None and not self.queries.query(AgentLine).filter(source=SOURCE, text=notice.text).exists():

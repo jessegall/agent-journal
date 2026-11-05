@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 const running = (id) => ({id, type: "processes.output", state: "docked", kept: false, leaves_at: null, target_model: "processes", target_id: id, text: ""});
-const finished = (id) => ({...running(id), leaves_at: Date.now() / 1000 + LEAVE_SECONDS});
+const finished = (id) => ({...running(id), leaves_at: new Date(Date.now() + LEAVE_SECONDS * 1000).toISOString()});
 const chips = (host) => host.querySelectorAll(".dock-runs-chips > *").length;
 const cards = (host) => host.querySelectorAll("[data-dock-action=undock]").length;
 

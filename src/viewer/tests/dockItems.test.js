@@ -7,7 +7,7 @@ const dockButtons = (item, declaration) => dockLook(item, declaration).buttons;
 const item = (id, extra = {}) => ({id, type: "run", state: "docked", kept: false, leaves_at: null, target_model: "tasks", target_id: id, ...extra});
 
 test("hover: an item past its leave time stays while it is held and goes when released", () => {
-    const due = item(1, {leaves_at: 100});
+    const due = item(1, {leaves_at: new Date(100000).toISOString()});
     expect(dockedItems([due], 99)).toHaveLength(1);
     expect(dockedItems([due], 101)).toHaveLength(0);
     expect(dockedItems([due], 101, new Set([1]))).toHaveLength(1);
@@ -46,7 +46,8 @@ test("a group of runs dissolves once fewer than two of them are still going, how
 });
 
 test("runs past the most are cleared oldest first when their leave time passed, and a running one stays", () => {
-    const runs = [item(1, {leaves_at: 10}), item(2), item(3, {leaves_at: 10}), item(4)];
+    const leaving = {leaves_at: new Date(10000).toISOString()};
+    const runs = [item(1, leaving), item(2), item(3, leaving), item(4)];
     expect(keptRuns(runs, 50, 3).map((r) => r.id)).toEqual([2, 3, 4]);
     expect(keptRuns(runs, 5, 3)).toHaveLength(4);
 });

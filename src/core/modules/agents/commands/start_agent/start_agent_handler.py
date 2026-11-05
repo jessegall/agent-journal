@@ -45,7 +45,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             return self.repository.save(replace(started, ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.process_start(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
-        agent = Agent(id=actor.id, environment_id=context.environment_id, parent_id=command.parent_id, creator_id=context.actor.id,
+        agent = Agent(id=actor.id, environment_id=context.environment_id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.process_start(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)

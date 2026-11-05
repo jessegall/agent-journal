@@ -2,7 +2,7 @@
 import {computed, inject, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import DockLeave from "./DockLeave.vue";
-import {isLeaving} from "../domain/dockItems.js";
+import {isLeaving, leaveSeconds} from "../domain/dockItems.js";
 import {usePoll} from "../../kit/usePoll.js";
 import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 
@@ -30,7 +30,7 @@ usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
 <template>
     <button type="button" class="run-chip" data-run-chip :title="name" :aria-label="`${name}; show its card`" :style="{'--tone': tone}">
         <template v-if="isLeaving(item)">
-            <DockLeave :ends-at="item.leaves_at" />
+            <DockLeave :ends-at="leaveSeconds(item)" />
         </template>
         <span class="run-chip-in">
             <template v-if="running">

@@ -549,7 +549,7 @@ async function runCommand(pin) {
 /* version 4's spacing: 10 pixels between items, 18 above the first and 20 below the last, inside the scroll area */
 .history :deep(.row-list) {
     gap: 10px;
-    padding: 18px 0 20px;
+    padding: 18px 0 8px;
 }
 
 /* version 4's marks are quiet lines, about 28 pixels tall, in a muted colour */

@@ -5,12 +5,12 @@ from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
-class SubagentDispatch(Model):
-    """A subagent an agent sent out: its profile, model, job and instruction, and what it returned when it ended."""
+class HelperJob(Model):
+    """A helper an agent sent out: its profile, model, job and instruction, and what it returned when it ended."""
 
-    model_name = "subagent_dispatch"
+    model_name = "helper_job"
     shared_rows = True
-    cli_name = "subagent-dispatch"
+    cli_name = "helper-job"
 
     environment_id: int
     agent_id: int
@@ -22,4 +22,6 @@ class SubagentDispatch(Model):
     instruction: str
     returned: str = ""
     ended_at: Timestamp | None = None
-    subagent_id: int | None = None
+    helper_id: int | None = None
+    brief: str = ""
+    report_message_id: int | None = None
