@@ -1,7 +1,5 @@
 from collections import Counter
 from collections.abc import Sequence
-from collections.abc import Generator
-from contextlib import contextmanager
 from core.base.database.points import Points
 from core.base.database.statement import Statement
 import re
@@ -43,6 +41,3 @@ class PointTally:
     def points(self) -> Points:
         return Points(self.rows, self.writes, self.bytes, Counter(self.tables), Counter(self.statements), Counter(self.update_statements))
 
-    @contextmanager
-    def reread(self, table: str) -> Generator[None]:
-        yield

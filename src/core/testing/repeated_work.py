@@ -7,11 +7,12 @@ import sqlite3
 import sys
 import traceback
 
-from core.base.database.point_tally import TABLE_PATTERN, PointTally
+from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from core.testing.repeated_calls_error import RepeatedCallsError
 
-READ_LIMIT_REPEATS = 218
+READ_LIMIT_REPEATS = 5
+READ_TEXT_LIMIT_REPEATS = 10
 COMMAND_LIMIT_REPEATS = 3
 CALLER_FRAMES = 14
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
@@ -22,7 +23,6 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
-    ("core/testing/repeated_work.py", "reread"): "A cached selection reloads only after its table signature changes; unrelated writes keep the cached value.",
 }
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
 
@@ -30,13 +30,13 @@ READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeepin
 class RepeatedWork(PointTally):
     """Counts database work and rejects repeated reads and commands within each story request."""
 
-    def __init__(self) -> None:
+    def __init__(self, read_text_limit: int | None = None) -> None:
         super().__init__()
+        self.read_text_limit = read_text_limit
         self.reads: Counter[Statement] = Counter()
         self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[str] = []
-        self.refreshed_tables: tuple[str, ...] = ()
 
     @contextmanager
     def request(self) -> Generator[None]:
@@ -56,22 +56,23 @@ class RepeatedWork(PointTally):
             return
         if not statement.is_read:
             return
-        if self.is_refreshed(statement) or self.is_allowed_read():
+        if self.is_allowed_read():
             return
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
-        if self.read_texts[statement.sql] == READ_LIMIT_REPEATS + 1:
-            self.reject(f"one request read this SQL more than {READ_LIMIT_REPEATS} times: {statement.sql}\n{self.caller_lines()}")
+            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times without a write: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
+        if self.read_text_limit is not None and self.read_texts[statement.sql] == self.read_text_limit + 1:
+            self.reject(f"one request read this SQL more than {self.read_text_limit} times without a write: {statement.sql}\n{self.caller_lines()}")
+
+    def count_write(self, sql: str) -> None:
+        super().count_write(sql)
+        self.reads.clear()
+        self.read_texts.clear()
 
     def reject(self, finding: str) -> None:
         self.findings.append(finding)
         raise RepeatedCallsError(finding)
-
-    def is_refreshed(self, statement: Statement) -> bool:
-        table = TABLE_PATTERN.search(statement.sql)
-        return table is not None and table.group(1) in self.refreshed_tables
 
     @staticmethod
     def is_allowed_read() -> bool:
@@ -82,15 +83,6 @@ class RepeatedWork(PointTally):
                 return any(filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
             frame = frame.f_back
         return False
-
-    @contextmanager
-    def reread(self, table: str) -> Generator[None]:
-        previous = self.refreshed_tables
-        self.refreshed_tables = (*previous, table)
-        try:
-            yield
-        finally:
-            self.refreshed_tables = previous
 
     @staticmethod
     def caller_lines() -> str:

@@ -83,6 +83,8 @@ class Database:
         return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
+        if not statement.is_read:
+            self.tally.count_write(statement.sql)
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement)
         return rows

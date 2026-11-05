@@ -12,7 +12,7 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.testing.repeated_calls_error import RepeatedCallsError
-from core.testing.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS
+from core.testing.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS, RepeatedWork
 from core.testing.story_line_run import StoryLineRun
 
 REPEATED_READ = Statement("SELECT 1")
@@ -31,6 +31,10 @@ def repeat_command(story, count: int) -> None:
             subprocess.run(["true"], check=True)
 
 
+def watch_text_reads(story) -> None:
+    story.container.get(Database).tally = RepeatedWork(read_text_limit=READ_TEXT_LIMIT_REPEATS)
+
+
 def test_a_request_that_repeats_one_read_past_the_limit_raises_and_names_the_read(new_story):
     story = new_story()
     with pytest.raises(RepeatedCallsError, match="SELECT 1"):
@@ -42,38 +46,41 @@ def test_a_request_that_stays_at_the_read_limit_passes(new_story):
     repeat_read(new_story(), READ_LIMIT_REPEATS)
 
 
-def test_a_write_does_not_clear_the_read_count(new_story):
+def test_a_write_starts_the_read_counts_again(new_story):
     story = new_story()
     database = story.container.get(Database)
-    with pytest.raises(RepeatedCallsError, match="SELECT 1"), story.repeated_work.request():
+    with story.repeated_work.request():
         for _ in range(READ_LIMIT_REPEATS):
             database.rows(REPEATED_READ)
         database.update(Statement("UPDATE settings SET version = version WHERE 1 = 0"))
-        database.rows(REPEATED_READ)
+        for _ in range(READ_LIMIT_REPEATS):
+            database.rows(REPEATED_READ)
 
 
 def test_a_per_row_read_loop_raises_even_when_each_row_has_a_different_id(new_story):
     story = new_story()
+    watch_text_reads(story)
     database = story.container.get(Database)
     with pytest.raises(RepeatedCallsError, match="SELECT \\?"), story.repeated_work.request():
-        for row_id in range(READ_LIMIT_REPEATS + 1):
+        for row_id in range(READ_TEXT_LIMIT_REPEATS + 1):
             database.rows(Statement("SELECT ?", [row_id]))
-            database.update(Statement("UPDATE settings SET version = version WHERE 1 = 0"))
 
 
 def test_reads_with_different_parameters_stay_within_the_loop_limit(new_story):
     story = new_story()
+    watch_text_reads(story)
     database = story.container.get(Database)
     with story.repeated_work.request():
-        for row_id in range(READ_LIMIT_REPEATS):
+        for row_id in range(READ_TEXT_LIMIT_REPEATS):
             database.rows(Statement("SELECT ?", [row_id]))
 
 
 def test_a_loop_of_query_objects_with_different_ids_still_raises(new_story):
     story = new_story()
+    watch_text_reads(story)
     query = story.container.get(Queries).query(Environment)
     with pytest.raises(RepeatedCallsError, match="environments"), story.repeated_work.request():
-        for row_id in range(READ_LIMIT_REPEATS + 1):
+        for row_id in range(READ_TEXT_LIMIT_REPEATS + 1):
             query.filter(id=row_id).first()
 
 
@@ -83,6 +90,17 @@ def test_a_write_returning_rows_does_not_count_as_a_repeated_read(new_story):
     with story.repeated_work.request():
         for _ in range(2):
             database.rows(Statement("UPDATE settings SET version = version WHERE 1 = 0 RETURNING version"))
+
+
+def test_a_returning_write_starts_the_read_counts_again(new_story):
+    story = new_story()
+    database = story.container.get(Database)
+    with story.repeated_work.request():
+        for _ in range(READ_LIMIT_REPEATS):
+            database.rows(REPEATED_READ)
+        database.rows(Statement("UPDATE settings SET version = version WHERE 1 = 0 RETURNING version"))
+        for _ in range(READ_LIMIT_REPEATS):
+            database.rows(REPEATED_READ)
 
 
 def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):

@@ -2,7 +2,6 @@ from collections.abc import Callable, Sequence
 from dataclasses import replace
 from typing import TypeVar, cast
 from weakref import WeakKeyDictionary
-from contextlib import nullcontext
 
 from core.base.database.database import Database
 from core.base.database.kept_value import KeptValue
@@ -31,7 +30,6 @@ class KeptRows:
         if cache_key in kept and kept[cache_key].signature == signature:
             kept[cache_key] = replace(kept[cache_key], change_mark=change_mark)
             return cast(T, kept[cache_key].value)
-        with self.database.tally.reread(table) if cache_key in kept else nullcontext():
-            loaded = loader()
+        loaded = loader()
         kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
