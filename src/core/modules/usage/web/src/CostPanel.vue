@@ -1,9 +1,9 @@
 <script setup>
 import {computed} from "vue";
 import {WindowRoom, usePoll, useUsage, useWindow} from "@journal/window-kit";
-import {byAgent, byModel, dollars} from "./costBreakdown.js";
+import {byAgent, byModel, byProfile, dollars} from "./costBreakdown.js";
 
-// what the open sessions would cost through an API, as a total, for this session and for each model and agent that reported one
+// what the open sessions and their helpers would cost through an API, as a total, for this session and for each model, agent and profile that reported one
 const REFRESH_MILLISECONDS = 30000;
 const context = useWindow();
 const {value: usage, failure, load} = useUsage();
@@ -46,6 +46,15 @@ usePoll(load, () => true, REFRESH_MILLISECONDS);
                         <span>{{ row.label }}</span>
                         <strong>{{ dollars(row.cost) }}</strong>
                     </div>
+                </template>
+                <template v-if="byProfile(agents).length">
+                    <p class="group">By profile</p>
+                    <template v-for="row in byProfile(agents)" :key="row.label">
+                        <div class="line" data-cost-profile>
+                            <span>{{ row.label }}</span>
+                            <strong>{{ dollars(row.cost) }}</strong>
+                        </div>
+                    </template>
                 </template>
             </template>
             <template v-else>

@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import threading
 import time
 import traceback
 from contextlib import contextmanager
@@ -13,6 +14,19 @@ from core.base.scope.row_owner import RowOwner
 PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
 NESTING_LIMIT_LEVELS = 8
+OPEN_WRITES: dict[int, float] = {}
+BACKGROUND_THREADS: list[threading.Thread] = []
+
+
+def sample_open_writes() -> None:
+    while True:
+        time.sleep(0.5)
+        frames = sys._current_frames()
+        for thread_id, started in tuple(OPEN_WRITES.items()):
+            if time.monotonic() - started <= 1 or thread_id not in frames:
+                continue
+            lines = [f"{frame.filename.rsplit('/', 2)[-1]}:{frame.lineno}" for frame in traceback.extract_stack(frames[thread_id]) if "/versions/" in frame.filename or "/src/" in frame.filename]
+            print(f"SLOW SAMPLE {time.monotonic() - started:.1f}s {' '.join(lines[-9:])}", file=sys.stderr, flush=True)
 
 
 class Database:
@@ -63,16 +77,20 @@ class Database:
         return self.connection.in_transaction
 
     def note_slow_write(self, started: float) -> None:
-        held = time.monotonic() - started
-        if held > 1:
+        seconds = time.monotonic() - started
+        if seconds > 1:
             frames = [f"{frame.filename.rsplit('/', 3)[-1]}:{frame.lineno}" for frame in traceback.extract_stack() if "/modules/" in frame.filename or "/base/command/" in frame.filename]
-            print(f"SLOW WRITE {held:.1f}s {' '.join(frames[-6:])}", file=sys.stderr, flush=True)
+            print(f"SLOW WRITE {seconds:.1f}s {' '.join(frames[-6:])}", file=sys.stderr, flush=True)
 
     @contextmanager
     def transaction(self):
         changes = self.connection.total_changes
         self.connection.execute("BEGIN IMMEDIATE")
         started = time.monotonic()
+        if not BACKGROUND_THREADS:
+            BACKGROUND_THREADS.append(threading.Thread(target=sample_open_writes, daemon=True))
+            BACKGROUND_THREADS[0].start()
+        OPEN_WRITES[threading.get_ident()] = started
         try:
             yield
             self.connection.execute("COMMIT")
@@ -82,6 +100,8 @@ class Database:
             if self.connection.in_transaction:
                 self.connection.execute("ROLLBACK")
             raise
+        finally:
+            OPEN_WRITES.pop(threading.get_ident(), None)
 
     @contextmanager
     def savepoint(self, label: str):
