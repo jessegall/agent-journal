@@ -1,6 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 from core.base.database.points import Points
+from core.base.database.statement import Statement
 import re
 import sqlite3
 
@@ -21,7 +22,8 @@ class PointTally:
         self.statements: Counter[str] = Counter()
         self.update_statements: Counter[str] = Counter()
 
-    def loaded(self, rows: Sequence[sqlite3.Row], sql: str) -> None:
+    def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:
+        sql = statement.sql
         if COUNT_PATTERN.match(sql):
             return
         self.rows += len(rows)

@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 
 
@@ -7,7 +8,7 @@ class RunCounts:
     def line(self, process: Process) -> str:
         return ""
 
-    def has_listing(self, process: Process) -> bool:
+    def has_listing(self, process: Process, agent: Agent) -> bool:
         return False
 
     def count(self, process: Process, text: str) -> int:

@@ -30,8 +30,9 @@ TONES = {tone.value: tone for tone in PluginCardTone}
 class PluginOutputListener(CommitListener[Created[PluginOutput]]):
     """Applies a plugin's answer after the reply, as the plugins module, which can never act as the person: a
     chat mark for each card of a kind its manifest declares when the answer is for a main agent, keyed so a
-    card with the same key is updated in place, its journal command lines, at most twenty, and the skills it
-    requires of the agent among those the plugin publishes."""
+    card with the same key is updated in place and shows how long the plugin took unless its tone is good,
+    its journal command lines, at most twenty, and the skills it requires of the agent among those the
+    plugin publishes."""
 
     name = "plugins.output"
 
@@ -47,7 +48,7 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
                 self.bus.run(ShowMark(row.environment_id, PluginMarkType.CARD, TONES[tone], f"plugin:{plugin.name}:{row.agent_id}:{card.key}", f"{plugin.name}: {card.label}",
-                                      detail=card.detail, figure=answer.duration_text()), actor, cause_id=logged.id, environment_id=row.environment_id)
+                                      detail=card.detail, figure="" if tone == PluginCardTone.GOOD else answer.duration_text()), actor, cause_id=logged.id, environment_id=row.environment_id)
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)

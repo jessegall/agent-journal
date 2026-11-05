@@ -23,11 +23,14 @@ class WorkerTestListings(RunCounts):
         self.queries, self.settings, self.run, self.folder, self.outputs = queries, settings, run, folder, outputs
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
+        return self.agent_parts(process, self.queries.query(Agent).find(process.agent_id))
+
+    def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
         if not process.is_queue_run or process.creator_id != process.agent_id:
             return ()
         if self.settings.number(WORKER_TEST_LIMIT, process.environment_id) <= 0:
             return ()
-        if self.queries.query(Agent).find(process.agent_id).role != AgentRole.WORKER:
+        if agent.role != AgentRole.WORKER:
             return ()
         readers = tuple(self.queries.query(Reader).all_rows())
         outputs = self.queries.query(Output).filter(process_id=process.id).page(1, 1).rows
@@ -44,8 +47,8 @@ class WorkerTestListings(RunCounts):
     def line(self, process: Process) -> str:
         return " && ".join(listing.line for listing in self.parts(process))
 
-    def has_listing(self, process: Process) -> bool:
-        return bool(self.parts(process))
+    def has_listing(self, process: Process, agent: Agent) -> bool:
+        return bool(self.agent_parts(process, agent))
 
     def count(self, process: Process, text: str) -> int:
         counts = [self.run.count(listing.reader, listing.output_text(text), 0) for listing in self.parts(process)]

@@ -27,7 +27,7 @@ class ReaderWriters:
         if not requests:
             self.check(actor)
         request = requests[0]
-        self.check_request(actor, request)
+        self.check_attempts(request)
         return request
 
     def agent_requests(self, actor: Actor) -> tuple[ReaderRequest, ...]:
@@ -43,6 +43,9 @@ class ReaderWriters:
             return
         if request not in self.agent_requests(actor):
             raise Refusal("save a reader only for your own open reader request", "read your request before saving")
+        self.check_attempts(request)
+
+    def check_attempts(self, request: ReaderRequest) -> None:
         if self.attempts.needs_help(request):
             raise Refusal(f"reader request {request.id} needs the main agent after failed saves", "stop; the main agent is asked to help")
 

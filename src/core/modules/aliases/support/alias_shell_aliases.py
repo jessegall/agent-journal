@@ -5,6 +5,7 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
 from core.base.cli.shell_run import ShellRun
+from core.base.database.kept_rows import KeptRows
 from core.base.journal_home import JournalHome
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
@@ -17,8 +18,8 @@ JOURNAL_FOLDER_PREFIX = ".journal/"
 class AliasShellAliases(ShellAliases):
     """Expands aliases with quoted arguments, declared access and paths from the journal folder."""
 
-    def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome) -> None:
-        self.aliases, self.access, self.names, self.home = aliases, access, names, home
+    def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome, kept: KeptRows) -> None:
+        self.aliases, self.access, self.names, self.home, self.kept = aliases, access, names, home, kept
 
     def shell_run(self, argv: list[str], caller: Caller, request: CallerRequest) -> ShellRun | None:
         alias = self.alias(argv[0]) if argv else None
@@ -39,5 +40,8 @@ class AliasShellAliases(ShellAliases):
         return alias.shell_line(argv[1:]) if alias else None
 
     def alias(self, name: str) -> Alias | None:
+        return self.kept.read("aliases", lambda: self.saved_alias(name), "name = ?", [name])
+
+    def saved_alias(self, name: str) -> Alias | None:
         rows = self.aliases.with_name(name).page(1, 1).rows if name not in self.names.command_names() else ()
         return rows[0] if rows else None

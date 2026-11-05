@@ -11,6 +11,8 @@ GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
 BUILD_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
+WORKTREE_CONFIG_FILE = "config.worktree"
+GIT_FOLDER_PREFIX = "gitdir:"
 BUILT_FOLDER = "/web/dist/"
 
 
@@ -151,11 +153,20 @@ class WorktreeGit:
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
     def exclude_file(self, folder: str) -> Path:
-        git_folder = Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
+        git_folder = self.git_folder(folder)
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
+        worktree_config = git_folder / WORKTREE_CONFIG_FILE
+        if worktree_config.exists() and str(exclude_file) in worktree_config.read_text():
+            return exclude_file
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
         return exclude_file
+
+    def git_folder(self, folder: str) -> Path:
+        link = Path(folder) / ".git"
+        if link.is_file():
+            return (Path(folder) / link.read_text().removeprefix(GIT_FOLDER_PREFIX).strip()).resolve()
+        return Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
         if Path(worktree.folder).exists():

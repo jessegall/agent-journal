@@ -25,9 +25,8 @@ class RunAdmission:
     def uses_slot(self, process: Process) -> bool:
         if process.slot_assigned:
             return True
-        agent = self.queries.query(Agent).find(process.agent_id)
-        return (process.is_queue_run and agent.role == AgentRole.MAIN
-                and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, process.environment_id))
+        return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, process.environment_id)
+                and self.queries.query(Agent).find(process.agent_id).role == AgentRole.MAIN)
 
     def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).all_rows())
@@ -35,7 +34,7 @@ class RunAdmission:
             return False
         if not self.needs_slot(process, agent):
             return True
-        if self.listings.has_listing(process) and self.folder.count_status(process.id) is None:
+        if self.folder.count_status(process.id) is None and self.listings.has_listing(process, agent):
             return False
         for part in parts:
             if part.reader_request_id is None:

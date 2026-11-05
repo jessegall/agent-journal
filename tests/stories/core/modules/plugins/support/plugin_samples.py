@@ -12,6 +12,7 @@ case "$line" in
   *'"command_starting"'*'git status'*) echo '{"v": 1, "cards": [{"kind": "state", "key": "branch", "label": "Branch is clean"}]}' ;;
   *'"command_starting"'*'git diff'*) echo '{"v": 1, "cards": [{"kind": "state", "key": "branch", "label": "Branch has changes", "tone": "warn"}]}' ;;
   *'"command_starting"'*'git show'*) echo '{"v": 1, "judged_ms": 1234, "cards": [{"kind": "state", "key": "branch", "label": "Branch was judged"}]}' ;;
+  *'"command_starting"'*'git tag'*) echo '{"v": 1, "judged_ms": 1234, "cards": [{"kind": "state", "key": "branch", "label": "Branch is clean again", "tone": "good"}]}' ;;
   *'"command_starting"'*'git log'*) printf '%s\\n' '{"v": 1, "commands": ["pin make \\"Release notes\\" --link https://example.org/notes --environment main"]}' ;;
 esac
 """

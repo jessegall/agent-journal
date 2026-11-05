@@ -4,7 +4,7 @@ import re
 import shlex
 from dataclasses import asdict
 from uuid import uuid4
-from typing import TypeVar
+from typing import TypeVar, cast
 from datetime import timedelta
 from core.base.actor import Actor
 from core.base.cli.console import Console
@@ -34,6 +34,7 @@ from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.plugins.support.login_path import LoginPath
+from core.testing.repeated_work import RepeatedWork
 from core.testing.story_login_path import StoryLoginPath
 from core.testing.story_main_agent_skills import StoryMainAgentSkills
 from core.testing.story_overview_first import StoryOverviewFirst
@@ -81,14 +82,16 @@ class Story:
         stream = io.StringIO()
         caller = Caller(actor or Actor.core(), environment_id)
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
-        code = self.container.get(Console).run(shlex.split(line), caller, stream)
+        with self.repeated_work.request():
+            code = self.container.get(Console).run(shlex.split(line), caller, stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
     def run_requested(self, line: str, request: CallerRequest) -> LineOutcome:
         stream = io.StringIO()
         self.steps.append(f"request {line}: {json.dumps(asdict(request), sort_keys=True)}")
-        code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
+        with self.repeated_work.request():
+            code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
@@ -111,7 +114,12 @@ class Story:
         milliseconds = int(self.clock.timestamp().value.timestamp() * 1000)
         firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
         event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
-        return self.container.get(HookRoute).answer(event)
+        with self.repeated_work.request():
+            return self.container.get(HookRoute).answer(event)
+
+    @property
+    def repeated_work(self) -> RepeatedWork:
+        return cast(RepeatedWork, self.container.get(Database).tally)
 
     def run_listeners(self) -> None:
         self.steps.append("listeners")
@@ -261,5 +269,6 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(SkillRequirement, StorySkillRequirement())
     container.bind(MainAgentSkills, StoryMainAgentSkills())
     container.bind(LoginPath, StoryLoginPath(home))
+    container.get(Database).tally = RepeatedWork()
     container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container
