@@ -39,8 +39,8 @@ class WorkerTestListings(RunCounts):
         for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows():
             if part.category is not CommandCategory.TEST_RUN:
                 continue
-            reader = self.reader(part, output, readers)
-            if reader is not None and reader.count_command:
+            reader = self.counting_reader(part, output, readers)
+            if reader is not None:
                 listings.append(TestListing(part.position, reader, part.command or part.text))
         return tuple(listings)
 
@@ -53,6 +53,12 @@ class WorkerTestListings(RunCounts):
     def count(self, process: Process, text: str) -> int:
         counts = [self.run.count(listing.reader, listing.output_text(text), 0) for listing in self.parts(process)]
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
+
+    def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
+        selected = self.reader(part, output, readers)
+        if selected is not None and selected.count_command:
+            return selected
+        return next((reader for reader in readers if reader.count_command and ReaderSelection.reads(reader, part)), None)
 
     def reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
         selected = ReaderSelection.choose(readers, [part])
