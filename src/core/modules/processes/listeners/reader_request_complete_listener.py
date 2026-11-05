@@ -33,11 +33,12 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
         if isinstance(event, Deleted):
             return
         reader = event.row
-        for request in tuple(self.requests.open().all_rows()):
+        for request in self.requests.open_rows():
             scope = ReaderSampleScope(request.environment_id, request.creator_id, request.command)
             if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_proper:
                 continue
-            self.repository.save(replace(request, reader_id=reader.id, completed_at=self.clock.timestamp()), context)
+            completed = self.repository.update(request, context, reader_id=reader.id, completed_at=self.clock.timestamp())
+            self.requests.remove_completed(completed)
             for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows():
                 for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).all_rows():
                     self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0,

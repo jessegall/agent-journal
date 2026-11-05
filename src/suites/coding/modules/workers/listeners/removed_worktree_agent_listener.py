@@ -1,7 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
@@ -18,12 +17,12 @@ class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
     name = "workers.removed-worktree-agent"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus) -> None:
-        self.queries, self.bus = queries, bus
+    def __init__(self, rows: EventRows, bus: Bus) -> None:
+        self.rows, self.bus = rows, bus
 
     def handle(self, event: Changed[Worktree], context: Context) -> None:
         worktree = event.row
         if worktree.state is not WorktreeState.REMOVED:
             return
-        if self.queries.query(Agent).find(worktree.agent_id).ended_at is None:
+        if self.rows.required(Agent, worktree.agent_id).ended_at is None:
             self.bus.dispatch(EndAgent(worktree.agent_id), context)

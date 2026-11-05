@@ -64,6 +64,36 @@ def test_unchanged_reads_run_the_loader_once_and_read_no_more_table_rows(databas
     assert len(calls) == 1 and database.tally.points().tables == table_reads
 
 
+def test_a_known_write_refreshes_the_kept_value_without_reloading_rows(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def collect_texts():
+        calls.append(True)
+        return texts(database)
+
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    database.update(Statement("UPDATE notes SET text = 'Updated', version = version + 1"))
+    kept.update("notes", lambda values: tuple(["Updated"]), name="notes.text")
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Updated"])
+    assert len(calls) == 1
+
+
+def test_a_rollback_without_writes_keeps_the_loaded_rows(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def collect_texts():
+        calls.append(True)
+        return texts(database)
+
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    with pytest.raises(RollbackRequested), database.transaction():
+        raise RollbackRequested
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    assert len(calls) == 1
+
+
 def test_a_read_only_transaction_reuses_the_kept_value(database):
     kept = KeptRows(database)
     assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])
@@ -71,6 +101,22 @@ def test_a_read_only_transaction_reuses_the_kept_value(database):
     with database.transaction():
         assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])
     assert database.tally.points().tables == table_reads
+
+
+def test_a_rollback_reuses_rows_that_were_never_loaded_from_the_failed_write(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def collect_texts():
+        calls.append(True)
+        return texts(database)
+
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    with pytest.raises(RollbackRequested), database.transaction():
+        database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
+        raise RollbackRequested
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    assert len(calls) == 1
 
 
 def test_distinct_named_loaders_of_one_table_keep_their_own_values(database):

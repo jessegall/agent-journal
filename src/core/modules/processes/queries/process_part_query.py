@@ -5,6 +5,8 @@ from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.models.reader import Reader
+from core.modules.processes.queries.conditions.reader_sample_queries import ReaderSampleQueries
 from core.modules.processes.queries.conditions.command_matches import CommandMatches
 from core.modules.processes.queries.conditions.kept_output_part import KeptOutputPart
 
@@ -20,3 +22,13 @@ class ProcessPartQuery(Query[ProcessPart]):
 
     def kept_samples(self, patterns: Sequence[str], environment_id: int | None = None) -> Self:
         return self.matching(KeptOutputPart(environment_id)).matching(CommandMatches(patterns)).newest()
+
+    def reader_samples(self, readers: Sequence[Reader], limit: int) -> dict[int, tuple[ProcessPart, ...]]:
+        if not readers:
+            return {}
+        queries = {reader.id: self.kept_samples(tuple(pattern.strip() for pattern in reader.commands.split(",")), reader.environment_id).select.sliced(limit, 0).statement()
+                   for reader in readers}
+        samples: dict[int, list[ProcessPart]] = {reader.id: [] for reader in readers}
+        for row in self.database.rows(ReaderSampleQueries(queries).statement()):
+            samples[row["reader_id"]].append(self.typed(self.table.row_model(row)))
+        return {reader_id: tuple(parts) for reader_id, parts in samples.items()}

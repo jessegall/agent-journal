@@ -14,12 +14,12 @@ class WorkerUnfinishedTasks:
         self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
-        started = tuple(self.tasks.holder(worker_id).started().all_rows())
+        started = self.tasks.started_tasks(worker_id)
         queued = self.tasks.next_delegated(worker_id)
         worktree = self.worktrees.worker_worktree(worker_id)
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()
-        return (*started, *self.tasks.filter(delegated_to=worker_id, state=TaskState.OPEN).all_rows())
+        return (*started, *self.tasks.queued_tasks(worker_id))
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

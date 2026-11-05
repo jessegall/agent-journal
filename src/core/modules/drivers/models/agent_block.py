@@ -40,6 +40,14 @@ class AgentBlock(Model):
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
         return conditions.built(self.condition_name, self.condition_text).is_true(BlockCheck(hook, self.creation_timestamp(), container))
 
+    def is_active(self, tool_uses: int, timestamp: Timestamp) -> bool:
+        if self.blocks_stop:
+            return False
+        if not self.grace_tool_uses and not self.grace_seconds:
+            return True
+        return bool((self.grace_tool_uses and tool_uses >= self.grace_tool_uses)
+                    or (self.grace_seconds and self.creation_timestamp().elapsed_seconds(timestamp) >= self.grace_seconds))
+
     @property
     def grace(self) -> Interval | None:
         spans = [span for span in (ToolUseSpan(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]

@@ -20,4 +20,4 @@ class UpdateLibraryConnectionHandler(Handler[UpdateLibraryConnection, LibraryCon
         if connection is None:
             raise LibraryStoppedError.disconnected()
         reached = {"reached_at": context.timestamp} if command.has_reached else {}
-        return self.repository.save(connection.changed(role=command.role, failure=command.failure, stopped=command.stopped, **reached), context)
+        return self.repository.update(connection, context, role=command.role, failure=command.failure, stopped=command.stopped, **reached)

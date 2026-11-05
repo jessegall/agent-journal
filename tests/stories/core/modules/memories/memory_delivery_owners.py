@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.query.queries import Queries
@@ -10,6 +12,17 @@ from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT,
 COMPACTION = HookSamples.sample("compact")
 SESSION_START = HookSamples.session_start()
 CART_EDIT = HookSamples.edit("src/cart.py")
+
+
+@pytest.mark.parametrize("owner_session", ["s-1", "s-9"])
+def test_an_edited_memory_is_not_kept_for_another_agent_to_edit(new_story, owner_session):
+    story = new_story(fixture=MainAndWorkerMemories)
+    owner = story.agent if owner_session == "s-1" else agent_of(story, "s-9")
+    forbidden_agent = agent_of(story, "s-9") if owner_session == "s-1" else story.agent
+    memory_id = MAIN_MEMORY if owner_session == "s-1" else WORKER_MEMORY
+    story.expect_success(f'memory edit {memory_id} --text "Only its owner changed it"', actor=owner)
+    story.expect_refusal(f'memory edit {memory_id} --text "Another agent changed it"', "no memory", actor=forbidden_agent)
+    story.expect_text(f"memory show {memory_id}", "Only its owner changed it", actor=owner)
 
 
 def test_a_job_with_no_scope_reads_the_memories_of_every_agent(new_story):

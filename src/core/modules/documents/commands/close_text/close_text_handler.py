@@ -19,4 +19,4 @@ class CloseTextHandler(Handler[CloseText, TextRow]):
         if not command.reason.strip():
             raise Refusal(f'{command.text_model.cli_name} {command.row_id} is closed only with the reason it needs no action: --why "<why>"', "say why it needs no action")
         text_row = self.queries.query(command.text_model).find(command.row_id)
-        return self.repository.save(text_row.changed(close_reason=command.reason.strip()), context)
+        return self.repository.update(text_row, context, close_reason=command.reason.strip())

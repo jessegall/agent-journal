@@ -8,7 +8,7 @@ from core.base.caller.process_chain import ProcessChain
 from core.base.timestamp import Timestamp
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.modules.agents.support.agent_rows import AgentRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.agent_type_book import AgentTypeBook
@@ -24,8 +24,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
-        self.queries, self.repository, self.chain = queries, repository, chain
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
+        self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox
 
@@ -37,12 +37,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
         self.types.find(command.role)
-        started = self.queries.query(Agent).filter(session=command.session).limited(1)
-        if started and started[0].ended_at is None:
+        started = self.agents.session(command.session)
+        if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
-        if started:
-            self.check_resume(started[0], command, context.environment_id)
-            return self.repository.save(replace(started[0], ended_at=None, pid=command.pid,
+        if started is not None:
+            self.check_resume(started, command, context.environment_id)
+            return self.repository.save(replace(started, ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.process_start(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, environment_id=context.environment_id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,

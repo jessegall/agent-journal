@@ -8,9 +8,8 @@ from core.base.query.queries import Queries
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.models.enums.plan_state import PlanState
-from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_progress import PlanProgress
-from core.modules.plans.models.plan_task import PlanTask
+from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
 
 UNFINISHED_STATES = (PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED)
@@ -24,12 +23,12 @@ class FinishedPlanListener(CommitListener[Moved[Task]]):
     name = "plans.finished-plan"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
-    def __init__(self, bus: Bus, queries: Queries) -> None:
+    def __init__(self, bus: Bus, queries: Queries, plans: TaskPlans) -> None:
         self.bus, self.queries = bus, queries
+        self.plans = plans
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        places = self.queries.query(PlanTask).filter(task_id=logged.row_id).limited(1)
-        plan = self.queries.query(Plan).find(places[0].plan_id) if places else None
+        plan = self.plans.find(event.row.id)
         if plan is None or plan.state not in UNFINISHED_STATES:
             return
         progress = self.queries.query(PlanProgress).find(plan.id)

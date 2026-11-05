@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
 from core.modules.messages.models.message import Message
@@ -12,8 +12,8 @@ class RecordMessageDeliveryHandler(Handler[RecordMessageDelivery, Message]):
 
     command = RecordMessageDelivery
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository) -> None:
+        self.rows, self.repository = rows, repository
 
     def handle(self, command: RecordMessageDelivery, context: Context) -> Message:
-        return self.repository.update(self.queries.query(Message).find(command.message_id), context, delivered_at=context.timestamp)
+        return self.repository.update(self.rows.required(Message, command.message_id), context, delivered_at=context.timestamp)

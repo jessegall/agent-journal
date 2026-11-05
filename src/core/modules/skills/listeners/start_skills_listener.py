@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.record_hook_call.record_hook_call_handler import DRIVERS_MODULE
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
@@ -21,13 +21,13 @@ class StartSkillsListener(SkillListener[SessionStarted]):
 
     name = "skills.start"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills) -> None:
-        super().__init__(bus, actors, queries, catalogue, suites)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills, agents: AgentRows) -> None:
+        super().__init__(bus, actors, queries, catalogue, suites, agents)
         self.start, self.main_skills = start, main_skills
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+        if self.agents.find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return
@@ -36,9 +36,9 @@ class StartSkillsListener(SkillListener[SessionStarted]):
 
     def skills(self, call: HookCall) -> list[str]:
         start = self.start.after_compaction(call.environment_id) if self.compacted(call) else self.start.session_start(call.environment_id)
-        is_main = self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN
+        is_main = self.agents.find(call.agent_id).role == AgentRole.MAIN
         return [*start, *self.start.main_agent(call.environment_id)] if is_main and self.main_skills.is_required else start
 
     def compacted(self, call: HookCall) -> bool:
-        recent = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().page(1, 2).rows
+        recent = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().limited(2)
         return len(recent) == 2 and recent[1].is_compaction

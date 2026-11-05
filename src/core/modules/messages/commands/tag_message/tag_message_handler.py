@@ -20,4 +20,4 @@ class TagMessageHandler(Handler[TagMessage, Message]):
         message = self.queries.query(Message).find(command.message_id)
         if command.file not in message.files:
             raise Refusal(f"message {message.id} has no file {command.file}", f"it has: {', '.join(message.files) or 'none'}")
-        return self.repository.save(message.changed(captions=MessageCaptions.adding(message, command.file, command.text)), context)
+        return self.repository.update(message, context, captions=MessageCaptions.adding(message, command.file, command.text))

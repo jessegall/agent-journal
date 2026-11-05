@@ -22,8 +22,8 @@ class Database:
         self.nested: list[str] = []
         self.tally = PointTally()
         self.read_actor_id: int | None = None
+        self.write_rollback_count = 0
         self.row_owner: RowOwner | None = None
-        self.rollback_count = 0
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
@@ -57,12 +57,13 @@ class Database:
 
     @contextmanager
     def transaction(self):
+        changes = self.connection.total_changes
         self.connection.execute("BEGIN IMMEDIATE")
         try:
             yield
             self.connection.execute("COMMIT")
         except BaseException:
-            self.rollback_count += 1
+            self.record_rollback(changes)
             if self.connection.in_transaction:
                 self.connection.execute("ROLLBACK")
             raise
@@ -73,12 +74,13 @@ class Database:
             raise NestingError((*self.nested, label))
         name = f"nested_{len(self.nested)}"
         self.nested.append(label)
+        changes = self.connection.total_changes
         self.connection.execute(f"SAVEPOINT {name}")
         try:
             yield
             self.connection.execute(f"RELEASE {name}")
         except BaseException:
-            self.rollback_count += 1
+            self.record_rollback(changes)
             if self.connection.in_transaction:
                 self.connection.execute(f"ROLLBACK TO {name}")
                 self.connection.execute(f"RELEASE {name}")
@@ -88,6 +90,10 @@ class Database:
 
     def change_mark(self) -> tuple[int, int]:
         return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
+
+    def record_rollback(self, changes: int) -> None:
+        if changes != self.connection.total_changes:
+            self.write_rollback_count += 1
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
         if not statement.is_read:

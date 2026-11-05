@@ -26,7 +26,7 @@ class FillSecretHandler(Handler[FillSecret, FilledField]):
         field = secret.field(command.field_name)
         value = self.read_file(command.file) if command.file else self.typed(command.value, context)
         self.values.put(field.variable, value, field.hidden, int(context.timestamp.value.timestamp()))
-        return FilledField(self.repository.save(secret.with_filled(field.name), context), field.name, command.file)
+        return FilledField(self.repository.save_change(secret, secret.with_filled(field.name), context), field.name, command.file)
 
     @staticmethod
     def typed(value: str, context: Context) -> str:

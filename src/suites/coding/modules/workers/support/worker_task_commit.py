@@ -32,4 +32,4 @@ class WorkerTaskCommit:
             raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
-        return self.repository.save(current, context)
+        return self.repository.save_change(worktree, current, context)

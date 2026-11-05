@@ -1,5 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.database.kept_rows import KeptRows
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
@@ -15,14 +16,25 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
 
     command = BlockUntil
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
+    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
         self.queries, self.repository = queries, repository
+        self.kept = kept
 
     def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
         line_blocks = self.queries.query(AgentBlock).filter(agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
-        open_blocks = (line_blocks.filter(condition_text=command.condition.text) if command.condition.subject_scoped else line_blocks).limited(1)
-        if open_blocks:
-            return self.repository.save(open_blocks[0].changed(nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text), context)
+        query = line_blocks.filter(condition_text=command.condition.text) if command.condition.subject_scoped else line_blocks
+        condition, parameters = "agent_id = ? AND nudge_key = ? AND closed_at IS NULL", [command.agent_id, command.nudge.key]
+        if command.condition.subject_scoped:
+            condition += " AND condition_text = ?"
+            parameters.append(command.condition.text)
+        existing = self.kept.read("agent_blocks", query.first, condition, parameters, name="drivers.open_block")
+        saved = self.save_block(command, context, existing)
+        self.kept.update("agent_blocks", lambda previous: saved, condition, parameters, name="drivers.open_block")
+        return saved
+
+    def save_block(self, command: BlockUntil, context: Context, existing: AgentBlock | None) -> AgentBlock:
+        if existing is not None:
+            return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text)
         return self.repository.save(AgentBlock(agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",

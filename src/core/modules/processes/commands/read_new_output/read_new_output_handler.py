@@ -1,14 +1,13 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.listener.event_rows import EventRows
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_step import ReaderStep
 
@@ -21,23 +20,23 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
 
     command = ReadNewOutput
 
-    def __init__(self, outputs: OutputQuery, processes: ProcessQuery, step: ReaderStep, folder: OutputFolder, repository: Repository) -> None:
-        self.outputs, self.processes, self.step, self.folder, self.repository = outputs, processes, step, folder, repository
+    def __init__(self, outputs: OutputQuery, rows: EventRows, step: ReaderStep, folder: OutputFolder, repository: Repository) -> None:
+        self.outputs, self.rows, self.step, self.folder, self.repository = outputs, rows, step, folder, repository
 
     def handle(self, command: ReadNewOutput, context: Context) -> Output:
-        kept = self.outputs.process(command.process_id).limited(1)
-        if not kept:
+        output = self.outputs.process_output(command.process_id)
+        if output is None:
             raise Refusal(f"process {command.process_id} keeps no output", "a short run keeps none")
-        process = self.processes.find(command.process_id)
-        advance = self.step.advance(process, kept[0], command.is_final)
+        process = self.rows.required(Process, command.process_id)
+        advance = self.step.advance(process, output, command.is_final)
         if advance is None:
-            return kept[0]
+            return output
         if advance.replaces:
             self.folder.replace_reader_lines(process.id, advance.lines)
         else:
             self.folder.append_reader_lines(process.id, advance.lines)
         if advance.progress != process.progress and process.state in OPEN:
-            self.repository.save(replace(process, progress=advance.progress), context)
-        return self.repository.save(replace(kept[0], read_offset=advance.read_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
+            self.repository.update(process, context, progress=advance.progress)
+        return self.repository.update(output, context, read_offset=advance.read_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
                                             reader_summary=advance.summary, progress=advance.progress, steps_passed=advance.steps_passed, steps_failed=advance.steps_failed,
-                                            test_count=advance.test_count), context)
+                                      test_count=advance.test_count)

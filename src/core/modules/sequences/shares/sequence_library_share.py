@@ -29,7 +29,7 @@ class SequenceLibraryShare(LibraryShare[Sequence]):
         return self.repository.save(Sequence(creator_id=context.actor.id, **asdict(SequenceColumns.parsed(fields))), context)
 
     def follow(self, row: Sequence, fields: Fields, context: Context) -> Sequence:
-        return self.repository.save(row.changed(**asdict(SequenceColumns.parsed(fields))), context)
+        return self.repository.update(row, context, **asdict(SequenceColumns.parsed(fields)))
 
     def is_paused(self, row: Sequence) -> bool:
         return self.runs.has_open_run(row.id)

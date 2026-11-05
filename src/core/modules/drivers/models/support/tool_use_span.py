@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.driver.span import Span
 
-from core.base.query.queries import Queries
+from core.base.driver.span_queries import SpanQueries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 
@@ -15,5 +15,5 @@ class ToolUseSpan(Span):
 
     count: int
 
-    def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
-        return ToolUseCount.after_timestamp(queries, agent_id, start) >= self.count
+    def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
+        return ToolUseCount.after_timestamp(reads.queries, agent_id, start) >= self.count

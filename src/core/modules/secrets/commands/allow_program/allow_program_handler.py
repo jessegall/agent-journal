@@ -25,5 +25,5 @@ class AllowProgramHandler(Handler[AllowProgram, SecretProgram]):
         if command.program and SecretPrograms.is_skipped(command.program):
             raise Refusal(f"a secret never goes to {command.program}", "allow the program that uses it, named bare, such as curl or gh")
         allowed = secret.with_program(command.program) if command.program else secret
-        return SecretProgram(self.repository.save(allowed.changed(helpers=secret.helpers or command.helpers), context), command.program,
+        return SecretProgram(self.repository.save_change(secret, allowed.changed(helpers=secret.helpers or command.helpers), context), command.program,
                              command.program not in secret.programs)

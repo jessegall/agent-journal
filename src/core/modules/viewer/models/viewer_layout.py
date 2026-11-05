@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
+from core.base.model.environment_scoped import EnvironmentScoped
 
 
 @dataclass(frozen=True, kw_only=True)
-class ViewerLayout(Model):
+class ViewerLayout(EnvironmentScoped, Model):
     """One person's layout of one viewer page in one environment, for one suite and driver, as the layout
     tree's JSON."""
 

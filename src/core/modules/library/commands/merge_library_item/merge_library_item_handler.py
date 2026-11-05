@@ -26,5 +26,5 @@ class MergeLibraryItemHandler(Handler[MergeLibraryItem, LibraryCopy]):
         if row.version != command.row_version:
             raise StaleRowError(row.cli_name, row.id)
         followed = share.follow(row, command.item.fields, context)
-        return self.repository.save(copy.changed(base_version=command.item.version, base_digest=share.digest(followed), state=CopyState.SYNCED, unsent_digest="",
-                                                 server_version=0, server_fields="{}", note=""), context)
+        return self.repository.update(copy, context, base_version=command.item.version, base_digest=share.digest(followed), state=CopyState.SYNCED, unsent_digest="",
+                                      server_version=0, server_fields="{}", note="")

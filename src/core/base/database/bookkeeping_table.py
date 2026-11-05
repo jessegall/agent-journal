@@ -1,5 +1,5 @@
 import sqlite3
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import TypeVar
 
 from core.base.database.database import Database
@@ -32,6 +32,12 @@ class BookkeepingTable:
 
     def row_rows(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? ORDER BY id", (row_table, row_id)))
+
+    def row_rows_many(self, row_table: str, row_ids: Sequence[int]) -> list[sqlite3.Row]:
+        if not row_ids:
+            return []
+        marks = ", ".join("?" for _ in row_ids)
+        return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id IN ({marks}) ORDER BY id", [row_table, *row_ids]))
 
     def child_rows(self, event_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? AND cause_id = ? ORDER BY id", (event_id, event_id)))

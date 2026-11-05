@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from core.base.driver.span import Span
 from core.base.driver.seconds import Seconds
-from core.base.query.queries import Queries
+from core.base.driver.span_queries import SpanQueries
 from core.base.timestamp import Timestamp
 
 
@@ -12,16 +12,16 @@ class Interval:
     def __init__(self, *spans: Span) -> None:
         self.spans = spans
 
-    def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
-        return any(span.has_passed(queries, agent_id, start, timestamp) for span in self.spans)
+    def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
+        return any(span.has_passed(reads, agent_id, start, timestamp) for span in self.spans)
 
-    def has_passed_many(self, queries: Queries, agent_id: int, starts: Sequence[Timestamp], checked_at: Timestamp) -> list[bool]:
+    def has_passed_many(self, reads: SpanQueries, agent_id: int, starts: Sequence[Timestamp], checked_at: Timestamp) -> list[bool]:
         passed = [False] * len(starts)
         for span in self.spans:
             pending = [index for index, passed_span in enumerate(passed) if not passed_span]
             if not pending:
                 break
-            answers = span.has_passed_many(queries, agent_id, [starts[index] for index in pending], checked_at)
+            answers = span.has_passed_many(reads, agent_id, [starts[index] for index in pending], checked_at)
             for index, answer in zip(pending, answers):
                 passed[index] = answer
         return passed

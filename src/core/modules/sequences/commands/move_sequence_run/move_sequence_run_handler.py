@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.step_checks import StepChecks
 from core.base.repository.repository import Repository
@@ -25,8 +25,9 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
 
     command = MoveSequenceRun
 
-    def __init__(self, queries: Queries, runs: SequenceRunQuery, repository: Repository, checks: StepChecks) -> None:
-        self.queries, self.runs, self.repository, self.checks = queries, runs, repository, checks
+    def __init__(self, runs: SequenceRunQuery, repository: Repository, checks: StepChecks, rows: EventRows) -> None:
+        self.runs, self.repository, self.checks = runs, repository, checks
+        self.rows = rows
 
     def handle(self, command: MoveSequenceRun, context: Context) -> SequenceLine:
         current = self.runs.current(context.actor.id)
@@ -34,7 +35,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
             return self.start(command, current, context)
         if current is None:
             raise Refusal("no sequence is running", "journal sequence run <n> starts one")
-        sequence = self.queries.query(Sequence).find(current.sequence_id)
+        sequence = self.rows.required(Sequence, current.sequence_id)
         if command.action == END:
             self.repository.save(replace(current, ended_at=context.timestamp, outcome=f"{ENDED}: {command.reason}"), context)
             return SequenceLine(f"sequence {sequence.id} ended: {command.reason}")
@@ -56,11 +57,11 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
             raise Refusal(f"sequence {current.sequence_id} is running", "finish it with journal sequence next, or give it up with journal sequence abandon")
         if command.sequence_id is None:
             raise Refusal("name the sequence to run", "journal sequence run <n>")
-        agents = self.queries.query(Agent).filter(id=context.actor.id).limited(1)
-        if not agents:
+        agent = self.rows.find(Agent, context.actor.id)
+        if agent is None:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
-        sequence = self.queries.query(Sequence).find(command.sequence_id)
-        run = self.repository.save(SequenceRun(environment_id=agents[0].environment_id, agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
+        sequence = self.rows.required(Sequence, command.sequence_id)
+        run = self.repository.save(SequenceRun(environment_id=agent.environment_id, agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
         return SequenceLine(StepLine.text(sequence, run))
 
     def require_checks(self, sequence: Sequence, current: SequenceRun) -> None:

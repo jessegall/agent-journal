@@ -5,6 +5,7 @@ from core.modules.tasks.models.support.views import closed_task_counts_select
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
@@ -19,8 +20,33 @@ from core.modules.tasks.models.open_dependency import OpenDependency
 class TaskQuery(Query[Task]):
     """Reads tasks, with the filters the tasks module and its guards use by name."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Task)
+        self.kept = kept
+
+    def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
+        return self.kept.read(self.table.name, lambda: tuple(self.holder(agent_id).started().descending("started_at").all_rows()),
+                              "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
+
+    def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
+        return self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).oldest().all_rows()),
+                              "delegated_to = ? AND state = ?", [agent_id, TaskState.OPEN], name="tasks.queued_tasks")
+
+    def remember(self, task: Task) -> None:
+        self.replace_cached(task, tuple([task]))
+
+    def remove(self, task: Task) -> None:
+        self.replace_cached(task, ())
+
+    def replace_cached(self, task: Task, present: tuple[Task, ...]) -> None:
+        started = [row for row in present if row.state is TaskState.STARTED]
+        queued = [row for row in present if row.state is TaskState.OPEN]
+        if task.holder_id is not None:
+            self.kept.update(self.table.name, lambda tasks: tuple(sorted([row for row in tasks if row.id != task.id] + started, key=lambda row: row.started_at, reverse=True)),
+                             "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
+        if task.delegated_to is not None:
+            self.kept.update(self.table.name, lambda tasks: tuple(sorted([row for row in tasks if row.id != task.id] + queued, key=lambda row: row.id)),
+                             "delegated_to = ? AND state = ?", [task.delegated_to, TaskState.OPEN], name="tasks.queued_tasks")
 
     def environment(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id)

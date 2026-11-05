@@ -1,9 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.docking.commands.make_dock.make_dock import MakeDock
 from core.modules.docking.models.dock import Dock
+from core.modules.docking.support.environment_docks import EnvironmentDocks
 
 
 class MakeDockHandler(Handler[MakeDock, Dock]):
@@ -11,9 +11,13 @@ class MakeDockHandler(Handler[MakeDock, Dock]):
 
     command = MakeDock
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, docks: EnvironmentDocks, repository: Repository) -> None:
+        self.docks, self.repository = docks, repository
 
     def handle(self, command: MakeDock, context: Context) -> Dock:
-        existing = next(self.queries.query(Dock).filter(environment_id=command.environment_id).all_rows(), None)
-        return existing or self.repository.save(Dock(environment_id=command.environment_id, creator_id=context.actor.id), context)
+        existing = self.docks.find(command.environment_id)
+        if existing is not None:
+            return existing
+        saved = self.repository.save(Dock(environment_id=command.environment_id, creator_id=context.actor.id), context)
+        self.docks.remember(saved)
+        return saved

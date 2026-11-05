@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -29,6 +27,6 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
             raise Refusal(f"agent {agent.id} has ended")
         if agent.paused_at is not None:
             raise Refusal(f"agent {agent.id} is paused already")
-        paused = self.repository.save(replace(agent, paused_at=context.timestamp), context)
+        paused = self.repository.update(agent, context, paused_at=context.timestamp)
         self.nudger.send(agent.id, PAUSED_REFUSAL, PAUSE_SOURCE, context)
         return paused

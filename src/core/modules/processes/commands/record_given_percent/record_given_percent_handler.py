@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -17,4 +15,4 @@ class RecordGivenPercentHandler(Handler[RecordGivenPercent, Watch]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordGivenPercent, context: Context) -> Watch:
-        return self.repository.save(replace(self.queries.query(Watch).find(command.watch_id), given_percent=command.given_percent), context)
+        return self.repository.update(self.queries.query(Watch).find(command.watch_id), context, given_percent=command.given_percent)

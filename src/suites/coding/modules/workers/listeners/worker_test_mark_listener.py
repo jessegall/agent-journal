@@ -3,6 +3,7 @@ from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.chat.listeners.mark_listener import MarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
@@ -22,8 +23,8 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
     moves = (ProofLifecycle.queue, ProofLifecycle.check, ProofLifecycle.short)
     module_name = "journal.suites.coding.workers"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, events: EventLog) -> None:
-        super().__init__(bus, actors, queries)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, events: EventLog, event_rows: EventRows) -> None:
+        super().__init__(bus, actors, queries, event_rows)
         self.events = events
 
     def handle(self, event: Moved[Proof], logged: LoggedEvent) -> None:

@@ -2,8 +2,6 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -23,19 +21,25 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
     name = "tasks.task-waits"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, tables: Tables, waits: TaskWaits, book: StateBook) -> None:
-        self.queries, self.repository, self.tables, self.waits, self.book = queries, repository, tables, waits, book
+    def __init__(self, repository: Repository, tables: Tables, waits: TaskWaits, book: StateBook) -> None:
+        self.repository, self.tables, self.waits, self.book = repository, tables, waits, book
 
     def handle(self, event: Changed[Model], context: Context) -> None:
         row = event.row
+        if isinstance(row, TaskWait):
+            if isinstance(event, Deleted):
+                self.waits.remove(row)
+                return
+            self.waits.remember(row)
+            return
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
-            for wait in tuple(self.waits.open_waits(row.id).all_rows()):
+            for wait in self.waits.pending_task(row.id):
                 self.repository.update(wait, context, ended_at=context.timestamp)
-        if isinstance(row, TaskWait) or lifecycle is None:
+        if lifecycle is None:
             return
         if not isinstance(event, Deleted) and getattr(row, "state", None) in lifecycle.editable:
             return
         target = f"{self.tables.table(type(row)).name}:{row.id}"
-        for wait in tuple(self.queries.query(TaskWait).filter(target=target).matching(IsNull("ended_at")).all_rows()):
+        for wait in self.waits.pending_target(target):
             self.waits.resolved(wait, context)

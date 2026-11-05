@@ -55,6 +55,8 @@ from core.modules.library.commands.send_library_item.send_library_item_subcomman
 from core.modules.library.commands.save_library_connection.save_library_connection_handler import SaveLibraryConnectionHandler
 from core.modules.library.guards.library_address_guard import LibraryAddressGuard
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
+from core.modules.library.migrations.m002_connection_signature_index import ConnectionSignatureIndexMigration
+from core.modules.library.listeners.connection_rows_listener import ConnectionRowsListener
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
@@ -74,7 +76,8 @@ class LibraryModule(Module):
                 SettingValue("agent-edits-wait", "Agent edits wait for a person", "An agent's edit of an item that follows the library stays on this journal until a person sends it.",
                              SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [LibraryTablesMigration]
+    migrations = [LibraryTablesMigration, ConnectionSignatureIndexMigration]
+    listeners = [ConnectionRowsListener]
     guards = [LibraryAddressGuard]
     bindings = {LibraryLookup: ServerLibraryLookup}
     handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, AddLibraryUserHandler, SetLibraryRoleHandler, RemoveLibraryUserHandler, RevokeLibraryTokenHandler, SendLibraryItemHandler,

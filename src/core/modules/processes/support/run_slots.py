@@ -4,6 +4,8 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.clock import Clock
+from core.base.listener.event_rows import EventRows
+from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
@@ -21,20 +23,21 @@ from core.modules.processes.support.run_admission import RunAdmission
 class RunSlots:
     """Admits every run, granting immediate runs and giving waiting runs capacity in order."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
+        self.rows, self.kept = rows, kept
 
     def grant(self, environment_id: int, context: Context) -> None:
         runs = self.running(environment_id)
         for waiting in [process for process in runs if process.queued_at is not None]:
-            agent = self.queries.query(Agent).find(waiting.agent_id)
+            agent = self.rows.required(Agent, waiting.agent_id)
             needs_slot = self.admission.needs_slot(waiting, agent)
             if not self.admission.may_start(waiting, agent, self.clock.timestamp()):
                 continue
-            process = self.queries.query(Process).find(waiting.id)
+            process = self.rows.required(Process, waiting.id)
             self.record_count(process, context)
-            process = self.queries.query(Process).find(process.id)
+            process = self.rows.required(Process, process.id)
             if process.queued_at is None or process.state not in RUNNING_STATES:
                 continue
             used_slots = sum(self.admission.uses_slot(run) for run in self.running(environment_id) if run.queued_at is None)
@@ -43,10 +46,17 @@ class RunSlots:
                 continue
             self.folder.write_slot(process.id)
             admitted = replace(process, queued_at=None, slot_assigned=needs_slot, started_at=context.timestamp)
-            self.repository.save(admitted, context)
+            saved = self.repository.save_change(process, admitted, context)
+            self.remember(saved)
+
+    def remember(self, process: Process) -> None:
+        self.kept.update("processes", lambda runs: tuple(sorted([run for run in runs if run.id != process.id]
+                         + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id)),
+                         "environment_id = ? AND state IN (?, ?)", [process.environment_id, *RUNNING_STATES], name="processes.slot_runs")
 
     def running(self, environment_id: int) -> tuple[Process, ...]:
-        return tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
+        return self.kept.read("processes", lambda: tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),
+                              "environment_id = ? AND state IN (?, ?)", [environment_id, *RUNNING_STATES], name="processes.slot_runs")
 
     def grant_all_environments(self, context: Context) -> None:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()
@@ -59,4 +69,4 @@ class RunSlots:
         count = self.listings.count(process, self.folder.count_text(process.id))
         outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
         if count and outputs and outputs[0].test_count != count:
-            self.repository.save(replace(outputs[0], test_count=count), context)
+            self.repository.update(outputs[0], context, test_count=count)

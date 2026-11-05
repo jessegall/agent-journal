@@ -1,6 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
@@ -16,8 +15,8 @@ class MarkTypeGuard(Guard[Changed[ChatMark]]):
 
     name = "chat.declared-type"
 
-    def __init__(self, registry: Registry, queries: Queries) -> None:
-        self.registry, self.queries = registry, queries
+    def __init__(self, registry: Registry, rows: EventRows) -> None:
+        self.registry, self.rows = registry, rows
 
     def check(self, event: Changed[ChatMark], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -30,5 +29,5 @@ class MarkTypeGuard(Guard[Changed[ChatMark]]):
             raise Refusal(f"no installed module declares the mark {mark.type}", "a module declares its mark types in its marks list")
         if mark.variant not in declared.variants:
             raise Refusal(f"the mark {mark.type} has no variant {mark.variant}", f"its variants are {', '.join(declared.variants)}")
-        if self.queries.query(ActorRecord).find(context.actor.id).name != declared.module:
+        if self.rows.required(ActorRecord, context.actor.id).name != declared.module:
             raise Refusal(f"only {declared.module} writes a mark of {mark.type}", f"{declared.module} runs ShowMark from its own listener")

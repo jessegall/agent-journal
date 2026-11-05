@@ -1,3 +1,4 @@
+from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 from functools import lru_cache
@@ -35,7 +36,7 @@ class SkillCatalogue:
     @staticmethod
     @lru_cache(maxsize=256)
     def loaded_skill(path: Path, version: FileVersion) -> tuple[SkillEntry, ...]:
-        text = FileAccess.shared().read(path)
+        text = SkillContents.read(path).text
         fields = SkillCatalogue.front_matter(text)
         if PLUGIN_KEY not in fields:
             return ()

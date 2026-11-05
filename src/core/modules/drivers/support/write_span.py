@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from core.base.driver.span import Span
 
 from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from core.base.driver.span_queries import SpanQueries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 
 @dataclass(frozen=True)
@@ -17,5 +17,5 @@ class WriteSpan(Span):
 
     count: int
 
-    def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
-        return queries.query(HookCall).filter(agent_id=agent_id, writes_files=True, answer=HookAnswer.ALLOWED).matching(Greater("created_at", start.text)).count() >= self.count
+    def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
+        return HookCallQuery(reads.queries.database, reads.queries.tables, reads.kept).agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Greater("created_at", start.text)).count() >= self.count

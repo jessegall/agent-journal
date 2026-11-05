@@ -6,6 +6,7 @@ from core.base.driver.block_until import BlockUntil
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.span_queries import SpanQueries
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
@@ -25,8 +26,8 @@ class UnopenableBlockRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, spans: SpanQueries) -> None:
+        self.queries, self.spans = queries, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tasks = tuple(self.queries.query(TaskBlockReview).filter(agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).all_rows())
@@ -35,7 +36,7 @@ class UnopenableBlockRule(DriverRule):
         blocks = self.queries.query(AgentBlock).filter(agent_id=hook.agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(IsNull("closed_at")).page(1, 1).rows
         if blocks and TaskBlocksReviewed.stored(blocks[0].condition_text).pending(tasks):
             return RuleAnswer.allowed()
-        passed = BLOCK_REVIEW_INTERVAL.has_passed_many(self.queries, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)
+        passed = BLOCK_REVIEW_INTERVAL.has_passed_many(self.spans, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)
         due = [task for task, passed_span in zip(tasks, passed) if passed_span][:SHOWN_TASK_COUNT]
         notices = [replace((USER_BLOCK_REVIEW if task.user_wait else BLOCK_REVIEW).nudge(task=task.task_id),
                            key=f"{BLOCK_REVIEW.key}.{task.task_id}", interval=None, declaration=None) for task in due]

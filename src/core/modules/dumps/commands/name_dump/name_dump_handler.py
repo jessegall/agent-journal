@@ -1,8 +1,6 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
@@ -16,13 +14,13 @@ class NameDumpHandler(Handler[NameDump, Dump]):
 
     command = NameDump
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository) -> None:
+        self.rows, self.repository = rows, repository
 
     def handle(self, command: NameDump, context: Context) -> Dump:
-        dump = self.queries.query(Dump).find(command.dump_id)
+        dump = self.rows.required(Dump, command.dump_id)
         if dump.closed_at is not None:
             raise Refusal(f"dump {dump.id} is closed", "a closed dump takes no more")
         if not 1 <= len(command.title) <= DUMP_NAME_LIMIT_CHARACTERS:
             raise Refusal(f"a dump's title is 1 to {DUMP_NAME_LIMIT_CHARACTERS} characters", "say it shorter")
-        return self.repository.save(replace(dump, title=command.title), context)
+        return self.repository.update(dump, context, title=command.title)

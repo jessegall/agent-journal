@@ -1,6 +1,7 @@
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
@@ -18,8 +19,18 @@ from core.modules.processes.queries.process_query import OPEN
 class OutputQuery(Query[Output]):
     """Reads outputs, with the filters the processes module and its rules use by name."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, cached: KeptRows) -> None:
         super().__init__(database, tables, Output)
+        self.cached = cached
+
+    def process_output(self, process_id: int) -> Output | None:
+        return self.cached.read(self.table.name, self.process(process_id).first, "process_id = ?", [process_id], name="processes.process_output")
+
+    def remember(self, output: Output) -> None:
+        self.cached.update(self.table.name, lambda previous: output, "process_id = ?", [output.process_id], name="processes.process_output")
+
+    def remove(self, output: Output) -> None:
+        self.cached.update(self.table.name, lambda previous: None, "process_id = ?", [output.process_id], name="processes.process_output")
 
     def kept(self) -> Self:
         return self.filter(state=OutputState.KEPT)

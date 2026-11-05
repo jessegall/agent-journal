@@ -25,7 +25,7 @@ class DocLibraryShare(LibraryShare[Doc]):
         return doc
 
     def follow(self, row: Doc, fields: Fields, context: Context) -> Doc:
-        doc = self.repository.save(row.changed(**self.columns(fields)), context)
+        doc = self.repository.update(row, context, **self.columns(fields))
         self.revisions.record_standalone(doc, context)
         return doc
 

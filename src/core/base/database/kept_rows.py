@@ -15,13 +15,11 @@ class KeptRows:
     def __init__(self, database: Database) -> None:
         self.database = database
         self.kept: dict[str, KeptValue] = {}
-        self.rollback_count = database.rollback_count
+        self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        if self.rollback_count != self.database.rollback_count:
-            self.kept.clear()
-            self.rollback_count = self.database.rollback_count
-        cache_key = f"{name}:{table}:{condition}:{tuple(parameters)}"
+        self.check_rollback()
+        cache_key = self.key(table, condition, parameters, name)
         change_mark = self.database.change_mark()
         if cache_key in self.kept and self.kept[cache_key].change_mark == change_mark:
             return cast(T, self.kept[cache_key].value)
@@ -33,3 +31,19 @@ class KeptRows:
         loaded = loader()
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
+
+    def update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
+        self.check_rollback()
+        previous = self.kept.pop(self.key(table, condition, parameters, name), None)
+        if previous is None:
+            return
+        self.read(table, lambda: updater(cast(T, previous.value)), condition, parameters, name=name)
+
+    def check_rollback(self) -> None:
+        if self.write_rollback_count != self.database.write_rollback_count:
+            self.kept = {key: replace(value, change_mark=(-1, -1)) for key, value in self.kept.items()}
+            self.write_rollback_count = self.database.write_rollback_count
+
+    @staticmethod
+    def key(table: str, condition: str, parameters: Sequence[object], name: str) -> str:
+        return f"{name}:{table}:{condition}:{tuple(parameters)}"

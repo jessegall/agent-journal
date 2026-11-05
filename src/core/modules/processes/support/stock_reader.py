@@ -25,6 +25,18 @@ DART_FAILED = r"\[E\]$|: Some tests failed\."
 DART_COUNT = r"^[0-9]+:[0-9]+ \+([0-9]+)(?: [~-][0-9]+)*: (?:All tests passed!|Some tests failed\.)"
 DART_STEP = r"(?m)^[0-9]+:[0-9]+ \+[0-9]+(?: ~[0-9]+)?(?: -[0-9]+)?: (?:(?P<failed>.*\[E\]$)|(?P<passed>(?!All tests passed|Some tests failed|loading ).*))"
 
+GOLANG_TEST_LISTING = '''go_test_list() {
+    pattern=.
+    previous=
+    for argument do
+        case "$previous" in -run|-test.run) pattern=$argument ;; esac
+        case "$argument" in -run=*|-test.run=*) pattern=${argument#*=} ;; esac
+        previous=$argument
+    done
+    "$@" -list "$pattern"
+}
+go_test_list {part}'''
+
 STOCK_READERS = (
     StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Python tests",
                   r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$",
@@ -49,7 +61,7 @@ STOCK_READERS = (
     StockReader("cargo-nextest", "cargo nextest run*", "Rust tests", r"^\s*(?:FAIL|Summary|error:)", finished=r"^\s*Summary", failed=r"^\s*(?:FAIL|error:)", summary=r"Summary\s+\[[^]]+\]\s+([0-9]+ tests? run:.*)|^error:.*", count=r"^\s*Starting ([0-9]+) tests?", step=r"(?m)^[ \t]*(?:(?P<passed>PASS)|(?P<failed>FAIL))[ \t]+\["),
     StockReader("docker-build", "docker build *,docker buildx build *", "Building image", r"^#\d+ .*(?:DONE|ERROR)|^ERROR:|^error:|Successfully built|Successfully tagged", progress=r"\[([0-9]+)/([0-9]+)\]", finished=r"^#\d+ .*DONE|Successfully built|Successfully tagged", failed=r"^#\d+ .*ERROR|^ERROR:|^error:", summary=r"^#\d+ .*DONE.*|^ERROR:.*|^error:.*|Successfully (?:built|tagged).*"),
     StockReader("jest", "jest*,npx*jest*,*node_modules/.bin/jest*", "Jest tests", r"^\s*(?:FAIL |PASS |Test Suites:|Tests:|Error:)", r"Test Suites:.*?(\d+) passed,\s*(\d+) total", r"^Test Suites:", r"^\s*(?:FAIL |Error:)", r"^Tests:.*|^Error:.*", count=r"^Tests:.*?([0-9]+) total"),
-    StockReader("go-test", "go test*,go -C * test*", "Go tests", r"^(?:ok|FAIL|--- FAIL|panic:|# )", finished=r"^(?:ok|FAIL)\s", failed=r"^(?:FAIL|--- FAIL|panic:|# )", summary=r"^(?:ok|FAIL)\s.*", count=r"^Test\w+$", count_command="{part} -list .", step=r"(?m)^--- (?:(?P<passed>PASS)|(?P<failed>FAIL)): .+"),
+    StockReader("go-test", "go test*,go -C * test*", "Go tests", r"^(?:ok|FAIL|--- FAIL|panic:|# )", finished=r"^(?:ok|FAIL)\s", failed=r"^(?:FAIL|--- FAIL|panic:|# )", summary=r"^(?:ok|FAIL)\s.*", count=r"^Test\w+$", count_command=GOLANG_TEST_LISTING, step=r"(?m)^--- (?:(?P<passed>PASS)|(?P<failed>FAIL)): .+"),
     StockReader("go-build", "go build*,go -C * build*,go install*,go -C * install*", "Building Go", r"^# |\.go:[0-9]+:[0-9]+:|^go: ", failed=r"^# |\.go:[0-9]+:[0-9]+:|^go: ", summary=r"\.go:[0-9]+:[0-9]+:.*|^go: .*|^# .*"),
     StockReader("go-vet", "go vet*,go -C * vet*", "Checking Go", r"^# |\.go:[0-9]+:[0-9]+:|^go: ", failed=r"^# |\.go:[0-9]+:[0-9]+:|^go: ", summary=r"\.go:[0-9]+:[0-9]+:.*|^go: .*|^# .*"),
     StockReader("make", "make,make *,gmake,gmake *", "Building", r"\*\*\*|\berror\b", failed=r"\*\*\*", summary=r"^make.*\*\*\*.*|^.+$"),

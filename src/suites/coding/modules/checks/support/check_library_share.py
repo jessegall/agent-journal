@@ -25,7 +25,7 @@ class CheckLibraryShare(LibraryShare[Check]):
         return self.repository.save(Check(creator_id=context.actor.id, stopped=True, **asdict(CheckColumns.parsed(fields))), context)
 
     def follow(self, row: Check, fields: Fields, context: Context) -> Check:
-        return self.repository.save(row.changed(**asdict(CheckColumns.parsed(fields))), context)
+        return self.repository.update(row, context, **asdict(CheckColumns.parsed(fields)))
 
     def is_removed(self, row: Check) -> bool:
         return row.removed_at is not None
