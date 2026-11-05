@@ -2,19 +2,18 @@ from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.block_until import BlockUntil
-from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.overview.support.overview_nudges import OVERVIEW_COMMAND, OVERVIEW_REFUSAL
+from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
 
 
 class OverviewFirstRule(DriverRule):
-    """A session's start or a compaction blocks the agent until it has run journal overview: nothing else passes
-    but reading a skill. A resume does not, since its conversation already holds it."""
+    """A session's start or a compaction tells the agent to run journal overview and blocks it until it has: nothing
+    else passes but reading a skill. A resume does not, since its conversation already holds it."""
 
     name = "overview.overview-first"
     start_line_rule = True
+    overlay_proof = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]
@@ -25,4 +24,4 @@ class OverviewFirstRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.first.is_required:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, OVERVIEW_REFUSAL.nudge(), RanCommand(OVERVIEW_COMMAND), strict=True))
+        return RuleAnswer.with_nudges(OVERVIEW_LINE.nudge()).running(self.first.block(hook.agent_id))

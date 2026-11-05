@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_record import RuleRecord
 from core.base.driver.layer import Layer
 from core.base.driver.overlay import Overlay
@@ -16,6 +17,7 @@ class Walk:
         self.layers = list(layers)
         self.rules: list[RuleRecord] = []
         self.is_silenced = False
+        self.delays_notices = False
         self.has_ended_layer = False
         self.delays_lines = False
 
@@ -31,7 +33,11 @@ class Walk:
         if not self.layers or self.layers[0] == layer.row.ref:
             self.delays_lines = overlay.delays_lines and not self.has_ended_layer
         self.is_silenced = self.is_silenced or (overlay.exclusive and not self.has_ended_layer)
+        self.delays_notices = self.delays_notices or (overlay.delays_notices and not self.has_ended_layer)
         self.has_ended_layer = False
+
+    def silences(self, rule: type[DriverRule]) -> bool:
+        return (self.is_silenced and not rule.overlay_proof) or (self.delays_notices and rule.is_notice)
 
     def answers(self) -> RuleAnswers:
         return RuleAnswers(self.layers, self.rules, self.delays_lines)
