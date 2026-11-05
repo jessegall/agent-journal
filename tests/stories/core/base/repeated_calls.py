@@ -12,7 +12,7 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.testing.repeated_calls_error import RepeatedCallsError
-from core.testing.repeated_work import READ_LIMIT_REPEATS
+from core.testing.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS
 from core.testing.story_line_run import StoryLineRun
 
 REPEATED_READ = Statement("SELECT 1")
@@ -34,19 +34,20 @@ def repeat_command(story, count: int) -> None:
 def test_a_request_that_repeats_one_read_past_the_limit_raises_and_names_the_read(new_story):
     story = new_story()
     with pytest.raises(RepeatedCallsError, match="SELECT 1"):
-        repeat_read(story, 3)
-    story.expect_rows(story.repeated_work.reads[REPEATED_READ] == 2)
+        repeat_read(story, READ_LIMIT_REPEATS + 2)
+    story.expect_rows(story.repeated_work.reads[REPEATED_READ] == READ_LIMIT_REPEATS + 1)
 
 
 def test_a_request_that_stays_at_the_read_limit_passes(new_story):
     repeat_read(new_story(), READ_LIMIT_REPEATS)
 
 
-def test_a_write_between_two_reads_does_not_clear_the_count(new_story):
+def test_a_write_does_not_clear_the_read_count(new_story):
     story = new_story()
     database = story.container.get(Database)
     with pytest.raises(RepeatedCallsError, match="SELECT 1"), story.repeated_work.request():
-        database.rows(REPEATED_READ)
+        for _ in range(READ_LIMIT_REPEATS):
+            database.rows(REPEATED_READ)
         database.update(Statement("UPDATE settings SET version = version WHERE 1 = 0"))
         database.rows(REPEATED_READ)
 
@@ -55,16 +56,16 @@ def test_a_per_row_read_loop_raises_even_when_each_row_has_a_different_id(new_st
     story = new_story()
     database = story.container.get(Database)
     with pytest.raises(RepeatedCallsError, match="SELECT \\?"), story.repeated_work.request():
-        for row_id in range(11):
+        for row_id in range(READ_LIMIT_REPEATS + 1):
             database.rows(Statement("SELECT ?", [row_id]))
             database.update(Statement("UPDATE settings SET version = version WHERE 1 = 0"))
 
 
-def test_ten_reads_with_different_parameters_are_within_the_loop_limit(new_story):
+def test_reads_with_different_parameters_stay_within_the_loop_limit(new_story):
     story = new_story()
     database = story.container.get(Database)
     with story.repeated_work.request():
-        for row_id in range(10):
+        for row_id in range(READ_LIMIT_REPEATS):
             database.rows(Statement("SELECT ?", [row_id]))
 
 
@@ -72,7 +73,7 @@ def test_a_loop_of_query_objects_with_different_ids_still_raises(new_story):
     story = new_story()
     query = story.container.get(Queries).query(Environment)
     with pytest.raises(RepeatedCallsError, match="environments"), story.repeated_work.request():
-        for row_id in range(11):
+        for row_id in range(READ_LIMIT_REPEATS + 1):
             query.filter(id=row_id).first()
 
 
@@ -89,7 +90,7 @@ def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):
     database = story.container.get(Database)
 
     def run():
-        for _ in range(2):
+        for _ in range(READ_LIMIT_REPEATS + 1):
             database.rows(REPEATED_READ)
 
     monkeypatch.setattr(story.container.get(CommitListenerRunner), "run", run)
@@ -102,8 +103,8 @@ def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
 
     def run(console, argv, caller, stream):
         database = console.events.table.database
-        database.rows(REPEATED_READ)
-        database.rows(REPEATED_READ)
+        for _ in range(READ_LIMIT_REPEATS + 1):
+            database.rows(REPEATED_READ)
         stream.write("{}")
         return 0
 
@@ -115,7 +116,7 @@ def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
 
 def test_a_request_that_starts_one_command_past_the_limit_raises_and_names_the_command(new_story):
     with pytest.raises(RepeatedCallsError, match="true"):
-        repeat_command(new_story(), 2)
+        repeat_command(new_story(), COMMAND_LIMIT_REPEATS + 1)
 
 
 def test_a_new_request_starts_every_count_at_zero(new_story):

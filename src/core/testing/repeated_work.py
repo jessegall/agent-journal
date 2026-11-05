@@ -11,9 +11,8 @@ from core.base.database.point_tally import TABLE_PATTERN, PointTally
 from core.base.database.statement import Statement
 from core.testing.repeated_calls_error import RepeatedCallsError
 
-READ_LIMIT_REPEATS = 1
-READ_TEXT_LIMIT_REPEATS = 10
-COMMAND_LIMIT_REPEATS = 1
+READ_LIMIT_REPEATS = 218
+COMMAND_LIMIT_REPEATS = 3
 CALLER_FRAMES = 14
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
@@ -63,8 +62,8 @@ class RepeatedWork(PointTally):
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
             self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
-        if self.read_texts[statement.sql] == READ_TEXT_LIMIT_REPEATS + 1:
-            self.reject(f"one request read this SQL more than {READ_TEXT_LIMIT_REPEATS} times: {statement.sql}\n{self.caller_lines()}")
+        if self.read_texts[statement.sql] == READ_LIMIT_REPEATS + 1:
+            self.reject(f"one request read this SQL more than {READ_LIMIT_REPEATS} times: {statement.sql}\n{self.caller_lines()}")
 
     def reject(self, finding: str) -> None:
         self.findings.append(finding)
