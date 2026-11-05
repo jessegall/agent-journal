@@ -19,3 +19,8 @@ func prepareManaged(command *exec.Cmd) {
 		return err
 	}
 }
+
+// detach lets a program go on after the hook that started it has answered.
+func detach(command *exec.Cmd) {
+	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+}

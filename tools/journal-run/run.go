@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -36,6 +37,8 @@ type Options struct {
 	// ReadFlags say what the agent reads of a saved command, by position; the whole output stays on disk.
 	ReadFlags map[int]string
 	Detach    func(options Options)
+	// ScanFiles looks for what the line changed once it has ended; when it is nil nothing looks.
+	ScanFiles func(options Options)
 	// ShellAlive says whether the shell that started the runner still lives; when it is nil the runner watches its parent.
 	ShellAlive func() bool
 }
@@ -125,6 +128,18 @@ func writeHeartbeats(folder Folder, pid int, interval time.Duration) {
 // StartCutting leaves a program behind that keeps a line's outputs under the limit once the line has ended.
 func StartCutting(options Options, parts int) {
 	command := exec.Command(os.Args[0], "--keep-cutting", "--process", strconv.Itoa(options.Process), "--folder", options.Home, "--parts", strconv.Itoa(parts), "--most-output", strconv.Itoa(options.MostOutputBytes))
+	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	_ = command.Start()
+}
+
+// ScanFiles leaves the hook program behind to look for the files the line changed, which no tool call waits for.
+func ScanFiles(options Options) {
+	folder, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	command := exec.Command(filepath.Join(options.Home, "bin", "journal-hook"), "--file-scan", options.Home, "--process", strconv.Itoa(options.Process), folder)
+	command.Env = journalEnvironment(options.Home)
 	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	_ = command.Start()
 }
