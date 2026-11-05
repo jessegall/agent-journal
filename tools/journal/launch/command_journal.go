@@ -186,6 +186,11 @@ func (journal CommandJournal) TellProgramExit(agentID, exitCode int) {
 	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode))
 }
 
+// TellLaunchEnded tells the journal a program was stopped because the launch that ran it ended.
+func (journal CommandJournal) TellLaunchEnded(agentID, exitCode int) {
+	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--launch-ended")
+}
+
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.
 func HookTrustLine(trust string) string {
 	switch trust {

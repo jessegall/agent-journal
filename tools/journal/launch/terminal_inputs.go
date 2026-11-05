@@ -21,6 +21,7 @@ const (
 // TerminalInputs keeps the input of each running program by its agent row, so a line typed in the viewer reaches the
 // program's pseudo terminal beside what the person types at the keyboard, with when each last came.
 type TerminalInputs struct {
+	closing bool
 	mutex    sync.Mutex
 	writers  map[int]*io.PipeWriter
 	keyedAt  map[int]time.Time
@@ -112,6 +113,27 @@ func (inputs *TerminalInputs) StopProgram(agentID int) bool {
 	signalGroup(program.Process.Pid, true)
 	inputs.waitForExit(agentID, forcedStopWait)
 	return true
+}
+
+// StopAll stops every program this launch started, as the launch ends, and says so to each one's exit.
+func (inputs *TerminalInputs) StopAll() {
+	inputs.mutex.Lock()
+	inputs.closing = true
+	running := make([]int, 0, len(inputs.programs))
+	for agentID := range inputs.programs {
+		running = append(running, agentID)
+	}
+	inputs.mutex.Unlock()
+	for _, agentID := range running {
+		inputs.StopProgram(agentID)
+	}
+}
+
+// IsClosing says the launch that owns these programs is ending.
+func (inputs *TerminalInputs) IsClosing() bool {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	return inputs.closing
 }
 
 func (inputs *TerminalInputs) waitForExit(agentID int, limit time.Duration) bool {

@@ -38,8 +38,9 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	_ = launch.SaveAnswers(home, choice.Answers)
 	prepareProgramHooks(journal, request.Program, choice.Folder, stderr)
 	inputs := launch.NewTerminalInputs()
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: journal.TellProgramExit}, inputs); err == nil {
+	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitTeller(journal, inputs)}, inputs); err == nil {
 		defer listener.Close()
+		defer inputs.StopAll()
 	}
 	launchName := "launch-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	agentID, err := journal.StartAgent(choice.Environment, request.Program, launchName)
@@ -134,4 +135,15 @@ func launchJournal() launch.CommandJournal {
 		}
 		return output.String(), nil
 	}}
+}
+
+// programExitTeller says how a program ended, and whether the launch ending is why.
+func programExitTeller(journal launch.CommandJournal, inputs *launch.TerminalInputs) func(agentID, exitCode int) {
+	return func(agentID, exitCode int) {
+		if inputs.IsClosing() {
+			journal.TellLaunchEnded(agentID, exitCode)
+			return
+		}
+		journal.TellProgramExit(agentID, exitCode)
+	}
 }

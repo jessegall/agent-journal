@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"time"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -53,6 +54,9 @@ type ProgramStart struct {
 type Starter interface {
 	Start(start ProgramStart) error
 }
+
+// socketDialLimit is how long a launch waits to learn whether another launch still answers on a socket.
+const socketDialLimit = 300 * time.Millisecond
 
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
 // terminal log under the journal's folder and read for its status file.
@@ -137,9 +141,15 @@ func exitCode(err error) int {
 // Listen takes requests on the launcher's socket: it starts each worker's program with its identity, and types a line
 // into the terminal of the agent a request names.
 func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, error) {
-	_ = os.Remove(path)
+	previous := setAsidePrevious(path)
 	listener, err := net.Listen("unix", path)
 	if err != nil {
+		return nil, err
+	}
+	listener.(*net.UnixListener).SetUnlinkOnClose(false)
+	bound, err := os.Stat(path)
+	if err != nil {
+		_ = listener.Close()
 		return nil, err
 	}
 	go func() {
@@ -148,13 +158,73 @@ func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, er
 			if err != nil {
 				return
 			}
-			go answered(connection, starter, inputs)
+			go answered(connection, starter, inputs, previous)
 		}
 	}()
-	return listener, nil
+	return launchSocket{listener: listener, path: path, previous: previous, bound: bound}, nil
 }
 
-func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
+// launchSocket is one launch's socket. A second launch in a project takes the name and keeps the first's socket beside
+// it, passing on what is not its own, so the first's programs can still be stopped and typed to.
+type launchSocket struct {
+	listener net.Listener
+	path     string
+	previous string
+	bound    os.FileInfo
+}
+
+// Close frees the name when it is still this launch's, and gives it back to the launch before it.
+func (socket launchSocket) Close() error {
+	err := socket.listener.Close()
+	if current, statErr := os.Stat(socket.path); statErr == nil && os.SameFile(current, socket.bound) {
+		_ = os.Remove(socket.path)
+		if socket.previous != "" {
+			restorePrevious(socket.previous, socket.path)
+		}
+	}
+	return err
+}
+
+func setAsidePrevious(path string) string {
+	connection, err := net.DialTimeout("unix", path, socketDialLimit)
+	if err != nil {
+		_ = os.Remove(path)
+		return ""
+	}
+	_ = connection.Close()
+	previous := path + "." + strconv.Itoa(os.Getpid())
+	if os.Rename(path, previous) != nil {
+		return ""
+	}
+	return previous
+}
+
+func restorePrevious(previous, path string) {
+	connection, err := net.DialTimeout("unix", previous, socketDialLimit)
+	if err != nil {
+		_ = os.Remove(previous)
+		return
+	}
+	_ = connection.Close()
+	_ = os.Rename(previous, path)
+}
+
+// forwarded passes a request this launch has no program for to the launch before it, and hands back its answer.
+func forwarded(connection net.Conn, request WorkerRequest, previous string) {
+	if previous == "" {
+		return
+	}
+	earlier, err := net.DialTimeout("unix", previous, socketDialLimit)
+	if err != nil {
+		return
+	}
+	defer earlier.Close()
+	if json.NewEncoder(earlier).Encode(request) == nil {
+		_, _ = io.Copy(connection, earlier)
+	}
+}
+
+func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, previous string) {
 	defer connection.Close()
 	var request WorkerRequest
 	if err := json.NewDecoder(connection).Decode(&request); err != nil {
@@ -163,13 +233,17 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 	if request.Stop {
 		if inputs.StopProgram(request.AgentID) {
 			_, _ = io.WriteString(connection, StoppedAnswer+"\n")
+			return
 		}
+		forwarded(connection, request, previous)
 		return
 	}
 	if request.InputLine != "" {
 		if inputs.TypeLine(request.AgentID, request.InputLine) {
 			_, _ = io.WriteString(connection, TypedAnswer+"\n")
+			return
 		}
+		forwarded(connection, request, previous)
 		return
 	}
 	if len(request.Command) == 0 {
