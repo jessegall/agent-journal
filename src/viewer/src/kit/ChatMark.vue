@@ -527,17 +527,18 @@ const tint = computed(() => ({
 /* the progress line lies along the mark's foot, inside its rounded corners */
 .bar {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 2px;
+    inset: 0;
     overflow: hidden;
-    border-radius: 0 0 6px 6px;
+    border-radius: 6px;
+    pointer-events: none;
 }
 
 .progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     display: block;
-    height: 100%;
+    height: 2px;
     opacity: 0.85;
     transition: width 0.5s ease;
 }

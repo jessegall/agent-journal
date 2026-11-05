@@ -52,6 +52,7 @@ export {usePoll} from "./usePoll.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
 export {useRows, useDeclaredRows} from "./useRows.js";
+export {useDockRow} from "./useDockRow.js";
 export {afterSkeletonMinimum} from "./skeletonMinimum.js";
 export {matchesSearch} from "./searchFields.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";

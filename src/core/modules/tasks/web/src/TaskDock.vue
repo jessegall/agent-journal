@@ -1,5 +1,7 @@
 <script setup>
-defineProps({row: {type: Object, default: null}});
+import {useDockRow} from "@journal/window-kit";
+
+const row = useDockRow("task");
 </script>
 
 <template>
