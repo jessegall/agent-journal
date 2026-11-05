@@ -18,10 +18,10 @@ class WorktreeQuery(Query[Worktree]):
                               "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
 
     def open_worktrees(self) -> list[Worktree]:
-        return list(self.kept.read_in_scope(self.table.name, lambda: tuple(self.rows_without("removed_at")), "removed_at IS NULL", name="workers.open_worktrees"))
+        return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.rows_without("removed_at")), "removed_at IS NULL", name="workers.open_worktrees"))
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
-        return self.kept.read_in_scope(self.table.name, lambda: tuple(self.oldest().all_rows()), name="workers.all_worktrees")
+        return self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), name="workers.all_worktrees")
 
     def remember(self, worktree: Worktree) -> None:
         self.replace_cached(worktree, tuple([worktree]))
@@ -33,7 +33,7 @@ class WorktreeQuery(Query[Worktree]):
         active = [row for row in present if row.removed_at is None]
         self.kept.update(self.table.name, lambda previous: next(iter(active), None), "session_agent_id = ? AND removed_at IS NULL",
                          [worktree.session_agent_id], name="workers.worker_worktree")
-        self.kept.update_in_scope(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(active), key=lambda row: row.id)),
+        self.kept.scoped_update(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(active), key=lambda row: row.id)),
                                   "removed_at IS NULL", name="workers.open_worktrees")
-        self.kept.update_in_scope(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(present), key=lambda row: row.id)),
+        self.kept.scoped_update(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(present), key=lambda row: row.id)),
                                   name="workers.all_worktrees")

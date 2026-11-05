@@ -6,6 +6,6 @@ class SequenceRunListSubcommand(ViewRowsSubcommand):
     """`journal sequence-run list [--sequence-id <n>]`: the sequence runs still going in this environment."""
 
     model = SequenceRunRow
-    filters = ("sequence_id",)
+    filters = ["sequence_id"]
     cli_name = "sequence-run"
     name = "list"

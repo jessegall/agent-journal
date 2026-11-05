@@ -10,7 +10,7 @@ class EnvironmentDocks:
         self.queries, self.kept = queries, kept
 
     def find(self) -> Dock | None:
-        return self.kept.read_in_scope("docks", self.queries.query(Dock).first, name="docking.environment_dock")
+        return self.kept.scoped_read("docks", self.queries.query(Dock).first, name="docking.environment_dock")
 
     def remember(self, dock: Dock) -> None:
-        self.kept.update_in_scope("docks", lambda previous: dock, name="docking.environment_dock")
+        self.kept.scoped_update("docks", lambda previous: dock, name="docking.environment_dock")

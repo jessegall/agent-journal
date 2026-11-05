@@ -42,10 +42,10 @@ class HelperLimits:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
             raise Refusal(f"{limit} helpers run here: {names}", "stop now: each report wakes you, then start again")
 
-    def checked_model(self, program: str, model: str, environment_id: int) -> str:
+    def checked_model(self, program: str, model: str) -> str:
         if not model:
             raise Refusal(f"this profile has no model for {program}", "add --model <model>")
-        names = self.models.allowed(self.providers.provider(program), environment_id)
+        names = self.models.allowed(self.providers.provider(program))
         if model not in names:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model

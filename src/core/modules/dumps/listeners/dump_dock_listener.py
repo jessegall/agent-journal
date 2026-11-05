@@ -27,14 +27,14 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
-    def docks_of_the_event(self, logged: LoggedEvent) -> list[Dock]:
+    def event_docks(self, logged: LoggedEvent) -> list[Dock]:
         return [dock for dock in self.queries.query(Dock).all_rows() if logged.environment_id in (None, dock.environment_id)]
 
     def handle(self, event: Changed[Dump], logged: LoggedEvent) -> None:
         dump = event.row
         actor = self.actors.actor(DUMPS_MODULE)
         if isinstance(event, Created):
-            for dock in self.docks_of_the_event(logged):
+            for dock in self.event_docks(logged):
                 self.bus.run(AddDockItem(DumpDockType.DUMP.value, Dump.model_name, dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
         if dump.closed_at is not None:
             for item in self.items.type_items(DumpDockType.DUMP.value).row_items(Dump.model_name, dump.id).all_rows():

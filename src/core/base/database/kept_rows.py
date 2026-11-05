@@ -39,13 +39,13 @@ class KeptRows:
             return
         self.read(table, lambda: updater(cast(T, previous.value)), condition, parameters, name=name)
 
-    def read_in_scope(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.read(table, loader, *self.in_scope(condition, parameters), name=name)
+    def scoped_read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
+        return self.read(table, loader, *self.condition_with_scope(condition, parameters), name=name)
 
-    def update_in_scope(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
-        self.update(table, updater, *self.in_scope(condition, parameters), name=name)
+    def scoped_update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
+        self.update(table, updater, *self.condition_with_scope(condition, parameters), name=name)
 
-    def in_scope(self, condition: str, parameters: Sequence[object]) -> tuple[str, Sequence[object]]:
+    def condition_with_scope(self, condition: str, parameters: Sequence[object]) -> tuple[str, Sequence[object]]:
         environment_id = self.database.scope_environment_id
         return (condition, parameters) if environment_id is None else (f"environment_id = ? AND {condition}", [environment_id, *parameters])
 

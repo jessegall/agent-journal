@@ -66,7 +66,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if not program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         parent_id = caller.id if caller is not None else None
-        self.check_model(program, command.program_model, environment.id)
+        self.check_model(program, command.program_model)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
@@ -86,7 +86,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))
 
-    def check_model(self, program: str, model: str, environment_id: int) -> None:
-        names = self.models.allowed(self.providers.provider(program), environment_id)
+    def check_model(self, program: str, model: str) -> None:
+        names = self.models.allowed(self.providers.provider(program))
         if model not in names:
             raise Refusal(f"a worker is dispatched on a model {program} may run: {', '.join(names)}", "add --model <model>; journal worker models lists them")

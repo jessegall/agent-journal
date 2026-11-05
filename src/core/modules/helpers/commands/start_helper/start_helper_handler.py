@@ -43,7 +43,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         if not command.new_helper and not profile.independent:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
-        model = self.limits.checked_model(program, command.program_model or profile.program_model(program), parent.environment_id)
+        model = self.limits.checked_model(program, command.program_model or profile.program_model(program))
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,

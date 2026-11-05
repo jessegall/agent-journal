@@ -15,7 +15,7 @@ class UnreadMessages:
         self.queries, self.kept, self.agents = queries, kept, agents
 
     def addressed(self, agent_id: int) -> tuple[Message, ...]:
-        messages = self.kept.read_in_scope("messages", lambda: tuple(self.queries.query(Message)
+        messages = self.kept.scoped_read("messages", lambda: tuple(self.queries.query(Message)
                                            .matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()),
                                            "read_at IS NULL", name="messages.unread_person_messages")
         agent = self.agents.find(agent_id)
@@ -29,5 +29,5 @@ class UnreadMessages:
         self.replace_cached(message, ())
 
     def replace_cached(self, message: Message, pending: tuple[Message, ...]) -> None:
-        self.kept.update_in_scope("messages", lambda messages: tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id)),
+        self.kept.scoped_update("messages", lambda messages: tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id)),
                                   "read_at IS NULL", name="messages.unread_person_messages")

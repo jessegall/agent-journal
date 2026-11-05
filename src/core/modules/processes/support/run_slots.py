@@ -51,12 +51,12 @@ class RunSlots:
             self.remember(saved)
 
     def remember(self, process: Process) -> None:
-        self.kept.update_in_scope("processes", lambda runs: tuple(sorted([run for run in runs if run.id != process.id]
+        self.kept.scoped_update("processes", lambda runs: tuple(sorted([run for run in runs if run.id != process.id]
                                   + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id)),
                                   "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
 
     def running(self) -> tuple[Process, ...]:
-        return self.kept.read_in_scope("processes", lambda: tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),
+        return self.kept.scoped_read("processes", lambda: tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),
                                        "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
 
     def grant_all_environments(self, context: Context) -> None:

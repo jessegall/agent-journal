@@ -22,11 +22,11 @@ class AgentRows:
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
 
-    def is_in_scope(self, agent_id: int) -> bool:
+    def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
 
     def running_mains(self) -> tuple[Agent, ...]:
-        return self.kept.read_in_scope("agents", lambda: MainAgentFinder.all_running(self.queries),
+        return self.kept.scoped_read("agents", lambda: MainAgentFinder.all_running(self.queries),
                                        "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_mains")
 
     def main_agent(self) -> Agent | None:
