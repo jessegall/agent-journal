@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.exception_sink import ExceptionSink
 from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from tests.stories.core.support.fixtures import UserJoined
@@ -13,6 +15,9 @@ def failed_read(story, message):
 def test_an_error_in_the_chat_reaches_the_main_agent_once(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)
+    failed_read(story, "TypeError: an unexpected argument")
+    failed_read(story, "TypeError: an unexpected argument")
+    story.advance(timedelta(minutes=5))
     failed_read(story, "TypeError: an unexpected argument")
     lines = story.run(LINES.format(agent=story.agent.id)).output_text
     story.expect_rows(lines.count("the journal failed in line agent cards") == 1)

@@ -7,7 +7,7 @@ from core.modules.developer.commands.send_exception_line.send_exception_line imp
 from core.modules.drivers.support.nudger import Nudger
 
 EXCEPTION_LINE_SOURCE = "developer.exception"
-EXCEPTION_LINE = NudgeDeclaration("developer.exception", NudgeType.STEERING, "the journal failed in {source}: {message}", turn_limited=False, wakes_agent=True)
+EXCEPTION_LINE = NudgeDeclaration("developer.exception", NudgeType.STEERING, "the journal failed in {place}: {message}", turn_limited=False, wakes_agent=True)
 
 
 class SendExceptionLineHandler(Handler[SendExceptionLine, None]):
@@ -20,4 +20,4 @@ class SendExceptionLineHandler(Handler[SendExceptionLine, None]):
         self.nudger = nudger
 
     def handle(self, command: SendExceptionLine, context: Context) -> None:
-        self.nudger.send(command.agent_id, EXCEPTION_LINE, EXCEPTION_LINE_SOURCE, context, source=command.source, message=command.message)
+        self.nudger.send(command.agent_id, EXCEPTION_LINE, EXCEPTION_LINE_SOURCE, context, place=command.source, message=command.message)
