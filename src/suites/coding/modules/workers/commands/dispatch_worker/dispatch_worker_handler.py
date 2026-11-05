@@ -20,7 +20,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.allowed_models import AllowedModels
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
