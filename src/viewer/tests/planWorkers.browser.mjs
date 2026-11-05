@@ -10,7 +10,7 @@ try {
 
     // the agent card of the helpers dropdown has the job and the tasks queued behind it
     await page.locator("[data-helpers]").click();
-    const card = page.locator(`[data-dropdown="agents.subagents"] [data-agent-open="${worker}"]`);
+    const card = page.locator(`[data-dropdown="agents.helpers"] [data-agent-open="${worker}"]`);
     await card.waitFor();
     assert.ok((await card.locator("[data-agent-job]").textContent()).length > 0);
     await page.screenshot({path: `${shots}-card.png`});
