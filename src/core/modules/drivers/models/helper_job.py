@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
@@ -26,3 +26,6 @@ class HelperJob(EnvironmentScoped, Model):
     helper_id: int | None = None
     brief: str = ""
     report_message_id: int | None = None
+
+    def next_job(self, session: str, brief: str, instruction: str, creator_id: int) -> "HelperJob":
+        return replace(self, id=0, version=0, created_at=None, updated_at=None, creator_id=creator_id, tool_key=f"{session}:{self.id}", brief=brief, instruction=instruction, ended_at=None, returned="", report_message_id=None)

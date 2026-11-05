@@ -18,6 +18,7 @@ class StartHelperSubcommand(Subcommand[StartHelper, Agent]):
         parser.add_argument("--program", default="")
         parser.add_argument("--model", default="")
         parser.add_argument("--name", default="")
+        parser.add_argument("--fresh", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> StartHelper:
-        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name)
+        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh)

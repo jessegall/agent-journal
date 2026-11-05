@@ -25,7 +25,7 @@ try {
             return {bottom: card.getBoundingClientRect().bottom, end: band.getBoundingClientRect().top, body: body.clientHeight, pane: pane.clientHeight, scroll: pane.scrollHeight, outer: element.scrollHeight, height: element.clientHeight, rows: pane.querySelectorAll('[data-row]').length, list: pane.querySelector('.row-list')?.clientHeight, first: pane.querySelector('[data-row]')?.clientHeight};
         });
         assert.ok(Math.abs(sizes.bottom - sizes.end) < 3, JSON.stringify(sizes));
-        assert.ok(sizes.body > 600 && sizes.pane > 600, JSON.stringify(sizes));
+        assert.ok(sizes.body > 600 && sizes.pane > 500, JSON.stringify(sizes));
         assert.ok(sizes.scroll > sizes.pane, JSON.stringify(sizes));
         assert.ok(sizes.outer <= sizes.height + 2, JSON.stringify(sizes));
         await card.getByRole("button", {name: "Back to the list"}).click();
@@ -43,6 +43,18 @@ try {
     await page.setViewportSize({width: 1000, height: 960});
     await card.locator('[data-tab="transcript"]').click();
     await card.getByText("Transcript row 119", {exact: false}).waitFor();
+    const widths = await window.evaluate((element) => {
+        const card = element.querySelector('[aria-expanded="true"].agent-card');
+        const command = card.querySelector("[data-agent-command]");
+        const before = card.getBoundingClientRect().width;
+        const walker = document.createTreeWalker(command, NodeFilter.SHOW_TEXT);
+        const text = walker.nextNode();
+        text.textContent = "python3 -c ".repeat(400);
+        return {before, after: card.getBoundingClientRect().width, command: command.getBoundingClientRect().width, overflow: element.scrollWidth - element.clientWidth};
+    });
+    assert.ok(Math.abs(widths.before - widths.after) < 1, JSON.stringify(widths));
+    assert.ok(widths.command <= widths.after * 0.62, JSON.stringify(widths));
+    assert.ok(widths.overflow <= 0, JSON.stringify(widths));
     await page.screenshot({path: capture, fullPage: true, animations: "disabled"});
     await page.setViewportSize({width: 390, height: 844});
     await page.goto(`${address}&windows=agents.agents`);

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
@@ -13,6 +14,10 @@ class WorkerFolders(AgentFolders):
     def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery) -> None:
         super().__init__(agents, environments)
         self.worktrees = worktrees
+
+    def keeps_folder(self, agent: Agent) -> bool:
+        parent = self.agents.find(agent.parent_id) if agent.parent_id is not None else None
+        return parent is None or parent.role != AgentRole.WORKER or self.worktrees.worker_worktree(parent.id) is not None
 
     def folder(self, agent: Agent) -> Path:
         worktree = self.worktrees.worker_worktree(agent.id)

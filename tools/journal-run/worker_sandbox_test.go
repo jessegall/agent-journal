@@ -124,12 +124,13 @@ func TestWorkerReadLimit(t *testing.T) {
 	worktree := filepath.Join(home, "worktrees", "worker")
 	sibling := filepath.Join(home, "worktrees", "other-worker")
 	library := filepath.Join(main, ".venv")
-	for _, path := range []string{worktree, sibling, library, filepath.Join(home, "bin")} {
+	rules := filepath.Join(main, ".commandments")
+	for _, path := range []string{worktree, sibling, library, rules, filepath.Join(home, "bin")} {
 		if err := os.MkdirAll(path, 0o700); err != nil {
 			t.Fatal(err)
 		}
 	}
-	files := map[string]string{filepath.Join(main, "secret.txt"): "main", filepath.Join(sibling, "secret.txt"): "other", filepath.Join(library, "lib.txt"): "library", filepath.Join(worktree, "own.txt"): "own"}
+	files := map[string]string{filepath.Join(main, "secret.txt"): "main", filepath.Join(sibling, "secret.txt"): "other", filepath.Join(library, "lib.txt"): "library", filepath.Join(worktree, "own.txt"): "own", filepath.Join(rules, "config.json"): "{}"}
 	for path, text := range files {
 		if err := os.WriteFile(path, []byte(text), 0o600); err != nil {
 			t.Fatal(err)
@@ -164,7 +165,7 @@ func TestWorkerReadLimit(t *testing.T) {
 			t.Fatalf("a worker read %s", path)
 		}
 	}
-	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt")} {
+	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt"), filepath.Join(rules, "config.json")} {
 		if err := reads(path); err != nil {
 			t.Fatalf("a worker could not read %s: %v", path, err)
 		}
