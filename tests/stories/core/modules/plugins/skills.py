@@ -8,7 +8,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
 
-FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
+GIT_FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
 
 
@@ -31,25 +31,25 @@ def skill_digest(story, name):
     return next(skill.digest for skill in story.container.get(SkillCatalogue).skills() if skill.folder == name)
 
 
-def load_rules(story, digest):
+def mark_rules_loaded(story, digest):
     story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), environment_id=1)
 
 
 def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
     story = installed_story(new_story)
-    load_rules(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are loaded")
+    mark_rules_loaded(story, skill_digest(story, "sample-rules"))
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are loaded")
 
 
 def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
     story = installed_story(new_story)
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
     story = installed_story(new_story)
-    load_rules(story, "an-older-text")
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    mark_rules_loaded(story, "an-older-text")
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_switched_off_plugin_takes_its_skills_away(new_story):
