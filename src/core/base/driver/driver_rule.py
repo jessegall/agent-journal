@@ -25,6 +25,7 @@ class DriverRule:
     exempt: ClassVar[bool] = False
     history: ClassVar[bool] = False
     overlay_proof: ClassVar[bool] = False
+    is_notice: ClassVar[bool] = False
     start_line_rule: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()
     tools: ClassVar[Sequence[ToolType]] = ()

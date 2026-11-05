@@ -19,6 +19,7 @@ STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 IDLE_LIMIT_SECONDS = 30
 IDLE_HOOKS = (HookEventName.SESSION_START, HookEventName.STOP)
+COMPACTION_LIMIT_SECONDS = 600
 
 
 class HookCallQuery(Query[HookCall]):
@@ -44,7 +45,11 @@ class HookCallQuery(Query[HookCall]):
         if not calls:
             return False
         is_silent = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
-        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED) or bool(calls[0].metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED and not calls[0].is_compaction_start) or bool(calls[0].metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+
+    def is_compacting(self, agent_id: int, current_time: Timestamp) -> bool:
+        calls = self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().limited(1)
+        return bool(calls) and calls[0].is_compaction and calls[0].creation_timestamp().elapsed_seconds(current_time) < COMPACTION_LIMIT_SECONDS
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()

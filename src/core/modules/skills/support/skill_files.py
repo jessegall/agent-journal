@@ -26,7 +26,13 @@ class SkillFiles:
         return project / path if hook.role in self.suites.agent_policy(hook.environment_id).project_skill_roles else path
 
     def readable(self, folder: str) -> Path:
-        paths = [project / program_folder / folder / SKILL_FILE for project in self.projects.projects() for program_folder in self.providers.skill_folders()]
+        return self.readable_paths([folder])[folder]
+
+    def readable_paths(self, folders: Sequence[str]) -> dict[str, Path]:
+        projects, program_folders = self.projects.projects(), self.providers.skill_folders()
+        return {folder: self.first_present([project / program_folder / folder / SKILL_FILE for project in projects for program_folder in program_folders]) for folder in folders}
+
+    def first_present(self, paths: Sequence[Path]) -> Path:
         return next((path for path in paths if path.exists()), paths[0])
 
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:

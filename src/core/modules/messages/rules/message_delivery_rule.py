@@ -32,6 +32,7 @@ class MessageDeliveryRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     overlay_proof = True
+    is_notice = True
 
     def __init__(self, queries: Queries, home: JournalHome) -> None:
         self.queries, self.home = queries, home
