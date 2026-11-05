@@ -37,6 +37,7 @@ func workerFolders(worktree, journalHome string) ([]string, error) {
 		filepath.Join(goPath, "pkg", "sumdb"),
 		configuredCache("npm_config_cache", configuredCache("NPM_CONFIG_CACHE", filepath.Join(home, ".npm"))),
 		configuredCache("PIP_CACHE_DIR", filepath.Join(cache, "pip")),
+		filepath.Join(home, ".cache", "agent-journal"),
 	}
 	writable := []string{worktree}
 	for _, path := range caches {
