@@ -12,7 +12,7 @@ class PluginQuery(Query[Plugin]):
         super().__init__(database, tables, Plugin)
 
     def find_name(self, name: str) -> Plugin:
-        rows = self.filter(name=name).page(1, 1).rows
+        rows = self.filter(name=name).limited(1)
         if not rows:
             raise Refusal(f"no plugin named {name} is installed", "journal plugin list shows them")
         return rows[0]

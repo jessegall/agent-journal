@@ -57,6 +57,6 @@ class RunSlots:
         if self.folder.count_status(process.id) != 0:
             return
         count = self.listings.count(process, self.folder.count_text(process.id))
-        outputs = self.queries.query(Output).filter(process_id=process.id).page(1, 1).rows
+        outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
         if count and outputs and outputs[0].test_count != count:
             self.repository.save(replace(outputs[0], test_count=count), context)

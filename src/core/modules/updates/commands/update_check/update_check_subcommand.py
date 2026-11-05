@@ -22,7 +22,7 @@ class UpdateCheckSubcommand(ReadSubcommand[UpdateStanding]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> UpdateStanding:
-        installed = self.queries.query(Release).newest().page(1, 1).rows
+        installed = self.queries.query(Release).newest().limited(1)
         return UpdateStanding(self.source.newest(), installed[0] if installed else None)
 
     def write_output(self, value: object, output: Output) -> None:

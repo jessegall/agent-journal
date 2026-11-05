@@ -17,8 +17,8 @@ class AssignNextReviewHandler(Handler[AssignNextReview, None]):
         self.reviews, self.reviewers, self.bus = reviews, reviewers, bus
 
     def handle(self, command: AssignNextReview, context: Context) -> None:
-        queued = self.reviews.queued(command.environment_id).page(1, 1).rows
-        idle = self.reviewers.environment(command.environment_id).idle().oldest().page(1, 1).rows
+        queued = self.reviews.queued(command.environment_id).limited(1)
+        idle = self.reviewers.environment(command.environment_id).idle().oldest().limited(1)
         if queued and idle:
             self.bus.dispatch(AssignReview(queued[0].id, idle[0].id), context)
             self.bus.dispatch(StartReviewer(idle[0].id), context)

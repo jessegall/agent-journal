@@ -1,5 +1,6 @@
 import re
 import sqlite3
+from dataclasses import replace
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
@@ -13,7 +14,8 @@ TABLE_CHECK = re.compile(r"CHECK constraint failed: (.+)")
 MISSING_VALUE_COLUMN = re.compile(r"NOT NULL constraint failed: \w+\.(\w+)")
 ENVIRONMENT_COLUMN = "environment_id"
 REFERENCING_TABLES = Statement("SELECT DISTINCT tables.name FROM sqlite_master AS tables, pragma_foreign_key_list(tables.name) AS keys"
-                      " WHERE tables.type = 'table' AND keys.\"table\" = ? ORDER BY tables.name")
+                      " WHERE tables.type = 'table' AND keys.\"table\" = ? ORDER BY tables.name",
+                      scan_reason="Foreign-key refusal details inspect the fixed schema catalogue, not stored journal rows.")
 
 
 class ConstraintRefusals:
@@ -46,4 +48,4 @@ class ConstraintRefusals:
         raise error
 
     def referencing_tables(self, table: str) -> list[str]:
-        return [row["name"] for row in self.database.rows(Statement(REFERENCING_TABLES.sql, [table]))]
+        return [row["name"] for row in self.database.rows(replace(REFERENCING_TABLES, parameters=[table]))]

@@ -23,6 +23,6 @@ class WorkerTaskGuard(Guard[Moved[Task]]):
     def check(self, event: Moved[Task], context: Context) -> None:
         if not self.queries.query(Agent).filter(id=context.actor.id, role=AgentRole.WORKER).exists():
             return
-        started_tasks = self.tasks.holder(context.actor.id).started().page(1, 1).rows
+        started_tasks = self.tasks.holder(context.actor.id).started().limited(1)
         if started_tasks and started_tasks[0].id != event.row.id:
             raise Refusal(f"worker {context.actor.id} has task {started_tasks[0].id} started already", "a worker works on one task at a time: deliver it first")

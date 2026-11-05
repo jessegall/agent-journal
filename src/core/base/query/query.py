@@ -81,6 +81,8 @@ class Query(Generic[M]):
         offset = 0
         while rows := self.rows(self.select.sliced(size, offset)):
             yield from rows
+            if len(rows) < size:
+                return
             offset += size
 
     def count(self) -> int:

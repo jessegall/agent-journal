@@ -28,7 +28,7 @@ class DocRevisionSubcommand(ReadSubcommand[RevisionReading]):
         count = revisions.count()
         if not count:
             raise Refusal(f"doc {arguments.id} has no revisions yet", "its first save writes revision 1")
-        matching = revisions.filter(number=arguments.number).page(1, 1).rows
+        matching = revisions.filter(number=arguments.number).limited(1)
         if not matching:
             raise Refusal(f"doc {arguments.id} has revisions 1 to {count}", "name one of them")
         return RevisionReading(matching[0], count)

@@ -26,5 +26,5 @@ class TakeoverRule(DriverRule):
         if self.hook_calls.newest_agent_hook(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         remaining = self.queries.query(Agent).filter(environment_id=hook.environment_id, role=AgentRole.MAIN).matching(Equal("id", hook.agent_id, negated=True))
-        rows = remaining.newest().page(1, 1).rows
+        rows = remaining.newest().limited(1)
         return RuleAnswer.with_nudges(TAKEOVER.nudge(agent=rows[0].id)) if rows else RuleAnswer.allowed()

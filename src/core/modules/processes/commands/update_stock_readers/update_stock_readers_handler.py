@@ -20,7 +20,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
 
     def handle(self, command: UpdateStockReaders, context: Context) -> None:
         for stock in STOCK_READERS:
-            rows = self.readers.with_name(stock.name).page(1, 1).rows
+            rows = self.readers.with_name(stock.name).limited(1)
             if not rows:
                 self.repository.save(self.reader(stock), context)
                 continue

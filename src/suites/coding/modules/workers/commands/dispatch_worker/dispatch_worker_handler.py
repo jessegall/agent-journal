@@ -54,7 +54,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if len(self.worktrees.environment_worktrees(environment.id)) >= worker_limit:
             raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
         worker_context = replace(context, environment_id=environment.id)
-        callers = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
+        callers = self.queries.query(Agent).filter(id=context.actor.id).limited(1)
         program = command.program or (callers[0].program if callers else "")
         if not program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")

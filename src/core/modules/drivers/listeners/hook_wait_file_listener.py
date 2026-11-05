@@ -17,7 +17,7 @@ class HookWaitFileListener(CommitListener[Touched[Setting]]):
         self.queries, self.home = queries, home
 
     def handle(self, event: Touched[Setting], logged: LoggedEvent) -> None:
-        settings = self.queries.query(Setting).filter(key=HOOK_WAIT_SECONDS).newest().page(1, 1).rows
+        settings = self.queries.query(Setting).filter(key=HOOK_WAIT_SECONDS).newest().limited(1)
         if settings:
             self.home.hook_wait_file.write_text(f"{settings[0].value}\n")
         else:

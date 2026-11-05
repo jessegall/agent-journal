@@ -40,7 +40,7 @@ class PlanTaskLineRule(DriverRule):
         return RuleAnswer.with_nudges(*(nudge for task in ended for nudge in self.plan_nudges(task.id)))
 
     def plan_nudges(self, task_id: int) -> list[Nudge]:
-        places = self.queries.query(PlanTask).filter(task_id=task_id).page(1, 1).rows
+        places = self.queries.query(PlanTask).filter(task_id=task_id).limited(1)
         if not places:
             return []
         place = places[0]

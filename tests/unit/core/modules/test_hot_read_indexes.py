@@ -46,6 +46,16 @@ def database(tmp_path):
     (Statement("SELECT * FROM proofs WHERE state IN (?, ?) ORDER BY id LIMIT 25", ("queued", "running")), "proofs_state"),
     (Statement("SELECT * FROM affected_tests WHERE state = ? ORDER BY id LIMIT 25", ["queued"]), "affected_tests_state"),
     (Statement("SELECT * FROM checks WHERE hidden = ? AND removed_at IS NULL ORDER BY id", [0]), "checks_open_hidden"),
+    (Statement("SELECT * FROM outputs WHERE reader_id = ?", [1]), "outputs_reader"),
+    (Statement("SELECT * FROM reader_requests WHERE reader_id = ?", [1]), "reader_requests_reader"),
+    (Statement("SELECT * FROM plugin_outputs WHERE plugin_id = ? ORDER BY id DESC LIMIT 50", [1]), "plugin_outputs_plugin"),
+    (Statement("SELECT * FROM share_comments WHERE share_link_id = ? ORDER BY id", [1]), "share_comments_link"),
+    (Statement("SELECT * FROM reviews WHERE state = ? ORDER BY id", ["queued"]), "reviews_state"),
+    (Statement("SELECT * FROM agents WHERE parent_id = ? ORDER BY id DESC LIMIT 25", [1]), "agents_parent"),
+    (Statement("SELECT count(*) FROM chat_marks WHERE agent_id = ? OR agent_id IS NULL", [1]), "chat_marks_agent"),
+    (Statement("SELECT * FROM sequence_run_rows ORDER BY id DESC LIMIT 25"), "sequence_runs_open_id"),
+    (Statement("SELECT * FROM chat_messages ORDER BY id DESC LIMIT 25"), "messages_chat_visible_id"),
+    (Statement("SELECT * FROM nudge_totals LIMIT 25"), "nudge_records_key_delivery"),
 ])
 def test_a_hot_read_uses_its_index(database, statement, index):
     plans = [row[3] for row in database.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters)]

@@ -41,7 +41,7 @@ class ReplyLinkListener(CommitListener[Created[Message] | Touched[Task] | Touche
             self.link_row(logged, model)
 
     def link_row(self, logged: LoggedEvent, model: str) -> None:
-        replies = self.queries.query(Message).filter(creator_id=logged.actor_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        replies = self.queries.query(Message).filter(creator_id=logged.actor_id, type=MessageType.AGENT).newest().limited(1)
         if not replies or replies[0].creation_timestamp().elapsed_seconds(logged.timestamp) > REPLY_WINDOW_SECONDS:
             return
         self.link(replies[0], model, logged.row_id)

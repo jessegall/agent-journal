@@ -55,6 +55,12 @@ def test_an_unfiltered_primary_key_page_is_a_bounded_read(new_story):
         story.container.get(Database).rows(Statement("SELECT * FROM agents ORDER BY id DESC LIMIT 25 OFFSET 0"))
 
 
+def test_an_unfiltered_primary_key_page_can_bind_its_size_and_offset(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement("SELECT * FROM events ORDER BY id DESC LIMIT ? OFFSET ?", (25, 0)))
+
+
 def test_a_page_with_an_unindexed_sort_still_reports_the_table_scan(new_story):
     story = new_story()
     with pytest.raises(RepeatedCallsError, match="scanned agents"):

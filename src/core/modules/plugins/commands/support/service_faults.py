@@ -26,4 +26,4 @@ class ServiceFaults:
             self.bus.run(ClearPluginFaults(plugin.id), self.actors.actor(MODULE_NAME), environment_id=self.environment_id())
 
     def environment_id(self) -> int:
-        return self.queries.query(Environment).oldest().page(1, 1).rows[0].id
+        return self.queries.query(Environment).oldest().limited(1)[0].id

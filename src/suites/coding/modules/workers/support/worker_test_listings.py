@@ -33,7 +33,7 @@ class WorkerTestListings(RunCounts):
         if agent.role != AgentRole.WORKER:
             return ()
         readers = tuple(self.queries.query(Reader).all_rows())
-        outputs = self.queries.query(Output).filter(process_id=process.id).page(1, 1).rows
+        outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
         output = outputs[0] if outputs else None
         listings: list[TestListing] = []
         for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows():

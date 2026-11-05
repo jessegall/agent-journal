@@ -19,7 +19,7 @@ class EndProcessPartHandler(Handler[EndProcessPart, ProcessPart]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: EndProcessPart, context: Context) -> ProcessPart:
-        parts = self.queries.query(ProcessPart).filter(process_id=command.process_id, position=command.position).page(1, 1).rows
+        parts = self.queries.query(ProcessPart).filter(process_id=command.process_id, position=command.position).limited(1)
         if not parts:
             raise Refusal(f"process {command.process_id} has no part {command.position}", f"journal process-part list --process {command.process_id}")
         if parts[0].ended_at is not None:

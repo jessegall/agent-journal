@@ -34,7 +34,7 @@ class EndedOutputText:
         return (*ended, *draft, *self.reader_nudges(process))
 
     def silent_failure_nudges(self, process: Process) -> tuple[Nudge, ...]:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         if process.state is not ProcessState.FAILED or not kept or kept[0].byte_count:
             return ()
         saved = next((part.saved_command for part in self.parts.process(process.id).oldest().all_rows() if part.saved_command), "")
@@ -51,7 +51,7 @@ class EndedOutputText:
         return next((part.program for part in parts if part.category.has_result_output), None)
 
     def reader_nudges(self, process: Process) -> tuple[Nudge, ...]:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         output = kept[0] if kept else None
         if output is None or output.reader_id is None or not output.line_count:
             return ()
@@ -72,7 +72,7 @@ class EndedOutputText:
         return tuple(matches)
 
     def needs_reader(self, process: Process) -> bool:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return False
         first = self.read_program(process)
@@ -82,7 +82,7 @@ class EndedOutputText:
         return not self.readers.with_name(name).exists()
 
     def summary(self, process: Process) -> str:
-        kept = self.outputs.process(process.id).page(1, 1).rows
+        kept = self.outputs.process(process.id).limited(1)
         return kept[0].reader_summary if kept else ""
 
     @staticmethod

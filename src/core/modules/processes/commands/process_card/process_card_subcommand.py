@@ -25,7 +25,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         parser.add_argument("process_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessCard:
-        kept = self.outputs.process(arguments.process_id).page(1, 1).rows
+        kept = self.outputs.process(arguments.process_id).limited(1)
         parts = self.parts.process(arguments.process_id).all_rows()
         process = self.processes.find(arguments.process_id)
         visible = next((part for part in parts if part.category.is_watched), None)

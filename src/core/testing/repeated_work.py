@@ -20,7 +20,7 @@ COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
 SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
-BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT [1-9]\d* OFFSET \d+$", re.IGNORECASE)
+BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?) OFFSET (\d+|\?)$", re.IGNORECASE)
 SMALL_TABLES = {
     "settings": "Project and environment settings are small configuration sets kept on the connection.",
     "secret_settings": "Secret settings are a small configuration set kept on the connection.",
@@ -88,7 +88,7 @@ class RepeatedWork(PointTally):
                 continue
             if self.is_logical_scan(match.group(1), plans):
                 continue
-            if page is not None and page.group(1) == match.group(1):
+            if page is not None and page.group(1) == match.group(1) and self.has_page_bounds(page, statement):
                 continue
             index = SCAN_INDEX.search(plan)
             if index is not None and self.database.is_partial_index(index.group(1)):
@@ -97,6 +97,12 @@ class RepeatedWork(PointTally):
                 self.allowed_scans[statement] = statement.scan_reason
                 continue
             self.findings.append(f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}\n{self.caller_lines()}")
+
+    @staticmethod
+    def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
+        parameters = iter(statement.parameters)
+        limit, offset = (next(parameters) if value == "?" else int(value) for value in page.groups()[1:])
+        return isinstance(limit, int) and limit > 0 and isinstance(offset, int) and offset >= 0
 
     @staticmethod
     def is_logical_scan(table: str, plans: Sequence[str]) -> bool:

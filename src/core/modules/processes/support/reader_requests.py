@@ -42,7 +42,7 @@ class ReaderRequests:
         existing = self.open_row(process.environment_id, self.command_key(spec))
         if existing is not None:
             return existing.id
-        samples = self.parts.kept_samples([f"{self.command_key(spec)}*"], process.environment_id).page(1, 1).rows
+        samples = self.parts.kept_samples([f"{self.command_key(spec)}*"], process.environment_id).limited(1)
         return self.open_request(process, spec, reason, samples[0].process_id if samples else process.id, context)
 
     def after_run(self, process: Process, spec: PartSpec, reader: Reader, context: Context) -> None:
@@ -57,7 +57,7 @@ class ReaderRequests:
         return spec.command_key or Path(spec.program).name
 
     def open_row(self, environment_id: int, key: str) -> ReaderRequest | None:
-        return next(iter(self.requests.open().filter(environment_id=environment_id, command_key=key).page(1, 1).rows), None)
+        return next(iter(self.requests.open().filter(environment_id=environment_id, command_key=key).limited(1)), None)
 
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)
