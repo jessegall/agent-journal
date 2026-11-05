@@ -11,4 +11,5 @@ def test_renaming_the_stop_flag_preserves_existing_blocks():
             connection.execute(statement)
         assert connection.execute("SELECT id, blocks_stop FROM agent_blocks ORDER BY id").fetchall() == [(1, 0), (2, 1)]
         connection.execute("INSERT INTO agent_blocks (id) VALUES (3)")
-        assert connection.execute("SELECT blocks_stop FROM agent_blocks WHERE id = 3").fetchone() == (0,)
+        [blocks_stop] = connection.execute("SELECT blocks_stop FROM agent_blocks WHERE id = 3").fetchone()
+        assert blocks_stop == 0

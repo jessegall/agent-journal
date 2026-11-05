@@ -56,7 +56,7 @@ func TestAWrongTokenIsRefusedAndNothingLimitsTheTries(t *testing.T) {
 func TestLastUsedIsWrittenAtMostOnceAMinute(t *testing.T) {
 	opened := openIn(t, t.TempDir())
 	clock := time.Date(2026, 11, 4, 12, 0, 0, 0, time.UTC)
-	opened.Now = func() time.Time { return clock }
+	opened.CurrentTime = func() time.Time { return clock }
 	user, _ := opened.AddUser("Ada", RoleAdmin)
 	text, token, _ := opened.NewToken(user.ID, "")
 	lastUsed := func() string {

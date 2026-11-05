@@ -21,7 +21,7 @@ func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
 }
 
-func run(arguments []string, out, errs io.Writer) int {
+func run(arguments []string, output, errs io.Writer) int {
 	if len(arguments) == 0 {
 		fmt.Fprintln(errs, usage)
 		return 2
@@ -29,17 +29,17 @@ func run(arguments []string, out, errs io.Writer) int {
 	var err error
 	switch {
 	case len(arguments) == 1 && arguments[0] == "--version":
-		fmt.Fprintf(out, "journal-shared %s protocol %d\n", version, protocol)
+		fmt.Fprintf(output, "journal-shared %s protocol %d\n", version, protocol)
 	case arguments[0] == "serve":
 		err = serve(arguments[1:], errs)
 	case arguments[0] == "user" && len(arguments) > 1:
-		err = userCommand(arguments[1], arguments[2:], out, errs)
+		err = userCommand(arguments[1], arguments[2:], output, errs)
 	case arguments[0] == "token" && len(arguments) > 1:
-		err = tokenCommand(arguments[1], arguments[2:], out, errs)
+		err = tokenCommand(arguments[1], arguments[2:], output, errs)
 	case arguments[0] == "backup":
-		err = backupCommand(arguments[1:], out, errs)
+		err = backupCommand(arguments[1:], output, errs)
 	case arguments[0] == "item" && len(arguments) > 1:
-		err = itemCommand(arguments[1], arguments[2:], out, errs)
+		err = itemCommand(arguments[1], arguments[2:], output, errs)
 	default:
 		fmt.Fprintln(errs, usage)
 		return 2

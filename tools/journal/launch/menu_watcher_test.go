@@ -68,17 +68,17 @@ func TestAPermissionQuestionAndAListOfPastSessionsAreNotTheProgramsOwn(t *testin
 }
 
 type watcherClock struct {
-	now     time.Time
-	keyedAt time.Time
-	typedAt time.Time
-	pressed []string
+	currentAt time.Time
+	keyedAt   time.Time
+	typedAt   time.Time
+	pressed   []string
 }
 
 func watched(clock *watcherClock) *MenuWatcher {
 	return &MenuWatcher{
-		Now:     func() time.Time { return clock.now },
-		KeyedAt: func() time.Time { return clock.keyedAt },
-		TypedAt: func() time.Time { return clock.typedAt },
+		CurrentTime: func() time.Time { return clock.currentAt },
+		KeyedAt:     func() time.Time { return clock.keyedAt },
+		TypedAt:     func() time.Time { return clock.typedAt },
 		Press: func(keys string) bool {
 			clock.pressed = append(clock.pressed, keys)
 			return true
@@ -87,18 +87,18 @@ func watched(clock *watcherClock) *MenuWatcher {
 }
 
 func newWatcherClock() *watcherClock {
-	return &watcherClock{now: time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)}
+	return &watcherClock{currentAt: time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)}
 }
 
 func TestAMenuCausedByALineTheJournalTypedIsConfirmedOnceTheScreenIsStill(t *testing.T) {
 	clock := newWatcherClock()
-	clock.typedAt = clock.now.Add(-5 * time.Second)
+	clock.typedAt = clock.currentAt.Add(-5 * time.Second)
 	watcher := watched(clock)
 	_, _ = watcher.Write([]byte(switchModelScreen))
 	if answer := watcher.CheckMenu(); answer != nil {
 		t.Fatalf("answered a menu still being drawn: %+v", answer)
 	}
-	clock.now = clock.now.Add(2 * time.Second)
+	clock.currentAt = clock.currentAt.Add(2 * time.Second)
 	answer := watcher.CheckMenu()
 	if answer == nil || answer.Keys != MenuKeyEnter || !strings.Contains(answer.Explanation, "Yes, switch to Opus 5.5") {
 		t.Fatalf("the answer is %+v", answer)
@@ -110,33 +110,33 @@ func TestAMenuCausedByALineTheJournalTypedIsConfirmedOnceTheScreenIsStill(t *tes
 
 func TestTheSameMenuDrawnAgainLaterIsAnsweredAgain(t *testing.T) {
 	clock := newWatcherClock()
-	clock.typedAt = clock.now
+	clock.typedAt = clock.currentAt
 	watcher := watched(clock)
 	for round := 0; round < 2; round++ {
 		_, _ = watcher.Write([]byte(switchModelScreen))
 		_ = watcher.CheckMenu()
-		clock.now = clock.now.Add(2 * time.Second)
+		clock.currentAt = clock.currentAt.Add(2 * time.Second)
 		if watcher.CheckMenu() == nil {
 			t.Fatalf("round %d was not answered", round)
 		}
-		clock.typedAt = clock.now
+		clock.typedAt = clock.currentAt
 	}
 }
 
 func TestAYesOrNoMenuAfterKeysAtTheKeyboardIsConfirmedAndAnyOtherIsLeftToThePerson(t *testing.T) {
 	clock := newWatcherClock()
-	clock.keyedAt = clock.now.Add(-time.Second)
+	clock.keyedAt = clock.currentAt.Add(-time.Second)
 	watcher := watched(clock)
 	_, _ = watcher.Write([]byte(switchModelScreen))
 	_ = watcher.CheckMenu()
-	clock.now = clock.now.Add(2 * time.Second)
+	clock.currentAt = clock.currentAt.Add(2 * time.Second)
 	if answer := watcher.CheckMenu(); answer == nil || answer.Keys != MenuKeyEnter {
 		t.Fatalf("what the person asked for was not confirmed: %+v", answer)
 	}
-	clock.keyedAt = clock.now
+	clock.keyedAt = clock.currentAt
 	_, _ = watcher.Write([]byte("Choose a theme\r\n❯ 1. Dark\r\n  2. Light\r\n"))
 	_ = watcher.CheckMenu()
-	clock.now = clock.now.Add(2 * time.Second)
+	clock.currentAt = clock.currentAt.Add(2 * time.Second)
 	if answer := watcher.CheckMenu(); answer != nil {
 		t.Fatalf("a person's own menu was answered: %+v", answer)
 	}
@@ -153,12 +153,12 @@ func TestAMenuNothingAskedForIsDeclinedOrClosedAndTheTrustQuestionAccepted(t *te
 	}
 	for _, testCase := range cases {
 		clock := newWatcherClock()
-		clock.keyedAt = clock.now.Add(-time.Hour)
-		clock.typedAt = clock.now.Add(-time.Hour)
+		clock.keyedAt = clock.currentAt.Add(-time.Hour)
+		clock.typedAt = clock.currentAt.Add(-time.Hour)
 		watcher := watched(clock)
 		_, _ = watcher.Write([]byte(testCase.screen))
 		_ = watcher.CheckMenu()
-		clock.now = clock.now.Add(2 * time.Second)
+		clock.currentAt = clock.currentAt.Add(2 * time.Second)
 		if answer := watcher.CheckMenu(); answer == nil || answer.Keys != testCase.keys {
 			t.Fatalf("%q was answered %+v", testCase.screen, answer)
 		}
@@ -167,11 +167,11 @@ func TestAMenuNothingAskedForIsDeclinedOrClosedAndTheTrustQuestionAccepted(t *te
 
 func TestAPermissionQuestionIsLeftAlone(t *testing.T) {
 	clock := newWatcherClock()
-	clock.typedAt = clock.now
+	clock.typedAt = clock.currentAt
 	watcher := watched(clock)
 	_, _ = watcher.Write([]byte("Do you want to proceed?\r\n❯ 1. Yes\r\n  2. No\r\n"))
 	_ = watcher.CheckMenu()
-	clock.now = clock.now.Add(2 * time.Second)
+	clock.currentAt = clock.currentAt.Add(2 * time.Second)
 	if answer := watcher.CheckMenu(); answer != nil {
 		t.Fatalf("a permission question was answered: %+v", answer)
 	}

@@ -108,7 +108,7 @@ func etag(item store.Item) string {
 }
 
 // kindOf finds the kind a name stands for, or answers 404.
-func kindOf(response http.ResponseWriter, name string) (store.Kind, bool) {
+func kindOf(response http.ResponseWriter, name string) (store.ItemType, bool) {
 	kind, valid := store.KindByName(name)
 	if !valid {
 		writeError(response, http.StatusNotFound, "there is no such kind", "the kinds are "+strings.Join(store.KindNames(), ", "))
@@ -117,7 +117,7 @@ func kindOf(response http.ResponseWriter, name string) (store.Kind, bool) {
 }
 
 // itemOf reads the kind and the number from the path, or answers 404.
-func itemOf(response http.ResponseWriter, request *http.Request) (store.Kind, int64, bool) {
+func itemOf(response http.ResponseWriter, request *http.Request) (store.ItemType, int64, bool) {
 	kind, valid := kindOf(response, request.PathValue("kind"))
 	if !valid {
 		return kind, 0, false

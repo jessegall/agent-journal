@@ -114,8 +114,8 @@ func story1(t *testing.T, client *http.Client, base, folder string) {
 	if status != 0 || token == "" {
 		t.Fatalf("%d %s", status, output)
 	}
-	if code, me := request(t, client, "GET", base+"/me", token, "", nil); code != 200 || me["name"] != "Ada" || me["role"] != "admin" {
-		t.Fatalf("/me: %d %v", code, me)
+	if code, currentUser := request(t, client, "GET", base+"/me", token, "", nil); code != 200 || currentUser["name"] != "Ada" || currentUser["role"] != "admin" {
+		t.Fatalf("/me: %d %v", code, currentUser)
 	}
 	if code, _ := request(t, client, "GET", base+"/me", "jsl_wrong", "", nil); code != 401 {
 		t.Errorf("a wrong token: %d", code)

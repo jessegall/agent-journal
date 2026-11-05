@@ -90,7 +90,7 @@ func transcriptTitle(path string) string {
 
 // Label is how the boot menu names a conversation: its title and how long ago it was last written, or its
 // session when it has no title.
-func (conversation Conversation) Label(now time.Time) string {
+func (conversation Conversation) Label(currentAt time.Time) string {
 	name := conversation.Title
 	if name == "" {
 		name = conversation.Session
@@ -98,7 +98,7 @@ func (conversation Conversation) Label(now time.Time) string {
 	if conversation.ModifiedAt.IsZero() {
 		return ConversationPrefix + name
 	}
-	return fmt.Sprintf("%s%s (%s)", ConversationPrefix, name, age(now.Sub(conversation.ModifiedAt)))
+	return fmt.Sprintf("%s%s (%s)", ConversationPrefix, name, age(currentAt.Sub(conversation.ModifiedAt)))
 }
 
 func age(elapsed time.Duration) string {

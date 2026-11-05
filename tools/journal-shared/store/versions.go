@@ -23,7 +23,7 @@ const versionColumns = "v.version, v.action, u.name, COALESCE(t.label, ''), v.cr
 const versionFrom = " FROM item_versions v JOIN users u ON u.id = v.user_id LEFT JOIN tokens t ON t.id = v.token_id"
 
 // ItemVersions lists the changes of an item, newest first. An item with no changes on record is not found.
-func (store *Store) ItemVersions(kind Kind, id int64) ([]VersionRow, error) {
+func (store *Store) ItemVersions(kind ItemType, id int64) ([]VersionRow, error) {
 	rows, err := store.DB.Query("SELECT "+versionColumns+versionFrom+" WHERE v.kind = ? AND v.item_id = ? ORDER BY v.version DESC", kind.Name, id)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (store *Store) ItemVersions(kind Kind, id int64) ([]VersionRow, error) {
 }
 
 // ItemVersionOf reads one version of an item with its fields.
-func (store *Store) ItemVersionOf(kind Kind, id, version int64) (ItemVersion, error) {
+func (store *Store) ItemVersionOf(kind ItemType, id, version int64) (ItemVersion, error) {
 	itemVersion := ItemVersion{Kind: kind.Name, ID: id}
 	var fields string
 	err := store.DB.QueryRow("SELECT "+versionColumns+", v.fields"+versionFrom+" WHERE v.kind = ? AND v.item_id = ? AND v.version = ?", kind.Name, id, version).

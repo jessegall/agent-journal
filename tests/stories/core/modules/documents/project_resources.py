@@ -21,7 +21,7 @@ class TwoEnvironments(StoryFixture):
         story.expect_text('environment list', 'other', actor=story.user)
 
 
-@pytest.mark.parametrize(('creation', 'listing', 'show_command', 'text'), [
+@pytest.mark.parametrize(('creation', 'listing', 'inspection_command', 'text'), [
     ('doc make "Project guide" --abstract "Project rules" --body "Shared instructions"',
      'doc list', 'doc show 1 --all', 'Shared instructions'),
     ('report make "Project guide" --abstract "Project review" --body "Shared findings"',
@@ -33,12 +33,12 @@ class TwoEnvironments(StoryFixture):
     ('dump make "Project guide"',
      'dump board', 'dump show 1', 'Project guide'),
 ])
-def test_project_resources_are_read_from_both_environments(new_story, creation, listing, show_command, text):
+def test_project_resources_are_read_from_both_environments(new_story, creation, listing, inspection_command, text):
     story = new_story(fixture=TwoEnvironments)
     story.expect_success(f'{creation} --environment main', actor=story.user)
     for environment_id in (1, 2):
         read_in_environment(story, f'{listing} --json', environment_id).expect_text('Project guide')
-        read_in_environment(story, show_command, environment_id).expect_text(text)
+        read_in_environment(story, inspection_command, environment_id).expect_text(text)
 
 
 def test_documents_have_no_environment_owner(new_story):
