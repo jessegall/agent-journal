@@ -3,7 +3,7 @@ import pytest
 from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
@@ -23,6 +23,22 @@ def git_in_writes(monkeypatch, new_story):
 
 def expect_git_calls_outside(git_calls):
     assert git_calls == [], f"git ran with a write open: {git_calls}"
+
+
+def test_a_dispatch_runs_git_with_no_write_open(git_in_writes):
+    story, git_calls = git_in_writes
+    repository_environment(story)
+    dispatched_worker(story)
+    expect_git_calls_outside(git_calls)
+
+
+def test_a_dispatch_whose_cut_fails_undoes_its_rows_with_no_write_open(git_in_writes):
+    story, git_calls = git_in_writes
+    repository = repository_environment(story)
+    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo npm is not installed >&2; exit 1"]' --environment main""", "key: journal.suites.coding.workers.worktree-commands")
+    story.expect_refusal(DISPATCH, "npm is not installed", actor=story.agent)
+    expect_clean_environment(story, repository)
+    expect_git_calls_outside(git_calls)
 
 
 def test_a_hand_in_runs_git_with_no_write_open(git_in_writes):

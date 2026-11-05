@@ -1,7 +1,4 @@
-from typing import TypeVar
-
 from core.base.command.bus import Bus
-from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.conflict_files import ConflictFiles
 from pathlib import Path
@@ -21,9 +18,6 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
-
-R = TypeVar("R")
-
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
@@ -51,15 +45,12 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
                           f"worker {worktree.session_agent_id} changes them too: commit or stash them, then merge again")
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
-            return self.recorded(RecordWorktreeMerge(worktree.id, conflicts), context)
+            return self.bus.run_with_context(RecordWorktreeMerge(worktree.id, conflicts), context)
         self.git.rebuild(worktree, environment.folder)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
-        merged = self.recorded(RecordWorktreeMerge(worktree.id, ()), context)
+        merged = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, ()), context)
         self.git.remove(environment.folder, merged.worktree)
-        return MergeOutcome(self.recorded(RecordWorktreeRemoval(worktree.id), context), ())
-
-    def recorded(self, command: Command[R], context: Context) -> R:
-        return self.bus.run(command, context.actor, environment_id=context.environment_id)
+        return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         ConflictFiles(Path(environment.folder)).check()

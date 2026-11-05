@@ -44,6 +44,9 @@ class Bus:
         self.timing.stamp("committed")
         return command_output
 
+    def run_with_context(self, command: Command[R], context: Context) -> R:
+        return self.run(command, context.actor, environment_id=context.environment_id)
+
     def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was explained inside a transaction")

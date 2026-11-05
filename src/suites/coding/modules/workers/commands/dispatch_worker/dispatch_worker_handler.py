@@ -1,9 +1,5 @@
-from dataclasses import replace
-from pathlib import Path
 from uuid import uuid4
 
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -14,7 +10,6 @@ from core.base.agent_type_book import AgentTypeBook
 from core.base.profile.agent_profile import AgentProfile
 from core.base.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -22,30 +17,30 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from core.modules.helpers.support.allowed_models import AllowedModels
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
+from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
-from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
+from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
 
-WORKTREES_FOLDER = Path(".journal") / "worktrees"
-
-
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the tasks
-    delegated after it; a failure undoes it."""
+    delegated after it. Its rows are saved in short transactions before and after the git and prepare work, which
+    run with no write open; a failure undoes the first."""
 
     command = DispatchWorker
+    transactional = False
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
-                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
-        self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
+    def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
+                 providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
+        self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
 
@@ -63,7 +58,6 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         worker_limit = self.settings.number(WORKER_LIMIT)
         if len(self.worktrees.open_worktrees()) >= worker_limit:
             raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
-        worker_context = replace(context, environment_id=environment.id)
         caller = self.rows.find(Agent, context.actor.id)
         program = command.program or (caller.program if caller is not None else "")
         if not program:
@@ -73,23 +67,17 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         model = command.program_model or profile.program_model(program)
         self.check_model(program, model)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
-        worker = self.bus.dispatch(start, worker_context)
-        name = f"worker-{worker.id}"
-        worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
-                                                 folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
-                                                 branch=f"journal/{environment.name}/{name}", base_branch=environment.branch), worker_context)
-        base_commit = self.git.tip(environment.folder, environment.branch)
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id), context)
         try:
-            self.git.cut(environment.folder, worktree)
-            self.bus.dispatch(PrepareWorktree(worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), worker_context)
-            worktree = self.repository.save_change(worktree, worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
-            for listed in tasks:
-                self.repository.update(listed, worker_context, delegated_to=worker.id)
-            self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
+            base_commit = self.git.tip(environment.folder, environment.branch)
+            self.git.cut(environment.folder, opened.worktree)
+            self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
+            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks)), context)
         except Exception:
-            self.git.remove(environment.folder, worktree)
+            self.git.remove(environment.folder, opened.worktree)
+            self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
-        return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))
+        return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(AgentRole.WORKER)
