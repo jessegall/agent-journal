@@ -79,5 +79,5 @@ class ProfileFormat:
 
     @staticmethod
     def text(fields: ProfileFields) -> str:
-        header = "\n".join(f"{FILE_NAMES.get(name, name.replace('_', '-'))}: {json.dumps(value, ensure_ascii=False)}" for name, value in fields.items() if name != "body")
+        header = "\n".join(f"{FILE_NAMES.get(name, name.replace('_', '-'))}: {json.dumps(value, ensure_ascii=False)}" for name, value in fields.items() if name != "body" or value == "")
         return f"---\n{header}\n---\n\n{fields.get('body', '')}\n"

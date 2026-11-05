@@ -166,7 +166,7 @@ class ProfileFiles:
     def folder(self, program_folder: str) -> Path:
         return self.home.project_folder / program_folder
 
-    def publish(self) -> None:
+    def publish(self, preserved: tuple[Path, ...] = ()) -> None:
         for folder in (self.folder(CLAUDE_FOLDER), self.folder(CODEX_FOLDER)):
             for path in (*folder.glob(f"{SHIPPED_PREFIX}*.md"), *folder.glob(f"{SHIPPED_PREFIX}*.toml")):
                 path.unlink()
@@ -174,11 +174,13 @@ class ProfileFiles:
             profile = self.defaults(profile)
             path = self.folder(CLAUDE_FOLDER) / f"{profile.name}.md"
             path.parent.mkdir(parents=True, exist_ok=True)
-            FileAccess.shared().write(path, self.claude_text(profile))
+            if path not in preserved:
+                FileAccess.shared().write(path, self.claude_text(profile))
             if (self.home.project_folder / CODEX_HOME).is_dir():
                 path = self.folder(CODEX_FOLDER) / f"{profile.name}.toml"
                 path.parent.mkdir(parents=True, exist_ok=True)
-                FileAccess.shared().write(path, self.codex_text(profile))
+                if path not in preserved:
+                    FileAccess.shared().write(path, self.codex_text(profile))
 
     @staticmethod
     def claude_text(profile: AgentProfile) -> str:

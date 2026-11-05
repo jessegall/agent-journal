@@ -20,38 +20,46 @@ class ProfileFolderMove:
 
     def publish(self) -> None:
         try:
-            self.run()
-            self.files.publish()
+            self.files.publish(self.run())
         except OSError as error:
             if not isinstance(error, PermissionError) and error.errno not in (errno.EROFS, errno.EACCES, errno.EPERM):
                 raise
             logging.getLogger(__name__).warning("Profiles left unchanged: the profile folder is read-only (%s)", error)
 
-    def run(self) -> None:
+    def run(self) -> tuple[Path, ...]:
         claude = tuple(self.files.folder(CLAUDE_FOLDER).glob("*.md"))
         names = {path.stem for path in claude}
         codex = tuple(path for path in self.files.folder(CODEX_FOLDER).glob("*.toml") if path.stem not in names)
+        preserved: list[Path] = []
         for path in (*claude, *codex):
             if path.name.startswith(SHIPPED_PREFIX):
                 continue
             try:
-                self.copy(path)
+                if self.copy(path):
+                    preserved.append(path)
             except (Refusal, ValueError, tomllib.TOMLDecodeError) as error:
+                preserved.append(path)
                 logging.getLogger(__name__).warning("Cannot copy profile %s: %s", path.name, error)
+        paired = [self.files.folder(CODEX_FOLDER) / f"{path.stem}.toml" for path in preserved if path.suffix == ".md"]
+        return (*preserved, *(path for path in paired if path.is_file()))
 
-    def copy(self, path: Path) -> None:
+    def is_published(self, path: Path, text: str) -> bool:
+        registered = self.files.registered(path.stem)
+        if registered is None:
+            return False
+        default = self.files.defaults(registered)
+        published = self.files.codex_text(default) if path.suffix == ".toml" else self.files.claude_text(default)
+        return text == published
+
+    def copy(self, path: Path) -> bool:
         text = FileAccess.shared().read(path)
         digest = self.digest.hex_digest(text)
         target = self.files.path(path.stem)
         if target.is_file():
-            self.copy_existing(path, target, text, digest)
-            return
+            return self.copy_existing(path, target, text, digest)
+        if self.is_published(path, text):
+            return False
         registered = self.files.registered(path.stem)
-        if registered is not None:
-            default = self.files.defaults(registered)
-            published = self.files.codex_text(default) if path.suffix == ".toml" else self.files.claude_text(default)
-            if text == published:
-                return
         fields = self.native_fields(path, text)
         profile = self.files.checked_type(self.files.profile(path, fields))
         fields = self.personal_fields(profile, fields)
@@ -64,15 +72,19 @@ class ProfileFolderMove:
         self.files.save_fields(path.stem, fields)
         if "legacy_writing" in fields:
             logging.getLogger(__name__).warning("Copied profile %s: Could write before; access is read-only", path.stem)
+        return True
 
-    def copy_existing(self, source: Path, target: Path, text: str, digest: str) -> None:
+    def copy_existing(self, source: Path, target: Path, text: str, digest: str) -> bool:
         fields = self.files.fields(target)
         if fields.get("source_digest") == digest:
-            return
+            return True
+        if "source_digest" not in fields and self.is_published(source, text):
+            return False
         changed_file = target.with_name(f"{source.stem}.clash.md")
         if changed_file.is_file() and FileAccess.shared().read(changed_file) == text:
-            return
+            return True
         FileAccess.shared().write(changed_file, text)
+        return True
 
     @staticmethod
     def personal_fields(profile, fields: ProfileFields) -> ProfileFields:
@@ -86,13 +98,19 @@ class ProfileFolderMove:
         if path.suffix == ".toml":
             native = tomllib.loads(text)
             fields = ProfileFields(name=path.stem, description=str(native.get("description", "")), body=str(native.get("developer_instructions", "")),
-                                   agent_type=str(native.get("type", native.get("kind", "helper"))), model="", codex_model=str(native.get("model", "")))
+                                   agent_type=str(native.get("type", native.get("kind", "helper"))), model="", codex_model=str(native.get("model", "")),
+                                   independent=bool(native.get("independent", False)), mcp_tools=ProfileFormat.tools(native.get("mcp_tools", [])))
             if fields["codex_model"] == "inherit":
                 fields["codex_model"] = ""
             if native.get("sandbox_mode") == "workspace-write":
                 fields.update(access=Access.READ, legacy_writing="true")
-            return fields
-        fields = ProfileFormat.fields(text)
+            return ProfileFolderMove.complete_fields(fields)
+        return ProfileFolderMove.complete_fields(ProfileFormat.fields(text))
+
+    @staticmethod
+    def complete_fields(fields: ProfileFields) -> ProfileFields:
+        if fields.get("agent_type") == "subagent":
+            fields["agent_type"] = "helper"
         fields.setdefault("agent_type", "helper")
         tools = ProfileFormat.tools(fields.get("tools", ""))
         fields["mcp_tools"] = tuple(dict.fromkeys((*fields.get("mcp_tools", ()), *(tool for tool in tools if tool.startswith("mcp__")))))

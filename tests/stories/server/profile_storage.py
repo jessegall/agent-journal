@@ -83,12 +83,13 @@ def boot(story):
 
 def test_an_own_profile_is_written_only_in_the_shared_folder(profile_story):
     story = profile_story
-    profile_line(story, [*SAVE, "--program", "codex", "--access", "read-only"])
+    profile_line(story, [*SAVE, "--program", "codex", "--access", "read-only", "--mcp-tools", "mcp__wiki__search", "--independent"])
     expect_value(profile_path(story).is_file(), True)
     expect_value((story.home.project_folder / ".claude/agents/critic.md").exists(), False)
     expect_value((story.home.project_folder / ".codex/agents/critic.toml").exists(), False)
     row = profile_row(story, "critic")
     expect_value((row["program"], row["access"], row["module"]), ("codex", "read-only", ""))
+    expect_value((row["mcp_tools"], row["independent"]), (["mcp__wiki__search"], True))
 
 
 def test_registered_profiles_are_listed_without_shared_files(profile_story):
@@ -110,13 +111,14 @@ def test_only_changed_fields_are_saved_and_other_fields_follow_an_upgrade(change
     expect_value(row["changed"], ["model"])
 
 
-def test_a_persons_text_survives_changed_module_text_and_reset(profile_story):
+@pytest.mark.parametrize("body", ["Read our wiki first.", ""], ids=["instructions", "empty"])
+def test_a_persons_text_survives_changed_module_text_and_reset(profile_story, body):
     story = profile_story
-    save_registered(story, "--body", "Read our wiki first.")
+    save_registered(story, "--body", body)
     expect_value("module-text:" in FileAccess.shared().read(profile_path(story, "module-reader")), True)
     change_version(story, "ProfileVersionTwo")
     row = profile_row(story, "module-reader")
-    expect_value((row["body"], row["module_text_changed"]), ("Read our wiki first.", True))
+    expect_value((row["body"], row["module_text_changed"]), (body, True))
     profile_line(story, ["profile", "reset", "module-reader"])
     expect_value(profile_row(story, "module-reader")["body"], "Read the new files.")
 
@@ -204,7 +206,7 @@ def test_a_module_cannot_take_over_an_existing_own_profile_name(profile_story):
 
 @pytest.mark.parametrize("source,suffix,text", [
     (".claude/agents", ".md", "---\nname: critic\ndescription: |\n  Reads changes\n  and their tests\nkind: subagent\nmodel: inherit\nindependent: true\ntools: Read, Edit, mcp__wiki__search\n---\nRead the diff.\n"),
-    (".codex/agents", ".toml", 'name = "critic"\ndescription = "Reads changes"\nmodel = "inherit"\nsandbox_mode = "read-only"\ndeveloper_instructions = "Read the diff."\n'),
+    (".codex/agents", ".toml", 'name = "critic"\ndescription = "Reads changes"\nmodel = "inherit"\nsandbox_mode = "read-only"\nindependent = true\nmcp_tools = ["mcp__wiki__search"]\ndeveloper_instructions = "Read the diff."\n'),
 ])
 def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profile_story, source, suffix, text):
     story = profile_story
@@ -215,8 +217,9 @@ def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profi
     expect_value("moved-from:" in FileAccess.shared().read(profile_path(story)), True)
     expect_value((row["agent_type"], row["access"]), ("helper", "read-only"))
     expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.1-sol"))
+    expect_value((row["independent"], row["mcp_tools"]), (True, ["mcp__wiki__search"]))
     if suffix == ".md":
-        expect_value((row["description"], row["independent"], row["mcp_tools"]), ("Reads changes\nand their tests", True, ["mcp__wiki__search"]))
+        expect_value(row["description"], "Reads changes\nand their tests")
         expect_value("Could write before" in row["notes"], True)
 
 
@@ -227,17 +230,23 @@ def test_copy_is_idempotent_and_a_changed_original_is_kept_as_a_clash(profile_st
     modified_at = profile_path(story).stat().st_mtime_ns
     boot(story)
     expect_value(profile_path(story).stat().st_mtime_ns, modified_at)
+    profile_line(story, [*SAVE, "--body", "Personal instructions."])
+    edited_at = profile_path(story).stat().st_mtime_ns
+    boot(story)
+    expect_value(profile_path(story).stat().st_mtime_ns, edited_at)
     FileAccess.shared().write(original, "---\nname: critic\ndescription: Reads\n---\nRead twice.\n")
     boot(story)
     expect_value(profile_path(story, "critic.clash").is_file(), True)
-    expect_value("Read once." in FileAccess.shared().read(profile_path(story)), True)
+    expect_value("Personal instructions." in FileAccess.shared().read(profile_path(story)), True)
     expect_value(any("clash" in note for note in profile_row(story, "critic")["notes"]), True)
 
 
 def test_a_legacy_registered_name_becomes_only_a_change_file(profile_story):
     story = profile_story
-    save_profile_file(story, "module-reader", "---\nname: module-reader\ndescription: Reads one question\nmodel: opus\n---\nRead the files.\n", ".claude/agents")
+    original = save_profile_file(story, "module-reader", "---\nname: module-reader\ndescription: Reads one question\nmodel: opus\n---\nRead the files.\n", ".claude/agents")
+    native_text = FileAccess.shared().read(original)
     boot(story)
+    expect_value(FileAccess.shared().read(original), native_text)
     expect_value(profile_row(story, "module-reader")["changed"], ["model"])
     expect_value("Read the files." in FileAccess.shared().read(profile_path(story, "module-reader")), False)
 
