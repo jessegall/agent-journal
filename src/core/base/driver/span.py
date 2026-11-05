@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Protocol
 
 from core.base.query.queries import Queries
@@ -11,3 +12,6 @@ class Span(Protocol):
     def unit(self) -> str: ...
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool: ...
+
+    def has_passed_many(self, queries: Queries, agent_id: int, starts: Sequence[Timestamp], checked_at: Timestamp) -> list[bool]:
+        return [self.has_passed(queries, agent_id, start, checked_at) for start in starts]

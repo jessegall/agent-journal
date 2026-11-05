@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 
+from core.base.driver.span import Span
+
 from core.base.query.queries import Queries
 from core.base.timestamp import MINUTE_SECONDS, Timestamp
 
 @dataclass(frozen=True)
-class Seconds:
+class Seconds(Span):
     """A span of time."""
 
     unit = "seconds"

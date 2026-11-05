@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.driver.span import Span
+
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
@@ -8,7 +10,7 @@ from core.modules.drivers.models.hook_call import HookCall
 
 
 @dataclass(frozen=True)
-class WriteSpan:
+class WriteSpan(Span):
     """A span of writes to files the agent was let make."""
 
     unit = "writes"

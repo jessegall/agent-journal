@@ -4,6 +4,7 @@ from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.modules.drivers.support.write_span import WriteSpan
+from core.modules.drivers.support.stops import Stops
 from core.modules.tasks.support.closed_tasks import ClosedTasks
 
 LOG_REQUEST_WRITES = 25
@@ -22,9 +23,12 @@ INACTIVE_TASK = NudgeDeclaration("tasks.inactive_task", NudgeType.STEERING, 'not
 MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.STEERING, 'log what the summary missed: journal task log {task} "<what>"')
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.STEERING, "a wait is a block: journal task block <n> --on task:<m>, or --until '<command>'", interval=Interval(Seconds(1800)))
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.STEERING, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", turn_limited=False)
-UNOPENABLE_BLOCKS = NudgeDeclaration("tasks.unopenable_blocks", NudgeType.STEERING, 'blocked with nothing to open them: {tasks}: give each --on or --until, or unblock it', interval=Interval(Seconds(2700), ClosedTasks(5)), turn_limited=False)
+BLOCK_REVIEW_INTERVAL = Interval(Seconds(3600), ClosedTasks(5), Stops(5))
+BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew with journal task block {task} --reason "<why>", unblock it, or close it', interval=BLOCK_REVIEW_INTERVAL, turn_limited=False)
+BLOCK_REVIEW_REQUIRED = NudgeDeclaration("tasks.block_review_hold", NudgeType.REFUSAL, 'review blocked task {tasks}: renew each with --reason "<why>", unblock it, or close it')
+USER_BLOCK_REVIEW = NudgeDeclaration("tasks.user_block_review", NudgeType.NOTICE, 'task {task} waits on the user: tell the user what is still needed', turn_limited=False)
 TASK_BRIEF_FIRST = NudgeDeclaration("tasks.brief_first", NudgeType.REFUSAL, "read task {task} first: journal task overview {task}")
 TASK_FILED = NudgeDeclaration("tasks.filed", NudgeType.STEERING, "filed: leave it open, do not start it", turn_limited=False)
 TASK_FILED_KEEP_CURRENT = NudgeDeclaration("tasks.filed_keep_current", NudgeType.STEERING, "filed: carry on with task:{task}, and leave the new one open", turn_limited=False)
 TASK_TESTING_QUESTION = NudgeDeclaration("tasks.testing_question", NudgeType.STEERING, "did you mean to move task:{task} to testing first? journal task test {task}", turn_limited=False)
-TASK_NUDGES = [TASK_TESTING_QUESTION, TASK_BRIEF_FIRST, TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST.declaration, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]
+TASK_NUDGES = [TASK_TESTING_QUESTION, TASK_BRIEF_FIRST, TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, USER_BLOCK_REVIEW, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST.declaration, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]

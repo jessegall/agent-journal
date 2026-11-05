@@ -19,3 +19,4 @@ class TaskInspectionJsonRecord(TypedDict):
     openers: object
     waits: object
     logs: object
+    block_renewals: object

@@ -26,9 +26,23 @@ TASK_INSPECTIONS_SELECT = (
     " (SELECT task_logs.id, task_logs.line, task_logs.created_at FROM task_logs WHERE task_logs.task_id = tasks.id ORDER BY task_logs.id DESC LIMIT 100) AS latest) AS logs,"
     " (SELECT json_group_array(json_object('command', task_waits.command, 'target', task_waits.target)) FROM task_waits"
     " WHERE task_waits.task_id = tasks.id AND task_waits.ended_at IS NULL) AS openers,"
+    " (SELECT json_group_array(json_object('id', renewal.id, 'reason', renewal.reason, 'created_at', renewal.created_at))"
+    " FROM (SELECT id, reason, created_at FROM task_block_renewals WHERE task_id = tasks.id ORDER BY id) AS renewal) AS block_renewals,"
     " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM tasks"
     " LEFT JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
+)
+
+TASK_BLOCK_REVIEWS_SELECT = (
+    "SELECT tasks.id AS task_id, agents.id AS agent_id, tasks.environment_id, tasks.state, tasks.version AS task_version,"
+    " coalesce((SELECT max(task_version) FROM task_block_renewals WHERE task_id = tasks.id), 0) AS block_version,"
+    " max(coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), tasks.updated_at),"
+    " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE agent_id = agents.id"
+    " AND key = 'tasks.block_review.' || tasks.id), '')) AS reviewed_at,"
+    " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user') AS user_wait,"
+    " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL"
+    " AND (command != '' OR target != 'user')) AS automatic"
+    " FROM tasks JOIN agents ON agents.environment_id = tasks.environment_id AND agents.role = 'main'"
 )
 
 ENVIRONMENT_CARDS_SELECT = (
