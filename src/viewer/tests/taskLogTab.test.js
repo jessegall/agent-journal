@@ -88,7 +88,7 @@ test("the Log tab reads only this task's bounded log page and shows its lines an
     expect(element.querySelector("[data-resource-logs]")).toBeNull();
     expect(read.mock.calls.some(([line]) => line[0] === "task-log")).toBe(false);
     await choose(element, "Log");
-    expect(read).toHaveBeenCalledWith(["task-log", "list", "--task-id", "7", "--limit", String(pageOf("task_logs")), "--page", "1"]);
+    expect(read).toHaveBeenCalledWith(["task-log", "list", "--task", "7", "--limit", String(pageOf("task_logs")), "--page", "1"]);
     expect(element.querySelector("[data-task-log]").textContent).toContain("Verified the cart totals.\nThe tax is correct.");
     const time = element.querySelector("[data-task-log] time");
     expect(time.dateTime).toBe(at);
@@ -119,7 +119,7 @@ test("older and newer pages keep the read limit fixed", async () => {
     element.querySelector("[data-task-log-older]").click();
     await settled();
     expect(element.querySelector("[data-task-log]").textContent).toContain("Page 2");
-    expect(read).toHaveBeenCalledWith(["task-log", "list", "--task-id", "7", "--limit", String(pageOf("task_logs")), "--page", "2"]);
+    expect(read).toHaveBeenCalledWith(["task-log", "list", "--task", "7", "--limit", String(pageOf("task_logs")), "--page", "2"]);
     expect(element.querySelector("[data-task-log-older]").disabled).toBe(true);
     element.querySelector("[data-task-log-newer]").click();
     await settled();
@@ -159,5 +159,5 @@ test("switching tasks resets the selected tab and never shows the previous task'
     expect(element.textContent).toContain("Task 8");
     expect(element.querySelector("[data-task-log]")).toBeNull();
     expect(element.textContent).not.toContain("The old task's entry");
-    expect(read).not.toHaveBeenCalledWith(["task-log", "list", "--task-id", "8", "--limit", String(pageOf("task_logs")), "--page", "1"]);
+    expect(read).not.toHaveBeenCalledWith(["task-log", "list", "--task", "8", "--limit", String(pageOf("task_logs")), "--page", "1"]);
 });

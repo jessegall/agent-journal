@@ -23,7 +23,7 @@ type HookEvent struct {
 	FiredAtMs    int64           `json:"fired_at_ms"`
 	Actor        string          `json:"actor"`
 	Environment  string          `json:"environment"`
-	Subagent     string          `json:"subagent"`
+	ChildAgent     string          `json:"child_agent"`
 	AcceptsLines bool            `json:"accepts_lines"`
 	Launch       string          `json:"launch"`
 	Tool         *Tool           `json:"tool"`

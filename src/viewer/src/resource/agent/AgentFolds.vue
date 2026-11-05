@@ -5,16 +5,16 @@ import {rowsOf} from "./agentView.js";
 import AgentFold from "./AgentFold.vue";
 import {wordLabel} from "../../domain/labels.js";
 
-// the three folds at the foot of an agent's inspector: the subagents it started, the skills it loaded and its details, each with a plain label;
+// the three folds at the foot of an agent's inspector: the helpers it started, the skills it loaded and its details, each with a plain label;
 // the inspector reads only the counts, and a list is read when its fold opens and again each time the inspector reloads while it stays open
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, counts: {type: Object, required: true}, loads: {type: Number, required: true}, details: {type: Array, required: true}});
-const shown = reactive({subagents: false, skills: false});
-const subagents = ref([]);
+const shown = reactive({helpers: false, skills: false});
+const helpers = ref([]);
 const skills = ref([]);
 const listed = async (command) => rowsOf(await props.read(command));
 
-watch(() => [shown.subagents, props.loads], async ([isOpen]) => {
-    if (isOpen) subagents.value = await listed(["agent", "list", "--parent", String(props.id)]);
+watch(() => [shown.helpers, props.loads], async ([isOpen]) => {
+    if (isOpen) helpers.value = await listed(["agent", "list", "--parent", String(props.id)]);
 });
 watch(() => [shown.skills, props.loads], async ([isOpen]) => {
     if (isOpen) skills.value = await listed(["agent-skill", "list", "--agent", String(props.id), "--state", "loaded"]);
@@ -23,13 +23,13 @@ const nameOf = (agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.
 </script>
 
 <template>
-    <AgentFold v-model:open="shown.subagents" icon="bot" label="Helpers" :count="counts.subagents">
-        <template v-for="agent in subagents" :key="agent.id">
-            <button type="button" class="row" data-agent-subagent @click="peek('agents', agent.id)">
+    <AgentFold v-model:open="shown.helpers" icon="bot" label="Helpers" :count="counts.helpers">
+        <template v-for="agent in helpers" :key="agent.id">
+            <button type="button" class="row" data-agent-helper @click="peek('agents', agent.id)">
                 <span class="text">{{ nameOf(agent) }}</span><span class="aside">{{ wordLabel(agent.role) }} {{ agent.id }}</span>
             </button>
         </template>
-        <template v-if="!subagents.length">
+        <template v-if="!helpers.length">
             <p class="none">It started no helpers.</p>
         </template>
     </AgentFold>

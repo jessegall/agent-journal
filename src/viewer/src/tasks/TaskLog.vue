@@ -24,7 +24,7 @@ async function load(number = 1) {
     const answer = await props.read([
         "task-log",
         "list",
-        "--task-id",
+        "--task",
         String(props.id),
         "--limit",
         String(pageOf("task_logs")),

@@ -23,7 +23,6 @@ class RawHookBody:
     session: str
     tool_name: str
     prompt: str
-    subagent: str
     raw: Mapping[object, object]
 
     @classmethod
@@ -38,7 +37,7 @@ class RawHookBody:
         tool = Tool(self.tool_name, ToolType.UNCATEGORISED, (), None, None) if event in TOOL_EVENTS else None
         prompt = self.prompt if event is HookEventName.PROMPT else None
         return HookEvent(RAW_BODY_VERSION, program, event, self.session, headers.firing, headers.hook_timestamp_ms, headers.actor,
-                         headers.environment, self.subagent, tool, prompt, self.raw)
+                         headers.environment, "", tool, prompt, self.raw)
 
 
 def is_raw_body(data: object) -> bool:

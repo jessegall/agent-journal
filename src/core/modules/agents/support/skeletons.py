@@ -10,7 +10,7 @@ SkeletonPart.stack([
 ], spacing=6, padding="10px 12px", count=4),
 ]
 
-AGENTS_SUBAGENTS_SKELETON = [
+AGENTS_HELPERS_SKELETON = [
 SkeletonPart.row([SkeletonPart.block(32), SkeletonPart.block(30, "170px"), SkeletonPart.block(26, "96px")], spacing=10, padding="8px 12px"),
 SkeletonPart.stack([
     SkeletonPart.row([SkeletonPart.line(SkeletonSize.MEDIUM, "25%"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.SMALL, "6%")]),

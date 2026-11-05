@@ -11,7 +11,7 @@ REQUIRED_EVENTS = (HookEventName.SESSION_START, HookEventName.STOP, HookEventNam
 
 class ProviderCheck:
     """Checks the agent programs the modules add before a sync writes anything: one module per program name,
-    a plain lowercase name, the session start, stop and tool hooks mapped, and lines, refusals and subagent
+    a plain lowercase name, the session start, stop and tool hooks mapped, and lines and refusals
     hooks only on hooks the program sends."""
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
@@ -31,6 +31,5 @@ class ProviderCheck:
         problems += [f"the agent program {provider.name} maps no hook to {event.value}" for event in REQUIRED_EVENTS if event not in mapped]
         problems += [f"the agent program {provider.name} takes lines on {event.value}, which it never sends" for event in provider.line_events if event not in mapped]
         problems += [f"the agent program {provider.name} refuses on {event.value}, which it never sends" for event in provider.refusals if event not in mapped]
-        problems += [f"the agent program {provider.name} sends {hook} for a subagent, which is none of its hooks" for hook in provider.subagent_events
                      if hook not in provider.hook_events]
         return problems

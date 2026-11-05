@@ -60,7 +60,7 @@ from core.modules.agents.commands.record_parent_report.record_parent_report_hand
 from core.modules.agents.support.report_nudges import REPORT_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
-from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_SUBAGENTS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
+from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
 CARD_READS = ["agent cards", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "process-part list"]
@@ -72,8 +72,7 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
-    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper"),
-                   AgentType("subagent", "Subagent", extends="helper"), AgentType("reviewer", "Reviewer")]
+    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper"), AgentType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
@@ -84,7 +83,7 @@ class AgentsModule(Module):
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["message send"], events=CARD_EVENTS, tabs=CARD_TABS),
-               WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_SUBAGENTS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["message send", "helper send", "helper stop"],
+               WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["message send", "helper send", "helper stop"],
                                  events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"])]

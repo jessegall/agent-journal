@@ -69,7 +69,7 @@ class Story:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
         self.steps: list[str] = []
-        self.agent, self.user, self.subagent, self.helper = state.agent, state.user, state.subagent, state.helper
+        self.agent, self.user, self.helper = state.agent, state.user, state.helper
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -78,7 +78,7 @@ class Story:
 
     @property
     def state(self) -> StoryState:
-        return StoryState(self.agent, self.user, self.subagent, self.helper)
+        return StoryState(self.agent, self.user, self.helper)
 
     def close(self) -> None:
         self.container.get(Database).close()

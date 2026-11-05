@@ -13,14 +13,13 @@ MAIN_ACTOR = "agent"
 
 
 class AgentTicks:
-    """Each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
+    """Each open agent gets a tick hook through the hook route, so rules that keep time
     speak on their own."""
 
     def __call__(self, container: Container) -> None:
         queries, route, clock_time = container.get(Queries), container.get(HookRoute), container.get(Clock).timestamp()
         for agent in tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows()):
-            if agent.role != AgentRole.SUBAGENT:
-                route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
+            route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
 
     @staticmethod
     def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:

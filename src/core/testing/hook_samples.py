@@ -16,7 +16,7 @@ class HookSamples:
     @staticmethod
     def sample(event: str, tool: dict[str, object] | None = None, prompt: str | None = None) -> HookSample:
         return HookSample({"version": HOOK_EVENT_VERSION, "program": SAMPLE_PROGRAM, "event": event, "session": "s-1", "firing": SAMPLE_FIRING, "fired_at_ms": 1, "actor": "agent",
-                "environment": "main", "subagent": "", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []})
+                "environment": "main", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []})
 
     @staticmethod
     def tool_use(name: str, category: ToolType, files: list[str], diff: object, **fields: object) -> HookSample:
@@ -52,10 +52,6 @@ class HookSamples:
         shell = {"line": line, "parts": joined, "redirects": list(redirects), "is_journal_only": all(part.program == "journal" for part in parts),
                  "parse_error": ""}
         return HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell)
-
-    @staticmethod
-    def subagent() -> HookSample:
-        return HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
 
     @staticmethod
     def helper(launch_name: str) -> HookSample:

@@ -12,12 +12,11 @@ import (
 var shippedTable []byte
 
 // Program is one agent program's row of the program table: its hook names under the journal's event names, the hooks
-// a subagent's run still sends, the events whose answer takes lines, how a refusal is printed, its tools' categories,
+// the events whose answer takes lines, how a refusal is printed, its tools' categories,
 // the fields its rewritten tool input must carry, and the decoder that reads its body.
 type Program struct {
 	Events         map[string]string         `json:"events"`
 	Matchers       map[string]string         `json:"matchers"`
-	SubagentEvents []string                  `json:"subagent_events"`
 	LineEvents     []string                  `json:"line_events"`
 	PlainOutput    []string                  `json:"plain_output_events"`
 	Refusals       map[string]string         `json:"refusals"`
@@ -58,11 +57,6 @@ func (program Program) AcceptsLines(event string) bool {
 // TakesPlainOutput says the program adds a hook's plain text output on this event to the agent's context.
 func (program Program) TakesPlainOutput(event string) bool {
 	return contains(program.PlainOutput, event)
-}
-
-// IsSubagentEvent says whether a subagent's hook of this name still reaches the journal.
-func (program Program) IsSubagentEvent(hookName string) bool {
-	return contains(program.SubagentEvents, hookName)
 }
 
 func contains(names []string, name string) bool {

@@ -47,9 +47,8 @@ class CodexProvider(Provider):
     hook_events = {"SessionStart": HookEventName.SESSION_START, "UserPromptSubmit": HookEventName.PROMPT,
                    "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
                    "PreCompact": HookEventName.COMPACT, "Stop": HookEventName.STOP,
-                   "SubagentStart": HookEventName.SESSION_START, "SubagentStop": HookEventName.STOP,
+                   
                    "SessionEnd": HookEventName.SESSION_END}
-    subagent_events = ["SubagentStart", "SubagentStop", "PreToolUse", "PostToolUse"]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
@@ -59,15 +58,13 @@ class CodexProvider(Provider):
     safe_tools = ("webrun", "list_mcp_resources", "create_goal", "update_goal", "clocksleep", "clockcurr_time")
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
-    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",
-                "SubagentStart": "agent_type", "SubagentStop": "agent_type"}
+    matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",}
     hook_files = tuple([Path(".codex/hooks.json")])
     hook_file = HookFile(Path(".codex/hooks.json"), {}, {
         "SessionStart": {"additionalContextLimit": 0},
         "UserPromptSubmit": {"additionalContextLimit": 0},
         "PreToolUse": {"additionalContextLimit": 0},
         "PostToolUse": {"additionalContextLimit": 0},
-        "SubagentStart": {"additionalContextLimit": 0},
         "SessionEnd": {"timeout": 3},
     })
     session_variable = "CODEX_THREAD_ID"

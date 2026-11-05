@@ -8,7 +8,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
 // its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
-const FALLBACK_TITLES = {subagent: "Helper", helper: "Helper", reviewer: "Reviewer"};
+const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const ENDED_WITHOUT_REPORT = "It ended without a report";
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
@@ -50,10 +50,10 @@ const context = useWindow();
 const tab = ref(context.tabs[0]);
 watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
-// a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
+// a read-only helper has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
 const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
-const isReader = computed(() => props.row.access === "read-only" || props.row.role === "subagent" || props.row.role === "reviewer");
+const isReader = computed(() => props.row.access === "read-only");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -119,7 +119,7 @@ readCommand();
                 <template v-if="isReader">
                     <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
                         <template v-if="facts?.instruction">
-                            <div class="agent-subagent-brief">
+                            <div class="agent-helper-brief">
                                 <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
                                     <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
                                 </FoldGroup>
@@ -375,13 +375,13 @@ readCommand();
     min-height: 0;
 }
 
-/* a subagent's instruction sits above its transcript, which keeps the height */
-.agent-card.open .agent-tab-body > .agent-subagent-brief {
+/* a helper's instruction sits above its transcript, which keeps the height */
+.agent-card.open .agent-tab-body > .agent-helper-brief {
     flex: none;
     padding: 8px 22px 0 27px;
 }
 
-.agent-card.open .agent-subagent-brief .agent-instruction {
+.agent-card.open .agent-helper-brief .agent-instruction {
     max-height: 240px;
 }
 
@@ -452,7 +452,7 @@ readCommand();
 .agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.row-list-row) { gap: 8px; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }
-.agent-card.open .agent-tab-body > .agent-subagent-brief { padding: 0; }
+.agent-card.open .agent-tab-body > .agent-helper-brief { padding: 0; }
 
 
 .agent-label { margin: 12px 14px 0; }

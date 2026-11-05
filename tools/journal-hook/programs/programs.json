@@ -24,8 +24,6 @@
         "SessionStart": "session_start",
         "Stop": "stop",
         "StopFailure": "stop_failure",
-        "SubagentStart": "session_start",
-        "SubagentStop": "stop",
         "UserPromptSubmit": "prompt"
       },
       "line_events": [
@@ -44,8 +42,7 @@
         "PreCompact": "trigger",
         "PreToolUse": "tool_name",
         "SessionEnd": "reason",
-        "SessionStart": "source",
-        "SubagentStop": "agent_type"
+        "SessionStart": "source"
       },
       "refusals": {
         "pre_tool_use": "deny",
@@ -57,13 +54,6 @@
           "run_in_background": false
         }
       },
-      "subagent_events": [
-        "SubagentStart",
-        "SubagentStop",
-        "PreToolUse",
-        "PostToolUse",
-        "PostToolUseFailure"
-      ],
       "tool_categories": {
         "Agent": "agent",
         "AskUserQuestion": "question",
@@ -89,8 +79,6 @@
         "SessionEnd": "session_end",
         "SessionStart": "session_start",
         "Stop": "stop",
-        "SubagentStart": "session_start",
-        "SubagentStop": "stop",
         "UserPromptSubmit": "prompt"
       },
       "line_events": [
@@ -107,20 +95,12 @@
         "PostToolUse": "tool_name",
         "PreToolUse": "tool_name",
         "SessionEnd": "reason",
-        "SessionStart": "source",
-        "SubagentStart": "agent_type",
-        "SubagentStop": "agent_type"
+        "SessionStart": "source"
       },
       "refusals": {
         "stop": "block"
       },
       "rewrites": {},
-      "subagent_events": [
-        "SubagentStart",
-        "SubagentStop",
-        "PreToolUse",
-        "PostToolUse"
-      ],
       "tool_categories": {
         "Bash": "shell",
         "apply_patch": "edit",

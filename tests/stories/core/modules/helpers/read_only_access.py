@@ -247,3 +247,8 @@ def test_a_wait_does_not_lift_the_subagent_refusal(new_story):
     story = main_story(new_story)
     story.run('wait stuck "no way on"', actor=story.agent)
     story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "keep this work yourself")
+
+
+def test_a_tool_called_by_a_programs_own_child_is_refused(new_story):
+    story = main_story(new_story)
+    story.expect_hook_refusal("s-1", tool("Read", ToolType.READ).with_fields(child_agent="child-1"), "keep this work yourself")

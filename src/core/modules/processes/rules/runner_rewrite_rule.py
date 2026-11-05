@@ -68,7 +68,7 @@ class RunnerRewriteRule(DriverRule):
             return {}
         run = replace(run, count_line=self.listings.line(process))
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
-        return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.runner_text, hook.event.subagent or hook.event.session)}
+        return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.runner_text, hook.event.session)}
 
     def missing(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.last_answer(self.name, hook) is not None:

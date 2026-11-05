@@ -32,7 +32,7 @@ type decoder func(name string, body []byte, program Program, context Context) (e
 var decoders = map[string]decoder{"common": commonEvent, "codex": codexEvent}
 
 // Prepared reads the body of one hook of the program through the decoder its table row names; skip says the hook goes
-// to no one, as a subagent's own hooks outside its program's subagent events go by.
+// to no one, as a program's own child's hooks other than a tool call go by.
 func Prepared(name string, body []byte, context Context) (prepared event.HookEvent, skip bool, err error) {
 	program, listed := context.Programs.Programs[name]
 	if !listed {
@@ -45,14 +45,18 @@ func Prepared(name string, body []byte, context Context) (prepared event.HookEve
 	return decode(name, body, program, context)
 }
 
-// readBody reads the fields every program sends, and skips a subagent's hook its program does not pass on.
+// readBody reads the fields every program sends. A tool call of a program's own child still reaches the journal, which
+// refuses it, and the child's other hooks go by.
 func readBody(body []byte, program Program) (commonBody, bool, error) {
 	var read commonBody
 	if err := json.Unmarshal(body, &read); err != nil {
 		return read, true, err
 	}
-	return read, read.AgentID != nil && !program.IsSubagentEvent(read.HookEventName), nil
+	return read, read.AgentID != nil && read.HookEventName != childToolHook, nil
 }
+
+// childToolHook is the hook of a program's own child that the journal still hears.
+const childToolHook = "PreToolUse"
 
 // The fields of a hook body both programs send.
 type commonBody struct {
@@ -114,7 +118,7 @@ func preparedFrom(programName string, program Program, body []byte, read commonB
 		Raw:          json.RawMessage(body),
 	}
 	if read.AgentID != nil {
-		prepared.Subagent = *read.AgentID
+		prepared.ChildAgent = *read.AgentID
 	}
 	if name == "prompt" {
 		prompt := ""

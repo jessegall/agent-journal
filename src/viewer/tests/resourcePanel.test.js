@@ -106,7 +106,7 @@ test("a task shows its log, and a move that needs words asks for them before it 
     const lines = [];
     await opened("#?open=tasks:7", answering({
         "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", priority: "normal", brief: "The totals", waits: [], logs: [{id: 1, line: "rounding found"}]}},
-        [`task-log list --task-id 7 --limit ${pageOf("task_logs")} --page 1`]: {ok: true, value: {rows: [{id: 1, line: "rounding found", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}},
+        [`task-log list --task 7 --limit ${pageOf("task_logs")} --page 1`]: {ok: true, value: {rows: [{id: 1, line: "rounding found", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}},
     }, lines));
     [...shown().querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
     await later();

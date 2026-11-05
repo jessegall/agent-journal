@@ -7,7 +7,7 @@ import MarkIcon from "../kit/MarkIcon.vue";
 import {useMarkMotion} from "../composables/markMotion.js";
 
 // a one-line card in the chat that grows in place to its whole text on a click on its title and folds on a second: a worker's report, a
-// message to or from a subagent; its one-click action, where it has one, sits at the end of its line. An incoming one, a message another
+// message to or from a helper; its one-click action, where it has one, sits at the end of its line. An incoming one, a message another
 // agent sent, has its icon at the far right and its title against it. A commentable one shows a comment button when pointed at, and the chat
 // takes the comment in its composer
 const props = defineProps({

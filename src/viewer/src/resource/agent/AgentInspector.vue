@@ -24,7 +24,7 @@ const row = ref(null);
 const facts = ref(null);
 const inspection = ref(null);
 const tool = ref({});
-const counts = ref({subagents: 0, skills: 0});
+const counts = ref({helpers: 0, skills: 0});
 const loads = ref(0);
 const points = ref([]);
 const failure = ref("");
@@ -53,7 +53,7 @@ async function load() {
     facts.value = rowsOf(listed).find((one) => one.id === props.id) ?? null;
     inspection.value = inspected.ok ? inspected.value : null;
     tool.value = tooled.ok ? tooled.value : {};
-    counts.value = {subagents: totalOf(children), skills: totalOf(loaded)};
+    counts.value = {helpers: totalOf(children), skills: totalOf(loaded)};
     points.value = pointed.ok ? pointed.value.points : [];
     loads.value += 1;
 }
@@ -75,7 +75,7 @@ onMounted(load);
                 <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :parts="identityParts(row, facts)" :started-by="inspection.started_by" />
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
-                <AgentBrief :label="row.access === 'read-only' || row.role === 'subagent' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
+                <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
                 <AgentRecent :moves="inspection.recent" />
                 <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
             </template>

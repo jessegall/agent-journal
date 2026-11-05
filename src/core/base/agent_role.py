@@ -6,5 +6,4 @@ class AgentRole(StrEnum):
 
     MAIN = "main"
     HELPER = "helper"
-    SUBAGENT = "subagent"
     REVIEWER = "reviewer"

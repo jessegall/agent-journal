@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 MAIN_SESSION = "s-1"
 DEFAULT_MINUTES = 5
-SUBAGENT_PROMPT = HookSamples.prompt("Read the cart").with_fields(helper="sub-1")
+HELPER_PROMPT = HookSamples.prompt("Read the cart")
 
 
 def minutes(count: int) -> timedelta:
@@ -108,7 +108,7 @@ def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):
     story = new_story(fixture=HelperUnderBuilder)
     line = inactive_line("helper", story.helper.id)
     story.advance(minutes(DEFAULT_MINUTES - 1))
-    story.hook(MAIN_SESSION, SUBAGENT_PROMPT)
+    story.hook("sub-1", HELPER_PROMPT)
     story.advance(minutes(DEFAULT_MINUTES - 1))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, line) == 0)

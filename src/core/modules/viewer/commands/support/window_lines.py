@@ -1,3 +1,4 @@
+from core.base.exception_sink import ExceptionSink
 from core.base.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
@@ -24,7 +25,8 @@ class WindowLines:
     raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
-                 active: ActiveModules, scopes: Scopes) -> None:
+                 active: ActiveModules, scopes: Scopes, exceptions: ExceptionSink) -> None:
+        self.exceptions = exceptions
         self.registry, self.line_parser, self.flags = registry, line_parser, flags
         self.allowances, self.environment_names = allowances, environment_names
         self.active, self.scopes = active, scopes
@@ -85,4 +87,6 @@ class WindowLines:
         try:
             return ParsedLine(subcommand, parser.parse_args(argv[2:]))
         except SystemExit as exit_request:
-            raise UsageError(f"{window_name} sent a line that does not parse: {' '.join(argv)}") from exit_request
+            message = f"{window_name} sent a line that does not parse: {' '.join(argv)}"
+            self.exceptions.record(f"window {window_name}", message, None)
+            raise UsageError(message) from exit_request

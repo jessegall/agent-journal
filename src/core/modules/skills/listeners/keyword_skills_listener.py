@@ -9,7 +9,7 @@ NOTICE_OPENING = "["
 
 class KeywordSkillsListener(SkillListener[PromptSubmitted]):
     """A prompt of the user's that holds a keyword of a skill makes that skill due for the agent; a line the
-    journal or a plugin put in the prompt, which opens with a bracket, and a prompt of a subagent do not."""
+    journal or a plugin put in the prompt, which opens with a bracket, and a prompt of a helper do not."""
 
     name = "skills.keyword"
 

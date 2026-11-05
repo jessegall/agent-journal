@@ -11,7 +11,7 @@ AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "driver
 
 class CodingSuite(Suite):
     """Building software: the builder or the orchestrator drives the main agent, which starts workers,
-    reviewers and verifiers, while the agent program's own subagents read for it; the viewer shows its chat,
+    reviewers and verifiers, while helpers read for it; the viewer shows its chat,
     tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
     layout presets."""
 
@@ -26,10 +26,10 @@ class CodingSuite(Suite):
         project_skill_roles=tuple(["worker"]),
         pause_retention_roles=tuple(["worker"]),
         restricted_alias_roles=tuple(["worker"]),
-        saved_command_roles=("main", "worker", "helper", "subagent", "reviewer", "verifier"),
+        saved_command_roles=("main", "worker", "helper", "reviewer", "verifier"),
         queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
     )
-    defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
+    defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.HELPER: "coding.helper", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "workers.models", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "reviews.reviewer", "updates.updates", "developer.numbers", "developer.hook-requests", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "sequences.sequences", "templates.templates", "plugins.plugins", "suggestions.suggestions", "phone.phones", "settings.settings", "settings.project-hooks", "triggers.triggers", "checks.checks", "usage.fitness", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]

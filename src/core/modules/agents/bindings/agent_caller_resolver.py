@@ -20,7 +20,7 @@ LOGIN_VARIABLE = "USER"
 
 class AgentCallerResolver(CallerResolver):
     """Resolves explicit sessions, then ancestors matching PID and start time or open program sessions.
-    Login and folder resolve callers; unresolved programs and inferred agents with open subagents use core.
+    Login and folder resolve callers; unresolved programs use core.
     Runner sessions may name ended agents."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
@@ -33,13 +33,10 @@ class AgentCallerResolver(CallerResolver):
             return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
         agent = self.ancestor_agent(request) or self.program_agent(program_sessions)
         if agent is not None:
-            return Caller(Actor.core() if self.has_open_subagent(agent) else Actor(agent.id, ActorType.AGENT), agent.environment_id)
+            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id)
         environment = self.environments.folder_environment(request.folder)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
         return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None)
-
-    def has_open_subagent(self, agent: Agent) -> bool:
-        return self.queries.query(Agent).filter(parent_id=agent.id, role=AgentRole.SUBAGENT).matching(IsNull("ended_at")).exists()
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
         return next(iter(self.queries.query(Agent).matching(Among("session", sessions)).matching(IsNull("ended_at")).all_rows()), None) if sessions else None

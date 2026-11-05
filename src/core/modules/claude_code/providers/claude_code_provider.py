@@ -56,9 +56,8 @@ class ClaudeCodeProvider(Provider):
                    "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
                    "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE, "PreCompact": HookEventName.COMPACT,
                    "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
-                   "SubagentStart": HookEventName.SESSION_START, "SubagentStop": HookEventName.STOP,
+                   
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
-    subagent_events = ["SubagentStart", "SubagentStop", "PreToolUse", "PostToolUse", "PostToolUseFailure"]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
@@ -72,7 +71,7 @@ class ClaudeCodeProvider(Provider):
                        "AskUserQuestion": ToolType.QUESTION}
     safe_tools = ("WebFetch", "WebSearch", "Skill", "TodoWrite")
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
-                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "SubagentStop": "agent_type"}
+                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
@@ -142,10 +141,6 @@ class ClaudeCodeProvider(Provider):
             return [content]
         blocks = content if is_list(content) else []
         return [str(block.get("text", "")) for block in blocks if is_mapping(block) and block.get("type") == "text"]
-
-    def transcript_path(self, event: HookEvent) -> Path | None:
-        path = event.raw.get("agent_transcript_path") if event.subagent else None
-        return Path(path) if isinstance(path, str) and path else super().transcript_path(event)
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)

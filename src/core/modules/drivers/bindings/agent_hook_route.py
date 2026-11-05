@@ -24,9 +24,8 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 class AgentHookRoute(HookRoute):
     """Answers a hook as the agent that sent it: finds its open agent by session, then by the
-    launch name it was started under, saving the real session on it, or by the subagent the hook
-    names, starts the main agent at its session's first hook and a subagent at its first hook
-    other than a stop, gives back the stored answer of a hook sent twice, and lets through,
+    launch name it was started under, saving the real session on it, starts the main agent at its
+    session's first hook, gives back the stored answer of a hook sent twice, and lets through,
     without a record, a hook from an agent it does not know."""
 
     def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows) -> None:
@@ -58,14 +57,9 @@ class AgentHookRoute(HookRoute):
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)
-        if main is None and event.event == HookEventName.SESSION_START and not event.subagent:
+        if main is None and event.event == HookEventName.SESSION_START:
             main = self.session_agent(event)
-        if main is None or not event.subagent:
-            return main
-        subagent = self.open_agent(event.subagent)
-        if subagent is None and event.event != HookEventName.STOP:
-            return self.started(event, AgentRole.SUBAGENT, main.id)
-        return subagent
+        return main
 
     def session_agent(self, event: HookEvent) -> Agent | None:
         ended = self.agents.session(event.session)
@@ -89,8 +83,7 @@ class AgentHookRoute(HookRoute):
         return agent if agent is not None and agent.ended_at is None else None
 
     def started(self, event: HookEvent, role: str, parent_id: int | None) -> Agent | None:
-        session = event.subagent if event.subagent and role == AgentRole.SUBAGENT else event.session
         environments = self.queries.query(Environment).filter(name=event.environment).limited(1)
         if not environments:
             return None
-        return self.bus.run(StartAgent(session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)
+        return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)

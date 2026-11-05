@@ -3,7 +3,7 @@ from enum import StrEnum
 
 class HookEventName(StrEnum):
     """The hook events of every agent program under one name each, and the tick the server sends itself; a
-    subagent's start and stop are a session start and a stop with the subagent named."""
+    helper sends the same events as any agent."""
 
     PRE_TOOL_USE = "pre_tool_use"
     POST_TOOL_USE = "post_tool_use"

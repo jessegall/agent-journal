@@ -7,7 +7,6 @@ READONLY = NudgeDeclaration("drivers.readonly", NudgeType.REFUSAL, "this driver 
 FILE_ACCESS_RESTRICTION = NudgeDeclaration("drivers.read_and_writes_only", NudgeType.REFUSAL, "this driver reads and writes files only; journal commands are allowed")
 JOURNAL_RESTRICTION = NudgeDeclaration("drivers.journal_only", NudgeType.REFUSAL, "this driver runs journal commands only")
 SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.REFUSAL, "this driver runs no shell commands")
-SUBAGENT_RESTRICTION = NudgeDeclaration("drivers.no_subagents", NudgeType.REFUSAL, "this driver sends no subagents")
 PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.REFUSAL, "this driver runs no {program} command")
 GIT_RESTRICTION = NudgeDeclaration("drivers.no_git", NudgeType.REFUSAL, "this driver runs no git commands")
 FULL_TEST_RESTRICTION = NudgeDeclaration("drivers.no_full_test_run", NudgeType.REFUSAL, "run the tests of the changed files; name the test files instead of running the whole suite", turn_limited=False)
@@ -20,4 +19,4 @@ NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.REFUSAL,
 NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
 
 ACCESS_NUDGES = [NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
-                 SHELL_RESTRICTION, SUBAGENT_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]
+                 SHELL_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]

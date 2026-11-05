@@ -51,7 +51,7 @@ func LimitFor(eventName string) time.Duration {
 	switch eventName {
 	case "prompt":
 		return 8 * time.Second
-	case "stop", "subagent_stop":
+	case "stop":
 		return 10 * time.Second
 	case "session_start":
 		return 15 * time.Second
@@ -166,7 +166,7 @@ var (
 
 // holdsStop says whether the event is a stop, which is never let through unchecked while the journal may be only slow.
 func holdsStop(eventName string) bool {
-	return eventName == "stop" || eventName == "subagent_stop"
+	return eventName == "stop"
 }
 
 // postedUntilAnswered asks as post does; a stop the journal does not answer with 200 is asked again, resting between asks, until

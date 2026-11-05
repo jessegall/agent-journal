@@ -122,11 +122,11 @@ async function save() {
             <section class="section">
                 <span class="label">Helpers</span>
                 <template v-if="helpers">
-                    <span class="muted">Helpers and subagents can use this secret too.</span>
+                    <span class="muted">Helpers can use this secret too.</span>
                 </template>
                 <template v-else>
                     <div class="proposal">
-                        <span>Helpers and subagents cannot use it.</span>
+                        <span>Helpers cannot use it.</span>
                         <Btn small bordered data-secret-helpers @click="helpers = true">Allow helpers</Btn>
                     </div>
                 </template>

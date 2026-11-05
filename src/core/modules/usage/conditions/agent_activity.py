@@ -8,4 +8,4 @@ class AgentActivity:
         return Statement("ended_at IS NULL")
 
     def idle(self) -> Statement:
-        return Statement("(ended_at IS NOT NULL AND role IN ('helper', 'subagent', 'reviewer'))")
+        return Statement("(ended_at IS NOT NULL AND role IN ('helper', 'reviewer'))")

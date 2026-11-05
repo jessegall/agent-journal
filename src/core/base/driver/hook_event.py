@@ -29,7 +29,7 @@ class HookEvent:
     hook_timestamp_ms: int
     actor: str
     environment: str
-    subagent: str
+    child_agent: str
     tool: Tool | None
     prompt: str | None
     raw: Mapping[object, object]
@@ -59,7 +59,7 @@ class HookEvent:
         if any("answer" not in run for run in mappings(fields["foreign"], "a foreign hook run")):
             raise OldHookRunnerError.detected()
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
-                   number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
+                   number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), str(fields.get("child_agent", "")),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
                    text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]))
 

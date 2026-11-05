@@ -14,7 +14,7 @@
     "fired_at_ms",
     "actor",
     "environment",
-    "subagent",
+    "child_agent",
     "tool",
     "prompt",
     "raw",
@@ -60,7 +60,7 @@
     "environment": {
       "type": "string"
     },
-    "subagent": {
+    "child_agent": {
       "type": "string"
     },
     "accepts_lines": {

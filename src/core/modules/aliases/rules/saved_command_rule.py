@@ -10,11 +10,11 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SUBAGENT, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
-SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_SUBAGENT.key)
+SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_HELPER.key)
 
 
 class SavedCommandRule(DriverRule):
@@ -66,8 +66,8 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if saved:
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
-        if role == AgentRole.SUBAGENT:
-            return SAVED_COMMAND_SUBAGENT.nudge(category=category.value)
+        if role == AgentRole.HELPER:
+            return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 
     @staticmethod
