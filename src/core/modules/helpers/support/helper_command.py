@@ -3,6 +3,7 @@ from pathlib import Path
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.providers import Providers
+from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -26,6 +27,9 @@ class HelperCommand:
         profile = self.profiles.effective(helper.profile)
         brief = BLANK_LINE.join((f"You are helper {helper.id}.", profile.body, job.brief, REPORT_STEP))
         return self.launched(helper, SessionStart(helper.session), brief)
+
+    def resumed(self, helper: Agent, job: str) -> LaunchCommand:
+        return self.launched(helper, ResumedSession(helper.session), BLANK_LINE.join((job, REPORT_STEP)))
 
     def launched(self, agent: Agent, session: SessionStart, brief: str) -> LaunchCommand:
         environment = self.environments.find(agent.environment_id)

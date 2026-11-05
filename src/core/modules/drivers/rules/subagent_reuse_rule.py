@@ -2,14 +2,13 @@ from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.path_mentions import PathMentions
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.rules.dispatch_mark_rule import DEFAULT_PROFILE
 from core.modules.drivers.support.driver_nudges import SUBAGENT_REUSE
+from core.modules.drivers.support.helper_reuse import HelperReuse
 
 INDEPENDENT_PROFILES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
@@ -23,8 +22,8 @@ class SubagentReuseRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, reuse: HelperReuse) -> None:
+        self.queries, self.reuse = queries, reuse
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -32,10 +31,9 @@ class SubagentReuseRule(DriverRule):
             return RuleAnswer.allowed()
         dispatch = hook.event.tool_input()
         profile = f"{dispatch.get('subagent_type') or DEFAULT_PROFILE}"
-        paths = PathMentions.found(f"{dispatch.get('prompt', '')}")
-        if not paths or profile in INDEPENDENT_PROFILES:
+        if profile in INDEPENDENT_PROFILES:
             return RuleAnswer.allowed()
-        for row in self.queries.query(HelperJob).filter(agent_id=hook.agent_id, profile=profile).newest().all_rows():
-            if row.ended_at is not None and row.helper_id is not None and PathMentions.overlap(paths, PathMentions.found(row.instruction)):
-                return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(row.helper_id).session))
-        return RuleAnswer.allowed()
+        known = self.reuse.known_job(hook.agent_id, profile, f"{dispatch.get('prompt', '')}")
+        if known is None or known.helper_id is None:
+            return RuleAnswer.allowed()
+        return RuleAnswer.refused(SUBAGENT_REUSE.nudge(agent=self.queries.query(Agent).find(known.helper_id).session))

@@ -9,7 +9,9 @@ from core.base.agent_type_book import AgentTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
+from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
@@ -24,8 +26,8 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository) -> None:
-        self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository = profiles, types, limits, launcher, bus, repository
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse) -> None:
+        self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
@@ -38,6 +40,8 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
         self.limits.checked_slot(parent.environment_id)
+        if not command.fresh and not profile.independent:
+            self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or profile.program_model(program), parent.environment_id)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
@@ -46,3 +50,8 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
                                        description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS]), context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper
+
+    def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
+        known = self.reuse.known_job(parent.id, profile.name, brief)
+        if known is not None:
+            raise Refusal(f"agent:{known.helper_id} knows these files", f"journal helper send {known.helper_id} \"<job>\", or start a new one with --fresh")
