@@ -28,6 +28,15 @@ def test_a_dispatch_shows_one_mark_with_its_instruction_and_it_finishes_in_place
     story.expect_text("chat-mark show 1", "state: ended")
 
 
+def test_a_dispatch_that_was_launched_in_the_background_stays_dispatched_after_the_tool_answers(researcher_dispatched):
+    story, sample = researcher_dispatched
+    launched = sample.with_fields(event="post_tool_use").with_raw({**sample.body["raw"], "tool_response": {"isAsync": True, "status": "async_launched"}})
+    story.hook("s-1", launched)
+    story.run_listeners()
+    expect_marks_text(story, "Dispatched journal-researcher . haiku: Read the cart")
+    story.expect_text("chat-mark show 1", "state: shown")
+
+
 def test_a_change_to_a_finished_dispatch_leaves_its_ended_mark_alone(researcher_dispatched):
     story, sample = researcher_dispatched
     story.hook("s-1", sample.with_fields(event="post_tool_use"))

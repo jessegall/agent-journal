@@ -7,6 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.type_guards import is_mapping
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch import RecordSubagentDispatch
@@ -14,6 +15,7 @@ from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
 
 DEFAULT_PROFILE = "subagent"
 BACKGROUND_INPUT = "run_in_background"
+ASYNC_RESPONSE = "isAsync"
 RETURNED_FIELD = "last_assistant_message"
 
 
@@ -41,9 +43,14 @@ class DispatchMarkRule(DriverRule):
         model, description, instruction = f"{dispatch.get('model', '')}", f"{dispatch.get('description', '')}", f"{dispatch.get('prompt', '')}"
         if hook.event.event is HookEventName.PRE_TOOL_USE:
             return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.environment_id, hook.agent_id, key, profile, model, description, instruction))
-        if hook.event.event is HookEventName.POST_TOOL_USE and not dispatch.get(BACKGROUND_INPUT):
+        if hook.event.event is HookEventName.POST_TOOL_USE and not self.is_background_launch(hook):
             return RuleAnswer.allowed().running(RecordSubagentDispatch(hook.environment_id, hook.agent_id, key, profile, model, description, instruction, f"{hook.event.raw.get('tool_response', '')}", True))
         return RuleAnswer.allowed()
+
+    @staticmethod
+    def is_background_launch(hook: AgentHook) -> bool:
+        response = hook.event.raw.get("tool_response")
+        return bool(hook.event.tool_input().get(BACKGROUND_INPUT)) or (is_mapping(response) and response.get(ASYNC_RESPONSE) is True)
 
     def subagent_started(self, hook: AgentHook) -> RuleAnswer:
         parent = self.queries.query(Agent).find(hook.agent_id).parent_id
