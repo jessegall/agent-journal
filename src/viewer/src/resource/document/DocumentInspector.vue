@@ -145,7 +145,7 @@ watch(() => `${props.table}:${props.id}`, () => {
                 <DocumentLinks :links="links" />
             </template>
             <template v-else-if="shownTab === 'revisions'">
-                <DocumentRevisions :id="id" :revisions="revisions" :read="read" />
+                <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" @restored="load" />
             </template>
             <template v-else-if="shownTab === 'comments'">
                 <CommentRail tab :comments="comments" :hot="hot" :lost="lost" @show="showInText" />

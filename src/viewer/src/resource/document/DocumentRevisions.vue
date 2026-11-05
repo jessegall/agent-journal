@@ -1,15 +1,25 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import Btn from "../../kit/Btn.vue";
-import {render} from "../../text/index.js";
+import {lineDiff} from "../../domain/lineDiff.js";
 
-// a document's revisions: each with what changed, and the text of the one opened
-const props = defineProps({id: {type: Number, required: true}, revisions: {type: Array, required: true}, read: {type: Function, required: true}});
+// a document's revisions: each with what changed; the one opened shows its difference from the current text and can be made the current text again
+const props = defineProps({id: {type: Number, required: true}, revisions: {type: Array, required: true}, text: {type: String, default: ""}, read: {type: Function, required: true}});
+const emit = defineEmits(["restored"]);
 const opened = ref(null);
+const failure = ref("");
+const lines = computed(() => (opened.value ? lineDiff(opened.value.body, props.text) : []));
 
 async function open(row) {
     const answer = await props.read(["doc", "revision", String(props.id), String(row.number)]);
     opened.value = answer.ok ? answer.value : null;
+    failure.value = answer.ok ? "" : answer.error;
+}
+
+async function restore() {
+    const answer = await props.read(["doc", "edit", String(props.id), "--abstract", opened.value.abstract, "--body", opened.value.body]);
+    failure.value = answer.ok ? "" : answer.error;
+    if (answer.ok) emit("restored");
 }
 </script>
 
@@ -19,8 +29,16 @@ async function open(row) {
             <template v-for="row in revisions" :key="row.number">
                 <Btn kind="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change || row.created_at }}</Btn>
             </template>
+            <template v-if="failure">
+                <p class="revision-failure" role="alert" data-text-revision-failure>{{ failure }}</p>
+            </template>
             <template v-if="opened">
-                <div class="md revision-text" data-text-revision-body v-html="render(opened.body, {env: '', rowNames: false, document: true})" />
+                <Btn small bordered data-text-revision-restore @click="restore">Go back to this revision</Btn>
+                <div class="revision-diff" data-text-revision-diff>
+                    <template v-for="(line, index) in lines" :key="index">
+                        <div :class="['revision-line', line.kind]">{{ line.text || " " }}</div>
+                    </template>
+                </div>
             </template>
         </template>
         <template v-else>
@@ -41,7 +59,25 @@ async function open(row) {
     padding: 18px 24px;
 }
 
-.revision-text {
+.revision-failure {
+    margin: 0;
+    color: var(--danger);
+    font-size: 12.5px;
+}
+
+.revision-line {
+    white-space: pre-wrap;
+}
+
+.revision-line.added {
+    background: color-mix(in srgb, var(--green) 14%, transparent);
+}
+
+.revision-line.removed {
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+}
+
+.revision-diff {
     width: 100%;
     margin-top: 12px;
     padding-top: 12px;

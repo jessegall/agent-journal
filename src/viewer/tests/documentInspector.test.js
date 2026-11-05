@@ -125,7 +125,7 @@ test("links and revisions are tabs, and a revision opens its text", async () => 
     await settle();
     element.querySelector('[data-text-revision="2"]').click();
     await settle();
-    expect(element.querySelector("[data-text-revision-body]").textContent).toContain("the old text");
+    expect(element.querySelector("[data-text-revision-diff]").textContent).toContain("the old text");
 });
 
 test("editing starts from the text as it is and saves abstract and body", async () => {
