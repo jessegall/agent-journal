@@ -38,6 +38,22 @@ class TextLines:
         output.line(OUTLINE_HINT)
 
     @staticmethod
+    def read_arguments(flags: list[str]) -> Namespace:
+        parser = ArgumentParser(add_help=False, exit_on_error=False)
+        TextLines.reading_flags(parser)
+        return parser.parse_known_args(flags)[0]
+
+    @staticmethod
+    def read_part(arguments: Namespace) -> str:
+        if arguments.all:
+            return "all"
+        if arguments.grep:
+            return f'search "{arguments.grep}"'
+        if arguments.section:
+            return f"bullets of section {arguments.section}" if arguments.bullets else f"section {arguments.section}"
+        return "outline"
+
+    @staticmethod
     def reading_flags(parser: ArgumentParser) -> None:
         parser.add_argument("--section")
         parser.add_argument("--bullets", action="store_true")
