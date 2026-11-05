@@ -22,6 +22,9 @@ class AgentProfile:
     changed: tuple[str, ...] = ()
     module_text_changed: bool = False
     path: str = ""
+    source_digest: str = ""
+    problem: str = ""
+    notes: tuple[str, ...] = ()
     uses: int = 0
     last_used: int = 0
 
@@ -32,4 +35,4 @@ class AgentProfile:
     @classmethod
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
-        return cls(**{**fields, "access": access, "mcp_tools": tuple(fields["mcp_tools"]), "changed": tuple(fields["changed"])})
+        return cls(**{**fields, "access": access, "mcp_tools": tuple(fields["mcp_tools"]), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})

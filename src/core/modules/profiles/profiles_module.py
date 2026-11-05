@@ -1,3 +1,7 @@
+from core.modules.profiles.commands.remove_profile.remove_profile_handler import RemoveProfileHandler
+from core.modules.profiles.commands.remove_profile.remove_profile_subcommand import RemoveProfileSubcommand
+from core.modules.profiles.commands.reset_profile.reset_profile_handler import ResetProfileHandler
+from core.modules.profiles.commands.reset_profile.reset_profile_subcommand import ResetProfileSubcommand
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -23,9 +27,9 @@ class ProfilesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.settings", "journal.core.drivers", "journal.core.usage"]
     settings = PROFILE_SETTINGS
-    handlers = [SaveProfileHandler, CountProfileUseHandler]
-    subcommands = [ProfileListSubcommand, SaveProfileSubcommand]
+    handlers = [ResetProfileHandler, RemoveProfileHandler, SaveProfileHandler, CountProfileUseHandler]
+    subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand, ProfileListSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
     driver_rules = [ProfileUseRule]
     windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
-                                 reads=["profile list"], runs=["profile save"])]
+                                 reads=["profile list"], runs=["profile save", "profile reset", "profile remove"])]
