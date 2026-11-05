@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import w
 import subprocess
 
 from core.base.journal_home import LAUNCHER_SOCKET
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 from datetime import timedelta
 
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
@@ -271,7 +271,7 @@ def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_s
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     story.run_listeners()
-    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
     expect_command_requests_launcher_with(launcher, 1, "--resume")
     expect_command_requests_launcher_line_2(launcher, 1, "clashes on cart.py")
     story.expect_text(f"agent-line list --agent {worker.id}", "entered")
@@ -341,7 +341,7 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
-    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
     expect_command_requests_launcher_with(launcher, 1, "--resume")
 
 
@@ -378,7 +378,7 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.run(f'worker send {worker.id} "First job"', actor=story.agent)
     story.run_listeners()
-    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
     story.advance(timedelta(seconds=1))
     story.run(f'worker send {worker.id} "Second job"', actor=story.agent)
     story.run_listeners()

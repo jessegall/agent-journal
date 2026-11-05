@@ -1,0 +1,69 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "any": [
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "field": "bases"
+                                },
+                                {
+                                    "nameIn": [
+                                        "Model",
+                                        "ViewModel"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "body": {
+                    "descendant": {
+                        "name": "environment_id"
+                    }
+                }
+            },
+            {
+                "not": {
+                    "child": {
+                        "all": [
+                            {
+                                "field": "bases"
+                            },
+                            {
+                                "name": "EnvironmentScoped"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "not": {
+                    "body": {
+                        "descendant": {
+                            "name": "shared_rows"
+                        }
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "model-without-environment-scope",
+        "description": "A model holds an environment id without declaring EnvironmentScoped, so its queries reach every environment unless each one filters by hand.",
+        "rule": "Declare EnvironmentScoped on the model.",
+        "skill": "plain-code-words"
+    }
+}

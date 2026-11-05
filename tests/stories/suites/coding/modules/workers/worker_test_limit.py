@@ -21,7 +21,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
 from core.testing.expect_reply import expect_reply_refusal
@@ -138,7 +138,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     OutputReading()(story.container)
     story.run_listeners()
     worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
-    launcher.expect_worker(worker.id, worker_session(story, worker), Path(worktree.folder))
+    launcher.expect_started(worker.id, worker_session(story, worker), Path(worktree.folder))
     story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
 
 
