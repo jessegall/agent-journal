@@ -4,7 +4,6 @@ from core.modules.drivers.migrations.m022_nudge_total_index import NudgeTotalInd
 from core.modules.drivers.migrations.m021_agent_line_text_index import AgentLineTextIndexMigration
 from core.modules.drivers.migrations.m020_block_stop_name import BlockStopNameMigration
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch_handler import RecordSubagentDispatchHandler
-from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
 from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDispatchesMigration
 from core.modules.drivers.migrations.m024_helper_jobs import HelperJobsMigration
 from core.modules.drivers.migrations.m025_helper_job_helper_index import HelperJobHelperIndexMigration
@@ -148,7 +147,7 @@ class DriversModule(Module):
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [JournalStartedListener, ManageHooksListener, DispatchMarkListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     performance_tools = [HookCostTool]

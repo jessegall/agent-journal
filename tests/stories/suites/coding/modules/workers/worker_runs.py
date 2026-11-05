@@ -27,6 +27,7 @@ RULE_LIMIT_POINTS = 20
 def worker_with_background_run(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)

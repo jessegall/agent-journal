@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 
-ALLOWED_MODELS = "journal.suites.coding.workers.allowed-models"
+ALLOWED_MODELS = "journal.core.helpers.allowed-models"
 
 
 def allow_opus(story) -> None:
