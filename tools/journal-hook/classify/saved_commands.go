@@ -10,6 +10,16 @@ type savedCommandTarget struct {
 	program, subcommand, folder string
 }
 
+func (classifier *Classifier) IsTestOrBuildProgram(program, subcommand string) bool {
+	row := classifier.loaded().Programs[program]
+	if row == nil {
+		return false
+	}
+	rows, _, _ := classifier.walked(row, strings.Fields(subcommand))
+	index := lastIndex(rows, func(level *Row) bool { return level.Category != "" || level == row })
+	return isTestOrBuild(rows[index].Category)
+}
+
 func (classifier *Classifier) SavedCommandConflict(candidate string, saved map[string]string) string {
 	targets := classifier.savedCommandTargets(candidate)
 	names := make([]string, 0, len(saved))
@@ -39,7 +49,7 @@ func (classifier *Classifier) savedCommandTargets(line string) []savedCommandTar
 			folder = commandFolder(folder, part.Arguments[0])
 			continue
 		}
-		if !isTestOrBuild(part.Classification.Category) || classifier.loaded().Programs[part.Program] == nil {
+		if !isTestOrBuild(part.Classification.Category) || !classifier.IsTestOrBuildProgram(part.Program, part.Subcommand) {
 			continue
 		}
 		targetFolder := folder
@@ -47,7 +57,7 @@ func (classifier *Classifier) savedCommandTargets(line string) []savedCommandTar
 			if slices.Contains([]string{"-C", "--prefix", "--root", "--dir", "--cwd"}, argument) && index+1 < len(part.Arguments) {
 				targetFolder = commandFolder(targetFolder, part.Arguments[index+1])
 			}
-			if flag, value, found := strings.Cut(argument, "="); found && slices.Contains([]string{"--prefix", "--root", "--dir", "--cwd"}, flag) {
+			if flag, value, exists := strings.Cut(argument, "="); exists && slices.Contains([]string{"--prefix", "--root", "--dir", "--cwd"}, flag) {
 				targetFolder = commandFolder(targetFolder, value)
 			}
 		}

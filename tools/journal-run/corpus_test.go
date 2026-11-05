@@ -442,7 +442,7 @@ func TestEveryCorpusTestAndBuildNamesAKnownProgram(t *testing.T) {
 				continue
 			}
 			programs[part.Program] = true
-			if table.Programs[part.Program] == nil || table.Wrappers[part.Program] != nil {
+			if !classifier.IsTestOrBuildProgram(part.Program, part.Subcommand) {
 				unknown[part.Program] = true
 			}
 		}
