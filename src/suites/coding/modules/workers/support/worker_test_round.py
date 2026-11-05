@@ -15,7 +15,7 @@ class WorkerTestRound:
     failed_count: int
 
     @classmethod
-    def from_events(cls, events: Iterable[LoggedEvent]) -> "WorkerTestRound":
+    def build(cls, events: Iterable[LoggedEvent]) -> "WorkerTestRound":
         waiting: set[int] = set()
         failed: set[int] = set()
         number, completed = 0, False
