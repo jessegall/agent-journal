@@ -32,7 +32,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
         parser.add_argument("--model", default="", help="the model the worker runs on, else the profile's: journal worker models lists them")
-        parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker: journal profile list names them")
+        parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
         parser.add_argument("--fresh", action="store_true", help="start a worker though an ended worker changed the same files")
         parser.add_argument("--name", default="", help="the worker's name on its card")
 

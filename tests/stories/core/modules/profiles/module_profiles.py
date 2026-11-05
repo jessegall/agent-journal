@@ -46,3 +46,9 @@ def test_shipped_profiles_have_registered_types_and_independent_review(new_story
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
     story.expect_rows(registry.profile("journal-plan-reviewer").profile.independent,
                       registry.agent_type_book().find("worker").default_profile == "journal-worker")
+
+
+def test_a_third_party_module_brings_a_type_a_driver_and_a_profile(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_sync_success(f"{MODULES}:ClerkModule")
+    story.expect_text("profile list", "sample-clerk", "clerk")
