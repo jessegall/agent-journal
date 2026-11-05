@@ -58,7 +58,7 @@ type Starter interface {
 type ProcessStarter struct {
 	Home   string
 	Inputs *TerminalInputs
-	Told   func(agentID int, question, said string)
+	OnAnswer   func(agentID int, question, explanation string)
 }
 
 // Start starts the program and leaves it running.
@@ -77,9 +77,9 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	if err != nil {
 		return err
 	}
-	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, said string) {
-		if starter.Told != nil {
-			starter.Told(start.AgentID, question, said)
+	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, explanation string) {
+		if starter.OnAnswer != nil {
+			starter.OnAnswer(start.AgentID, question, explanation)
 		}
 	})
 	stop := make(chan struct{})

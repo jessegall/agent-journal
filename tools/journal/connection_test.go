@@ -46,12 +46,12 @@ func TestASocketPathTooLongBecomesAShortOneNamedByItsHashAsTheServerNamesIt(t *t
 	deep := "/" + strings.Repeat("deep-folder-", 10)
 	path := filepath.Join(deep, "server.sock")
 	sum := sha256.Sum256([]byte(path))
-	if got := socket.Path(deep); got != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
-		t.Fatalf("socket path %s", got)
+	if actual := socket.Path(deep); actual != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
+		t.Fatalf("socket path %s", actual)
 	}
 	home := shortHome(t)
-	if got := socket.Path(home); got != filepath.Join(home, "server.sock") {
-		t.Fatalf("socket path %s", got)
+	if actual := socket.Path(home); actual != filepath.Join(home, "server.sock") {
+		t.Fatalf("socket path %s", actual)
 	}
 }
 
@@ -171,8 +171,8 @@ func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItHoldsTheServer(t *t
 	if err := os.WriteFile(filepath.Join(server, "server.py"), []byte(""), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(home, "src") {
-		t.Fatalf("an installed project's code is %s, not %s", filepath.Join(home, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(home, "src") {
+		t.Fatalf("an installed project's code is %s, not %s", filepath.Join(home, "src"), actual)
 	}
 }
 
@@ -182,8 +182,8 @@ func TestSourceFolderIsTheRepositorysSrcWhenTheJournalHoldsNoServer(t *testing.T
 	if err := os.MkdirAll(filepath.Join(home, "src", "journal"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(project, "src") {
-		t.Fatalf("the repository's code is %s, not %s", filepath.Join(project, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(project, "src") {
+		t.Fatalf("the repository's code is %s, not %s", filepath.Join(project, "src"), actual)
 	}
 }
 
@@ -200,8 +200,8 @@ func TestSourceFolderPutsInPlaceTheLinkAStoppedSwitchLeft(t *testing.T) {
 	if err := os.Symlink(filepath.Join("versions", "1"), filepath.Join(home, newSourceLink)); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(home, "src") {
-		t.Fatalf("the code after a stopped switch is %s, not %s", filepath.Join(home, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(home, "src") {
+		t.Fatalf("the code after a stopped switch is %s, not %s", filepath.Join(home, "src"), actual)
 	}
 	if _, err := os.Stat(filepath.Join(home, "src", "server", "server.py")); err != nil {
 		t.Fatalf("src was not put in place: %v", err)

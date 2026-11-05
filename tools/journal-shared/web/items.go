@@ -129,9 +129,9 @@ func itemOf(response http.ResponseWriter, request *http.Request) (store.Kind, in
 	return kind, id, valid
 }
 
-func number(text string, otherwise int) (int, bool) {
+func number(text string, defaultValue int) (int, bool) {
 	if text == "" {
-		return otherwise, true
+		return defaultValue, true
 	}
 	parsed, err := strconv.Atoi(text)
 	return parsed, err == nil

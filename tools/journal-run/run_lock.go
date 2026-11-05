@@ -18,12 +18,12 @@ const RunLockLimitSeconds = 600
 // on itself, and waits while the mark is there before the first part starts. A line of journal commands, or one that
 // only reads, does not wait: the agent needs them to go on working, and they touch none of the code being changed.
 func LockWait(home string, process int, parts []Part, aliases []string, onlyReads bool) string {
-	named := fmt.Sprintf("export JOURNAL_PROCESS=%d\n", process)
+	processExport := fmt.Sprintf("export JOURNAL_PROCESS=%d\n", process)
 	if onlyReads || isJournalLine(parts, aliases) {
-		return named
+		return processExport
 	}
 	mark := quoted(filepath.Join(home, RunLockMark))
-	return named + fmt.Sprintf("__journal_waited=0\nwhile [ -e %s ] && [ \"$__journal_waited\" -lt %d ]; do sleep 1; __journal_waited=$((__journal_waited+1)); done\n", mark, RunLockLimitSeconds)
+	return processExport + fmt.Sprintf("__journal_waited=0\nwhile [ -e %s ] && [ \"$__journal_waited\" -lt %d ]; do sleep 1; __journal_waited=$((__journal_waited+1)); done\n", mark, RunLockLimitSeconds)
 }
 
 // isJournalLine says every part is a journal command; an alias is the command under it, so it waits like any other.
@@ -41,8 +41,8 @@ func SlotWait(home string, process int, queued bool) string {
 
 func isJournalLine(parts []Part, aliases []string) bool {
 	for _, part := range parts {
-		words := strings.Fields(part.Text)
-		if len(words) == 0 || words[0] != "journal" || (len(words) > 1 && slices.Contains(aliases, words[1])) {
+		arguments := strings.Fields(part.Text)
+		if len(arguments) == 0 || arguments[0] != "journal" || (len(arguments) > 1 && slices.Contains(aliases, arguments[1])) {
 			return false
 		}
 	}

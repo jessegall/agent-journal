@@ -51,30 +51,30 @@ func PlainTerminalText(raw string) string {
 // ReadTerminalMenu finds the last menu on the screen's bytes, or nil with none.
 func ReadTerminalMenu(screen string) *TerminalMenu {
 	text := PlainTerminalText(screen)
-	above, footed := text, false
+	menuText, footed := text, false
 	if footers := menuFooter.FindAllStringIndex(text, -1); len(footers) > 0 {
-		above, footed = text[:footers[len(footers)-1][0]], true
+		menuText, footed = text[:footers[len(footers)-1][0]], true
 	}
-	found := menuOption.FindAllStringSubmatchIndex(above, -1)
+	matches := menuOption.FindAllStringSubmatchIndex(menuText, -1)
 	options := []MenuOption{}
 	start := 0
-	for index := len(found) - 1; index >= 0; index-- {
-		match := found[index]
-		number, _ := strconv.Atoi(above[match[4]:match[5]])
+	for index := len(matches) - 1; index >= 0; index-- {
+		match := matches[index]
+		number, _ := strconv.Atoi(menuText[match[4]:match[5]])
 		if len(options) > 0 && number != options[0].Number-1 {
 			break
 		}
 		cursor := match[2] >= 0
-		options = append([]MenuOption{{number, above[match[6]:match[7]], cursor}}, options...)
+		options = append([]MenuOption{{number, menuText[match[6]:match[7]], cursor}}, options...)
 		start = match[0]
 	}
 	if len(options) < 2 || options[0].Number != 1 {
 		return nil
 	}
-	if !footed && !hasPointer(above, found[len(found)-len(options):]) {
+	if !footed && !hasPointer(menuText, matches[len(matches)-len(options):]) {
 		return nil
 	}
-	return &TerminalMenu{questionAbove(above[:start]), options}
+	return &TerminalMenu{questionAbove(menuText[:start]), options}
 }
 
 // hasPointer says whether one of the option lines holds a cursor that a quoted line of text could not: > starts a quote.
@@ -160,18 +160,18 @@ func (menu *TerminalMenu) Trusting() bool {
 }
 
 // KeysFor is the arrow keys from the option under the cursor to the one taken, then Enter.
-func (menu *TerminalMenu) KeysFor(taken MenuOption) string {
-	at, to := 0, 0
+func (menu *TerminalMenu) KeysFor(option MenuOption) string {
+	cursorIndex, targetIndex := 0, 0
 	for index, option := range menu.Options {
 		if option.Cursor {
-			at = index
+			cursorIndex = index
 		}
-		if option.Number == taken.Number {
-			to = index
+		if option.Number == option.Number {
+			targetIndex = index
 		}
 	}
-	if to >= at {
-		return strings.Repeat(MenuKeyDown, to-at) + MenuKeyEnter
+	if targetIndex >= cursorIndex {
+		return strings.Repeat(MenuKeyDown, targetIndex-cursorIndex) + MenuKeyEnter
 	}
-	return strings.Repeat(MenuKeyUp, at-to) + MenuKeyEnter
+	return strings.Repeat(MenuKeyUp, cursorIndex-targetIndex) + MenuKeyEnter
 }

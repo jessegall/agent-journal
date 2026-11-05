@@ -26,13 +26,13 @@ type TerminalInputs struct {
 // keyboardReader notes when keys come from the keyboard.
 type keyboardReader struct {
 	source io.Reader
-	noted  func()
+	onRead  func()
 }
 
 func (reader keyboardReader) Read(buffer []byte) (int, error) {
 	count, err := reader.source.Read(buffer)
 	if count > 0 {
-		reader.noted()
+		reader.onRead()
 	}
 	return count, err
 }
@@ -117,16 +117,16 @@ func (inputs *TerminalInputs) PressKeys(agentID int, keys string) bool {
 	if !ok {
 		return false
 	}
-	before, entered := strings.CutSuffix(keys, "\r")
-	if before != "" {
-		if _, err := io.WriteString(writer, before); err != nil {
+	prefix, entered := strings.CutSuffix(keys, "\r")
+	if prefix != "" {
+		if _, err := io.WriteString(writer, prefix); err != nil {
 			return false
 		}
 	}
 	if !entered {
 		return true
 	}
-	if before != "" {
+	if prefix != "" {
 		time.Sleep(keyPause)
 	}
 	_, err := io.WriteString(writer, "\r")

@@ -3,7 +3,7 @@ package classify
 import "testing"
 
 func TestSavedTimeoutFlagsStayOutOfCommandArguments(t *testing.T) {
-	for _, sample := range []struct{ arguments, wanted, reading, timeout string }{
+	for _, sample := range []struct{ arguments, wanted, selection, timeout string }{
 		{"--timeout 5m cart", "cart", "", "5m"},
 		{"--timeout=2h", "", "", "2h"},
 		{"--tail 20 --timeout 5m cart", "cart", "tail:20", "5m"},
@@ -15,7 +15,7 @@ func TestSavedTimeoutFlagsStayOutOfCommandArguments(t *testing.T) {
 	} {
 		t.Run(sample.arguments, func(t *testing.T) {
 			options := splitSavedOptions(sample.arguments)
-			if options.arguments != sample.wanted || options.reading != sample.reading || (sample.timeout != "" && (options.timeoutDuration == nil || *options.timeoutDuration != sample.timeout)) || (sample.timeout == "" && options.timeoutDuration != nil) {
+			if options.arguments != sample.wanted || options.selection != sample.selection || (sample.timeout != "" && (options.timeoutDuration == nil || *options.timeoutDuration != sample.timeout)) || (sample.timeout == "" && options.timeoutDuration != nil) {
 				t.Fatalf("saved options %+v", options)
 			}
 		})

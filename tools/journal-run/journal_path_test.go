@@ -41,8 +41,8 @@ func TestJournalClientReportsThroughItsInstalledJournal(t *testing.T) {
 	if err := (JournalClient{Home: home}).Run("process", "end", "7"); err != nil {
 		t.Fatal(err)
 	}
-	if got := readFile(t, record); got != home+"\nprocess\nend\n7\n" {
-		t.Fatalf("reported %q", got)
+	if actual := readFile(t, record); actual != home+"\nprocess\nend\n7\n" {
+		t.Fatalf("reported %q", actual)
 	}
 }
 

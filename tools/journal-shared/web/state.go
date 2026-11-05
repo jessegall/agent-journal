@@ -27,9 +27,9 @@ func (server *Server) state(response http.ResponseWriter, request *http.Request,
 
 // matches tells whether an If-None-Match header names the tag, weak or not, or is *.
 func matches(header, tag string) bool {
-	for _, named := range strings.Split(header, ",") {
-		named = strings.Trim(strings.TrimPrefix(strings.TrimSpace(named), "W/"), `"`)
-		if named == "*" || named == tag {
+	for _, candidateTag := range strings.Split(header, ",") {
+		candidateTag = strings.Trim(strings.TrimPrefix(strings.TrimSpace(candidateTag), "W/"), `"`)
+		if candidateTag == "*" || candidateTag == tag {
 			return true
 		}
 	}

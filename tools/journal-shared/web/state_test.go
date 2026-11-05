@@ -49,9 +49,9 @@ func TestARoundWithNothingNewIs304WithNoBody(t *testing.T) {
 	made := newFixture(t)
 	createChecklist(t, made)
 	tag := stateFor(made, store.RoleRead, "").Header().Get("ETag")
-	again := stateFor(made, store.RoleRead, tag)
-	if again.Code != http.StatusNotModified || again.Body.Len() != 0 || again.Header().Get("ETag") != tag {
-		t.Fatalf("%d %q", again.Code, again.Body.String())
+	cachedResponse := stateFor(made, store.RoleRead, tag)
+	if cachedResponse.Code != http.StatusNotModified || cachedResponse.Body.Len() != 0 || cachedResponse.Header().Get("ETag") != tag {
+		t.Fatalf("%d %q", cachedResponse.Code, cachedResponse.Body.String())
 	}
 }
 

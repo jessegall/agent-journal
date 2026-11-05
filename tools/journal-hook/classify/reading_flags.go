@@ -15,22 +15,22 @@ var timeoutFlag = regexp.MustCompile(`(?:^|\s)--timeout(?:=|\s+)(?:'([^']*)'|"([
 
 type savedOptions struct {
 	arguments       string
-	reading         string
+	selection         string
 	timeoutDuration *string
 }
 
 func splitSavedOptions(arguments string) savedOptions {
-	flags, rest := arguments, ""
+	flags, remainder := arguments, ""
 	if place := argumentsEnd.FindStringIndex(arguments); place != nil {
-		flags, rest = arguments[:place[0]], arguments[place[1]:]
+		flags, remainder = arguments[:place[0]], arguments[place[1]:]
 	}
 	options := savedOptions{arguments: arguments}
-	var reading []string
-	flags, reading = removeSavedFlag(flags, readingFlag)
-	if reading != nil {
-		options.reading = reading[1] + ":" + reading[2]
-		if reading[3] != "" {
-			options.reading = reading[3] + ":" + reading[4]
+	var selection []string
+	flags, selection = removeSavedFlag(flags, readingFlag)
+	if selection != nil {
+		options.selection = selection[1] + ":" + selection[2]
+		if selection[3] != "" {
+			options.selection = selection[3] + ":" + selection[4]
 		}
 	}
 	var timeout []string
@@ -39,8 +39,8 @@ func splitSavedOptions(arguments string) savedOptions {
 		value := timeout[1] + timeout[2] + timeout[3]
 		options.timeoutDuration = &value
 	}
-	if reading != nil || timeout != nil {
-		options.arguments = strings.TrimSpace(flags + " " + rest)
+	if selection != nil || timeout != nil {
+		options.arguments = strings.TrimSpace(flags + " " + remainder)
 	}
 	return options
 }

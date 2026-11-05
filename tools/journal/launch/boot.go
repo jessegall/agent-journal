@@ -42,7 +42,7 @@ type Conversation struct {
 	Session string
 	Role    string
 	Title   string
-	Written time.Time
+	ModifiedAt time.Time
 }
 
 // Journal is what the boot menu reads from the journal and asks it to make.
@@ -180,8 +180,8 @@ func (menu *boot) useEnvironment(environment Environment) error {
 	if filepath.Dir(environment.Folder) != worktrees.Folder() {
 		return nil
 	}
-	folder, fresh, err := menu.cut(worktrees, filepath.Base(environment.Folder))
-	if err != nil || !fresh {
+	folder, created, err := menu.cut(worktrees, filepath.Base(environment.Folder))
+	if err != nil || !created {
 		return err
 	}
 	return menu.journal.PrepareWorktree(folder, menu.request.Root, environment.Name)
@@ -212,7 +212,7 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		name = worktrees.UnusedName(names)
 	}
 	name = UnheldName(name, working)
-	folder, fresh, err := menu.cut(worktrees, name)
+	folder, created, err := menu.cut(worktrees, name)
 	if err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		}
 	}
 	menu.choice.Environment, menu.choice.Folder = name, folder
-	if !fresh {
+	if !created {
 		return nil
 	}
 	return menu.journal.PrepareWorktree(folder, menu.request.Root, name)

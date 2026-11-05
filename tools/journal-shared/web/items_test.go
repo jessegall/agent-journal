@@ -230,11 +230,11 @@ func TestAnAdminRemovesAndRestoresAnItemAndAPutOnARemovedItemIs410(t *testing.T)
 	if listed := decode(t, made.send("GET", "/items?kind=doc", "", made.tokens[store.RoleRead], nil)); listed["total"] != float64(0) {
 		t.Errorf("a removed item is listed: %v", listed)
 	}
-	gone := made.send("PUT", "/items/doc/1", `{"fields": {"body": "x"}}`, made.tokens[store.RoleEdit], ifMatch(`"2"`))
-	if gone.Code != http.StatusGone {
-		t.Fatalf("%d", gone.Code)
+	removedResponse := made.send("PUT", "/items/doc/1", `{"fields": {"body": "x"}}`, made.tokens[store.RoleEdit], ifMatch(`"2"`))
+	if removedResponse.Code != http.StatusGone {
+		t.Fatalf("%d", removedResponse.Code)
 	}
-	expectErrorShape(t, gone)
+	expectErrorShape(t, removedResponse)
 	if made.send("POST", "/items/doc/1/restore", "", made.tokens[store.RoleEdit], nil).Code != http.StatusForbidden {
 		t.Error("an editor restored an item")
 	}

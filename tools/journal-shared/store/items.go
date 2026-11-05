@@ -307,15 +307,15 @@ func readItem(database querier, kind Kind, id int64) (Item, error) {
 
 // record adds the history row of a write and reads the item as that write left it.
 func (store *Store) record(transaction *sql.Tx, kind Kind, id int64, action string, caller Caller) (Item, error) {
-	written, err := readItem(transaction, kind, id)
+	recordedItem, err := readItem(transaction, kind, id)
 	if err != nil {
 		return Item{}, err
 	}
-	fields, err := json.Marshal(written.Fields)
+	fields, err := json.Marshal(recordedItem.Fields)
 	if err != nil {
 		return Item{}, err
 	}
-	if err := store.addVersion(transaction, kind, id, written.Version, action, string(fields), caller); err != nil {
+	if err := store.addVersion(transaction, kind, id, recordedItem.Version, action, string(fields), caller); err != nil {
 		return Item{}, err
 	}
 	return readItem(transaction, kind, id)
@@ -343,17 +343,17 @@ func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 			}
 			continue
 		}
-		switch typed := value.(type) {
+		switch fieldValue := value.(type) {
 		case string:
-			checked[field] = typed
+			checked[field] = fieldValue
 		case json.Number:
-			number, err := typed.Int64()
+			number, err := fieldValue.Int64()
 			if err != nil {
 				return nil, fmt.Errorf("%w: %s is not a whole number", ErrBadFields, field)
 			}
 			checked[field] = number
 		case int64:
-			checked[field] = typed
+			checked[field] = fieldValue
 		default:
 			return nil, fmt.Errorf("%w: %s is neither text nor a whole number", ErrBadFields, field)
 		}
@@ -392,15 +392,15 @@ func excerptAround(term string, texts []string) string {
 			if !sameLetters(characters[start:start+len(wanted)], wanted) {
 				continue
 			}
-			from, to := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
-			shown := strings.Join(strings.Fields(string(characters[from:to])), " ")
+			from, endIndex := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
+			excerpt := strings.Join(strings.Fields(string(characters[from:endIndex])), " ")
 			if from > 0 {
-				shown = "…" + shown
+				excerpt = "…" + excerpt
 			}
-			if to < len(characters) {
-				shown += "…"
+			if endIndex < len(characters) {
+				excerpt += "…"
 			}
-			return shown
+			return excerpt
 		}
 	}
 	return ""

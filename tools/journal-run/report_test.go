@@ -24,9 +24,9 @@ func TestEachPartStartIsReportedBeforeItsEnd(t *testing.T) {
 	client := newClient()
 	run(t, options(t, "echo one && echo two"), client)
 	want := []string{"process part-start 4 --position 1", "process part-end 4 --position 1 --exit-code 0", "process part-start 4 --position 2", "process part-end 4 --position 2 --exit-code 0"}
-	got := client.reported()
-	if len(got) < len(want) || strings.Join(got[:len(want)], "\n") != strings.Join(want, "\n") {
-		t.Errorf("reported %q, which does not open with %q", got, want)
+	actual := client.reported()
+	if len(actual) < len(want) || strings.Join(actual[:len(want)], "\n") != strings.Join(want, "\n") {
+		t.Errorf("reported %q, which does not open with %q", actual, want)
 	}
 }
 

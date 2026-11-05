@@ -67,7 +67,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 	}
 	for _, run := range classifier.savedRuns {
 		if run.line == strings.TrimSpace(command.Text) {
-			prepared.SavedCommand, prepared.ReadFlag = run.name, run.reading
+			prepared.SavedCommand, prepared.ReadFlag = run.name, run.selection
 			prepared.TimeoutDuration = run.timeoutDuration
 		}
 	}

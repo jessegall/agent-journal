@@ -24,7 +24,7 @@ const (
 type MenuAnswer struct {
 	Keys     string
 	Question string
-	Said     string
+	Explanation     string
 }
 
 // MenuWatcher reads an agent's screen and keeps the agent from sitting at a menu: one the journal or the person caused is
@@ -35,23 +35,23 @@ type MenuWatcher struct {
 	mutex     sync.Mutex
 	screen    []byte
 	changedAt time.Time
-	seen      string
-	seenAt    time.Time
+	menuSignature      string
+	menuDetectedAt    time.Time
 	Now       func() time.Time
 	KeyedAt   func() time.Time
 	TypedAt   func() time.Time
 	Press     func(keys string) bool
-	Told      func(question, said string)
+	OnAnswer      func(question, explanation string)
 }
 
 // NewMenuWatcher watches the agent's terminal through its input, and tells of what it pressed.
-func NewMenuWatcher(inputs *TerminalInputs, agentID int, told func(question, said string)) *MenuWatcher {
+func NewMenuWatcher(inputs *TerminalInputs, agentID int, onAnswer func(question, explanation string)) *MenuWatcher {
 	return &MenuWatcher{
 		Now:     time.Now,
 		KeyedAt: func() time.Time { return inputs.KeyedAt(agentID) },
 		TypedAt: func() time.Time { return inputs.TypedAt(agentID) },
 		Press:   func(keys string) bool { return inputs.PressKeys(agentID, keys) },
-		Told:    told,
+		OnAnswer:    onAnswer,
 	}
 }
 
@@ -76,17 +76,17 @@ func (watcher *MenuWatcher) Watch(stop <-chan struct{}) {
 		case <-stop:
 			return
 		case <-ticker.C:
-			watcher.Look()
+			watcher.CheckMenu()
 		}
 	}
 }
 
 // Look is one look at the screen: it answers a menu that waits and tells of it, and says what it pressed, or nil. The
 // telling comes after the screen is free again, so a slow journal never holds up the program's output.
-func (watcher *MenuWatcher) Look() *MenuAnswer {
+func (watcher *MenuWatcher) CheckMenu() *MenuAnswer {
 	answer := watcher.answered()
-	if answer != nil && watcher.Told != nil {
-		watcher.Told(answer.Question, answer.Said)
+	if answer != nil && watcher.OnAnswer != nil {
+		watcher.OnAnswer(answer.Question, answer.Explanation)
 	}
 	return answer
 }
@@ -99,43 +99,43 @@ func (watcher *MenuWatcher) answered() *MenuAnswer {
 	now := watcher.Now()
 	menu := ReadTerminalMenu(string(watcher.screen))
 	if menu == nil || !menu.Foreign() {
-		watcher.seen = ""
+		watcher.menuSignature = ""
 		return nil
 	}
-	if watcher.seen != menu.Signature() {
-		watcher.seen, watcher.seenAt = menu.Signature(), now
+	if watcher.menuSignature != menu.Signature() {
+		watcher.menuSignature, watcher.menuDetectedAt = menu.Signature(), now
 	}
 	if now.Sub(watcher.changedAt) < menuQuiet {
 		return nil
 	}
-	yours := watcher.KeyedAt().After(watcher.seenAt.Add(-menuYoursWithin))
+	yours := watcher.KeyedAt().After(watcher.menuDetectedAt.Add(-menuYoursWithin))
 	if yours && !menu.Confirming() {
 		return nil
 	}
-	caused := yours || watcher.TypedAt().After(watcher.seenAt.Add(-menuCausedWithin))
-	keys, said := menuDecision(menu, caused)
+	requested := yours || watcher.TypedAt().After(watcher.menuDetectedAt.Add(-menuCausedWithin))
+	keys, explanation := menuDecision(menu, requested)
 	if !watcher.Press(keys) {
 		return nil
 	}
-	watcher.screen, watcher.seen = nil, ""
+	watcher.screen, watcher.menuSignature = nil, ""
 	question := menu.Question
 	if len(question) > menuQuestionShown {
 		question = question[len(question)-menuQuestionShown:]
 	}
-	return &MenuAnswer{keys, question, said}
+	return &MenuAnswer{keys, question, explanation}
 }
 
-func menuDecision(menu *TerminalMenu, caused bool) (string, string) {
-	if caused {
-		taken := menu.Accepting()
-		return menu.KeysFor(taken), fmt.Sprintf("chose %q, since it confirms what was asked for", taken.Label)
+func menuDecision(menu *TerminalMenu, requested bool) (string, string) {
+	if requested {
+		option := menu.Accepting()
+		return menu.KeysFor(option), fmt.Sprintf("chose %q, since it confirms what was asked for", option.Label)
 	}
 	if menu.Trusting() {
-		taken := menu.Accepting()
-		return menu.KeysFor(taken), fmt.Sprintf("chose %q", taken.Label)
+		option := menu.Accepting()
+		return menu.KeysFor(option), fmt.Sprintf("chose %q", option.Label)
 	}
-	if taken, declines := menu.Declining(); declines {
-		return menu.KeysFor(taken), fmt.Sprintf("chose %q", taken.Label)
+	if option, declines := menu.Declining(); declines {
+		return menu.KeysFor(option), fmt.Sprintf("chose %q", option.Label)
 	}
 	return MenuKeyEscape, "closed it with Escape, since nothing asked for it"
 }

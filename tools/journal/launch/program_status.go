@@ -60,7 +60,7 @@ type ProgramStatus struct {
 	model        string
 	tokens       int
 	windowTokens int
-	written      bool
+	hasReport      bool
 }
 
 // NewProgramStatus keeps status files in the status folder under the journal's folder.
@@ -118,10 +118,10 @@ func (status *ProgramStatus) keep(session string) {
 	}
 	path := filepath.Join(status.folder, session+".json")
 	// a file this run already wrote that has gone was moved when the agent ended, so a late line follows it there
-	if _, missing := os.Stat(path); status.written && missing != nil {
+	if _, missing := os.Stat(path); status.hasReport && missing != nil {
 		path = filepath.Join(status.folder, "ended", session+".json")
 	}
-	status.written = true
+	status.hasReport = true
 	_ = os.WriteFile(path, body, 0o644)
 }
 

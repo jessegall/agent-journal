@@ -8,7 +8,7 @@ import (
 const countedLines = "one\ntwo\nthree\nfour\nfive\n"
 
 func TestReadLines(t *testing.T) {
-	cases := []struct{ reading, shown string }{
+	cases := []struct{ selection, shown string }{
 		{"tail:2", "four\nfive\n"},
 		{"tail:99", countedLines},
 		{"head:2", "one\ntwo\n"},
@@ -19,8 +19,8 @@ func TestReadLines(t *testing.T) {
 		{"tail:0", ""},
 	}
 	for _, testCase := range cases {
-		t.Run(testCase.reading, func(t *testing.T) {
-			if shown := readLines(countedLines, testCase.reading); shown != testCase.shown {
+		t.Run(testCase.selection, func(t *testing.T) {
+			if shown := readLines(countedLines, testCase.selection); shown != testCase.shown {
 				t.Fatalf("shown %q", shown)
 			}
 		})
@@ -28,9 +28,9 @@ func TestReadLines(t *testing.T) {
 }
 
 func TestAReadingIsParsedPerPosition(t *testing.T) {
-	reading := parseReading("2:tail:5,4:cut:10-20")
-	if reading[2] != "tail:5" || reading[4] != "cut:10-20" || len(reading) != 2 {
-		t.Fatalf("reading %v", reading)
+	selection := parseReading("2:tail:5,4:cut:10-20")
+	if selection[2] != "tail:5" || selection[4] != "cut:10-20" || len(selection) != 2 {
+		t.Fatalf("reading %v", selection)
 	}
 }
 

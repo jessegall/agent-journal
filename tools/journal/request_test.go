@@ -17,8 +17,8 @@ func TestTheRequestCarriesTheCommandLineTheCallerVariablesAndTheFolderButNoPid(t
 		t.Fatal(err)
 	}
 	want := `{"argv":["task","list"],"folder":"/work","variables":{"JOURNAL_AGENT_SESSION":"s-1","USER":"ada"}}`
-	if got, _ := json.Marshal(decoded); string(got) != want {
-		t.Fatalf("body %s, want %s", got, want)
+	if actual, _ := json.Marshal(decoded); string(actual) != want {
+		t.Fatalf("body %s, want %s", actual, want)
 	}
 }
 
